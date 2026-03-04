@@ -1,11 +1,13 @@
 --勇気の旗印
+-- 效果：
+-- ①：只要这张卡在魔法与陷阱区域存在，自己场上的怪兽的攻击力在自己战斗阶段内上升200。
 function c10012614.initial_effect(c)
-	--activate
+	-- ①：只要这张卡在魔法与陷阱区域存在，自己场上的怪兽的攻击力在自己战斗阶段内上升200。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	--Atk up
+	-- 只要这张卡在魔法与陷阱区域存在，自己场上的怪兽的攻击力在自己战斗阶段内上升200。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD)
 	e2:SetRange(LOCATION_SZONE)
@@ -15,8 +17,11 @@ function c10012614.initial_effect(c)
 	e2:SetValue(200)
 	c:RegisterEffect(e2)
 end
+-- 条件函数开始
 function c10012614.con(e)
+	-- 获取当前阶段
 	local ph=Duel.GetCurrentPhase()
+	-- 获取当前回合玩家
 	local tp=Duel.GetTurnPlayer()
 	return tp==e:GetHandlerPlayer() and ph>=PHASE_BATTLE_START and ph<=PHASE_BATTLE
 end
