@@ -1,7 +1,13 @@
 --耀聖の花詩ルキナ
+-- 效果：
+-- 这个卡名的①的方法的特殊召唤1回合只能有1次，②③的效果1回合各能使用1次。
+-- ①：这张卡可以从手卡往自己的中央的主要怪兽区域特殊召唤。
+-- ②：自己主要阶段才能发动。从卡组把「耀圣之花诗 卢西娜」以外的1只「耀圣」怪兽加入手卡。
+-- ③：对方回合才能发动。自己的主要怪兽区域的这张卡和中央的怪兽的位置交换。那之后，可以让对方场上1只6星以下的怪兽回到手卡。
 local s,id,o=GetID()
+-- 初始化效果函数
 function s.initial_effect(c)
-	--special summon
+	-- ①：这张卡可以从手卡往自己的中央的主要怪兽区域特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_SPSUMMON_PROC)
@@ -11,7 +17,7 @@ function s.initial_effect(c)
 	e1:SetCondition(s.spcon)
 	e1:SetValue(s.spval)
 	c:RegisterEffect(e1)
-	--tohand
+	-- ②：自己主要阶段才能发动。从卡组把「耀圣之花诗 卢西娜」以外的1只「耀圣」怪兽加入手卡。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(id,0))
 	e2:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
@@ -21,7 +27,7 @@ function s.initial_effect(c)
 	e2:SetTarget(s.thtg)
 	e2:SetOperation(s.thop)
 	c:RegisterEffect(e2)
-	--switch locations
+	-- ③：对方回合才能发动。自己的主要怪兽区域的这张卡和中央的怪兽的位置交换。那之后，可以让对方场上1只6星以下的怪兽回到手卡。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(id,1))
 	e3:SetCategory(CATEGORY_TOHAND)
@@ -35,56 +41,84 @@ function s.initial_effect(c)
 	e3:SetOperation(s.chop)
 	c:RegisterEffect(e3)
 end
+-- 判断特殊召唤条件是否满足
 function s.spcon(e,c)
 	if c==nil then return true end
 	local tp=c:GetControler()
+	-- 检查玩家场上是否有足够的怪兽区域
 	return Duel.GetLocationCount(tp,LOCATION_MZONE,tp,LOCATION_REASON_TOFIELD,0x4)>0
 end
+-- 设置特殊召唤的值
 function s.spval(e,c)
 	return 0,0x4
 end
+-- 检索手卡中满足条件的卡片
 function s.thfilter(c)
 	return not c:IsCode(id) and c:IsSetCard(0x1d8) and c:IsType(TYPE_MONSTER) and c:IsAbleToHand()
 end
+-- 设置效果处理时的检索目标
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
+	-- 检查是否满足检索条件
 	if chk==0 then return Duel.IsExistingMatchingCard(s.thfilter,tp,LOCATION_DECK,0,1,nil) end
+	-- 设置效果处理信息
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
+-- 处理效果发动后的操作
 function s.thop(e,tp,eg,ep,ev,re,r,rp)
+	-- 提示玩家选择要加入手卡的卡片
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)
+	-- 选择满足条件的卡片
 	local g=Duel.SelectMatchingCard(tp,s.thfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if #g>0 then
+		-- 将选中的卡片送入手卡
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
+		-- 确认玩家看到选中的卡片
 		Duel.ConfirmCards(1-tp,g)
 	end
 end
+-- 判断位置交换效果是否可以发动
 function s.chcon(e,tp,eg,ep,ev,re,r,rp)
+	-- 检查当前回合是否为对方回合且该卡在主要怪兽区域
 	return e:GetHandler():GetSequence()<5 and Duel.GetTurnPlayer()==1-tp
 end
+-- 筛选可以交换位置的怪兽
 function s.chfilter(c)
 	return c:GetSequence()==2
 end
+-- 设置位置交换效果的目标
 function s.chtg(e,tp,eg,ep,ev,re,r,rp,chk)
+	-- 检查是否有满足交换条件的怪兽
 	if chk==0 then return Duel.IsExistingMatchingCard(s.chfilter,tp,LOCATION_MZONE,0,1,e:GetHandler()) end
 end
+-- 筛选可以送回手卡的怪兽
 function s.rthfilter(c)
 	return c:IsFaceup() and c:IsAbleToHand() and c:IsLevelBelow(6)
 end
+-- 处理位置交换效果的操作
 function s.chop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local cs=c:GetSequence()
 	if not c:IsRelateToChain() or not c:IsControler(tp) or cs>4 or cs==2 then return end
+	-- 获取满足交换条件的怪兽
 	local g=Duel.GetMatchingGroup(s.chfilter,tp,LOCATION_MZONE,0,nil)
 	if g:GetCount()==1 then
 		local tc=g:GetFirst()
+		-- 交换两张怪兽卡的位置
 		Duel.SwapSequence(c,tc)
 		if c:GetSequence()==cs then return end
+		-- 检查是否有满足条件的怪兽可以送回手卡
 		if Duel.IsExistingMatchingCard(s.rthfilter,tp,0,LOCATION_MZONE,1,nil)
+			-- 询问玩家是否发动送回手卡的效果
 			and Duel.SelectYesNo(tp,aux.Stringid(id,2)) then
+			-- 中断当前效果处理
 			Duel.BreakEffect()
+			-- 提示玩家选择要送回手卡的怪兽
 			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_RTOHAND)
+			-- 选择满足条件的怪兽
 			local rg=Duel.SelectMatchingCard(tp,s.rthfilter,tp,0,LOCATION_MZONE,1,1,nil)
+			-- 显示选中的怪兽
 			Duel.HintSelection(rg)
+			-- 将选中的怪兽送回手卡
 			Duel.SendtoHand(rg,nil,REASON_EFFECT)
 		end
 	end
