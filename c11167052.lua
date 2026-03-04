@@ -1,28 +1,34 @@
 --霊神統一
+-- 效果：
+-- ①：只要这张卡在魔法与陷阱区域存在，自己场上的「灵神的圣殿」不会被效果破坏，不会成为对方的效果的对象。
+-- ②：1回合1次，把自己场上1只怪兽解放才能发动。原本属性和解放的怪兽不同的1只「元素灵剑士」怪兽从卡组特殊召唤。
+-- ③：把魔法与陷阱区域的表侧表示的这张卡送去墓地才能发动。手卡全部丢弃。那之后，从自己墓地选这个效果丢弃的卡数量的「灵神」怪兽加入手卡。
 function c11167052.initial_effect(c)
+	-- 为卡片注册关联卡片代码，标明该卡效果文本中存在「灵神的圣殿」
 	aux.AddCodeList(c,61557074)
-	--Activate
+	-- ①：只要这张卡在魔法与陷阱区域存在，自己场上的「灵神的圣殿」不会被效果破坏，不会成为对方的效果的对象。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetHintTiming(0,TIMING_END_PHASE)
 	c:RegisterEffect(e1)
-	--indes/untarget
+	-- ①：只要这张卡在魔法与陷阱区域存在，自己场上的「灵神的圣殿」不会被效果破坏，不会成为对方的效果的对象。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD)
 	e2:SetCode(EFFECT_CANNOT_BE_EFFECT_TARGET)
 	e2:SetRange(LOCATION_SZONE)
 	e2:SetTargetRange(LOCATION_ONFIELD,0)
 	e2:SetTarget(c11167052.intg)
+	-- 设置效果值为过滤函数，用于判断是否不会成为对方的卡的效果对象
 	e2:SetValue(aux.tgoval)
 	c:RegisterEffect(e2)
 	local e3=e2:Clone()
 	e3:SetCode(EFFECT_INDESTRUCTABLE_EFFECT)
 	e3:SetValue(1)
 	c:RegisterEffect(e3)
-	--special summon
+	-- ②：1回合1次，把自己场上1只怪兽解放才能发动。原本属性和解放的怪兽不同的1只「元素灵剑士」怪兽从卡组特殊召唤。
 	local e4=Effect.CreateEffect(c)
-	e4:SetDescription(aux.Stringid(11167052,0))
+	e4:SetDescription(aux.Stringid(11167052,0))  --"特殊召唤"
 	e4:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e4:SetType(EFFECT_TYPE_QUICK_O)
 	e4:SetCode(EVENT_FREE_CHAIN)
@@ -33,9 +39,9 @@ function c11167052.initial_effect(c)
 	e4:SetTarget(c11167052.sptg)
 	e4:SetOperation(c11167052.spop)
 	c:RegisterEffect(e4)
-	--discard & salvage
+	-- ③：把魔法与陷阱区域的表侧表示的这张卡送去墓地才能发动。手卡全部丢弃。那之后，从自己墓地选这个效果丢弃的卡数量的「灵神」怪兽加入手卡。
 	local e5=Effect.CreateEffect(c)
-	e5:SetDescription(aux.Stringid(11167052,1))
+	e5:SetDescription(aux.Stringid(11167052,1))  --"墓地回收"
 	e5:SetCategory(CATEGORY_HANDES+CATEGORY_TOHAND)
 	e5:SetType(EFFECT_TYPE_QUICK_O)
 	e5:SetCode(EVENT_FREE_CHAIN)
@@ -47,65 +53,97 @@ function c11167052.initial_effect(c)
 	e5:SetOperation(c11167052.thop)
 	c:RegisterEffect(e5)
 end
+-- 判断目标是否为表侧表示的「灵神的圣殿」
 function c11167052.intg(e,c)
 	return c:IsFaceup() and c:IsCode(61557074)
 end
+-- 设置特殊召唤效果的费用处理函数
 function c11167052.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	e:SetLabel(100)
 	if chk==0 then return true end
 end
+-- 判断场上是否存在可解放的怪兽，且该怪兽的属性与后续选择的怪兽不同
 function c11167052.filter1(c,e,tp)
+	-- 检查卡组中是否存在满足条件的「元素灵剑士」怪兽
 	return Duel.IsExistingMatchingCard(c11167052.filter2,tp,LOCATION_DECK,0,1,nil,e,tp,c:GetOriginalAttribute())
+		-- 检查场上是否有足够的怪兽区域用于特殊召唤
 		and Duel.GetMZoneCount(tp,c)>0
 end
+-- 判断卡组中是否存在满足条件的「元素灵剑士」怪兽
 function c11167052.filter2(c,e,tp,att)
 	return c:IsSetCard(0x400d) and c:GetOriginalAttribute()~=att and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
+-- 设置特殊召唤效果的目标处理函数
 function c11167052.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then
 		if e:GetLabel()~=100 then return false end
 		e:SetLabel(0)
+		-- 检查场上是否存在满足条件的可解放怪兽
 		return Duel.CheckReleaseGroup(tp,c11167052.filter1,1,nil,e,tp)
 	end
+	-- 选择场上满足条件的可解放怪兽
 	local rg=Duel.SelectReleaseGroup(tp,c11167052.filter1,1,1,nil,e,tp)
 	e:SetLabel(rg:GetFirst():GetOriginalAttribute())
+	-- 将选中的怪兽解放作为特殊召唤的费用
 	Duel.Release(rg,REASON_COST)
+	-- 设置特殊召唤效果的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_DECK)
 end
+-- 设置特殊召唤效果的执行函数
 function c11167052.spop(e,tp,eg,ep,ev,re,r,rp)
+	-- 检查场上是否有足够的怪兽区域用于特殊召唤
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
 	local att=e:GetLabel()
+	-- 提示玩家选择特殊召唤的怪兽
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
+	-- 从卡组中选择满足条件的「元素灵剑士」怪兽
 	local g=Duel.SelectMatchingCard(tp,c11167052.filter2,tp,LOCATION_DECK,0,1,1,nil,e,tp,att)
 	if g:GetCount()>0 then
+		-- 将选中的怪兽特殊召唤到场上
 		Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
+-- 设置墓地回收效果的发动条件函数
 function c11167052.thcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsStatus(STATUS_EFFECT_ENABLED)
 end
+-- 设置墓地回收效果的费用处理函数
 function c11167052.thcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsAbleToGraveAsCost() end
+	-- 将自身送去墓地作为墓地回收效果的费用
 	Duel.SendtoGrave(e:GetHandler(),REASON_COST)
 end
+-- 判断墓地回收效果中可加入手牌的「灵神」怪兽
 function c11167052.thfilter(c)
 	return c:IsType(TYPE_MONSTER) and c:IsSetCard(0x113) and c:IsAbleToHand()
 end
+-- 设置墓地回收效果的目标处理函数
 function c11167052.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
+	-- 获取玩家手牌组
 	local hg=Duel.GetFieldGroup(tp,LOCATION_HAND,0)
 	local ct=hg:GetCount()
+	-- 检查是否满足墓地回收效果的发动条件
 	if chk==0 then return ct>0 and Duel.IsExistingMatchingCard(c11167052.thfilter,tp,LOCATION_GRAVE,0,ct,nil) end
+	-- 设置丢弃手牌的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_HANDES,hg,ct,0,0)
+	-- 设置从墓地将怪兽加入手牌的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,ct,tp,LOCATION_GRAVE)
 end
+-- 设置墓地回收效果的执行函数
 function c11167052.thop(e,tp,eg,ep,ev,re,r,rp)
+	-- 获取玩家手牌组
 	local hg=Duel.GetFieldGroup(tp,LOCATION_HAND,0)
+	-- 将玩家手牌全部送去墓地
 	local ct=Duel.SendtoGrave(hg,REASON_EFFECT+REASON_DISCARD)
 	if ct<=0 then return end
+	-- 提示玩家选择从墓地加入手牌的怪兽
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)
+	-- 从墓地选择满足条件的「灵神」怪兽
 	local g=Duel.SelectMatchingCard(tp,c11167052.thfilter,tp,LOCATION_GRAVE,0,ct,ct,nil)
 	if g:GetCount()>0 then
+		-- 中断当前效果处理，使后续效果视为不同时处理
 		Duel.BreakEffect()
+		-- 将选中的怪兽加入手牌
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
 	end
 end
