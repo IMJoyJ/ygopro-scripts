@@ -1,16 +1,23 @@
 --ロイヤル・ストレート・スラッシャー
+-- 效果：
+-- 这张卡不能通常召唤，用「同花大顺」的效果才能特殊召唤。这个卡名的①②的效果1回合各能使用1次。
+-- ①：自己墓地有「王后骑士」「卫兵骑士」「国王骑士」全部存在的场合才能发动。1～5星的怪兽各1只从手卡·卡组送去墓地，对方场上的卡全部破坏。
+-- ②：这张卡被战斗破坏时，以自己墓地最多3只战士族·光属性怪兽为对象才能发动。那些怪兽特殊召唤。
 local s,id,o=GetID()
+-- 初始化卡片效果函数
 function s.initial_effect(c)
+	-- 为卡片注册与「同花大顺」相关的卡片代码列表
 	aux.AddCodeList(c,25652259,64788463,90876561)
 	c:EnableReviveLimit()
-	--cannot special summon
+	-- ①：自己墓地有「王后骑士」「卫兵骑士」「国王骑士」全部存在的场合才能发动。
 	local e1=Effect.CreateEffect(c)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_SPSUMMON_CONDITION)
+	-- 设置该卡不能通常召唤
 	e1:SetValue(aux.FALSE)
 	c:RegisterEffect(e1)
-	--destroy
+	-- ②：这张卡被战斗破坏时，以自己墓地最多3只战士族·光属性怪兽为对象才能发动。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(id,0))
 	e2:SetCategory(CATEGORY_TOGRAVE+CATEGORY_DESTROY)
@@ -21,7 +28,7 @@ function s.initial_effect(c)
 	e2:SetTarget(s.destg)
 	e2:SetOperation(s.desop)
 	c:RegisterEffect(e2)
-	--spsummon
+	-- ①：自己墓地有「王后骑士」「卫兵骑士」「国王骑士」全部存在的场合才能发动。1～5星的怪兽各1只从手卡·卡组送去墓地，对方场上的卡全部破坏。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(id,1))
 	e3:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -33,58 +40,91 @@ function s.initial_effect(c)
 	e3:SetOperation(s.spop)
 	c:RegisterEffect(e3)
 end
+-- 判断效果发动条件是否满足
 function s.descon(e,tp,eg,ep,ev,re,r,rp)
+	-- 检查自己墓地是否存在「王后骑士」
 	return Duel.IsExistingMatchingCard(Card.IsCode,tp,LOCATION_GRAVE,0,1,nil,25652259)
+		-- 检查自己墓地是否存在「卫兵骑士」
 		and Duel.IsExistingMatchingCard(Card.IsCode,tp,LOCATION_GRAVE,0,1,nil,64788463)
+		-- 检查自己墓地是否存在「国王骑士」
 		and Duel.IsExistingMatchingCard(Card.IsCode,tp,LOCATION_GRAVE,0,1,nil,90876561)
 end
+-- 定义用于筛选怪兽的过滤器函数
 function s.tgfilter(c)
 	return c:IsType(TYPE_MONSTER) and c:IsLevelBelow(5) and c:IsAbleToGrave()
 end
+-- 设置效果的目标函数
 function s.destg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then
+		-- 检查对方场上是否存在至少一张卡
 		if not Duel.IsExistingMatchingCard(aux.TRUE,tp,0,LOCATION_ONFIELD,1,nil) then return false end
+		-- 获取手卡和卡组中满足条件的怪兽组
 		local tg=Duel.GetMatchingGroup(s.tgfilter,tp,LOCATION_HAND+LOCATION_DECK,0,nil)
+		-- 检查是否存在满足等级要求的5张怪兽组合
 		return tg:CheckSubGroup(aux.dlvcheck,5,5)
 	end
+	-- 获取对方场上的所有卡
 	local g=Duel.GetMatchingGroup(aux.TRUE,tp,0,LOCATION_ONFIELD,nil)
+	-- 设置操作信息：将5张卡送去墓地
 	Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,nil,5,tp,LOCATION_HAND+LOCATION_DECK)
+	-- 设置操作信息：破坏对方场上的所有卡
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,g:GetCount(),0,0)
 end
+-- 设置效果的处理函数
 function s.desop(e,tp,eg,ep,ev,re,r,rp)
+	-- 获取手卡和卡组中满足条件的怪兽组
 	local tg=Duel.GetMatchingGroup(s.tgfilter,tp,LOCATION_HAND+LOCATION_DECK,0,nil)
+	-- 提示玩家选择要送去墓地的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)
+	-- 从满足条件的怪兽组中选择5张不同等级的卡
 	local sg=tg:SelectSubGroup(tp,aux.dlvcheck,false,5,5)
 	if sg then
+		-- 将选中的卡送去墓地
 		Duel.SendtoGrave(sg,REASON_EFFECT)
+		-- 获取对方场上的所有卡
 		local g=Duel.GetMatchingGroup(aux.TRUE,tp,0,LOCATION_ONFIELD,nil)
 		if #g>0 then
+			-- 破坏对方场上的所有卡
 			Duel.Destroy(g,REASON_EFFECT)
 		end
 	end
 end
+-- 定义用于筛选可特殊召唤怪兽的过滤器函数
 function s.spfilter(c,e,tp)
 	return c:IsRace(RACE_WARRIOR) and c:IsAttribute(ATTRIBUTE_LIGHT) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
+-- 设置特殊召唤效果的目标函数
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and s.spfilter(chkc,e,tp) end
+	-- 获取玩家场上可召唤怪兽的数量
 	local ft=Duel.GetLocationCount(tp,LOCATION_MZONE)
+	-- 检查是否满足特殊召唤的条件
 	if chk==0 then return ft>0 and Duel.IsExistingTarget(s.spfilter,tp,LOCATION_GRAVE,0,1,nil,e,tp) end
+	-- 若玩家受到效果影响，则限制可召唤数量
 	if ft>1 and Duel.IsPlayerAffectedByEffect(tp,59822133) then ft=1 end
 	if ft>3 then ft=3 end
+	-- 提示玩家选择要特殊召唤的怪兽
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
+	-- 选择满足条件的怪兽作为特殊召唤目标
 	local g=Duel.SelectTarget(tp,s.spfilter,tp,LOCATION_GRAVE,0,1,ft,nil,e,tp)
+	-- 设置操作信息：特殊召唤指定数量的怪兽
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,#g,0,0)
 end
+-- 设置特殊召唤效果的处理函数
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
+	-- 获取玩家场上可召唤怪兽的数量
 	local ft=Duel.GetLocationCount(tp,LOCATION_MZONE)
 	if ft<=0 then return end
+	-- 获取当前连锁中指定的目标卡组
 	local g=Duel.GetChainInfo(0,CHAININFO_TARGET_CARDS)
 	local sg=g:Filter(Card.IsRelateToEffect,nil,e)
+	-- 若玩家受到效果影响且选择数量超过1，则不执行特殊召唤
 	if sg:GetCount()>1 and Duel.IsPlayerAffectedByEffect(tp,59822133) then return end
 	if sg:GetCount()>ft then
+		-- 提示玩家选择要特殊召唤的怪兽
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
 		sg=sg:Select(tp,ft,ft,nil)
 	end
+	-- 将选中的怪兽特殊召唤到场上
 	Duel.SpecialSummon(sg,0,tp,tp,false,false,POS_FACEUP)
 end
