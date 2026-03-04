@@ -1,6 +1,8 @@
 --ライトイレイザー
+-- 效果：
+-- 光属性·战士族才能装备。和装备怪兽进行战斗的怪兽在那个伤害步骤结束时从游戏中除外。
 function c11471117.initial_effect(c)
-	--Activate
+	-- 装备怪兽进行战斗的怪兽在那个伤害步骤结束时从游戏中除外。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_EQUIP)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -9,16 +11,16 @@ function c11471117.initial_effect(c)
 	e1:SetTarget(c11471117.target)
 	e1:SetOperation(c11471117.operation)
 	c:RegisterEffect(e1)
-	--Equip limit
+	-- 光属性·战士族才能装备。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_SINGLE)
 	e2:SetCode(EFFECT_EQUIP_LIMIT)
 	e2:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
 	e2:SetValue(c11471117.eqlimit)
 	c:RegisterEffect(e2)
-	--remove
+	-- 和装备怪兽进行战斗的怪兽在那个伤害步骤结束时从游戏中除外。
 	local e3=Effect.CreateEffect(c)
-	e3:SetDescription(aux.Stringid(11471117,0))
+	e3:SetDescription(aux.Stringid(11471117,0))  --"战斗对象除外"
 	e3:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_F)
 	e3:SetCategory(CATEGORY_REMOVE)
 	e3:SetCode(EVENT_BATTLED)
@@ -28,46 +30,65 @@ function c11471117.initial_effect(c)
 	e3:SetOperation(c11471117.rmop)
 	c:RegisterEffect(e3)
 end
+-- 判断装备对象是否为光属性战士族
 function c11471117.eqlimit(e,c)
 	return c:IsAttribute(ATTRIBUTE_LIGHT) and c:IsRace(RACE_WARRIOR)
 end
+-- 筛选光属性战士族怪兽
 function c11471117.filter(c)
 	return c:IsFaceup() and c:IsAttribute(ATTRIBUTE_LIGHT) and c:IsRace(RACE_WARRIOR)
 end
+-- 选择装备目标
 function c11471117.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and c11471117.filter(chkc) end
+	-- 检查是否存在符合条件的装备目标
 	if chk==0 then return Duel.IsExistingTarget(c11471117.filter,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil) end
+	-- 提示玩家选择装备对象
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_EQUIP)
+	-- 选择装备目标
 	Duel.SelectTarget(tp,c11471117.filter,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,nil)
+	-- 设置装备效果的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_EQUIP,e:GetHandler(),1,0,0)
 end
+-- 装备效果的处理函数
 function c11471117.operation(e,tp,eg,ep,ev,re,r,rp)
+	-- 获取装备效果的目标怪兽
 	local tc=Duel.GetFirstTarget()
 	if e:GetHandler():IsRelateToEffect(e) and tc:IsRelateToEffect(e) and tc:IsFaceup() then
+		-- 将装备卡装备给目标怪兽
 		Duel.Equip(tp,e:GetHandler(),tc)
 	end
 end
+-- 判断是否满足除外条件
 function c11471117.rmcon(e,tp,eg,ep,ev,re,r,rp)
+	-- 获取攻击怪兽
 	local a=Duel.GetAttacker()
+	-- 获取攻击目标怪兽
 	local d=Duel.GetAttackTarget()
 	local c=e:GetHandler():GetEquipTarget()
 	return d and (a==c or d==c)
 end
+-- 设置除外效果的目标
 function c11471117.rmtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
 end
+-- 除外效果的处理函数
 function c11471117.rmop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local tc=c:GetEquipTarget():GetBattleTarget()
+	-- 在伤害步骤结束时发动除外效果
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e1:SetCode(EVENT_DAMAGE_STEP_END)
 	e1:SetReset(RESET_PHASE+PHASE_DAMAGE)
 	e1:SetLabelObject(tc)
 	e1:SetOperation(c11471117.rmop2)
+	-- 注册除外效果
 	Duel.RegisterEffect(e1,tp)
 end
+-- 除外效果的处理函数
 function c11471117.rmop2(e,tp,eg,ep,ev,re,r,rp)
 	local tc=e:GetLabelObject()
+	-- 将目标怪兽从游戏中除外
 	Duel.Remove(tc,POS_FACEUP,REASON_EFFECT)
 end

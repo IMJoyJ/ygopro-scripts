@@ -1,14 +1,16 @@
 --アーティファクト－アキレウス
+-- 效果：
+-- 这张卡可以当作魔法卡使用从手卡到魔法与陷阱卡区域盖放。魔法与陷阱卡区域盖放的这张卡在对方回合被破坏送去墓地时，这张卡特殊召唤。对方回合中这张卡特殊召唤成功的场合，这个回合对方不能把自己场上的名字带有「古遗物」的怪兽作为攻击对象。
 function c11475049.initial_effect(c)
-	--set
+	-- 效果原文：这张卡可以当作魔法卡使用从手卡到魔法与陷阱卡区域盖放。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_MONSTER_SSET)
 	e1:SetValue(TYPE_SPELL)
 	c:RegisterEffect(e1)
-	--spsummon
+	-- 效果原文：魔法与陷阱卡区域盖放的这张卡在对方回合被破坏送去墓地时，这张卡特殊召唤。
 	local e2=Effect.CreateEffect(c)
-	e2:SetDescription(aux.Stringid(11475049,0))
+	e2:SetDescription(aux.Stringid(11475049,0))  --"特殊召唤"
 	e2:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e2:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_F)
 	e2:SetCode(EVENT_TO_GRAVE)
@@ -16,42 +18,54 @@ function c11475049.initial_effect(c)
 	e2:SetTarget(c11475049.sptg)
 	e2:SetOperation(c11475049.spop)
 	c:RegisterEffect(e2)
-	--cannot be battle target
+	-- 效果原文：对方回合中这张卡特殊召唤成功的场合，这个回合对方不能把自己场上的名字带有「古遗物」的怪兽作为攻击对象。
 	local e3=Effect.CreateEffect(c)
-	e3:SetDescription(aux.Stringid(11475049,1))
+	e3:SetDescription(aux.Stringid(11475049,1))  --"攻击限制"
 	e3:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_F)
 	e3:SetCode(EVENT_SPSUMMON_SUCCESS)
 	e3:SetCondition(c11475049.atcon)
 	e3:SetOperation(c11475049.atop)
 	c:RegisterEffect(e3)
 end
+-- 规则层面：判断是否满足特殊召唤的触发条件，包括卡从魔陷区被破坏送去墓地且为对方回合。
 function c11475049.spcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	return c:IsPreviousLocation(LOCATION_SZONE) and c:IsPreviousPosition(POS_FACEDOWN)
 		and c:IsPreviousControler(tp)
+		-- 规则层面：确保该卡是在对方回合被破坏送入墓地。
 		and c:IsReason(REASON_DESTROY) and Duel.GetTurnPlayer()~=tp
 end
+-- 规则层面：设置特殊召唤效果的目标和类别。
 function c11475049.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
+	-- 规则层面：设置特殊召唤操作的信息，用于连锁处理。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
+-- 规则层面：定义特殊召唤的具体操作内容。
 function c11475049.spop(e,tp,eg,ep,ev,re,r,rp)
 	if e:GetHandler():IsRelateToEffect(e) then
+		-- 规则层面：将该卡以正面表示形式特殊召唤到场上。
 		Duel.SpecialSummon(e:GetHandler(),0,tp,tp,false,false,POS_FACEUP)
 	end
 end
+-- 规则层面：判断是否满足攻击限制效果的触发条件，即是否在对方回合特殊召唤成功。
 function c11475049.atcon(e,tp,eg,ep,ev,re,r,rp)
+	-- 规则层面：确保该卡是在对方回合特殊召唤成功。
 	return Duel.GetTurnPlayer()~=tp
 end
+-- 规则层面：定义攻击限制效果的具体操作内容。
 function c11475049.atop(e,tp,eg,ep,ev,re,r,rp)
+	-- 效果原文：对方回合中这张卡特殊召唤成功的场合，这个回合对方不能把自己场上的名字带有「古遗物」的怪兽作为攻击对象。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_CANNOT_SELECT_BATTLE_TARGET)
 	e1:SetTargetRange(0,LOCATION_MZONE)
 	e1:SetValue(c11475049.atlimit)
 	e1:SetReset(RESET_PHASE+PHASE_END)
+	-- 规则层面：注册攻击限制效果，使对方不能选择带有「古遗物」的怪兽作为攻击对象。
 	Duel.RegisterEffect(e1,tp)
 end
+-- 规则层面：定义攻击限制效果的判断函数，用于判断目标怪兽是否满足限制条件。
 function c11475049.atlimit(e,c)
 	return c:IsFaceup() and c:IsSetCard(0x97)
 end
