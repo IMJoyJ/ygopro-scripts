@@ -1,14 +1,18 @@
 --竜魂の城
+-- 效果：
+-- ①：「龙魂之城」在自己场上只能有1张表侧表示存在。
+-- ②：1回合1次，从自己墓地把1只龙族怪兽除外，以自己场上1只表侧表示怪兽为对象才能发动。那只怪兽的攻击力直到回合结束时上升700。
+-- ③：表侧表示的这张卡从场上送去墓地时，以除外的1只自己的龙族怪兽为对象才能发动。那只怪兽特殊召唤。
 function c13513663.initial_effect(c)
 	c:SetUniqueOnField(1,0,13513663)
-	--activate
+	-- ①：「龙魂之城」在自己场上只能有1张表侧表示存在。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	--atkup
+	-- ②：1回合1次，从自己墓地把1只龙族怪兽除外，以自己场上1只表侧表示怪兽为对象才能发动。那只怪兽的攻击力直到回合结束时上升700。
 	local e2=Effect.CreateEffect(c)
-	e2:SetDescription(aux.Stringid(13513663,0))
+	e2:SetDescription(aux.Stringid(13513663,0))  --"攻击上升"
 	e2:SetType(EFFECT_TYPE_QUICK_O)
 	e2:SetCode(EVENT_FREE_CHAIN)
 	e2:SetRange(LOCATION_SZONE)
@@ -19,9 +23,9 @@ function c13513663.initial_effect(c)
 	e2:SetTarget(c13513663.target)
 	e2:SetOperation(c13513663.operation)
 	c:RegisterEffect(e2)
-	--spsummon
+	-- ③：表侧表示的这张卡从场上送去墓地时，以除外的1只自己的龙族怪兽为对象才能发动。那只怪兽特殊召唤。
 	local e3=Effect.CreateEffect(c)
-	e3:SetDescription(aux.Stringid(13513663,1))
+	e3:SetDescription(aux.Stringid(13513663,1))  --"特殊召唤"
 	e3:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e3:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e3:SetCode(EVENT_TO_GRAVE)
@@ -31,24 +35,37 @@ function c13513663.initial_effect(c)
 	e3:SetOperation(c13513663.spop)
 	c:RegisterEffect(e3)
 end
+-- 过滤函数，用于检查是否满足龙族且可除外的条件
 function c13513663.cfilter(c)
 	return c:IsRace(RACE_DRAGON) and c:IsAbleToRemoveAsCost()
 end
+-- 效果的费用支付函数，用于处理从墓地除外龙族怪兽的费用
 function c13513663.cost(e,tp,eg,ep,ev,re,r,rp,chk)
+	-- 检查是否满足除外龙族怪兽的条件
 	if chk==0 then return Duel.IsExistingMatchingCard(c13513663.cfilter,tp,LOCATION_GRAVE,0,1,nil) end
+	-- 提示玩家选择要除外的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)
+	-- 选择满足条件的1只龙族怪兽从墓地除外
 	local rg=Duel.SelectMatchingCard(tp,c13513663.cfilter,tp,LOCATION_GRAVE,0,1,1,nil)
+	-- 将选中的卡从墓地除外作为费用
 	Duel.Remove(rg,POS_FACEUP,REASON_COST)
 end
+-- 效果的目标选择函数，用于选择场上表侧表示的怪兽
 function c13513663.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(tp) and chkc:IsLocation(LOCATION_MZONE) and chkc:IsFaceup() end
+	-- 检查场上是否存在满足条件的怪兽作为目标
 	if chk==0 then return Duel.IsExistingTarget(Card.IsFaceup,tp,LOCATION_MZONE,0,1,nil) end
+	-- 提示玩家选择效果的对象
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)
+	-- 选择场上1只表侧表示的怪兽作为效果对象
 	Duel.SelectTarget(tp,Card.IsFaceup,tp,LOCATION_MZONE,0,1,1,nil)
 end
+-- 效果的处理函数，用于提升目标怪兽的攻击力
 function c13513663.operation(e,tp,eg,ep,ev,re,r,rp)
+	-- 获取当前连锁效果的目标怪兽
 	local tc=Duel.GetFirstTarget()
 	if tc and tc:IsRelateToEffect(e) and tc:IsFaceup() then
+		-- 使目标怪兽的攻击力上升700点直到回合结束
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)
@@ -57,23 +74,34 @@ function c13513663.operation(e,tp,eg,ep,ev,re,r,rp)
 		tc:RegisterEffect(e1)
 	end
 end
+-- 效果发动条件函数，判断此卡是否从场上送去墓地
 function c13513663.spcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsPreviousLocation(LOCATION_ONFIELD) and e:GetHandler():IsPreviousPosition(POS_FACEUP)
 end
+-- 过滤函数，用于检查是否满足可特殊召唤的龙族怪兽条件
 function c13513663.spfilter(c,e,tp)
 	return c:IsFaceup() and c:IsRace(RACE_DRAGON) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
+-- 效果的目标选择函数，用于选择从除外区特殊召唤的龙族怪兽
 function c13513663.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(tp) and chkc:IsLocation(LOCATION_REMOVED) and c13513663.spfilter(chkc,e,tp) end
+	-- 检查是否有足够的特殊召唤区域
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
+		-- 检查是否存在满足条件的除外龙族怪兽作为特殊召唤对象
 		and Duel.IsExistingTarget(c13513663.spfilter,tp,LOCATION_REMOVED,0,1,nil,e,tp) end
+	-- 提示玩家选择要特殊召唤的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
+	-- 选择满足条件的1只除外龙族怪兽作为特殊召唤对象
 	local g=Duel.SelectTarget(tp,c13513663.spfilter,tp,LOCATION_REMOVED,0,1,1,nil,e,tp)
+	-- 设置操作信息，告知连锁处理将要特殊召唤怪兽
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,1,0,0)
 end
+-- 效果的处理函数，用于将目标怪兽特殊召唤
 function c13513663.spop(e,tp,eg,ep,ev,re,r,rp)
+	-- 获取当前连锁效果的目标怪兽
 	local tc=Duel.GetFirstTarget()
 	if tc and tc:IsRelateToEffect(e) then
+		-- 将目标怪兽特殊召唤到场上
 		Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
