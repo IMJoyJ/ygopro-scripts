@@ -1,11 +1,13 @@
 --魔術師の左手
+-- 效果：
+-- ①：1回合1次，自己场上有魔法师族怪兽存在的场合，对方发动的陷阱卡的效果无效并破坏。
 function c13758665.initial_effect(c)
-	--Activate
+	-- ①：1回合1次，自己场上有魔法师族怪兽存在的场合，对方发动的陷阱卡的效果无效并破坏。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	--negate
+	-- ①：1回合1次，自己场上有魔法师族怪兽存在的场合，对方发动的陷阱卡的效果无效并破坏。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e2:SetCode(EVENT_CHAIN_SOLVING)
@@ -15,17 +17,24 @@ function c13758665.initial_effect(c)
 	e2:SetOperation(c13758665.negop)
 	c:RegisterEffect(e2)
 end
+-- 过滤函数，检查以玩家来看的自己场上是否存在至少1张满足过滤条件的魔法师族怪兽
 function c13758665.cfilter(c)
 	return c:IsFaceup() and c:IsRace(RACE_SPELLCASTER)
 end
+-- 判断是否满足效果发动条件，即自己场上存在魔法师族怪兽且对方发动了陷阱卡
 function c13758665.negcon(e,tp,eg,ep,ev,re,r,rp)
+	-- 检索满足条件的魔法师族怪兽组，检查自己场上是否存在至少1张表侧表示的魔法师族怪兽
 	return Duel.IsExistingMatchingCard(c13758665.cfilter,tp,LOCATION_MZONE,0,1,nil)
 		and rp==1-tp and re:IsActiveType(TYPE_TRAP)
 end
+-- 处理效果发动时的执行操作，使对方陷阱卡效果无效并破坏
 function c13758665.negop(e,tp,eg,ep,ev,re,r,rp)
+	-- 向玩家发送提示信息，显示该卡发动的动画
 	Duel.Hint(HINT_CARD,0,13758665)
 	local rc=re:GetHandler()
+	-- 使连锁中的陷阱卡效果无效，并检查该陷阱卡是否与效果有关联
 	if Duel.NegateEffect(ev,true) and rc:IsRelateToEffect(re) then
+		-- 将目标陷阱卡因效果破坏
 		Duel.Destroy(rc,REASON_EFFECT)
 	end
 end
