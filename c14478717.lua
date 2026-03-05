@@ -6,12 +6,12 @@
 local s,id,o=GetID()
 -- 初始化卡片效果函数
 function s.initial_effect(c)
-	-- ①：自己场上有「书灵师」怪兽存在的场合，以对方场上1只表侧表示怪兽为对象才能发动。这个回合，那只表侧表示怪兽不能作为融合·同调·超量·连接召唤的素材。
+	--让这张卡可以发动
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- ②：自己·对方的结束阶段，「书灵师」仪式怪兽不在自己场上存在的场合发动。这张卡送去墓地。
+	-- ①：自己场上有「书灵师」怪兽存在的场合，以对方场上1只表侧表示怪兽为对象才能发动。这个回合，那只表侧表示怪兽不能作为融合·同调·超量·连接召唤的素材。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(id,0))
 	e2:SetType(EFFECT_TYPE_QUICK_O)
@@ -24,7 +24,7 @@ function s.initial_effect(c)
 	e2:SetTarget(s.target)
 	e2:SetOperation(s.operation)
 	c:RegisterEffect(e2)
-	-- 这个卡名的①的效果1回合只能使用1次。
+	-- ②：自己·对方的结束阶段，「书灵师」仪式怪兽不在自己场上存在的场合发动。这张卡送去墓地。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(id,2))
 	e3:SetCategory(CATEGORY_TOGRAVE)

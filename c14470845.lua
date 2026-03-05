@@ -28,7 +28,7 @@ function c14470845.initial_effect(c)
 end
 -- 效果处理函数：c14470845.target，用于判断效果是否可以发动
 function c14470845.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否受到「神圣防护罩」等效果影响
+	-- 检查是否受到「青眼精灵龙」等效果影响
 	if chk==0 then return not Duel.IsPlayerAffectedByEffect(tp,59822133)
 		-- 检查对方场上是否有至少2个空位
 		and Duel.GetLocationCount(1-tp,LOCATION_MZONE,tp)>1
@@ -41,7 +41,7 @@ function c14470845.target(e,tp,eg,ep,ev,re,r,rp,chk)
 end
 -- 效果处理函数：c14470845.activate，用于执行效果
 function c14470845.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查是否受到「神圣防护罩」等效果影响
+	-- 检查是否受到「青眼精灵龙」等效果影响
 	if Duel.IsPlayerAffectedByEffect(tp,59822133) then return end
 	-- 检查对方场上是否有至少2个空位
 	if Duel.GetLocationCount(1-tp,LOCATION_MZONE,tp)<2 then return end
@@ -89,7 +89,7 @@ function c14470845.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then
 		-- 获取卡组中所有「扰乱」怪兽
 		local g=Duel.GetMatchingGroup(c14470845.spfilter,tp,LOCATION_DECK,0,nil,e,tp)
-		-- 检查是否受到「神圣防护罩」等效果影响
+		-- 检查是否受到「青眼精灵龙」等效果影响
 		return not Duel.IsPlayerAffectedByEffect(tp,59822133)
 			-- 检查是否有至少2个空位并确保选出的2只怪兽卡名不同
 			and Duel.GetLocationCount(tp,LOCATION_MZONE)>1 and g:GetClassCount(Card.GetCode)>=2 end
@@ -102,7 +102,7 @@ function c14470845.spop(e,tp,eg,ep,ev,re,r,rp)
 	local ft=Duel.GetLocationCount(tp,LOCATION_MZONE)
 	-- 获取卡组中所有「扰乱」怪兽
 	local g=Duel.GetMatchingGroup(c14470845.spfilter,tp,LOCATION_DECK,0,nil,e,tp)
-	-- 检查是否满足发动条件：未受「神圣防护罩」影响、有足够空位、卡组中有至少2张不同卡名的「扰乱」怪兽
+	-- 检查是否满足发动条件：未受「青眼精灵龙」影响、有足够空位、卡组中有至少2张不同卡名的「扰乱」怪兽
 	if not Duel.IsPlayerAffectedByEffect(tp,59822133) and ft>1 and g:GetClassCount(Card.GetCode)>1 then
 		-- 提示玩家选择要特殊召唤的怪兽
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
