@@ -9,11 +9,11 @@
 -- ①：自己的灵摆区域有「霸王门之魔术师」以外的「霸王门」卡存在的场合才能发动。从手卡·额外卡组把「灵摆龙」「超量龙」「同调龙」「融合龙」怪兽之内1只送去墓地，这张卡从手卡特殊召唤。
 -- ②：这张卡特殊召唤的场合才能发动。除魔法师族怪兽外的1张有「霸王龙 扎克」的卡名记述的卡从卡组加入手卡。
 local s,id,o=GetID()
--- 初始化卡片效果，注册卡名代码列表、灵摆属性，并创建4个效果
+-- 初始化卡片效果，注册卡号列表、灵摆属性并创建4个效果
 function s.initial_effect(c)
-	-- 记录该卡拥有「霸王龙 扎克」的卡名
+	-- 记录该卡的卡号为13331639
 	aux.AddCodeList(c,13331639)
-	-- 为该卡添加灵摆怪兽属性，使其可以灵摆召唤
+	-- 为该卡添加灵摆属性
 	aux.EnablePendulumAttribute(c)
 	-- ①：自己场上的「霸王龙 扎克」不能用对方的效果除外。
 	local e1=Effect.CreateEffect(c)
@@ -71,20 +71,20 @@ function s.pentg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsDestructable()
 		-- 灵摆区域放置效果的发动条件判断
 		and Duel.IsExistingMatchingCard(s.penfilter,tp,LOCATION_DECK+LOCATION_HAND,0,1,nil) end
-	-- 设置灵摆区域放置效果的处理信息为破坏
+	-- 设置灵摆区域放置效果的处理信息
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,e:GetHandler(),1,0,0)
 end
 -- 灵摆区域放置效果的处理函数
 function s.penop(e,tp,eg,ep,ev,re,r,rp)
-	-- 破坏自身
+	-- 破坏自身以发动灵摆区域放置效果
 	if Duel.Destroy(e:GetHandler(),REASON_EFFECT)~=0 then
-		-- 提示玩家选择要放置到场上的卡
+		-- 提示选择要放置到场上的卡
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOFIELD)  --"请选择要放置到场上的卡"
 		-- 选择要放置到场上的卡
 		local g=Duel.SelectMatchingCard(tp,s.penfilter,tp,LOCATION_DECK+LOCATION_HAND,0,1,1,nil)
 		local tc=g:GetFirst()
 		if tc then
-			-- 将选中的卡放置到灵摆区域
+			-- 将选中的卡放置到场上的灵摆区域
 			Duel.MoveToField(tc,tp,tp,LOCATION_PZONE,POS_FACEUP,true)
 		end
 	end
@@ -109,19 +109,19 @@ function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false)
 		-- 特殊召唤效果的发动条件判断
 		and Duel.IsExistingMatchingCard(s.spfilter2,tp,LOCATION_HAND+LOCATION_EXTRA,0,1,nil) end
-	-- 设置特殊召唤效果的处理信息为送墓
+	-- 设置特殊召唤效果的处理信息
 	Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,nil,1,tp,LOCATION_EXTRA)
-	-- 设置特殊召唤效果的处理信息为特殊召唤
+	-- 设置特殊召唤效果的处理信息
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
 -- 特殊召唤效果的处理函数
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要送去墓地的卡
+	-- 提示选择要送去墓地的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
 	-- 选择要送去墓地的卡
 	local g=Duel.SelectMatchingCard(tp,s.spfilter2,tp,LOCATION_HAND+LOCATION_EXTRA,0,1,1,nil)
 	local gc=g:GetFirst()
-	-- 将选中的卡送去墓地并判断是否成功
+	-- 将选中的卡送去墓地
 	if gc and Duel.SendtoGrave(gc,REASON_EFFECT)~=0 and gc:IsLocation(LOCATION_GRAVE) then
 		local c=e:GetHandler()
 		if c:IsRelateToEffect(e) then
@@ -139,19 +139,19 @@ end
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 检索效果的发动条件判断
 	if chk==0 then return Duel.IsExistingMatchingCard(s.thfilter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置检索效果的处理信息为加入手牌
+	-- 设置检索效果的处理信息
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
 -- 检索效果的处理函数
 function s.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要加入手牌的卡
+	-- 提示选择要加入手牌的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
 	-- 选择要加入手牌的卡
 	local g=Duel.SelectMatchingCard(tp,s.thfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
 		-- 将选中的卡加入手牌
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 确认对方查看选中的卡
+		-- 确认对方看到被加入手牌的卡
 		Duel.ConfirmCards(1-tp,g)
 	end
 end

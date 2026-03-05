@@ -51,7 +51,7 @@ end
 -- 设置特殊召唤的处理信息
 function c15771991.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
-	-- 检查是否有足够的怪兽区域进行特殊召唤且该卡可被特殊召唤
+	-- 判断是否满足特殊召唤条件（场上是否有空位且该卡可特殊召唤）
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0 and c:IsCanBeSpecialSummoned(e,0,tp,false,false) end
 	-- 设置特殊召唤的处理信息
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,c,1,0,0)
@@ -60,22 +60,22 @@ end
 function c15771991.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) then
-		-- 将该卡以正面表示形式特殊召唤到己方场上
+		-- 将该卡以正面表示特殊召唤到场上
 		Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
--- 判断是否处于战斗状态且对方怪兽存在且为表侧表示且攻击力大于0
+-- 判断是否满足守备力提升条件（对方怪兽在战斗中且攻击力大于0）
 function c15771991.defcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local bc=c:GetBattleTarget()
 	return bc and bc:IsControler(1-tp) and bc:IsFaceup() and bc:GetAttack()>0
 end
--- 设置守备力提升效果
+-- 执行守备力提升操作
 function c15771991.defop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local bc=c:GetBattleTarget()
 	if c:IsRelateToBattle() and c:IsFaceup() and bc:IsRelateToBattle() and bc:IsFaceup() and bc:IsControler(1-tp) then
-		-- 将该卡的守备力提升为对方怪兽的攻击力数值
+		-- 设置守备力提升效果
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_DEFENSE)
@@ -84,18 +84,18 @@ function c15771991.defop(e,tp,eg,ep,ev,re,r,rp)
 		c:RegisterEffect(e1)
 	end
 end
--- 判断该卡是否从手卡或场上送去墓地
+-- 判断该卡是否从手牌或场上送去墓地
 function c15771991.thcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsPreviousLocation(LOCATION_HAND+LOCATION_ONFIELD)
 end
--- 定义检索过滤条件：卡名为「太阳神之翼神龙」且为魔法或陷阱卡
+-- 定义检索过滤函数（是否为带有太阳神之翼神龙记述的魔法或陷阱卡）
 function c15771991.thfilter(c)
-	-- 判断卡名为「太阳神之翼神龙」且为魔法或陷阱卡
+	-- 判断该卡是否带有太阳神之翼神龙记述且为魔法或陷阱卡
 	return aux.IsCodeListed(c,10000010) and c:IsType(TYPE_SPELL+TYPE_TRAP) and c:IsAbleToHand()
 end
 -- 设置检索处理信息
 function c15771991.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查卡组中是否存在满足条件的卡
+	-- 判断卡组中是否存在满足条件的卡
 	if chk==0 then return Duel.IsExistingMatchingCard(c15771991.thfilter,tp,LOCATION_DECK,0,1,nil) end
 	-- 设置检索处理信息
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
@@ -104,7 +104,7 @@ end
 function c15771991.thop(e,tp,eg,ep,ev,re,r,rp)
 	-- 提示玩家选择要加入手牌的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择满足条件的1张卡
+	-- 选择满足条件的卡
 	local g=Duel.SelectMatchingCard(tp,c15771991.thfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
 		-- 将选中的卡加入手牌
