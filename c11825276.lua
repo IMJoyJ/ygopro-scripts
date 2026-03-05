@@ -7,40 +7,40 @@
 -- ②：只要自己场上有里侧守备表示怪兽存在，这张卡不会成为攻击对象。
 -- ③：对方把效果发动时才能发动。从卡组把1只「忍者」怪兽表侧守备表示或者里侧守备表示特殊召唤。
 local s,id,o=GetID()
--- 初始化卡片效果函数
+-- 初始化效果函数，启用复活限制，添加融合召唤手续和接触融合程序，设置特殊召唤条件，注册直接攻击效果，注册不能成为攻击对象效果，注册诱发效果③
 function s.initial_effect(c)
 	c:EnableReviveLimit()
-	-- 添加融合召唤手续，要求使用2个满足条件的「忍者」怪兽作为融合素材
+	-- 添加融合召唤手续，使用2个满足s.ffilter条件的卡作为融合素材
 	aux.AddFusionProcFunRep(c,s.ffilter,2,true)
-	-- 添加接触融合程序，允许通过解放自己场上的符合条件的怪兽从额外卡组特殊召唤
+	-- 添加接触融合程序，要求自己场上怪兽区有可解放的卡，将这些卡解放后从额外卡组特殊召唤
 	aux.AddContactFusionProcedure(c,aux.FilterBoolFunction(Card.IsReleasable,REASON_SPSUMMON),LOCATION_MZONE,0,Duel.Release,REASON_SPSUMMON+REASON_MATERIAL)
-	-- ③：对方把效果发动时才能发动。从卡组把1只「忍者」怪兽表侧守备表示或者里侧守备表示特殊召唤。
+	-- 设置该卡的特殊召唤条件，只能通过融合召唤或接触融合方式从额外卡组特殊召唤
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
 	e1:SetCode(EFFECT_SPSUMMON_CONDITION)
 	e1:SetValue(s.splimit)
 	c:RegisterEffect(e1)
-	-- ①：自己的「忍者」怪兽可以直接攻击。
+	-- 使自己的「忍者」怪兽可以直接攻击
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD)
 	e2:SetCode(EFFECT_DIRECT_ATTACK)
 	e2:SetRange(LOCATION_MZONE)
 	e2:SetTargetRange(LOCATION_MZONE,0)
-	-- 设置效果目标为所有「忍者」怪兽
+	-- 筛选目标为「忍者」种族的怪兽
 	e2:SetTarget(aux.TargetBoolFunction(Card.IsSetCard,0x2b))
 	c:RegisterEffect(e2)
-	-- ②：只要自己场上有里侧守备表示怪兽存在，这张卡不会成为攻击对象。
+	-- 使该卡不会成为攻击对象，条件为己方场上有里侧守备表示怪兽
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_SINGLE)
 	e3:SetCode(EFFECT_CANNOT_BE_BATTLE_TARGET)
 	e3:SetRange(LOCATION_MZONE)
 	e3:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
 	e3:SetCondition(s.atkcon)
-	-- 设置效果值为不会成为攻击对象的过滤函数
+	-- 设置不能成为攻击对象的过滤函数
 	e3:SetValue(aux.imval1)
 	c:RegisterEffect(e3)
-	-- ③：对方把效果发动时才能发动。从卡组把1只「忍者」怪兽表侧守备表示或者里侧守备表示特殊召唤。
+	-- 注册诱发效果③，对方发动效果时才能发动，从卡组特殊召唤1只「忍者」怪兽
 	local e4=Effect.CreateEffect(c)
 	e4:SetDescription(aux.Stringid(id,0))
 	e4:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_MSET)
@@ -53,50 +53,50 @@ function s.initial_effect(c)
 	e4:SetOperation(s.spop)
 	c:RegisterEffect(e4)
 end
--- 融合素材过滤函数，确保种族不同
+-- 融合素材过滤函数，要求是「忍者」种族且种族不同的怪兽
 function s.ffilter(c,fc,sub,mg,sg)
 	return c:IsFusionSetCard(0x2b) and (not sg or not sg:IsExists(Card.IsRace,1,c,c:GetRace()))
 end
--- 特殊召唤限制函数，用于限制只能通过融合召唤从额外卡组特殊召唤
+-- 特殊召唤条件函数，限制只能通过融合召唤或接触融合方式从额外卡组特殊召唤
 function s.splimit(e,se,sp,st)
-	-- 如果卡片不在额外卡组则不生效，否则调用融合限制函数
+	-- 若该卡不在额外卡组则允许召唤，否则必须通过融合召唤方式召唤
 	return not e:GetHandler():IsLocation(LOCATION_EXTRA) or aux.fuslimit(e,se,sp,st)
 end
--- 攻击条件判断函数，用于判断是否满足效果发动条件
+-- 判断己方场上有里侧守备表示怪兽的条件函数
 function s.atkcon(e)
-	-- 检查自己场上是否存在里侧守备表示的怪兽
+	-- 检查己方场上有至少1张里侧守备表示的怪兽
 	return Duel.IsExistingMatchingCard(Card.IsPosition,e:GetHandlerPlayer(),LOCATION_MZONE,0,1,nil,POS_FACEDOWN_DEFENSE)
 end
--- 特殊召唤发动条件函数，用于判断是否为对方发动效果时
+-- 效果③发动条件函数，对方发动效果时才能发动
 function s.spcon(e,tp,eg,ep,ev,re,r,rp)
 	return rp==1-tp
 end
--- 特殊召唤目标过滤函数，筛选可以特殊召唤的「忍者」怪兽
+-- 特殊召唤目标过滤函数，筛选「忍者」种族且可特殊召唤的怪兽
 function s.spfilter(c,e,tp)
 	return c:IsSetCard(0x2b) and c:IsCanBeSpecialSummoned(e,0,tp,false,false,POS_DEFENSE)
 end
--- 特殊召唤发动时的处理函数，用于设置发动信息
+-- 效果③的发动时的判定函数，检查是否有满足条件的怪兽可特殊召唤
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否满足发动条件，包括是否有足够的召唤位置和卡组中是否有符合条件的怪兽
+	-- 检查己方场上是否有空位
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查是否有满足条件的「忍者」怪兽
+		-- 检查卡组中是否有满足条件的「忍者」怪兽
 		and Duel.IsExistingMatchingCard(s.spfilter,tp,LOCATION_DECK,0,1,nil,e,tp) end
-	-- 设置发动信息，表示将从卡组特殊召唤一只怪兽
+	-- 设置效果③发动时的操作信息，表示将从卡组特殊召唤怪兽
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_DECK)
 end
--- 特殊召唤处理函数，用于执行特殊召唤操作
+-- 效果③的处理函数，选择并特殊召唤怪兽，若为里侧表示则确认其内容
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查是否有足够的召唤位置
+	-- 检查己方场上是否有空位，若无则不发动
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<1 then return end
-	-- 提示玩家选择要特殊召唤的怪兽
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
-	-- 从卡组中选择一只符合条件的怪兽
+	-- 提示玩家选择要特殊召唤的卡
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
+	-- 选择满足条件的1只怪兽
 	local g=Duel.SelectMatchingCard(tp,s.spfilter,tp,LOCATION_DECK,0,1,1,nil,e,tp)
 	if #g>0 then
-		-- 将选中的怪兽以守备表示特殊召唤到场上
+		-- 将选中的怪兽特殊召唤到己方场上
 		Duel.SpecialSummon(g,0,tp,tp,false,false,POS_DEFENSE)
 		if g:GetFirst():IsFacedown() then
-			-- 确认对方能看到被特殊召唤的怪兽
+			-- 若特殊召唤的怪兽为里侧表示，则向对方确认其内容
 			Duel.ConfirmCards(1-tp,g)
 		end
 	end

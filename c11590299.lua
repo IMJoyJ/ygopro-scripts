@@ -4,11 +4,11 @@
 -- ①：这张卡召唤的场合才能发动。从卡组把1只4星以下的龙族·炎属性怪兽加入手卡。
 -- ②：1回合1次，自己主要阶段才能发动。自己卡组最上面的卡翻开。翻开的卡是龙族·炎属性怪兽的场合，那只怪兽送去墓地，这张卡的攻击力上升自己场上的「龙宝龙」数量×1000。不是的场合，翻开的卡回到卡组最下面。
 local s,id,o=GetID()
--- 初始化卡片效果函数
+-- 创建两个效果，分别对应①和②效果
 function s.initial_effect(c)
 	-- ①：这张卡召唤的场合才能发动。从卡组把1只4星以下的龙族·炎属性怪兽加入手卡。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(id,0))
+	e1:SetDescription(aux.Stringid(id,0))  --"检索"
 	e1:SetCategory(CATEGORY_SEARCH+CATEGORY_TOHAND)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e1:SetCode(EVENT_SUMMON_SUCCESS)
@@ -19,7 +19,7 @@ function s.initial_effect(c)
 	c:RegisterEffect(e1)
 	-- ②：1回合1次，自己主要阶段才能发动。自己卡组最上面的卡翻开。翻开的卡是龙族·炎属性怪兽的场合，那只怪兽送去墓地，这张卡的攻击力上升自己场上的「龙宝龙」数量×1000。不是的场合，翻开的卡回到卡组最下面。
 	local e2=Effect.CreateEffect(c)
-	e2:SetDescription(aux.Stringid(id,1))
+	e2:SetDescription(aux.Stringid(id,1))  --"翻卡顶"
 	e2:SetCategory(CATEGORY_ATKCHANGE+CATEGORY_DECKDES)
 	e2:SetType(EFFECT_TYPE_IGNITION)
 	e2:SetRange(LOCATION_MZONE)
@@ -28,21 +28,21 @@ function s.initial_effect(c)
 	e2:SetOperation(s.atkop)
 	c:RegisterEffect(e2)
 end
--- 定义过滤函数，用于筛选4星以下的龙族·炎属性怪兽
+-- 定义检索过滤条件：4星以下的龙族·炎属性怪兽且能加入手牌
 function s.filter(c)
 	return c:IsLevelBelow(4) and c:IsRace(RACE_DRAGON) and c:IsAttribute(ATTRIBUTE_FIRE) and c:IsAbleToHand()
 end
--- ①效果的发动时点处理函数
+-- ①效果的发动时点处理，检查是否满足检索条件
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否满足①效果的发动条件
+	-- 检查是否满足检索条件
 	if chk==0 then return Duel.IsExistingMatchingCard(s.filter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置①效果的处理信息
+	-- 设置操作信息为检索效果
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- ①效果的发动处理函数
+-- ①效果的发动处理，选择并加入手牌
 function s.thop(e,tp,eg,ep,ev,re,r,rp)
 	-- 提示玩家选择要加入手牌的卡
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
 	-- 选择满足条件的卡
 	local g=Duel.SelectMatchingCard(tp,s.filter,tp,LOCATION_DECK,0,1,1,nil)
 	if #g>0 then
@@ -52,34 +52,34 @@ function s.thop(e,tp,eg,ep,ev,re,r,rp)
 		Duel.ConfirmCards(1-tp,g)
 	end
 end
--- 定义过滤函数，用于筛选场上的龙宝龙
+-- 定义场上的龙宝龙数量计算条件
 function s.cfilter(c)
 	return c:IsFaceup() and c:IsCode(id)
 end
--- ②效果的发动时点处理函数
+-- ②效果的发动时点处理，检查是否满足发动条件
 function s.atktg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否满足②效果的发动条件
+	-- 检查是否满足发动条件
 	if chk==0 then return Duel.IsExistingMatchingCard(s.cfilter,tp,LOCATION_ONFIELD,0,1,nil) and Duel.IsPlayerCanDiscardDeck(tp,1) end
 end
--- ②效果的发动处理函数
+-- ②效果的发动处理，翻开卡组最上方的卡并处理效果
 function s.atkop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	-- 检查玩家是否可以翻开卡组最上方的卡
 	if not Duel.IsPlayerCanDiscardDeck(tp,1) then return end
-	-- 翻开玩家卡组最上方的卡
+	-- 翻开卡组最上方的卡
 	Duel.ConfirmDecktop(tp,1)
-	-- 获取卡组最上方的卡
+	-- 获取翻开的卡
 	local g=Duel.GetDecktopGroup(tp,1)
 	local tc=g:GetFirst()
 	if tc:IsRace(RACE_DRAGON) and tc:IsAttribute(ATTRIBUTE_FIRE) then
-		-- 禁止自动洗切卡组
+		-- 禁止洗切卡组检查
 		Duel.DisableShuffleCheck()
 		-- 将翻开的卡送去墓地
 		if Duel.SendtoGrave(tc,REASON_EFFECT+REASON_REVEAL)==0 or not tc:IsLocation(LOCATION_GRAVE) then return end
 		-- 计算攻击力提升值
 		local atk=Duel.GetMatchingGroupCount(s.cfilter,c:GetControler(),LOCATION_ONFIELD,0,nil)*1000
 		if c:IsRelateToEffect(e) and c:IsFaceup() and atk>0 then
-			-- 将攻击力提升效果应用到自身
+			-- 将攻击力提升效果注册到自身
 			local e2=Effect.CreateEffect(c)
 			e2:SetType(EFFECT_TYPE_SINGLE)
 			e2:SetCode(EFFECT_UPDATE_ATTACK)
