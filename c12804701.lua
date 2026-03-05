@@ -4,7 +4,7 @@
 -- ①：自己回复自己场上的「芳香」怪兽种类×1000基本分。
 -- ②：把墓地的这张卡除外，以自己墓地1只「芳香」怪兽为对象才能发动。那只怪兽特殊召唤。那之后，自己回复500基本分。这个效果特殊召唤的怪兽从场上离开的场合除外。
 local s,id,o=GetID()
--- 注册卡片效果的入口函数
+-- 注册两个效果，第一个为发动时回复基本分，第二个为墓地发动特殊召唤并回复基本分
 function s.initial_effect(c)
 	-- ①：自己回复自己场上的「芳香」怪兽种类×1000基本分。
 	local e1=Effect.CreateEffect(c)
@@ -18,7 +18,7 @@ function s.initial_effect(c)
 	c:RegisterEffect(e1)
 	-- ②：把墓地的这张卡除外，以自己墓地1只「芳香」怪兽为对象才能发动。那只怪兽特殊召唤。那之后，自己回复500基本分。这个效果特殊召唤的怪兽从场上离开的场合除外。
 	local e2=Effect.CreateEffect(c)
-	e2:SetDescription(aux.Stringid(id,1))
+	e2:SetDescription(aux.Stringid(id,1))  --"特殊召唤"
 	e2:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e2:SetProperty(EFFECT_FLAG_CARD_TARGET)
 	e2:SetType(EFFECT_TYPE_QUICK_O)
@@ -26,69 +26,69 @@ function s.initial_effect(c)
 	e2:SetRange(LOCATION_GRAVE)
 	e2:SetHintTiming(0,TIMING_END_PHASE)
 	e2:SetCountLimit(1,id)
-	-- 将此卡除外作为费用
+	-- 将此卡除外作为cost
 	e2:SetCost(aux.bfgcost)
 	e2:SetTarget(s.sptg)
 	e2:SetOperation(s.spop)
 	c:RegisterEffect(e2)
 end
--- 检索满足条件的「芳香」怪兽
+-- 过滤场上正面表示的芳香怪兽
 function s.recfilter(c)
 	return c:IsFaceup() and c:IsSetCard(0xc9)
 end
--- 效果①的发动时点处理函数
+-- 效果处理时判断是否满足条件并设置回复基本分的数值
 function s.rectg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断是否满足效果①的发动条件
+	-- 判断场上是否存在正面表示的芳香怪兽
 	if chk==0 then return Duel.IsExistingMatchingCard(s.recfilter,tp,LOCATION_MZONE,0,1,nil) end
-	-- 检索满足条件的「芳香」怪兽组
+	-- 获取场上正面表示的芳香怪兽组
 	local g=Duel.GetMatchingGroup(s.recfilter,tp,LOCATION_MZONE,0,nil)
 	local rec=g:GetClassCount(Card.GetCode)*1000
-	-- 设置效果①的处理信息
+	-- 设置效果处理时回复基本分的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_RECOVER,nil,0,tp,rec)
 end
--- 效果①的处理函数
+-- 效果处理时执行回复基本分
 function s.recop(e,tp,eg,ep,ev,re,r,rp)
-	-- 检索满足条件的「芳香」怪兽组
+	-- 获取场上正面表示的芳香怪兽组
 	local g=Duel.GetMatchingGroup(s.recfilter,tp,LOCATION_MZONE,0,nil)
 	local rec=g:GetClassCount(Card.GetCode)*1000
-	-- 使玩家回复对应基本分
+	-- 执行回复基本分
 	Duel.Recover(tp,rec,REASON_EFFECT)
 end
--- 检索满足条件的「芳香」怪兽
+-- 过滤墓地的芳香怪兽并可特殊召唤
 function s.spfilter(c,e,tp)
 	return c:IsSetCard(0xc9) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 效果②的发动时点处理函数
+-- 效果处理时判断是否满足条件并设置特殊召唤和回复基本分的操作信息
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(tp) and chkc:IsLocation(LOCATION_GRAVE) and s.spfilter(chkc,e,tp) end
-	-- 判断是否满足效果②的发动条件
+	-- 判断是否有足够的特殊召唤区域
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 判断是否满足效果②的发动条件
+		-- 判断墓地是否存在符合条件的芳香怪兽
 		and Duel.IsExistingTarget(s.spfilter,tp,LOCATION_GRAVE,0,1,nil,e,tp) end
-	-- 提示玩家选择要特殊召唤的卡
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
-	-- 选择要特殊召唤的卡
+	-- 提示选择要特殊召唤的卡
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
+	-- 选择目标墓地的芳香怪兽
 	local g=Duel.SelectTarget(tp,s.spfilter,tp,LOCATION_GRAVE,0,1,1,nil,e,tp)
-	-- 设置效果②的目标玩家
+	-- 设置效果处理的目标玩家为使用者
 	Duel.SetTargetPlayer(tp)
-	-- 设置效果②的目标参数
+	-- 设置效果处理的目标参数为500
 	Duel.SetTargetParam(500)
-	-- 设置效果②的处理信息
+	-- 设置效果处理时特殊召唤的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,1,0,0)
-	-- 设置效果②的处理信息
+	-- 设置效果处理时回复基本分的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_RECOVER,nil,0,tp,500)
 end
--- 效果②的处理函数
+-- 效果处理时执行特殊召唤和回复基本分
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取效果②的目标卡
+	-- 获取效果处理时选择的目标卡
 	local tc=Duel.GetFirstTarget()
-	-- 获取连锁信息中的目标玩家和参数
+	-- 获取效果处理时的目标玩家和目标参数
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
 	if tc:IsRelateToEffect(e) then
-		-- 特殊召唤目标卡
+		-- 执行特殊召唤步骤
 		if Duel.SpecialSummonStep(tc,0,tp,tp,false,false,POS_FACEUP) then
-			-- 将特殊召唤的怪兽从场上离开时除外，并回复基本分
+			-- 特殊召唤的怪兽离开场上时将其除外，然后回复基本分
 			local e1=Effect.CreateEffect(c)
 			e1:SetType(EFFECT_TYPE_SINGLE)
 			e1:SetCode(EFFECT_LEAVE_FIELD_REDIRECT)
@@ -96,11 +96,11 @@ function s.spop(e,tp,eg,ep,ev,re,r,rp)
 			e1:SetValue(LOCATION_REMOVED)
 			e1:SetReset(RESET_EVENT+RESETS_REDIRECT)
 			tc:RegisterEffect(e1,true)
-			-- 完成特殊召唤处理
+			-- 完成特殊召唤步骤
 			Duel.SpecialSummonComplete()
 			-- 中断当前效果处理
 			Duel.BreakEffect()
-			-- 使玩家回复基本分
+			-- 执行回复基本分
 			Duel.Recover(p,d,REASON_EFFECT)
 		end
 	end
