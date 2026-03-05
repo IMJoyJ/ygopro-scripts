@@ -1,8 +1,10 @@
 --霞の谷の幼怪鳥
+-- 效果：
+-- ①：这张卡从手卡送去墓地时才能发动。这张卡特殊召唤。
 function c14983497.initial_effect(c)
-	--spsummon
+	-- ①：这张卡从手卡送去墓地时才能发动。这张卡特殊召唤。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(14983497,0))
+	e1:SetDescription(aux.Stringid(14983497,0))  --"特殊召唤"
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e1:SetCode(EVENT_TO_GRAVE)
@@ -11,16 +13,22 @@ function c14983497.initial_effect(c)
 	e1:SetOperation(c14983497.spop)
 	c:RegisterEffect(e1)
 end
+-- 效果发动条件：这张卡必须是从手卡送去墓地的
 function c14983497.spcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsPreviousLocation(LOCATION_HAND)
 end
+-- 效果处理条件判断：场上存在空位且自身可以被特殊召唤
 function c14983497.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
+	-- 判断场上怪兽区域是否存在空位
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
+	-- 设置连锁处理信息：将自身特殊召唤
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
+-- 效果处理执行：若自身存在于场上或墓地则进行特殊召唤
 function c14983497.spop(e,tp,eg,ep,ev,re,r,rp)
 	if e:GetHandler():IsRelateToEffect(e) then
+		-- 将自身以正面表示形式特殊召唤到自己场上
 		Duel.SpecialSummon(e:GetHandler(),0,tp,tp,false,false,POS_FACEUP)
 	end
 end
