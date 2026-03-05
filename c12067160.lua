@@ -6,7 +6,7 @@
 -- ②：这张卡的攻击力上升这张卡所连接区的怪兽的原本攻击力数值。
 -- ③：这张卡所连接区没有怪兽存在的场合，这张卡不会被战斗以及怪兽的效果破坏。
 local s,id,o=GetID()
--- 初始化效果函数
+-- 初始化效果函数，设置连接召唤条件、苏生限制及所有效果
 function s.initial_effect(c)
 	-- 添加连接召唤手续，要求使用至少2只效果怪兽作为连接素材
 	aux.AddLinkProcedure(c,aux.FilterBoolFunction(Card.IsType,TYPE_EFFECT),2)
@@ -58,39 +58,39 @@ function s.initial_effect(c)
 	e6:SetValue(s.efilter)
 	c:RegisterEffect(e6)
 end
--- zone限制函数，返回不能使用的区域
+-- zone限制函数，返回不能使用的区域掩码
 function s.zonelimit(e)
 	return 0x7f007f & ~e:GetHandler():GetLinkedZone()
 end
--- 攻击限制目标函数，判断目标是否在连接区
+-- 攻击目标过滤函数，判断目标是否在连接区怪兽组中
 function s.antg(e,c)
 	return e:GetHandler():GetLinkedGroup():IsContains(c)
 end
--- 无效化连锁效果的条件函数
+-- 无效化连锁效果的条件函数，判断是否满足无效条件
 function s.discon(e,tp,eg,ep,ev,re,r,rp)
 	local rc=re:GetHandler()
 	return rc and re:IsActiveType(TYPE_MONSTER) and rc:IsRelateToChain() and e:GetHandler():GetLinkedGroup():IsContains(rc)
-		-- 判断效果是否可以被无效
+		-- 判断连锁效果是否可以被无效
 		and rc:IsCanBeDisabledByEffect(e) and Duel.IsChainDisablable(ev)
 end
--- 无效化连锁效果的操作函数
+-- 无效化连锁效果的操作函数，发送提示并使效果无效
 function s.disop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示对方发动了卡片效果
+	-- 发送提示信息，显示该卡发动了效果
 	Duel.Hint(HINT_CARD,0,id)
 	-- 使连锁效果无效
 	Duel.NegateEffect(ev)
 end
--- 攻击力计算函数，返回连接区怪兽原始攻击力总和
+-- 计算攻击力提升值，为连接区怪兽原本攻击力总和
 function s.atkval(e,c)
 	local g=e:GetHandler():GetLinkedGroup():Filter(Card.IsFaceup,nil)
 	return g:GetSum(Card.GetBaseAttack)
 end
--- 不被破坏的条件函数，判断连接区是否为空
+-- 判断是否满足效果条件，即连接区没有怪兽存在
 function s.incon(e)
 	local c=e:GetHandler()
 	return c:IsType(TYPE_LINK) and c:GetLinkedGroupCount()==0
 end
--- 效果过滤函数，判断是否为效果怪兽
+-- 效果过滤函数，判断是否为效果怪兽的效果
 function s.efilter(e,re)
 	return re:IsActiveType(TYPE_EFFECT)
 end

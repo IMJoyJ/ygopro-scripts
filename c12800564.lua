@@ -4,19 +4,19 @@
 -- ①：这张卡是已上级召唤的场合，对方把手卡·场上的怪兽的效果发动时才能发动。那个发动无效并破坏。
 -- ②：上级召唤的这张卡被战斗或者对方的效果破坏的场合才能发动。下次的对方主要阶段跳过。
 local s,id,o=GetID()
--- 初始化卡片效果函数
+-- 初始化卡片效果，注册所有效果
 function s.initial_effect(c)
-	-- 这张卡通常召唤的场合，必须把自己场上3只怪兽解放作召唤，可以作为怪兽的代替而把自己场上的永续魔法·永续陷阱卡解放。这个卡名的①②的效果1回合各能使用1次。
+	-- 这张卡通常召唤的场合，必须把自己场上3只怪兽解放作召唤，可以作为怪兽的代替而把自己场上的永续魔法·永续陷阱卡解放。
 	local e0=Effect.CreateEffect(c)
 	e0:SetType(EFFECT_TYPE_SINGLE)
 	e0:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
 	e0:SetCode(EFFECT_ADD_EXTRA_TRIBUTE)
 	e0:SetTargetRange(LOCATION_SZONE,0)
-	-- 设置祭品为场上的永续魔法·永续陷阱卡
+	-- 设置祭品目标为场上的永续魔法·永续陷阱卡
 	e0:SetTarget(aux.TargetBoolFunction(Card.IsType,TYPE_CONTINUOUS))
 	e0:SetValue(POS_FACEUP_ATTACK)
 	c:RegisterEffect(e0)
-	-- 上级召唤的这张卡才能通常召唤，且必须解放3只怪兽
+	-- 上级召唤时才能发动。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
@@ -25,7 +25,7 @@ function s.initial_effect(c)
 	e1:SetOperation(s.ttop)
 	e1:SetValue(SUMMON_TYPE_ADVANCE)
 	c:RegisterEffect(e1)
-	-- 这张卡不能通常放置
+	-- 上级召唤的这张卡被战斗或者对方的效果破坏的场合才能发动。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_SINGLE)
 	e2:SetCode(EFFECT_LIMIT_SET_PROC)
@@ -55,76 +55,76 @@ function s.initial_effect(c)
 	e4:SetOperation(s.tpop)
 	c:RegisterEffect(e4)
 end
--- 过滤可用于解放的永续魔法·永续陷阱卡
+-- 过滤场上的永续魔法·永续陷阱卡，满足条件的卡可以作为祭品
 function s.otfilter(c)
 	return c:IsType(TYPE_CONTINUOUS) and c:IsReleasable(REASON_SUMMON)
 end
--- 判断是否满足通常召唤条件
+-- 判断是否满足上级召唤的祭品条件
 function s.ttcon(e,c,minc)
 	if c==nil then return true end
 	-- 检查场上是否存在3个祭品
 	return minc<=3 and Duel.CheckTribute(c,3)
 end
--- 执行通常召唤操作
+-- 选择并解放3个祭品
 function s.ttop(e,tp,eg,ep,ev,re,r,rp,c)
 	-- 选择3个祭品
 	local g=Duel.SelectTribute(tp,c,3,3)
 	c:SetMaterial(g)
-	-- 解放选中的祭品
+	-- 将祭品解放
 	Duel.Release(g,REASON_SUMMON+REASON_MATERIAL)
 end
--- 判断是否满足通常放置条件
+-- 设置召唤条件为不满足（即不能通常召唤）
 function s.setcon(e,c,minc)
 	if not c then return true end
 	return false
 end
--- 判断是否满足效果发动条件
+-- 判断连锁发动是否满足效果无效条件
 function s.negcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁发动位置
+	-- 获取连锁发动的位置信息
 	local loc=Duel.GetChainInfo(ev,CHAININFO_TRIGGERING_LOCATION)
 	return ep~=tp and (LOCATION_HAND+LOCATION_ONFIELD)&loc~=0
-		-- 检查连锁是否为怪兽效果且可无效
+		-- 判断连锁发动是否为怪兽效果且可被无效
 		and re:IsActiveType(TYPE_MONSTER) and Duel.IsChainDisablable(ev)
 		and e:GetHandler():IsSummonType(SUMMON_TYPE_ADVANCE)
 end
--- 设置效果发动目标
+-- 设置效果处理时的操作信息
 function s.negtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置无效效果的操作信息
+	-- 设置连锁发动无效的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_NEGATE,eg,1,0,0)
 	if re:GetHandler():IsDestructable() and re:GetHandler():IsRelateToEffect(re) then
-		-- 设置破坏效果的操作信息
+		-- 设置连锁发动破坏的操作信息
 		Duel.SetOperationInfo(0,CATEGORY_DESTROY,eg,1,0,0)
 	end
 end
--- 执行效果操作
+-- 执行效果处理操作
 function s.negop(e,tp,eg,ep,ev,re,r,rp)
-	-- 使连锁发动无效并破坏对象卡
+	-- 判断是否成功使连锁发动无效并处理破坏
 	if Duel.NegateActivation(ev) and re:GetHandler():IsRelateToChain(ev) then
-		-- 破坏对象卡
+		-- 破坏连锁发动的目标卡
 		Duel.Destroy(eg,REASON_EFFECT)
 	end
 end
--- 判断是否满足跳过对方主要阶段条件
+-- 判断是否满足跳过对方主要阶段的条件
 function s.tpcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	return (c:IsReason(REASON_BATTLE) or (c:IsReason(REASON_EFFECT) and c:GetReasonPlayer()==1-tp and c:IsPreviousControler(tp)))
 		and c:IsPreviousLocation(LOCATION_MZONE) and c:IsSummonType(SUMMON_TYPE_ADVANCE)
 end
 
--- 判断是否满足跳过阶段条件
+-- 判断是否满足跳过对方主要阶段的条件
 function s.turncon(e)
-	-- 判断回合是否已改变
+	-- 判断是否为不同回合
 	return Duel.GetTurnCount()~=e:GetLabel()
 end
 
--- 设置跳过阶段效果
+-- 创建并注册跳过阶段效果
 function s.schedule_skip(c,tp,code,next_turn)
 	local phase=PHASE_MAIN1
 	if code==EFFECT_SKIP_M2 then
 		phase=PHASE_MAIN2
 	end
-	-- 创建并注册跳过阶段效果
+	-- 注册跳过阶段效果
 	local e=Effect.CreateEffect(c)
 	e:SetType(EFFECT_TYPE_FIELD)
 	e:SetCode(code)
@@ -157,7 +157,7 @@ function s.tpop(e,tp,eg,ep,ev,re,r,rp)
 		return
 	end
 
-	-- 判断是否处于战斗阶段
+	-- 判断是否为战斗阶段
 	if Duel.IsBattlePhase() then
 		s.schedule_skip(c,tp,EFFECT_SKIP_M2,false)
 		return
@@ -166,7 +166,7 @@ function s.tpop(e,tp,eg,ep,ev,re,r,rp)
 	if ph==PHASE_MAIN1 then
 		local skip_m1=s.schedule_skip(c,tp,EFFECT_SKIP_M1,true)
 
-		-- 设置战斗阶段后的跳过效果
+		-- 注册阶段结束时的跳过效果
 		local e2=Effect.CreateEffect(c)
 		e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 		e2:SetCode(EVENT_PHASE+PHASE_BATTLE)
@@ -178,7 +178,7 @@ function s.tpop(e,tp,eg,ep,ev,re,r,rp)
 			ee:Reset()
 		end)
 		e2:SetReset(RESET_PHASE+PHASE_END,1)
-		-- 将战斗阶段后的跳过效果注册给对方玩家
+		-- 将阶段跳过效果注册给对方玩家
 		Duel.RegisterEffect(e2,op)
 		return
 	end
