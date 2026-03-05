@@ -5,7 +5,7 @@
 -- ③：表侧表示的这张卡从场上送去墓地时，以除外的1只自己的龙族怪兽为对象才能发动。那只怪兽特殊召唤。
 function c13513663.initial_effect(c)
 	c:SetUniqueOnField(1,0,13513663)
-	-- ①：「龙魂之城」在自己场上只能有1张表侧表示存在。
+	-- 永续魔陷/场地卡通用的“允许发动”空效果，无此效果则无法发动
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
@@ -35,32 +35,32 @@ function c13513663.initial_effect(c)
 	e3:SetOperation(c13513663.spop)
 	c:RegisterEffect(e3)
 end
--- 过滤函数，用于检查是否满足龙族且可除外的条件
+-- 过滤函数，检查自己墓地是否存在满足条件的龙族怪兽（可作为除外的代价）
 function c13513663.cfilter(c)
 	return c:IsRace(RACE_DRAGON) and c:IsAbleToRemoveAsCost()
 end
--- 效果的费用支付函数，用于处理从墓地除外龙族怪兽的费用
+-- 效果发动时的处理：检索满足条件的龙族怪兽并除外作为代价
 function c13513663.cost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否满足除外龙族怪兽的条件
+	-- 检查自己墓地是否存在至少1张满足条件的龙族怪兽
 	if chk==0 then return Duel.IsExistingMatchingCard(c13513663.cfilter,tp,LOCATION_GRAVE,0,1,nil) end
-	-- 提示玩家选择要除外的卡
+	-- 向玩家提示“请选择要除外的卡”
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)
-	-- 选择满足条件的1只龙族怪兽从墓地除外
+	-- 选择满足条件的1张龙族怪兽从墓地除外
 	local rg=Duel.SelectMatchingCard(tp,c13513663.cfilter,tp,LOCATION_GRAVE,0,1,1,nil)
-	-- 将选中的卡从墓地除外作为费用
+	-- 将选中的卡以正面表示形式除外作为发动代价
 	Duel.Remove(rg,POS_FACEUP,REASON_COST)
 end
--- 效果的目标选择函数，用于选择场上表侧表示的怪兽
+-- 效果发动时选择对象：选择自己场上1只表侧表示怪兽作为对象
 function c13513663.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(tp) and chkc:IsLocation(LOCATION_MZONE) and chkc:IsFaceup() end
-	-- 检查场上是否存在满足条件的怪兽作为目标
+	-- 检查自己场上是否存在至少1只表侧表示怪兽
 	if chk==0 then return Duel.IsExistingTarget(Card.IsFaceup,tp,LOCATION_MZONE,0,1,nil) end
-	-- 提示玩家选择效果的对象
+	-- 向玩家提示“请选择效果的对象”
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)
-	-- 选择场上1只表侧表示的怪兽作为效果对象
+	-- 选择自己场上1只表侧表示怪兽作为对象
 	Duel.SelectTarget(tp,Card.IsFaceup,tp,LOCATION_MZONE,0,1,1,nil)
 end
--- 效果的处理函数，用于提升目标怪兽的攻击力
+-- 效果处理：使目标怪兽的攻击力上升700点直到回合结束
 function c13513663.operation(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取当前连锁效果的目标怪兽
 	local tc=Duel.GetFirstTarget()
@@ -74,34 +74,34 @@ function c13513663.operation(e,tp,eg,ep,ev,re,r,rp)
 		tc:RegisterEffect(e1)
 	end
 end
--- 效果发动条件函数，判断此卡是否从场上送去墓地
+-- 判断此卡是否从场上以正面表示形式送去墓地
 function c13513663.spcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsPreviousLocation(LOCATION_ONFIELD) and e:GetHandler():IsPreviousPosition(POS_FACEUP)
 end
--- 过滤函数，用于检查是否满足可特殊召唤的龙族怪兽条件
+-- 过滤函数，检查目标是否为龙族且可特殊召唤
 function c13513663.spfilter(c,e,tp)
 	return c:IsFaceup() and c:IsRace(RACE_DRAGON) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 效果的目标选择函数，用于选择从除外区特殊召唤的龙族怪兽
+-- 效果发动时的处理：检索满足条件的除外龙族怪兽并选择作为对象
 function c13513663.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(tp) and chkc:IsLocation(LOCATION_REMOVED) and c13513663.spfilter(chkc,e,tp) end
-	-- 检查是否有足够的特殊召唤区域
+	-- 检查玩家场上是否有可用空间
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查是否存在满足条件的除外龙族怪兽作为特殊召唤对象
+		-- 检查自己除外区是否存在至少1只满足条件的龙族怪兽
 		and Duel.IsExistingTarget(c13513663.spfilter,tp,LOCATION_REMOVED,0,1,nil,e,tp) end
-	-- 提示玩家选择要特殊召唤的卡
+	-- 向玩家提示“请选择要特殊召唤的卡”
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
 	-- 选择满足条件的1只除外龙族怪兽作为特殊召唤对象
 	local g=Duel.SelectTarget(tp,c13513663.spfilter,tp,LOCATION_REMOVED,0,1,1,nil,e,tp)
-	-- 设置操作信息，告知连锁处理将要特殊召唤怪兽
+	-- 设置操作信息：确定特殊召唤的卡和数量
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,1,0,0)
 end
--- 效果的处理函数，用于将目标怪兽特殊召唤
+-- 效果处理：将选中的除外龙族怪兽特殊召唤到场上
 function c13513663.spop(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取当前连锁效果的目标怪兽
 	local tc=Duel.GetFirstTarget()
 	if tc and tc:IsRelateToEffect(e) then
-		-- 将目标怪兽特殊召唤到场上
+		-- 将目标怪兽以正面表示形式特殊召唤到场上
 		Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
