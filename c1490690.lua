@@ -1,12 +1,16 @@
 --カノプスの守護者
+-- 效果：
+-- 这个卡名的②的效果1回合只能使用1次。
+-- ①：对方把效果发动时才能发动（同一连锁上最多1次）。从自己的手卡·墓地把1只「荷鲁斯」怪兽特殊召唤。这个回合，自己不能把原本卡名和这个效果特殊召唤的怪兽相同的怪兽用「卡诺匹斯的守护者」的效果特殊召唤。
+-- ②：这张卡从手卡·场上送去墓地的场合才能发动。这张卡在自己场上盖放。这个效果盖放的这张卡从场上离开的场合除外。
 function c1490690.initial_effect(c)
-	--Activate
+	-- ①：对方把效果发动时才能发动（同一连锁上最多1次）。从自己的手卡·墓地把1只「荷鲁斯」怪兽特殊召唤。这个回合，自己不能把原本卡名和这个效果特殊召唤的怪兽相同的怪兽用「卡诺匹斯的守护者」的效果特殊召唤。
 	local e0=Effect.CreateEffect(c)
 	e0:SetType(EFFECT_TYPE_ACTIVATE)
 	e0:SetCode(EVENT_FREE_CHAIN)
 	e0:SetHintTiming(0,TIMING_END_PHASE)
 	c:RegisterEffect(e0)
-	--spsummon
+	-- ②：这张卡从手卡·场上送去墓地的场合才能发动。这张卡在自己场上盖放。这个效果盖放的这张卡从场上离开的场合除外。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(1490690,0))
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -18,7 +22,7 @@ function c1490690.initial_effect(c)
 	e1:SetTarget(c1490690.tg)
 	e1:SetOperation(c1490690.op)
 	c:RegisterEffect(e1)
-	--set
+	-- 这个卡名的②的效果1回合只能使用1次。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(1490690,1))
 	e2:SetCategory(CATEGORY_SSET)
@@ -31,23 +35,35 @@ function c1490690.initial_effect(c)
 	e2:SetOperation(c1490690.stop)
 	c:RegisterEffect(e2)
 end
+-- 效果作用：判断是否为对方发动效果时
 function c1490690.con(e,tp,eg,ep,ev,re,r,rp)
 	return rp==1-tp
 end
+-- 效果作用：过滤「荷鲁斯」怪兽
 function c1490690.filter(c,e,tp)
 	return c:IsSetCard(0x19d) and c:IsCanBeSpecialSummoned(e,0,tp,false,false,POS_FACEUP)
 end
+-- 效果作用：设置特殊召唤的处理目标
 function c1490690.tg(e,tp,eg,ep,ev,re,r,rp,chk)
+	-- 效果作用：判断场上是否有特殊召唤怪兽的空位
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
+		-- 效果作用：判断手卡或墓地是否存在满足条件的怪兽
 		and Duel.IsExistingMatchingCard(c1490690.filter,tp,LOCATION_HAND+LOCATION_GRAVE,0,1,nil,e,tp) end
+	-- 效果作用：设置操作信息为特殊召唤
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_HAND+LOCATION_GRAVE)
 end
+-- 效果作用：处理特殊召唤
 function c1490690.op(e,tp,eg,ep,ev,re,r,rp)
+	-- 效果作用：判断场上是否有特殊召唤怪兽的空位
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<1 then return end
+	-- 效果作用：提示选择特殊召唤
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
+	-- 效果作用：选择满足条件的「荷鲁斯」怪兽
 	local g=Duel.SelectMatchingCard(tp,aux.NecroValleyFilter(c1490690.filter),tp,LOCATION_HAND+LOCATION_GRAVE,0,1,1,nil,e,tp)
 	if #g>0 then
+		-- 效果作用：将选中的怪兽特殊召唤
 		Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
+		-- ①：对方把效果发动时才能发动（同一连锁上最多1次）。从自己的手卡·墓地把1只「荷鲁斯」怪兽特殊召唤。这个回合，自己不能把原本卡名和这个效果特殊召唤的怪兽相同的怪兽用「卡诺匹斯的守护者」的效果特殊召唤。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_FIELD)
 		e1:SetCode(EFFECT_CANNOT_SPECIAL_SUMMON)
@@ -56,23 +72,31 @@ function c1490690.op(e,tp,eg,ep,ev,re,r,rp)
 		e1:SetTarget(c1490690.splimit)
 		e1:SetLabel(g:GetFirst():GetOriginalCodeRule())
 		e1:SetReset(RESET_PHASE+PHASE_END)
+		-- 效果作用：注册不能特殊召唤的限制效果
 		Duel.RegisterEffect(e1,tp)
 	end
 end
+-- 效果作用：限制特殊召唤的过滤函数
 function c1490690.splimit(e,c,sump,sumtype,sumpos,targetp,se)
 	local sc=se:GetHandler()
 	return sc and sc:IsCode(1490690) and c:IsOriginalCodeRule(e:GetLabel())
 end
+-- 效果作用：判断此卡是否从手卡或场上送去墓地
 function c1490690.stcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsPreviousLocation(LOCATION_HAND+LOCATION_ONFIELD)
 end
+-- 效果作用：设置盖放的处理目标
 function c1490690.sttg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsSSetable() end
+	-- 效果作用：设置操作信息为盖放
 	Duel.SetOperationInfo(0,CATEGORY_LEAVE_GRAVE,e:GetHandler(),1,0,0)
 end
+-- 效果作用：处理盖放
 function c1490690.stop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
+	-- 效果作用：判断此卡是否能盖放
 	if c:IsRelateToEffect(e) and Duel.SSet(tp,c)~=0 then
+		-- ②：这张卡从手卡·场上送去墓地的场合才能发动。这张卡在自己场上盖放。这个效果盖放的这张卡从场上离开的场合除外。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_LEAVE_FIELD_REDIRECT)
