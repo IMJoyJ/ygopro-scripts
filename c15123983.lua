@@ -1,10 +1,16 @@
 --THE・スターハム
+-- 效果：
+-- 调整＋调整以外的怪兽1只以上
+-- 这个卡名的①②的效果1回合各能使用1次。
+-- ①：这张卡同调召唤的场合，丢弃1张手卡才能发动。那1只作为同调素材的怪兽从自己墓地特殊召唤。这个效果特殊召唤的怪兽当作调整使用。
+-- ②：这张卡在墓地存在的场合，丢弃2张手卡才能发动。这张卡特殊召唤。这个效果特殊召唤的这张卡从场上离开的场合除外。
 local s,id,o=GetID()
+-- 为卡片添加同调召唤手续并注册两个效果
 function s.initial_effect(c)
-	--synchro summon
+	-- 添加同调召唤手续，要求1只调整和1只调整以外的怪兽
 	aux.AddSynchroProcedure(c,nil,aux.NonTuner(nil),1)
 	c:EnableReviveLimit()
-	--special summon
+	-- 效果①：这张卡同调召唤成功的场合才能发动
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(id,0))
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -17,7 +23,7 @@ function s.initial_effect(c)
 	e1:SetTarget(s.sptg)
 	e1:SetOperation(s.spop)
 	c:RegisterEffect(e1)
-	--spsummon
+	-- 效果②：这张卡在墓地存在的场合才能发动
 	local e2=Effect.CreateEffect(c)
 	e2:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e2:SetType(EFFECT_TYPE_IGNITION)
@@ -28,54 +34,79 @@ function s.initial_effect(c)
 	e2:SetOperation(s.spop2)
 	c:RegisterEffect(e2)
 end
+-- 判断是否为同调召唤
 function s.spcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsSummonType(SUMMON_TYPE_SYNCHRO)
 end
+-- 丢弃1张手卡作为效果①的代价
 function s.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
+	-- 检查是否满足丢弃1张手卡的条件
 	if chk==0 then return Duel.IsExistingMatchingCard(Card.IsDiscardable,tp,LOCATION_HAND,0,1,nil) end
+	-- 执行丢弃1张手卡的操作
 	Duel.DiscardHand(tp,Card.IsDiscardable,1,1,REASON_COST+REASON_DISCARD)
 end
+-- 筛选可特殊召唤的墓地怪兽
 function s.spfilter(c,e,tp,sync)
 	return c:IsControler(tp) and c:IsLocation(LOCATION_GRAVE)
 		and bit.band(c:GetReason(),0x80008)==0x80008 and c:GetReasonCard()==sync
 		and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
+-- 设置效果①的发动条件和目标
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	local mg=c:GetMaterial()
 	if chk==0 then return mg:GetCount()>0 and mg:FilterCount(s.spfilter,nil,e,tp,c)
+		-- 检查场上是否有足够的召唤位置
 		and Duel.GetLocationCount(tp,LOCATION_MZONE)>0 end
+	-- 设置效果①的目标卡片
 	Duel.SetTargetCard(mg)
+	-- 设置效果①的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,mg,1,0,0)
 end
+-- 处理效果①的发动效果
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
+	-- 获取连锁中的目标卡片
 	local mg=Duel.GetChainInfo(0,CHAININFO_TARGET_CARDS)
 	local g=mg:Filter(Card.IsRelateToChain,nil)
+	-- 检查场上是否有召唤位置
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)==0 then return end
+	-- 选择满足条件的墓地怪兽
 	local sg=g:FilterSelect(tp,aux.NecroValleyFilter(s.spfilter),1,1,nil,e,tp,e:GetHandler())
 	local tc=sg:GetFirst()
+	-- 执行特殊召唤步骤
 	if tc and Duel.SpecialSummonStep(tc,0,tp,tp,false,false,POS_FACEUP) then
+		-- 将特殊召唤的怪兽变为调整
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_ADD_TYPE)
 		e1:SetValue(TYPE_TUNER)
 		e1:SetReset(RESET_EVENT+RESETS_STANDARD)
 		tc:RegisterEffect(e1)
+		-- 完成特殊召唤流程
 		Duel.SpecialSummonComplete()
 	end
 end
+-- 丢弃2张手卡作为效果②的代价
 function s.spcost2(e,tp,eg,ep,ev,re,r,rp,chk)
+	-- 检查是否满足丢弃2张手卡的条件
 	if chk==0 then return Duel.IsExistingMatchingCard(Card.IsDiscardable,tp,LOCATION_HAND,0,2,nil) end
+	-- 执行丢弃2张手卡的操作
 	Duel.DiscardHand(tp,Card.IsDiscardable,2,2,REASON_COST+REASON_DISCARD)
 end
+-- 设置效果②的发动条件和目标
 function s.sptg2(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
+	-- 检查是否满足特殊召唤条件
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0 and c:IsCanBeSpecialSummoned(e,0,tp,false,false) end
+	-- 设置效果②的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,c,1,0,0)
 end
+-- 处理效果②的发动效果
 function s.spop2(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
+	-- 判断是否满足特殊召唤条件
 	if c:IsRelateToChain() and aux.NecroValleyFilter()(c) and Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)>0 then
+		-- 将特殊召唤的卡除外
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_LEAVE_FIELD_REDIRECT)
