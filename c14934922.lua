@@ -59,7 +59,7 @@ function c14934922.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	local op=0
 	if b1 and b2 then
 		-- 选择第一个效果：从手卡或场上送去墓地破坏1张卡
-		op=Duel.SelectOption(tp,aux.Stringid(14934922,0),aux.Stringid(14934922,1))  --"破坏1张卡"
+		op=Duel.SelectOption(tp,aux.Stringid(14934922,0),aux.Stringid(14934922,1))  --"破坏1张卡" / "破坏连接标记数量的卡"
 	elseif b1 then
 		-- 选择第一个效果：从手卡或场上送去墓地破坏1张卡
 		op=Duel.SelectOption(tp,aux.Stringid(14934922,0))  --"破坏1张卡"

@@ -40,7 +40,7 @@ function c1006081.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 		op=Duel.SelectOption(tp,aux.Stringid(1006081,1))  --"等级上升1星"
 	else
 		-- 选择「等级下降1星」效果
-		op=Duel.SelectOption(tp,aux.Stringid(1006081,1),aux.Stringid(1006081,2))  --"等级上升1星"
+		op=Duel.SelectOption(tp,aux.Stringid(1006081,1),aux.Stringid(1006081,2))  --"等级下降1星"
 	end
 	e:SetLabel(op)
 end

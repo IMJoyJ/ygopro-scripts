@@ -100,7 +100,7 @@ function s.acop(e,tp,eg,ep,ev,re,r,rp)
 				Duel.SendtoDeck(g,nil,SEQ_DECKBOTTOM,REASON_EFFECT)
 			else
 				-- 选择将陷阱卡送回卡组顶端或底端
-				local opt=Duel.SelectOption(tp,aux.Stringid(id,4),aux.Stringid(id,5))
+				local opt=Duel.SelectOption(tp,aux.Stringid(id,4),aux.Stringid(id,5))  --"返回卡组最上面" / "返回卡组最下面"
 				if opt==0 then
 					-- 将陷阱卡送回卡组顶端
 					Duel.SendtoDeck(g,nil,SEQ_DECKTOP,REASON_EFFECT)

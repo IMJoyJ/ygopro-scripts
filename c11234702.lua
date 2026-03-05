@@ -98,7 +98,7 @@ function c11234702.lvop(e,tp,eg,ep,ev,re,r,rp)
 			sel=Duel.SelectOption(tp,aux.Stringid(11234702,1))  --"等级上升1星"
 		else
 			-- 选择等级上升或下降
-			sel=Duel.SelectOption(tp,aux.Stringid(11234702,1),aux.Stringid(11234702,2))  --"等级上升1星"
+			sel=Duel.SelectOption(tp,aux.Stringid(11234702,1),aux.Stringid(11234702,2))  --"等级上升1星" / "等级下降1星"
 		end
 		if sel==1 then
 			lvl=-1

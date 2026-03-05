@@ -42,7 +42,7 @@ function c14532163.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	end
 	if b1 and b2 then
 		-- 选择破坏对方场上攻击表示怪兽或魔法·陷阱卡的效果
-		s=Duel.SelectOption(tp,aux.Stringid(14532163,0),aux.Stringid(14532163,1))  --"对方场上的攻击表示怪兽全部破坏"
+		s=Duel.SelectOption(tp,aux.Stringid(14532163,0),aux.Stringid(14532163,1))  --"对方场上的攻击表示怪兽全部破坏" / "对方场上的魔法·陷阱卡全部破坏"
 	end
 	e:SetLabel(s)
 	local g=nil

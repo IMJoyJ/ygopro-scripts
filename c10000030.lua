@@ -57,7 +57,7 @@ function c10000030.target1(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	local op=0
 	if b1 and b2 then
 		-- 当两个效果都可用时，让玩家选择发动哪个效果
-		op=Duel.SelectOption(tp,aux.Stringid(10000030,1),aux.Stringid(10000030,2))  --"对方场上1只怪兽得到控制权"
+		op=Duel.SelectOption(tp,aux.Stringid(10000030,1),aux.Stringid(10000030,2))  --"对方场上1只怪兽得到控制权" / "对方墓地1只怪兽特殊召唤"
 	elseif b1 then
 		-- 当只有第一个效果可用时，直接选择第一个效果
 		op=Duel.SelectOption(tp,aux.Stringid(10000030,1))  --"对方场上1只怪兽得到控制权"

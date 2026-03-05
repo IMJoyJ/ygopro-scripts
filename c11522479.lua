@@ -80,7 +80,7 @@ function c11522479.lgtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return b1 or b2 end
 	local op=0
 	-- 当两个选项都存在时，让玩家选择其中一个
-	if b1 and b2 then op=Duel.SelectOption(tp,aux.Stringid(11522479,1),aux.Stringid(11522479,2))  --"从墓地特殊召唤怪兽"
+	if b1 and b2 then op=Duel.SelectOption(tp,aux.Stringid(11522479,1),aux.Stringid(11522479,2))  --"从墓地特殊召唤怪兽" / "从墓地盖放反击陷阱"
 	-- 当只有特殊召唤选项存在时，选择该选项
 	elseif b1 then op=Duel.SelectOption(tp,aux.Stringid(11522479,1))  --"从墓地特殊召唤怪兽"
 	-- 当只有盖放选项存在时，选择该选项

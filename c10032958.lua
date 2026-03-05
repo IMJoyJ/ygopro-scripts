@@ -21,18 +21,18 @@ function c10032958.effop(e,tp,eg,ep,ev,re,r,rp)
 	if ct>3 then ct=3 end
 	if ct>0 and c:IsFaceup() and c:IsRelateToEffect(e) then
 		-- 让玩家从三个效果中选择一个作为第一个效果
-		local opt1=Duel.SelectOption(tp,aux.Stringid(10032958,1),aux.Stringid(10032958,2),aux.Stringid(10032958,3))  --"攻击力上升1000"
+		local opt1=Duel.SelectOption(tp,aux.Stringid(10032958,1),aux.Stringid(10032958,2),aux.Stringid(10032958,3))  --"攻击力上升1000" / "战斗破坏对方怪兽的场合，只有1次可以再度攻击" / "战斗破坏怪兽送去墓地时，给予对方基本分破坏怪兽的攻击力数值的伤害"
 		local opt2=0
 		local opt3=0
 		c10032958.reg(c,opt1)
 		if ct<2 then return end
 		-- 如果第一个选择的是效果1（攻击力上升1000），则从效果2和3中选择第二个效果
-		if opt1==0 then opt2=Duel.SelectOption(tp,aux.Stringid(10032958,2),aux.Stringid(10032958,3))+1  --"战斗破坏对方怪兽的场合，只有1次可以再度攻击"
+		if opt1==0 then opt2=Duel.SelectOption(tp,aux.Stringid(10032958,2),aux.Stringid(10032958,3))+1  --"战斗破坏对方怪兽的场合，只有1次可以再度攻击" / "战斗破坏怪兽送去墓地时，给予对方基本分破坏怪兽的攻击力数值的伤害"
 		-- 如果第一个选择的是效果3（战斗破坏怪兽送去墓地时给予伤害），则从效果1和2中选择第二个效果
-		elseif opt1==2 then opt2=Duel.SelectOption(tp,aux.Stringid(10032958,1),aux.Stringid(10032958,2))  --"攻击力上升1000"
+		elseif opt1==2 then opt2=Duel.SelectOption(tp,aux.Stringid(10032958,1),aux.Stringid(10032958,2))  --"攻击力上升1000" / "战斗破坏对方怪兽的场合，只有1次可以再度攻击"
 		else
 			-- 如果第一个选择的是效果2（战斗破坏对方怪兽的场合，只有1次可以再度攻击），则从效果1和3中选择第二个效果
-			opt2=Duel.SelectOption(tp,aux.Stringid(10032958,1),aux.Stringid(10032958,3))  --"攻击力上升1000"
+			opt2=Duel.SelectOption(tp,aux.Stringid(10032958,1),aux.Stringid(10032958,3))  --"攻击力上升1000" / "战斗破坏怪兽送去墓地时，给予对方基本分破坏怪兽的攻击力数值的伤害"
 			if opt2==1 then opt2=2 end
 		end
 		c10032958.reg(c,opt2)

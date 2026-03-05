@@ -79,7 +79,7 @@ function c14756848.destg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local sel=e:GetLabel()
 	if sel==3 then
 		-- 选择发动效果的选项，选择破坏对方魔法与陷阱区域的卡
-		sel=Duel.SelectOption(tp,aux.Stringid(14756848,1),aux.Stringid(14756848,2))+1  --"对方的魔法与陷阱区域1张卡破坏"
+		sel=Duel.SelectOption(tp,aux.Stringid(14756848,1),aux.Stringid(14756848,2))+1  --"对方的魔法与陷阱区域1张卡破坏" / "选对方的灵摆区域1张卡破坏"
 	elseif sel==1 then
 		-- 选择发动效果的选项，选择破坏对方魔法与陷阱区域的卡
 		Duel.SelectOption(tp,aux.Stringid(14756848,1))  --"对方的魔法与陷阱区域1张卡破坏"

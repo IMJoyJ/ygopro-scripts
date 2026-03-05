@@ -59,14 +59,14 @@ function c14309486.mtop(e,tp,eg,ep,ev,re,r,rp)
 	local select=2
 	if g1:GetCount()>0 and g2:GetCount()>0 then
 		-- 当手卡同时存在「核成兽的钢核」和岩石族怪兽时，选择其一执行效果
-		select=Duel.SelectOption(tp,aux.Stringid(14309486,0),aux.Stringid(14309486,1),aux.Stringid(14309486,2))  --"选择一张「核成兽的钢核」送去墓地"
+		select=Duel.SelectOption(tp,aux.Stringid(14309486,0),aux.Stringid(14309486,1),aux.Stringid(14309486,2))  --"选择一张「核成兽的钢核」送去墓地" / "选择一只岩石族怪物给对方观看" / "破坏「核成过量体」"
 	elseif g1:GetCount()>0 then
 		-- 当仅存在「核成兽的钢核」时，选择将其送入墓地或破坏卡片
-		select=Duel.SelectOption(tp,aux.Stringid(14309486,0),aux.Stringid(14309486,2))  --"选择一张「核成兽的钢核」送去墓地"
+		select=Duel.SelectOption(tp,aux.Stringid(14309486,0),aux.Stringid(14309486,2))  --"选择一张「核成兽的钢核」送去墓地" / "破坏「核成过量体」"
 		if select==1 then select=2 end
 	elseif g2:GetCount()>0 then
 		-- 当仅存在岩石族怪兽时，选择将其展示给对方或破坏卡片
-		select=Duel.SelectOption(tp,aux.Stringid(14309486,1),aux.Stringid(14309486,2))+1  --"选择一只岩石族怪物给对方观看"
+		select=Duel.SelectOption(tp,aux.Stringid(14309486,1),aux.Stringid(14309486,2))+1  --"选择一只岩石族怪物给对方观看" / "破坏「核成过量体」"
 	else
 		-- 当手卡无符合条件的卡片时，选择直接破坏卡片
 		select=Duel.SelectOption(tp,aux.Stringid(14309486,2))  --"破坏「核成过量体」"

@@ -32,7 +32,7 @@ function c12467005.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chk==0 then return b1 or b2 end
 	local op=0
 	-- 若两个效果都可用，则让玩家选择发动哪个效果，选项为“怪兽变成里侧守备表示”
-	if b1 and b2 then op=Duel.SelectOption(tp,aux.Stringid(12467005,1),aux.Stringid(12467005,2))  --"怪兽变成里侧守备表示"
+	if b1 and b2 then op=Duel.SelectOption(tp,aux.Stringid(12467005,1),aux.Stringid(12467005,2))  --"怪兽变成里侧守备表示" / "魔法·陷阱卡回到手卡"
 	-- 若只有第一个效果可用，则让玩家选择发动第一个效果，选项为“怪兽变成里侧守备表示”
 	elseif b1 then op=Duel.SelectOption(tp,aux.Stringid(12467005,1))  --"怪兽变成里侧守备表示"
 	-- 若只有第二个效果可用，则让玩家选择发动第二个效果，选项为“魔法·陷阱卡回到手卡”

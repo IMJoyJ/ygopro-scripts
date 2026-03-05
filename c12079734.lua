@@ -43,7 +43,7 @@ function c12079734.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	local op=0
 	if b1 and b2 then
 		-- 让玩家选择发动效果1（装备）
-		op=Duel.SelectOption(tp,aux.Stringid(12079734,1),aux.Stringid(12079734,2))  --"同盟怪兽给这张卡装备"
+		op=Duel.SelectOption(tp,aux.Stringid(12079734,1),aux.Stringid(12079734,2))  --"同盟怪兽给这张卡装备" / "回到卡组并抽卡"
 	elseif b1 then
 		-- 让玩家选择发动效果1（装备）
 		op=Duel.SelectOption(tp,aux.Stringid(12079734,1))  --"同盟怪兽给这张卡装备"

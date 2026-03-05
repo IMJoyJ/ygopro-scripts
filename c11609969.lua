@@ -111,7 +111,7 @@ function c11609969.thtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chk==0 then return b1 or b2 end
 	local op=0
 	-- 若两个选项都存在，则选择其中一个
-	if b1 and b2 then op=Duel.SelectOption(tp,aux.Stringid(11609969,0),aux.Stringid(11609969,1))  --"自己场上1张「DD」卡回到手卡"
+	if b1 and b2 then op=Duel.SelectOption(tp,aux.Stringid(11609969,0),aux.Stringid(11609969,1))  --"自己场上1张「DD」卡回到手卡" / "自己卡组1张「契约书」卡加入手卡"
 	-- 若只有DD怪兽选项存在，则选择该选项
 	elseif b1 then op=Duel.SelectOption(tp,aux.Stringid(11609969,0))  --"自己场上1张「DD」卡回到手卡"
 	-- 若只有契约书卡选项存在，则选择该选项

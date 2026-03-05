@@ -39,7 +39,7 @@ function c12183332.operation(e,tp,eg,ep,ev,re,r,rp)
 	local res1=Duel.GetFieldGroupCount(tp,0,LOCATION_DECK)>1
 	if res0 and res1 then
 		-- 当自己和对方卡组都有多于1张牌时，让玩家选择洗切自己的卡组
-		opt=Duel.SelectOption(tp,aux.Stringid(12183332,1),aux.Stringid(12183332,2))  --"自己洗切卡组"
+		opt=Duel.SelectOption(tp,aux.Stringid(12183332,1),aux.Stringid(12183332,2))  --"自己洗切卡组" / "对方洗切卡组"
 	elseif res0 then
 		-- 当只有自己卡组有多于1张牌时，让玩家选择洗切自己的卡组
 		opt=Duel.SelectOption(tp,aux.Stringid(12183332,1))  --"自己洗切卡组"

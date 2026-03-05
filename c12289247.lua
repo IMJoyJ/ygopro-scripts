@@ -103,7 +103,7 @@ function c12289247.rpop(e,tp,eg,ep,ev,re,r,rp)
 		-- 检查怪兽区域是否有空位且该卡是否可以特殊召唤
 		if Duel.GetLocationCount(tp,LOCATION_MZONE)>0 and tc:IsCanBeSpecialSummoned(e,0,tp,false,false) then
 			-- 让玩家选择将卡放置在灵摆区域或进行特殊召唤
-			op=Duel.SelectOption(tp,aux.Stringid(12289247,1),aux.Stringid(12289247,2))  --"灵摆区域放置"
+			op=Duel.SelectOption(tp,aux.Stringid(12289247,1),aux.Stringid(12289247,2))  --"灵摆区域放置" / "特殊召唤"
 		else
 			-- 因不满足特招条件，玩家只能选择将卡放置在灵摆区域
 			op=Duel.SelectOption(tp,aux.Stringid(12289247,1))  --"灵摆区域放置"

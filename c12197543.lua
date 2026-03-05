@@ -36,7 +36,7 @@ function c12197543.activate(e,tp,eg,ep,ev,re,r,rp)
 				opt=Duel.SelectOption(tp,aux.Stringid(12197543,0))  --"把抽到的卡丢弃。"
 			else
 				-- 规则层面作用：选择丢弃抽到的卡或破坏对方场上一张魔法·陷阱卡
-				opt=Duel.SelectOption(tp,aux.Stringid(12197543,0),aux.Stringid(12197543,1))  --"把抽到的卡丢弃。"
+				opt=Duel.SelectOption(tp,aux.Stringid(12197543,0),aux.Stringid(12197543,1))  --"把抽到的卡丢弃。" / "选对方场上1张魔法·陷阱卡破坏。"
 			end
 			-- 规则层面作用：将抽到的卡丢弃
 			if opt==0 then Duel.SendtoGrave(tc,REASON_EFFECT+REASON_DISCARD)

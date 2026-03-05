@@ -49,10 +49,10 @@ function c10925955.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 若己方场上有水属性仪式怪兽表侧表示，则可选择两个效果
 	elseif Duel.IsExistingMatchingCard(c10925955.cfilter,tp,LOCATION_MZONE,0,1,nil,true) then
 		-- 选择效果1或2或3：确认对方魔法与陷阱区域盖放的卡
-		ac=Duel.SelectOption(tp,aux.Stringid(10925955,0),aux.Stringid(10925955,1),aux.Stringid(10925955,2))  --"确认对方的魔法与陷阱卡区域盖放的卡"
+		ac=Duel.SelectOption(tp,aux.Stringid(10925955,0),aux.Stringid(10925955,1),aux.Stringid(10925955,2))  --"确认对方的魔法与陷阱卡区域盖放的卡" / "确认卡组上方的两张卡" / "两个效果都发动"
 	else
 		-- 选择效果1或2：确认对方魔法与陷阱区域盖放的卡
-		ac=Duel.SelectOption(tp,aux.Stringid(10925955,0),aux.Stringid(10925955,1))  --"确认对方的魔法与陷阱卡区域盖放的卡"
+		ac=Duel.SelectOption(tp,aux.Stringid(10925955,0),aux.Stringid(10925955,1))  --"确认对方的魔法与陷阱卡区域盖放的卡" / "确认卡组上方的两张卡"
 	end
 	e:SetLabel(ac)
 end

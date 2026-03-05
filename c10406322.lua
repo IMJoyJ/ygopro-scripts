@@ -104,7 +104,7 @@ function c10406322.tdop(e,tp,eg,ep,ev,re,r,rp)
 	if tc:IsRelateToEffect(e) then
 		if tc:IsExtraDeckMonster()
 			-- 选择将卡送回卡组的位置（最上面或最下面）
-			or Duel.SelectOption(tp,aux.Stringid(10406322,2),aux.Stringid(10406322,3))==0 then  --"返回卡组最上面"
+			or Duel.SelectOption(tp,aux.Stringid(10406322,2),aux.Stringid(10406322,3))==0 then  --"返回卡组最上面" / "返回卡组最下面"
 			-- 将目标卡送回卡组最上方
 			Duel.SendtoDeck(tc,nil,SEQ_DECKTOP,REASON_EFFECT)
 		else

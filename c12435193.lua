@@ -50,14 +50,14 @@ function c12435193.mtop(e,tp,eg,ep,ev,re,r,rp)
 	local select=2
 	if g1:GetCount()>0 and g2:GetCount()>0 then
 		-- 当同时存在「核成兽的钢核」和龙族怪兽时，选择将其中一张送去墓地或给对方确认一只龙族怪兽
-		select=Duel.SelectOption(tp,aux.Stringid(12435193,0),aux.Stringid(12435193,1),aux.Stringid(12435193,2))  --"选择一张「核成兽的钢核」送去墓地"
+		select=Duel.SelectOption(tp,aux.Stringid(12435193,0),aux.Stringid(12435193,1),aux.Stringid(12435193,2))  --"选择一张「核成兽的钢核」送去墓地" / "选择一只龙族怪物给对方观看" / "破坏「核成龙」"
 	elseif g1:GetCount()>0 then
 		-- 当只有「核成兽的钢核」时，选择将一张送去墓地或破坏此卡
-		select=Duel.SelectOption(tp,aux.Stringid(12435193,0),aux.Stringid(12435193,2))  --"选择一张「核成兽的钢核」送去墓地"
+		select=Duel.SelectOption(tp,aux.Stringid(12435193,0),aux.Stringid(12435193,2))  --"选择一张「核成兽的钢核」送去墓地" / "破坏「核成龙」"
 		if select==1 then select=2 end
 	elseif g2:GetCount()>0 then
 		-- 当只有龙族怪兽时，选择给对方确认一只龙族怪兽或破坏此卡
-		select=Duel.SelectOption(tp,aux.Stringid(12435193,1),aux.Stringid(12435193,2))+1  --"选择一只龙族怪物给对方观看"
+		select=Duel.SelectOption(tp,aux.Stringid(12435193,1),aux.Stringid(12435193,2))+1  --"选择一只龙族怪物给对方观看" / "破坏「核成龙」"
 	else
 		-- 当既无「核成兽的钢核」也无龙族怪兽时，只能选择破坏此卡
 		select=Duel.SelectOption(tp,aux.Stringid(12435193,2))  --"破坏「核成龙」"

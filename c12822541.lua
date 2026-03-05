@@ -37,7 +37,7 @@ function c12822541.thtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chk==0 then return b1 or b2 end
 	local op=0
 	-- 当两个效果都可用时，让玩家选择发动哪个效果
-	if b1 and b2 then op=Duel.SelectOption(tp,aux.Stringid(12822541,0),aux.Stringid(12822541,1))  --"自己墓地1只「DD」怪兽加入手卡"
+	if b1 and b2 then op=Duel.SelectOption(tp,aux.Stringid(12822541,0),aux.Stringid(12822541,1))  --"自己墓地1只「DD」怪兽加入手卡" / "自己额外卡组1只「DD」灵摆怪兽加入手卡"
 	-- 当只有墓地效果可用时，让玩家选择发动墓地效果
 	elseif b1 then op=Duel.SelectOption(tp,aux.Stringid(12822541,0))  --"自己墓地1只「DD」怪兽加入手卡"
 	-- 当只有额外卡组效果可用时，直接选择额外卡组效果

@@ -64,10 +64,10 @@ function c10060427.mtop(e,tp,eg,ep,ev,re,r,rp)
 	local select=2
 	if g1:GetCount()>0 and g2:GetCount()>0 then
 		-- 当手卡同时有「核成兽的钢核」和战士族怪兽时，选择其一执行效果
-		select=Duel.SelectOption(tp,aux.Stringid(10060427,0),aux.Stringid(10060427,1),aux.Stringid(10060427,2))  --"选择一张「核成兽的钢核」送去墓地"
+		select=Duel.SelectOption(tp,aux.Stringid(10060427,0),aux.Stringid(10060427,1),aux.Stringid(10060427,2))  --"选择一张「核成兽的钢核」送去墓地" / "选择一张战士族怪兽给对方观看" / "破坏「核成城主」"
 	elseif g1:GetCount()>0 then
 		-- 当手卡只有「核成兽的钢核」时，选择将其送去墓地或破坏卡片
-		select=Duel.SelectOption(tp,aux.Stringid(10060427,0),aux.Stringid(10060427,2))  --"选择一张「核成兽的钢核」送去墓地"
+		select=Duel.SelectOption(tp,aux.Stringid(10060427,0),aux.Stringid(10060427,2))  --"选择一张「核成兽的钢核」送去墓地" / "破坏「核成城主」"
 		if select==1 then select=2 end
 	elseif g2:GetCount()>0 then
 		-- 当手卡只有战士族怪兽时，选择将其给对方观看或破坏卡片

@@ -59,7 +59,7 @@ function c14220547.tgop(e,tp,eg,ep,ev,re,r,rp)
 	if (#g1~=0 or #g2~=0) then
 		local g=nil
 		-- 如果己方额外卡组不为空，且对方额外卡组为空或玩家选择确认己方额外卡组，则选择己方额外卡组。
-		if #g1~=0 and (#g2==0 or Duel.SelectOption(tp,aux.Stringid(14220547,1),aux.Stringid(14220547,2))==0) then  --"确认自己的额外卡组"
+		if #g1~=0 and (#g2==0 or Duel.SelectOption(tp,aux.Stringid(14220547,1),aux.Stringid(14220547,2))==0) then  --"确认自己的额外卡组" / "确认对方的额外卡组"
 			g=g1
 		else
 			g=g2

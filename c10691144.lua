@@ -56,7 +56,7 @@ function c10691144.rmop(e,tp,eg,ep,ev,re,r,rp)
 		if rg:GetCount()>0 then
 			local ct=1
 			-- 如果对方手牌数量大于1，则让玩家选择除外1张或2张手牌
-			if rg:GetCount()>1 then ct=Duel.SelectOption(tp,aux.Stringid(10691144,3),aux.Stringid(10691144,4))+1 end  --"除外一张手牌"
+			if rg:GetCount()>1 then ct=Duel.SelectOption(tp,aux.Stringid(10691144,3),aux.Stringid(10691144,4))+1 end  --"除外1张手牌" / "除外2张手牌"
 			g:Merge(rg:RandomSelect(tp,ct))
 		end
 	end

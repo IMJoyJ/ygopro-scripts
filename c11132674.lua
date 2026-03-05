@@ -94,7 +94,7 @@ function c11132674.desop(e,tp,eg,ep,ev,re,r,rp)
 	if not tc:IsRelateToEffect(e) then return end
 	if tc:IsAbleToHand()
 		-- 玩家选择将目标卡送回手牌或破坏
-		and Duel.SelectOption(tp,aux.Stringid(11132674,3),aux.Stringid(11132674,4))==1 then  --"破坏"
+		and Duel.SelectOption(tp,aux.Stringid(11132674,3),aux.Stringid(11132674,4))==1 then  --"破坏" / "送回手牌"
 		-- 将目标卡送回手牌
 		Duel.SendtoHand(tc,nil,REASON_EFFECT)
 	else

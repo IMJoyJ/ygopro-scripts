@@ -71,7 +71,7 @@ function c12081875.effop(e,tp,eg,ep,ev,re,r,rp)
 		-- 中断当前效果处理，使后续处理视为错时点
 		Duel.BreakEffect()
 		-- 判断是否选择将怪兽送回卡组顶端或底端
-		if tc:IsExtraDeckMonster() or Duel.SelectOption(tp,aux.Stringid(12081875,1),aux.Stringid(12081875,2))==0 then  --"回到卡组最上面"
+		if tc:IsExtraDeckMonster() or Duel.SelectOption(tp,aux.Stringid(12081875,1),aux.Stringid(12081875,2))==0 then  --"回到卡组最上面" / "回到卡组最下面"
 			-- 将怪兽送回卡组顶端
 			Duel.SendtoDeck(tc,nil,SEQ_DECKTOP,REASON_EFFECT)
 		else
