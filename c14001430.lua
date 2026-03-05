@@ -50,7 +50,7 @@ end
 function c14001430.activate(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取满足条件的墓地中的「魔偶甜点」怪兽组
 	local g=Duel.GetMatchingGroup(c14001430.tdfilter,tp,LOCATION_GRAVE,0,nil)
-	-- 检查是否受到奈落的葬列影响，若存在则取消效果处理
+	-- 检查是否受到王家长眠之谷影响，若存在则取消效果处理
 	if aux.NecroValleyNegateCheck(g) then return end
 	if g:GetCount()>0 then
 		-- 将满足条件的怪兽送回卡组

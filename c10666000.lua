@@ -70,7 +70,7 @@ function s.atop(e,tp,eg,ep,ev,re,r,rp)
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_XMATERIAL)
 	-- 获取己方墓地的卡组
 	local g=Duel.GetFieldGroup(tp,0,LOCATION_GRAVE)
-	-- 检查是否受到奈落的葬列影响
+	-- 检查是否受到王家长眠之谷影响
 	if aux.NecroValleyNegateCheck(g) then return end
 	local tg=g:Select(tp,1,1,nil)
 	if #tg>0 then
