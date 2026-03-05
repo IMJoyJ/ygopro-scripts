@@ -1,6 +1,8 @@
 --コンタクト
+-- 效果：
+-- 把自己场上名字带有「茧状体」的怪兽全部送去墓地，那些卡记述的1只怪兽从手卡·卡组特殊召唤。
 function c16616620.initial_effect(c)
-	--Activate
+	-- 效果发动条件设置为自由时点，目标函数为c16616620.target，处理函数为c16616620.activate
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -9,34 +11,49 @@ function c16616620.initial_effect(c)
 	e1:SetOperation(c16616620.activate)
 	c:RegisterEffect(e1)
 end
+-- 过滤函数，用于检测场上是否存在名字带有「茧状体」且满足后续条件的怪兽
 function c16616620.filter1(c,e,tp)
+	-- 检测场上表侧表示的「茧状体」怪兽，并检查其是否能从手卡或卡组特殊召唤符合条件的怪兽
 	return c:IsFaceup() and c:IsSetCard(0x1e) and Duel.IsExistingMatchingCard(c16616620.filter2,tp,LOCATION_HAND+LOCATION_DECK,0,1,nil,c,e,tp)
 end
+-- 过滤函数，用于检测手卡或卡组中名字带有「茧状体」且与目标怪兽卡号一致的怪兽
 function c16616620.filter2(c,mc,e,tp)
+	-- 检测手卡或卡组中名字带有「茧状体」且与目标怪兽卡号一致的怪兽，并判断是否可以特殊召唤
 	return c:IsSetCard(0x1f) and aux.IsCodeListed(mc,c:GetCode()) and c:IsCanBeSpecialSummoned(e,0,tp,true,false)
 end
+-- 目标函数，检查是否满足发动条件：场上存在「茧状体」怪兽且有可特殊召唤的怪兽
 function c16616620.target(e,tp,eg,ep,ev,re,r,rp,chk)
+	-- 检查玩家场上是否有足够的怪兽区域
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>-1
+		-- 检查场上是否存在满足条件的「茧状体」怪兽
 		and Duel.IsExistingMatchingCard(c16616620.filter1,tp,LOCATION_MZONE,0,1,nil,e,tp) end
+	-- 设置操作信息，表示将要特殊召唤1只怪兽，目标位置为手卡或卡组
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_HAND+LOCATION_DECK)
 end
+-- 过滤函数，用于检测场上表侧表示的「茧状体」怪兽
 function c16616620.filter3(c)
 	return c:IsFaceup() and c:IsSetCard(0x1e)
 end
+-- 处理函数，将场上所有「茧状体」怪兽送去墓地，并从手卡或卡组特殊召唤符合条件的怪兽
 function c16616620.activate(e,tp,eg,ep,ev,re,r,rp)
+	-- 获取场上所有表侧表示的「茧状体」怪兽
 	local g=Duel.GetMatchingGroup(c16616620.filter3,tp,LOCATION_MZONE,0,nil)
 	if g:GetCount()==0 then return end
+	-- 将场上所有「茧状体」怪兽送去墓地
 	Duel.SendtoGrave(g,REASON_EFFECT)
 	local sg=Group.CreateGroup()
 	local tc=g:GetFirst()
 	while tc do
+		-- 获取与当前「茧状体」怪兽卡号一致的可特殊召唤怪兽
 		local tg=Duel.GetMatchingGroup(c16616620.filter2,tp,LOCATION_HAND+LOCATION_DECK,0,nil,tc,e,tp)
 		sg:Merge(tg)
 		tc=g:GetNext()
 	end
 	if sg:GetCount()>0 then
-		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
+		-- 提示玩家选择要特殊召唤的怪兽
+		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
 		local spg=sg:Select(tp,1,1,nil)
+		-- 将选择的怪兽特殊召唤到场上
 		Duel.SpecialSummon(spg,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
