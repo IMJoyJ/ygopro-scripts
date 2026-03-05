@@ -2,7 +2,7 @@
 -- 效果：
 -- 名字带有「六武众」的怪兽被攻击时，攻击怪兽的攻击力下降500。
 function c11102908.initial_effect(c)
-	-- 名字带有「六武众」的怪兽被攻击时，攻击怪兽的攻击力下降500。
+	-- 永续魔陷/场地卡通用的“允许发动”空效果，无此效果则无法发动
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
@@ -18,15 +18,15 @@ function c11102908.initial_effect(c)
 	e2:SetValue(-500)
 	c:RegisterEffect(e2)
 end
--- 判断是否处于伤害计算阶段且攻击对象存在且为六武众卡组怪兽
+-- 效果适用的条件：在伤害计算阶段且攻击对象是六武众怪兽时生效
 function c11102908.atkcon(e)
-	-- 获取当前攻击目标怪兽
+	-- 获取当前正在被攻击的怪兽
 	local d=Duel.GetAttackTarget()
-	-- 判断是否处于伤害计算阶段且攻击目标存在且为六武众卡组怪兽
+	-- 判断当前阶段是否为伤害计算阶段且攻击目标存在且为六武众怪兽
 	return Duel.GetCurrentPhase()==PHASE_DAMAGE_CAL and d and d:IsSetCard(0x103d)
 end
--- 判断当前被攻击的怪兽是否为攻击怪兽
+-- 效果适用的目标：攻击怪兽
 function c11102908.atktg(e,c)
-	-- 返回当前攻击怪兽
+	-- 目标为当前攻击怪兽
 	return c==Duel.GetAttacker()
 end
