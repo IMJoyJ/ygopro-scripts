@@ -39,7 +39,7 @@ function s.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 		and Duel.IsExistingTarget(s.filter,tp,LOCATION_GRAVE,0,1,nil,e,tp) end
 	-- 计算可选择的怪兽数量上限
 	local ft=math.min(3,(Duel.GetLocationCount(tp,LOCATION_MZONE)))
-	-- 若受到效果影响则限制为最多1只
+	-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中：禁止该玩家同时特殊召唤2只以上怪兽
 	if Duel.IsPlayerAffectedByEffect(tp,59822133) then ft=1 end
 	-- 提示玩家选择要特殊召唤的怪兽
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
@@ -65,7 +65,7 @@ function s.operation(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取连锁中已选定的目标怪兽组
 	local g=Duel.GetChainInfo(0,CHAININFO_TARGET_CARDS):Filter(Card.IsRelateToEffect,nil,e)
 	if #g==0 then return end
-	-- 若受到效果影响则限制为最多1只
+	-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中：禁止该玩家同时特殊召唤2只以上怪兽
 	if ft>1 and Duel.IsPlayerAffectedByEffect(tp,59822133) then ft=1 end
 	if #g>ft then
 		-- 提示玩家选择要特殊召唤的怪兽

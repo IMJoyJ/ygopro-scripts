@@ -91,7 +91,7 @@ function c1041278.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	local g=Duel.GetMatchingGroup(c1041278.spfilter0,tp,LOCATION_GRAVE+LOCATION_REMOVED,LOCATION_GRAVE+LOCATION_REMOVED,nil,e,tp)
 	local b1=ft1>0 and ft2>0
 		and g:IsExists(c1041278.spfilter1,1,nil,e,tp,g)
-	-- 若未满足发动条件则返回false
+	-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中：禁止该玩家同时特殊召唤2只以上怪兽
 	if chk==0 then return not Duel.IsPlayerAffectedByEffect(tp,59822133)
 		and (b1 or e:IsCostChecked()) end
 	-- 判断是否为以「阿不思的落胤」为融合素材的融合怪兽
@@ -109,7 +109,7 @@ function c1041278.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 end
 -- 定义发动此卡的效果处理函数
 function c1041278.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 若玩家受到「王家长眠之谷」等效果影响则不发动
+	-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中：禁止该玩家同时特殊召唤2只以上怪兽
 	if Duel.IsPlayerAffectedByEffect(tp,59822133) then return end
 	-- 获取玩家自己场上的可用怪兽区数量
 	local ft1=Duel.GetLocationCount(tp,LOCATION_MZONE)

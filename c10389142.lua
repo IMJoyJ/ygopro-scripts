@@ -33,7 +33,7 @@ function c10389142.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 		and Duel.IsPlayerCanSpecialSummonMonster(tp,10389143,0,TYPES_TOKEN_MONSTER,2000,0,6,RACE_MACHINE,ATTRIBUTE_WIND) end
 	-- 获取玩家场上可用的怪兽区域数量
 	local ft=Duel.GetLocationCount(tp,LOCATION_MZONE)
-	-- 若玩家受到效果影响，则限制只能特殊召唤1只衍生物
+	-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中：禁止该玩家同时特殊召唤2只以上怪兽
 	if Duel.IsPlayerAffectedByEffect(tp,59822133) then ft=1 end
 	-- 设置连锁操作信息：将要特殊召唤衍生物
 	Duel.SetOperationInfo(0,CATEGORY_TOKEN,nil,ft,0,0)
@@ -56,7 +56,7 @@ function c10389142.spop(e,tp,eg,ep,ev,re,r,rp)
 	local ft=Duel.GetLocationCount(tp,LOCATION_MZONE)
 	-- 若场上无空位或无法特殊召唤衍生物则返回
 	if ft<=0 or not Duel.IsPlayerCanSpecialSummonMonster(tp,10389143,0,TYPES_TOKEN_MONSTER,2000,0,6,RACE_MACHINE,ATTRIBUTE_WIND) then return end
-	-- 若玩家受到效果影响，则限制只能特殊召唤1只衍生物
+	-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中：禁止该玩家同时特殊召唤2只以上怪兽
 	if Duel.IsPlayerAffectedByEffect(tp,59822133) then ft=1 end
 	local fid=e:GetHandler():GetFieldID()
 	local g=Group.CreateGroup()

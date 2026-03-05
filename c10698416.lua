@@ -65,7 +65,7 @@ end
 -- 效果处理时的选对象函数，用于选择要特殊召唤的怪兽
 function c10698416.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then
-		-- 检查玩家是否受到「王家长眠之谷」等效果影响
+		-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中：禁止该玩家同时特殊召唤2只以上怪兽
 		if Duel.IsPlayerAffectedByEffect(tp,59822133) then return false end
 		-- 检查玩家场上是否有足够的召唤区域
 		if Duel.GetLocationCount(tp,LOCATION_MZONE)<2 then return false end
@@ -78,7 +78,7 @@ function c10698416.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 end
 -- 效果处理函数，执行特殊召唤操作
 function c10698416.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查玩家是否受到「王家长眠之谷」等效果影响
+	-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中：禁止该玩家同时特殊召唤2只以上怪兽
 	if Duel.IsPlayerAffectedByEffect(tp,59822133) then return end
 	-- 检查玩家场上是否有足够的召唤区域
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<2 then return end

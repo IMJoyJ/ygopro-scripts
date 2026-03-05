@@ -56,7 +56,7 @@ end
 -- 设置特殊召唤的效果处理函数
 function c12678870.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return false end
-	-- 判断是否可以发动此效果，排除玩家被影响的条件
+	-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中：禁止该玩家同时特殊召唤2只以上怪兽
 	if chk==0 then return not Duel.IsPlayerAffectedByEffect(tp,59822133)
 		-- 判断自己场上是否有足够的怪兽区域
 		and Duel.GetMZoneCount(tp,e:GetHandler())>1
@@ -78,7 +78,7 @@ end
 function c12678870.spop(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取自己场上可用的怪兽区域数量
 	local ft=Duel.GetLocationCount(tp,LOCATION_MZONE)
-	-- 如果受到效果影响，则限制只能召唤1只怪兽
+	-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中：禁止该玩家同时特殊召唤2只以上怪兽
 	if Duel.IsPlayerAffectedByEffect(tp,59822133) then ft=1 end
 	-- 获取连锁中指定的目标卡片组，并筛选出与效果相关的卡片
 	local g=Duel.GetChainInfo(0,CHAININFO_TARGET_CARDS):Filter(Card.IsRelateToEffect,nil,e)

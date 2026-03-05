@@ -99,7 +99,7 @@ function c14886190.activate(e,tp,eg,ep,ev,re,r,rp)
 				local ft2=Duel.GetLocationCountFromEx(tp,tp,nil,TYPE_PENDULUM+TYPE_LINK)
 				-- 获取玩家场上可用的怪兽区域数量
 				local ft=Duel.GetUsableMZoneCount(tp)
-				-- 检查玩家是否受到「凯撒斗技场」等效果影响
+				-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中：禁止该玩家同时特殊召唤2只以上怪兽
 				if Duel.IsPlayerAffectedByEffect(tp,59822133) then
 					if ft1>0 then ft1=1 end
 					if ft2>0 then ft2=1 end

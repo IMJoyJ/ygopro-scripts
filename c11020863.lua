@@ -100,7 +100,7 @@ function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	local ft=Duel.GetLocationCount(tp,LOCATION_MZONE)
 	-- 检查是否满足特殊召唤的条件
 	if chk==0 then return ft>0 and Duel.IsExistingTarget(s.spfilter,tp,LOCATION_GRAVE,0,1,nil,e,tp) end
-	-- 若玩家受到效果影响，则限制可召唤数量
+	-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中：禁止该玩家同时特殊召唤2只以上怪兽
 	if ft>1 and Duel.IsPlayerAffectedByEffect(tp,59822133) then ft=1 end
 	if ft>3 then ft=3 end
 	-- 提示玩家选择要特殊召唤的怪兽
@@ -118,7 +118,7 @@ function s.spop(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取当前连锁中指定的目标卡组
 	local g=Duel.GetChainInfo(0,CHAININFO_TARGET_CARDS)
 	local sg=g:Filter(Card.IsRelateToEffect,nil,e)
-	-- 若玩家受到效果影响且选择数量超过1，则不执行特殊召唤
+	-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中：禁止该玩家同时特殊召唤2只以上怪兽
 	if sg:GetCount()>1 and Duel.IsPlayerAffectedByEffect(tp,59822133) then return end
 	if sg:GetCount()>ft then
 		-- 提示玩家选择要特殊召唤的怪兽

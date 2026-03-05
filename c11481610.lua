@@ -70,7 +70,7 @@ function c11481610.activate(e,tp,eg,ep,ev,re,r,rp)
 			-- 中断当前效果，使之后的效果处理视为不同时处理
 			Duel.BreakEffect()
 			ct=math.min(ct,ft)
-			-- 如果玩家受到效果影响，则限制特殊召唤数量为1
+			-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中：禁止该玩家同时特殊召唤2只以上怪兽
 			if Duel.IsPlayerAffectedByEffect(tp,59822133) then ct=1 end
 			-- 获取满足条件的怪兽组
 			local g=Duel.GetMatchingGroup(c11481610.cfilter,tp,LOCATION_HAND,0,nil,e,tp,lsc,rsc)

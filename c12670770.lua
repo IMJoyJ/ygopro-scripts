@@ -153,7 +153,7 @@ function c12670770.spop(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取可特殊召唤的机械族·光属性怪兽组
 	local tg=Duel.GetMatchingGroup(c12670770.spfilter,tp,LOCATION_REMOVED,0,nil,e,tp)
 	if ft<=0 or tg:GetCount()==0 then return end
-	-- 检查当前玩家是否受到效果影响（如星尘龙）
+	-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中：禁止该玩家同时特殊召唤2只以上怪兽
 	if Duel.IsPlayerAffectedByEffect(tp,59822133) then ft=1 end
 	-- 提示玩家选择特殊召唤的怪兽
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)

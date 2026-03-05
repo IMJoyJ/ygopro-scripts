@@ -61,7 +61,7 @@ function c12247206.activate(e,tp,eg,ep,ev,re,r,rp)
 	local tc=eg:GetFirst()
 	-- 获取己方场上可用的怪兽区域数量
 	local ft1=Duel.GetLocationCount(tp,LOCATION_MZONE)
-	-- 若己方受到效果影响，则将可用区域数量限制为1
+	-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中：禁止该玩家同时特殊召唤2只以上怪兽
 	if ft1>1 and Duel.IsPlayerAffectedByEffect(tp,59822133) then ft1=1 end
 	-- 获取己方满足条件的可特殊召唤卡组（手牌·卡组·墓地）
 	local g=Duel.GetMatchingGroup(aux.NecroValleyFilter(c12247206.spfilter1),tp,LOCATION_HAND+LOCATION_DECK+LOCATION_GRAVE,0,nil,tc,e,tp)
@@ -77,7 +77,7 @@ function c12247206.activate(e,tp,eg,ep,ev,re,r,rp)
 	end
 	-- 获取对方场上可用的怪兽区域数量
 	local ft2=Duel.GetLocationCount(1-tp,LOCATION_MZONE)
-	-- 若对方受到效果影响，则将可用区域数量限制为1
+	-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中：禁止该玩家同时特殊召唤2只以上怪兽
 	if ft2>1 and Duel.IsPlayerAffectedByEffect(1-tp,59822133) then ft2=1 end
 	-- 提示对方选择表侧表示的怪兽
 	Duel.Hint(HINT_SELECTMSG,1-tp,HINTMSG_FACEUP)

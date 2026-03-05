@@ -27,7 +27,7 @@ function c14878871.filter(c,e,tp)
 end
 -- 设置发动时的处理目标，检查是否满足发动条件
 function c14878871.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查玩家是否被「王家长眠之谷」等效果影响
+	-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中：禁止该玩家同时特殊召唤2只以上怪兽
 	if chk==0 then return not Duel.IsPlayerAffectedByEffect(tp,59822133)
 		-- 检查玩家场上是否有足够的怪兽区域
 		and Duel.GetLocationCount(tp,LOCATION_MZONE)>0
@@ -38,7 +38,7 @@ function c14878871.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 end
 -- 效果发动时的处理函数
 function c14878871.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 如果玩家被「王家长眠之谷」等效果影响则不发动
+	-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中：禁止该玩家同时特殊召唤2只以上怪兽
 	if Duel.IsPlayerAffectedByEffect(tp,59822133) then return end
 	-- 如果场上没有足够的怪兽区域则不发动
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<2 then return end

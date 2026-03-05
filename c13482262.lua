@@ -38,7 +38,7 @@ function c13482262.spfilter(c,e,tp,code)
 end
 -- 处理魔神仪的隐蔽房间的发动效果
 function c13482262.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查此卡是否有效且玩家未被「王家长眠之谷」等效果影响
+	-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中：禁止该玩家同时特殊召唤2只以上怪兽
 	if not e:GetHandler():IsRelateToEffect(e) or Duel.IsPlayerAffectedByEffect(tp,59822133) then return end
 	-- 获取满足条件的手牌怪兽组
 	local g=Duel.GetMatchingGroup(c13482262.filter,tp,LOCATION_HAND,0,nil,e,tp)

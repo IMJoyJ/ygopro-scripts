@@ -67,7 +67,7 @@ function c12958919.spop(e,tp,eg,ep,ev,re,r,rp)
 	local ct=Duel.GetFieldGroupCount(tp,LOCATION_MZONE,0)
 	if ft>ct then ft=ct end
 	if ft<=0 then return end
-	-- 若玩家受到效果影响，则限制只能召唤一张衍生物
+	-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中：禁止该玩家同时特殊召唤2只以上怪兽
 	if Duel.IsPlayerAffectedByEffect(tp,59822133) then ft=1 end
 	-- 判断是否可以特殊召唤衍生物
 	if not Duel.IsPlayerCanSpecialSummonMonster(tp,12958920,0x49,TYPES_TOKEN_MONSTER,500,500,4,RACE_FIEND,ATTRIBUTE_DARK) then return end

@@ -42,7 +42,7 @@ function c13536606.rfilter(c,tp,g)
 	local ft=Duel.GetMZoneCount(tp,c)
 	local lk=math.min(3,ft)
 	return c:IsFaceup() and c:IsType(TYPE_LINK) and c:IsLinkBelow(lk) and c:IsReleasableByEffect() and g:IsContains(c)
-		-- 若目标玩家未被「王家长眠之谷」影响，或仅剩一个怪兽区，则满足条件
+		-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中：禁止该玩家同时特殊召唤2只以上怪兽
 		and (ft==1 or not Duel.IsPlayerAffectedByEffect(tp,59822133))
 end
 -- 设置效果目标的函数，用于选择符合条件的目标怪兽
@@ -73,7 +73,7 @@ function c13536606.tkop(e,tp,eg,ep,ev,re,r,rp)
 	if tc:IsRelateToEffect(e) and not tc:IsImmuneToEffect(e) and Duel.Release(tc,REASON_EFFECT)>0 then
 		-- 获取目标玩家场上可用的怪兽区数量
 		local ft=Duel.GetLocationCount(tp,LOCATION_MZONE)
-		-- 判断是否满足特殊召唤衍生物的条件
+		-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中：禁止该玩家同时特殊召唤2只以上怪兽
 		if ft<ct or (ft>1 and Duel.IsPlayerAffectedByEffect(tp,59822133)) then return end
 		-- 检查玩家是否可以特殊召唤衍生物
 		if not Duel.IsPlayerCanSpecialSummonMonster(tp,13536607,0,TYPES_TOKEN_MONSTER,0,0,1,RACE_CYBERSE,ATTRIBUTE_LIGHT) then return end

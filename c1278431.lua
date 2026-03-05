@@ -105,7 +105,7 @@ function c1278431.spop(e,tp,eg,ep,ev,re,r,rp)
 	-- 计算可特殊召唤的最大数量，最多为3只
 	local ft=math.min((Duel.GetLocationCount(tp,LOCATION_MZONE)),3)
 	if ft<1 then return end
-	-- 若玩家受到「王家长眠之谷」等效果影响，则限制只能特殊召唤1只
+	-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中：禁止该玩家同时特殊召唤2只以上怪兽
 	if Duel.IsPlayerAffectedByEffect(tp,59822133) then ft=1 end
 	-- 提示玩家选择要特殊召唤的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)

@@ -45,7 +45,7 @@ function c13504844.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 end
 -- 效果处理函数，执行将选中的怪兽特殊召唤到自己场上的操作
 function c13504844.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查玩家是否被「王家长眠之谷」等效果影响
+	-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中：禁止该玩家同时特殊召唤2只以上怪兽
 	if Duel.IsPlayerAffectedByEffect(tp,59822133) then return end
 	-- 检查自己场上是否有至少2个可用区域
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<2 then return end

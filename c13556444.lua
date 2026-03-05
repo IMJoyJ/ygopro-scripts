@@ -46,7 +46,7 @@ function c13556444.spop(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取满足特殊召唤条件的墓地怪兽组
 	local tg=Duel.GetMatchingGroup(c13556444.spfilter,tp,LOCATION_GRAVE,0,nil,e,tp,Duel.GetTurnCount())
 	if ft<1 or #tg<1 then return end
-	-- 若自己受到效果影响（如王家长眠之谷），则限制召唤数量为1
+	-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中：禁止该玩家同时特殊召唤2只以上怪兽
 	if Duel.IsPlayerAffectedByEffect(tp,59822133) then ft=1 end
 	-- 向玩家提示选择要特殊召唤的卡牌
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)

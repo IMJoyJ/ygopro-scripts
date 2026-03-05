@@ -37,7 +37,7 @@ function c11050415.activate(e,tp,eg,ep,ev,re,r,rp)
 		if Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)==0 then return end
 		-- 获取玩家场上可用的怪兽区域数量
 		local ft=Duel.GetLocationCount(tp,LOCATION_MZONE)
-		-- 判断是否可以继续特殊召唤衍生物
+		-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中：禁止该玩家同时特殊召唤2只以上怪兽
 		if ft<=0 or (Duel.IsPlayerAffectedByEffect(tp,59822133) and ft>1) then return end
 		-- 检查玩家是否可以特殊召唤「河马衍生物」
 		if Duel.IsPlayerCanSpecialSummonMonster(tp,18027139,0,TYPES_TOKEN_MONSTER,0,0,1,RACE_BEAST,ATTRIBUTE_EARTH)

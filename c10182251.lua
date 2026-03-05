@@ -33,7 +33,7 @@ end
 function c10182251.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	local c=e:GetHandler()
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and c10182251.spfilter(chkc,e,tp) end
-	-- 检查玩家是否受到禁止多重特殊召唤的效果影响（如古遗物运动）
+	-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中：禁止该玩家同时特殊召唤2只以上怪兽
 	if chk==0 then return not Duel.IsPlayerAffectedByEffect(tp,59822133)
 		-- 检查玩家主要怪兽区是否有至少2个空位，以同时特殊召唤自己和对象怪兽
 		and Duel.GetLocationCount(tp,LOCATION_MZONE)>1
@@ -54,7 +54,7 @@ function c10182251.spop(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取玩家在目标选择阶段选择的对象怪兽
 	local tc=Duel.GetFirstTarget()
 	if c:IsRelateToEffect(e) and tc:IsRelateToEffect(e) and c:IsCanBeSpecialSummoned(e,0,tp,false,false) and tc:IsCanBeSpecialSummoned(e,0,tp,false,false)
-		-- 再次确认玩家未受禁止多重特殊召唤效果影响且有足够位置
+		-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中：禁止该玩家同时特殊召唤2只以上怪兽
 		and not Duel.IsPlayerAffectedByEffect(tp,59822133) and Duel.GetLocationCount(tp,LOCATION_MZONE)>1 then
 		local g=Group.FromCards(c,tc)
 		-- 将这张卡和对象怪兽特殊召唤到场上

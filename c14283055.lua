@@ -58,7 +58,7 @@ end
 function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 获取符合条件的灵摆怪兽组
 	local g=Duel.GetMatchingGroup(s.filter,tp,LOCATION_DECK+LOCATION_EXTRA+LOCATION_HAND,0,nil)
-	-- 检查是否满足发动条件
+	-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中：禁止该玩家同时特殊召唤2只以上怪兽
 	if chk==0 then return not Duel.IsPlayerAffectedByEffect(tp,59822133)
 		and g:IsExists(s.sfilter1,1,nil,e,tp,g) end
 	-- 设置连锁操作信息
@@ -68,7 +68,7 @@ end
 function s.activate(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取符合条件的灵摆怪兽组
 	local g=Duel.GetMatchingGroup(s.filter,tp,LOCATION_DECK+LOCATION_EXTRA+LOCATION_HAND,0,nil)
-	-- 检查是否满足发动条件
+	-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中：禁止该玩家同时特殊召唤2只以上怪兽
 	if not Duel.IsPlayerAffectedByEffect(tp,59822133) and g:IsExists(s.sfilter1,1,nil,e,tp,g) then
 		-- 提示选择「新式魔厨」灵摆怪兽
 		Duel.Hint(HINT_SELECTMSG,tp,aux.Stringid(id,2))

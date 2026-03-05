@@ -62,7 +62,7 @@ function c14957440.tkop(e,tp,eg,ep,ev,re,r,rp)
 		-- 中断当前效果处理，使后续效果视为错时处理
 		Duel.BreakEffect()
 		local ct=c:GetCounter(0x59)
-		-- 若己方受到效果影响，则限制特殊召唤数量为1只
+		-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中：禁止该玩家同时特殊召唤2只以上怪兽
 		if Duel.IsPlayerAffectedByEffect(tp,59822133) then ft=1 end
 		if ct>ft then ct=ft end
 		while ct>0 do

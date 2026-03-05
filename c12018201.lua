@@ -83,7 +83,7 @@ function c12018201.spop(e,tp,eg,ep,ev,re,r,rp)
 	local ft=Duel.GetLocationCount(tp,LOCATION_MZONE)
 	if ft<=0 then return end
 	if ft>3 then ft=3 end
-	-- 判断玩家是否受到效果影响，限制特殊召唤数量
+	-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中：禁止该玩家同时特殊召唤2只以上怪兽
 	if Duel.IsPlayerAffectedByEffect(tp,59822133) then ft=1 end
 	-- 提示玩家选择要特殊召唤的卡片
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)

@@ -68,7 +68,7 @@ end
 -- 效果①的第二个子效果的发动时处理函数
 function c14604710.target2(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and c14604710.tgfilter2(chkc,e,tp) end
-	-- 判断是否满足发动条件：玩家未被「王家长眠之谷」等效果影响
+	-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中：禁止该玩家同时特殊召唤2只以上怪兽
 	if chk==0 then return not Duel.IsPlayerAffectedByEffect(tp,59822133)
 		-- 判断是否满足发动条件：场上是否有足够的怪兽区域
 		and Duel.GetLocationCount(tp,LOCATION_MZONE)>1
@@ -90,7 +90,7 @@ function c14604710.activate2(e,tp,eg,ep,ev,re,r,rp)
 	local ft=Duel.GetLocationCount(tp,LOCATION_MZONE)
 	-- 获取卡组中所有满足条件的9星怪兽
 	local g=Duel.GetMatchingGroup(c14604710.spfilter2,tp,LOCATION_DECK,0,nil,e,tp,tc)
-	-- 判断是否满足发动条件：玩家未被「王家长眠之谷」等效果影响
+	-- 判断是否满足发动条件：玩家未被「王家长眠之谷」等效果影响、场上有足够的怪兽区域、卡组中有至少2只不同卡名的9星怪兽
 	if not Duel.IsPlayerAffectedByEffect(tp,59822133)
 		and ft>1 and g:GetClassCount(Card.GetCode)>1 and tc:IsRelateToEffect(e) and tc:IsFaceup() then
 		-- 提示玩家选择要特殊召唤的卡

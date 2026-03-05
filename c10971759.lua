@@ -33,7 +33,7 @@ end
 -- 效果①的发动时点处理函数，用于判断是否满足发动条件并选择目标
 function c10971759.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and c10971759.spfilter(chkc,e,tp) end
-	-- 判断玩家是否被「王家长眠之谷」等效果影响
+	-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中：禁止该玩家同时特殊召唤2只以上怪兽
 	if chk==0 then return not Duel.IsPlayerAffectedByEffect(tp,59822133)
 		-- 判断玩家场上是否有足够的怪兽区域
 		and Duel.GetLocationCount(tp,LOCATION_MZONE)>1
@@ -50,7 +50,7 @@ end
 function c10971759.spop(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取连锁中选择的目标怪兽组，并过滤出与当前效果相关的怪兽
 	local g=Duel.GetChainInfo(0,CHAININFO_TARGET_CARDS):Filter(Card.IsRelateToEffect,nil,e)
-	-- 判断是否满足特殊召唤条件（场地不足或被王家长眠之谷影响）
+	-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中：禁止该玩家同时特殊召唤2只以上怪兽
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<g:GetCount() or (g:GetCount()>1 and Duel.IsPlayerAffectedByEffect(tp,59822133)) then return end
 	local tc=g:GetFirst()
 	while tc do
