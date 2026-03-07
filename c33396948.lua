@@ -1,6 +1,8 @@
 --封印されしエクゾディア
+-- 效果：
+-- 这张卡和「被封印者的右腕」「被封印者的左腕」「被封印者的右足」「被封印者的左足」在手卡全部齐集时，自己决斗胜利。
 function c33396948.initial_effect(c)
-	--win
+	-- 效果原文：这张卡和「被封印者的右腕」「被封印者的左腕」「被封印者的右足」「被封印者的左足」在手卡全部齐集时，自己决斗胜利。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE+EFFECT_FLAG_DELAY)
@@ -9,9 +11,11 @@ function c33396948.initial_effect(c)
 	e1:SetOperation(c33396948.operation)
 	c:RegisterEffect(e1)
 end
+-- 检索满足条件的卡片组，即手牌中包含被封印的艾克佐迪亚及其四片肢体的卡片
 function c33396948.filter(c)
 	return c:IsCode(8124921,44519536,70903634,7902349,33396948)
 end
+-- 检查g中是否同时包含被封印的艾克佐迪亚及其四片肢体
 function c33396948.check(g)
 	local a1=false
 	local a2=false
@@ -31,21 +35,31 @@ function c33396948.check(g)
 	end
 	return a1 and a2 and a3 and a4 and a5
 end
+-- 当满足胜利条件时，确认双方手牌并令对应玩家获胜
 function c33396948.operation(e,tp,eg,ep,ev,re,r,rp)
 	local WIN_REASON_EXODIA = 0x10
+	-- 获取当前玩家手牌中满足条件的卡片组
 	local g1=Duel.GetFieldGroup(tp,LOCATION_HAND,0):Filter(c33396948.filter,nil)
+	-- 获取对方玩家手牌中满足条件的卡片组
 	local g2=Duel.GetFieldGroup(tp,0,LOCATION_HAND):Filter(c33396948.filter,nil)
 	local wtp=c33396948.check(g1)
 	local wntp=c33396948.check(g2)
 	if wtp and not wntp then
+		-- 确认对方玩家看到当前玩家的手牌
 		Duel.ConfirmCards(1-tp,g1)
+		-- 令当前玩家以艾克佐迪亚胜利
 		Duel.Win(tp,WIN_REASON_EXODIA)
 	elseif not wtp and wntp then
+		-- 确认当前玩家看到对方的手牌
 		Duel.ConfirmCards(tp,g2)
+		-- 令对方玩家以艾克佐迪亚胜利
 		Duel.Win(1-tp,WIN_REASON_EXODIA)
 	elseif wtp and wntp then
+		-- 确认对方玩家看到当前玩家的手牌
 		Duel.ConfirmCards(1-tp,g1)
+		-- 确认当前玩家看到对方的手牌
 		Duel.ConfirmCards(tp,g2)
+		-- 令双方均以艾克佐迪亚胜利
 		Duel.Win(PLAYER_NONE,WIN_REASON_EXODIA)
 	end
 end
