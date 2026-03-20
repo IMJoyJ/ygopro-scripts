@@ -16,7 +16,7 @@ function c12296376.initial_effect(c)
 	e2:SetOperation(c12296376.operation)
 	c:RegisterEffect(e2)
 end
--- 效果作用
+-- 当此卡参与战斗时，检索与该卡战斗的怪兽并为其注册不能改变表示形式的效果。
 function c12296376.operation(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local bc=c:GetBattleTarget()
