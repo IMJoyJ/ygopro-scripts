@@ -3,7 +3,7 @@
 -- ①：这张卡召唤成功时才能发动。从卡组把1只4星以下的怪兽送去墓地。
 -- ②：这张卡被战斗破坏送去墓地时才能发动。自己从卡组抽1张。
 function c41386308.initial_effect(c)
-	-- 效果原文：①：这张卡召唤成功时才能发动。从卡组把1只4星以下的怪兽送去墓地。
+	-- ①：这张卡召唤成功时才能发动。从卡组把1只4星以下的怪兽送去墓地。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(41386308,0))  --"送墓"
 	e1:SetCategory(CATEGORY_TOGRAVE)
@@ -12,7 +12,7 @@ function c41386308.initial_effect(c)
 	e1:SetTarget(c41386308.target)
 	e1:SetOperation(c41386308.operation)
 	c:RegisterEffect(e1)
-	-- 效果原文：②：这张卡被战斗破坏送去墓地时才能发动。自己从卡组抽1张。
+	-- ②：这张卡被战斗破坏送去墓地时才能发动。自己从卡组抽1张。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(41386308,1))  --"抽卡"
 	e2:SetCategory(CATEGORY_DRAW)

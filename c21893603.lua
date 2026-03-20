@@ -30,53 +30,53 @@ function c21893603.initial_effect(c)
 	e3:SetOperation(c21893603.thop2)
 	c:RegisterEffect(e3)
 end
--- 检索满足条件的「星杯」怪兽卡片组
+-- 检索满足条件的「星杯」怪兽（卡名、类型、能加入手牌）
 function c21893603.thfilter(c)
 	return c:IsSetCard(0xfd) and c:IsType(TYPE_MONSTER) and c:IsAbleToHand()
 end
--- 效果作用
+-- 效果处理时判断是否满足条件（卡组存在满足条件的怪兽）
 function c21893603.thtg1(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查卡组中是否存在满足条件的卡片
+	-- 判断卡组是否存在满足条件的怪兽
 	if chk==0 then return Duel.IsExistingMatchingCard(c21893603.thfilter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置连锁操作信息为检索卡组效果
+	-- 设置连锁操作信息：将1张卡从卡组加入手牌
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 效果处理
+-- 效果处理：选择并加入手牌
 function c21893603.thop1(e,tp,eg,ep,ev,re,r,rp)
 	-- 提示玩家选择要加入手牌的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择满足条件的卡
+	-- 选择满足条件的卡组怪兽
 	local g=Duel.SelectMatchingCard(tp,c21893603.thfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的卡加入手牌
+		-- 将选中的怪兽加入手牌
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 向对方确认翻开的卡
+		-- 向对方确认加入手牌的卡
 		Duel.ConfirmCards(1-tp,g)
 	end
 end
--- 满足条件的怪兽卡片组
+-- 过滤手卡或场上怪兽（类型为怪兽、能送去墓地）
 function c21893603.thcfilter(c)
 	return c:IsType(TYPE_MONSTER) and c:IsAbleToGraveAsCost()
 end
--- 效果处理
+-- 效果处理：支付代价（将手卡或场上的1只怪兽送去墓地）
 function c21893603.thcost2(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查手卡或场上是否存在满足条件的卡片
+	-- 判断手卡或场上是否存在满足条件的怪兽
 	if chk==0 then return Duel.IsExistingMatchingCard(c21893603.thcfilter,tp,LOCATION_HAND+LOCATION_MZONE,0,1,nil) end
 	-- 提示玩家选择要送去墓地的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
-	-- 选择满足条件的卡
+	-- 选择满足条件的手卡或场上的怪兽
 	local g=Duel.SelectMatchingCard(tp,c21893603.thcfilter,tp,LOCATION_HAND+LOCATION_MZONE,0,1,1,nil)
-	-- 将选中的卡送去墓地作为代价
+	-- 将选中的怪兽送去墓地作为代价
 	Duel.SendtoGrave(g,REASON_COST)
 end
--- 效果作用
+-- 效果处理：判断墓地的这张卡是否能加入手牌
 function c21893603.thtg2(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	if chk==0 then return c:IsAbleToHand() end
-	-- 设置连锁操作信息为回手牌效果
+	-- 设置连锁操作信息：将此卡加入手牌
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,c,1,0,0)
 end
--- 效果处理
+-- 效果处理：将此卡加入手牌
 function c21893603.thop2(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) then

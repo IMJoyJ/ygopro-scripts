@@ -2,7 +2,7 @@
 -- 效果：
 -- 自己场上有「六武众-伊郎」以外的名字带有「六武众」的怪兽存在，这张卡向里侧守备表示怪兽攻击的场合，不进行伤害计算以里侧守备表示的状态把那只怪兽破坏。此外，场上表侧表示存在的这张卡被破坏的场合，可以作为代替把这张卡以外的自己场上表侧表示存在的1只名字带有「六武众」的怪兽破坏。
 function c27782503.initial_effect(c)
-	-- 效果原文：自己场上有「六武众-伊郎」以外的名字带有「六武众」的怪兽存在，这张卡向里侧守备表示怪兽攻击的场合，不进行伤害计算以里侧守备表示的状态把那只怪兽破坏。
+	-- 自己场上有「六武众-伊郎」以外的名字带有「六武众」的怪兽存在，这张卡向里侧守备表示怪兽攻击的场合，不进行伤害计算以里侧守备表示的状态把那只怪兽破坏。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(27782503,0))  --"里侧守备的攻击对象怪兽破坏"
 	e1:SetCategory(CATEGORY_DESTROY)
@@ -12,7 +12,7 @@ function c27782503.initial_effect(c)
 	e1:SetTarget(c27782503.destg)
 	e1:SetOperation(c27782503.desop)
 	c:RegisterEffect(e1)
-	-- 效果原文：此外，场上表侧表示存在的这张卡被破坏的场合，可以作为代替把这张卡以外的自己场上表侧表示存在的1只名字带有「六武众」的怪兽破坏。
+	-- 此外，场上表侧表示存在的这张卡被破坏的场合，可以作为代替把这张卡以外的自己场上表侧表示存在的1只名字带有「六武众」的怪兽破坏。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_CONTINUOUS+EFFECT_TYPE_SINGLE)
 	e2:SetCode(EFFECT_DESTROY_REPLACE)

@@ -2,7 +2,7 @@
 -- 效果：
 -- 选择自己场上表侧表示存在的1只4星以下的名字带有「发条」的怪兽回到手卡，和回去的怪兽相同等级的1只名字带有「发条」的怪兽从手卡特殊召唤。
 function c29999161.initial_effect(c)
-	-- 效果原文：选择自己场上表侧表示存在的1只4星以下的名字带有「发条」的怪兽回到手卡，和回去的怪兽相同等级的1只名字带有「发条」的怪兽从手卡特殊召唤。
+	-- 选择自己场上表侧表示存在的1只4星以下的名字带有「发条」的怪兽回到手卡，和回去的怪兽相同等级的1只名字带有「发条」的怪兽从手卡特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SPECIAL_SUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)

@@ -8,7 +8,7 @@ function c24010609.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- 效果原文：①：1回合1次，以这张卡以外的自己场上1张卡为对象才能发动。这个回合，对方不能对应自己的魔法卡的发动把魔法·陷阱·怪兽的效果发动。并且，再把作为对象的卡送去墓地。
+	-- ①：1回合1次，以这张卡以外的自己场上1张卡为对象才能发动。这个回合，对方不能对应自己的魔法卡的发动把魔法·陷阱·怪兽的效果发动。并且，再把作为对象的卡送去墓地。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(24010609,0))
 	e2:SetCategory(CATEGORY_TOGRAVE)
@@ -19,7 +19,7 @@ function c24010609.initial_effect(c)
 	e2:SetTarget(c24010609.tgtg)
 	e2:SetOperation(c24010609.tgop)
 	c:RegisterEffect(e2)
-	-- 效果原文：②：自己·对方的结束阶段才能发动。选最多有这个回合这张卡表侧表示存在期间自己发动的「闪刀」魔法卡数量的自己墓地的「闪刀」魔法卡在自己场上盖放（同名卡最多1张）。这个效果盖放的卡从场上离开的场合除外。
+	-- ②：自己·对方的结束阶段才能发动。选最多有这个回合这张卡表侧表示存在期间自己发动的「闪刀」魔法卡数量的自己墓地的「闪刀」魔法卡在自己场上盖放（同名卡最多1张）。这个效果盖放的卡从场上离开的场合除外。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(24010609,1))
 	e3:SetCategory(CATEGORY_LEAVE_GRAVE+CATEGORY_SSET)
@@ -30,7 +30,7 @@ function c24010609.initial_effect(c)
 	e3:SetTarget(c24010609.settg)
 	e3:SetOperation(c24010609.setop)
 	c:RegisterEffect(e3)
-	-- 效果原文：①：1回合1次，以这张卡以外的自己场上1张卡为对象才能发动。这个回合，对方不能对应自己的魔法卡的发动把魔法·陷阱·怪兽的效果发动。并且，再把作为对象的卡送去墓地。
+	-- ①：1回合1次，以这张卡以外的自己场上1张卡为对象才能发动。这个回合，对方不能对应自己的魔法卡的发动把魔法·陷阱·怪兽的效果发动。并且，再把作为对象的卡送去墓地。
 	local e4=Effect.CreateEffect(c)
 	e4:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e4:SetCode(EVENT_CHAINING)
@@ -58,7 +58,7 @@ function c24010609.tgtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 end
 -- 效果处理函数，注册连锁限制效果并记录flag，然后将目标卡送去墓地
 function c24010609.tgop(e,tp,eg,ep,ev,re,r,rp)
-	-- 效果原文：①：1回合1次，以这张卡以外的自己场上1张卡为对象才能发动。这个回合，对方不能对应自己的魔法卡的发动把魔法·陷阱·怪兽的效果发动。并且，再把作为对象的卡送去墓地。
+	-- ①：1回合1次，以这张卡以外的自己场上1张卡为对象才能发动。这个回合，对方不能对应自己的魔法卡的发动把魔法·陷阱·怪兽的效果发动。并且，再把作为对象的卡送去墓地。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e1:SetCode(EVENT_CHAINING)
@@ -143,7 +143,7 @@ function c24010609.setop(e,tp,eg,ep,ev,re,r,rp)
 	if Duel.SSet(tp,tg)==0 then return end
 	local tc=tg:GetFirst()
 	while tc do
-		-- 效果原文：②：自己·对方的结束阶段才能发动。选最多有这个回合这张卡表侧表示存在期间自己发动的「闪刀」魔法卡数量的自己墓地的「闪刀」魔法卡在自己场上盖放（同名卡最多1张）。这个效果盖放的卡从场上离开的场合除外。
+		-- ②：自己·对方的结束阶段才能发动。选最多有这个回合这张卡表侧表示存在期间自己发动的「闪刀」魔法卡数量的自己墓地的「闪刀」魔法卡在自己场上盖放（同名卡最多1张）。这个效果盖放的卡从场上离开的场合除外。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_LEAVE_FIELD_REDIRECT)

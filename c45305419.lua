@@ -2,7 +2,7 @@
 -- 效果：
 -- 自己墓地有3张同名怪兽卡存在时发动。选择那些怪兽的其中1只在自己场上特殊召唤，并装备这张卡。这张卡破坏时，装备怪兽破坏。
 function c45305419.initial_effect(c)
-	-- 效果原文：自己墓地有3张同名怪兽卡存在时发动。选择那些怪兽的其中1只在自己场上特殊召唤，并装备这张卡。
+	-- 自己墓地有3张同名怪兽卡存在时发动。选择那些怪兽的其中1只在自己场上特殊召唤，并装备这张卡。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_EQUIP)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -11,7 +11,7 @@ function c45305419.initial_effect(c)
 	e1:SetTarget(c45305419.target)
 	e1:SetOperation(c45305419.operation)
 	c:RegisterEffect(e1)
-	-- 效果原文：这张卡破坏时，装备怪兽破坏。
+	-- 这张卡破坏时，装备怪兽破坏。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_CONTINUOUS+EFFECT_TYPE_SINGLE)
 	e2:SetCode(EVENT_LEAVE_FIELD)

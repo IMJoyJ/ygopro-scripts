@@ -2,7 +2,7 @@
 -- 效果：
 -- 查看对方卡组最上面的最多5张卡，然后放回原处。
 function c17092736.initial_effect(c)
-	-- 效果原文：查看对方卡组最上面的最多5张卡，然后放回原处。
+	-- 查看对方卡组最上面的最多5张卡，然后放回原处。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
@@ -18,7 +18,7 @@ function c17092736.cftg(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 将当前连锁的目标玩家设置为当前玩家。
 	Duel.SetTargetPlayer(tp)
 end
--- 效果原文：查看对方卡组最上面的最多5张卡，然后放回原处。
+-- 查看对方卡组最上面的最多5张卡，然后放回原处。
 function c17092736.cfop(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取当前连锁的目标玩家。
 	local p=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER)

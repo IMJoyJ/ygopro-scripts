@@ -4,13 +4,13 @@
 -- ②：这张卡直接攻击给与对方战斗伤害的场合发动。对方手卡随机选1张丢弃。
 -- ③：场上的表侧表示的这张卡成为效果的对象的场合破坏。
 function c23205979.initial_effect(c)
-	-- 效果原文：①：这张卡不会被战斗破坏。
+	-- ①：这张卡不会被战斗破坏。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_INDESTRUCTABLE_BATTLE)
 	e1:SetValue(1)
 	c:RegisterEffect(e1)
-	-- 效果原文：②：这张卡直接攻击给与对方战斗伤害的场合发动。对方手卡随机选1张丢弃。
+	-- ②：这张卡直接攻击给与对方战斗伤害的场合发动。对方手卡随机选1张丢弃。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(23205979,0))  --"丢弃手牌"
 	e2:SetCategory(CATEGORY_HANDES)
@@ -20,7 +20,7 @@ function c23205979.initial_effect(c)
 	e2:SetTarget(c23205979.target)
 	e2:SetOperation(c23205979.operation)
 	c:RegisterEffect(e2)
-	-- 效果原文：③：场上的表侧表示的这张卡成为效果的对象的场合破坏。
+	-- ③：场上的表侧表示的这张卡成为效果的对象的场合破坏。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_SINGLE)
 	e3:SetProperty(EFFECT_FLAG_SINGLE_RANGE)

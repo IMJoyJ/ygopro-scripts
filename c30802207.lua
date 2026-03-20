@@ -10,7 +10,7 @@ function c30802207.initial_effect(c)
 	e0:SetType(EFFECT_TYPE_ACTIVATE)
 	e0:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e0)
-	-- 效果原文：双方不能把自己场上的「救祓少女」怪兽作为从墓地特殊召唤的怪兽的效果的对象。
+	-- 双方不能把自己场上的「救祓少女」怪兽作为从墓地特殊召唤的怪兽的效果的对象。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_CANNOT_BE_EFFECT_TARGET)
@@ -20,7 +20,7 @@ function c30802207.initial_effect(c)
 	e1:SetTarget(c30802207.eftg)
 	e1:SetValue(c30802207.efilter)
 	c:RegisterEffect(e1)
-	-- 效果原文：自己把「救祓少女」怪兽超量召唤的场合，宣言1个卡名才能发动。直到回合结束时，原本卡名和宣言的卡相同的卡的效果无效化。
+	-- 自己把「救祓少女」怪兽超量召唤的场合，宣言1个卡名才能发动。直到回合结束时，原本卡名和宣言的卡相同的卡的效果无效化。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(30802207,0))  --"宣言卡名将其无效"
 	e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
@@ -32,7 +32,7 @@ function c30802207.initial_effect(c)
 	e2:SetTarget(c30802207.bantg)
 	e2:SetOperation(c30802207.banop)
 	c:RegisterEffect(e2)
-	-- 效果原文：自己的「救祓少女」怪兽进行战斗的攻击宣言时，以对方场上1张魔法·陷阱卡为对象才能发动。那张卡破坏。
+	-- 自己的「救祓少女」怪兽进行战斗的攻击宣言时，以对方场上1张魔法·陷阱卡为对象才能发动。那张卡破坏。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(30802207,1))
 	e3:SetCategory(CATEGORY_DESTROY)

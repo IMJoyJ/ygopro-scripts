@@ -3,7 +3,7 @@
 -- 自己的场上·墓地的名字带有「武神」的怪兽从游戏中除外的场合，这张卡可以从手卡表侧守备表示特殊召唤。此外，这张卡在场上表侧表示存在，名字带有「武神」的卡用抽卡以外的方法从自己卡组加入手卡的场合，那个回合的结束阶段时才能发动1次。从卡组抽1张卡，那之后选1张手卡丢弃。「武神-荒樔田」在自己场上只能有1只表侧表示存在。
 function c23979249.initial_effect(c)
 	c:SetUniqueOnField(1,0,23979249)
-	-- 效果原文：自己的场上·墓地的名字带有「武神」的怪兽从游戏中除外的场合，这张卡可以从手卡表侧守备表示特殊召唤。
+	-- 自己的场上·墓地的名字带有「武神」的怪兽从游戏中除外的场合，这张卡可以从手卡表侧守备表示特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(23979249,0))  --"特殊召唤"
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -15,7 +15,7 @@ function c23979249.initial_effect(c)
 	e1:SetTarget(c23979249.sptg)
 	e1:SetOperation(c23979249.spop)
 	c:RegisterEffect(e1)
-	-- 效果原文：此外，这张卡在场上表侧表示存在，名字带有「武神」的卡用抽卡以外的方法从自己卡组加入手卡的场合，那个回合的结束阶段时才能发动1次。从卡组抽1张卡，那之后选1张手卡丢弃。
+	-- 此外，这张卡在场上表侧表示存在，名字带有「武神」的卡用抽卡以外的方法从自己卡组加入手卡的场合，那个回合的结束阶段时才能发动1次。从卡组抽1张卡，那之后选1张手卡丢弃。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e2:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
@@ -24,7 +24,7 @@ function c23979249.initial_effect(c)
 	e2:SetCondition(c23979249.regcon)
 	e2:SetOperation(c23979249.regop)
 	c:RegisterEffect(e2)
-	-- 效果原文：「武神-荒樔田」在自己场上只能有1只表侧表示存在。
+	-- 「武神-荒樔田」在自己场上只能有1只表侧表示存在。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(23979249,1))  --"抽卡"
 	e3:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES)

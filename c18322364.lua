@@ -2,7 +2,7 @@
 -- 效果：
 -- 这张卡上级召唤成功时，把这张卡解放才能发动。从卡组把3只3星的水属性怪兽特殊召唤。这个效果特殊召唤的怪兽的效果无效化。
 function c18322364.initial_effect(c)
-	-- 效果原文：这张卡上级召唤成功时，把这张卡解放才能发动。从卡组把3只3星的水属性怪兽特殊召唤。这个效果特殊召唤的怪兽的效果无效化。
+	-- 这张卡上级召唤成功时，把这张卡解放才能发动。从卡组把3只3星的水属性怪兽特殊召唤。这个效果特殊召唤的怪兽的效果无效化。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(18322364,0))  --"特殊召唤"
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -55,13 +55,13 @@ function c18322364.operation(e,tp,eg,ep,ev,re,r,rp)
 	while tc do
 		-- 将一张怪兽特殊召唤到场上
 		Duel.SpecialSummonStep(tc,0,tp,tp,false,false,POS_FACEUP)
-		-- 效果原文：这个效果特殊召唤的怪兽的效果无效化。
+		-- 这个效果特殊召唤的怪兽的效果无效化。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_DISABLE)
 		e1:SetReset(RESET_EVENT+RESETS_STANDARD)
 		tc:RegisterEffect(e1,true)
-		-- 效果原文：这个效果特殊召唤的怪兽的效果无效化。
+		-- 这个效果特殊召唤的怪兽的效果无效化。
 		local e2=Effect.CreateEffect(e:GetHandler())
 		e2:SetType(EFFECT_TYPE_SINGLE)
 		e2:SetCode(EFFECT_DISABLE_EFFECT)

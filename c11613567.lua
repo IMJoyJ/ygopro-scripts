@@ -2,7 +2,7 @@
 -- 效果：
 -- 自己场上有名字带有「黑羽」的怪兽表侧表示存在的场合，这张卡可以不用解放作召唤。这张卡召唤成功时，可以把对方场上存在的1只怪兽的表示形式改变。
 function c11613567.initial_effect(c)
-	-- 效果原文：自己场上有名字带有「黑羽」的怪兽表侧表示存在的场合，这张卡可以不用解放作召唤。
+	-- 自己场上有名字带有「黑羽」的怪兽表侧表示存在的场合，这张卡可以不用解放作召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(11613567,0))  --"不用解放作召唤"
 	e1:SetProperty(EFFECT_FLAG_UNCOPYABLE)
@@ -10,7 +10,7 @@ function c11613567.initial_effect(c)
 	e1:SetCode(EFFECT_SUMMON_PROC)
 	e1:SetCondition(c11613567.ntcon)
 	c:RegisterEffect(e1)
-	-- 效果原文：这张卡召唤成功时，可以把对方场上存在的1只怪兽的表示形式改变。
+	-- 这张卡召唤成功时，可以把对方场上存在的1只怪兽的表示形式改变。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(11613567,1))  --"改变表示形式"
 	e2:SetCategory(CATEGORY_POSITION)

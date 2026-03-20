@@ -4,7 +4,7 @@
 -- ②：持有这张卡作为素材中的原本种族是兽战士族的超量怪兽得到以下效果。
 -- ●这张卡为对象的对方怪兽的效果发动时，把这张卡1个超量素材取除才能发动。那个发动无效。
 function c20155904.initial_effect(c)
-	-- 效果原文：①：这张卡被战斗·效果破坏的场合，以「十二兽 鸡拳」以外的自己墓地1张「十二兽」卡为对象才能发动。那张卡回到卡组。
+	-- ①：这张卡被战斗·效果破坏的场合，以「十二兽 鸡拳」以外的自己墓地1张「十二兽」卡为对象才能发动。那张卡回到卡组。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(20155904,0))
 	e1:SetCategory(CATEGORY_TODECK)
@@ -15,7 +15,7 @@ function c20155904.initial_effect(c)
 	e1:SetTarget(c20155904.tdtg)
 	e1:SetOperation(c20155904.tdop)
 	c:RegisterEffect(e1)
-	-- 效果原文：②：持有这张卡作为素材中的原本种族是兽战士族的超量怪兽得到以下效果。●这张卡为对象的对方怪兽的效果发动时，把这张卡1个超量素材取除才能发动。那个发动无效。
+	-- ②：持有这张卡作为素材中的原本种族是兽战士族的超量怪兽得到以下效果。●这张卡为对象的对方怪兽的效果发动时，把这张卡1个超量素材取除才能发动。那个发动无效。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(20155904,1))
 	e2:SetCategory(CATEGORY_NEGATE)

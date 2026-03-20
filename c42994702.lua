@@ -2,7 +2,7 @@
 -- 效果：
 -- 这张卡1个回合可以有1次变回里侧守备表示。这个效果使用后，把自己的主要怪兽区域的全部里侧守备表示的怪兽洗切，再次重新里侧守备表示按自己的顺序安排到场上的位置。
 function c42994702.initial_effect(c)
-	-- 效果原文：这张卡1个回合可以有1次变回里侧守备表示。
+	-- 这张卡1个回合可以有1次变回里侧守备表示。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(42994702,0))  --"变成里侧守备"
 	e1:SetCategory(CATEGORY_POSITION+CATEGORY_MSET)

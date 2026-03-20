@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：双方有除外的自己怪兽1只以上存在的场合才能发动。双方玩家各自选除外的1只自己怪兽里侧守备表示特殊召唤。
 function c39900763.initial_effect(c)
-	-- 效果原文：①：双方有除外的自己怪兽1只以上存在的场合才能发动。双方玩家各自选除外的1只自己怪兽里侧守备表示特殊召唤。
+	-- ①：双方有除外的自己怪兽1只以上存在的场合才能发动。双方玩家各自选除外的1只自己怪兽里侧守备表示特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_MSET)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)

@@ -3,13 +3,13 @@
 -- 这张卡不能进行通常召唤。这张卡只能通过「第一之棺」的效果进行特殊召唤。这张卡特殊召唤成功时，可以从自己的墓地里特殊召唤至多4只2星以下的不死族通常怪兽上场。
 function c25343280.initial_effect(c)
 	c:EnableReviveLimit()
-	-- 效果原文：这张卡不能进行通常召唤。这张卡只能通过「第一之棺」的效果进行特殊召唤。
+	-- 这张卡不能进行通常召唤。这张卡只能通过「第一之棺」的效果进行特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_SPSUMMON_CONDITION)
 	c:RegisterEffect(e1)
-	-- 效果原文：这张卡特殊召唤成功时，可以从自己的墓地里特殊召唤至多4只2星以下的不死族通常怪兽上场。
+	-- 这张卡特殊召唤成功时，可以从自己的墓地里特殊召唤至多4只2星以下的不死族通常怪兽上场。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(25343280,1))
 	e2:SetCategory(CATEGORY_SPECIAL_SUMMON)

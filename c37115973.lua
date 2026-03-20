@@ -3,7 +3,7 @@
 -- ①：这张卡召唤·反转召唤·特殊召唤成功的场合发动。场上的「No.」超量怪兽全部回到持有者的额外卡组。
 -- ②：只要这张卡在怪兽区域存在，双方不能把「No.」超量怪兽特殊召唤。此外，这张卡不会被和超量怪兽的战斗破坏，不受超量怪兽的效果影响。
 function c37115973.initial_effect(c)
-	-- 效果原文：①：这张卡召唤·反转召唤·特殊召唤成功的场合发动。场上的「No.」超量怪兽全部回到持有者的额外卡组。
+	-- ①：这张卡召唤·反转召唤·特殊召唤成功的场合发动。场上的「No.」超量怪兽全部回到持有者的额外卡组。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(37115973,0))  --"回到额外卡组"
 	e1:SetCategory(CATEGORY_TOEXTRA)
@@ -18,7 +18,7 @@ function c37115973.initial_effect(c)
 	local e3=e1:Clone()
 	e3:SetCode(EVENT_SPSUMMON_SUCCESS)
 	c:RegisterEffect(e3)
-	-- 效果原文：②：只要这张卡在怪兽区域存在，双方不能把「No.」超量怪兽特殊召唤。
+	-- ②：只要这张卡在怪兽区域存在，双方不能把「No.」超量怪兽特殊召唤。
 	local e4=Effect.CreateEffect(c)
 	e4:SetType(EFFECT_TYPE_FIELD)
 	e4:SetCode(EFFECT_CANNOT_SPECIAL_SUMMON)
@@ -27,13 +27,13 @@ function c37115973.initial_effect(c)
 	e4:SetTargetRange(1,1)
 	e4:SetTarget(c37115973.splimit)
 	c:RegisterEffect(e4)
-	-- 效果原文：此外，这张卡不会被和超量怪兽的战斗破坏，不受超量怪兽的效果影响。
+	-- 此外，这张卡不会被和超量怪兽的战斗破坏，不受超量怪兽的效果影响。
 	local e5=Effect.CreateEffect(c)
 	e5:SetType(EFFECT_TYPE_SINGLE)
 	e5:SetCode(EFFECT_INDESTRUCTABLE_BATTLE)
 	e5:SetValue(c37115973.indval)
 	c:RegisterEffect(e5)
-	-- 效果原文：此外，这张卡不会被和超量怪兽的战斗破坏，不受超量怪兽的效果影响。
+	-- 此外，这张卡不会被和超量怪兽的战斗破坏，不受超量怪兽的效果影响。
 	local e6=Effect.CreateEffect(c)
 	e6:SetType(EFFECT_TYPE_SINGLE)
 	e6:SetProperty(EFFECT_FLAG_SINGLE_RANGE)

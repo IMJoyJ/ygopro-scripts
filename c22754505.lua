@@ -2,7 +2,7 @@
 -- 效果：
 -- 自己场上有「大块石人」表侧表示存在的场合这张卡召唤·反转召唤·特殊召唤成功时，可以从自己卡组把1只「中块石人」特殊召唤。这个效果特殊召唤的怪兽的效果无效化。
 function c22754505.initial_effect(c)
-	-- 效果原文：自己场上有「大块石人」表侧表示存在的场合这张卡召唤·反转召唤·特殊召唤成功时，可以从自己卡组把1只「中块石人」特殊召唤。这个效果特殊召唤的怪兽的效果无效化。
+	-- 自己场上有「大块石人」表侧表示存在的场合这张卡召唤·反转召唤·特殊召唤成功时，可以从自己卡组把1只「中块石人」特殊召唤。这个效果特殊召唤的怪兽的效果无效化。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(22754505,0))  --"特殊召唤"
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -52,13 +52,13 @@ function c22754505.spop(e,tp,eg,ep,ev,re,r,rp)
 	local tc=g:GetFirst()
 	-- 特殊召唤选定的怪兽
 	if tc and Duel.SpecialSummonStep(tc,0,tp,tp,false,false,POS_FACEUP) then
-		-- 效果原文：这个效果特殊召唤的怪兽的效果无效化。
+		-- 这个效果特殊召唤的怪兽的效果无效化。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_DISABLE)
 		e1:SetReset(RESET_EVENT+RESETS_STANDARD)
 		tc:RegisterEffect(e1,true)
-		-- 效果原文：这个效果特殊召唤的怪兽的效果无效化。
+		-- 这个效果特殊召唤的怪兽的效果无效化。
 		local e2=Effect.CreateEffect(e:GetHandler())
 		e2:SetType(EFFECT_TYPE_SINGLE)
 		e2:SetCode(EFFECT_DISABLE_EFFECT)

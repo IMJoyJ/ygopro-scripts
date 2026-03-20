@@ -2,7 +2,7 @@
 -- 效果：
 -- 可以把自己场上1只「暗灵使 达克」和1只暗属性怪兽送去墓地，从手卡·卡组特殊召唤。这个方法特殊召唤成功时，可以从卡组把1只3星或者4星的魔法师族·光属性怪兽加入手卡。此外，这个方法特殊召唤的这张卡向守备表示怪兽攻击时，若攻击力超过那个守备力，给与对方基本分那个数值的战斗伤害。
 function c21390858.initial_effect(c)
-	-- 效果原文：可以把自己场上1只「暗灵使 达克」和1只暗属性怪兽送去墓地，从手卡·卡组特殊召唤。
+	-- 可以把自己场上1只「暗灵使 达克」和1只暗属性怪兽送去墓地，从手卡·卡组特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_SPSUMMON_PROC)
@@ -13,7 +13,7 @@ function c21390858.initial_effect(c)
 	e1:SetOperation(c21390858.spop)
 	e1:SetValue(SUMMON_VALUE_SELF)
 	c:RegisterEffect(e1)
-	-- 效果原文：这个方法特殊召唤成功时，可以从卡组把1只3星或者4星的魔法师族·光属性怪兽加入手卡。
+	-- 这个方法特殊召唤成功时，可以从卡组把1只3星或者4星的魔法师族·光属性怪兽加入手卡。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(21390858,0))  --"检索"
 	e2:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
@@ -23,7 +23,7 @@ function c21390858.initial_effect(c)
 	e2:SetTarget(c21390858.target)
 	e2:SetOperation(c21390858.operation)
 	c:RegisterEffect(e2)
-	-- 效果原文：此外，这个方法特殊召唤的这张卡向守备表示怪兽攻击时，若攻击力超过那个守备力，给与对方基本分那个数值的战斗伤害。
+	-- 此外，这个方法特殊召唤的这张卡向守备表示怪兽攻击时，若攻击力超过那个守备力，给与对方基本分那个数值的战斗伤害。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_SINGLE)
 	e3:SetCode(EFFECT_PIERCE)

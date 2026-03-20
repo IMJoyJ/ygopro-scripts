@@ -9,7 +9,7 @@ function c37055344.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- 效果原文：1回合1次，战斗阶段中可以从以下效果选择1个发动。
+	-- 1回合1次，战斗阶段中可以从以下效果选择1个发动。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(37055344,0))  --"选择效果"
 	e2:SetCategory(CATEGORY_POSITION+CATEGORY_MSET)
@@ -85,7 +85,7 @@ function c37055344.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 		Duel.SetOperationInfo(0,CATEGORY_POSITION,g,1,0,0)
 	end
 end
--- 效果原文：●选择自己场上1只名字带有「鬼计」的怪兽变成里侧守备表示，选对方场上里侧守备表示存在的1只怪兽变成表侧攻击表示。●选择自己场上里侧守备表示存在的1只怪兽变成表侧攻击表示，那是名字带有「鬼计」的怪兽的场合，选对方场上表侧表示存在的1只怪兽变成里侧守备表示。
+-- ●选择自己场上1只名字带有「鬼计」的怪兽变成里侧守备表示，选对方场上里侧守备表示存在的1只怪兽变成表侧攻击表示。●选择自己场上里侧守备表示存在的1只怪兽变成表侧攻击表示，那是名字带有「鬼计」的怪兽的场合，选对方场上表侧表示存在的1只怪兽变成里侧守备表示。
 function c37055344.operation(e,tp,eg,ep,ev,re,r,rp)
 	-- 规则层面：获取当前连锁的目标怪兽
 	local tc=Duel.GetFirstTarget()

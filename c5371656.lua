@@ -2,7 +2,7 @@
 -- 效果：
 -- 这张卡只能装备在自己场上存在的3星以下的通常怪兽身上。这张卡发动时，祭掉自己场上除装备这张卡的怪兽以外的所有通常怪兽（衍生物除外）。每祭掉1只通常怪兽，装备这张卡的怪兽攻击力上升1000点。
 function c5371656.initial_effect(c)
-	-- 效果原文：这张卡只能装备在自己场上存在的3星以下的通常怪兽身上。这张卡发动时，祭掉自己场上除装备这张卡的怪兽以外的所有通常怪兽（衍生物除外）。每祭掉1只通常怪兽，装备这张卡的怪兽攻击力上升1000点。
+	-- 这张卡只能装备在自己场上存在的3星以下的通常怪兽身上。这张卡发动时，祭掉自己场上除装备这张卡的怪兽以外的所有通常怪兽（衍生物除外）。每祭掉1只通常怪兽，装备这张卡的怪兽攻击力上升1000点。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_EQUIP)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -11,7 +11,7 @@ function c5371656.initial_effect(c)
 	e1:SetTarget(c5371656.target)
 	e1:SetOperation(c5371656.operation)
 	c:RegisterEffect(e1)
-	-- 效果原文：这张卡只能装备在自己场上存在的3星以下的通常怪兽身上。
+	-- 这张卡只能装备在自己场上存在的3星以下的通常怪兽身上。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_SINGLE)
 	e2:SetCode(EFFECT_EQUIP_LIMIT)
@@ -62,7 +62,7 @@ function c5371656.operation(e,tp,eg,ep,ev,re,r,rp)
 	if c:IsRelateToEffect(e) and tc:IsRelateToEffect(e) and tc:IsFaceup() and tc:IsControler(tp) then
 		-- 将装备卡装备给目标怪兽
 		Duel.Equip(tp,e:GetHandler(),tc)
-		-- 效果原文：每祭掉1只通常怪兽，装备这张卡的怪兽攻击力上升1000点。
+		-- 每祭掉1只通常怪兽，装备这张卡的怪兽攻击力上升1000点。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_EQUIP)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)

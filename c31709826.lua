@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：这张卡被战斗破坏送去墓地时，支付1000基本分才能发动。下次的自己准备阶段这张卡从墓地守备表示特殊召唤。
 function c31709826.initial_effect(c)
-	-- 效果原文：①：这张卡被战斗破坏送去墓地时，支付1000基本分才能发动。下次的自己准备阶段这张卡从墓地守备表示特殊召唤。
+	-- ①：这张卡被战斗破坏送去墓地时，支付1000基本分才能发动。下次的自己准备阶段这张卡从墓地守备表示特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(31709826,0))  --"特殊召唤"
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -12,7 +12,7 @@ function c31709826.initial_effect(c)
 	e1:SetCost(c31709826.spcost)
 	e1:SetOperation(c31709826.spop)
 	c:RegisterEffect(e1)
-	-- 效果原文：①：这张卡被战斗破坏送去墓地时，支付1000基本分才能发动。下次的自己准备阶段这张卡从墓地守备表示特殊召唤。
+	-- ①：这张卡被战斗破坏送去墓地时，支付1000基本分才能发动。下次的自己准备阶段这张卡从墓地守备表示特殊召唤。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e2:SetCode(EVENT_PHASE+PHASE_STANDBY)

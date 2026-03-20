@@ -4,7 +4,7 @@
 -- ②：1回合1次，把手卡1张魔法卡给对方观看才能发动。这张卡的卡名直到结束阶段当作「电子龙」使用。
 -- ③：这张卡向对方怪兽攻击的伤害步骤内，这张卡的攻击力上升300。
 function c5373478.initial_effect(c)
-	-- 效果原文：③：这张卡向对方怪兽攻击的伤害步骤内，这张卡的攻击力上升300。
+	-- ③：这张卡向对方怪兽攻击的伤害步骤内，这张卡的攻击力上升300。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCode(EFFECT_UPDATE_ATTACK)
 	e1:SetType(EFFECT_TYPE_SINGLE)
@@ -13,7 +13,7 @@ function c5373478.initial_effect(c)
 	e1:SetCondition(c5373478.atkcon)
 	e1:SetValue(300)
 	c:RegisterEffect(e1)
-	-- 效果原文：②：1回合1次，把手卡1张魔法卡给对方观看才能发动。这张卡的卡名直到结束阶段当作「电子龙」使用。
+	-- ②：1回合1次，把手卡1张魔法卡给对方观看才能发动。这张卡的卡名直到结束阶段当作「电子龙」使用。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(5373478,0))  --"卡名当成「电子龙」"
 	e2:SetType(EFFECT_TYPE_IGNITION)

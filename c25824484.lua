@@ -2,7 +2,7 @@
 -- 效果：
 -- 1回合1次，自己的主要阶段时才能发动。自己卡组最上面的卡翻开。翻开的卡是植物族怪兽的场合，那只怪兽送去墓地，从卡组抽1张卡。不是的场合，那张卡回到卡组最下面。此外，卡组的这张卡被卡的效果翻开送去墓地的场合，从自己卡组上面把最多3张卡确认，用喜欢的顺序回到卡组上面。
 function c25824484.initial_effect(c)
-	-- 效果原文：1回合1次，自己的主要阶段时才能发动。自己卡组最上面的卡翻开。翻开的卡是植物族怪兽的场合，那只怪兽送去墓地，从卡组抽1张卡。不是的场合，那张卡回到卡组最下面。
+	-- 1回合1次，自己的主要阶段时才能发动。自己卡组最上面的卡翻开。翻开的卡是植物族怪兽的场合，那只怪兽送去墓地，从卡组抽1张卡。不是的场合，那张卡回到卡组最下面。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(25824484,0))  --"确认卡组"
 	e1:SetCategory(CATEGORY_DRAW+CATEGORY_DECKDES)
@@ -12,7 +12,7 @@ function c25824484.initial_effect(c)
 	e1:SetTarget(c25824484.target)
 	e1:SetOperation(c25824484.operation)
 	c:RegisterEffect(e1)
-	-- 效果原文：此外，卡组的这张卡被卡的效果翻开送去墓地的场合，从自己卡组上面把最多3张卡确认，用喜欢的顺序回到卡组上面。
+	-- 此外，卡组的这张卡被卡的效果翻开送去墓地的场合，从自己卡组上面把最多3张卡确认，用喜欢的顺序回到卡组上面。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(25824484,1))  --"确认卡组顺序"
 	e2:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_F)

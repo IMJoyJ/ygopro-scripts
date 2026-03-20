@@ -4,7 +4,7 @@
 -- ②：这张卡不受对方的魔法卡的效果影响。
 -- ③：对方怪兽的攻击宣言时才能发动。这张卡的守备力下降1000，这个回合，自己的「女武神」怪兽不会被战斗破坏。
 function c2204038.initial_effect(c)
-	-- 效果原文：②：这张卡不受对方的魔法卡的效果影响。
+	-- ②：这张卡不受对方的魔法卡的效果影响。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_IMMUNE_EFFECT)
@@ -12,7 +12,7 @@ function c2204038.initial_effect(c)
 	e1:SetRange(LOCATION_MZONE)
 	e1:SetValue(c2204038.efilter)
 	c:RegisterEffect(e1)
-	-- 效果原文：①：这张卡的攻击力上升对方场上的怪兽数量×500。
+	-- ①：这张卡的攻击力上升对方场上的怪兽数量×500。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_SINGLE)
 	e2:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
@@ -20,7 +20,7 @@ function c2204038.initial_effect(c)
 	e2:SetCode(EFFECT_UPDATE_ATTACK)
 	e2:SetValue(c2204038.atkval)
 	c:RegisterEffect(e2)
-	-- 效果原文：③：对方怪兽的攻击宣言时才能发动。这张卡的守备力下降1000，这个回合，自己的「女武神」怪兽不会被战斗破坏。
+	-- ③：对方怪兽的攻击宣言时才能发动。这张卡的守备力下降1000，这个回合，自己的「女武神」怪兽不会被战斗破坏。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(2204038,0))
 	e3:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)

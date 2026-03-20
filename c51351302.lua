@@ -2,7 +2,7 @@
 -- 效果：
 -- 这张卡通常召唤时和每到自己准备阶段时，选择对方场上1张盖放的卡，确认后回复原状。
 function c51351302.initial_effect(c)
-	-- 效果原文：这张卡通常召唤时和每到自己准备阶段时，选择对方场上1张盖放的卡，确认后回复原状。
+	-- 这张卡通常召唤时和每到自己准备阶段时，选择对方场上1张盖放的卡，确认后回复原状。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(51351302,0))  --"确认"
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_F)
@@ -11,7 +11,7 @@ function c51351302.initial_effect(c)
 	e1:SetTarget(c51351302.target)
 	e1:SetOperation(c51351302.operation)
 	c:RegisterEffect(e1)
-	-- 效果原文：这张卡通常召唤时和每到自己准备阶段时，选择对方场上1张盖放的卡，确认后回复原状。
+	-- 这张卡通常召唤时和每到自己准备阶段时，选择对方场上1张盖放的卡，确认后回复原状。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(51351302,0))  --"确认"
 	e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_F)

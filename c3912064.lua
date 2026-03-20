@@ -5,7 +5,7 @@
 -- ③：只要这张卡的②的方法召唤的这张卡在怪兽区域存在，对方场上的怪兽的攻击力下降那怪兽的原本攻击力数值。
 -- ④：这张卡在同1次的战斗阶段中可以作2次攻击。
 function c3912064.initial_effect(c)
-	-- 效果原文：①：这张卡上级召唤成功时才能发动。场上的怪兽全部变成表侧攻击表示。
+	-- ①：这张卡上级召唤成功时才能发动。场上的怪兽全部变成表侧攻击表示。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_POSITION)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
@@ -14,7 +14,7 @@ function c3912064.initial_effect(c)
 	e1:SetTarget(c3912064.postg)
 	e1:SetOperation(c3912064.posop)
 	c:RegisterEffect(e1)
-	-- 效果原文：②：这张卡也能把3只怪兽解放作召唤。
+	-- ②：这张卡也能把3只怪兽解放作召唤。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(3912064,0))  --"解放3只怪兽召唤"
 	e2:SetType(EFFECT_TYPE_SINGLE)
@@ -23,7 +23,7 @@ function c3912064.initial_effect(c)
 	e2:SetOperation(c3912064.ttop)
 	e2:SetValue(SUMMON_TYPE_ADVANCE+SUMMON_VALUE_SELF)
 	c:RegisterEffect(e2)
-	-- 效果原文：③：只要这张卡的②的方法召唤的这张卡在怪兽区域存在，对方场上的怪兽的攻击力下降那怪兽的原本攻击力数值。
+	-- ③：只要这张卡的②的方法召唤的这张卡在怪兽区域存在，对方场上的怪兽的攻击力下降那怪兽的原本攻击力数值。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_FIELD)
 	e3:SetCode(EFFECT_UPDATE_ATTACK)
@@ -32,7 +32,7 @@ function c3912064.initial_effect(c)
 	e3:SetCondition(c3912064.atkcon)
 	e3:SetValue(c3912064.atkval)
 	c:RegisterEffect(e3)
-	-- 效果原文：④：这张卡在同1次的战斗阶段中可以作2次攻击。
+	-- ④：这张卡在同1次的战斗阶段中可以作2次攻击。
 	local e4=Effect.CreateEffect(c)
 	e4:SetType(EFFECT_TYPE_SINGLE)
 	e4:SetCode(EFFECT_EXTRA_ATTACK)

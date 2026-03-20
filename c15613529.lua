@@ -4,7 +4,7 @@
 -- ①：自己场上有5星以上的通常怪兽存在，对方场上的怪兽把效果发动时才能发动。这张卡从手卡特殊召唤，那个效果无效。
 -- ②：对方战斗阶段，以自己或者对方的墓地1只通常怪兽为对象才能发动。那只怪兽在自己场上特殊召唤。这个回合，只要那只怪兽在自己场上存在，可以攻击的对方怪兽必须向那只怪兽作出攻击。
 function c15613529.initial_effect(c)
-	-- 效果原文：①：自己场上有5星以上的通常怪兽存在，对方场上的怪兽把效果发动时才能发动。这张卡从手卡特殊召唤，那个效果无效。
+	-- ①：自己场上有5星以上的通常怪兽存在，对方场上的怪兽把效果发动时才能发动。这张卡从手卡特殊召唤，那个效果无效。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(15613529,0))
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DISABLE)
@@ -16,7 +16,7 @@ function c15613529.initial_effect(c)
 	e1:SetTarget(c15613529.sptg1)
 	e1:SetOperation(c15613529.spop1)
 	c:RegisterEffect(e1)
-	-- 效果原文：②：对方战斗阶段，以自己或者对方的墓地1只通常怪兽为对象才能发动。那只怪兽在自己场上特殊召唤。这个回合，只要那只怪兽在自己场上存在，可以攻击的对方怪兽必须向那只怪兽作出攻击。
+	-- ②：对方战斗阶段，以自己或者对方的墓地1只通常怪兽为对象才能发动。那只怪兽在自己场上特殊召唤。这个回合，只要那只怪兽在自己场上存在，可以攻击的对方怪兽必须向那只怪兽作出攻击。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(15613529,1))
 	e2:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -94,7 +94,7 @@ function c15613529.spop2(e,tp,eg,ep,ev,re,r,rp)
 	local tc=Duel.GetFirstTarget()
 	-- 规则层面：判断目标怪兽是否能被特殊召唤
 	if tc:IsRelateToEffect(e) and Duel.SpecialSummonStep(tc,0,tp,tp,false,false,POS_FACEUP) then
-		-- 效果原文：这个回合，只要那只怪兽在自己场上存在，可以攻击的对方怪兽必须向那只怪兽作出攻击。
+		-- 这个回合，只要那只怪兽在自己场上存在，可以攻击的对方怪兽必须向那只怪兽作出攻击。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_FIELD)
 		e1:SetCode(EFFECT_MUST_ATTACK)

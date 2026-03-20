@@ -2,7 +2,7 @@
 -- 效果：
 -- 场上每有1只表侧表示存在的和装备怪兽同名的怪兽，装备怪兽攻击力上升800。
 function c46910446.initial_effect(c)
-	-- 效果原文：场上每有1只表侧表示存在的和装备怪兽同名的怪兽，装备怪兽攻击力上升800。
+	-- 场上每有1只表侧表示存在的和装备怪兽同名的怪兽，装备怪兽攻击力上升800。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_EQUIP)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -11,13 +11,13 @@ function c46910446.initial_effect(c)
 	e1:SetTarget(c46910446.target)
 	e1:SetOperation(c46910446.operation)
 	c:RegisterEffect(e1)
-	-- 效果原文：场上每有1只表侧表示存在的和装备怪兽同名的怪兽，装备怪兽攻击力上升800。
+	-- 场上每有1只表侧表示存在的和装备怪兽同名的怪兽，装备怪兽攻击力上升800。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_EQUIP)
 	e2:SetCode(EFFECT_UPDATE_ATTACK)
 	e2:SetValue(c46910446.value)
 	c:RegisterEffect(e2)
-	-- 效果原文：场上每有1只表侧表示存在的和装备怪兽同名的怪兽，装备怪兽攻击力上升800。
+	-- 场上每有1只表侧表示存在的和装备怪兽同名的怪兽，装备怪兽攻击力上升800。
 	local e3=Effect.CreateEffect(c)
 	e3:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
 	e3:SetType(EFFECT_TYPE_SINGLE)

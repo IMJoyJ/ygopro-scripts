@@ -4,7 +4,7 @@
 -- ②：自己场上没有其他的「娱乐伙伴」卡存在的场合，这张卡不能攻击。
 -- ③：这张卡的攻击宣言时才能发动。对方场上的魔法·陷阱卡全部回到持有者手卡。
 function c340002.initial_effect(c)
-	-- 效果原文：①：自己场上有「娱乐伙伴」卡2张以上存在的场合，这张卡可以不用解放作召唤。
+	-- ①：自己场上有「娱乐伙伴」卡2张以上存在的场合，这张卡可以不用解放作召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(340002,0))  --"不用解放召唤"
 	e1:SetProperty(EFFECT_FLAG_UNCOPYABLE)
@@ -12,13 +12,13 @@ function c340002.initial_effect(c)
 	e1:SetCode(EFFECT_SUMMON_PROC)
 	e1:SetCondition(c340002.ntcon)
 	c:RegisterEffect(e1)
-	-- 效果原文：②：自己场上没有其他的「娱乐伙伴」卡存在的场合，这张卡不能攻击。
+	-- ②：自己场上没有其他的「娱乐伙伴」卡存在的场合，这张卡不能攻击。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_SINGLE)
 	e2:SetCode(EFFECT_CANNOT_ATTACK)
 	e2:SetCondition(c340002.atkcon)
 	c:RegisterEffect(e2)
-	-- 效果原文：③：这张卡的攻击宣言时才能发动。对方场上的魔法·陷阱卡全部回到持有者手卡。
+	-- ③：这张卡的攻击宣言时才能发动。对方场上的魔法·陷阱卡全部回到持有者手卡。
 	local e3=Effect.CreateEffect(c)
 	e3:SetCategory(CATEGORY_TOHAND)
 	e3:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)

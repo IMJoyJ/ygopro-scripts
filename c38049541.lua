@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：自己·对方回合，把这张卡从手卡丢弃，以自己场上1只「次世代」怪兽为对象，宣言1个属性才能发动。那只自己的「次世代」怪兽变成宣言的属性。
 function c38049541.initial_effect(c)
-	-- 效果原文：①：自己·对方回合，把这张卡从手卡丢弃，以自己场上1只「次世代」怪兽为对象，宣言1个属性才能发动。那只自己的「次世代」怪兽变成宣言的属性。
+	-- ①：自己·对方回合，把这张卡从手卡丢弃，以自己场上1只「次世代」怪兽为对象，宣言1个属性才能发动。那只自己的「次世代」怪兽变成宣言的属性。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(38049541,0))  --"属性变化"
 	e1:SetType(EFFECT_TYPE_QUICK_O)
@@ -45,7 +45,7 @@ function c38049541.cosop(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取当前连锁的效果对象怪兽
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) and tc:IsControler(tp) and c38049541.filter(tc) then
-		-- 效果原文：那只自己的「次世代」怪兽变成宣言的属性。
+		-- 那只自己的「次世代」怪兽变成宣言的属性。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_CHANGE_ATTRIBUTE)

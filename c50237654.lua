@@ -7,7 +7,7 @@ function c50237654.initial_effect(c)
 	c:EnableReviveLimit()
 	-- 添加融合召唤手续，使用「黑魔术师」或「黑魔术少女」与1只魔法师族怪兽作为融合素材
 	aux.AddFusionProcCodeFun(c,{46986414,38033121},aux.FilterBoolFunction(Card.IsRace,RACE_SPELLCASTER),1,true,true)
-	-- 效果原文：①：1回合1次，魔法·陷阱卡的效果发动的场合才能发动。自己抽1张。那张抽到的卡是魔法·陷阱卡的场合，可以再把那张卡在自己场上盖放。把速攻魔法·陷阱卡盖放的场合，那张卡在盖放的回合也能发动。
+	-- ①：1回合1次，魔法·陷阱卡的效果发动的场合才能发动。自己抽1张。那张抽到的卡是魔法·陷阱卡的场合，可以再把那张卡在自己场上盖放。把速攻魔法·陷阱卡盖放的场合，那张卡在盖放的回合也能发动。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(50237654,1))  --"抽1张卡"
 	e1:SetCategory(CATEGORY_DRAW+CATEGORY_SSET)
@@ -20,7 +20,7 @@ function c50237654.initial_effect(c)
 	e1:SetTarget(c50237654.drtg)
 	e1:SetOperation(c50237654.drop)
 	c:RegisterEffect(e1)
-	-- 效果原文：②：这张卡被破坏的场合才能发动。「黑魔术师」「黑魔术少女」各1只从自己的手卡·卡组·墓地特殊召唤。
+	-- ②：这张卡被破坏的场合才能发动。「黑魔术师」「黑魔术少女」各1只从自己的手卡·卡组·墓地特殊召唤。
 	local e2=Effect.CreateEffect(c)
 	e2:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e2:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)

@@ -5,7 +5,7 @@
 -- ②：这张卡特殊召唤成功时，以自己墓地1张「洞」通常陷阱卡或者「落穴」通常陷阱卡为对象才能发动。那张卡在自己场上盖放。那张卡在下次的自己回合的结束阶段除外。
 -- ③：这张卡不受「洞」通常陷阱卡以及「落穴」通常陷阱卡的效果影响。
 function c45803070.initial_effect(c)
-	-- 效果原文：③：这张卡不受「洞」通常陷阱卡以及「落穴」通常陷阱卡的效果影响。
+	-- ③：这张卡不受「洞」通常陷阱卡以及「落穴」通常陷阱卡的效果影响。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
@@ -13,7 +13,7 @@ function c45803070.initial_effect(c)
 	e1:SetCode(EFFECT_IMMUNE_EFFECT)
 	e1:SetValue(c45803070.efilter)
 	c:RegisterEffect(e1)
-	-- 效果原文：①：这张卡召唤成功时，以自己墓地1只「虫惑魔」怪兽为对象才能发动。那只怪兽守备表示特殊召唤。
+	-- ①：这张卡召唤成功时，以自己墓地1只「虫惑魔」怪兽为对象才能发动。那只怪兽守备表示特殊召唤。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(45803070,0))  --"特殊召唤"
 	e2:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -23,7 +23,7 @@ function c45803070.initial_effect(c)
 	e2:SetTarget(c45803070.sptg)
 	e2:SetOperation(c45803070.spop)
 	c:RegisterEffect(e2)
-	-- 效果原文：②：这张卡特殊召唤成功时，以自己墓地1张「洞」通常陷阱卡或者「落穴」通常陷阱卡为对象才能发动。那张卡在自己场上盖放。那张卡在下次的自己回合的结束阶段除外。
+	-- ②：这张卡特殊召唤成功时，以自己墓地1张「洞」通常陷阱卡或者「落穴」通常陷阱卡为对象才能发动。那张卡在自己场上盖放。那张卡在下次的自己回合的结束阶段除外。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(45803070,1))  --"盖放"
 	e3:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
@@ -92,7 +92,7 @@ function c45803070.setop(e,tp,eg,ep,ev,re,r,rp)
 	-- 规则层面：判断目标陷阱卡是否能盖放
 	if tc:IsRelateToEffect(e) and Duel.SSet(tp,tc)~=0 then
 		local fid=e:GetHandler():GetFieldID()
-		-- 效果原文：②：这张卡特殊召唤成功时，以自己墓地1张「洞」通常陷阱卡或者「落穴」通常陷阱卡为对象才能发动。那张卡在自己场上盖放。那张卡在下次的自己回合的结束阶段除外。
+		-- ②：这张卡特殊召唤成功时，以自己墓地1张「洞」通常陷阱卡或者「落穴」通常陷阱卡为对象才能发动。那张卡在自己场上盖放。那张卡在下次的自己回合的结束阶段除外。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 		e1:SetCode(EVENT_PHASE+PHASE_END)

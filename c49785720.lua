@@ -2,7 +2,7 @@
 -- 效果：
 -- 自己场上有名字带有「炎舞」的魔法·陷阱卡存在，自己场上没有怪兽存在的场合，这张卡可以从手卡特殊召唤。
 function c49785720.initial_effect(c)
-	-- 效果原文：自己场上有名字带有「炎舞」的魔法·陷阱卡存在，自己场上没有怪兽存在的场合，这张卡可以从手卡特殊召唤。
+	-- 自己场上有名字带有「炎舞」的魔法·陷阱卡存在，自己场上没有怪兽存在的场合，这张卡可以从手卡特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_SPSUMMON_PROC)

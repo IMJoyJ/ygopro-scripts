@@ -2,7 +2,7 @@
 -- 效果：
 -- 自己场上存在名字带有「剑斗兽」的怪兽场合才能发动，这回合内自己控制的怪兽不会被战斗破坏且自己受到的战斗伤害为0。这张卡回到自己卡组最下面。
 function c28877100.initial_effect(c)
-	-- 效果原文：自己场上存在名字带有「剑斗兽」的怪兽场合才能发动，这回合内自己控制的怪兽不会被战斗破坏且自己受到的战斗伤害为0。这张卡回到自己卡组最下面。
+	-- 自己场上存在名字带有「剑斗兽」的怪兽场合才能发动，这回合内自己控制的怪兽不会被战斗破坏且自己受到的战斗伤害为0。这张卡回到自己卡组最下面。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
@@ -22,7 +22,7 @@ function c28877100.condition(e,tp,eg,ep,ev,re,r,rp)
 end
 -- 发动效果函数，设置永续效果使自己控制的怪兽不会被战斗破坏且自己受到的战斗伤害为0，并将此卡送回卡组底端
 function c28877100.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 效果原文：这回合内自己控制的怪兽不会被战斗破坏
+	-- 这回合内自己控制的怪兽不会被战斗破坏
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_AVOID_BATTLE_DAMAGE)
@@ -32,7 +32,7 @@ function c28877100.activate(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetReset(RESET_PHASE+PHASE_END)
 	-- 将效果e1注册给玩家tp，使其生效
 	Duel.RegisterEffect(e1,tp)
-	-- 效果原文：这回合内自己控制的怪兽不会被战斗破坏且自己受到的战斗伤害为0
+	-- 这回合内自己控制的怪兽不会被战斗破坏且自己受到的战斗伤害为0
 	local e2=Effect.CreateEffect(e:GetHandler())
 	e2:SetType(EFFECT_TYPE_FIELD)
 	e2:SetCode(EFFECT_INDESTRUCTABLE_BATTLE)

@@ -4,7 +4,7 @@
 -- ①：这张卡上级召唤的场合才能发动。从手卡·卡组把「帝王」魔法·陷阱卡2种类各1张送去墓地，从对方的手卡·场上·墓地让1张卡回到卡组（从手卡是随机选）。
 -- ②：这张卡在墓地存在的场合，1回合1次，自己·对方的主要阶段，从手卡丢弃1张「帝王」魔法·陷阱卡，以自己墓地1只攻击力2400以上而守备力1000的怪兽为对象才能发动。那只怪兽加入手卡。
 function c23064604.initial_effect(c)
-	-- 效果原文：把1只上级召唤的怪兽解放作上级召唤
+	-- 把1只上级召唤的怪兽解放作上级召唤
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(23064604,0))  --"把1只上级召唤的怪兽解放作上级召唤"
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
@@ -17,7 +17,7 @@ function c23064604.initial_effect(c)
 	local e2=e1:Clone()
 	e2:SetCode(EFFECT_SET_PROC)
 	c:RegisterEffect(e2)
-	-- 效果原文：从手卡·卡组把「帝王」魔法·陷阱卡2种类送去墓地，从对方的手卡·场上·墓地之中选1张卡回到卡组
+	-- 从手卡·卡组把「帝王」魔法·陷阱卡2种类送去墓地，从对方的手卡·场上·墓地之中选1张卡回到卡组
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(23064604,1))  --"从手卡·卡组把「帝王」魔法·陷阱卡2种类送去墓地，从对方的手卡·场上·墓地之中选1张卡回到卡组"
 	e3:SetCategory(CATEGORY_TOGRAVE+CATEGORY_TODECK)
@@ -28,7 +28,7 @@ function c23064604.initial_effect(c)
 	e3:SetTarget(c23064604.tdtg)
 	e3:SetOperation(c23064604.tdop)
 	c:RegisterEffect(e3)
-	-- 效果原文：以自己墓地1只攻击力2400以上而守备力1000的怪兽为对象才能发动。那只怪兽加入手卡
+	-- 以自己墓地1只攻击力2400以上而守备力1000的怪兽为对象才能发动。那只怪兽加入手卡
 	local e4=Effect.CreateEffect(c)
 	e4:SetDescription(aux.Stringid(23064604,2))  --"以自己墓地1只攻击力2400以上而守备力1000的怪兽为对象才能发动。那只怪兽加入手卡"
 	e4:SetCategory(CATEGORY_TOHAND)

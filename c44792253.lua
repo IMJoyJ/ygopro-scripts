@@ -2,7 +2,7 @@
 -- 效果：
 -- 场上存在的这张卡从游戏中除外时，可以选择对方场上表侧表示存在的1张卡破坏。
 function c44792253.initial_effect(c)
-	-- 创建一个诱发选发效果，效果原文：对方场上表侧表示存在的1张卡破坏
+	-- 创建一个诱发选发效果，对方场上表侧表示存在的1张卡破坏
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(44792253,0))  --"对方场上表侧表示存在的1张卡破坏"
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)

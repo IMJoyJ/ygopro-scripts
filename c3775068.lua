@@ -6,13 +6,13 @@
 -- ③：这张卡被对方送去墓地的场合，以自己墓地最多3只「方界」怪兽为对象才能发动。那些怪兽特殊召唤。那之后，可以从自己的卡组·墓地选1张「方界」卡加入手卡。
 function c3775068.initial_effect(c)
 	c:EnableReviveLimit()
-	-- 效果原文：这张卡不能通常召唤。
+	-- 这张卡不能通常召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
 	e1:SetCode(EFFECT_SPSUMMON_CONDITION)
 	c:RegisterEffect(e1)
-	-- 效果原文：把自己场上3只「方界」怪兽送去墓地的场合才能特殊召唤。
+	-- 把自己场上3只「方界」怪兽送去墓地的场合才能特殊召唤。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD)
 	e2:SetCode(EFFECT_SPSUMMON_PROC)
@@ -22,7 +22,7 @@ function c3775068.initial_effect(c)
 	e2:SetTarget(c3775068.sprtg)
 	e2:SetOperation(c3775068.sprop)
 	c:RegisterEffect(e2)
-	-- 效果原文：②：这张卡从手卡的特殊召唤成功的场合发动。给与对方800伤害。
+	-- ②：这张卡从手卡的特殊召唤成功的场合发动。给与对方800伤害。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(3775068,0))  --"效果伤害"
 	e3:SetCategory(CATEGORY_DAMAGE)
@@ -33,7 +33,7 @@ function c3775068.initial_effect(c)
 	e3:SetTarget(c3775068.damtg)
 	e3:SetOperation(c3775068.damop)
 	c:RegisterEffect(e3)
-	-- 效果原文：③：这张卡被对方送去墓地的场合，以自己墓地最多3只「方界」怪兽为对象才能发动。那些怪兽特殊召唤。那之后，可以从自己的卡组·墓地选1张「方界」卡加入手卡。
+	-- ③：这张卡被对方送去墓地的场合，以自己墓地最多3只「方界」怪兽为对象才能发动。那些怪兽特殊召唤。那之后，可以从自己的卡组·墓地选1张「方界」卡加入手卡。
 	local e4=Effect.CreateEffect(c)
 	e4:SetDescription(aux.Stringid(3775068,1))  --"特殊召唤墓地怪兽"
 	e4:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_TOHAND+CATEGORY_SEARCH)
@@ -78,7 +78,7 @@ function c3775068.sprop(e,tp,eg,ep,ev,re,r,rp,c)
 	-- 规则层面：将选中的怪兽送去墓地作为特殊召唤的cost
 	Duel.SendtoGrave(g,REASON_COST)
 	g:DeleteGroup()
-	-- 效果原文：①：这个方法特殊召唤的这张卡的攻击力上升2400。
+	-- ①：这个方法特殊召唤的这张卡的攻击力上升2400。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_UPDATE_ATTACK)

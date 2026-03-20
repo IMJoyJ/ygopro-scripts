@@ -4,7 +4,7 @@
 -- ①：把这张卡以外的自己的手卡·场上1只「龙辉巧」怪兽或仪式怪兽解放才能发动（这个效果发动的回合，自己若非不能通常召唤的怪兽则不能特殊召唤）。这张卡从手卡·墓地守备表示特殊召唤。那之后，可以把手卡1只仪式怪兽或1张仪式魔法卡给对方观看让自己抽1张。
 function c22420202.initial_effect(c)
 	c:EnableReviveLimit()
-	-- 效果原文：这张卡不能通常召唤，用「龙辉巧」卡的效果才能特殊召唤。
+	-- 这张卡不能通常召唤，用「龙辉巧」卡的效果才能特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
@@ -17,7 +17,7 @@ function c22420202.initial_effect(c)
 	e2:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DRAW)
 	e2:SetCountLimit(1,22420202)
 end
--- 效果原文：用「龙辉巧」卡的效果才能特殊召唤。
+-- 用「龙辉巧」卡的效果才能特殊召唤。
 function c22420202.splimit(e,se,sp,st)
 	return se:GetHandler():IsSetCard(0x154)
 end

@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：以除外的1只自己的念动力族怪兽为对象才能把这张卡发动。那只怪兽特殊召唤。这张卡从场上离开时那只怪兽破坏。那只怪兽破坏时这张卡破坏。
 function c39531794.initial_effect(c)
-	-- 效果原文：①：以除外的1只自己的念动力族怪兽为对象才能把这张卡发动。
+	-- ①：以除外的1只自己的念动力族怪兽为对象才能把这张卡发动。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -12,13 +12,13 @@ function c39531794.initial_effect(c)
 	e1:SetTarget(c39531794.target)
 	e1:SetOperation(c39531794.operation)
 	c:RegisterEffect(e1)
-	-- 效果原文：这张卡从场上离开时那只怪兽破坏。
+	-- 这张卡从场上离开时那只怪兽破坏。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_CONTINUOUS+EFFECT_TYPE_SINGLE)
 	e2:SetCode(EVENT_LEAVE_FIELD)
 	e2:SetOperation(c39531794.desop)
 	c:RegisterEffect(e2)
-	-- 效果原文：那只怪兽破坏时这张卡破坏。
+	-- 那只怪兽破坏时这张卡破坏。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_CONTINUOUS+EFFECT_TYPE_FIELD)
 	e3:SetRange(LOCATION_SZONE)

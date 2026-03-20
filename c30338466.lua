@@ -4,7 +4,7 @@
 -- ●选择自己墓地1只名字带有「武神」的怪兽加入手卡。
 -- ●选择从游戏中除外的1只自己的名字带有「武神」的怪兽回到墓地。
 function c30338466.initial_effect(c)
-	-- 效果原文：选择自己墓地1只名字带有「武神」的怪兽加入手卡。
+	-- 选择自己墓地1只名字带有「武神」的怪兽加入手卡。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(30338466,0))  --"墓地回收"
 	e1:SetCategory(CATEGORY_TOHAND)
@@ -14,7 +14,7 @@ function c30338466.initial_effect(c)
 	e1:SetTarget(c30338466.target)
 	e1:SetOperation(c30338466.activate)
 	c:RegisterEffect(e1)
-	-- 效果原文：选择从游戏中除外的1只自己的名字带有「武神」的怪兽回到墓地。
+	-- 选择从游戏中除外的1只自己的名字带有「武神」的怪兽回到墓地。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(30338466,1))  --"除外回到墓地"
 	e2:SetProperty(EFFECT_FLAG_CARD_TARGET)

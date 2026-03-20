@@ -4,7 +4,7 @@
 -- ①：这张卡已在怪兽区域存在的状态，这张卡以外的炎属性怪兽被破坏送去自己墓地的场合发动。从卡组把1只炎属性怪兽送去墓地。
 -- ②：这张卡被破坏送去墓地的场合发动。从卡组把1只炎属性怪兽送去墓地。
 function c36569343.initial_effect(c)
-	-- 效果原文：①：这张卡已在怪兽区域存在的状态，这张卡以外的炎属性怪兽被破坏送去自己墓地的场合发动。从卡组把1只炎属性怪兽送去墓地。
+	-- ①：这张卡已在怪兽区域存在的状态，这张卡以外的炎属性怪兽被破坏送去自己墓地的场合发动。从卡组把1只炎属性怪兽送去墓地。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(36569343,0))  --"卡组送墓"
 	e1:SetCategory(CATEGORY_TOGRAVE)
@@ -16,7 +16,7 @@ function c36569343.initial_effect(c)
 	e1:SetTarget(c36569343.tgtg)
 	e1:SetOperation(c36569343.tgop1)
 	c:RegisterEffect(e1)
-	-- 效果原文：②：这张卡被破坏送去墓地的场合发动。从卡组把1只炎属性怪兽送去墓地。
+	-- ②：这张卡被破坏送去墓地的场合发动。从卡组把1只炎属性怪兽送去墓地。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(36569343,0))  --"卡组送墓"
 	e2:SetCategory(CATEGORY_TOGRAVE)

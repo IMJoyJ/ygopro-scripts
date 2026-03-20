@@ -2,13 +2,13 @@
 -- 效果：
 -- 这张卡战斗破坏光属性怪兽送去墓地时，从自己卡组抽1张卡。这个效果抽到的卡是4星以下的暗属性怪兽的场合，可以把那张卡给对方观看在自己场上特殊召唤。
 function c45450218.initial_effect(c)
-	-- 效果原文：这张卡战斗破坏光属性怪兽送去墓地时，从自己卡组抽1张卡。
+	-- 这张卡战斗破坏光属性怪兽送去墓地时，从自己卡组抽1张卡。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_CONTINUOUS)
 	e1:SetCode(EVENT_BATTLED)
 	e1:SetOperation(c45450218.checkop)
 	c:RegisterEffect(e1)
-	-- 效果原文：这个效果抽到的卡是4星以下的暗属性怪兽的场合，可以把那张卡给对方观看在自己场上特殊召唤。
+	-- 这个效果抽到的卡是4星以下的暗属性怪兽的场合，可以把那张卡给对方观看在自己场上特殊召唤。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(45450218,0))  --"抽卡"
 	e2:SetCategory(CATEGORY_DRAW+CATEGORY_SPECIAL_SUMMON)

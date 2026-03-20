@@ -2,7 +2,7 @@
 -- 效果：
 -- 这张卡被对方破坏送去墓地时，这张卡回到卡组。这张卡反转时，可以选择自己墓地1张名字带有「魔偶甜点」的魔法·陷阱卡加入手卡。
 function c26016357.initial_effect(c)
-	-- 效果原文：这张卡被对方破坏送去墓地时，这张卡回到卡组。
+	-- 这张卡被对方破坏送去墓地时，这张卡回到卡组。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(26016357,0))  --"返回卡组"
 	e1:SetCategory(CATEGORY_TODECK)
@@ -12,7 +12,7 @@ function c26016357.initial_effect(c)
 	e1:SetTarget(c26016357.rettg)
 	e1:SetOperation(c26016357.retop)
 	c:RegisterEffect(e1)
-	-- 效果原文：这张卡反转时，可以选择自己墓地1张名字带有「魔偶甜点」的魔法·陷阱卡加入手卡。
+	-- 这张卡反转时，可以选择自己墓地1张名字带有「魔偶甜点」的魔法·陷阱卡加入手卡。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(26016357,1))  --"返回手牌"
 	e2:SetCategory(CATEGORY_TOHAND)

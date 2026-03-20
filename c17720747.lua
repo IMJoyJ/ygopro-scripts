@@ -3,13 +3,13 @@
 -- 这张卡不能特殊召唤。
 -- ①：自己场上没有其他卡存在，这张卡召唤成功的场合发动。自己从卡组抽1张，给双方确认。那是怪兽以外的场合，那张卡送去墓地，这张卡破坏。
 function c17720747.initial_effect(c)
-	-- 效果原文：这张卡不能特殊召唤。
+	-- 这张卡不能特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_SPSUMMON_CONDITION)
 	c:RegisterEffect(e1)
-	-- 效果原文：①：自己场上没有其他卡存在，这张卡召唤成功的场合发动。自己从卡组抽1张，给双方确认。那是怪兽以外的场合，那张卡送去墓地，这张卡破坏。
+	-- ①：自己场上没有其他卡存在，这张卡召唤成功的场合发动。自己从卡组抽1张，给双方确认。那是怪兽以外的场合，那张卡送去墓地，这张卡破坏。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(17720747,0))  --"抽卡"
 	e2:SetCategory(CATEGORY_DRAW)

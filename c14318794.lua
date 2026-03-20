@@ -7,7 +7,7 @@ function c14318794.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- 诱发必发效果，于准备阶段发动，效果原文：每次自己的准备阶段，回复之前的那个自己的回合支付的基本分的一半。
+	-- 诱发必发效果，于准备阶段发动，每次自己的准备阶段，回复之前的那个自己的回合支付的基本分的一半。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(14318794,0))  --"回复"
 	e2:SetCategory(CATEGORY_RECOVER)
@@ -26,14 +26,14 @@ function c14318794.initial_effect(c)
 		c14318794[1]=0
 		c14318794[2]=0
 		c14318794[3]=0
-		-- 用于记录玩家在回合中支付的生命值，效果原文：每次自己的准备阶段，回复之前的那个自己的回合支付的基本分的一半。
+		-- 用于记录玩家在回合中支付的生命值，每次自己的准备阶段，回复之前的那个自己的回合支付的基本分的一半。
 		local ge1=Effect.CreateEffect(c)
 		ge1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 		ge1:SetCode(EVENT_PAY_LPCOST)
 		ge1:SetOperation(c14318794.checkop)
 		-- 将效果ge1注册到全局环境，使其在支付LP时触发。
 		Duel.RegisterEffect(ge1,0)
-		-- 用于在回合结束时清空并保存上一回合支付的生命值，效果原文：每次自己的准备阶段，回复之前的那个自己的回合支付的基本分的一半。
+		-- 用于在回合结束时清空并保存上一回合支付的生命值，每次自己的准备阶段，回复之前的那个自己的回合支付的基本分的一半。
 		local ge2=Effect.CreateEffect(c)
 		ge2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 		ge2:SetCode(EVENT_TURN_END)

@@ -4,7 +4,7 @@
 -- ①：把自己场上的电子界族怪兽作为「码语者」怪兽的连接素材的场合，手卡的这张卡也能作为连接素材。
 -- ②：这张卡作为「码语者」怪兽的连接素材从手卡·场上送去墓地的场合，以自己墓地1只4星以下的电子界族怪兽为对象才能发动。那只怪兽加入手卡。场上的这张卡为素材的场合可以不加入手卡把效果无效特殊召唤。
 function c37119142.initial_effect(c)
-	-- 效果原文：①：把自己场上的电子界族怪兽作为「码语者」怪兽的连接素材的场合，手卡的这张卡也能作为连接素材。
+	-- ①：把自己场上的电子界族怪兽作为「码语者」怪兽的连接素材的场合，手卡的这张卡也能作为连接素材。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
@@ -13,7 +13,7 @@ function c37119142.initial_effect(c)
 	e1:SetCountLimit(1,37119142)
 	e1:SetValue(c37119142.matval)
 	c:RegisterEffect(e1)
-	-- 效果原文：②：这张卡作为「码语者」怪兽的连接素材从手卡·场上送去墓地的场合，以自己墓地1只4星以下的电子界族怪兽为对象才能发动。那只怪兽加入手卡。场上的这张卡为素材的场合可以不加入手卡把效果无效特殊召唤。
+	-- ②：这张卡作为「码语者」怪兽的连接素材从手卡·场上送去墓地的场合，以自己墓地1只4星以下的电子界族怪兽为对象才能发动。那只怪兽加入手卡。场上的这张卡为素材的场合可以不加入手卡把效果无效特殊召唤。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(37119142,0))
 	e2:SetCategory(CATEGORY_TOHAND)

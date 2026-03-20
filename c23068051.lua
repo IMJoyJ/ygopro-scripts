@@ -4,7 +4,7 @@
 -- ●从卡组把1只幻龙族怪兽加入手卡。
 -- ●从手卡以及自己场上的表侧表示怪兽之中把幻龙族怪兽任意数量送去墓地才能发动。自己从卡组抽出送去墓地的怪兽的数量＋1张。
 function c23068051.initial_effect(c)
-	-- 效果原文：●从卡组把1只幻龙族怪兽加入手卡。
+	-- ●从卡组把1只幻龙族怪兽加入手卡。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(23068051,0))  --"卡组检索"
 	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
@@ -14,7 +14,7 @@ function c23068051.initial_effect(c)
 	e1:SetTarget(c23068051.target)
 	e1:SetOperation(c23068051.activate)
 	c:RegisterEffect(e1)
-	-- 效果原文：●从手卡以及自己场上的表侧表示怪兽之中把幻龙族怪兽任意数量送去墓地才能发动。自己从卡组抽出送去墓地的怪兽的数量＋1张。
+	-- ●从手卡以及自己场上的表侧表示怪兽之中把幻龙族怪兽任意数量送去墓地才能发动。自己从卡组抽出送去墓地的怪兽的数量＋1张。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(23068051,1))  --"送去墓地并抽卡"
 	e2:SetCategory(CATEGORY_DRAW)

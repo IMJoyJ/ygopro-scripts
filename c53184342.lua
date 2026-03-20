@@ -5,7 +5,7 @@
 -- ②：以场上1只表侧表示怪兽为对象才能发动。那只怪兽的效果无效化，那个攻击力下降自己场上的装备卡数量×1000。
 -- ③：对方怪兽被战斗破坏送去墓地时才能发动。那怪兽当作装备魔法卡使用给这张卡装备。
 function c53184342.initial_effect(c)
-	-- 效果原文：①：这张卡在手卡·墓地存在的场合，从自己墓地把2只其他的龙族·鸟兽族怪兽除外才能发动。这张卡特殊召唤。
+	-- ①：这张卡在手卡·墓地存在的场合，从自己墓地把2只其他的龙族·鸟兽族怪兽除外才能发动。这张卡特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(53184342,0))
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -16,7 +16,7 @@ function c53184342.initial_effect(c)
 	e1:SetTarget(c53184342.sptg)
 	e1:SetOperation(c53184342.spop)
 	c:RegisterEffect(e1)
-	-- 效果原文：②：以场上1只表侧表示怪兽为对象才能发动。那只怪兽的效果无效化，那个攻击力下降自己场上的装备卡数量×1000。
+	-- ②：以场上1只表侧表示怪兽为对象才能发动。那只怪兽的效果无效化，那个攻击力下降自己场上的装备卡数量×1000。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(53184342,1))
 	e2:SetProperty(EFFECT_FLAG_CARD_TARGET)
@@ -27,7 +27,7 @@ function c53184342.initial_effect(c)
 	e2:SetTarget(c53184342.distg)
 	e2:SetOperation(c53184342.disop)
 	c:RegisterEffect(e2)
-	-- 效果原文：③：对方怪兽被战斗破坏送去墓地时才能发动。那怪兽当作装备魔法卡使用给这张卡装备。
+	-- ③：对方怪兽被战斗破坏送去墓地时才能发动。那怪兽当作装备魔法卡使用给这张卡装备。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
 	e3:SetCode(EVENT_BATTLE_DESTROYED)

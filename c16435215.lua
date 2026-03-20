@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：双方各自把对方手卡确认，从那之中选1张卡丢弃。那之后，双方各自从卡组抽1张。
 function c16435215.initial_effect(c)
-	-- 效果原文：①：双方各自把对方手卡确认，从那之中选1张卡丢弃。那之后，双方各自从卡组抽1张。
+	-- ①：双方各自把对方手卡确认，从那之中选1张卡丢弃。那之后，双方各自从卡组抽1张。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_TOGRAVE+CATEGORY_HANDES+CATEGORY_DRAW)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -15,10 +15,10 @@ end
 -- 判断是否满足发动条件
 function c16435215.condition(e,tp,eg,ep,ev,re,r,rp)
 	if e:GetHandler():IsLocation(LOCATION_HAND) then
-		-- 效果原文：双方各自把对方手卡确认，从那之中选1张卡丢弃。
+		-- 双方各自把对方手卡确认，从那之中选1张卡丢弃。
 		return Duel.GetFieldGroupCount(tp,0,LOCATION_HAND)>0 and Duel.GetFieldGroupCount(tp,LOCATION_HAND,0)>1
 	else
-		-- 效果原文：双方各自把对方手卡确认，从那之中选1张卡丢弃。
+		-- 双方各自把对方手卡确认，从那之中选1张卡丢弃。
 		return Duel.GetFieldGroupCount(tp,0,LOCATION_HAND)>0 and Duel.GetFieldGroupCount(tp,LOCATION_HAND,0)>0
 	end
 end

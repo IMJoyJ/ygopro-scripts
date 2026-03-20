@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：1回合1次，以场上1只同调怪兽为对象才能发动。这张卡的攻击力直到回合结束时变成和作为对象的怪兽的攻击力相同。
 function c36442179.initial_effect(c)
-	-- 效果原文：①：1回合1次，以场上1只同调怪兽为对象才能发动。这张卡的攻击力直到回合结束时变成和作为对象的怪兽的攻击力相同。
+	-- ①：1回合1次，以场上1只同调怪兽为对象才能发动。这张卡的攻击力直到回合结束时变成和作为对象的怪兽的攻击力相同。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(36442179,0))  --"攻击变化"
 	e1:SetCategory(CATEGORY_ATKCHANGE)
@@ -34,7 +34,7 @@ function c36442179.operation(e,tp,eg,ep,ev,re,r,rp)
 	local tc=Duel.GetFirstTarget()
 	local c=e:GetHandler()
 	if c:IsFaceup() and c:IsRelateToEffect(e) and tc and tc:IsFaceup() and tc:IsRelateToEffect(e) then
-		-- 效果原文：这张卡的攻击力直到回合结束时变成和作为对象的怪兽的攻击力相同。
+		-- 这张卡的攻击力直到回合结束时变成和作为对象的怪兽的攻击力相同。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_SET_ATTACK_FINAL)

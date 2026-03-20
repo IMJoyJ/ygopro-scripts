@@ -2,14 +2,14 @@
 -- 效果：
 -- 场上有「光之金字塔」存在的场合，可以支付500基本分把这张卡从手卡特殊召唤。这张卡在召唤·特殊召唤的回合不能攻击。这张卡不能作从墓地的特殊召唤。这张卡战斗破坏守备表示怪兽的场合，给与对方基本分破坏的怪兽的守备力一半数值的伤害。
 function c51402177.initial_effect(c)
-	-- 效果原文：场上有「光之金字塔」存在的场合，可以支付500基本分把这张卡从手卡特殊召唤。
+	-- 场上有「光之金字塔」存在的场合，可以支付500基本分把这张卡从手卡特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE+EFFECT_FLAG_SINGLE_RANGE)
 	e1:SetRange(LOCATION_GRAVE)
 	e1:SetCode(EFFECT_SPSUMMON_CONDITION)
 	c:RegisterEffect(e1)
-	-- 效果原文：这张卡在召唤·特殊召唤的回合不能攻击。
+	-- 这张卡在召唤·特殊召唤的回合不能攻击。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD)
 	e2:SetCode(EFFECT_SPSUMMON_PROC)
@@ -18,7 +18,7 @@ function c51402177.initial_effect(c)
 	e2:SetCondition(c51402177.spcon)
 	e2:SetOperation(c51402177.spop)
 	c:RegisterEffect(e2)
-	-- 效果原文：这张卡不能作从墓地的特殊召唤。
+	-- 这张卡不能作从墓地的特殊召唤。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(51402177,0))  --"LP伤害"
 	e3:SetCategory(CATEGORY_DAMAGE)
@@ -29,7 +29,7 @@ function c51402177.initial_effect(c)
 	e3:SetTarget(c51402177.damtg)
 	e3:SetOperation(c51402177.damop)
 	c:RegisterEffect(e3)
-	-- 效果原文：这张卡战斗破坏守备表示怪兽的场合，给与对方基本分破坏的怪兽的守备力一半数值的伤害。
+	-- 这张卡战斗破坏守备表示怪兽的场合，给与对方基本分破坏的怪兽的守备力一半数值的伤害。
 	local e4=Effect.CreateEffect(c)
 	e4:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_CONTINUOUS)
 	e4:SetCode(EVENT_SUMMON_SUCCESS)

@@ -4,26 +4,26 @@
 -- ②：这张卡不会被战斗破坏。
 -- ③：自己因战斗·效果受到伤害的场合发动。场上的表侧表示的这张卡破坏。
 function c11662742.initial_effect(c)
-	-- 效果原文：②：这张卡不会被战斗破坏。
+	-- ②：这张卡不会被战斗破坏。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_INDESTRUCTABLE_BATTLE)
 	e1:SetValue(1)
 	c:RegisterEffect(e1)
-	-- 效果原文：①：天使族·光属性怪兽上级召唤的场合，这张卡可以作为2只的数量解放。
+	-- ①：天使族·光属性怪兽上级召唤的场合，这张卡可以作为2只的数量解放。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_SINGLE)
 	e2:SetCode(EFFECT_DOUBLE_TRIBUTE)
 	e2:SetValue(c11662742.dtcon)
 	c:RegisterEffect(e2)
-	-- 效果原文：③：自己因战斗·效果受到伤害的场合发动。场上的表侧表示的这张卡破坏。
+	-- ③：自己因战斗·效果受到伤害的场合发动。场上的表侧表示的这张卡破坏。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e3:SetRange(LOCATION_MZONE)
 	e3:SetCode(EVENT_DAMAGE)
 	e3:SetOperation(c11662742.dmop)
 	c:RegisterEffect(e3)
-	-- 效果原文：③：自己因战斗·效果受到伤害的场合发动。场上的表侧表示的这张卡破坏。
+	-- ③：自己因战斗·效果受到伤害的场合发动。场上的表侧表示的这张卡破坏。
 	local e4=Effect.CreateEffect(c)
 	e4:SetDescription(aux.Stringid(11662742,0))  --"自坏"
 	e4:SetCategory(CATEGORY_DESTROY)
@@ -34,7 +34,7 @@ function c11662742.initial_effect(c)
 	e4:SetTarget(c11662742.destg)
 	e4:SetOperation(c11662742.desop)
 	c:RegisterEffect(e4)
-	-- 效果原文：③：自己因战斗·效果受到伤害的场合发动。场上的表侧表示的这张卡破坏。
+	-- ③：自己因战斗·效果受到伤害的场合发动。场上的表侧表示的这张卡破坏。
 	local e5=Effect.CreateEffect(c)
 	e5:SetDescription(aux.Stringid(11662742,0))  --"自坏"
 	e5:SetCategory(CATEGORY_DESTROY)
@@ -45,7 +45,7 @@ function c11662742.initial_effect(c)
 	e5:SetTarget(c11662742.destg)
 	e5:SetOperation(c11662742.desop)
 	c:RegisterEffect(e5)
-	-- 效果原文：③：自己因战斗·效果受到伤害的场合发动。场上的表侧表示的这张卡破坏。
+	-- ③：自己因战斗·效果受到伤害的场合发动。场上的表侧表示的这张卡破坏。
 	local e6=Effect.CreateEffect(c)
 	e6:SetDescription(aux.Stringid(11662742,0))  --"自坏"
 	e6:SetCategory(CATEGORY_DESTROY)

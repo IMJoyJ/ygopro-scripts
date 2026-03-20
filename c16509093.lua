@@ -2,7 +2,7 @@
 -- 效果：
 -- 这张卡1个回合可以有1次变回里侧守备表示。这张卡反转时，在回合结束前这张卡的攻击力守备力上升300。
 function c16509093.initial_effect(c)
-	-- 效果原文：这张卡1个回合可以有1次变回里侧守备表示。
+	-- 这张卡1个回合可以有1次变回里侧守备表示。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(16509093,0))  --"变成里侧守备"
 	e1:SetCategory(CATEGORY_POSITION+CATEGORY_MSET)
@@ -11,7 +11,7 @@ function c16509093.initial_effect(c)
 	e1:SetTarget(c16509093.target)
 	e1:SetOperation(c16509093.operation)
 	c:RegisterEffect(e1)
-	-- 效果原文：这张卡反转时，在回合结束前这张卡的攻击力守备力上升300。
+	-- 这张卡反转时，在回合结束前这张卡的攻击力守备力上升300。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(16509093,1))  --"攻守上升"
 	e2:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_F)
@@ -39,7 +39,7 @@ end
 function c16509093.adop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) and c:IsFaceup() then
-		-- 效果原文：这张卡反转时，在回合结束前这张卡的攻击力守备力上升300。
+		-- 这张卡反转时，在回合结束前这张卡的攻击力守备力上升300。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)

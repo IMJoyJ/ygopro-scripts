@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：这张卡被战斗破坏送去墓地的场合发动。选2张手卡送去墓地，自己从卡组抽2张。
 function c31034919.initial_effect(c)
-	-- 效果原文：①：这张卡被战斗破坏送去墓地的场合发动。选2张手卡送去墓地，自己从卡组抽2张。
+	-- ①：这张卡被战斗破坏送去墓地的场合发动。选2张手卡送去墓地，自己从卡组抽2张。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(31034919,0))  --"抽卡"
 	e1:SetCategory(CATEGORY_TOGRAVE+CATEGORY_DRAW)

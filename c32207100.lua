@@ -2,7 +2,7 @@
 -- 效果：
 -- 把自己场上表侧攻击表示存在的1只2星以下的怪兽解放发动。场上表侧表示存在的7星以上的特殊召唤的怪兽全部回到持有者手卡。
 function c32207100.initial_effect(c)
-	-- 效果原文：把自己场上表侧攻击表示存在的1只2星以下的怪兽解放发动。场上表侧表示存在的7星以上的特殊召唤的怪兽全部回到持有者手卡。
+	-- 把自己场上表侧攻击表示存在的1只2星以下的怪兽解放发动。场上表侧表示存在的7星以上的特殊召唤的怪兽全部回到持有者手卡。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_TOHAND)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -12,7 +12,7 @@ function c32207100.initial_effect(c)
 	e1:SetOperation(c32207100.activate)
 	c:RegisterEffect(e1)
 end
--- 效果原文：把自己场上表侧攻击表示存在的1只2星以下的怪兽解放发动。
+-- 把自己场上表侧攻击表示存在的1只2星以下的怪兽解放发动。
 function c32207100.cfilter(c)
 	return c:IsPosition(POS_FACEUP_ATTACK) and c:IsLevelBelow(2)
 end
@@ -25,7 +25,7 @@ function c32207100.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 以代價原因解放选择的卡
 	Duel.Release(g,REASON_COST)
 end
--- 效果原文：场上表侧表示存在的7星以上的特殊召唤的怪兽全部回到持有者手卡。
+-- 场上表侧表示存在的7星以上的特殊召唤的怪兽全部回到持有者手卡。
 function c32207100.filter(c)
 	return c:IsFaceup() and c:IsLevelAbove(7) and c:IsSummonType(SUMMON_TYPE_SPECIAL) and c:IsAbleToHand()
 end

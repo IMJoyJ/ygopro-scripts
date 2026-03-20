@@ -2,7 +2,7 @@
 -- 效果：
 -- 这张卡在墓地存在，对方怪兽的直接攻击让自己受到2000以上的战斗伤害时，选择自己墓地存在的1只名字带有「黑羽」的3星以下的怪兽发动。选择的怪兽和这张卡从墓地特殊召唤。这个效果特殊召唤的怪兽的效果无效化。「黑羽-天狗风之飞廉」的效果在决斗中只能使用1次。
 function c3072808.initial_effect(c)
-	-- 效果原文：这张卡在墓地存在，对方怪兽的直接攻击让自己受到2000以上的战斗伤害时，选择自己墓地存在的1只名字带有「黑羽」的3星以下的怪兽发动。选择的怪兽和这张卡从墓地特殊召唤。这个效果特殊召唤的怪兽的效果无效化。「黑羽-天狗风之飞廉」的效果在决斗中只能使用1次。
+	-- 这张卡在墓地存在，对方怪兽的直接攻击让自己受到2000以上的战斗伤害时，选择自己墓地存在的1只名字带有「黑羽」的3星以下的怪兽发动。选择的怪兽和这张卡从墓地特殊召唤。这个效果特殊召唤的怪兽的效果无效化。「黑羽-天狗风之飞廉」的效果在决斗中只能使用1次。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(3072808,0))  --"特殊召唤"
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -18,7 +18,7 @@ function c3072808.initial_effect(c)
 end
 -- 判断是否满足发动条件，即对方怪兽直接攻击造成自身2000以上战斗伤害且未被阻挡
 function c3072808.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 效果原文：对方怪兽的直接攻击让自己受到2000以上的战斗伤害时
+	-- 对方怪兽的直接攻击让自己受到2000以上的战斗伤害时
 	return ep==tp and ev>=2000 and Duel.GetAttackTarget()==nil
 end
 -- 定义可选择的墓地怪兽过滤条件，即等级3以下且属于黑羽卡组
@@ -48,7 +48,7 @@ function c3072808.operation(e,tp,eg,ep,ev,re,r,rp)
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<2 then return end
 	if not c:IsRelateToEffect(e) or not c:IsCanBeSpecialSummoned(e,0,tp,false,false) then return end
 	if not tc or not tc:IsRelateToEffect(e) or not tc:IsCanBeSpecialSummoned(e,0,tp,false,false) then return end
-	-- 效果原文：这个效果特殊召唤的怪兽的效果无效化。
+	-- 这个效果特殊召唤的怪兽的效果无效化。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_DISABLE)

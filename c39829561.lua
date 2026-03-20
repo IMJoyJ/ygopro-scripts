@@ -2,7 +2,7 @@
 -- 效果：
 -- 自己的准备阶段时，这张卡在墓地存在的场合，在对方场上表侧攻击表示特殊召唤。这张卡被战斗破坏的场合，不去墓地从游戏中除外。这张卡从手卡·卡组被卡的效果送去墓地的场合，不去墓地从游戏中除外。
 function c39829561.initial_effect(c)
-	-- 效果原文：自己的准备阶段时，这张卡在墓地存在的场合，在对方场上表侧攻击表示特殊召唤。
+	-- 自己的准备阶段时，这张卡在墓地存在的场合，在对方场上表侧攻击表示特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(39829561,0))  --"特殊召唤"
 	e1:SetType(EFFECT_TYPE_TRIGGER_F+EFFECT_TYPE_FIELD)
@@ -14,7 +14,7 @@ function c39829561.initial_effect(c)
 	e1:SetTarget(c39829561.target)
 	e1:SetOperation(c39829561.operation)
 	c:RegisterEffect(e1)
-	-- 效果原文：这张卡被战斗破坏的场合，不去墓地从游戏中除外。这张卡从手卡·卡组被卡的效果送去墓地的场合，不去墓地从游戏中除外。
+	-- 这张卡被战斗破坏的场合，不去墓地从游戏中除外。这张卡从手卡·卡组被卡的效果送去墓地的场合，不去墓地从游戏中除外。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_SINGLE)
 	e2:SetCode(EFFECT_TO_GRAVE_REDIRECT)

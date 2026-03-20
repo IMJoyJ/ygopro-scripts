@@ -6,7 +6,7 @@
 -- ③：这张卡特殊召唤的场合，对方结束阶段发动。这张卡回到手卡。
 -- ④：这张卡被除外的场合才能发动。从卡组把1只龙族·炎属性怪兽加入手卡。
 function c53804307.initial_effect(c)
-	-- 效果原文：②：把2只龙族或炎属性的怪兽从自己的手卡·墓地除外才能发动。这张卡从手卡·墓地特殊召唤。
+	-- ②：把2只龙族或炎属性的怪兽从自己的手卡·墓地除外才能发动。这张卡从手卡·墓地特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(53804307,0))  --"从手卡特殊召唤"
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -17,7 +17,7 @@ function c53804307.initial_effect(c)
 	e1:SetTarget(c53804307.hsptg)
 	e1:SetOperation(c53804307.hspop)
 	c:RegisterEffect(e1)
-	-- 效果原文：③：这张卡特殊召唤的场合，对方结束阶段发动。这张卡回到手卡。
+	-- ③：这张卡特殊召唤的场合，对方结束阶段发动。这张卡回到手卡。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(53804307,1))  --"返回手牌"
 	e2:SetCategory(CATEGORY_TOHAND)
@@ -29,7 +29,7 @@ function c53804307.initial_effect(c)
 	e2:SetTarget(c53804307.rettg)
 	e2:SetOperation(c53804307.retop)
 	c:RegisterEffect(e2)
-	-- 效果原文：①：从手卡把这张卡和1只炎属性怪兽丢弃去墓地，以场上1张卡为对象才能发动。那张破坏。
+	-- ①：从手卡把这张卡和1只炎属性怪兽丢弃去墓地，以场上1张卡为对象才能发动。那张破坏。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(53804307,2))  --"选择场上1张卡破坏"
 	e3:SetCategory(CATEGORY_DESTROY)
@@ -41,7 +41,7 @@ function c53804307.initial_effect(c)
 	e3:SetTarget(c53804307.destg)
 	e3:SetOperation(c53804307.desop)
 	c:RegisterEffect(e3)
-	-- 效果原文：④：这张卡被除外的场合才能发动。从卡组把1只龙族·炎属性怪兽加入手卡。
+	-- ④：这张卡被除外的场合才能发动。从卡组把1只龙族·炎属性怪兽加入手卡。
 	local e4=Effect.CreateEffect(c)
 	e4:SetDescription(aux.Stringid(53804307,3))  --"加入手卡"
 	e4:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)

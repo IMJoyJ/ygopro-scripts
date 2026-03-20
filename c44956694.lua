@@ -3,7 +3,7 @@
 -- ①：这张卡召唤成功时，以「ROM云雌羊」以外的自己墓地1只电子界族怪兽为对象才能发动。那只怪兽加入手卡。
 -- ②：这张卡被战斗·效果破坏的场合才能发动。从卡组把「ROM云雌羊」以外的1只4星以下的电子界族怪兽特殊召唤。
 function c44956694.initial_effect(c)
-	-- 效果原文：①：这张卡召唤成功时，以「ROM云雌羊」以外的自己墓地1只电子界族怪兽为对象才能发动。那只怪兽加入手卡。
+	-- ①：这张卡召唤成功时，以「ROM云雌羊」以外的自己墓地1只电子界族怪兽为对象才能发动。那只怪兽加入手卡。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(44956694,0))
 	e1:SetCategory(CATEGORY_TOHAND)
@@ -13,7 +13,7 @@ function c44956694.initial_effect(c)
 	e1:SetTarget(c44956694.thtg)
 	e1:SetOperation(c44956694.thop)
 	c:RegisterEffect(e1)
-	-- 效果原文：②：这张卡被战斗·效果破坏的场合才能发动。从卡组把「ROM云雌羊」以外的1只4星以下的电子界族怪兽特殊召唤。
+	-- ②：这张卡被战斗·效果破坏的场合才能发动。从卡组把「ROM云雌羊」以外的1只4星以下的电子界族怪兽特殊召唤。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(44956694,1))
 	e2:SetCategory(CATEGORY_SPECIAL_SUMMON)

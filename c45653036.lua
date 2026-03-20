@@ -53,7 +53,7 @@ function c45653036.activate(e,tp,eg,ep,ev,re,r,rp)
 		elseif b2 then opt=Duel.SelectOption(tp,aux.Stringid(45653036,1))+1  --"攻击力下降2000"
 		else opt=2 end
 		if opt==0 then
-			-- 效果原文：攻击力下降1000
+			-- 攻击力下降1000
 			local e1=Effect.CreateEffect(e:GetHandler())
 			e1:SetType(EFFECT_TYPE_SINGLE)
 			e1:SetCode(EFFECT_UPDATE_ATTACK)
@@ -66,7 +66,7 @@ function c45653036.activate(e,tp,eg,ep,ev,re,r,rp)
 			-- 破坏指定数量的卡
 			Duel.Destroy(dg,REASON_EFFECT)
 		elseif opt==1 then
-			-- 效果原文：攻击力下降2000
+			-- 攻击力下降2000
 			local e1=Effect.CreateEffect(e:GetHandler())
 			e1:SetType(EFFECT_TYPE_SINGLE)
 			e1:SetCode(EFFECT_UPDATE_ATTACK)

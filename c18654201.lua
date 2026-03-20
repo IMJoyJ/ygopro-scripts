@@ -2,14 +2,14 @@
 -- 效果：
 -- 只要这张卡在自己场上表侧表示存在，场上的怪兽回到持有者手卡时，那只怪兽的持有者从手卡选择1张卡送去墓地。
 function c18654201.initial_effect(c)
-	-- 效果原文：只要这张卡在自己场上表侧表示存在，场上的怪兽回到持有者手卡时，那只怪兽的持有者从手卡选择1张卡送去墓地。
+	-- 只要这张卡在自己场上表侧表示存在，场上的怪兽回到持有者手卡时，那只怪兽的持有者从手卡选择1张卡送去墓地。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e1:SetRange(LOCATION_MZONE)
 	e1:SetCode(EVENT_TO_HAND)
 	e1:SetOperation(c18654201.regop)
 	c:RegisterEffect(e1)
-	-- 效果原文：只要这张卡在自己场上表侧表示存在，场上的怪兽回到持有者手卡时，那只怪兽的持有者从手卡选择1张卡送去墓地。
+	-- 只要这张卡在自己场上表侧表示存在，场上的怪兽回到持有者手卡时，那只怪兽的持有者从手卡选择1张卡送去墓地。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(18654201,0))  --"手牌送墓"
 	e2:SetCategory(CATEGORY_TOGRAVE)

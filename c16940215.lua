@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：对方把魔法·陷阱卡发动时，把这张卡和自己场上1只「自然」怪兽解放才能发动。那个发动无效并破坏。
 function c16940215.initial_effect(c)
-	-- 效果原文：①：对方把魔法·陷阱卡发动时，把这张卡和自己场上1只「自然」怪兽解放才能发动。那个发动无效并破坏。
+	-- ①：对方把魔法·陷阱卡发动时，把这张卡和自己场上1只「自然」怪兽解放才能发动。那个发动无效并破坏。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(16940215,0))  --"魔法陷阱发动无效并破坏"
 	e1:SetCategory(CATEGORY_NEGATE+CATEGORY_DESTROY)

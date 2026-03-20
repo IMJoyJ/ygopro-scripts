@@ -6,7 +6,7 @@
 -- ④：这张卡进行战斗的伤害步骤结束时发动。这张卡1个指示物取除。不能取除的场合，这张卡破坏。
 function c22790789.initial_effect(c)
 	c:EnableCounterPermit(0x1f)
-	-- 效果原文：①：这张卡召唤的场合发动。给这张卡放置3个指示物。
+	-- ①：这张卡召唤的场合发动。给这张卡放置3个指示物。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(22790789,0))  --"放置指示物"
 	e1:SetCategory(CATEGORY_COUNTER)
@@ -15,7 +15,7 @@ function c22790789.initial_effect(c)
 	e1:SetTarget(c22790789.addct)
 	e1:SetOperation(c22790789.addc)
 	c:RegisterEffect(e1)
-	-- 效果原文：②：这张卡不会被战斗破坏。
+	-- ②：这张卡不会被战斗破坏。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_SINGLE)
 	e2:SetCode(EFFECT_INDESTRUCTABLE_BATTLE)
@@ -23,7 +23,7 @@ function c22790789.initial_effect(c)
 	c:RegisterEffect(e2)
 	-- 注册一个在伤害步骤结束时触发的效果，用于处理战斗后指示物的取除或破坏判定。
 	aux.EnableBESRemove(c)
-	-- 效果原文：③：1回合1次，以对方场上1只表侧攻击表示怪兽为对象才能发动。那只对方的表侧攻击表示怪兽变成表侧守备表示。
+	-- ③：1回合1次，以对方场上1只表侧攻击表示怪兽为对象才能发动。那只对方的表侧攻击表示怪兽变成表侧守备表示。
 	local e5=Effect.CreateEffect(c)
 	e5:SetDescription(aux.Stringid(22790789,3))  --"改变表示形式"
 	e5:SetCategory(CATEGORY_POSITION)

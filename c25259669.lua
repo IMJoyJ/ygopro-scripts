@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：这张卡召唤时才能发动。从手卡把1只4星以下的怪兽特殊召唤。这张卡是攻击表示的场合，再让这张卡变成守备表示。
 function c25259669.initial_effect(c)
-	-- 效果原文：①：这张卡召唤时才能发动。从手卡把1只4星以下的怪兽特殊召唤。这张卡是攻击表示的场合，再让这张卡变成守备表示。
+	-- ①：这张卡召唤时才能发动。从手卡把1只4星以下的怪兽特殊召唤。这张卡是攻击表示的场合，再让这张卡变成守备表示。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(25259669,0))  --"特殊召唤"
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_POSITION)

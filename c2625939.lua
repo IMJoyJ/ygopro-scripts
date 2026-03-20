@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：自己墓地的电子界族怪兽是3只以上的场合，对方怪兽的直接攻击宣言时才能发动。那次攻击无效。那之后，可以在自己场上把最多3只「假脱机衍生物」（电子界族·光·1星·攻/守0）守备表示特殊召唤。这衍生物不能为上级召唤而解放。
 function c2625939.initial_effect(c)
-	-- 效果原文：①：自己墓地的电子界族怪兽是3只以上的场合，对方怪兽的直接攻击宣言时才能发动。那次攻击无效。那之后，可以在自己场上把最多3只「假脱机衍生物」（电子界族·光·1星·攻/守0）守备表示特殊召唤。这衍生物不能为上级召唤而解放。
+	-- ①：自己墓地的电子界族怪兽是3只以上的场合，对方怪兽的直接攻击宣言时才能发动。那次攻击无效。那之后，可以在自己场上把最多3只「假脱机衍生物」（电子界族·光·1星·攻/守0）守备表示特殊召唤。这衍生物不能为上级召唤而解放。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -11,14 +11,14 @@ function c2625939.initial_effect(c)
 	e1:SetOperation(c2625939.activate)
 	c:RegisterEffect(e1)
 end
--- 效果原文：自己墓地的电子界族怪兽是3只以上的场合，对方怪兽的直接攻击宣言时才能发动。
+-- 自己墓地的电子界族怪兽是3只以上的场合，对方怪兽的直接攻击宣言时才能发动。
 function c2625939.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 效果原文：对方怪兽的直接攻击宣言时才能发动。
+	-- 对方怪兽的直接攻击宣言时才能发动。
 	return eg:GetFirst():IsControler(1-tp) and Duel.GetAttackTarget()==nil
-		-- 效果原文：自己墓地的电子界族怪兽是3只以上的场合
+		-- 自己墓地的电子界族怪兽是3只以上的场合
 		and Duel.IsExistingMatchingCard(Card.IsRace,tp,LOCATION_GRAVE,0,3,nil,RACE_CYBERSE)
 end
--- 效果原文：那之后，可以在自己场上把最多3只「假脱机衍生物」（电子界族·光·1星·攻/守0）守备表示特殊召唤。这衍生物不能为上级召唤而解放。
+-- 那之后，可以在自己场上把最多3只「假脱机衍生物」（电子界族·光·1星·攻/守0）守备表示特殊召唤。这衍生物不能为上级召唤而解放。
 function c2625939.activate(e,tp,eg,ep,ev,re,r,rp)
 	-- 计算玩家场上最多可特殊召唤的衍生物数量，最多为3只
 	local ft=math.min((Duel.GetLocationCount(tp,LOCATION_MZONE)),3)
@@ -50,7 +50,7 @@ function c2625939.activate(e,tp,eg,ep,ev,re,r,rp)
 			local token=Duel.CreateToken(tp,2625940)
 			-- 将衍生物以守备表示特殊召唤到场上
 			Duel.SpecialSummonStep(token,0,tp,tp,false,false,POS_FACEUP_DEFENSE)
-			-- 效果原文：这衍生物不能为上级召唤而解放。
+			-- 这衍生物不能为上级召唤而解放。
 			local e1=Effect.CreateEffect(e:GetHandler())
 			e1:SetType(EFFECT_TYPE_SINGLE)
 			e1:SetCode(EFFECT_UNRELEASABLE_SUM)

@@ -12,7 +12,7 @@ function c34487429.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- 效果原文：●1张以上：这张卡不会被效果破坏。
+	-- ●1张以上：这张卡不会被效果破坏。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_SINGLE)
 	e2:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
@@ -21,7 +21,7 @@ function c34487429.initial_effect(c)
 	e2:SetCondition(c34487429.desrepcon)
 	e2:SetValue(1)
 	c:RegisterEffect(e2)
-	-- 效果原文：●3张以上：魔法·陷阱卡的发动时，把自己场上1只表侧表示的「宝玉兽」怪兽送去墓地才能发动。那个发动无效并破坏。
+	-- ●3张以上：魔法·陷阱卡的发动时，把自己场上1只表侧表示的「宝玉兽」怪兽送去墓地才能发动。那个发动无效并破坏。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(34487429,1))  --"魔法·陷阱发动无效并破坏"
 	e3:SetCategory(CATEGORY_NEGATE+CATEGORY_DESTROY)
@@ -33,7 +33,7 @@ function c34487429.initial_effect(c)
 	e3:SetTarget(c34487429.distg)
 	e3:SetOperation(c34487429.disop)
 	c:RegisterEffect(e3)
-	-- 效果原文：●4张以上：1回合1次，可以发动。自己抽1张。
+	-- ●4张以上：1回合1次，可以发动。自己抽1张。
 	local e4=Effect.CreateEffect(c)
 	e4:SetDescription(aux.Stringid(34487429,2))  --"从自己卡组抽1张卡"
 	e4:SetCategory(CATEGORY_DRAW)
@@ -44,7 +44,7 @@ function c34487429.initial_effect(c)
 	e4:SetTarget(c34487429.drtg)
 	e4:SetOperation(c34487429.drop)
 	c:RegisterEffect(e4)
-	-- 效果原文：●5张：1回合1次，以自己的魔法与陷阱区域1张「宝玉兽」卡为对象才能发动。那张卡特殊召唤。
+	-- ●5张：1回合1次，以自己的魔法与陷阱区域1张「宝玉兽」卡为对象才能发动。那张卡特殊召唤。
 	local e5=Effect.CreateEffect(c)
 	e5:SetDescription(aux.Stringid(34487429,3))  --"魔法与陷阱卡区域的「宝玉兽」卡特殊召唤"
 	e5:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -56,7 +56,7 @@ function c34487429.initial_effect(c)
 	e5:SetTarget(c34487429.sptg)
 	e5:SetOperation(c34487429.spop)
 	c:RegisterEffect(e5)
-	-- 效果原文：●2张以上：1回合1次，可以把对自己的战斗伤害变成一半。
+	-- ●2张以上：1回合1次，可以把对自己的战斗伤害变成一半。
 	local e6=Effect.CreateEffect(c)
 	e6:SetDescription(aux.Stringid(34487429,0))  --"伤害减半"
 	e6:SetType(EFFECT_TYPE_CONTINUOUS+EFFECT_TYPE_FIELD)

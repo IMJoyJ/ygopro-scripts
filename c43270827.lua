@@ -5,7 +5,7 @@
 -- ●那个发动的效果无效。
 -- ●那只怪兽除外。
 function c43270827.initial_effect(c)
-	-- 效果原文：这个卡名的卡在1回合只能发动1张。
+	-- 这个卡名的卡在1回合只能发动1张。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(43270827,0))  --"选择效果发动"
 	e1:SetType(EFFECT_TYPE_ACTIVATE)

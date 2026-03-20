@@ -9,7 +9,7 @@ function c269012.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- 效果原文：①：场上的10星以上的怪兽不会成为效果的对象，不会被效果破坏。
+	-- ①：场上的10星以上的怪兽不会成为效果的对象，不会被效果破坏。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD)
 	e2:SetCode(EFFECT_INDESTRUCTABLE_EFFECT)
@@ -22,7 +22,7 @@ function c269012.initial_effect(c)
 	e3:SetCode(EFFECT_CANNOT_BE_EFFECT_TARGET)
 	e3:SetProperty(EFFECT_FLAG_IGNORE_IMMUNE)
 	c:RegisterEffect(e3)
-	-- 效果原文：②：自己或者对方的10星以上的怪兽战斗破坏怪兽送去墓地的场合发动。破坏的怪兽的控制者受到1000伤害。
+	-- ②：自己或者对方的10星以上的怪兽战斗破坏怪兽送去墓地的场合发动。破坏的怪兽的控制者受到1000伤害。
 	local e4=Effect.CreateEffect(c)
 	e4:SetDescription(aux.Stringid(269012,0))  --"1000伤害"
 	e4:SetCategory(CATEGORY_DAMAGE)
@@ -34,7 +34,7 @@ function c269012.initial_effect(c)
 	e4:SetTarget(c269012.damtg)
 	e4:SetOperation(c269012.damop)
 	c:RegisterEffect(e4)
-	-- 效果原文：③：场上的这张卡被效果破坏送去墓地时才能发动。从卡组把1只神属性怪兽加入手卡。
+	-- ③：场上的这张卡被效果破坏送去墓地时才能发动。从卡组把1只神属性怪兽加入手卡。
 	local e5=Effect.CreateEffect(c)
 	e5:SetDescription(aux.Stringid(269012,1))  --"检索"
 	e5:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)

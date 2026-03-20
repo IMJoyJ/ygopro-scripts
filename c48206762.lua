@@ -2,7 +2,7 @@
 -- 效果：
 -- 支付800基本分。从自己墓地选择1只仪式怪兽在自己场上特殊召唤，并装备上这张卡。这张卡破坏时，装备怪兽从游戏中除外。
 function c48206762.initial_effect(c)
-	-- 效果原文：支付800基本分。从自己墓地选择1只仪式怪兽在自己场上特殊召唤，并装备上这张卡。
+	-- 支付800基本分。从自己墓地选择1只仪式怪兽在自己场上特殊召唤，并装备上这张卡。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_EQUIP)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)

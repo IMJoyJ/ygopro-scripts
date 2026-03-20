@@ -6,14 +6,14 @@
 -- ③：场上的这张卡为素材作超量召唤的怪兽得到以下效果。
 -- ●这张卡的攻击力·守备力上升1000。
 function c19301729.initial_effect(c)
-	-- 效果原文：把这张卡作为超量召唤的素材的场合，不是昆虫族怪兽的超量召唤不能使用。
+	-- 把这张卡作为超量召唤的素材的场合，不是昆虫族怪兽的超量召唤不能使用。
 	local e0=Effect.CreateEffect(c)
 	e0:SetType(EFFECT_TYPE_SINGLE)
 	e0:SetCode(EFFECT_CANNOT_BE_XYZ_MATERIAL)
 	e0:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
 	e0:SetValue(c19301729.xyzlimit)
 	c:RegisterEffect(e0)
-	-- 效果原文：①：自己对昆虫族·3星怪兽的召唤成功时才能发动。这张卡从手卡特殊召唤。那之后，可以把这张卡和那只怪兽的等级变成5星或者7星。
+	-- ①：自己对昆虫族·3星怪兽的召唤成功时才能发动。这张卡从手卡特殊召唤。那之后，可以把这张卡和那只怪兽的等级变成5星或者7星。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(19301729,0))
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -24,7 +24,7 @@ function c19301729.initial_effect(c)
 	e1:SetTarget(c19301729.sptg)
 	e1:SetOperation(c19301729.spop)
 	c:RegisterEffect(e1)
-	-- 效果原文：②：这张卡从手卡的特殊召唤成功的场合才能发动。选自己场上1只昆虫族怪兽把表示形式变更。
+	-- ②：这张卡从手卡的特殊召唤成功的场合才能发动。选自己场上1只昆虫族怪兽把表示形式变更。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(19301729,1))
 	e2:SetCategory(CATEGORY_POSITION)
@@ -35,7 +35,7 @@ function c19301729.initial_effect(c)
 	e2:SetTarget(c19301729.postg)
 	e2:SetOperation(c19301729.posop)
 	c:RegisterEffect(e2)
-	-- 效果原文：③：场上的这张卡为素材作超量召唤的怪兽得到以下效果。●这张卡的攻击力·守备力上升1000。
+	-- ③：场上的这张卡为素材作超量召唤的怪兽得到以下效果。●这张卡的攻击力·守备力上升1000。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_CONTINUOUS)
 	e3:SetCode(EVENT_BE_MATERIAL)
@@ -80,7 +80,7 @@ function c19301729.spop(e,tp,eg,ep,ev,re,r,rp)
 		local lv=Duel.AnnounceNumber(tp,5,7)
 		-- 规则层面：遍历卡片组中的每张卡。
 		for oc in aux.Next(g) do
-			-- 效果原文：●这张卡的攻击力·守备力上升1000。
+			-- ●这张卡的攻击力·守备力上升1000。
 			local e1=Effect.CreateEffect(c)
 			e1:SetType(EFFECT_TYPE_SINGLE)
 			e1:SetCode(EFFECT_CHANGE_LEVEL)
@@ -128,7 +128,7 @@ end
 function c19301729.efop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local rc=c:GetReasonCard()
-	-- 效果原文：●这张卡的攻击力·守备力上升1000。
+	-- ●这张卡的攻击力·守备力上升1000。
 	local e1=Effect.CreateEffect(rc)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_UPDATE_ATTACK)
@@ -139,7 +139,7 @@ function c19301729.efop(e,tp,eg,ep,ev,re,r,rp)
 	e2:SetCode(EFFECT_UPDATE_DEFENSE)
 	rc:RegisterEffect(e2,true)
 	if not rc:IsType(TYPE_EFFECT) then
-		-- 效果原文：●这张卡的攻击力·守备力上升1000。
+		-- ●这张卡的攻击力·守备力上升1000。
 		local e3=Effect.CreateEffect(c)
 		e3:SetType(EFFECT_TYPE_SINGLE)
 		e3:SetCode(EFFECT_ADD_TYPE)

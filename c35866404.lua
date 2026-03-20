@@ -2,7 +2,7 @@
 -- 效果：
 -- 对方场上有超量怪兽存在的场合，这张卡可以从手卡表侧攻击表示特殊召唤。
 function c35866404.initial_effect(c)
-	-- 卡片效果原文：对方场上有超量怪兽存在的场合，这张卡可以从手卡表侧攻击表示特殊召唤。
+	-- 卡片对方场上有超量怪兽存在的场合，这张卡可以从手卡表侧攻击表示特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_SPSUMMON_PROC)

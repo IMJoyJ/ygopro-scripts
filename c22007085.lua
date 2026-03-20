@@ -3,7 +3,7 @@
 -- 这个卡名的卡在1回合只能发动1张。
 -- ①：从卡组把1只「圣夜骑士」怪兽或者龙族·光属性·7星怪兽加入手卡。对方场上有暗属性怪兽存在，自己场上没有怪兽存在的场合，可以再从手卡把1只龙族·光属性·7星怪兽特殊召唤。
 function c22007085.initial_effect(c)
-	-- 效果原文：这个卡名的卡在1回合只能发动1张。
+	-- 这个卡名的卡在1回合只能发动1张。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH+CATEGORY_SPECIAL_SUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)

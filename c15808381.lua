@@ -4,7 +4,7 @@
 -- ①：这张卡召唤·特殊召唤的场合才能发动。除「辣辣妖@火灵天星」外的1只4星以下的「@火灵天星」怪兽从卡组加入手卡。
 -- ②：自己的电子界族怪兽进行战斗的伤害步骤开始时，把墓地的这张卡除外才能发动。那只自己怪兽破坏。
 function c15808381.initial_effect(c)
-	-- 效果原文：①：这张卡召唤·特殊召唤的场合才能发动。除「辣辣妖@火灵天星」外的1只4星以下的「@火灵天星」怪兽从卡组加入手卡。
+	-- ①：这张卡召唤·特殊召唤的场合才能发动。除「辣辣妖@火灵天星」外的1只4星以下的「@火灵天星」怪兽从卡组加入手卡。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(15808381,0))
 	e1:SetCategory(CATEGORY_SEARCH+CATEGORY_TOHAND)
@@ -18,7 +18,7 @@ function c15808381.initial_effect(c)
 	local e2=e1:Clone()
 	e2:SetCode(EVENT_SPSUMMON_SUCCESS)
 	c:RegisterEffect(e2)
-	-- 效果原文：②：自己的电子界族怪兽进行战斗的伤害步骤开始时，把墓地的这张卡除外才能发动。那只自己怪兽破坏。
+	-- ②：自己的电子界族怪兽进行战斗的伤害步骤开始时，把墓地的这张卡除外才能发动。那只自己怪兽破坏。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(15808381,1))
 	e3:SetCategory(CATEGORY_DESTROY)

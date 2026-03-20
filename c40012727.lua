@@ -2,7 +2,7 @@
 -- 效果：
 -- 自己场上有名字带有「/爆裂体」的怪兽表侧表示存在的场合才能发动。场上表侧表示存在的怪兽全部破坏。
 function c40012727.initial_effect(c)
-	-- 效果原文：自己场上有名字带有「/爆裂体」的怪兽表侧表示存在的场合才能发动。场上表侧表示存在的怪兽全部破坏。
+	-- 自己场上有名字带有「/爆裂体」的怪兽表侧表示存在的场合才能发动。场上表侧表示存在的怪兽全部破坏。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_DESTROY)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)

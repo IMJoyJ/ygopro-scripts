@@ -2,7 +2,7 @@
 -- 效果：
 -- 场上的超量怪兽为对象的效果怪兽的效果·魔法·陷阱卡的发动无效并破坏。那之后，给与对方基本分800分伤害。
 function c2371506.initial_effect(c)
-	-- 效果原文：场上的超量怪兽为对象的效果怪兽的效果·魔法·陷阱卡的发动无效并破坏。那之后，给与对方基本分800分伤害。
+	-- 场上的超量怪兽为对象的效果怪兽的效果·魔法·陷阱卡的发动无效并破坏。那之后，给与对方基本分800分伤害。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_NEGATE+CATEGORY_DESTROY+CATEGORY_DAMAGE)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)

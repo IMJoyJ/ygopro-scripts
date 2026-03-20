@@ -2,7 +2,7 @@
 -- 效果：
 -- 自己场上没有怪兽存在的场合，这张卡可以不用解放作召唤。对方的准备阶段时1次，这张卡的攻击力直到结束阶段时变成2倍。
 function c37798171.initial_effect(c)
-	-- 效果原文：自己场上没有怪兽存在的场合，这张卡可以不用解放作召唤
+	-- 自己场上没有怪兽存在的场合，这张卡可以不用解放作召唤
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(37798171,0))  --"不解放怪兽进行召唤"
 	e1:SetProperty(EFFECT_FLAG_UNCOPYABLE)
@@ -10,7 +10,7 @@ function c37798171.initial_effect(c)
 	e1:SetCode(EFFECT_SUMMON_PROC)
 	e1:SetCondition(c37798171.ntcon)
 	c:RegisterEffect(e1)
-	-- 效果原文：对方的准备阶段时1次，这张卡的攻击力直到结束阶段时变成2倍
+	-- 对方的准备阶段时1次，这张卡的攻击力直到结束阶段时变成2倍
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(37798171,1))  --"攻击上升"
 	e2:SetCategory(CATEGORY_ATKCHANGE)

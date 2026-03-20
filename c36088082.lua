@@ -2,7 +2,7 @@
 -- 效果：
 -- 这张卡和对方怪兽进行战斗的攻击宣言时才能发动。那次战斗发生的对双方玩家的战斗伤害变成0，伤害计算后那只对方怪兽破坏。
 function c36088082.initial_effect(c)
-	-- 效果原文：这张卡和对方怪兽进行战斗的攻击宣言时才能发动。
+	-- 这张卡和对方怪兽进行战斗的攻击宣言时才能发动。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(36088082,0))  --"破坏"
 	e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
@@ -21,7 +21,7 @@ end
 function c36088082.regop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) then
-		-- 效果原文：那次战斗发生的对双方玩家的战斗伤害变成0
+		-- 那次战斗发生的对双方玩家的战斗伤害变成0
 		local e1=Effect.CreateEffect(c)
 		e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
 		e1:SetType(EFFECT_TYPE_SINGLE)
@@ -32,7 +32,7 @@ function c36088082.regop(e,tp,eg,ep,ev,re,r,rp)
 		e2:SetCode(EFFECT_AVOID_BATTLE_DAMAGE)
 		e2:SetValue(1)
 		c:RegisterEffect(e2)
-		-- 效果原文：伤害计算后那只对方怪兽破坏
+		-- 伤害计算后那只对方怪兽破坏
 		local e3=Effect.CreateEffect(c)
 		e3:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 		e3:SetCode(EVENT_BATTLED)

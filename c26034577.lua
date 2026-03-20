@@ -5,13 +5,13 @@
 -- ②：对方回合1次，把自己场上1只怪兽解放，以对方墓地1张卡为对象才能发动。那张卡除外。
 function c26034577.initial_effect(c)
 	c:EnableReviveLimit()
-	-- 效果原文：这张卡不能通常召唤。
+	-- 这张卡不能通常召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
 	e1:SetCode(EFFECT_SPSUMMON_CONDITION)
 	c:RegisterEffect(e1)
-	-- 效果原文：自己场上的效果怪兽的等级·阶级的合计是8以下时，把自己的手卡·墓地1只「狱火机」怪兽除外的场合才能从手卡特殊召唤。
+	-- 自己场上的效果怪兽的等级·阶级的合计是8以下时，把自己的手卡·墓地1只「狱火机」怪兽除外的场合才能从手卡特殊召唤。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD)
 	e2:SetCode(EFFECT_SPSUMMON_PROC)
@@ -21,7 +21,7 @@ function c26034577.initial_effect(c)
 	e2:SetTarget(c26034577.sptg)
 	e2:SetOperation(c26034577.spop)
 	c:RegisterEffect(e2)
-	-- 效果原文：①：1回合1次，以对方场上1张表侧表示卡为对象才能发动。那张卡回到手卡。
+	-- ①：1回合1次，以对方场上1张表侧表示卡为对象才能发动。那张卡回到手卡。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(26034577,0))  --"卡片回手"
 	e3:SetCategory(CATEGORY_TOHAND)
@@ -32,7 +32,7 @@ function c26034577.initial_effect(c)
 	e3:SetTarget(c26034577.thtg)
 	e3:SetOperation(c26034577.thop)
 	c:RegisterEffect(e3)
-	-- 效果原文：②：对方回合1次，把自己场上1只怪兽解放，以对方墓地1张卡为对象才能发动。那张卡除外。
+	-- ②：对方回合1次，把自己场上1只怪兽解放，以对方墓地1张卡为对象才能发动。那张卡除外。
 	local e4=Effect.CreateEffect(c)
 	e4:SetDescription(aux.Stringid(26034577,1))  --"对方墓地的卡除外"
 	e4:SetCategory(CATEGORY_REMOVE)

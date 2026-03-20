@@ -2,7 +2,7 @@
 -- 效果：
 -- 把自己场上存在的1只怪兽作为祭品。从自己卡组选择1只名字带有「青蛙」的怪兽在自己场上特殊召唤。只要这张卡在场上存在，名字带有「青蛙」的怪兽不会被战斗破坏。
 function c20663556.initial_effect(c)
-	-- 效果原文：把自己场上存在的1只怪兽作为祭品。从自己卡组选择1只名字带有「青蛙」的怪兽在自己场上特殊召唤。
+	-- 把自己场上存在的1只怪兽作为祭品。从自己卡组选择1只名字带有「青蛙」的怪兽在自己场上特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(20663556,0))  --"特殊召唤"
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -12,7 +12,7 @@ function c20663556.initial_effect(c)
 	e1:SetTarget(c20663556.target)
 	e1:SetOperation(c20663556.operation)
 	c:RegisterEffect(e1)
-	-- 效果原文：只要这张卡在场上存在，名字带有「青蛙」的怪兽不会被战斗破坏。
+	-- 只要这张卡在场上存在，名字带有「青蛙」的怪兽不会被战斗破坏。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD)
 	e2:SetCode(EFFECT_INDESTRUCTABLE_BATTLE)

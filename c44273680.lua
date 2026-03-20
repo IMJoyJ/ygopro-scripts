@@ -2,7 +2,7 @@
 -- 效果：
 -- 1回合1次，把手卡1张魔法卡送去墓地才能发动。从手卡把1只名字带有「光天使」的怪兽特殊召唤。
 function c44273680.initial_effect(c)
-	-- 效果原文：1回合1次，把手卡1张魔法卡送去墓地才能发动。从手卡把1只名字带有「光天使」的怪兽特殊召唤。
+	-- 1回合1次，把手卡1张魔法卡送去墓地才能发动。从手卡把1只名字带有「光天使」的怪兽特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(44273680,0))  --"特殊召唤"
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)

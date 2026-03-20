@@ -8,7 +8,7 @@ function c31444249.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- 效果原文：自己场上的原本等级是2星以上的「狱火机」怪兽等级变成1星
+	-- 自己场上的原本等级是2星以上的「狱火机」怪兽等级变成1星
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD)
 	e2:SetCode(EFFECT_CHANGE_LEVEL)
@@ -17,7 +17,7 @@ function c31444249.initial_effect(c)
 	e2:SetValue(1)
 	e2:SetTarget(c31444249.lvtg)
 	c:RegisterEffect(e2)
-	-- 效果原文：那些怪兽给与对方的战斗伤害变成一半
+	-- 那些怪兽给与对方的战斗伤害变成一半
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_FIELD)
 	e3:SetCode(EFFECT_CHANGE_BATTLE_DAMAGE)
@@ -27,7 +27,7 @@ function c31444249.initial_effect(c)
 	-- 将效果作用对象受到的战斗伤害改为一半
 	e3:SetValue(aux.ChangeBattleDamage(1,HALF_DAMAGE))
 	c:RegisterEffect(e3)
-	-- 效果原文：把魔法与陷阱区域的表侧表示的这张卡送去墓地才能发动。自己的手卡·场上的怪兽作为融合素材，把1只「狱火机」融合怪兽融合召唤
+	-- 把魔法与陷阱区域的表侧表示的这张卡送去墓地才能发动。自己的手卡·场上的怪兽作为融合素材，把1只「狱火机」融合怪兽融合召唤
 	local e4=Effect.CreateEffect(c)
 	e4:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_FUSION_SUMMON+CATEGORY_DECKDES)
 	e4:SetType(EFFECT_TYPE_IGNITION)

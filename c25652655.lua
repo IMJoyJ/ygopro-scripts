@@ -2,7 +2,7 @@
 -- 效果：
 -- 这张卡被同调怪兽的同调召唤使用送去墓地的场合，选择对方场上存在的1只怪兽把表示形式变更。
 function c25652655.initial_effect(c)
-	-- 效果原文：这张卡被同调怪兽的同调召唤使用送去墓地的场合，选择对方场上存在的1只怪兽把表示形式变更。
+	-- 这张卡被同调怪兽的同调召唤使用送去墓地的场合，选择对方场上存在的1只怪兽把表示形式变更。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(25652655,0))  --"变更表示形式"
 	e1:SetCategory(CATEGORY_POSITION)

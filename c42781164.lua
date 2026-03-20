@@ -10,7 +10,7 @@ function s.initial_effect(c)
 	-- 为该卡添加同调召唤手续，要求满足条件的调整怪兽作为同调素材
 	aux.AddSynchroMixProcedure(c,aux.FilterBoolFunction(Card.IsSetCard,0x1d5),nil,nil,aux.Tuner(nil),1,99)
 	c:EnableReviveLimit()
-	-- 效果原文：场上的这张卡为素材作同调召唤的场合，手卡1只调整也能作为同调素材
+	-- 场上的这张卡为素材作同调召唤的场合，手卡1只调整也能作为同调素材
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE+EFFECT_FLAG_SPSUM_PARAM)
@@ -19,7 +19,7 @@ function s.initial_effect(c)
 	e1:SetTargetRange(0,1)
 	e1:SetTarget(s.tfilter)
 	c:RegisterEffect(e1)
-	-- 效果原文：①：这张卡特殊召唤的场合才能发动。从卡组把1张「杀手级调整曲」卡加入手卡
+	-- ①：这张卡特殊召唤的场合才能发动。从卡组把1张「杀手级调整曲」卡加入手卡
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(id,0))  --"检索效果"
 	e2:SetCategory(CATEGORY_SEARCH+CATEGORY_TOHAND)
@@ -30,7 +30,7 @@ function s.initial_effect(c)
 	e2:SetTarget(s.thtg)
 	e2:SetOperation(s.thop)
 	c:RegisterEffect(e2)
-	-- 效果原文：②：这张卡作为同调素材送去墓地的场合才能发动。对方场上1张卡回到手卡
+	-- ②：这张卡作为同调素材送去墓地的场合才能发动。对方场上1张卡回到手卡
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(id,1))  --"回手效果"
 	e3:SetCategory(CATEGORY_TOHAND)
@@ -43,7 +43,7 @@ function s.initial_effect(c)
 	e3:SetOperation(s.rthop)
 	c:RegisterEffect(e3)
 	s.killer_tune_be_material_effect=e3
-	-- 效果原文：这个卡名的①②的效果1回合各能使用1次
+	-- 这个卡名的①②的效果1回合各能使用1次
 	local e4=Effect.CreateEffect(c)
 	e4:SetType(EFFECT_TYPE_SINGLE)
 	e4:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)

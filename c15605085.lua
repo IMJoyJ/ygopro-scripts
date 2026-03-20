@@ -3,7 +3,7 @@
 -- 这张卡可以把1只「次世代」怪兽解放表侧表示上级召唤。
 -- ①：这张卡在怪兽区域存在的状态，每次自己场上的表侧表示的「次世代」怪兽被送去墓地发动。给与对方500伤害。
 function c15605085.initial_effect(c)
-	-- 效果原文：这张卡可以把1只「次世代」怪兽解放表侧表示上级召唤。
+	-- 这张卡可以把1只「次世代」怪兽解放表侧表示上级召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(15605085,0))  --"用1只名字带有「次世代」的怪兽解放召唤"
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
@@ -13,7 +13,7 @@ function c15605085.initial_effect(c)
 	e1:SetOperation(c15605085.otop)
 	e1:SetValue(SUMMON_TYPE_ADVANCE)
 	c:RegisterEffect(e1)
-	-- 效果原文：①：这张卡在怪兽区域存在的状态，每次自己场上的表侧表示的「次世代」怪兽被送去墓地发动。给与对方500伤害。
+	-- ①：这张卡在怪兽区域存在的状态，每次自己场上的表侧表示的「次世代」怪兽被送去墓地发动。给与对方500伤害。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(15605085,1))  --"伤害"
 	e2:SetCategory(CATEGORY_DAMAGE)

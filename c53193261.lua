@@ -2,7 +2,7 @@
 -- 效果：
 -- 自己场上表侧表示存在的名字带有「电气」的怪兽在这个回合可以直接攻击对方玩家。
 function c53193261.initial_effect(c)
-	-- 效果原文：自己场上表侧表示存在的名字带有「电气」的怪兽在这个回合可以直接攻击对方玩家。
+	-- 自己场上表侧表示存在的名字带有「电气」的怪兽在这个回合可以直接攻击对方玩家。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)

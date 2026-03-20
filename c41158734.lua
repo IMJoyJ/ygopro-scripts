@@ -2,7 +2,7 @@
 -- 效果：
 -- 自己场上有调整表侧表示存在的场合，场上表侧表示存在的这张卡的等级当作5星使用。场上存在的这张卡被破坏送去墓地时，可以选择自己墓地存在的1只「太阳之神官」特殊召唤。
 function c41158734.initial_effect(c)
-	-- 效果原文：自己场上有调整表侧表示存在的场合，场上表侧表示存在的这张卡的等级当作5星使用。
+	-- 自己场上有调整表侧表示存在的场合，场上表侧表示存在的这张卡的等级当作5星使用。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
@@ -11,7 +11,7 @@ function c41158734.initial_effect(c)
 	e1:SetCondition(c41158734.lvcon)
 	e1:SetValue(5)
 	c:RegisterEffect(e1)
-	-- 效果原文：场上存在的这张卡被破坏送去墓地时，可以选择自己墓地存在的1只「太阳之神官」特殊召唤。
+	-- 场上存在的这张卡被破坏送去墓地时，可以选择自己墓地存在的1只「太阳之神官」特殊召唤。
 	local e2=Effect.CreateEffect(c)
 	e2:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e2:SetDescription(aux.Stringid(41158734,0))  --"特殊召唤"

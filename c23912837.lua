@@ -6,7 +6,7 @@
 -- ●自己场上1只里侧表示怪兽变成表侧守备表示。
 -- ●自己场上1只表侧表示怪兽变成里侧守备表示。
 function c23912837.initial_effect(c)
-	-- 效果原文：这个卡名的①②的效果1回合只能有1次使用其中任意1个。
+	-- 这个卡名的①②的效果1回合只能有1次使用其中任意1个。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(23912837,0))  --"特殊召唤"
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_MSET)
@@ -18,7 +18,7 @@ function c23912837.initial_effect(c)
 	e1:SetTarget(c23912837.target)
 	e1:SetOperation(c23912837.operation)
 	c:RegisterEffect(e1)
-	-- 效果原文：①：以自己墓地1只「影依」怪兽为对象才能发动。那只怪兽表侧守备表示或里侧守备表示特殊召唤。
+	-- ①：以自己墓地1只「影依」怪兽为对象才能发动。那只怪兽表侧守备表示或里侧守备表示特殊召唤。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(23912837,1))  --"选择效果发动"
 	e2:SetCategory(CATEGORY_POSITION+CATEGORY_MSET)
@@ -87,15 +87,15 @@ function c23912837.postg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return b1 or b2 end
 	local s=0
 	if b1 and not b2 then
-		-- 效果原文：●自己场上1只里侧表示怪兽变成表侧守备表示。
+		-- ●自己场上1只里侧表示怪兽变成表侧守备表示。
 		s=Duel.SelectOption(tp,aux.Stringid(23912837,2))  --"里侧表示怪兽变成表侧守备表示"
 	end
 	if not b1 and b2 then
-		-- 效果原文：●自己场上1只表侧表示怪兽变成里侧守备表示。
+		-- ●自己场上1只表侧表示怪兽变成里侧守备表示。
 		s=Duel.SelectOption(tp,aux.Stringid(23912837,3))+1  --"表侧表示怪兽变成里侧守备表示"
 	end
 	if b1 and b2 then
-		-- 效果原文：●自己场上1只里侧表示怪兽变成表侧守备表示。/●自己场上1只表侧表示怪兽变成里侧守备表示。
+		-- ●自己场上1只里侧表示怪兽变成表侧守备表示。/●自己场上1只表侧表示怪兽变成里侧守备表示。
 		s=Duel.SelectOption(tp,aux.Stringid(23912837,2),aux.Stringid(23912837,3))  --"里侧表示怪兽变成表侧守备表示/表侧表示怪兽变成里侧守备表示"
 	end
 	e:SetLabel(s)

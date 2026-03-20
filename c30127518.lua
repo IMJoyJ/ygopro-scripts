@@ -2,7 +2,7 @@
 -- 效果：
 -- 对方以表侧表示对2只以上的怪兽的特殊召唤成功时才能发动。那些怪兽全部送去墓地。并且再把和那些怪兽同名怪兽从对方的手卡·卡组送去墓地。
 function c30127518.initial_effect(c)
-	-- 效果原文：对方以表侧表示对2只以上的怪兽的特殊召唤成功时才能发动。
+	-- 对方以表侧表示对2只以上的怪兽的特殊召唤成功时才能发动。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_TOGRAVE+CATEGORY_DECKDES)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -24,7 +24,7 @@ function c30127518.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 设置操作信息为将目标怪兽送去墓地
 	Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,g,g:GetCount(),0,0)
 end
--- 效果原文：那些怪兽全部送去墓地。并且再把和那些怪兽同名怪兽从对方的手卡·卡组送去墓地。
+-- 那些怪兽全部送去墓地。并且再把和那些怪兽同名怪兽从对方的手卡·卡组送去墓地。
 function c30127518.activate(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取当前连锁对象中符合条件的怪兽（表侧表示、对方特殊召唤、与效果相关）
 	local g=Duel.GetChainInfo(0,CHAININFO_TARGET_CARDS):Filter(c30127518.cfilter,nil,1-tp,e)

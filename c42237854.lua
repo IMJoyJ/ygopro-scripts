@@ -3,7 +3,7 @@
 -- ①：以自己场上的机械族·4星怪兽任意数量为对象才能发动。这张卡发动后变成效果怪兽（机械族·地·4星·攻/守0）在怪兽区域特殊召唤。那之后，作为对象的表侧表示怪兽当作装备卡使用给这张卡装备。这张卡也当作陷阱卡使用。
 -- ②：这张卡的效果特殊召唤的这张卡的攻击力上升这张卡的效果装备的怪兽的攻击力的合计数值，对方不能把其他的自己场上的怪兽作为攻击对象，也不能作为效果的对象。
 function c42237854.initial_effect(c)
-	-- 效果原文：①：以自己场上的机械族·4星怪兽任意数量为对象才能发动。这张卡发动后变成效果怪兽（机械族·地·4星·攻/守0）在怪兽区域特殊召唤。那之后，作为对象的表侧表示怪兽当作装备卡使用给这张卡装备。这张卡也当作陷阱卡使用。
+	-- ①：以自己场上的机械族·4星怪兽任意数量为对象才能发动。这张卡发动后变成效果怪兽（机械族·地·4星·攻/守0）在怪兽区域特殊召唤。那之后，作为对象的表侧表示怪兽当作装备卡使用给这张卡装备。这张卡也当作陷阱卡使用。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -12,7 +12,7 @@ function c42237854.initial_effect(c)
 	e1:SetTarget(c42237854.target)
 	e1:SetOperation(c42237854.activate)
 	c:RegisterEffect(e1)
-	-- 效果原文：②：这张卡的效果特殊召唤的这张卡的攻击力上升这张卡的效果装备的怪兽的攻击力的合计数值，对方不能把其他的自己场上的怪兽作为攻击对象，也不能作为效果的对象。
+	-- ②：这张卡的效果特殊召唤的这张卡的攻击力上升这张卡的效果装备的怪兽的攻击力的合计数值，对方不能把其他的自己场上的怪兽作为攻击对象，也不能作为效果的对象。
 	local e0=Effect.CreateEffect(c)
 	e0:SetType(EFFECT_TYPE_SINGLE)
 	e0:SetCode(EFFECT_UPDATE_ATTACK)
@@ -21,7 +21,7 @@ function c42237854.initial_effect(c)
 	e0:SetCondition(c42237854.condition)
 	e0:SetValue(c42237854.atkval)
 	c:RegisterEffect(e0)
-	-- 效果原文：②：这张卡的效果特殊召唤的这张卡的攻击力上升这张卡的效果装备的怪兽的攻击力的合计数值，对方不能把其他的自己场上的怪兽作为攻击对象，也不能作为效果的对象。
+	-- ②：这张卡的效果特殊召唤的这张卡的攻击力上升这张卡的效果装备的怪兽的攻击力的合计数值，对方不能把其他的自己场上的怪兽作为攻击对象，也不能作为效果的对象。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD)
 	e2:SetCode(EFFECT_CANNOT_SELECT_BATTLE_TARGET)
@@ -30,7 +30,7 @@ function c42237854.initial_effect(c)
 	e2:SetCondition(c42237854.condition)
 	e2:SetValue(c42237854.atlimit)
 	c:RegisterEffect(e2)
-	-- 效果原文：②：这张卡的效果特殊召唤的这张卡的攻击力上升这张卡的效果装备的怪兽的攻击力的合计数值，对方不能把其他的自己场上的怪兽作为攻击对象，也不能作为效果的对象。
+	-- ②：这张卡的效果特殊召唤的这张卡的攻击力上升这张卡的效果装备的怪兽的攻击力的合计数值，对方不能把其他的自己场上的怪兽作为攻击对象，也不能作为效果的对象。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_FIELD)
 	e3:SetCode(EFFECT_CANNOT_BE_EFFECT_TARGET)

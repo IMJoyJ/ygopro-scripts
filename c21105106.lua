@@ -6,14 +6,14 @@
 -- ②：这张卡仪式召唤时才能发动（这个效果发动的回合，自己不能把其他怪兽通常召唤·特殊召唤）。这张卡以外的双方的场上·墓地的卡全部除外。
 function c21105106.initial_effect(c)
 	c:EnableReviveLimit()
-	-- 效果原文：这张卡若非以使用各自种族不同的自己场上3只怪兽来作的从手卡的仪式召唤则不能特殊召唤。
+	-- 这张卡若非以使用各自种族不同的自己场上3只怪兽来作的从手卡的仪式召唤则不能特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
 	e1:SetCode(EFFECT_SPSUMMON_CONDITION)
 	e1:SetValue(c21105106.splimit)
 	c:RegisterEffect(e1)
-	-- 效果原文：①：自己·对方的主要阶段1，从手卡把这张卡和1张「影灵衣」魔法卡丢弃才能发动。那次阶段内，对方不能从额外卡组把怪兽特殊召唤。
+	-- ①：自己·对方的主要阶段1，从手卡把这张卡和1张「影灵衣」魔法卡丢弃才能发动。那次阶段内，对方不能从额外卡组把怪兽特殊召唤。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_QUICK_O)
 	e2:SetCode(EVENT_FREE_CHAIN)
@@ -22,7 +22,7 @@ function c21105106.initial_effect(c)
 	e2:SetCost(c21105106.discost)
 	e2:SetOperation(c21105106.disop)
 	c:RegisterEffect(e2)
-	-- 效果原文：②：这张卡仪式召唤时才能发动（这个效果发动的回合，自己不能把其他怪兽通常召唤·特殊召唤）。这张卡以外的双方的场上·墓地的卡全部除外。
+	-- ②：这张卡仪式召唤时才能发动（这个效果发动的回合，自己不能把其他怪兽通常召唤·特殊召唤）。这张卡以外的双方的场上·墓地的卡全部除外。
 	local e3=Effect.CreateEffect(c)
 	e3:SetCategory(CATEGORY_REMOVE)
 	e3:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
@@ -65,7 +65,7 @@ function c21105106.discost(e,tp,eg,ep,ev,re,r,rp,chk)
 end
 -- 规则层面：创建一个效果，使对方在本阶段不能特殊召唤额外怪兽。
 function c21105106.disop(e,tp,eg,ep,ev,re,r,rp)
-	-- 效果原文：①：自己·对方的主要阶段1，从手卡把这张卡和1张「影灵衣」魔法卡丢弃才能发动。那次阶段内，对方不能从额外卡组把怪兽特殊召唤。
+	-- ①：自己·对方的主要阶段1，从手卡把这张卡和1张「影灵衣」魔法卡丢弃才能发动。那次阶段内，对方不能从额外卡组把怪兽特殊召唤。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
@@ -90,7 +90,7 @@ function c21105106.rmcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.GetActivityCount(tp,ACTIVITY_NORMALSUMMON)==0
 		-- 规则层面：判断是否满足发动条件，即本回合已进行一次特殊召唤。
 		and Duel.GetActivityCount(tp,ACTIVITY_SPSUMMON)==1 end
-	-- 效果原文：②：这张卡仪式召唤时才能发动（这个效果发动的回合，自己不能把其他怪兽通常召唤·特殊召唤）。这张卡以外的双方的场上·墓地的卡全部除外。
+	-- ②：这张卡仪式召唤时才能发动（这个效果发动的回合，自己不能把其他怪兽通常召唤·特殊召唤）。这张卡以外的双方的场上·墓地的卡全部除外。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET+EFFECT_FLAG_OATH)

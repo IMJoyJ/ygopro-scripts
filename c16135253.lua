@@ -2,7 +2,7 @@
 -- 效果：
 -- 这张卡被战斗破坏送去墓地时，掷1次骰子。可以从自己的墓地中特殊召唤1只等级与掷出点数相同的天使族怪兽上场。（若掷出6，则包括6星以上的怪兽）。
 function c16135253.initial_effect(c)
-	-- 效果原文：这张卡被战斗破坏送去墓地时，掷1次骰子。可以从自己的墓地中特殊召唤1只等级与掷出点数相同的天使族怪兽上场。（若掷出6，则包括6星以上的怪兽）。
+	-- 这张卡被战斗破坏送去墓地时，掷1次骰子。可以从自己的墓地中特殊召唤1只等级与掷出点数相同的天使族怪兽上场。（若掷出6，则包括6星以上的怪兽）。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(16135253,0))  --"掷骰子"
 	e1:SetCategory(CATEGORY_DICE+CATEGORY_SPECIAL_SUMMON)
@@ -28,7 +28,7 @@ function c16135253.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 设置骰子效果的连锁信息
 	Duel.SetOperationInfo(0,CATEGORY_DICE,nil,0,tp,1)
 end
--- 效果原文：这张卡被战斗破坏送去墓地时，掷1次骰子。可以从自己的墓地中特殊召唤1只等级与掷出点数相同的天使族怪兽上场。（若掷出6，则包括6星以上的怪兽）。
+-- 这张卡被战斗破坏送去墓地时，掷1次骰子。可以从自己的墓地中特殊召唤1只等级与掷出点数相同的天使族怪兽上场。（若掷出6，则包括6星以上的怪兽）。
 function c16135253.operation(e,tp,eg,ep,ev,re,r,rp)
 	-- 判断场上是否有特殊召唤怪兽的空间
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end

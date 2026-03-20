@@ -10,21 +10,21 @@ function c15661378.initial_effect(c)
 	aux.AddFusionProcFunRep(c,c15661378.ffilter,3,false)
 	-- 添加接触融合特殊召唤规则，需要除外自己场上的卡才能从额外卡组特殊召唤
 	aux.AddContactFusionProcedure(c,Card.IsAbleToRemoveAsCost,LOCATION_MZONE,0,Duel.Remove,POS_FACEUP,REASON_COST+REASON_MATERIAL):SetValue(SUMMON_VALUE_SELF)
-	-- 效果原文：卡名不同的怪兽×3
+	-- 卡名不同的怪兽×3
 	local e0=Effect.CreateEffect(c)
 	e0:SetType(EFFECT_TYPE_SINGLE)
 	e0:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
 	e0:SetCode(EFFECT_MATERIAL_LIMIT)
 	e0:SetValue(c15661378.matlimit)
 	c:RegisterEffect(e0)
-	-- 效果原文：这张卡用只以自己的手卡·场上的怪兽为素材的融合召唤以及用以下方法才能从额外卡组特殊召唤
+	-- 这张卡用只以自己的手卡·场上的怪兽为素材的融合召唤以及用以下方法才能从额外卡组特殊召唤
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
 	e1:SetCode(EFFECT_SPSUMMON_CONDITION)
 	e1:SetValue(c15661378.splimit)
 	c:RegisterEffect(e1)
-	-- 效果原文：①：只用原本种族是龙族的怪兽作为素材让这张卡特殊召唤成功的场合才能发动。以自己卡组·对方卡组最上面·对方的额外卡组的顺序来确认并各让1张除外。这个卡名的这个效果1回合只能使用1次。
+	-- ①：只用原本种族是龙族的怪兽作为素材让这张卡特殊召唤成功的场合才能发动。以自己卡组·对方卡组最上面·对方的额外卡组的顺序来确认并各让1张除外。这个卡名的这个效果1回合只能使用1次。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(15661378,0))
 	e3:SetCategory(CATEGORY_REMOVE)
@@ -36,7 +36,7 @@ function c15661378.initial_effect(c)
 	e3:SetTarget(c15661378.remtg)
 	e3:SetOperation(c15661378.remop)
 	c:RegisterEffect(e3)
-	-- 效果原文：●把自己场上的上记卡除外的场合可以从额外卡组特殊召唤（不需要「融合」）
+	-- ●把自己场上的上记卡除外的场合可以从额外卡组特殊召唤（不需要「融合」）
 	local e4=Effect.CreateEffect(c)
 	e4:SetType(EFFECT_TYPE_SINGLE)
 	e4:SetCode(EFFECT_MATERIAL_CHECK)

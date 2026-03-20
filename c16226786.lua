@@ -3,7 +3,7 @@
 -- ①：这张卡反转的场合，以对方场上1只怪兽为对象发动。那只对方怪兽破坏。
 -- ②：这张卡从手卡送去墓地的场合，以「深渊的暗杀者」以外的自己墓地1只反转怪兽为对象发动。那只怪兽加入手卡。
 function c16226786.initial_effect(c)
-	-- 效果原文：①：这张卡反转的场合，以对方场上1只怪兽为对象发动。那只对方怪兽破坏。
+	-- ①：这张卡反转的场合，以对方场上1只怪兽为对象发动。那只对方怪兽破坏。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(16226786,0))  --"破坏"
 	e1:SetCategory(CATEGORY_DESTROY)
@@ -12,7 +12,7 @@ function c16226786.initial_effect(c)
 	e1:SetTarget(c16226786.target)
 	e1:SetOperation(c16226786.operation)
 	c:RegisterEffect(e1)
-	-- 效果原文：②：这张卡从手卡送去墓地的场合，以「深渊的暗杀者」以外的自己墓地1只反转怪兽为对象发动。那只怪兽加入手卡。
+	-- ②：这张卡从手卡送去墓地的场合，以「深渊的暗杀者」以外的自己墓地1只反转怪兽为对象发动。那只怪兽加入手卡。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(16226786,1))  --"返回手牌"
 	e2:SetCategory(CATEGORY_TOHAND)

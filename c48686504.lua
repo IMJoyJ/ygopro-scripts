@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：1回合1次，把自己场上1只表侧表示的植物族怪兽解放才能发动。从卡组把1只植物族怪兽特殊召唤。
 function c48686504.initial_effect(c)
-	-- 效果原文：①：1回合1次，把自己场上1只表侧表示的植物族怪兽解放才能发动。从卡组把1只植物族怪兽特殊召唤。
+	-- ①：1回合1次，把自己场上1只表侧表示的植物族怪兽解放才能发动。从卡组把1只植物族怪兽特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(48686504,0))  --"特殊召唤"
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)

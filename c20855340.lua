@@ -2,7 +2,7 @@
 -- 效果：
 -- 这张卡在自己场上被破坏送去墓地的场合，可以从手卡把1只名字带有「进化龙」的怪兽特殊召唤。
 function c20855340.initial_effect(c)
-	-- 效果原文：这张卡在自己场上被破坏送去墓地的场合，可以从手卡把1只名字带有「进化龙」的怪兽特殊召唤。
+	-- 这张卡在自己场上被破坏送去墓地的场合，可以从手卡把1只名字带有「进化龙」的怪兽特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(20855340,0))  --"特殊召唤"
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)

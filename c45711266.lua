@@ -2,7 +2,7 @@
 -- 效果：
 -- 这张卡被攻击的场合，伤害计算后攻击怪兽回到手卡。这张卡的守备力上升这个效果回到手卡的怪兽等级×100的数值。
 function c45711266.initial_effect(c)
-	-- 效果原文：这张卡被攻击的场合，伤害计算后攻击怪兽回到手卡。这张卡的守备力上升这个效果回到手卡的怪兽等级×100的数值。
+	-- 这张卡被攻击的场合，伤害计算后攻击怪兽回到手卡。这张卡的守备力上升这个效果回到手卡的怪兽等级×100的数值。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(45711266,0))  --"返回手牌"
 	e1:SetCategory(CATEGORY_TOHAND)
@@ -15,7 +15,7 @@ function c45711266.initial_effect(c)
 end
 -- 判断是否为攻击对象
 function c45711266.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 效果原文：这张卡被攻击的场合，伤害计算后攻击怪兽回到手卡。
+	-- 这张卡被攻击的场合，伤害计算后攻击怪兽回到手卡。
 	return e:GetHandler()==Duel.GetAttackTarget()
 end
 -- 设置连锁操作信息，确定将攻击怪兽送回手牌
@@ -36,7 +36,7 @@ function c45711266.operation(e,tp,eg,ep,ev,re,r,rp)
 		-- 将攻击怪兽送回手牌
 		Duel.SendtoHand(tc,nil,REASON_EFFECT)
 		if not c:IsStatus(STATUS_BATTLE_DESTROYED) then
-			-- 效果原文：这张卡的守备力上升这个效果回到手卡的怪兽等级×100的数值。
+			-- 这张卡的守备力上升这个效果回到手卡的怪兽等级×100的数值。
 			local e1=Effect.CreateEffect(c)
 			e1:SetType(EFFECT_TYPE_SINGLE)
 			e1:SetCode(EFFECT_UPDATE_DEFENSE)

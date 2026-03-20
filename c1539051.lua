@@ -2,7 +2,7 @@
 -- 效果：
 -- 自己场上表侧表示存在的名字带有「新空间侠」的怪兽每有1种类，从自己卡组抽1张卡。
 function c1539051.initial_effect(c)
-	-- 效果原文：自己场上表侧表示存在的名字带有「新空间侠」的怪兽每有1种类，从自己卡组抽1张卡。
+	-- 自己场上表侧表示存在的名字带有「新空间侠」的怪兽每有1种类，从自己卡组抽1张卡。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_DRAW)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)

@@ -3,14 +3,14 @@
 -- 这张卡不是从墓地中不能特殊召唤，若没已从场上送去墓地则也不能作从墓地的特殊召唤。
 -- ①：这张卡从墓地的特殊召唤成功的场合，以自己墓地1只怪兽为对象发动。这张卡的攻击力上升作为对象的怪兽的等级×200。
 function c3954901.initial_effect(c)
-	-- 效果原文：这张卡不是从墓地中不能特殊召唤，若没已从场上送去墓地则也不能作从墓地的特殊召唤。
+	-- 这张卡不是从墓地中不能特殊召唤，若没已从场上送去墓地则也不能作从墓地的特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_SPSUMMON_CONDITION)
 	e1:SetValue(c3954901.spcon)
 	c:RegisterEffect(e1)
-	-- 效果原文：①：这张卡从墓地的特殊召唤成功的场合，以自己墓地1只怪兽为对象发动。这张卡的攻击力上升作为对象的怪兽的等级×200。
+	-- ①：这张卡从墓地的特殊召唤成功的场合，以自己墓地1只怪兽为对象发动。这张卡的攻击力上升作为对象的怪兽的等级×200。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(3954901,0))  --"攻击上升"
 	e2:SetCategory(CATEGORY_ATKCHANGE)
@@ -45,7 +45,7 @@ function c3954901.atkop(e,tp,eg,ep,ev,re,r,rp)
 	-- 规则层面：获取此连锁中选择的对象卡
 	local tc=Duel.GetFirstTarget()
 	if tc and tc:IsRelateToEffect(e) and c:IsFaceup() and c:IsRelateToEffect(e) then
-		-- 效果原文：这张卡的攻击力上升作为对象的怪兽的等级×200。
+		-- 这张卡的攻击力上升作为对象的怪兽的等级×200。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)

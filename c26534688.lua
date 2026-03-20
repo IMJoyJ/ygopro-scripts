@@ -5,13 +5,13 @@
 -- ②：1回合1次，以自己场上1只水属性怪兽为对象才能发动。那只怪兽的等级直到回合结束时上升1星或者2星。
 -- ③：1回合1次，自己主要阶段，自己对水属性同调怪兽的特殊召唤成功的场合才能发动。把对方手卡确认，从那之中选1张卡直到结束阶段表侧表示除外。
 function c26534688.initial_effect(c)
-	-- 效果原文：①：作为这张卡的发动时的效果处理，可以从卡组选1只水属性怪兽在卡组最上面放置。
+	-- ①：作为这张卡的发动时的效果处理，可以从卡组选1只水属性怪兽在卡组最上面放置。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetOperation(c26534688.activate)
 	c:RegisterEffect(e1)
-	-- 效果原文：②：1回合1次，以自己场上1只水属性怪兽为对象才能发动。那只怪兽的等级直到回合结束时上升1星或者2星。
+	-- ②：1回合1次，以自己场上1只水属性怪兽为对象才能发动。那只怪兽的等级直到回合结束时上升1星或者2星。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(26534688,0))
 	e2:SetType(EFFECT_TYPE_IGNITION)
@@ -21,7 +21,7 @@ function c26534688.initial_effect(c)
 	e2:SetTarget(c26534688.lvtg)
 	e2:SetOperation(c26534688.lvop)
 	c:RegisterEffect(e2)
-	-- 效果原文：③：1回合1次，自己主要阶段，自己对水属性同调怪兽的特殊召唤成功的场合才能发动。把对方手卡确认，从那之中选1张卡直到结束阶段表侧表示除外。
+	-- ③：1回合1次，自己主要阶段，自己对水属性同调怪兽的特殊召唤成功的场合才能发动。把对方手卡确认，从那之中选1张卡直到结束阶段表侧表示除外。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(26534688,1))
 	e3:SetCategory(CATEGORY_REMOVE)

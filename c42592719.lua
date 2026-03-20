@@ -2,7 +2,7 @@
 -- 效果：
 -- 「剑斗兽 双斗」以外的效果不能把这张卡特殊召唤。特殊召唤的这张卡只要在自己场上表侧表示存在，不受魔法的效果的影响。这张卡进行战斗的战斗阶段结束时可以让这张卡回到卡组，从卡组把「剑斗兽 亚历山大」以外的1只名字带有「剑斗兽」的怪兽在自己场上特殊召唤。
 function c42592719.initial_effect(c)
-	-- 效果原文：特殊召唤的这张卡只要在自己场上表侧表示存在，不受魔法的效果的影响。
+	-- 特殊召唤的这张卡只要在自己场上表侧表示存在，不受魔法的效果的影响。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_IMMUNE_EFFECT)
@@ -11,7 +11,7 @@ function c42592719.initial_effect(c)
 	e1:SetCondition(c42592719.imcon)
 	e1:SetValue(c42592719.imfilter)
 	c:RegisterEffect(e1)
-	-- 效果原文：这张卡进行战斗的战斗阶段结束时可以让这张卡回到卡组，从卡组把「剑斗兽 亚历山大」以外的1只名字带有「剑斗兽」的怪兽在自己场上特殊召唤。
+	-- 这张卡进行战斗的战斗阶段结束时可以让这张卡回到卡组，从卡组把「剑斗兽 亚历山大」以外的1只名字带有「剑斗兽」的怪兽在自己场上特殊召唤。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(42592719,0))  --"特殊召唤"
 	e2:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -23,7 +23,7 @@ function c42592719.initial_effect(c)
 	e2:SetTarget(c42592719.sptg)
 	e2:SetOperation(c42592719.spop)
 	c:RegisterEffect(e2)
-	-- 效果原文：「剑斗兽 双斗」以外的效果不能把这张卡特殊召唤。
+	-- 「剑斗兽 双斗」以外的效果不能把这张卡特殊召唤。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_SINGLE)
 	e3:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)

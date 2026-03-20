@@ -2,7 +2,7 @@
 -- 效果：
 -- 选择对方场上表侧表示存在的1只怪兽发动。这个回合自己同调召唤的场合，可以把选择的怪兽作为同调素材。这张卡发动的回合，自己不能进行战斗阶段。
 function c14507213.initial_effect(c)
-	-- 效果原文：选择对方场上表侧表示存在的1只怪兽发动。这个回合自己同调召唤的场合，可以把选择的怪兽作为同调素材。这张卡发动的回合，自己不能进行战斗阶段。
+	-- 选择对方场上表侧表示存在的1只怪兽发动。这个回合自己同调召唤的场合，可以把选择的怪兽作为同调素材。这张卡发动的回合，自己不能进行战斗阶段。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET)
@@ -20,7 +20,7 @@ end
 function c14507213.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 规则层面：若玩家在本回合中未进入过战斗阶段则满足费用条件
 	if chk==0 then return Duel.GetActivityCount(tp,ACTIVITY_BATTLE_PHASE)==0 end
-	-- 效果原文：这张卡发动的回合，自己不能进行战斗阶段。
+	-- 这张卡发动的回合，自己不能进行战斗阶段。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_CANNOT_BP)
@@ -45,7 +45,7 @@ function c14507213.activate(e,tp,eg,ep,ev,re,r,rp)
 	-- 规则层面：获取当前连锁中被选择的目标怪兽
 	local tc=Duel.GetFirstTarget()
 	if tc and tc:IsRelateToEffect(e) then
-		-- 效果原文：这个回合自己同调召唤的场合，可以把选择的怪兽作为同调素材。
+		-- 这个回合自己同调召唤的场合，可以把选择的怪兽作为同调素材。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_EXTRA_SYNCHRO_MATERIAL)

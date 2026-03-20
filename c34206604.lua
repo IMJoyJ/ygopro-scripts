@@ -2,7 +2,7 @@
 -- 效果：
 -- 支付1000基本分，就可以从自己的融合卡组中特殊召唤1只6星以下的融合怪兽。这只融合怪兽不能对对方进行直接攻击，回合结束时回到融合卡组。
 function c34206604.initial_effect(c)
-	-- 效果原文：支付1000基本分，就可以从自己的融合卡组中特殊召唤1只6星以下的融合怪兽。这只融合怪兽不能对对方进行直接攻击，回合结束时回到融合卡组。
+	-- 支付1000基本分，就可以从自己的融合卡组中特殊召唤1只6星以下的融合怪兽。这只融合怪兽不能对对方进行直接攻击，回合结束时回到融合卡组。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e1:SetDescription(aux.Stringid(34206604,0))  --"特殊召唤"
@@ -42,14 +42,14 @@ function c34206604.operation(e,tp,eg,ep,ev,re,r,rp)
 	local tc=g:GetFirst()
 	-- 将选中的怪兽特殊召唤到场上
 	if tc and Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP)~=0 then
-		-- 效果原文：这只融合怪兽不能对对方进行直接攻击。
+		-- 这只融合怪兽不能对对方进行直接攻击。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_CANNOT_DIRECT_ATTACK)
 		e1:SetProperty(EFFECT_FLAG_IGNORE_IMMUNE)
 		e1:SetReset(RESET_EVENT+RESETS_STANDARD)
 		tc:RegisterEffect(e1,true)
-		-- 效果原文：回合结束时回到融合卡组。
+		-- 回合结束时回到融合卡组。
 		local e2=Effect.CreateEffect(e:GetHandler())
 		e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 		e2:SetCode(EVENT_PHASE+PHASE_END)

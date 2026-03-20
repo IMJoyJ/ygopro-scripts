@@ -7,21 +7,21 @@
 function c34945480.initial_effect(c)
 	aux.AddXyzProcedure(c,nil,5,3,c34945480.ovfilter,aux.Stringid(34945480,1))  --"是否在自己场上的「外神」超量怪兽上面重叠来超量召唤？"
 	c:EnableReviveLimit()
-	-- 效果原文：这张卡不能作为超量召唤的素材。
+	-- 这张卡不能作为超量召唤的素材。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
 	e1:SetCode(EFFECT_CANNOT_BE_XYZ_MATERIAL)
 	e1:SetValue(1)
 	c:RegisterEffect(e1)
-	-- 效果原文：①：这张卡超量召唤成功的回合，对方不能把怪兽的效果发动。
+	-- ①：这张卡超量召唤成功的回合，对方不能把怪兽的效果发动。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_CONTINUOUS)
 	e2:SetCode(EVENT_SPSUMMON_SUCCESS)
 	e2:SetCondition(c34945480.sumcon)
 	e2:SetOperation(c34945480.sumsuc)
 	c:RegisterEffect(e2)
-	-- 效果原文：②：这张卡有融合·同调·超量怪兽全部在作为超量素材的场合，把这张卡1个超量素材取除才能发动。对方场上的卡全部破坏。
+	-- ②：这张卡有融合·同调·超量怪兽全部在作为超量素材的场合，把这张卡1个超量素材取除才能发动。对方场上的卡全部破坏。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(34945480,0))  --"对方场上的卡全部破坏"
 	e3:SetCategory(CATEGORY_DESTROY)
@@ -43,7 +43,7 @@ function c34945480.sumcon(e,tp,eg,ep,ev,re,r,rp)
 end
 -- 为对方玩家设置不能发动怪兽效果的永续效果
 function c34945480.sumsuc(e,tp,eg,ep,ev,re,r,rp)
-	-- 效果原文：对方场上的卡全部破坏
+	-- 对方场上的卡全部破坏
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_CANNOT_ACTIVATE)

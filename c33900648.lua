@@ -14,7 +14,7 @@ function c33900648.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- 效果原文：这张卡的控制者在每次自己结束阶段支付500基本分或把这张卡破坏。
+	-- 这张卡的控制者在每次自己结束阶段支付500基本分或把这张卡破坏。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(33900648,4))
 	e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
@@ -25,7 +25,7 @@ function c33900648.initial_effect(c)
 	e2:SetCondition(c33900648.mtcon)
 	e2:SetOperation(c33900648.mtop)
 	c:RegisterEffect(e2)
-	-- 效果原文：●光：手卡全部持续公开。
+	-- ●光：手卡全部持续公开。
 	local e4=Effect.CreateEffect(c)
 	e4:SetType(EFFECT_TYPE_FIELD)
 	e4:SetCode(EFFECT_PUBLIC)
@@ -37,7 +37,7 @@ function c33900648.initial_effect(c)
 	e4_:SetTargetRange(0,LOCATION_HAND)
 	e4_:SetCondition(c33900648.lightcon2)
 	c:RegisterEffect(e4_)
-	-- 效果原文：●暗：自己场上的怪兽是2只以上的场合，不能攻击宣言。
+	-- ●暗：自己场上的怪兽是2只以上的场合，不能攻击宣言。
 	local e5=Effect.CreateEffect(c)
 	e5:SetType(EFFECT_TYPE_FIELD)
 	e5:SetCode(EFFECT_CANNOT_ATTACK_ANNOUNCE)
@@ -50,7 +50,7 @@ function c33900648.initial_effect(c)
 	e6:SetCondition(c33900648.darkcon2)
 	e6:SetTargetRange(0,1)
 	c:RegisterEffect(e6)
-	-- 效果原文：●地：自己准备阶段把自己1只表侧守备表示怪兽破坏。
+	-- ●地：自己准备阶段把自己1只表侧守备表示怪兽破坏。
 	local e7=Effect.CreateEffect(c)
 	e7:SetDescription(aux.Stringid(33900648,1))  --"破坏"
 	e7:SetCategory(CATEGORY_DESTROY)
@@ -63,7 +63,7 @@ function c33900648.initial_effect(c)
 	e7:SetTarget(c33900648.destg)
 	e7:SetOperation(c33900648.desop)
 	c:RegisterEffect(e7)
-	-- 效果原文：●水：自己结束阶段选1张手卡丢弃。
+	-- ●水：自己结束阶段选1张手卡丢弃。
 	local e8=Effect.CreateEffect(c)
 	e8:SetDescription(aux.Stringid(33900648,2))  --"丢弃手牌"
 	e8:SetCategory(CATEGORY_HANDES)
@@ -75,7 +75,7 @@ function c33900648.initial_effect(c)
 	e8:SetTarget(c33900648.hdtg)
 	e8:SetOperation(c33900648.hdop)
 	c:RegisterEffect(e8)
-	-- 效果原文：●炎：自己结束阶段受到1000伤害。
+	-- ●炎：自己结束阶段受到1000伤害。
 	local e9=Effect.CreateEffect(c)
 	e9:SetDescription(aux.Stringid(33900648,3))  --"1000伤害"
 	e9:SetCategory(CATEGORY_DAMAGE)
@@ -87,7 +87,7 @@ function c33900648.initial_effect(c)
 	e9:SetTarget(c33900648.damtg)
 	e9:SetOperation(c33900648.damop)
 	c:RegisterEffect(e9)
-	-- 效果原文：●风：若不支付500基本分则不能把魔法卡发动。
+	-- ●风：若不支付500基本分则不能把魔法卡发动。
 	local e10=Effect.CreateEffect(c)
 	e10:SetType(EFFECT_TYPE_FIELD)
 	e10:SetCode(EFFECT_ACTIVATE_COST)

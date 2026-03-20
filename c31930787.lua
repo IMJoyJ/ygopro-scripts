@@ -7,14 +7,14 @@
 -- ④：把给自身装备的1只自己怪兽送去墓地才能发动。这个回合这张卡可以直接攻击。
 function c31930787.initial_effect(c)
 	c:EnableReviveLimit()
-	-- 效果原文：这张卡不能通常召唤，用自身的效果才能特殊召唤。
+	-- 这张卡不能通常召唤，用自身的效果才能特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
 	e1:SetCode(EFFECT_SPSUMMON_CONDITION)
 	e1:SetValue(0)
 	c:RegisterEffect(e1)
-	-- 效果原文：①：自己场上的表侧表示怪兽被效果破坏送去墓地时才能发动。手卡的这张卡特殊召唤。
+	-- ①：自己场上的表侧表示怪兽被效果破坏送去墓地时才能发动。手卡的这张卡特殊召唤。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(31930787,0))  --"特殊召唤"
 	e2:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -25,7 +25,7 @@ function c31930787.initial_effect(c)
 	e2:SetTarget(c31930787.sptg)
 	e2:SetOperation(c31930787.spop)
 	c:RegisterEffect(e2)
-	-- 效果原文：③：这个攻击力上升自身的效果装备的怪兽的攻击力数值，其他的自己怪兽不能攻击宣言。
+	-- ③：这个攻击力上升自身的效果装备的怪兽的攻击力数值，其他的自己怪兽不能攻击宣言。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_FIELD)
 	e3:SetRange(LOCATION_MZONE)
@@ -33,7 +33,7 @@ function c31930787.initial_effect(c)
 	e3:SetTargetRange(LOCATION_MZONE,0)
 	e3:SetTarget(c31930787.antarget)
 	c:RegisterEffect(e3)
-	-- 效果原文：②：1回合1次，以对方场上1只同调怪兽为对象才能发动。那只对方同调怪兽给这张卡装备。
+	-- ②：1回合1次，以对方场上1只同调怪兽为对象才能发动。那只对方同调怪兽给这张卡装备。
 	local e4=Effect.CreateEffect(c)
 	e4:SetDescription(aux.Stringid(31930787,1))  --"装备同调怪兽"
 	e4:SetType(EFFECT_TYPE_IGNITION)
@@ -43,7 +43,7 @@ function c31930787.initial_effect(c)
 	e4:SetTarget(c31930787.eqtg)
 	e4:SetOperation(c31930787.eqop)
 	c:RegisterEffect(e4)
-	-- 效果原文：④：把给自身装备的1只自己怪兽送去墓地才能发动。这个回合这张卡可以直接攻击。
+	-- ④：把给自身装备的1只自己怪兽送去墓地才能发动。这个回合这张卡可以直接攻击。
 	local e5=Effect.CreateEffect(c)
 	e5:SetDescription(aux.Stringid(31930787,2))  --"直接攻击"
 	e5:SetType(EFFECT_TYPE_IGNITION)
@@ -113,7 +113,7 @@ function c31930787.eqop(e,tp,eg,ep,ev,re,r,rp)
 		if atk<0 then atk=0 end
 		-- 规则层面：尝试装备目标怪兽
 		if not Duel.Equip(tp,tc,c,false) then return end
-		-- 效果原文：②：1回合1次，以对方场上1只同调怪兽为对象才能发动。那只对方同调怪兽给这张卡装备。
+		-- ②：1回合1次，以对方场上1只同调怪兽为对象才能发动。那只对方同调怪兽给这张卡装备。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetProperty(EFFECT_FLAG_OWNER_RELATE)
@@ -122,7 +122,7 @@ function c31930787.eqop(e,tp,eg,ep,ev,re,r,rp)
 		e1:SetValue(c31930787.eqlimit)
 		tc:RegisterEffect(e1)
 		if atk>0 then
-			-- 效果原文：②：1回合1次，以对方场上1只同调怪兽为对象才能发动。那只对方同调怪兽给这张卡装备。
+			-- ②：1回合1次，以对方场上1只同调怪兽为对象才能发动。那只对方同调怪兽给这张卡装备。
 			local e2=Effect.CreateEffect(c)
 			e2:SetType(EFFECT_TYPE_EQUIP)
 			e2:SetProperty(EFFECT_FLAG_IGNORE_IMMUNE+EFFECT_FLAG_OWNER_RELATE)
@@ -155,7 +155,7 @@ end
 function c31930787.dirop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsFacedown() or not c:IsRelateToEffect(e) then return end
-	-- 效果原文：④：把给自身装备的1只自己怪兽送去墓地才能发动。这个回合这张卡可以直接攻击。
+	-- ④：把给自身装备的1只自己怪兽送去墓地才能发动。这个回合这张卡可以直接攻击。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_DIRECT_ATTACK)

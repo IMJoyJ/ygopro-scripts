@@ -5,13 +5,13 @@
 -- ②：这张卡被战斗·效果破坏的场合才能发动。等级合计最多到12星以下为止，选除外的最多3只自己的「机甲」怪兽特殊召唤。
 function c46033517.initial_effect(c)
 	c:EnableReviveLimit()
-	-- 效果原文：这张卡不能通常召唤。
+	-- 这张卡不能通常召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
 	e1:SetCode(EFFECT_SPSUMMON_CONDITION)
 	c:RegisterEffect(e1)
-	-- 效果原文：把等级合计直到12以上的自己墓地的机械族怪兽除外的场合才能从墓地特殊召唤。
+	-- 把等级合计直到12以上的自己墓地的机械族怪兽除外的场合才能从墓地特殊召唤。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD)
 	e2:SetCode(EFFECT_SPSUMMON_PROC)
@@ -21,7 +21,7 @@ function c46033517.initial_effect(c)
 	e2:SetTarget(c46033517.hsptg)
 	e2:SetOperation(c46033517.hspop)
 	c:RegisterEffect(e2)
-	-- 效果原文：①：战斗阶段对方把效果发动时，把基本分支付一半才能发动。那个发动无效，对方基本分变成一半。
+	-- ①：战斗阶段对方把效果发动时，把基本分支付一半才能发动。那个发动无效，对方基本分变成一半。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(46033517,0))
 	e3:SetCategory(CATEGORY_NEGATE)
@@ -35,7 +35,7 @@ function c46033517.initial_effect(c)
 	e3:SetTarget(c46033517.negtg)
 	e3:SetOperation(c46033517.negop)
 	c:RegisterEffect(e3)
-	-- 效果原文：②：这张卡被战斗·效果破坏的场合才能发动。等级合计最多到12星以下为止，选除外的最多3只自己的「机甲」怪兽特殊召唤。
+	-- ②：这张卡被战斗·效果破坏的场合才能发动。等级合计最多到12星以下为止，选除外的最多3只自己的「机甲」怪兽特殊召唤。
 	local e4=Effect.CreateEffect(c)
 	e4:SetDescription(aux.Stringid(46033517,1))
 	e4:SetCategory(CATEGORY_SPECIAL_SUMMON)

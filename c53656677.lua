@@ -2,7 +2,7 @@
 -- 效果：
 -- 自己场上表侧表示存在的怪兽被选择作为持有比那个攻击力高的攻击力的怪兽的攻击对象时才能发动。那次攻击无效，这张卡给1只攻击对象怪兽装备。装备怪兽的攻击力上升那个时候的攻击怪兽和攻击对象怪兽的攻击力差的数值。
 function c53656677.initial_effect(c)
-	-- 效果原文：自己场上表侧表示存在的怪兽被选择作为持有比那个攻击力高的攻击力的怪兽的攻击对象时才能发动。
+	-- 自己场上表侧表示存在的怪兽被选择作为持有比那个攻击力高的攻击力的怪兽的攻击对象时才能发动。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_EQUIP)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -19,7 +19,7 @@ function c53656677.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	-- 获取当前连锁的ID
 	local cid=Duel.GetChainInfo(0,CHAININFO_CHAIN_ID)
-	-- 效果原文：这次攻击无效，这张卡给1只攻击对象怪兽装备。
+	-- 这次攻击无效，这张卡给1只攻击对象怪兽装备。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_REMAIN_FIELD)
@@ -76,7 +76,7 @@ function c53656677.operation(e,tp,eg,ep,ev,re,r,rp)
 		local d=Duel.GetAttackTarget()
 		local atk=a:GetAttack()-d:GetAttack()
 		if atk<0 then atk=0 end
-		-- 效果原文：装备怪兽的攻击力上升那个时候的攻击怪兽和攻击对象怪兽的攻击力差的数值。
+		-- 装备怪兽的攻击力上升那个时候的攻击怪兽和攻击对象怪兽的攻击力差的数值。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_EQUIP)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)

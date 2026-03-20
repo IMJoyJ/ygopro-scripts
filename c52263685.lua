@@ -2,7 +2,7 @@
 -- 效果：
 -- 对方从卡组上面把3张卡翻开。自己从那之中选择1张回到对方卡组最下面，剩下的卡用喜欢的顺序回到对方卡组上面。
 function c52263685.initial_effect(c)
-	-- 效果原文：对方从卡组上面把3张卡翻开。自己从那之中选择1张回到对方卡组最下面，剩下的卡用喜欢的顺序回到对方卡组上面。
+	-- 对方从卡组上面把3张卡翻开。自己从那之中选择1张回到对方卡组最下面，剩下的卡用喜欢的顺序回到对方卡组上面。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
@@ -18,7 +18,7 @@ function c52263685.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 将连锁的目标玩家设为当前玩家。
 	Duel.SetTargetPlayer(tp)
 end
--- 效果原文：对方从卡组上面把3张卡翻开。自己从那之中选择1张回到对方卡组最下面，剩下的卡用喜欢的顺序回到对方卡组上面。
+-- 对方从卡组上面把3张卡翻开。自己从那之中选择1张回到对方卡组最下面，剩下的卡用喜欢的顺序回到对方卡组上面。
 function c52263685.activate(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取当前连锁的目标玩家。
 	local p=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER)

@@ -3,7 +3,7 @@
 -- ①：这张卡召唤成功时，以自己墓地1只龙族·3星以下的「龙骑兵团」怪兽为对象才能发动。那只龙族怪兽当作装备卡使用给这张卡装备。
 -- ②：这张卡的攻击力上升自己场上的「龙骑兵团」卡数量×200。
 function c28183605.initial_effect(c)
-	-- 效果原文：②：这张卡的攻击力上升自己场上的「龙骑兵团」卡数量×200。
+	-- ②：这张卡的攻击力上升自己场上的「龙骑兵团」卡数量×200。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
@@ -11,7 +11,7 @@ function c28183605.initial_effect(c)
 	e1:SetCode(EFFECT_UPDATE_ATTACK)
 	e1:SetValue(c28183605.atkval)
 	c:RegisterEffect(e1)
-	-- 效果原文：①：这张卡召唤成功时，以自己墓地1只龙族·3星以下的「龙骑兵团」怪兽为对象才能发动。那只龙族怪兽当作装备卡使用给这张卡装备。
+	-- ①：这张卡召唤成功时，以自己墓地1只龙族·3星以下的「龙骑兵团」怪兽为对象才能发动。那只龙族怪兽当作装备卡使用给这张卡装备。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(28183605,0))  --"装备"
 	e2:SetCategory(CATEGORY_LEAVE_GRAVE)
@@ -57,7 +57,7 @@ function c28183605.eqop(e,tp,eg,ep,ev,re,r,rp)
 	if tc:IsRelateToEffect(e) and tc:IsRace(RACE_DRAGON) then
 		-- 尝试将目标怪兽装备给自身，若失败则返回
 		if not Duel.Equip(tp,tc,c,false) then return end
-		-- 效果原文：①：这张卡召唤成功时，以自己墓地1只龙族·3星以下的「龙骑兵团」怪兽为对象才能发动。那只龙族怪兽当作装备卡使用给这张卡装备。
+		-- ①：这张卡召唤成功时，以自己墓地1只龙族·3星以下的「龙骑兵团」怪兽为对象才能发动。那只龙族怪兽当作装备卡使用给这张卡装备。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetProperty(EFFECT_FLAG_OWNER_RELATE)

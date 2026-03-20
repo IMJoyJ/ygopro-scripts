@@ -6,7 +6,7 @@
 -- ●自己：装备怪兽的表示形式变更，自己墓地1张「游乐设施」陷阱卡由对方选出。那张卡在自己场上盖放。
 -- ●对方：装备怪兽直到结束阶段除外。
 function c36591747.initial_effect(c)
-	-- 效果原文：①：以1只自己场上的「惊乐」怪兽或者对方场上的表侧表示怪兽为对象才能把这张卡发动。这张卡当作装备卡使用给那只怪兽装备。
+	-- ①：以1只自己场上的「惊乐」怪兽或者对方场上的表侧表示怪兽为对象才能把这张卡发动。这张卡当作装备卡使用给那只怪兽装备。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_EQUIP)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -17,7 +17,7 @@ function c36591747.initial_effect(c)
 	e1:SetTarget(c36591747.target)
 	e1:SetOperation(c36591747.operation)
 	c:RegisterEffect(e1)
-	-- 效果原文：②：可以把装备怪兽的控制者对应的以下效果发动。
+	-- ②：可以把装备怪兽的控制者对应的以下效果发动。
 	local e2=Effect.CreateEffect(c)
 	e2:SetCategory(CATEGORY_POSITION+CATEGORY_LEAVE_GRAVE+CATEGORY_SSET)
 	e2:SetType(EFFECT_TYPE_QUICK_O)
@@ -29,7 +29,7 @@ function c36591747.initial_effect(c)
 	e2:SetTarget(c36591747.sttg)
 	e2:SetOperation(c36591747.stop)
 	c:RegisterEffect(e2)
-	-- 效果原文：●对方：装备怪兽直到结束阶段除外。
+	-- ●对方：装备怪兽直到结束阶段除外。
 	local e3=Effect.CreateEffect(c)
 	e3:SetCategory(CATEGORY_REMOVE)
 	e3:SetType(EFFECT_TYPE_QUICK_O)
@@ -100,7 +100,7 @@ function c36591747.operation(e,tp,eg,ep,ev,re,r,rp)
 		if c:IsRelateToEffect(e) and not c:IsStatus(STATUS_LEAVE_CONFIRMED) then
 			-- 规则层面：将此卡装备给目标怪兽
 			Duel.Equip(tp,c,tc)
-			-- 效果原文：这张卡当作装备卡使用给那只怪兽装备。
+			-- 这张卡当作装备卡使用给那只怪兽装备。
 			local e1=Effect.CreateEffect(c)
 			e1:SetType(EFFECT_TYPE_SINGLE)
 			e1:SetCode(EFFECT_EQUIP_LIMIT)
@@ -176,7 +176,7 @@ function c36591747.rmop(e,tp,eg,ep,ev,re,r,rp)
 	local ec=c:GetEquipTarget()
 	-- 规则层面：判断是否可以将目标怪兽除外
 	if ec and c:IsRelateToEffect(e) and Duel.Remove(ec,0,REASON_EFFECT+REASON_TEMPORARY)~=0 then
-		-- 效果原文：●自己：装备怪兽的表示形式变更，自己墓地1张「游乐设施」陷阱卡由对方选出。那张卡在自己场上盖放。
+		-- ●自己：装备怪兽的表示形式变更，自己墓地1张「游乐设施」陷阱卡由对方选出。那张卡在自己场上盖放。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 		e1:SetCode(EVENT_PHASE+PHASE_END)

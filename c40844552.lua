@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：这张卡召唤成功时，对方场上有怪兽存在，自己场上没有这张卡以外的卡存在的场合，从手卡把2只「极星」怪兽除外才能发动。在自己场上把2只「英灵衍生物」（战士族·地·4星·攻/守1000）守备表示特殊召唤。
 function c40844552.initial_effect(c)
-	-- 效果原文：①：这张卡召唤成功时，对方场上有怪兽存在，自己场上没有这张卡以外的卡存在的场合，从手卡把2只「极星」怪兽除外才能发动。在自己场上把2只「英灵衍生物」（战士族·地·4星·攻/守1000）守备表示特殊召唤。
+	-- ①：这张卡召唤成功时，对方场上有怪兽存在，自己场上没有这张卡以外的卡存在的场合，从手卡把2只「极星」怪兽除外才能发动。在自己场上把2只「英灵衍生物」（战士族·地·4星·攻/守1000）守备表示特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(40844552,0))  --"特殊召唤Token"
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_TOKEN)
@@ -16,7 +16,7 @@ function c40844552.initial_effect(c)
 end
 -- 检查对方场上是否有怪兽，且自己场上除这张卡外没有其他卡。
 function c40844552.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 效果原文：对方场上有怪兽存在，自己场上没有这张卡以外的卡存在的场合
+	-- 对方场上有怪兽存在，自己场上没有这张卡以外的卡存在的场合
 	return Duel.GetFieldGroupCount(tp,0,LOCATION_MZONE)>0 and Duel.GetFieldGroupCount(tp,LOCATION_ONFIELD,0)<=1
 end
 -- 定义用于过滤手卡中「极星」怪兽的条件。

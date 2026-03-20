@@ -2,7 +2,7 @@
 -- 效果：
 -- 这张卡可以从手卡当作装备卡使用给场上表侧表示存在的「飞蛾宝宝」装备。用这个效果把这张卡装备的「飞蛾宝宝」的攻击力·守备力按「进化之茧」的数值适用。
 function c40240595.initial_effect(c)
-	-- 效果原文：这张卡可以从手卡当作装备卡使用给场上表侧表示存在的「飞蛾宝宝」装备。
+	-- 这张卡可以从手卡当作装备卡使用给场上表侧表示存在的「飞蛾宝宝」装备。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(40240595,0))
 	e1:SetType(EFFECT_TYPE_IGNITION)
@@ -17,7 +17,7 @@ end
 function c40240595.filter(c)
 	return c:IsFaceup() and c:IsCode(58192742)
 end
--- 效果原文：这张卡可以从手卡当作装备卡使用给场上表侧表示存在的「飞蛾宝宝」装备。
+-- 这张卡可以从手卡当作装备卡使用给场上表侧表示存在的「飞蛾宝宝」装备。
 function c40240595.eqtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and c40240595.filter(chkc) end
 	-- 判断玩家场上是否有足够的魔陷区空位
@@ -29,7 +29,7 @@ function c40240595.eqtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	-- 选择满足条件的「飞蛾宝宝」怪兽作为装备对象
 	Duel.SelectTarget(tp,c40240595.filter,tp,LOCATION_MZONE,0,1,1,nil)
 end
--- 效果原文：用这个效果把这张卡装备的「飞蛾宝宝」的攻击力·守备力按「进化之茧」的数值适用。
+-- 用这个效果把这张卡装备的「飞蛾宝宝」的攻击力·守备力按「进化之茧」的数值适用。
 function c40240595.eqop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if not c:IsRelateToEffect(e) then return end
@@ -43,7 +43,7 @@ function c40240595.eqop(e,tp,eg,ep,ev,re,r,rp)
 	end
 	-- 将装备卡装备给目标怪兽
 	Duel.Equip(tp,c,tc)
-	-- 效果原文：用这个效果把这张卡装备的「飞蛾宝宝」的攻击力·守备力按「进化之茧」的数值适用。
+	-- 用这个效果把这张卡装备的「飞蛾宝宝」的攻击力·守备力按「进化之茧」的数值适用。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_EQUIP_LIMIT)

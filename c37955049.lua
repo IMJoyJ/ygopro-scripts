@@ -2,7 +2,7 @@
 -- 效果：
 -- 只要这张卡在场上表侧表示存在，场上存在的怪兽全部变成表侧攻击表示，表示形式不能改变。（这个时候，反转效果怪兽的效果不发动。）此外，1回合只有1次可以把手卡的恶魔族怪兽给对方观看，这张卡的攻击力直到结束阶段时上升观看的卡数量×300的数值。
 function c37955049.initial_effect(c)
-	-- 卡片效果原文：只要这张卡在场上表侧表示存在，场上存在的怪兽全部变成表侧攻击表示，表示形式不能改变。（这个时候，反转效果怪兽的效果不发动。）
+	-- 卡片只要这张卡在场上表侧表示存在，场上存在的怪兽全部变成表侧攻击表示，表示形式不能改变。（这个时候，反转效果怪兽的效果不发动。）
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_SET_POSITION)
@@ -14,7 +14,7 @@ function c37955049.initial_effect(c)
 	local e2=e1:Clone()
 	e2:SetCode(EFFECT_CANNOT_CHANGE_POSITION)
 	c:RegisterEffect(e2)
-	-- 卡片效果原文：此外，1回合只有1次可以把手卡的恶魔族怪兽给对方观看，这张卡的攻击力直到结束阶段时上升观看的卡数量×300的数值。
+	-- 卡片此外，1回合只有1次可以把手卡的恶魔族怪兽给对方观看，这张卡的攻击力直到结束阶段时上升观看的卡数量×300的数值。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(37955049,0))  --"攻击上升"
 	e3:SetCategory(CATEGORY_ATKCHANGE)

@@ -5,7 +5,7 @@
 -- ③：这张卡装备中的场合，装备怪兽可以向对方场上的全部怪兽各作1次攻击。
 function c40941889.initial_effect(c)
 	c:SetUniqueOnField(1,0,40941889)
-	-- 效果原文：②：以自己场上1只「希望皇 霍普」怪兽为对象才能发动。从自己的手卡·场上把这张卡当作攻击力上升1000的装备卡使用给那只自己的「希望皇 霍普」怪兽装备。
+	-- ②：以自己场上1只「希望皇 霍普」怪兽为对象才能发动。从自己的手卡·场上把这张卡当作攻击力上升1000的装备卡使用给那只自己的「希望皇 霍普」怪兽装备。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(40941889,0))  --"装备"
 	e1:SetType(EFFECT_TYPE_IGNITION)
@@ -16,7 +16,7 @@ function c40941889.initial_effect(c)
 	e1:SetTarget(c40941889.eqtg)
 	e1:SetOperation(c40941889.eqop)
 	c:RegisterEffect(e1)
-	-- 效果原文：③：这张卡装备中的场合，装备怪兽可以向对方场上的全部怪兽各作1次攻击。
+	-- ③：这张卡装备中的场合，装备怪兽可以向对方场上的全部怪兽各作1次攻击。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_EQUIP)
 	e2:SetCode(EFFECT_ATTACK_ALL)
@@ -62,7 +62,7 @@ end
 function c40941889.zw_equip_monster(c,tp,tc)
 	-- 规则层面：尝试将卡装备给目标怪兽，若失败则返回
 	if not Duel.Equip(tp,c,tc) then return end
-	-- 效果原文：以自己场上1只「希望皇 霍普」怪兽为对象才能发动。从自己的手卡·场上把这张卡当作攻击力上升1000的装备卡使用给那只自己的「希望皇 霍普」怪兽装备。
+	-- 以自己场上1只「希望皇 霍普」怪兽为对象才能发动。从自己的手卡·场上把这张卡当作攻击力上升1000的装备卡使用给那只自己的「希望皇 霍普」怪兽装备。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_EQUIP_LIMIT)
@@ -71,7 +71,7 @@ function c40941889.zw_equip_monster(c,tp,tc)
 	e1:SetValue(c40941889.eqlimit)
 	e1:SetLabelObject(tc)
 	c:RegisterEffect(e1)
-	-- 效果原文：以自己场上1只「希望皇 霍普」怪兽为对象才能发动。从自己的手卡·场上把这张卡当作攻击力上升1000的装备卡使用给那只自己的「希望皇 霍普」怪兽装备。
+	-- 以自己场上1只「希望皇 霍普」怪兽为对象才能发动。从自己的手卡·场上把这张卡当作攻击力上升1000的装备卡使用给那只自己的「希望皇 霍普」怪兽装备。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_EQUIP)
 	e2:SetCode(EFFECT_UPDATE_ATTACK)

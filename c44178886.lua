@@ -3,7 +3,7 @@
 -- ①：这张卡向守备表示怪兽攻击的伤害计算前发动。那只怪兽回到持有者卡组。
 -- ②：自己结束阶段发动。从自己卡组上面把3张卡送去墓地。
 function c44178886.initial_effect(c)
-	-- 效果原文：①：这张卡向守备表示怪兽攻击的伤害计算前发动。那只怪兽回到持有者卡组。
+	-- ①：这张卡向守备表示怪兽攻击的伤害计算前发动。那只怪兽回到持有者卡组。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(44178886,0))  --"返回卡组"
 	e1:SetCategory(CATEGORY_TODECK)
@@ -12,7 +12,7 @@ function c44178886.initial_effect(c)
 	e1:SetTarget(c44178886.targ)
 	e1:SetOperation(c44178886.op)
 	c:RegisterEffect(e1)
-	-- 效果原文：②：自己结束阶段发动。从自己卡组上面把3张卡送去墓地。
+	-- ②：自己结束阶段发动。从自己卡组上面把3张卡送去墓地。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_F)
 	e2:SetCategory(CATEGORY_DECKDES)

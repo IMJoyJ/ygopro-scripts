@@ -6,7 +6,7 @@
 -- ●4个：从自己的额外卡组把1只表侧表示的「魔导兽」灵摆怪兽特殊召唤。那之后，可以给那只怪兽放置2个魔力指示物。
 -- ●6个：从自己的额外卡组把1只表侧表示的灵摆怪兽特殊召唤。
 function c21984400.initial_effect(c)
-	-- 效果原文：①：可以把自己场上的魔力指示物的以下数量取除，那个效果发动。
+	-- ①：可以把自己场上的魔力指示物的以下数量取除，那个效果发动。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(21984400,0))  --"取除2个"
 	e1:SetCategory(CATEGORY_TOHAND)

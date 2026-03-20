@@ -35,7 +35,7 @@ function c24673894.activate(e,tp,eg,ep,ev,re,r,rp)
 	local tc=Duel.GetAttacker()
 	-- 攻击怪兽存在于场上且攻击宣言有效，且可以改变表示形式
 	if tc:IsRelateToEffect(e) and Duel.NegateAttack() and Duel.ChangePosition(tc,POS_FACEUP_DEFENSE)~=0 then
-		-- 效果原文：那只怪兽只要在场上表侧表示存在，变成不能把表示形式变更
+		-- 那只怪兽只要在场上表侧表示存在，变成不能把表示形式变更
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_CANNOT_CHANGE_POSITION)

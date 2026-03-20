@@ -4,7 +4,7 @@
 -- ①：自己场上有战士族·地属性怪兽召唤的场合才能发动。这张卡从手卡特殊召唤。
 -- ②：这张卡被对方的效果从怪兽区域送去墓地的场合才能发动。从手卡·卡组把1只5星以上的「战吼」怪兽特殊召唤。
 function c19771459.initial_effect(c)
-	-- 效果原文：①：自己场上有战士族·地属性怪兽召唤的场合才能发动。这张卡从手卡特殊召唤。
+	-- ①：自己场上有战士族·地属性怪兽召唤的场合才能发动。这张卡从手卡特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(19771459,0))
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -15,7 +15,7 @@ function c19771459.initial_effect(c)
 	e1:SetTarget(c19771459.sptg1)
 	e1:SetOperation(c19771459.spop1)
 	c:RegisterEffect(e1)
-	-- 效果原文：②：这张卡被对方的效果从怪兽区域送去墓地的场合才能发动。从手卡·卡组把1只5星以上的「战吼」怪兽特殊召唤。
+	-- ②：这张卡被对方的效果从怪兽区域送去墓地的场合才能发动。从手卡·卡组把1只5星以上的「战吼」怪兽特殊召唤。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(19771459,1))
 	e2:SetCategory(CATEGORY_SPECIAL_SUMMON)

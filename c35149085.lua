@@ -2,7 +2,7 @@
 -- 效果：
 -- 自己场上表侧表示存在的1只兽族怪兽回手卡，从手卡特殊召唤1只和回手怪兽等级相同的兽族怪兽上场。
 function c35149085.initial_effect(c)
-	-- 效果原文：自己场上表侧表示存在的1只兽族怪兽回手卡，从手卡特殊召唤1只和回手怪兽等级相同的兽族怪兽上场。
+	-- 自己场上表侧表示存在的1只兽族怪兽回手卡，从手卡特殊召唤1只和回手怪兽等级相同的兽族怪兽上场。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SPECIAL_SUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)

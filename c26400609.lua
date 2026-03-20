@@ -6,7 +6,7 @@
 -- ③：这张卡特殊召唤的场合，对方结束阶段发动。这张卡回到手卡。
 -- ④：这张卡被除外的场合才能发动。从卡组把1只龙族·水属性怪兽加入手卡。
 function c26400609.initial_effect(c)
-	-- 效果原文：②：把2只龙族或水属性的怪兽从自己的手卡·墓地除外才能发动。这张卡从手卡·墓地特殊召唤。
+	-- ②：把2只龙族或水属性的怪兽从自己的手卡·墓地除外才能发动。这张卡从手卡·墓地特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(26400609,0))  --"从手卡特殊召唤"
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -17,7 +17,7 @@ function c26400609.initial_effect(c)
 	e1:SetTarget(c26400609.hsptg)
 	e1:SetOperation(c26400609.hspop)
 	c:RegisterEffect(e1)
-	-- 效果原文：③：这张卡特殊召唤的场合，对方结束阶段发动。这张卡回到手卡。
+	-- ③：这张卡特殊召唤的场合，对方结束阶段发动。这张卡回到手卡。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(26400609,1))  --"返回手牌"
 	e2:SetCategory(CATEGORY_TOHAND)
@@ -29,7 +29,7 @@ function c26400609.initial_effect(c)
 	e2:SetTarget(c26400609.rettg)
 	e2:SetOperation(c26400609.retop)
 	c:RegisterEffect(e2)
-	-- 效果原文：①：从手卡把这张卡和1只水属性怪兽丢弃去墓地才能发动。从卡组把1只怪兽送去墓地。
+	-- ①：从手卡把这张卡和1只水属性怪兽丢弃去墓地才能发动。从卡组把1只怪兽送去墓地。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(26400609,2))  --"从卡组把1只怪兽送去墓地"
 	e3:SetCategory(CATEGORY_HANDES)
@@ -40,7 +40,7 @@ function c26400609.initial_effect(c)
 	e3:SetTarget(c26400609.tgtg)
 	e3:SetOperation(c26400609.tgop)
 	c:RegisterEffect(e3)
-	-- 效果原文：④：这张卡被除外的场合才能发动。从卡组把1只龙族·水属性怪兽加入手卡。
+	-- ④：这张卡被除外的场合才能发动。从卡组把1只龙族·水属性怪兽加入手卡。
 	local e4=Effect.CreateEffect(c)
 	e4:SetDescription(aux.Stringid(26400609,3))  --"加入手卡"
 	e4:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)

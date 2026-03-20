@@ -5,7 +5,7 @@
 -- ②：把这张卡抽到时，把这张卡给对方观看才能发动。这张卡从手卡特殊召唤。自己场上有8星以上的龙族同调怪兽存在的场合，可以再从卡组把1只龙族·1星怪兽特殊召唤。
 function c291414.initial_effect(c)
 	c:SetSPSummonOnce(291414)
-	-- 效果原文：自己对「集心龙」1回合只能有1次特殊召唤，把这张卡作为同调素材的场合，不是「救世」怪兽的同调召唤不能使用。
+	-- 自己对「集心龙」1回合只能有1次特殊召唤，把这张卡作为同调素材的场合，不是「救世」怪兽的同调召唤不能使用。
 	local e0=Effect.CreateEffect(c)
 	e0:SetType(EFFECT_TYPE_SINGLE)
 	e0:SetCode(EFFECT_CANNOT_BE_SYNCHRO_MATERIAL)
@@ -14,7 +14,7 @@ function c291414.initial_effect(c)
 	c:RegisterEffect(e0)
 	-- 将此卡在场上或墓地时视为「救世龙」使用
 	aux.EnableChangeCode(c,21159309,LOCATION_MZONE+LOCATION_GRAVE)
-	-- 效果原文：②：把这张卡抽到时，把这张卡给对方观看才能发动。这张卡从手卡特殊召唤。自己场上有8星以上的龙族同调怪兽存在的场合，可以再从卡组把1只龙族·1星怪兽特殊召唤。
+	-- ②：把这张卡抽到时，把这张卡给对方观看才能发动。这张卡从手卡特殊召唤。自己场上有8星以上的龙族同调怪兽存在的场合，可以再从卡组把1只龙族·1星怪兽特殊召唤。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(291414,0))
 	e2:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES)

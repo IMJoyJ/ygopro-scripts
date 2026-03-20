@@ -2,7 +2,7 @@
 -- 效果：
 -- 这张卡的攻击力·守备力上升自己墓地存在的名字带有「光道」的怪兽卡种类×300的数值。这张卡攻击守备表示怪兽时，若攻击力超过那个守备力，给与对方基本分那个数值的战斗伤害。这张卡在自己场上表侧表示存在的场合，每次自己的结束阶段，从卡组上面把3张卡送去墓地。
 function c21785144.initial_effect(c)
-	-- 效果原文：这张卡的攻击力上升自己墓地存在的名字带有「光道」的怪兽卡种类×300的数值。
+	-- 这张卡的攻击力上升自己墓地存在的名字带有「光道」的怪兽卡种类×300的数值。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
@@ -10,7 +10,7 @@ function c21785144.initial_effect(c)
 	e1:SetCode(EFFECT_UPDATE_ATTACK)
 	e1:SetValue(c21785144.value)
 	c:RegisterEffect(e1)
-	-- 效果原文：这张卡的守备力上升自己墓地存在的名字带有「光道」的怪兽卡种类×300的数值。
+	-- 这张卡的守备力上升自己墓地存在的名字带有「光道」的怪兽卡种类×300的数值。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_SINGLE)
 	e2:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
@@ -18,12 +18,12 @@ function c21785144.initial_effect(c)
 	e2:SetCode(EFFECT_UPDATE_DEFENSE)
 	e2:SetValue(c21785144.value)
 	c:RegisterEffect(e2)
-	-- 效果原文：这张卡攻击守备表示怪兽时，若攻击力超过那个守备力，给与对方基本分那个数值的战斗伤害。
+	-- 这张卡攻击守备表示怪兽时，若攻击力超过那个守备力，给与对方基本分那个数值的战斗伤害。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_SINGLE)
 	e3:SetCode(EFFECT_PIERCE)
 	c:RegisterEffect(e3)
-	-- 效果原文：这张卡在自己场上表侧表示存在的场合，每次自己的结束阶段，从卡组上面把3张卡送去墓地。
+	-- 这张卡在自己场上表侧表示存在的场合，每次自己的结束阶段，从卡组上面把3张卡送去墓地。
 	local e4=Effect.CreateEffect(c)
 	e4:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_F)
 	e4:SetDescription(aux.Stringid(21785144,0))  --"从卡组送3张卡去墓地"

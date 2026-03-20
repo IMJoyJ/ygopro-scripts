@@ -2,7 +2,7 @@
 -- 效果：
 -- 这张卡可以把自己墓地的龙族·光属性怪兽和龙族的通常怪兽各1只从游戏中除外，从手卡特殊召唤。场上的这张卡被破坏的场合，可以作为代替把这张卡以外的自己场上表侧表示存在的1只名字带有「圣刻」的怪兽解放。
 function c30794966.initial_effect(c)
-	-- 效果原文：这张卡可以把自己墓地的龙族·光属性怪兽和龙族的通常怪兽各1只从游戏中除外，从手卡特殊召唤。
+	-- 这张卡可以把自己墓地的龙族·光属性怪兽和龙族的通常怪兽各1只从游戏中除外，从手卡特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
 	e1:SetType(EFFECT_TYPE_FIELD)
@@ -12,7 +12,7 @@ function c30794966.initial_effect(c)
 	e1:SetTarget(c30794966.hsptg)
 	e1:SetOperation(c30794966.hspop)
 	c:RegisterEffect(e1)
-	-- 效果原文：场上的这张卡被破坏的场合，可以作为代替把这张卡以外的自己场上表侧表示存在的1只名字带有「圣刻」的怪兽解放。
+	-- 场上的这张卡被破坏的场合，可以作为代替把这张卡以外的自己场上表侧表示存在的1只名字带有「圣刻」的怪兽解放。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_CONTINUOUS+EFFECT_TYPE_SINGLE)
 	e2:SetCode(EFFECT_DESTROY_REPLACE)

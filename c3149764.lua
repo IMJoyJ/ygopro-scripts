@@ -2,7 +2,7 @@
 -- 效果：
 -- 场上表侧表示存在的1只不死族怪兽为对象的魔法·陷阱卡的发动无效并破坏。
 function c3149764.initial_effect(c)
-	-- 效果原文：场上表侧表示存在的1只不死族怪兽为对象的魔法·陷阱卡的发动无效并破坏。
+	-- 场上表侧表示存在的1只不死族怪兽为对象的魔法·陷阱卡的发动无效并破坏。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_NEGATE+CATEGORY_DESTROY)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)

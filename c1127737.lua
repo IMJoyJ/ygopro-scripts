@@ -7,7 +7,7 @@ function c1127737.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- 效果原文：每次超量召唤成功，那个玩家受到500分伤害。
+	-- 每次超量召唤成功，那个玩家受到500分伤害。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(1127737,0))  --"伤害"
 	e2:SetCategory(CATEGORY_DAMAGE)
@@ -18,7 +18,7 @@ function c1127737.initial_effect(c)
 	e2:SetTarget(c1127737.damtg1)
 	e2:SetOperation(c1127737.damop1)
 	c:RegisterEffect(e2)
-	-- 效果原文：此外，控制超量怪兽的玩家各自在每次自己的结束阶段受到500分伤害。
+	-- 此外，控制超量怪兽的玩家各自在每次自己的结束阶段受到500分伤害。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e2:SetCode(EVENT_PHASE+PHASE_END)

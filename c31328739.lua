@@ -2,7 +2,7 @@
 -- 效果：
 -- 把自己场上存在的1只念动力族怪兽解放发动。对方手卡全部加入卡组洗切。那之后，对方从卡组抽3张卡。
 function c31328739.initial_effect(c)
-	-- 效果原文：把自己场上存在的1只念动力族怪兽解放发动。
+	-- 把自己场上存在的1只念动力族怪兽解放发动。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_TODECK+CATEGORY_DRAW)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -22,7 +22,7 @@ function c31328739.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 将选中的怪兽以REASON_COST原因进行解放。
 	Duel.Release(g,REASON_COST)
 end
--- 效果原文：对方手卡全部加入卡组洗切。那之后，对方从卡组抽3张卡。
+-- 对方手卡全部加入卡组洗切。那之后，对方从卡组抽3张卡。
 function c31328739.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 检查对方手牌数量是否大于0且对方是否可以抽3张卡。
 	if chk==0 then return Duel.GetFieldGroupCount(tp,0,LOCATION_HAND)>0 and Duel.IsPlayerCanDraw(1-tp,3) end

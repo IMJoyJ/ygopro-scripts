@@ -3,7 +3,7 @@
 -- 这张卡不能解放，也不能作为融合·同调·超量召唤的素材。场上的这张卡被破坏时，这张卡的控制者选择自己场上1张魔法·陷阱卡回到持有者手卡。「绿尘妖」在自己场上只能有1只表侧表示存在。
 function c52182715.initial_effect(c)
 	c:SetUniqueOnField(1,0,52182715)
-	-- 效果原文：这张卡不能解放，也不能作为融合·同调·超量召唤的素材。
+	-- 这张卡不能解放，也不能作为融合·同调·超量召唤的素材。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
@@ -14,7 +14,7 @@ function c52182715.initial_effect(c)
 	local e2=e1:Clone()
 	e2:SetCode(EFFECT_UNRELEASABLE_NONSUM)
 	c:RegisterEffect(e2)
-	-- 效果原文：这张卡不能解放，也不能作为融合·同调·超量召唤的素材。
+	-- 这张卡不能解放，也不能作为融合·同调·超量召唤的素材。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_SINGLE)
 	e3:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
@@ -28,7 +28,7 @@ function c52182715.initial_effect(c)
 	local e5=e4:Clone()
 	e5:SetCode(EFFECT_CANNOT_BE_XYZ_MATERIAL)
 	c:RegisterEffect(e5)
-	-- 效果原文：场上的这张卡被破坏时，这张卡的控制者选择自己场上1张魔法·陷阱卡回到持有者手卡。
+	-- 场上的这张卡被破坏时，这张卡的控制者选择自己场上1张魔法·陷阱卡回到持有者手卡。
 	local e6=Effect.CreateEffect(c)
 	e6:SetDescription(aux.Stringid(52182715,0))  --"返回手牌"
 	e6:SetCategory(CATEGORY_TOHAND)

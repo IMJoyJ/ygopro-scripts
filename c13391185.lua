@@ -3,7 +3,7 @@
 -- 这张卡只要在场上表侧表示存在，当作通常怪兽使用。只要这张卡有名字带有「圣剑」的装备魔法卡装备，这张卡变成当作效果怪兽使用并得到以下效果。
 -- ●选择自己墓地1只名字带有「圣骑士」的怪兽才能发动。选择的怪兽加入手卡，选自己场上1张名字带有「圣剑」的装备魔法卡破坏。「圣骑士 加拉哈德」的这个效果1回合只能使用1次。
 function c13391185.initial_effect(c)
-	-- 效果原文：这张卡只要在场上表侧表示存在，当作通常怪兽使用。
+	-- 这张卡只要在场上表侧表示存在，当作通常怪兽使用。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
@@ -16,7 +16,7 @@ function c13391185.initial_effect(c)
 	e2:SetCode(EFFECT_REMOVE_TYPE)
 	e2:SetValue(TYPE_EFFECT)
 	c:RegisterEffect(e2)
-	-- 效果原文：选择自己墓地1只名字带有「圣骑士」的怪兽才能发动。选择的怪兽加入手卡，选自己场上1张名字带有「圣剑」的装备魔法卡破坏。「圣骑士 加拉哈德」的这个效果1回合只能使用1次。
+	-- 选择自己墓地1只名字带有「圣骑士」的怪兽才能发动。选择的怪兽加入手卡，选自己场上1张名字带有「圣剑」的装备魔法卡破坏。「圣骑士 加拉哈德」的这个效果1回合只能使用1次。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(13391185,0))  --"返回手牌"
 	e3:SetCategory(CATEGORY_TOHAND)

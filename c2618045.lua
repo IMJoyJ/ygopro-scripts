@@ -2,7 +2,7 @@
 -- 效果：
 -- 1回合1次，自己的主要阶段时才能发动。这张卡的攻击力直到下次的自己的准备阶段时变成原本攻击力的2倍。这个效果发动的回合，这张卡不能攻击。
 function c2618045.initial_effect(c)
-	-- 效果原文：1回合1次，自己的主要阶段时才能发动。这张卡的攻击力直到下次的自己的准备阶段时变成原本攻击力的2倍。这个效果发动的回合，这张卡不能攻击。
+	-- 1回合1次，自己的主要阶段时才能发动。这张卡的攻击力直到下次的自己的准备阶段时变成原本攻击力的2倍。这个效果发动的回合，这张卡不能攻击。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(2618045,0))  --"攻击变化"
 	e1:SetCategory(CATEGORY_ATKCHANGE)
@@ -16,7 +16,7 @@ end
 -- 检查此卡在本回合是否已经攻击过，若未攻击则设置此卡在效果发动的回合不能攻击
 function c2618045.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():GetAttackAnnouncedCount()==0 end
-	-- 效果原文：1回合1次，自己的主要阶段时才能发动。这张卡的攻击力直到下次的自己的准备阶段时变成原本攻击力的2倍。这个效果发动的回合，这张卡不能攻击。
+	-- 1回合1次，自己的主要阶段时才能发动。这张卡的攻击力直到下次的自己的准备阶段时变成原本攻击力的2倍。这个效果发动的回合，这张卡不能攻击。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
@@ -28,7 +28,7 @@ end
 function c2618045.operation(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) and c:IsFaceup() then
-		-- 效果原文：这张卡的攻击力直到下次的自己的准备阶段时变成原本攻击力的2倍。
+		-- 这张卡的攻击力直到下次的自己的准备阶段时变成原本攻击力的2倍。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_SET_ATTACK_FINAL)

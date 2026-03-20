@@ -3,7 +3,7 @@
 -- ①：场上的这张卡被对方破坏送去墓地时才能发动。自己卡组最上面的卡翻开，那张卡是植物族怪兽的场合，那只怪兽送去墓地。不是的场合，那张卡回到卡组最下面。
 -- ②：卡组的这张卡被效果翻开送去墓地的场合发动。自己场上的全部植物族怪兽的攻击力·守备力上升300。
 function c47077318.initial_effect(c)
-	-- 效果原文：①：场上的这张卡被对方破坏送去墓地时才能发动。自己卡组最上面的卡翻开，那张卡是植物族怪兽的场合，那只怪兽送去墓地。不是的场合，那张卡回到卡组最下面。
+	-- ①：场上的这张卡被对方破坏送去墓地时才能发动。自己卡组最上面的卡翻开，那张卡是植物族怪兽的场合，那只怪兽送去墓地。不是的场合，那张卡回到卡组最下面。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(47077318,0))  --"翻开卡组"
 	e1:SetCategory(CATEGORY_DECKDES)
@@ -14,7 +14,7 @@ function c47077318.initial_effect(c)
 	e1:SetTarget(c47077318.target)
 	e1:SetOperation(c47077318.operation)
 	c:RegisterEffect(e1)
-	-- 效果原文：②：卡组的这张卡被效果翻开送去墓地的场合发动。自己场上的全部植物族怪兽的攻击力·守备力上升300。
+	-- ②：卡组的这张卡被效果翻开送去墓地的场合发动。自己场上的全部植物族怪兽的攻击力·守备力上升300。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(47077318,1))  --"攻守上升"
 	e2:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_F)

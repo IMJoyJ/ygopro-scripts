@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：以自己墓地最多2只「宝玉兽」怪兽为对象才能发动。那些怪兽当作永续魔法卡使用在自己的魔法与陷阱区域表侧表示放置。
 function c35486099.initial_effect(c)
-	-- 效果原文：①：以自己墓地最多2只「宝玉兽」怪兽为对象才能发动。那些怪兽当作永续魔法卡使用在自己的魔法与陷阱区域表侧表示放置。
+	-- ①：以自己墓地最多2只「宝玉兽」怪兽为对象才能发动。那些怪兽当作永续魔法卡使用在自己的魔法与陷阱区域表侧表示放置。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_LEAVE_GRAVE)
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET)
@@ -57,7 +57,7 @@ function c35486099.activate(e,tp,eg,ep,ev,re,r,rp)
 		while tc do
 			-- 将对象怪兽移动到魔法陷阱区域并表侧表示放置
 			Duel.MoveToField(tc,tp,tp,LOCATION_SZONE,POS_FACEUP,true)
-			-- 效果原文：①：以自己墓地最多2只「宝玉兽」怪兽为对象才能发动。那些怪兽当作永续魔法卡使用在自己的魔法与陷阱区域表侧表示放置。
+			-- ①：以自己墓地最多2只「宝玉兽」怪兽为对象才能发动。那些怪兽当作永续魔法卡使用在自己的魔法与陷阱区域表侧表示放置。
 			local e1=Effect.CreateEffect(e:GetHandler())
 			e1:SetCode(EFFECT_CHANGE_TYPE)
 			e1:SetType(EFFECT_TYPE_SINGLE)

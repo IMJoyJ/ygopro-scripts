@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：这张卡作为同调素材送去墓地的场合才能发动。从卡组把1张「融合」魔法卡加入手卡。
 function c15839054.initial_effect(c)
-	-- 效果原文：①：这张卡作为同调素材送去墓地的场合才能发动。从卡组把1张「融合」魔法卡加入手卡。
+	-- ①：这张卡作为同调素材送去墓地的场合才能发动。从卡组把1张「融合」魔法卡加入手卡。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(15839054,0))  --"检索"
 	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)

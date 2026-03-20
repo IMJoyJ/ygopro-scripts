@@ -2,7 +2,7 @@
 -- 效果：
 -- 名字带有「机人」的怪兽从自己墓地加入手卡时，可以特殊召唤那只怪兽。
 function c36378213.initial_effect(c)
-	-- 效果原文：名字带有「机人」的怪兽从自己墓地加入手卡时，可以特殊召唤那只怪兽。
+	-- 名字带有「机人」的怪兽从自己墓地加入手卡时，可以特殊召唤那只怪兽。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(36378213,0))  --"特殊召唤"
 	e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)

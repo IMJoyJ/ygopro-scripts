@@ -12,12 +12,12 @@ function c19828680.initial_effect(c)
 	e1:SetOperation(c19828680.activate)
 	c:RegisterEffect(e1)
 end
--- 效果原文：这张卡以外的自己手卡是3张以上的场合才能发动
+-- 这张卡以外的自己手卡是3张以上的场合才能发动
 function c19828680.condition(e,tp,eg,ep,ev,re,r,rp)
 	-- 规则层面：判断自己手牌数量是否不少于3张
 	return Duel.GetMatchingGroupCount(nil,tp,LOCATION_HAND,0,e:GetHandler())>=3
 end
--- 效果原文：自己手卡全部丢弃
+-- 自己手卡全部丢弃
 function c19828680.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	local exc=nil
 	if e:IsHasType(EFFECT_TYPE_ACTIVATE) and e:GetHandler():IsLocation(LOCATION_HAND) then exc=e:GetHandler() end
@@ -27,7 +27,7 @@ function c19828680.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 规则层面：设置操作信息为丢弃手牌
 	Duel.SetOperationInfo(0,CATEGORY_HANDES,sg,sg:GetCount(),0,0)
 end
--- 效果原文：从自己墓地选1只「永火」怪兽或者龙族·暗属性·8星的同调怪兽特殊召唤
+-- 从自己墓地选1只「永火」怪兽或者龙族·暗属性·8星的同调怪兽特殊召唤
 function c19828680.spfilter(c,e,tp)
 	return (c:IsSetCard(0xb) or c:IsType(TYPE_SYNCHRO) and c:IsLevel(8) and c:IsAttribute(ATTRIBUTE_DARK) and c:IsRace(RACE_DRAGON))
 		and c:IsCanBeSpecialSummoned(e,0,tp,false,false)

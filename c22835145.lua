@@ -3,7 +3,7 @@
 -- 这张卡不能特殊召唤。
 -- ①：这张卡召唤成功时，以自己墓地1只4星以下的「黑羽」怪兽为对象才能发动。那只怪兽守备表示特殊召唤。
 function c22835145.initial_effect(c)
-	-- 效果原文：这张卡不能特殊召唤。
+	-- 这张卡不能特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
 	e1:SetType(EFFECT_TYPE_SINGLE)
@@ -11,7 +11,7 @@ function c22835145.initial_effect(c)
 	-- 设置该卡无法特殊召唤。
 	e1:SetValue(aux.FALSE)
 	c:RegisterEffect(e1)
-	-- 效果原文：①：这张卡召唤成功时，以自己墓地1只4星以下的「黑羽」怪兽为对象才能发动。那只怪兽守备表示特殊召唤。
+	-- ①：这张卡召唤成功时，以自己墓地1只4星以下的「黑羽」怪兽为对象才能发动。那只怪兽守备表示特殊召唤。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(22835145,0))  --"特殊召唤"
 	e2:SetCategory(CATEGORY_SPECIAL_SUMMON)

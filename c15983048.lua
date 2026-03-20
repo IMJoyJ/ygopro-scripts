@@ -4,7 +4,7 @@
 -- ①：自己场上有「魔键」怪兽存在的场合，把手卡的这张卡给对方观看才能发动。这个回合，自己在通常召唤外加上只有1次，可以把1只「魔键」怪兽召唤。
 -- ②：这张卡召唤成功时，以自己墓地的4星以下的1只通常怪兽或者「魔键」怪兽为对象才能发动。那只怪兽守备表示特殊召唤。
 function c15983048.initial_effect(c)
-	-- 效果原文：这个卡名的②的效果1回合只能使用1次，把这张卡作为同调·超量召唤的素材的场合，不是「魔键」怪兽的同调·超量召唤不能使用。
+	-- 这个卡名的②的效果1回合只能使用1次，把这张卡作为同调·超量召唤的素材的场合，不是「魔键」怪兽的同调·超量召唤不能使用。
 	local e0=Effect.CreateEffect(c)
 	e0:SetType(EFFECT_TYPE_SINGLE)
 	e0:SetCode(EFFECT_CANNOT_BE_SYNCHRO_MATERIAL)
@@ -14,7 +14,7 @@ function c15983048.initial_effect(c)
 	local e1=e0:Clone()
 	e1:SetCode(EFFECT_CANNOT_BE_XYZ_MATERIAL)
 	c:RegisterEffect(e1)
-	-- 效果原文：①：自己场上有「魔键」怪兽存在的场合，把手卡的这张卡给对方观看才能发动。这个回合，自己在通常召唤外加上只有1次，可以把1只「魔键」怪兽召唤。
+	-- ①：自己场上有「魔键」怪兽存在的场合，把手卡的这张卡给对方观看才能发动。这个回合，自己在通常召唤外加上只有1次，可以把1只「魔键」怪兽召唤。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(15983048,0))
 	e2:SetType(EFFECT_TYPE_IGNITION)
@@ -24,7 +24,7 @@ function c15983048.initial_effect(c)
 	e2:SetTarget(c15983048.target)
 	e2:SetOperation(c15983048.operation)
 	c:RegisterEffect(e2)
-	-- 效果原文：②：这张卡召唤成功时，以自己墓地的4星以下的1只通常怪兽或者「魔键」怪兽为对象才能发动。那只怪兽守备表示特殊召唤。
+	-- ②：这张卡召唤成功时，以自己墓地的4星以下的1只通常怪兽或者「魔键」怪兽为对象才能发动。那只怪兽守备表示特殊召唤。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(15983048,1))
 	e3:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -63,7 +63,7 @@ function c15983048.target(e,tp,eg,ep,ev,re,r,rp,chk)
 end
 -- 规则层面：注册一个使玩家可以额外召唤一次「魔键」怪兽的效果
 function c15983048.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 效果原文：①：自己场上有「魔键」怪兽存在的场合，把手卡的这张卡给对方观看才能发动。这个回合，自己在通常召唤外加上只有1次，可以把1只「魔键」怪兽召唤。
+	-- ①：自己场上有「魔键」怪兽存在的场合，把手卡的这张卡给对方观看才能发动。这个回合，自己在通常召唤外加上只有1次，可以把1只「魔键」怪兽召唤。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetDescription(aux.Stringid(15983048,2))  --"使用「大魔键-马夫提亚尔」的效果召唤"
 	e1:SetType(EFFECT_TYPE_FIELD)

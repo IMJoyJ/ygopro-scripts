@@ -2,7 +2,7 @@
 -- 效果：
 -- 这张卡给与对方基本分战斗伤害时，可以从自己卡组抽1张卡。这张卡攻击的场合，战斗阶段结束时变成守备表示，直到下次的自己回合的结束阶段时不能把表示形式改变。
 function c18960169.initial_effect(c)
-	-- 效果原文：这张卡给与对方基本分战斗伤害时，可以从自己卡组抽1张卡。
+	-- 这张卡给与对方基本分战斗伤害时，可以从自己卡组抽1张卡。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(18960169,0))  --"抽卡"
 	e1:SetCategory(CATEGORY_DRAW)
@@ -13,7 +13,7 @@ function c18960169.initial_effect(c)
 	e1:SetTarget(c18960169.target)
 	e1:SetOperation(c18960169.operation)
 	c:RegisterEffect(e1)
-	-- 效果原文：这张卡攻击的场合，战斗阶段结束时变成守备表示，直到下次的自己回合的结束阶段时不能把表示形式改变。
+	-- 这张卡攻击的场合，战斗阶段结束时变成守备表示，直到下次的自己回合的结束阶段时不能把表示形式改变。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e2:SetCode(EVENT_PHASE+PHASE_BATTLE)

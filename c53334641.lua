@@ -7,7 +7,7 @@
 function c53334641.initial_effect(c)
 	aux.AddXyzProcedure(c,nil,4,2,c53334641.ovfilter,aux.Stringid(53334641,0))  --"是否在「鬼计」超量怪兽上面重叠超量召唤？"
 	c:EnableReviveLimit()
-	-- 效果原文：这张卡持有的超量素材数量变成10时，自己决斗胜利。
+	-- 这张卡持有的超量素材数量变成10时，自己决斗胜利。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
@@ -18,7 +18,7 @@ function c53334641.initial_effect(c)
 	local e2=e1:Clone()
 	e2:SetCode(EVENT_SPSUMMON_SUCCESS)
 	c:RegisterEffect(e2)
-	-- 效果原文：①：1回合1次，把这张卡1个超量素材取除才能发动。从卡组把1张「鬼计」魔法·陷阱卡加入手卡。
+	-- ①：1回合1次，把这张卡1个超量素材取除才能发动。从卡组把1张「鬼计」魔法·陷阱卡加入手卡。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(53334641,1))  --"卡组检索"
 	e2:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
@@ -29,7 +29,7 @@ function c53334641.initial_effect(c)
 	e2:SetTarget(c53334641.thtg)
 	e2:SetOperation(c53334641.thop)
 	c:RegisterEffect(e2)
-	-- 效果原文：②：1回合1次，自己主要阶段才能发动。把手卡1张「鬼计」卡在这张卡下面重叠作为超量素材。
+	-- ②：1回合1次，自己主要阶段才能发动。把手卡1张「鬼计」卡在这张卡下面重叠作为超量素材。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(53334641,2))  --"素材增加"
 	e3:SetType(EFFECT_TYPE_IGNITION)

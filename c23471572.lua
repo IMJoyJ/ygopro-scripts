@@ -2,7 +2,7 @@
 -- 效果：
 -- 下次的自己的准备阶段跳过。
 function c23471572.initial_effect(c)
-	-- 效果原文：下次的自己的准备阶段跳过。
+	-- 下次的自己的准备阶段跳过。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
@@ -18,7 +18,7 @@ function c23471572.target(e,tp,eg,ep,ev,re,r,rp,chk)
 end
 -- 设置卡的效果，在自己回合的准备阶段跳过准备阶段
 function c23471572.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 效果原文：下次的自己的准备阶段跳过。
+	-- 下次的自己的准备阶段跳过。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET)

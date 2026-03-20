@@ -2,7 +2,7 @@
 -- 效果：
 -- 自己场上有这张卡以外的水属性怪兽表侧表示存在的场合，和这张卡进行战斗的效果怪兽的效果在伤害计算后无效化。这张卡被破坏的场合，可以作为代替把自己场上表侧表示存在的1只3星以下的水属性怪兽破坏。
 function c20470500.initial_effect(c)
-	-- 效果原文：自己场上有这张卡以外的水属性怪兽表侧表示存在的场合，和这张卡进行战斗的效果怪兽的效果在伤害计算后无效化。
+	-- 自己场上有这张卡以外的水属性怪兽表侧表示存在的场合，和这张卡进行战斗的效果怪兽的效果在伤害计算后无效化。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(20470500,0))  --"效果无效"
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_F)
@@ -11,7 +11,7 @@ function c20470500.initial_effect(c)
 	e1:SetCondition(c20470500.condition)
 	e1:SetOperation(c20470500.operation)
 	c:RegisterEffect(e1)
-	-- 效果原文：这张卡被破坏的场合，可以作为代替把自己场上表侧表示存在的1只3星以下的水属性怪兽破坏。
+	-- 这张卡被破坏的场合，可以作为代替把自己场上表侧表示存在的1只3星以下的水属性怪兽破坏。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_CONTINUOUS+EFFECT_TYPE_SINGLE)
 	e2:SetCode(EFFECT_DESTROY_REPLACE)

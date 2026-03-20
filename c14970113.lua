@@ -8,7 +8,7 @@
 function c14970113.initial_effect(c)
 	aux.AddXyzProcedure(c,nil,4,3,c14970113.ovfilter,aux.Stringid(14970113,0),99,c14970113.xyzop)  --"是否在「十二兽」怪兽上面重叠来超量召唤？"
 	c:EnableReviveLimit()
-	-- 效果原文：①：这张卡的攻击力·守备力上升这张卡作为超量素材中的「十二兽」怪兽的各自数值。
+	-- ①：这张卡的攻击力·守备力上升这张卡作为超量素材中的「十二兽」怪兽的各自数值。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_UPDATE_ATTACK)
@@ -20,7 +20,7 @@ function c14970113.initial_effect(c)
 	e2:SetCode(EFFECT_UPDATE_DEFENSE)
 	e2:SetValue(c14970113.defval)
 	c:RegisterEffect(e2)
-	-- 效果原文：②：只要持有超量素材的这张卡在怪兽区域存在，对方不能把这张卡以外的场上的「十二兽」怪兽作为效果的对象。
+	-- ②：只要持有超量素材的这张卡在怪兽区域存在，对方不能把这张卡以外的场上的「十二兽」怪兽作为效果的对象。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_FIELD)
 	e3:SetCode(EFFECT_CANNOT_BE_EFFECT_TARGET)
@@ -32,7 +32,7 @@ function c14970113.initial_effect(c)
 	-- 设置效果值为aux.tgoval函数，用于过滤不能成为对方效果对象的条件。
 	e3:SetValue(aux.tgoval)
 	c:RegisterEffect(e3)
-	-- 效果原文：③：自己·对方的结束阶段发动。这张卡1个超量素材取除。
+	-- ③：自己·对方的结束阶段发动。这张卡1个超量素材取除。
 	local e4=Effect.CreateEffect(c)
 	e4:SetDescription(aux.Stringid(14970113,1))  --"这张卡1个超量素材取除"
 	e4:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_F)

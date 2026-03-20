@@ -2,7 +2,7 @@
 -- 效果：
 -- 1回合1次，可以从自己卡组选择1只名字带有「遗式」的怪兽在卡组最上面放置。
 function c16693254.initial_effect(c)
-	-- 效果原文：1回合1次，可以从自己卡组选择1只名字带有「遗式」的怪兽在卡组最上面放置。
+	-- 1回合1次，可以从自己卡组选择1只名字带有「遗式」的怪兽在卡组最上面放置。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(16693254,0))  --"卡组最上方放置"
 	e1:SetType(EFFECT_TYPE_IGNITION)

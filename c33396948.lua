@@ -2,7 +2,7 @@
 -- 效果：
 -- 这张卡和「被封印者的右腕」「被封印者的左腕」「被封印者的右足」「被封印者的左足」在手卡全部齐集时，自己决斗胜利。
 function c33396948.initial_effect(c)
-	-- 效果原文：这张卡和「被封印者的右腕」「被封印者的左腕」「被封印者的右足」「被封印者的左足」在手卡全部齐集时，自己决斗胜利。
+	-- 这张卡和「被封印者的右腕」「被封印者的左腕」「被封印者的右足」「被封印者的左足」在手卡全部齐集时，自己决斗胜利。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE+EFFECT_FLAG_DELAY)

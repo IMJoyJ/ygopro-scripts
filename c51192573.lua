@@ -2,7 +2,7 @@
 -- 效果：
 -- 把自己场上存在的原本持有者是对方的怪兽作为祭品的场合，这张卡可以用1只祭品作召唤。1回合1次，可以在对方场上1只怪兽放置1个A指示物。放置有A指示物的怪兽和名字带有「外星」的怪兽战斗的场合，每有1个A指示物攻击力·守备力下降300。
 function c51192573.initial_effect(c)
-	-- 效果原文：把自己场上存在的原本持有者是对方的怪兽作为祭品的场合，这张卡可以用1只祭品作召唤。
+	-- 把自己场上存在的原本持有者是对方的怪兽作为祭品的场合，这张卡可以用1只祭品作召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(51192573,0))  --"用1只祭品作召唤"
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
@@ -12,7 +12,7 @@ function c51192573.initial_effect(c)
 	e1:SetOperation(c51192573.otop)
 	e1:SetValue(SUMMON_TYPE_ADVANCE)
 	c:RegisterEffect(e1)
-	-- 效果原文：1回合1次，可以在对方场上1只怪兽放置1个A指示物。
+	-- 1回合1次，可以在对方场上1只怪兽放置1个A指示物。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(51192573,1))  --"放置「A指示物」"
 	e2:SetCategory(CATEGORY_COUNTER)
@@ -23,7 +23,7 @@ function c51192573.initial_effect(c)
 	e2:SetTarget(c51192573.cttg)
 	e2:SetOperation(c51192573.ctop)
 	c:RegisterEffect(e2)
-	-- 效果原文：放置有A指示物的怪兽和名字带有「外星」的怪兽战斗的场合，每有1个A指示物攻击力·守备力下降300。
+	-- 放置有A指示物的怪兽和名字带有「外星」的怪兽战斗的场合，每有1个A指示物攻击力·守备力下降300。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_FIELD)
 	e3:SetCode(EFFECT_UPDATE_ATTACK)

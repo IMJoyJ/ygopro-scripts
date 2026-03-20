@@ -4,14 +4,14 @@
 -- ①：1回合1次，自己场上有「秘旋谍」怪兽特殊召唤的场合，以对方场上1只怪兽为对象才能发动。那只怪兽的控制权直到结束阶段得到。这个效果得到控制权的怪兽在这个回合不能直接攻击。
 -- ②：自己场上的「秘旋谍」怪兽被战斗·效果破坏的场合，可以作为那1只破坏的怪兽的代替而把墓地的这张卡除外。
 function c39373426.initial_effect(c)
-	-- 效果原文：这张卡发动后，第3次的自己结束阶段破坏。
+	-- 这张卡发动后，第3次的自己结束阶段破坏。
 	local e0=Effect.CreateEffect(c)
 	e0:SetDescription(aux.Stringid(39373426,0))
 	e0:SetType(EFFECT_TYPE_ACTIVATE)
 	e0:SetCode(EVENT_FREE_CHAIN)
 	e0:SetTarget(c39373426.target)
 	c:RegisterEffect(e0)
-	-- 效果原文：①：1回合1次，自己场上有「秘旋谍」怪兽特殊召唤的场合，以对方场上1只怪兽为对象才能发动。那只怪兽的控制权直到结束阶段得到。这个效果得到控制权的怪兽在这个回合不能直接攻击。
+	-- ①：1回合1次，自己场上有「秘旋谍」怪兽特殊召唤的场合，以对方场上1只怪兽为对象才能发动。那只怪兽的控制权直到结束阶段得到。这个效果得到控制权的怪兽在这个回合不能直接攻击。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(39373426,1))
 	e1:SetCategory(CATEGORY_CONTROL)
@@ -29,7 +29,7 @@ function c39373426.initial_effect(c)
 	e2:SetRange(LOCATION_SZONE)
 	e2:SetTarget(c39373426.cntg2)
 	c:RegisterEffect(e2)
-	-- 效果原文：②：自己场上的「秘旋谍」怪兽被战斗·效果破坏的场合，可以作为那1只破坏的怪兽的代替而把墓地的这张卡除外。
+	-- ②：自己场上的「秘旋谍」怪兽被战斗·效果破坏的场合，可以作为那1只破坏的怪兽的代替而把墓地的这张卡除外。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e3:SetCode(EFFECT_DESTROY_REPLACE)
@@ -43,7 +43,7 @@ end
 function c39373426.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
 	local c=e:GetHandler()
-	-- 效果原文：local e1=Effect.CreateEffect(c) e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS) e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE) e1:SetCode(EVENT_PHASE+PHASE_END) e1:SetCountLimit(1) e1:SetRange(LOCATION_SZONE) e1:SetCondition(c39373426.descon) e1:SetOperation(c39373426.desop) e1:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END+RESET_SELF_TURN,3) c:SetTurnCounter(0) c:RegisterEffect(e1)
+	-- local e1=Effect.CreateEffect(c) e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS) e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE) e1:SetCode(EVENT_PHASE+PHASE_END) e1:SetCountLimit(1) e1:SetRange(LOCATION_SZONE) e1:SetCondition(c39373426.descon) e1:SetOperation(c39373426.desop) e1:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END+RESET_SELF_TURN,3) c:SetTurnCounter(0) c:RegisterEffect(e1)
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
@@ -97,7 +97,7 @@ function c39373426.cntg1(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	-- 规则层面：设置连锁操作信息，表明将要改变控制权
 	Duel.SetOperationInfo(0,CATEGORY_CONTROL,g,1,0,0)
 	local c=e:GetHandler()
-	-- 效果原文：local e1=Effect.CreateEffect(c) e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS) e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE) e1:SetCode(EVENT_PHASE+PHASE_END) e1:SetCountLimit(1) e1:SetRange(LOCATION_SZONE) e1:SetCondition(c39373426.descon) e1:SetOperation(c39373426.desop) e1:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END+RESET_SELF_TURN,3) c:SetTurnCounter(0) c:RegisterEffect(e1)
+	-- local e1=Effect.CreateEffect(c) e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS) e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE) e1:SetCode(EVENT_PHASE+PHASE_END) e1:SetCountLimit(1) e1:SetRange(LOCATION_SZONE) e1:SetCondition(c39373426.descon) e1:SetOperation(c39373426.desop) e1:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END+RESET_SELF_TURN,3) c:SetTurnCounter(0) c:RegisterEffect(e1)
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
@@ -128,7 +128,7 @@ function c39373426.cnop(e,tp,eg,ep,ev,re,r,rp)
 	local tc=Duel.GetFirstTarget()
 	-- 规则层面：判断目标怪兽是否有效且成功获得控制权
 	if tc:IsRelateToEffect(e) and Duel.GetControl(tc,tp,PHASE_END,1)>0 then
-		-- 效果原文：local e1=Effect.CreateEffect(e:GetHandler()) e1:SetType(EFFECT_TYPE_SINGLE) e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE) e1:SetCode(EFFECT_CANNOT_DIRECT_ATTACK) e1:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END) tc:RegisterEffect(e1)
+		-- local e1=Effect.CreateEffect(e:GetHandler()) e1:SetType(EFFECT_TYPE_SINGLE) e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE) e1:SetCode(EFFECT_CANNOT_DIRECT_ATTACK) e1:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END) tc:RegisterEffect(e1)
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)

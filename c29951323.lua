@@ -4,14 +4,14 @@
 -- ①：这张卡1回合最多2次不会被战斗破坏。
 -- ②：只要这张卡在怪兽区域存在，回合玩家只能有最多和那个回合攻击过的次数相同次数把怪兽特殊召唤。
 function c29951323.initial_effect(c)
-	-- 效果原文：这张卡不能通常召唤，在自己没有进行特殊召唤的自己主要阶段1，用卡的效果才能特殊召唤。
+	-- 这张卡不能通常召唤，在自己没有进行特殊召唤的自己主要阶段1，用卡的效果才能特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
 	e1:SetCode(EFFECT_SPSUMMON_CONDITION)
 	e1:SetValue(c29951323.splimit)
 	c:RegisterEffect(e1)
-	-- 效果原文：①：这张卡1回合最多2次不会被战斗破坏。
+	-- ①：这张卡1回合最多2次不会被战斗破坏。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_SINGLE)
 	e2:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
@@ -20,7 +20,7 @@ function c29951323.initial_effect(c)
 	e2:SetCountLimit(2)
 	e2:SetValue(c29951323.valcon)
 	c:RegisterEffect(e2)
-	-- 效果原文：②：只要这张卡在怪兽区域存在，回合玩家只能有最多和那个回合攻击过的次数相同次数把怪兽特殊召唤。
+	-- ②：只要这张卡在怪兽区域存在，回合玩家只能有最多和那个回合攻击过的次数相同次数把怪兽特殊召唤。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_FIELD)
 	e3:SetRange(LOCATION_MZONE)
@@ -29,7 +29,7 @@ function c29951323.initial_effect(c)
 	e3:SetTargetRange(1,1)
 	e3:SetTarget(c29951323.limittg)
 	c:RegisterEffect(e3)
-	-- 效果原文：②：只要这张卡在怪兽区域存在，回合玩家只能有最多和那个回合攻击过的次数相同次数把怪兽特殊召唤。
+	-- ②：只要这张卡在怪兽区域存在，回合玩家只能有最多和那个回合攻击过的次数相同次数把怪兽特殊召唤。
 	local e4=Effect.CreateEffect(c)
 	e4:SetType(EFFECT_TYPE_FIELD)
 	e4:SetCode(EFFECT_LEFT_SPSUMMON_COUNT)

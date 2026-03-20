@@ -4,7 +4,7 @@
 -- ②：这张卡的攻击力上升自己场上的表侧表示的魔法·陷阱卡数量×300。
 -- ③：只要这张卡在怪兽区域存在，自己的魔法与陷阱区域的表侧表示的卡不会被效果破坏。
 function c32588805.initial_effect(c)
-	-- 效果原文：①：自己场上没有魔法·陷阱卡存在，这张卡上级召唤成功时才能发动。对方宣言卡的种类（永续魔法·永续陷阱）。自己从卡组选宣言的种类的1张卡在自己的魔法与陷阱区域盖放。
+	-- ①：自己场上没有魔法·陷阱卡存在，这张卡上级召唤成功时才能发动。对方宣言卡的种类（永续魔法·永续陷阱）。自己从卡组选宣言的种类的1张卡在自己的魔法与陷阱区域盖放。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(32588805,0))
 	e1:SetCategory(CATEGORY_SSET)
@@ -14,7 +14,7 @@ function c32588805.initial_effect(c)
 	e1:SetTarget(c32588805.settg)
 	e1:SetOperation(c32588805.setop)
 	c:RegisterEffect(e1)
-	-- 效果原文：②：这张卡的攻击力上升自己场上的表侧表示的魔法·陷阱卡数量×300。
+	-- ②：这张卡的攻击力上升自己场上的表侧表示的魔法·陷阱卡数量×300。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_SINGLE)
 	e2:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
@@ -22,7 +22,7 @@ function c32588805.initial_effect(c)
 	e2:SetRange(LOCATION_MZONE)
 	e2:SetValue(c32588805.atkval)
 	c:RegisterEffect(e2)
-	-- 效果原文：③：只要这张卡在怪兽区域存在，自己的魔法与陷阱区域的表侧表示的卡不会被效果破坏。
+	-- ③：只要这张卡在怪兽区域存在，自己的魔法与陷阱区域的表侧表示的卡不会被效果破坏。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_FIELD)
 	e3:SetCode(EFFECT_INDESTRUCTABLE_EFFECT)

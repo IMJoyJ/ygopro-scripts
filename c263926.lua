@@ -4,21 +4,21 @@
 -- ①：这张卡可以从手卡攻击表示特殊召唤。
 -- ②：这张卡已在怪兽区域存在的状态，自己场上有这张卡以外的怪兽召唤·反转召唤·特殊召唤的场合发动。这张卡破坏。
 function c263926.initial_effect(c)
-	-- 效果原文：自己场上有怪兽存在的场合，这张卡不能召唤·特殊召唤。
+	-- 自己场上有怪兽存在的场合，这张卡不能召唤·特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
 	e1:SetCode(EFFECT_CANNOT_SUMMON)
 	e1:SetCondition(c263926.sumcon)
 	c:RegisterEffect(e1)
-	-- 效果原文：自己场上有怪兽存在的场合，这张卡不能召唤·特殊召唤。
+	-- 自己场上有怪兽存在的场合，这张卡不能召唤·特殊召唤。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_SINGLE)
 	e2:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
 	e2:SetCode(EFFECT_SPSUMMON_CONDITION)
 	e2:SetValue(c263926.sumlimit)
 	c:RegisterEffect(e2)
-	-- 效果原文：①：这张卡可以从手卡攻击表示特殊召唤。
+	-- ①：这张卡可以从手卡攻击表示特殊召唤。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_FIELD)
 	e3:SetProperty(EFFECT_FLAG_SPSUM_PARAM+EFFECT_FLAG_UNCOPYABLE)
@@ -27,7 +27,7 @@ function c263926.initial_effect(c)
 	e3:SetRange(LOCATION_HAND)
 	e3:SetCondition(c263926.sprcon)
 	c:RegisterEffect(e3)
-	-- 效果原文：②：这张卡已在怪兽区域存在的状态，自己场上有这张卡以外的怪兽召唤·反转召唤·特殊召唤的场合发动。这张卡破坏。
+	-- ②：这张卡已在怪兽区域存在的状态，自己场上有这张卡以外的怪兽召唤·反转召唤·特殊召唤的场合发动。这张卡破坏。
 	local e4=Effect.CreateEffect(c)
 	e4:SetDescription(aux.Stringid(263926,0))
 	e4:SetCategory(CATEGORY_DESTROY)

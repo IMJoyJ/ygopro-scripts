@@ -5,7 +5,7 @@
 -- ●8星以下：这张卡的攻击力·守备力上升800。
 -- ●9星以上：这张卡向守备表示怪兽攻击的场合，给与攻击力超过那个守备力的数值的战斗伤害。
 function c4632019.initial_effect(c)
-	-- 效果原文：①：把场上的这张卡作为同调素材的场合，可以把这张卡的等级当作8星使用。
+	-- ①：把场上的这张卡作为同调素材的场合，可以把这张卡的等级当作8星使用。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_SYNCHRO_LEVEL)
@@ -13,7 +13,7 @@ function c4632019.initial_effect(c)
 	e1:SetRange(LOCATION_MZONE)
 	e1:SetValue(c4632019.synclv)
 	c:RegisterEffect(e1)
-	-- 效果原文：②：这张卡为同调素材的同调怪兽得到那自身原本等级的以下效果。●8星以下：这张卡的攻击力·守备力上升800。●9星以上：这张卡向守备表示怪兽攻击的场合，给与攻击力超过那个守备力的数值的战斗伤害。
+	-- ②：这张卡为同调素材的同调怪兽得到那自身原本等级的以下效果。●8星以下：这张卡的攻击力·守备力上升800。●9星以上：这张卡向守备表示怪兽攻击的场合，给与攻击力超过那个守备力的数值的战斗伤害。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_CONTINUOUS)
 	e2:SetCode(EVENT_BE_MATERIAL)
@@ -39,7 +39,7 @@ function c4632019.efop(e,tp,eg,ep,ev,re,r,rp)
 	local lv=rc:GetOriginalLevel()
 	local reg=nil
 	if lv>0 and lv<=8 then
-		-- 效果原文：●8星以下：这张卡的攻击力·守备力上升800。
+		-- ●8星以下：这张卡的攻击力·守备力上升800。
 		local e1=Effect.CreateEffect(rc)
 		e1:SetDescription(aux.Stringid(4632019,0))  --"「八蛸大蛇」效果适用中"
 		e1:SetType(EFFECT_TYPE_SINGLE)
@@ -53,7 +53,7 @@ function c4632019.efop(e,tp,eg,ep,ev,re,r,rp)
 		rc:RegisterEffect(e2,true)
 		reg=true
 	elseif lv>=9 then
-		-- 效果原文：●9星以上：这张卡向守备表示怪兽攻击的场合，给与攻击力超过那个守备力的数值的战斗伤害。
+		-- ●9星以上：这张卡向守备表示怪兽攻击的场合，给与攻击力超过那个守备力的数值的战斗伤害。
 		local e2=Effect.CreateEffect(rc)
 		e2:SetDescription(aux.Stringid(4632019,0))  --"「八蛸大蛇」效果适用中"
 		e2:SetType(EFFECT_TYPE_SINGLE)
@@ -65,7 +65,7 @@ function c4632019.efop(e,tp,eg,ep,ev,re,r,rp)
 	end
 	if reg then
 		if not rc:IsType(TYPE_EFFECT) then
-			-- 效果原文：这张卡为同调素材的同调怪兽得到那自身原本等级的以下效果。
+			-- 这张卡为同调素材的同调怪兽得到那自身原本等级的以下效果。
 			local e0=Effect.CreateEffect(c)
 			e0:SetType(EFFECT_TYPE_SINGLE)
 			e0:SetCode(EFFECT_ADD_TYPE)

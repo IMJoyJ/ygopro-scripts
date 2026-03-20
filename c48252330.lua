@@ -2,7 +2,7 @@
 -- 效果：
 -- 这张卡被对方破坏送去墓地时，这张卡回到卡组。这张卡召唤成功时，场上有这张卡以外的名字带有「魔偶甜点」的怪兽存在的场合，可以从卡组把1张场地魔法卡加入手卡。
 function c48252330.initial_effect(c)
-	-- 效果原文：这张卡被对方破坏送去墓地时，这张卡回到卡组。
+	-- 这张卡被对方破坏送去墓地时，这张卡回到卡组。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(48252330,0))  --"返回卡组"
 	e1:SetCategory(CATEGORY_TODECK)
@@ -12,7 +12,7 @@ function c48252330.initial_effect(c)
 	e1:SetTarget(c48252330.rettg)
 	e1:SetOperation(c48252330.retop)
 	c:RegisterEffect(e1)
-	-- 效果原文：这张卡召唤成功时，场上有这张卡以外的名字带有「魔偶甜点」的怪兽存在的场合，可以从卡组把1张场地魔法卡加入手卡。
+	-- 这张卡召唤成功时，场上有这张卡以外的名字带有「魔偶甜点」的怪兽存在的场合，可以从卡组把1张场地魔法卡加入手卡。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(48252330,1))  --"检索"
 	e2:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)

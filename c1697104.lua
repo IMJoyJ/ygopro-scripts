@@ -3,14 +3,14 @@
 -- 这张卡不能通常召唤，用卡的效果才能特殊召唤。
 -- ①：自己场上没有怪兽存在，对方的陷阱卡发动时才能发动。选手卡的这张卡和自己的手卡·卡组·墓地1只「PSY骨架驱动者」特殊召唤，那个发动无效并破坏。这个效果特殊召唤的怪兽全部在结束阶段除外。
 function c1697104.initial_effect(c)
-	-- 效果原文：这张卡不能通常召唤，用卡的效果才能特殊召唤。
+	-- 这张卡不能通常召唤，用卡的效果才能特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
 	e1:SetCode(EFFECT_SPSUMMON_CONDITION)
 	e1:SetValue(c1697104.splimit)
 	c:RegisterEffect(e1)
-	-- 效果原文：①：自己场上没有怪兽存在，对方的陷阱卡发动时才能发动。选手卡的这张卡和自己的手卡·卡组·墓地1只「PSY骨架驱动者」特殊召唤，那个发动无效并破坏。这个效果特殊召唤的怪兽全部在结束阶段除外。
+	-- ①：自己场上没有怪兽存在，对方的陷阱卡发动时才能发动。选手卡的这张卡和自己的手卡·卡组·墓地1只「PSY骨架驱动者」特殊召唤，那个发动无效并破坏。这个效果特殊召唤的怪兽全部在结束阶段除外。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(1697104,0))
 	e2:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_NEGATE+CATEGORY_DESTROY)
@@ -80,7 +80,7 @@ function c1697104.operation(e,tp,eg,ep,ev,re,r,rp)
 	Duel.SpecialSummonComplete()
 	g:AddCard(c)
 	g:KeepAlive()
-	-- 效果原文：这个效果特殊召唤的怪兽全部在结束阶段除外。
+	-- 这个效果特殊召唤的怪兽全部在结束阶段除外。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e1:SetCode(EVENT_PHASE+PHASE_END)

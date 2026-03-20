@@ -8,7 +8,7 @@
 function c1269512.initial_effect(c)
 	aux.AddXyzProcedure(c,nil,4,3,c1269512.ovfilter,aux.Stringid(1269512,0),3,c1269512.xyzop)  --"是否在4阶以下的超量怪兽上面重叠来超量召唤？"
 	c:EnableReviveLimit()
-	-- 效果原文：①：对方场上的怪兽的攻击力下降500。
+	-- ①：对方场上的怪兽的攻击力下降500。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetRange(LOCATION_MZONE)
@@ -16,7 +16,7 @@ function c1269512.initial_effect(c)
 	e1:SetCode(EFFECT_UPDATE_ATTACK)
 	e1:SetValue(-500)
 	c:RegisterEffect(e1)
-	-- 效果原文：②：自己·对方的战斗阶段开始时才能发动。对方场上的全部攻击表示怪兽的效果无效化。
+	-- ②：自己·对方的战斗阶段开始时才能发动。对方场上的全部攻击表示怪兽的效果无效化。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(1269512,2))  --"对方场上攻击表示的怪兽效果无效化"
 	e2:SetCategory(CATEGORY_DISABLE)
@@ -27,7 +27,7 @@ function c1269512.initial_effect(c)
 	e2:SetTarget(c1269512.distg)
 	e2:SetOperation(c1269512.disop)
 	c:RegisterEffect(e2)
-	-- 效果原文：③：这张卡的攻击破坏对方怪兽时，把这张卡1个超量素材取除才能发动。这张卡只再1次可以继续攻击。
+	-- ③：这张卡的攻击破坏对方怪兽时，把这张卡1个超量素材取除才能发动。这张卡只再1次可以继续攻击。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(1269512,3))  --"取除超量素材再次攻击"
 	e3:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)

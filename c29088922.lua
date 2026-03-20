@@ -4,7 +4,7 @@
 -- ②：自己准备阶段发动。这张卡的等级上升1星（最多到12星）。
 -- ③：自己场上有「命运女郎·沃特莉」以外的「命运女郎」怪兽存在，这张卡特殊召唤成功的场合发动。自己从卡组抽2张。
 function c29088922.initial_effect(c)
-	-- 效果原文：①：这张卡的攻击力·守备力变成这张卡的等级×300。
+	-- ①：这张卡的攻击力·守备力变成这张卡的等级×300。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
@@ -15,7 +15,7 @@ function c29088922.initial_effect(c)
 	local e2=e1:Clone()
 	e2:SetCode(EFFECT_SET_DEFENSE)
 	c:RegisterEffect(e2)
-	-- 效果原文：②：自己准备阶段发动。这张卡的等级上升1星（最多到12星）。
+	-- ②：自己准备阶段发动。这张卡的等级上升1星（最多到12星）。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(29088922,0))  --"等级上升"
 	e3:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_F)
@@ -25,7 +25,7 @@ function c29088922.initial_effect(c)
 	e3:SetCondition(c29088922.lvcon)
 	e3:SetOperation(c29088922.lvop)
 	c:RegisterEffect(e3)
-	-- 效果原文：③：自己场上有「命运女郎·沃特莉」以外的「命运女郎」怪兽存在，这张卡特殊召唤成功的场合发动。自己从卡组抽2张。
+	-- ③：自己场上有「命运女郎·沃特莉」以外的「命运女郎」怪兽存在，这张卡特殊召唤成功的场合发动。自己从卡组抽2张。
 	local e4=Effect.CreateEffect(c)
 	e4:SetDescription(aux.Stringid(29088922,1))  --"抽卡"
 	e4:SetCategory(CATEGORY_DRAW)

@@ -2,7 +2,7 @@
 -- 效果：
 -- 对方场上表侧攻击表示存在的怪兽的表示形式变更为表侧守备表示时才能发动。对方场上守备表示存在的怪兽全部破坏。
 function c35686187.initial_effect(c)
-	-- 效果原文：对方场上表侧攻击表示存在的怪兽的表示形式变更为表侧守备表示时才能发动。
+	-- 对方场上表侧攻击表示存在的怪兽的表示形式变更为表侧守备表示时才能发动。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_DESTROY)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)

@@ -4,7 +4,7 @@
 -- ①：「转生炎兽 羚羊」以外的「转生炎兽」怪兽被送去自己墓地的场合才能发动。这张卡从手卡特殊召唤。
 -- ②：这张卡召唤·特殊召唤的场合才能发动。从卡组把「转生炎兽 羚羊」以外的1张「转生炎兽」卡送去墓地。
 function c26889158.initial_effect(c)
-	-- 效果原文：①：「转生炎兽 羚羊」以外的「转生炎兽」怪兽被送去自己墓地的场合才能发动。这张卡从手卡特殊召唤。
+	-- ①：「转生炎兽 羚羊」以外的「转生炎兽」怪兽被送去自己墓地的场合才能发动。这张卡从手卡特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(26889158,0))  --"从手卡特殊召唤"
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -17,7 +17,7 @@ function c26889158.initial_effect(c)
 	e1:SetTarget(c26889158.sptg)
 	e1:SetOperation(c26889158.spop)
 	c:RegisterEffect(e1)
-	-- 效果原文：②：这张卡召唤·特殊召唤的场合才能发动。从卡组把「转生炎兽 羚羊」以外的1张「转生炎兽」卡送去墓地。
+	-- ②：这张卡召唤·特殊召唤的场合才能发动。从卡组把「转生炎兽 羚羊」以外的1张「转生炎兽」卡送去墓地。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(26889158,1))
 	e2:SetCategory(CATEGORY_TOGRAVE)

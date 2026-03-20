@@ -2,7 +2,7 @@
 -- 效果：
 -- 选择场上盖放的1张魔法·陷阱卡发动。只要这张卡在场上存在，选择的卡不能发动。不能对应这张卡的发动把魔法·陷阱·效果怪兽的效果发动。
 function c40736921.initial_effect(c)
-	-- 效果原文：选择场上盖放的1张魔法·陷阱卡发动。
+	-- 选择场上盖放的1张魔法·陷阱卡发动。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
@@ -10,7 +10,7 @@ function c40736921.initial_effect(c)
 	e1:SetTarget(c40736921.target)
 	e1:SetOperation(c40736921.operation)
 	c:RegisterEffect(e1)
-	-- 效果原文：只要这张卡在场上存在，选择的卡不能发动。
+	-- 只要这张卡在场上存在，选择的卡不能发动。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_TARGET)
 	e2:SetCode(EFFECT_CANNOT_TRIGGER)

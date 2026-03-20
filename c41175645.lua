@@ -6,13 +6,13 @@
 -- ③：场上的这张卡被战斗或者对方的效果破坏的场合才能发动。从手卡·卡组把「沉默魔术师」以外的1只「沉默魔术师」怪兽无视召唤条件特殊召唤。
 function c41175645.initial_effect(c)
 	c:EnableReviveLimit()
-	-- 效果原文：这张卡不能通常召唤。把自己场上1只魔法师族怪兽解放的场合才能特殊召唤。
+	-- 这张卡不能通常召唤。把自己场上1只魔法师族怪兽解放的场合才能特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
 	e1:SetCode(EFFECT_SPSUMMON_CONDITION)
 	c:RegisterEffect(e1)
-	-- 效果原文：这张卡不能通常召唤。把自己场上1只魔法师族怪兽解放的场合才能特殊召唤。
+	-- 这张卡不能通常召唤。把自己场上1只魔法师族怪兽解放的场合才能特殊召唤。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD)
 	e2:SetCode(EFFECT_SPSUMMON_PROC)
@@ -22,7 +22,7 @@ function c41175645.initial_effect(c)
 	e2:SetTarget(c41175645.sptg)
 	e2:SetOperation(c41175645.spop)
 	c:RegisterEffect(e2)
-	-- 效果原文：①：这张卡的攻击力上升自己手卡数量×500。
+	-- ①：这张卡的攻击力上升自己手卡数量×500。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_SINGLE)
 	e3:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
@@ -30,7 +30,7 @@ function c41175645.initial_effect(c)
 	e3:SetCode(EFFECT_UPDATE_ATTACK)
 	e3:SetValue(c41175645.value)
 	c:RegisterEffect(e3)
-	-- 效果原文：②：1回合1次，魔法卡发动时才能发动。那个发动无效。
+	-- ②：1回合1次，魔法卡发动时才能发动。那个发动无效。
 	local e4=Effect.CreateEffect(c)
 	e4:SetDescription(aux.Stringid(41175645,0))
 	e4:SetCategory(CATEGORY_NEGATE)
@@ -43,7 +43,7 @@ function c41175645.initial_effect(c)
 	e4:SetTarget(c41175645.target)
 	e4:SetOperation(c41175645.operation)
 	c:RegisterEffect(e4)
-	-- 效果原文：③：场上的这张卡被战斗或者对方的效果破坏的场合才能发动。从手卡·卡组把「沉默魔术师」以外的1只「沉默魔术师」怪兽无视召唤条件特殊召唤。
+	-- ③：场上的这张卡被战斗或者对方的效果破坏的场合才能发动。从手卡·卡组把「沉默魔术师」以外的1只「沉默魔术师」怪兽无视召唤条件特殊召唤。
 	local e5=Effect.CreateEffect(c)
 	e5:SetDescription(aux.Stringid(41175645,1))
 	e5:SetCategory(CATEGORY_SPECIAL_SUMMON)

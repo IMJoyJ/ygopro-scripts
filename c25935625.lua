@@ -4,7 +4,7 @@
 -- ①：自己场上的这张卡被战斗·效果破坏送去墓地时才能发动。从卡组把「暗龙星-椒图」以外的1只「龙星」怪兽攻击表示特殊召唤。
 -- ②：自己场上没有这张卡以外的怪兽存在的场合，把手卡2张「龙星」卡送去墓地才能发动。从卡组把攻击力0和守备力0的「龙星」怪兽各1只特殊召唤。这个效果特殊召唤的怪兽在结束阶段除外。
 function c25935625.initial_effect(c)
-	-- 效果原文：①：自己场上的这张卡被战斗·效果破坏送去墓地时才能发动。从卡组把「暗龙星-椒图」以外的1只「龙星」怪兽攻击表示特殊召唤。
+	-- ①：自己场上的这张卡被战斗·效果破坏送去墓地时才能发动。从卡组把「暗龙星-椒图」以外的1只「龙星」怪兽攻击表示特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(25935625,0))  --"特殊召唤"
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -16,7 +16,7 @@ function c25935625.initial_effect(c)
 	e1:SetTarget(c25935625.target)
 	e1:SetOperation(c25935625.operation)
 	c:RegisterEffect(e1)
-	-- 效果原文：②：自己场上没有这张卡以外的怪兽存在的场合，把手卡2张「龙星」卡送去墓地才能发动。从卡组把攻击力0和守备力0的「龙星」怪兽各1只特殊召唤。这个效果特殊召唤的怪兽在结束阶段除外。
+	-- ②：自己场上没有这张卡以外的怪兽存在的场合，把手卡2张「龙星」卡送去墓地才能发动。从卡组把攻击力0和守备力0的「龙星」怪兽各1只特殊召唤。这个效果特殊召唤的怪兽在结束阶段除外。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(25935625,1))  --"特殊召唤"
 	e2:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -125,7 +125,7 @@ function c25935625.spop(e,tp,eg,ep,ev,re,r,rp)
 		-- 规则层面：完成特殊召唤流程
 		Duel.SpecialSummonComplete()
 		g1:KeepAlive()
-		-- 效果原文：这个效果特殊召唤的怪兽在结束阶段除外。
+		-- 这个效果特殊召唤的怪兽在结束阶段除外。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 		e1:SetCode(EVENT_PHASE+PHASE_END)

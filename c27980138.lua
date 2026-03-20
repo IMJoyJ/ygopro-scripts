@@ -2,7 +2,7 @@
 -- 效果：
 -- 选择自己墓地存在的2只风属性怪兽回到卡组，选择场上存在的1张卡回到持有者手卡。
 function c27980138.initial_effect(c)
-	-- 效果原文：选择自己墓地存在的2只风属性怪兽回到卡组，选择场上存在的1张卡回到持有者手卡。
+	-- 选择自己墓地存在的2只风属性怪兽回到卡组，选择场上存在的1张卡回到持有者手卡。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_TODECK+CATEGORY_TOHAND)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)

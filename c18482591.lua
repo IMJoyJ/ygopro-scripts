@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：只要自己场上有其他的「冰结界」怪兽存在，双方魔法卡若不盖放则不能发动，直到从盖放的玩家来看的下次的自己回合到来不能发动。
 function c18482591.initial_effect(c)
-	-- 效果原文：①：只要自己场上有其他的「冰结界」怪兽存在，双方魔法卡若不盖放则不能发动，直到从盖放的玩家来看的下次的自己回合到来不能发动。
+	-- ①：只要自己场上有其他的「冰结界」怪兽存在，双方魔法卡若不盖放则不能发动，直到从盖放的玩家来看的下次的自己回合到来不能发动。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD)
 	e2:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
@@ -12,7 +12,7 @@ function c18482591.initial_effect(c)
 	e2:SetCondition(c18482591.con)
 	e2:SetValue(c18482591.aclimit)
 	c:RegisterEffect(e2)
-	-- 效果原文：①：只要自己场上有其他的「冰结界」怪兽存在，双方魔法卡若不盖放则不能发动，直到从盖放的玩家来看的下次的自己回合到来不能发动。
+	-- ①：只要自己场上有其他的「冰结界」怪兽存在，双方魔法卡若不盖放则不能发动，直到从盖放的玩家来看的下次的自己回合到来不能发动。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e3:SetCode(EVENT_SSET)

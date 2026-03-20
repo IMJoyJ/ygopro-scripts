@@ -4,13 +4,13 @@
 -- ②：魔法与陷阱区域盖放的这张卡在对方回合被破坏送去墓地的场合发动。这张卡特殊召唤。
 -- ③：对方回合，把手卡·场上的这张卡解放才能发动。这个回合，双方不能把卡除外。
 function c34267821.initial_effect(c)
-	-- 效果原文：①：这张卡可以当作魔法卡使用从手卡到魔法与陷阱区域盖放。
+	-- ①：这张卡可以当作魔法卡使用从手卡到魔法与陷阱区域盖放。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_MONSTER_SSET)
 	e1:SetValue(TYPE_SPELL)
 	c:RegisterEffect(e1)
-	-- 效果原文：②：魔法与陷阱区域盖放的这张卡在对方回合被破坏送去墓地的场合发动。这张卡特殊召唤。
+	-- ②：魔法与陷阱区域盖放的这张卡在对方回合被破坏送去墓地的场合发动。这张卡特殊召唤。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(34267821,0))  --"特殊召唤"
 	e2:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -20,7 +20,7 @@ function c34267821.initial_effect(c)
 	e2:SetTarget(c34267821.sptg)
 	e2:SetOperation(c34267821.spop)
 	c:RegisterEffect(e2)
-	-- 效果原文：③：对方回合，把手卡·场上的这张卡解放才能发动。这个回合，双方不能把卡除外。
+	-- ③：对方回合，把手卡·场上的这张卡解放才能发动。这个回合，双方不能把卡除外。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(34267821,1))  --"双方不能把卡除外"
 	e3:SetType(EFFECT_TYPE_QUICK_O)
@@ -71,7 +71,7 @@ function c34267821.rmtg(e,tp,eg,ep,ev,re,r,rp,chk)
 end
 -- 规则层面：注册双方不能除外的效果。
 function c34267821.rmop(e,tp,eg,ep,ev,re,r,rp)
-	-- 效果原文：双方不能把卡除外
+	-- 双方不能把卡除外
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_CANNOT_REMOVE)

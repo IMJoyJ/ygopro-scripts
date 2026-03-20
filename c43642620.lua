@@ -2,7 +2,7 @@
 -- 效果：
 -- 自己墓地没有不死族怪兽存在的场合，这张卡破坏。场上表侧表示存在的这张卡被破坏的场合，给与那个时候的控制者这张卡的原本攻击力数值的伤害。
 function c43642620.initial_effect(c)
-	-- 效果原文：自己墓地没有不死族怪兽存在的场合，这张卡破坏。
+	-- 自己墓地没有不死族怪兽存在的场合，这张卡破坏。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
@@ -10,7 +10,7 @@ function c43642620.initial_effect(c)
 	e1:SetCode(EFFECT_SELF_DESTROY)
 	e1:SetCondition(c43642620.sdcon)
 	c:RegisterEffect(e1)
-	-- 效果原文：场上表侧表示存在的这张卡被破坏的场合，给与那个时候的控制者这张卡的原本攻击力数值的伤害。
+	-- 场上表侧表示存在的这张卡被破坏的场合，给与那个时候的控制者这张卡的原本攻击力数值的伤害。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(43642620,0))  --"伤害"
 	e2:SetCategory(CATEGORY_DAMAGE)

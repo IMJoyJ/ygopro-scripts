@@ -2,7 +2,7 @@
 -- 效果：
 -- 对方对怪兽的特殊召唤成功时，掷1次骰子。出现的数目和那特殊召唤的怪兽的等级相同的场合，那怪兽回到持有者手卡。
 function c31863912.initial_effect(c)
-	-- 效果原文：对方对怪兽的特殊召唤成功时，掷1次骰子。出现的数目和那特殊召唤的怪兽的等级相同的场合，那怪兽回到持有者手卡。
+	-- 对方对怪兽的特殊召唤成功时，掷1次骰子。出现的数目和那特殊召唤的怪兽的等级相同的场合，那怪兽回到持有者手卡。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_DICE+CATEGORY_TOHAND)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -11,7 +11,7 @@ function c31863912.initial_effect(c)
 	e1:SetTarget(c31863912.target1)
 	e1:SetOperation(c31863912.operation)
 	c:RegisterEffect(e1)
-	-- 效果原文：对方对怪兽的特殊召唤成功时，掷1次骰子。出现的数目和那特殊召唤的怪兽的等级相同的场合，那怪兽回到持有者手卡。
+	-- 对方对怪兽的特殊召唤成功时，掷1次骰子。出现的数目和那特殊召唤的怪兽的等级相同的场合，那怪兽回到持有者手卡。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(31863912,0))  --"投掷骰子"
 	e1:SetCategory(CATEGORY_DICE+CATEGORY_TOHAND)

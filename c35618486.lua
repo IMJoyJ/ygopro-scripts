@@ -2,7 +2,7 @@
 -- 效果：
 -- 自己场上存在的这张卡被送去墓地时，选择场上表侧表示存在的1只仪式·融合·同调怪兽破坏。
 function c35618486.initial_effect(c)
-	-- 效果原文：自己场上存在的这张卡被送去墓地时，选择场上表侧表示存在的1只仪式·融合·同调怪兽破坏。
+	-- 自己场上存在的这张卡被送去墓地时，选择场上表侧表示存在的1只仪式·融合·同调怪兽破坏。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(35618486,0))  --"破坏"
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET)

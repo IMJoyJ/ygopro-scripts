@@ -2,7 +2,7 @@
 -- 效果：
 -- 自己场上有4星以下的战士族怪兽召唤时才能发动。这张卡发动后变成和那只召唤的怪兽相同等级的同名怪兽卡（战士族·光·攻/守0）在怪兽卡区域特殊召唤。这张卡也当作陷阱卡使用。
 function c21843307.initial_effect(c)
-	-- 效果原文：自己场上有4星以下的战士族怪兽召唤时才能发动。
+	-- 自己场上有4星以下的战士族怪兽召唤时才能发动。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -39,7 +39,7 @@ function c21843307.activate(e,tp,eg,ep,ev,re,r,rp)
 	c:AddMonsterAttribute(TYPE_NORMAL+TYPE_TRAP,0,0,ec:GetLevel(),0,0)
 	-- 规则层面：执行特殊召唤步骤，将此卡作为怪兽特殊召唤到场上
 	if Duel.SpecialSummonStep(c,0,tp,tp,true,false,POS_FACEUP) then
-		-- 效果原文：这张卡发动后变成和那只召唤的怪兽相同等级的同名怪兽卡（战士族·光·攻/守0）在怪兽卡区域特殊召唤。
+		-- 这张卡发动后变成和那只召唤的怪兽相同等级的同名怪兽卡（战士族·光·攻/守0）在怪兽卡区域特殊召唤。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_CHANGE_CODE)

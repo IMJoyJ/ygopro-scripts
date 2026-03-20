@@ -3,7 +3,7 @@
 -- ①：这张卡召唤·特殊召唤成功的场合，以对方场上1只表侧表示怪兽为对象发动。这只怪兽表侧表示存在期间，作为对象的表侧表示怪兽不能攻击，效果无效化。
 -- ②：只要这张卡的①的效果作为对象的怪兽在场上存在，这张卡不会被战斗·效果破坏。
 function c43730887.initial_effect(c)
-	-- 效果原文：①：这张卡召唤·特殊召唤成功的场合，以对方场上1只表侧表示怪兽为对象发动。这只怪兽表侧表示存在期间，作为对象的表侧表示怪兽不能攻击，效果无效化。
+	-- ①：这张卡召唤·特殊召唤成功的场合，以对方场上1只表侧表示怪兽为对象发动。这只怪兽表侧表示存在期间，作为对象的表侧表示怪兽不能攻击，效果无效化。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(43730887,0))  --"选择怪兽不能攻击，效果无效化"
 	e1:SetCategory(CATEGORY_DISABLE)
@@ -16,7 +16,7 @@ function c43730887.initial_effect(c)
 	local e2=e1:Clone()
 	e2:SetCode(EVENT_SPSUMMON_SUCCESS)
 	c:RegisterEffect(e2)
-	-- 效果原文：②：只要这张卡的①的效果作为对象的怪兽在场上存在，这张卡不会被战斗·效果破坏。
+	-- ②：只要这张卡的①的效果作为对象的怪兽在场上存在，这张卡不会被战斗·效果破坏。
 	local e6=Effect.CreateEffect(c)
 	e6:SetType(EFFECT_TYPE_SINGLE)
 	e6:SetProperty(EFFECT_FLAG_SINGLE_RANGE)

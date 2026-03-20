@@ -3,7 +3,7 @@
 -- 这张卡可以作为「同调士」调整的代替而成为同调素材。把这张卡作为同调素材的场合，不是以「同调士」调整为素材的同调怪兽的同调召唤不能使用。
 -- ①：这张卡可以把手卡1只怪兽送去墓地，从手卡特殊召唤。
 function c20932152.initial_effect(c)
-	-- 效果原文：①：这张卡可以把手卡1只怪兽送去墓地，从手卡特殊召唤。
+	-- ①：这张卡可以把手卡1只怪兽送去墓地，从手卡特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_SPSUMMON_PROC)
@@ -13,14 +13,14 @@ function c20932152.initial_effect(c)
 	e1:SetTarget(c20932152.sptg)
 	e1:SetOperation(c20932152.spop)
 	c:RegisterEffect(e1)
-	-- 效果原文：这张卡可以作为「同调士」调整的代替而成为同调素材。
+	-- 这张卡可以作为「同调士」调整的代替而成为同调素材。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_SINGLE)
 	e2:SetCode(EFFECT_CANNOT_BE_SYNCHRO_MATERIAL)
 	e2:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
 	e2:SetValue(c20932152.synlimit)
 	c:RegisterEffect(e2)
-	-- 效果原文：把这张卡作为同调素材的场合，不是以「同调士」调整为素材的同调怪兽的同调召唤不能使用。
+	-- 把这张卡作为同调素材的场合，不是以「同调士」调整为素材的同调怪兽的同调召唤不能使用。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_SINGLE)
 	e3:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)

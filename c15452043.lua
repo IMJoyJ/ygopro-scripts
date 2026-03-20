@@ -3,7 +3,7 @@
 -- ①：这张卡召唤·特殊召唤成功的场合发动。对方场上的全部怪兽的攻击力·守备力下降600。
 -- ②：这张卡在怪兽区域存在，自己对怪兽的特殊召唤成功的场合发动。对方场上的全部怪兽的攻击力·守备力下降600。
 function c15452043.initial_effect(c)
-	-- 效果原文：①：这张卡召唤·特殊召唤成功的场合发动。对方场上的全部怪兽的攻击力·守备力下降600。
+	-- ①：这张卡召唤·特殊召唤成功的场合发动。对方场上的全部怪兽的攻击力·守备力下降600。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(15452043,0))  --"攻守变化"
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_F)
@@ -13,7 +13,7 @@ function c15452043.initial_effect(c)
 	local e2=e1:Clone()
 	e2:SetCode(EVENT_SPSUMMON_SUCCESS)
 	c:RegisterEffect(e2)
-	-- 效果原文：②：这张卡在怪兽区域存在，自己对怪兽的特殊召唤成功的场合发动。对方场上的全部怪兽的攻击力·守备力下降600。
+	-- ②：这张卡在怪兽区域存在，自己对怪兽的特殊召唤成功的场合发动。对方场上的全部怪兽的攻击力·守备力下降600。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(15452043,1))  --"攻守变化"
 	e3:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_F)

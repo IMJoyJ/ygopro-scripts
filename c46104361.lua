@@ -4,7 +4,7 @@
 -- ①：自己场上有相同种族的怪兽2只以上存在的场合，这张卡可以从手卡特殊召唤。
 -- ②：这张卡作为连接素材送去墓地的场合才能发动。对方场上的全部怪兽的攻击力直到回合结束时下降1000。
 function c46104361.initial_effect(c)
-	-- 效果原文：①：自己场上有相同种族的怪兽2只以上存在的场合，这张卡可以从手卡特殊召唤。
+	-- ①：自己场上有相同种族的怪兽2只以上存在的场合，这张卡可以从手卡特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(46104361,0))
 	e1:SetType(EFFECT_TYPE_FIELD)
@@ -14,7 +14,7 @@ function c46104361.initial_effect(c)
 	e1:SetCountLimit(1,46104361+EFFECT_COUNT_CODE_OATH)
 	e1:SetCondition(c46104361.spcon)
 	c:RegisterEffect(e1)
-	-- 效果原文：②：这张卡作为连接素材送去墓地的场合才能发动。对方场上的全部怪兽的攻击力直到回合结束时下降1000。
+	-- ②：这张卡作为连接素材送去墓地的场合才能发动。对方场上的全部怪兽的攻击力直到回合结束时下降1000。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(46104361,1))
 	e2:SetCategory(CATEGORY_ATKCHANGE)

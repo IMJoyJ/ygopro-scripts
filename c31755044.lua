@@ -4,7 +4,7 @@
 -- ②：持有这张卡作为素材中的原本种族是兽战士族的超量怪兽得到以下效果。
 -- ●这张卡和对方怪兽进行战斗的伤害计算后发动。那只对方怪兽除外。
 function c31755044.initial_effect(c)
-	-- 效果原文：①：以自己场上1只兽战士族超量怪兽为对象才能发动。把自己的手卡·场上的这张卡在那只怪兽下面重叠作为超量素材。这个效果在对方回合也能发动。
+	-- ①：以自己场上1只兽战士族超量怪兽为对象才能发动。把自己的手卡·场上的这张卡在那只怪兽下面重叠作为超量素材。这个效果在对方回合也能发动。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(31755044,0))  --"这张卡重叠作为超量素材"
 	e1:SetType(EFFECT_TYPE_QUICK_O)
@@ -14,7 +14,7 @@ function c31755044.initial_effect(c)
 	e1:SetTarget(c31755044.mattg)
 	e1:SetOperation(c31755044.matop)
 	c:RegisterEffect(e1)
-	-- 效果原文：②：持有这张卡作为素材中的原本种族是兽战士族的超量怪兽得到以下效果。●这张卡和对方怪兽进行战斗的伤害计算后发动。那只对方怪兽除外。
+	-- ②：持有这张卡作为素材中的原本种族是兽战士族的超量怪兽得到以下效果。●这张卡和对方怪兽进行战斗的伤害计算后发动。那只对方怪兽除外。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(31755044,1))  --"进行战斗的对方怪兽除外（十二兽 蛇笞）"
 	e2:SetCategory(CATEGORY_REMOVE)

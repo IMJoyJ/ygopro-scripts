@@ -3,7 +3,7 @@
 -- 「隐藏的机壳」在1回合只能发动1张。
 -- ①：从自己的额外卡组把最多3只表侧表示的「机壳」灵摆怪兽加入手卡。
 function c4450854.initial_effect(c)
-	-- 效果原文：「隐藏的机壳」在1回合只能发动1张。
+	-- 「隐藏的机壳」在1回合只能发动1张。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)

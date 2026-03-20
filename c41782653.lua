@@ -5,13 +5,13 @@
 -- ②：这张卡被效果送去墓地的场合才能发动。从卡组把1张「进化药」魔法卡加入手卡。
 function c41782653.initial_effect(c)
 	c:EnableReviveLimit()
-	-- 效果原文：这张卡不能通常召唤。
+	-- 这张卡不能通常召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
 	e1:SetCode(EFFECT_SPSUMMON_CONDITION)
 	c:RegisterEffect(e1)
-	-- 效果原文：让除外的5只自己的恐龙族怪兽回到卡组的场合才能特殊召唤。
+	-- 让除外的5只自己的恐龙族怪兽回到卡组的场合才能特殊召唤。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD)
 	e2:SetCode(EFFECT_SPSUMMON_PROC)
@@ -21,7 +21,7 @@ function c41782653.initial_effect(c)
 	e2:SetTarget(c41782653.sprtg)
 	e2:SetOperation(c41782653.sprop)
 	c:RegisterEffect(e2)
-	-- 效果原文：①：1回合1次，对方把魔法·陷阱卡发动时才能发动。选自己的手卡·场上1只恐龙族怪兽破坏，那个发动无效并破坏。
+	-- ①：1回合1次，对方把魔法·陷阱卡发动时才能发动。选自己的手卡·场上1只恐龙族怪兽破坏，那个发动无效并破坏。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(41782653,0))
 	e3:SetCategory(CATEGORY_NEGATE+CATEGORY_DESTROY)
@@ -34,7 +34,7 @@ function c41782653.initial_effect(c)
 	e3:SetTarget(c41782653.negtg)
 	e3:SetOperation(c41782653.negop)
 	c:RegisterEffect(e3)
-	-- 效果原文：②：这张卡被效果送去墓地的场合才能发动。从卡组把1张「进化药」魔法卡加入手卡。
+	-- ②：这张卡被效果送去墓地的场合才能发动。从卡组把1张「进化药」魔法卡加入手卡。
 	local e4=Effect.CreateEffect(c)
 	e4:SetDescription(aux.Stringid(41782653,1))
 	e4:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)

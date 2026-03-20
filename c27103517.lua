@@ -4,7 +4,7 @@
 -- ①：自己手卡是5张以上的场合，这张卡可以不用解放作召唤。
 -- ②：这张卡被战斗破坏送去墓地时才能发动。这张卡从墓地守备表示特殊召唤。这个效果特殊召唤的这张卡当作调整使用。
 function c27103517.initial_effect(c)
-	-- 效果原文：①：自己手卡是5张以上的场合，这张卡可以不用解放作召唤。
+	-- ①：自己手卡是5张以上的场合，这张卡可以不用解放作召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(27103517,0))  --"不用解放作召唤"
 	e1:SetType(EFFECT_TYPE_SINGLE)
@@ -12,7 +12,7 @@ function c27103517.initial_effect(c)
 	e1:SetProperty(EFFECT_FLAG_UNCOPYABLE)
 	e1:SetCondition(c27103517.sumcon)
 	c:RegisterEffect(e1)
-	-- 效果原文：②：这张卡被战斗破坏送去墓地时才能发动。这张卡从墓地守备表示特殊召唤。这个效果特殊召唤的这张卡当作调整使用。
+	-- ②：这张卡被战斗破坏送去墓地时才能发动。这张卡从墓地守备表示特殊召唤。这个效果特殊召唤的这张卡当作调整使用。
 	local e2=Effect.CreateEffect(c)
 	e2:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e2:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
@@ -50,7 +50,7 @@ function c27103517.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	-- 判断该卡是否能参与特殊召唤，且特殊召唤成功。
 	if c:IsRelateToEffect(e) and Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP_DEFENSE)~=0 then
-		-- 效果原文：这个效果特殊召唤的这张卡当作调整使用。
+		-- 这个效果特殊召唤的这张卡当作调整使用。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_ADD_TYPE)

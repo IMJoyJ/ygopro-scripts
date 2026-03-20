@@ -47,7 +47,7 @@ function c525110.operation(e,tp,eg,ep,ev,re,r,rp)
 		local t2=g:GetNext()
 		-- 将第一只选中的怪兽特殊召唤
 		Duel.SpecialSummonStep(t1,0,tp,tp,false,false,POS_FACEUP)
-		-- 效果原文：这个效果特殊召唤的怪兽这个回合不能作为同调素材
+		-- 这个效果特殊召唤的怪兽这个回合不能作为同调素材
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_CANNOT_BE_SYNCHRO_MATERIAL)

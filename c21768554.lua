@@ -2,7 +2,7 @@
 -- 效果：
 -- 自己场上有名字带有「外星」的怪兽存在时才能发动。选择对方场上存在的最多3只放置有A指示物的怪兽得到控制权。这张卡在发动回合的结束阶段时破坏。
 function c21768554.initial_effect(c)
-	-- 效果原文：自己场上有名字带有「外星」的怪兽存在时才能发动。
+	-- 自己场上有名字带有「外星」的怪兽存在时才能发动。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_CONTROL)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -12,7 +12,7 @@ function c21768554.initial_effect(c)
 	e1:SetTarget(c21768554.target)
 	e1:SetOperation(c21768554.operation)
 	c:RegisterEffect(e1)
-	-- 效果原文：这张卡在发动回合的结束阶段时破坏。
+	-- 这张卡在发动回合的结束阶段时破坏。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(21768554,0))  --"破坏"
 	e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
@@ -22,7 +22,7 @@ function c21768554.initial_effect(c)
 	e2:SetCondition(c21768554.descon)
 	e2:SetOperation(c21768554.desop)
 	c:RegisterEffect(e2)
-	-- 效果原文：选择对方场上存在的最多3只放置有A指示物的怪兽得到控制权。
+	-- 选择对方场上存在的最多3只放置有A指示物的怪兽得到控制权。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_TARGET)
 	e3:SetCode(EFFECT_SET_CONTROL)

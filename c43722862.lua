@@ -4,7 +4,7 @@
 -- ①：自己场上没有怪兽存在的场合才能发动。这张卡从手卡特殊召唤。那之后，可以从卡组把1只「风魔女」怪兽特殊召唤。这个效果从卡组特殊召唤的怪兽不能解放，这个效果发动的回合，自己不是5星以上的风属性怪兽不能从额外卡组特殊召唤。
 -- ②：这张卡召唤·特殊召唤成功的场合才能发动。给与对方500伤害。
 function c43722862.initial_effect(c)
-	-- 效果原文：①：自己场上没有怪兽存在的场合才能发动。这张卡从手卡特殊召唤。那之后，可以从卡组把1只「风魔女」怪兽特殊召唤。这个效果从卡组特殊召唤的怪兽不能解放，这个效果发动的回合，自己不是5星以上的风属性怪兽不能从额外卡组特殊召唤。
+	-- ①：自己场上没有怪兽存在的场合才能发动。这张卡从手卡特殊召唤。那之后，可以从卡组把1只「风魔女」怪兽特殊召唤。这个效果从卡组特殊召唤的怪兽不能解放，这个效果发动的回合，自己不是5星以上的风属性怪兽不能从额外卡组特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(43722862,0))  --"特殊召唤"
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES)
@@ -16,7 +16,7 @@ function c43722862.initial_effect(c)
 	e1:SetTarget(c43722862.sptg)
 	e1:SetOperation(c43722862.spop)
 	c:RegisterEffect(e1)
-	-- 效果原文：②：这张卡召唤·特殊召唤成功的场合才能发动。给与对方500伤害。
+	-- ②：这张卡召唤·特殊召唤成功的场合才能发动。给与对方500伤害。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(43722862,2))  --"伤害"
 	e2:SetCategory(CATEGORY_DAMAGE)
@@ -94,14 +94,14 @@ function c43722862.spop(e,tp,eg,ep,ev,re,r,rp)
 			if tc then
 				-- 将选择的怪兽特殊召唤到场上。
 				Duel.SpecialSummon(sg,0,tp,tp,false,false,POS_FACEUP)
-				-- 效果原文：这个效果从卡组特殊召唤的怪兽不能解放。
+				-- 这个效果从卡组特殊召唤的怪兽不能解放。
 				local e1=Effect.CreateEffect(c)
 				e1:SetType(EFFECT_TYPE_SINGLE)
 				e1:SetCode(EFFECT_UNRELEASABLE_SUM)
 				e1:SetValue(1)
 				e1:SetReset(RESET_EVENT+RESETS_STANDARD)
 				tc:RegisterEffect(e1)
-				-- 效果原文：这个效果发动的回合，自己不是5星以上的风属性怪兽不能从额外卡组特殊召唤。
+				-- 这个效果发动的回合，自己不是5星以上的风属性怪兽不能从额外卡组特殊召唤。
 				local e2=Effect.CreateEffect(c)
 				e2:SetType(EFFECT_TYPE_SINGLE)
 				e2:SetCode(EFFECT_UNRELEASABLE_NONSUM)

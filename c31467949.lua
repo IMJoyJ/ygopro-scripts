@@ -4,7 +4,7 @@
 -- ①：自己主要阶段才能发动。从手卡把「空牙团的飞哨 锐康」以外的1只「空牙团」怪兽特殊召唤。
 -- ②：这张卡已在怪兽区域存在的状态，自己场上有这张卡以外的「空牙团」怪兽特殊召唤的场合，以场上盖放的1张卡为对象才能发动。那张卡破坏。
 function c31467949.initial_effect(c)
-	-- 效果原文：①：自己主要阶段才能发动。从手卡把「空牙团的飞哨 锐康」以外的1只「空牙团」怪兽特殊召唤。
+	-- ①：自己主要阶段才能发动。从手卡把「空牙团的飞哨 锐康」以外的1只「空牙团」怪兽特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(31467949,0))
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -14,7 +14,7 @@ function c31467949.initial_effect(c)
 	e1:SetTarget(c31467949.sptg)
 	e1:SetOperation(c31467949.spop)
 	c:RegisterEffect(e1)
-	-- 效果原文：②：这张卡已在怪兽区域存在的状态，自己场上有这张卡以外的「空牙团」怪兽特殊召唤的场合，以场上盖放的1张卡为对象才能发动。那张卡破坏。
+	-- ②：这张卡已在怪兽区域存在的状态，自己场上有这张卡以外的「空牙团」怪兽特殊召唤的场合，以场上盖放的1张卡为对象才能发动。那张卡破坏。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(31467949,1))
 	e2:SetCategory(CATEGORY_DESTROY)

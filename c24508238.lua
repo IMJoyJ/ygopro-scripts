@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：自己·对方回合，把这张卡从手卡丢弃去墓地，以对方墓地1张卡为对象才能发动。那张卡除外。
 function c24508238.initial_effect(c)
-	-- 效果原文：自己·对方回合，把这张卡从手卡丢弃去墓地，以对方墓地1张卡为对象才能发动。那张卡除外。
+	-- 自己·对方回合，把这张卡从手卡丢弃去墓地，以对方墓地1张卡为对象才能发动。那张卡除外。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(24508238,0))  --"对方墓地1张卡除外"
 	e1:SetCategory(CATEGORY_REMOVE)

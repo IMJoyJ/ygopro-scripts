@@ -7,7 +7,7 @@ function c16227556.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- 效果原文：每次对方的准备阶段可以支付500基本分，随机看对方1张手卡。
+	-- 每次对方的准备阶段可以支付500基本分，随机看对方1张手卡。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(16227556,0))  --"查看手牌"
 	e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)

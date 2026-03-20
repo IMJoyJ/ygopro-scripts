@@ -2,7 +2,7 @@
 -- 效果：
 -- 灵魂怪兽才能装备。装备怪兽在结束阶段时回到手卡效果可以不发动。装备怪兽被战斗破坏的场合，作为代替把这张卡破坏。
 function c1200843.initial_effect(c)
-	-- 效果原文：灵魂怪兽才能装备。装备怪兽在结束阶段时回到手卡效果可以不发动。装备怪兽被战斗破坏的场合，作为代替把这张卡破坏。
+	-- 灵魂怪兽才能装备。装备怪兽在结束阶段时回到手卡效果可以不发动。装备怪兽被战斗破坏的场合，作为代替把这张卡破坏。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_EQUIP)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -11,20 +11,20 @@ function c1200843.initial_effect(c)
 	e1:SetTarget(c1200843.target)
 	e1:SetOperation(c1200843.operation)
 	c:RegisterEffect(e1)
-	-- 效果原文：灵魂怪兽才能装备。装备怪兽在结束阶段时回到手卡效果可以不发动。装备怪兽被战斗破坏的场合，作为代替把这张卡破坏。
+	-- 灵魂怪兽才能装备。装备怪兽在结束阶段时回到手卡效果可以不发动。装备怪兽被战斗破坏的场合，作为代替把这张卡破坏。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_EQUIP)
 	e2:SetCode(EFFECT_SPIRIT_MAYNOT_RETURN)
 	e2:SetRange(LOCATION_SZONE)
 	c:RegisterEffect(e2)
-	-- 效果原文：灵魂怪兽才能装备。装备怪兽在结束阶段时回到手卡效果可以不发动。装备怪兽被战斗破坏的场合，作为代替把这张卡破坏。
+	-- 灵魂怪兽才能装备。装备怪兽在结束阶段时回到手卡效果可以不发动。装备怪兽被战斗破坏的场合，作为代替把这张卡破坏。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_SINGLE)
 	e3:SetCode(EFFECT_EQUIP_LIMIT)
 	e3:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
 	e3:SetValue(c1200843.eqlimit)
 	c:RegisterEffect(e3)
-	-- 效果原文：装备怪兽被战斗破坏的场合，作为代替把这张卡破坏。
+	-- 装备怪兽被战斗破坏的场合，作为代替把这张卡破坏。
 	local e4=Effect.CreateEffect(c)
 	e4:SetType(EFFECT_TYPE_EQUIP)
 	e4:SetProperty(EFFECT_FLAG_IGNORE_IMMUNE)

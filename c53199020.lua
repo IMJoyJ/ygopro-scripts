@@ -3,7 +3,7 @@
 -- 这张卡可以把1只「魔轰神」怪兽解放表侧攻击表示上级召唤。
 -- ①：只要这张卡在怪兽区域存在，对方把通常魔法卡发动的场合，1回合只有1次让那个效果变成「对方选1张手卡丢弃」。
 function c53199020.initial_effect(c)
-	-- 效果原文：这张卡可以把1只「魔轰神」怪兽解放表侧攻击表示上级召唤。
+	-- 这张卡可以把1只「魔轰神」怪兽解放表侧攻击表示上级召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(53199020,0))  --"把1只名字带有「魔轰神」的怪兽解放召唤"
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
@@ -13,7 +13,7 @@ function c53199020.initial_effect(c)
 	e1:SetOperation(c53199020.otop)
 	e1:SetValue(SUMMON_TYPE_ADVANCE)
 	c:RegisterEffect(e1)
-	-- 效果原文：①：只要这张卡在怪兽区域存在，对方把通常魔法卡发动的场合，1回合只有1次让那个效果变成「对方选1张手卡丢弃」。
+	-- ①：只要这张卡在怪兽区域存在，对方把通常魔法卡发动的场合，1回合只有1次让那个效果变成「对方选1张手卡丢弃」。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e2:SetCode(EVENT_CHAINING)
@@ -22,7 +22,7 @@ function c53199020.initial_effect(c)
 	e2:SetCondition(c53199020.chcon1)
 	e2:SetOperation(c53199020.chop1)
 	c:RegisterEffect(e2)
-	-- 效果原文：①：只要这张卡在怪兽区域存在，对方把通常魔法卡发动的场合，1回合只有1次让那个效果变成「对方选1张手卡丢弃」。
+	-- ①：只要这张卡在怪兽区域存在，对方把通常魔法卡发动的场合，1回合只有1次让那个效果变成「对方选1张手卡丢弃」。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e3:SetCode(EVENT_CHAIN_SOLVING)

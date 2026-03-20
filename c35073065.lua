@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：自己对怪兽的上级召唤成功时才能发动。这张卡从手卡特殊召唤。这个效果特殊召唤的这张卡的种族·属性·等级变成和上级召唤的那只怪兽相同。
 function c35073065.initial_effect(c)
-	-- 效果原文：①：自己对怪兽的上级召唤成功时才能发动。这张卡从手卡特殊召唤。这个效果特殊召唤的这张卡的种族·属性·等级变成和上级召唤的那只怪兽相同。
+	-- ①：自己对怪兽的上级召唤成功时才能发动。这张卡从手卡特殊召唤。这个效果特殊召唤的这张卡的种族·属性·等级变成和上级召唤的那只怪兽相同。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(35073065,0))  --"特殊召唤"
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -40,7 +40,7 @@ function c35073065.spop(e,tp,eg,ep,ev,re,r,rp)
 	-- 执行特殊召唤步骤
 	if Duel.SpecialSummonStep(c,0,tp,tp,false,false,POS_FACEUP) then
 		if ec:IsRelateToEffect(e) and ec:IsFaceup() then
-			-- 效果原文：这个效果特殊召唤的这张卡的种族·属性·等级变成和上级召唤的那只怪兽相同。
+			-- 这个效果特殊召唤的这张卡的种族·属性·等级变成和上级召唤的那只怪兽相同。
 			local e1=Effect.CreateEffect(c)
 			e1:SetType(EFFECT_TYPE_SINGLE)
 			e1:SetCode(EFFECT_CHANGE_RACE)
@@ -51,7 +51,7 @@ function c35073065.spop(e,tp,eg,ep,ev,re,r,rp)
 			end
 			e1:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_DISABLE)
 			c:RegisterEffect(e1)
-			-- 效果原文：这个效果特殊召唤的这张卡的种族·属性·等级变成和上级召唤的那只怪兽相同。
+			-- 这个效果特殊召唤的这张卡的种族·属性·等级变成和上级召唤的那只怪兽相同。
 			local e2=Effect.CreateEffect(c)
 			e2:SetType(EFFECT_TYPE_SINGLE)
 			e2:SetCode(EFFECT_CHANGE_ATTRIBUTE)
@@ -62,7 +62,7 @@ function c35073065.spop(e,tp,eg,ep,ev,re,r,rp)
 			end
 			e2:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_DISABLE)
 			c:RegisterEffect(e2)
-			-- 效果原文：这个效果特殊召唤的这张卡的种族·属性·等级变成和上级召唤的那只怪兽相同。
+			-- 这个效果特殊召唤的这张卡的种族·属性·等级变成和上级召唤的那只怪兽相同。
 			local e3=Effect.CreateEffect(c)
 			e3:SetType(EFFECT_TYPE_SINGLE)
 			e3:SetCode(EFFECT_CHANGE_LEVEL)

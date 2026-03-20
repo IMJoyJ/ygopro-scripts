@@ -4,14 +4,14 @@
 -- ●从卡组·额外卡组选卡名不同的「异热同心武器」怪兽任意数量当作装备卡使用给作为对象的怪兽装备。
 -- ●和作为对象的自己怪兽卡名不同的1只「希望皇 霍普」超量怪兽在那只怪兽上面重叠当作超量召唤从额外卡组特殊召唤。
 function c35906693.initial_effect(c)
-	-- 效果原文：①：自己抽卡阶段通过把通常抽卡的这张卡持续公开，那个回合的主要阶段1，可以以自己场上1只「希望皇 霍普」超量怪兽为对象，从以下效果选择1个发动。
+	-- ①：自己抽卡阶段通过把通常抽卡的这张卡持续公开，那个回合的主要阶段1，可以以自己场上1只「希望皇 霍普」超量怪兽为对象，从以下效果选择1个发动。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_CONTINUOUS)
 	e1:SetCode(EVENT_DRAW)
 	e1:SetCondition(c35906693.regcon)
 	e1:SetOperation(c35906693.regop)
 	c:RegisterEffect(e1)
-	-- 效果原文：●从卡组·额外卡组选卡名不同的「异热同心武器」怪兽任意数量当作装备卡使用给作为对象的怪兽装备。
+	-- ●从卡组·额外卡组选卡名不同的「异热同心武器」怪兽任意数量当作装备卡使用给作为对象的怪兽装备。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(35906693,1))  --"装备"
 	e2:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -40,7 +40,7 @@ function c35906693.regop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	-- 规则层面：询问玩家是否要持续公开此卡
 	if Duel.SelectYesNo(tp,aux.Stringid(35906693,0)) then  --"是否要持续公开「闪光抽卡」？"
-		-- 效果原文：●和作为对象的自己怪兽卡名不同的1只「希望皇 霍普」超量怪兽在那只怪兽上面重叠当作超量召唤从额外卡组特殊召唤。
+		-- ●和作为对象的自己怪兽卡名不同的1只「希望皇 霍普」超量怪兽在那只怪兽上面重叠当作超量召唤从额外卡组特殊召唤。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_PUBLIC)
@@ -99,7 +99,7 @@ function c35906693.eqop(e,tp,eg,ep,ev,re,r,rp)
 	while ec do
 		-- 规则层面：将装备卡装备给目标怪兽
 		Duel.Equip(tp,ec,tc,true,true)
-		-- 效果原文：从卡组·额外卡组选卡名不同的「异热同心武器」怪兽任意数量当作装备卡使用给作为对象的怪兽装备。
+		-- 从卡组·额外卡组选卡名不同的「异热同心武器」怪兽任意数量当作装备卡使用给作为对象的怪兽装备。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_EQUIP_LIMIT)
@@ -113,7 +113,7 @@ function c35906693.eqop(e,tp,eg,ep,ev,re,r,rp)
 	-- 规则层面：完成装备过程
 	Duel.EquipComplete()
 end
--- 效果原文：和作为对象的自己怪兽卡名不同的1只「希望皇 霍普」超量怪兽在那只怪兽上面重叠当作超量召唤从额外卡组特殊召唤。
+-- 和作为对象的自己怪兽卡名不同的1只「希望皇 霍普」超量怪兽在那只怪兽上面重叠当作超量召唤从额外卡组特殊召唤。
 function c35906693.eqlimit(e,c)
 	return c==e:GetLabelObject()
 end

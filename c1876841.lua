@@ -6,7 +6,7 @@
 -- ●守备表示：1回合1次，自己主要阶段才能发动。从自己墓地选1只4星以下的「变形斗士」怪兽加入手卡。那之后，选1张手卡回到卡组最上面。
 function c1876841.initial_effect(c)
 	c:EnableReviveLimit()
-	-- 效果原文：从手卡把1只「变形斗士」怪兽除外的场合可以特殊召唤。
+	-- 从手卡把1只「变形斗士」怪兽除外的场合可以特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_SPSUMMON_PROC)
@@ -16,7 +16,7 @@ function c1876841.initial_effect(c)
 	e1:SetTarget(c1876841.sptg)
 	e1:SetOperation(c1876841.spop)
 	c:RegisterEffect(e1)
-	-- 效果原文：攻击表示：1回合1次，自己主要阶段才能发动。从卡组把1张「变形斗士」魔法·陷阱卡加入手卡。那之后，选1张手卡回到卡组最上面。
+	-- 攻击表示：1回合1次，自己主要阶段才能发动。从卡组把1张「变形斗士」魔法·陷阱卡加入手卡。那之后，选1张手卡回到卡组最上面。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(1876841,0))
 	e2:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH+CATEGORY_TODECK)
@@ -27,7 +27,7 @@ function c1876841.initial_effect(c)
 	e2:SetTarget(c1876841.srtg)
 	e2:SetOperation(c1876841.srop)
 	c:RegisterEffect(e2)
-	-- 效果原文：守备表示：1回合1次，自己主要阶段才能发动。从自己墓地选1只4星以下的「变形斗士」怪兽加入手卡。那之后，选1张手卡回到卡组最上面。
+	-- 守备表示：1回合1次，自己主要阶段才能发动。从自己墓地选1只4星以下的「变形斗士」怪兽加入手卡。那之后，选1张手卡回到卡组最上面。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(1876841,1))
 	e3:SetCategory(CATEGORY_TOHAND+CATEGORY_TODECK)

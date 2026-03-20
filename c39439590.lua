@@ -2,7 +2,7 @@
 -- 效果：
 -- 对方从手卡特殊召唤怪兽时，可以从手卡特殊召唤这张卡。
 function c39439590.initial_effect(c)
-	-- 效果原文：对方从手卡特殊召唤怪兽时，可以从手卡特殊召唤这张卡。
+	-- 对方从手卡特殊召唤怪兽时，可以从手卡特殊召唤这张卡。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(39439590,0))  --"特殊召唤"
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)

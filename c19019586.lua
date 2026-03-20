@@ -2,7 +2,7 @@
 -- 效果：
 -- 自己的主要阶段时，可以让场上表侧表示存在的这张卡回到手卡。此外，这张卡进行战斗的伤害计算时只有1次，从手卡把1只通常怪兽送去墓地才能发动。这张卡的守备力只在那次伤害计算时上升1000。
 function c19019586.initial_effect(c)
-	-- 效果原文：自己的主要阶段时，可以让场上表侧表示存在的这张卡回到手卡。
+	-- 自己的主要阶段时，可以让场上表侧表示存在的这张卡回到手卡。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_IGNITION)
 	e1:SetDescription(aux.Stringid(19019586,0))  --"返回手牌"
@@ -11,7 +11,7 @@ function c19019586.initial_effect(c)
 	e1:SetTarget(c19019586.thtg)
 	e1:SetOperation(c19019586.thop)
 	c:RegisterEffect(e1)
-	-- 效果原文：这张卡进行战斗的伤害计算时只有1次，从手卡把1只通常怪兽送去墓地才能发动。这张卡的守备力只在那次伤害计算时上升1000。
+	-- 这张卡进行战斗的伤害计算时只有1次，从手卡把1只通常怪兽送去墓地才能发动。这张卡的守备力只在那次伤害计算时上升1000。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(19019586,1))  --"守备上升1000"
 	e2:SetCategory(CATEGORY_DEFCHANGE)
@@ -63,7 +63,7 @@ end
 -- 设置此卡的守备力在伤害计算时增加1000
 function c19019586.defop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 效果原文：这张卡的守备力只在那次伤害计算时上升1000。
+	-- 这张卡的守备力只在那次伤害计算时上升1000。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_UPDATE_DEFENSE)

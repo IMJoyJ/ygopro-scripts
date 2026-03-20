@@ -2,7 +2,7 @@
 -- 效果：
 -- 自己的主要阶段时，选择持有超量素材的1只超量怪兽才能发动。把选择的怪兽1个超量素材取除，从自己卡组把1只「电击栗子」特殊召唤。这张卡不能作为同调素材。
 function c40817915.initial_effect(c)
-	-- 效果原文：自己的主要阶段时，选择持有超量素材的1只超量怪兽才能发动。
+	-- 自己的主要阶段时，选择持有超量素材的1只超量怪兽才能发动。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(40817915,0))  --"特殊召唤"
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -12,7 +12,7 @@ function c40817915.initial_effect(c)
 	e1:SetTarget(c40817915.target)
 	e1:SetOperation(c40817915.activate)
 	c:RegisterEffect(e1)
-	-- 效果原文：这张卡不能作为同调素材。
+	-- 这张卡不能作为同调素材。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_SINGLE)
 	e2:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)

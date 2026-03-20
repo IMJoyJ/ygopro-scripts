@@ -6,7 +6,7 @@
 -- ●3张以上：可以选场上1张卡除外。
 -- ●4张：可以从卡组把1张「摇晃的目光」加入手卡。
 function c31222701.initial_effect(c)
-	-- 效果原文：①：双方的灵摆区域的卡全部破坏。那之后，这个效果破坏的卡数量的以下效果适用。
+	-- ①：双方的灵摆区域的卡全部破坏。那之后，这个效果破坏的卡数量的以下效果适用。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_DESTROY+CATEGORY_DAMAGE+CATEGORY_SEARCH)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -26,11 +26,11 @@ function c31222701.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 设置连锁信息，将对对方造成500伤害记录到操作信息中
 	Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,1-tp,500)
 end
--- 效果原文：●2张以上：可以从卡组把1只灵摆怪兽加入手卡。
+-- ●2张以上：可以从卡组把1只灵摆怪兽加入手卡。
 function c31222701.thfilter1(c)
 	return c:IsType(TYPE_PENDULUM) and c:IsAbleToHand()
 end
--- 效果原文：●4张：可以从卡组把1张「摇晃的目光」加入手卡。
+-- ●4张：可以从卡组把1张「摇晃的目光」加入手卡。
 function c31222701.thfilter2(c)
 	return c:IsCode(31222701) and c:IsAbleToHand()
 end

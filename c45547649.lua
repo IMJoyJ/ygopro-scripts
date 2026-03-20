@@ -2,7 +2,7 @@
 -- 效果：
 -- 这张卡被战斗破坏送去墓地时，从卡组选1张「鹰身女郎」加入手卡。之后洗切卡组。
 function c45547649.initial_effect(c)
-	-- 效果原文：这张卡被战斗破坏送去墓地时，从卡组选1张「鹰身女郎」加入手卡。之后洗切卡组。
+	-- 这张卡被战斗破坏送去墓地时，从卡组选1张「鹰身女郎」加入手卡。之后洗切卡组。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(45547649,0))  --"检索"
 	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)

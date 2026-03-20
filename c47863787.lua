@@ -2,13 +2,13 @@
 -- 效果：
 -- 这张卡可以当作魔法卡使用从手卡到魔法与陷阱卡区域盖放。魔法与陷阱卡区域盖放的这张卡在对方回合被破坏送去墓地时，这张卡特殊召唤。此外，名字带有「古遗物」的卡被破坏送去自己墓地时才能发动。这张卡从手卡特殊召唤。
 function c47863787.initial_effect(c)
-	-- 效果原文：这张卡可以当作魔法卡使用从手卡到魔法与陷阱卡区域盖放。
+	-- 这张卡可以当作魔法卡使用从手卡到魔法与陷阱卡区域盖放。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_MONSTER_SSET)
 	e1:SetValue(TYPE_SPELL)
 	c:RegisterEffect(e1)
-	-- 效果原文：魔法与陷阱卡区域盖放的这张卡在对方回合被破坏送去墓地时，这张卡特殊召唤。此外，名字带有「古遗物」的卡被破坏送去自己墓地时才能发动。这张卡从手卡特殊召唤。
+	-- 魔法与陷阱卡区域盖放的这张卡在对方回合被破坏送去墓地时，这张卡特殊召唤。此外，名字带有「古遗物」的卡被破坏送去自己墓地时才能发动。这张卡从手卡特殊召唤。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(47863787,0))  --"特殊召唤"
 	e2:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -18,7 +18,7 @@ function c47863787.initial_effect(c)
 	e2:SetTarget(c47863787.sptg)
 	e2:SetOperation(c47863787.spop)
 	c:RegisterEffect(e2)
-	-- 效果原文：此外，名字带有「古遗物」的卡被破坏送去自己墓地时才能发动。这张卡从手卡特殊召唤。
+	-- 此外，名字带有「古遗物」的卡被破坏送去自己墓地时才能发动。这张卡从手卡特殊召唤。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(47863787,1))  --"特殊召唤"
 	e3:SetCategory(CATEGORY_SPECIAL_SUMMON)

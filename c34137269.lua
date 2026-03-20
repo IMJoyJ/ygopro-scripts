@@ -6,21 +6,21 @@
 -- ③：这张卡进行战斗的战斗阶段结束时发动。自己基本分比对方少的场合，给与对方那个相差数值的伤害。
 -- ④：自己准备阶段发动。这张卡回到持有者卡组。
 function c34137269.initial_effect(c)
-	-- 效果原文：这张卡不能从卡组特殊召唤。
+	-- 这张卡不能从卡组特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE+EFFECT_FLAG_SINGLE_RANGE)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetRange(LOCATION_DECK)
 	e1:SetCode(EFFECT_SPSUMMON_CONDITION)
 	c:RegisterEffect(e1)
-	-- 效果原文：①：自己场上没有怪兽存在的场合，这张卡可以不用解放作召唤。
+	-- ①：自己场上没有怪兽存在的场合，这张卡可以不用解放作召唤。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(34137269,0))  --"不用解放作召唤"
 	e2:SetType(EFFECT_TYPE_SINGLE)
 	e2:SetCode(EFFECT_SUMMON_PROC)
 	e2:SetCondition(c34137269.ntcon)
 	c:RegisterEffect(e2)
-	-- 效果原文：②：这张卡不会被战斗·效果破坏，这张卡的战斗发生的对自己的战斗伤害变成0。
+	-- ②：这张卡不会被战斗·效果破坏，这张卡的战斗发生的对自己的战斗伤害变成0。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_SINGLE)
 	e3:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
@@ -34,7 +34,7 @@ function c34137269.initial_effect(c)
 	local e5=e3:Clone()
 	e5:SetCode(EFFECT_AVOID_BATTLE_DAMAGE)
 	c:RegisterEffect(e5)
-	-- 效果原文：③：这张卡进行战斗的战斗阶段结束时发动。自己基本分比对方少的场合，给与对方那个相差数值的伤害。
+	-- ③：这张卡进行战斗的战斗阶段结束时发动。自己基本分比对方少的场合，给与对方那个相差数值的伤害。
 	local e6=Effect.CreateEffect(c)
 	e6:SetCategory(CATEGORY_DAMAGE)
 	e6:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
@@ -46,7 +46,7 @@ function c34137269.initial_effect(c)
 	e6:SetTarget(c34137269.damtg)
 	e6:SetOperation(c34137269.damop)
 	c:RegisterEffect(e6)
-	-- 效果原文：④：自己准备阶段发动。这张卡回到持有者卡组。
+	-- ④：自己准备阶段发动。这张卡回到持有者卡组。
 	local e7=Effect.CreateEffect(c)
 	e7:SetDescription(aux.Stringid(34137269,1))
 	e7:SetCategory(CATEGORY_TODECK)

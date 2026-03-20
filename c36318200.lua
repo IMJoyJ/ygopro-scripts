@@ -2,7 +2,7 @@
 -- 效果：
 -- 自己墓地的怪兽只有兽族的场合，把这张卡解放才能发动。从自己的手卡·墓地选「森之圣兽 绿叶独角兽」以外的1只兽族怪兽特殊召唤。这个效果特殊召唤的怪兽在这个回合不能攻击。
 function c36318200.initial_effect(c)
-	-- 效果原文：自己墓地的怪兽只有兽族的场合，把这张卡解放才能发动。
+	-- 自己墓地的怪兽只有兽族的场合，把这张卡解放才能发动。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(36318200,0))  --"特殊召唤"
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -14,11 +14,11 @@ function c36318200.initial_effect(c)
 	e1:SetOperation(c36318200.spop)
 	c:RegisterEffect(e1)
 end
--- 效果原文：从自己的手卡·墓地选「森之圣兽 绿叶独角兽」以外的1只兽族怪兽特殊召唤。
+-- 从自己的手卡·墓地选「森之圣兽 绿叶独角兽」以外的1只兽族怪兽特殊召唤。
 function c36318200.cfilter(c)
 	return c:GetRace()~=RACE_BEAST
 end
--- 效果原文：这个效果特殊召唤的怪兽在这个回合不能攻击。
+-- 这个效果特殊召唤的怪兽在这个回合不能攻击。
 function c36318200.spcon(e,tp,eg,ep,ev,re,r,rp)
 	-- 检索满足条件的卡片组
 	local g=Duel.GetMatchingGroup(Card.IsType,tp,LOCATION_GRAVE,0,nil,TYPE_MONSTER)
@@ -54,7 +54,7 @@ function c36318200.spop(e,tp,eg,ep,ev,re,r,rp)
 	local tc=g:GetFirst()
 	-- 将目标怪兽特殊召唤
 	if tc and Duel.SpecialSummonStep(tc,0,tp,tp,false,false,POS_FACEUP) then
-		-- 效果原文：这个效果特殊召唤的怪兽在这个回合不能攻击。
+		-- 这个效果特殊召唤的怪兽在这个回合不能攻击。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_CANNOT_ATTACK)

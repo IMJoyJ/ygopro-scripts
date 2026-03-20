@@ -5,7 +5,7 @@
 -- ●以自己场上1只表侧表示怪兽和这张卡为对象才能发动。那只自己的表侧表示怪兽和这张卡除外，那之后自己从卡组抽2张。
 -- ●以自己墓地1张卡为对象才能发动。场上的这张卡和1张手卡除外，那之后作为对象的卡回到卡组最上面。
 function c3657444.initial_effect(c)
-	-- 效果原文：这张卡被选择作为攻击对象时，把这张卡除外才能发动。自己从卡组抽1张，那之后战斗阶段结束。
+	-- 这张卡被选择作为攻击对象时，把这张卡除外才能发动。自己从卡组抽1张，那之后战斗阶段结束。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(3657444,0))  --"除外这张卡，抽卡并结束战斗阶段"
 	e1:SetCategory(CATEGORY_DRAW)
@@ -15,7 +15,7 @@ function c3657444.initial_effect(c)
 	e1:SetTarget(c3657444.target1)
 	e1:SetOperation(c3657444.operation1)
 	c:RegisterEffect(e1)
-	-- 效果原文：以自己场上1只表侧表示怪兽和这张卡为对象才能发动。那只自己的表侧表示怪兽和这张卡除外，那之后自己从卡组抽2张。
+	-- 以自己场上1只表侧表示怪兽和这张卡为对象才能发动。那只自己的表侧表示怪兽和这张卡除外，那之后自己从卡组抽2张。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(3657444,1))  --"除外其他怪兽和这张卡，抽2张卡"
 	e2:SetCategory(CATEGORY_DRAW)
@@ -25,7 +25,7 @@ function c3657444.initial_effect(c)
 	e2:SetTarget(c3657444.target2)
 	e2:SetOperation(c3657444.operation2)
 	c:RegisterEffect(e2)
-	-- 效果原文：以自己墓地1张卡为对象才能发动。场上的这张卡和1张手卡除外，那之后作为对象的卡回到卡组最上面。
+	-- 以自己墓地1张卡为对象才能发动。场上的这张卡和1张手卡除外，那之后作为对象的卡回到卡组最上面。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(3657444,2))  --"除外手卡和这张卡，回收墓地"
 	e3:SetCategory(CATEGORY_TODECK)

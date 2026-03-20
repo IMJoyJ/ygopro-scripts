@@ -2,7 +2,7 @@
 -- 效果：
 -- 自己墓地存在的最多3张名字带有「火山」的怪兽卡回到卡组。
 function c33725271.initial_effect(c)
-	-- 效果原文：自己墓地存在的最多3张名字带有「火山」的怪兽卡回到卡组。
+	-- 自己墓地存在的最多3张名字带有「火山」的怪兽卡回到卡组。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_TODECK)
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET)

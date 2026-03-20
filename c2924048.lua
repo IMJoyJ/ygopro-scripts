@@ -2,7 +2,7 @@
 -- 效果：
 -- 自己场上有名字带有「机巧」的怪兽表侧守备表示存在的场合才能发动。对方发动的魔法·陷阱卡的发动无效并破坏。
 function c2924048.initial_effect(c)
-	-- 效果原文：自己场上有名字带有「机巧」的怪兽表侧守备表示存在的场合才能发动。对方发动的魔法·陷阱卡的发动无效并破坏。
+	-- 自己场上有名字带有「机巧」的怪兽表侧守备表示存在的场合才能发动。对方发动的魔法·陷阱卡的发动无效并破坏。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_NEGATE+CATEGORY_DESTROY)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)

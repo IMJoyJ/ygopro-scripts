@@ -2,7 +2,7 @@
 -- 效果：
 -- 要让自己场上的卡破坏的效果由对方怪兽发动时，把成为对象的自己的卡全部送去墓地才能发动。这张卡从手卡特殊召唤。
 function c38109772.initial_effect(c)
-	-- 效果原文：要让自己场上的卡破坏的效果由对方怪兽发动时，把成为对象的自己的卡全部送去墓地才能发动。这张卡从手卡特殊召唤。
+	-- 要让自己场上的卡破坏的效果由对方怪兽发动时，把成为对象的自己的卡全部送去墓地才能发动。这张卡从手卡特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(38109772,0))  --"特殊召唤"
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)

@@ -2,7 +2,7 @@
 -- 效果：
 -- 自己场上表侧表示存在的这张卡不会受到魔法的效果影响。自己回合的准备阶段时，可以把表侧表示的这张卡送到墓地，从手卡·卡组特殊召唤1只「究极昆虫 LV3」。（召唤·特殊召唤·反转的回合不能使用此效果）
 function c49441499.initial_effect(c)
-	-- 效果原文：自己场上表侧表示存在的这张卡不会受到魔法的效果影响。
+	-- 自己场上表侧表示存在的这张卡不会受到魔法的效果影响。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_IMMUNE_EFFECT)
@@ -10,7 +10,7 @@ function c49441499.initial_effect(c)
 	e1:SetRange(LOCATION_MZONE)
 	e1:SetValue(c49441499.efilter)
 	c:RegisterEffect(e1)
-	-- 效果原文：自己回合的准备阶段时，可以把表侧表示的这张卡送到墓地，从手卡·卡组特殊召唤1只「究极昆虫 LV3」。（召唤·特殊召唤·反转的回合不能使用此效果）
+	-- 自己回合的准备阶段时，可以把表侧表示的这张卡送到墓地，从手卡·卡组特殊召唤1只「究极昆虫 LV3」。（召唤·特殊召唤·反转的回合不能使用此效果）
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(49441499,0))  --"特殊召唤"
 	e2:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -22,7 +22,7 @@ function c49441499.initial_effect(c)
 	e2:SetTarget(c49441499.sptg)
 	e2:SetOperation(c49441499.spop)
 	c:RegisterEffect(e2)
-	-- 效果原文：（召唤·特殊召唤·反转的回合不能使用此效果）
+	-- （召唤·特殊召唤·反转的回合不能使用此效果）
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_CONTINUOUS)
 	e3:SetCode(EVENT_SUMMON_SUCCESS)

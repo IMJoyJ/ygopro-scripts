@@ -3,7 +3,7 @@
 -- ①：这张卡只要在怪兽区域存在，不能为战士族怪兽的上级召唤以外而解放。
 -- ②：自己准备阶段有这张卡在墓地存在，自己墓地没有战士族怪兽以外的怪兽存在的场合才能发动。这张卡特殊召唤。这个效果在自己场上没有怪兽存在的场合才能发动和处理。
 function c52035300.initial_effect(c)
-	-- 效果原文：①：这张卡只要在怪兽区域存在，不能为战士族怪兽的上级召唤以外而解放。
+	-- ①：这张卡只要在怪兽区域存在，不能为战士族怪兽的上级召唤以外而解放。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_UNRELEASABLE_SUM)
@@ -11,7 +11,7 @@ function c52035300.initial_effect(c)
 	e1:SetRange(LOCATION_MZONE)
 	e1:SetValue(c52035300.recon)
 	c:RegisterEffect(e1)
-	-- 效果原文：①：这张卡只要在怪兽区域存在，不能为战士族怪兽的上级召唤以外而解放。
+	-- ①：这张卡只要在怪兽区域存在，不能为战士族怪兽的上级召唤以外而解放。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_SINGLE)
 	e2:SetCode(EFFECT_UNRELEASABLE_NONSUM)
@@ -19,7 +19,7 @@ function c52035300.initial_effect(c)
 	e2:SetRange(LOCATION_MZONE)
 	e2:SetValue(1)
 	c:RegisterEffect(e2)
-	-- 效果原文：②：自己准备阶段有这张卡在墓地存在，自己墓地没有战士族怪兽以外的怪兽存在的场合才能发动。这张卡特殊召唤。这个效果在自己场上没有怪兽存在的场合才能发动和处理。
+	-- ②：自己准备阶段有这张卡在墓地存在，自己墓地没有战士族怪兽以外的怪兽存在的场合才能发动。这张卡特殊召唤。这个效果在自己场上没有怪兽存在的场合才能发动和处理。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(52035300,0))  --"特殊召唤"
 	e3:SetType(EFFECT_TYPE_TRIGGER_O+EFFECT_TYPE_FIELD)

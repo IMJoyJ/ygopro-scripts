@@ -5,13 +5,13 @@
 -- ②：对方场上的卡数量比自己场上的卡多的场合，1回合1次，以除外的1只自己的「玄化」怪兽为对象才能发动。那只怪兽特殊召唤。这个效果特殊召唤的怪兽在下个回合的结束阶段除外。
 function c45148985.initial_effect(c)
 	c:EnableReviveLimit()
-	-- 效果原文：这张卡不能通常召唤。从自己墓地以及自己场上的表侧表示的卡之中把「玄化」卡5种类各1张除外的场合才能特殊召唤。
+	-- 这张卡不能通常召唤。从自己墓地以及自己场上的表侧表示的卡之中把「玄化」卡5种类各1张除外的场合才能特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_SPSUMMON_CONDITION)
 	c:RegisterEffect(e1)
-	-- 效果原文：从自己墓地以及自己场上的表侧表示的卡之中把「玄化」卡5种类各1张除外的场合才能特殊召唤。
+	-- 从自己墓地以及自己场上的表侧表示的卡之中把「玄化」卡5种类各1张除外的场合才能特殊召唤。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD)
 	e2:SetCode(EFFECT_SPSUMMON_PROC)
@@ -21,7 +21,7 @@ function c45148985.initial_effect(c)
 	e2:SetTarget(c45148985.sprtg)
 	e2:SetOperation(c45148985.sprop)
 	c:RegisterEffect(e2)
-	-- 效果原文：场上的这张卡不会被效果破坏，不能用效果除外。
+	-- 场上的这张卡不会被效果破坏，不能用效果除外。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_SINGLE)
 	e3:SetCode(EFFECT_INDESTRUCTABLE_EFFECT)
@@ -29,7 +29,7 @@ function c45148985.initial_effect(c)
 	e3:SetRange(LOCATION_MZONE)
 	e3:SetValue(1)
 	c:RegisterEffect(e3)
-	-- 效果原文：场上的这张卡不会被效果破坏，不能用效果除外。
+	-- 场上的这张卡不会被效果破坏，不能用效果除外。
 	local e4=Effect.CreateEffect(c)
 	e4:SetType(EFFECT_TYPE_FIELD)
 	e4:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
@@ -38,7 +38,7 @@ function c45148985.initial_effect(c)
 	e4:SetTargetRange(1,1)
 	e4:SetTarget(c45148985.rmlimit)
 	c:RegisterEffect(e4)
-	-- 效果原文：对方场上的卡数量比自己场上的卡多的场合，1回合1次，以除外的1只自己的「玄化」怪兽为对象才能发动。那只怪兽特殊召唤。这个效果特殊召唤的怪兽在下个回合的结束阶段除外。
+	-- 对方场上的卡数量比自己场上的卡多的场合，1回合1次，以除外的1只自己的「玄化」怪兽为对象才能发动。那只怪兽特殊召唤。这个效果特殊召唤的怪兽在下个回合的结束阶段除外。
 	local e5=Effect.CreateEffect(c)
 	e5:SetDescription(aux.Stringid(45148985,0))
 	e5:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -128,7 +128,7 @@ function c45148985.spop(e,tp,eg,ep,ev,re,r,rp)
 	-- 判断目标怪兽是否有效且成功特殊召唤。
 	if tc:IsRelateToEffect(e) and Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP)~=0 then
 		tc:RegisterFlagEffect(45148985,RESET_EVENT+RESETS_STANDARD,0,1)
-		-- 效果原文：对方场上的卡数量比自己场上的卡多的场合，1回合1次，以除外的1只自己的「玄化」怪兽为对象才能发动。那只怪兽特殊召唤。这个效果特殊召唤的怪兽在下个回合的结束阶段除外。
+		-- 对方场上的卡数量比自己场上的卡多的场合，1回合1次，以除外的1只自己的「玄化」怪兽为对象才能发动。那只怪兽特殊召唤。这个效果特殊召唤的怪兽在下个回合的结束阶段除外。
 		local e2=Effect.CreateEffect(e:GetHandler())
 		e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 		e2:SetCode(EVENT_PHASE+PHASE_END)

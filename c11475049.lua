@@ -2,13 +2,13 @@
 -- 效果：
 -- 这张卡可以当作魔法卡使用从手卡到魔法与陷阱卡区域盖放。魔法与陷阱卡区域盖放的这张卡在对方回合被破坏送去墓地时，这张卡特殊召唤。对方回合中这张卡特殊召唤成功的场合，这个回合对方不能把自己场上的名字带有「古遗物」的怪兽作为攻击对象。
 function c11475049.initial_effect(c)
-	-- 效果原文：这张卡可以当作魔法卡使用从手卡到魔法与陷阱卡区域盖放。
+	-- 这张卡可以当作魔法卡使用从手卡到魔法与陷阱卡区域盖放。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_MONSTER_SSET)
 	e1:SetValue(TYPE_SPELL)
 	c:RegisterEffect(e1)
-	-- 效果原文：魔法与陷阱卡区域盖放的这张卡在对方回合被破坏送去墓地时，这张卡特殊召唤。
+	-- 魔法与陷阱卡区域盖放的这张卡在对方回合被破坏送去墓地时，这张卡特殊召唤。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(11475049,0))  --"特殊召唤"
 	e2:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -18,7 +18,7 @@ function c11475049.initial_effect(c)
 	e2:SetTarget(c11475049.sptg)
 	e2:SetOperation(c11475049.spop)
 	c:RegisterEffect(e2)
-	-- 效果原文：对方回合中这张卡特殊召唤成功的场合，这个回合对方不能把自己场上的名字带有「古遗物」的怪兽作为攻击对象。
+	-- 对方回合中这张卡特殊召唤成功的场合，这个回合对方不能把自己场上的名字带有「古遗物」的怪兽作为攻击对象。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(11475049,1))  --"攻击限制"
 	e3:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_F)
@@ -55,7 +55,7 @@ function c11475049.atcon(e,tp,eg,ep,ev,re,r,rp)
 end
 -- 规则层面：定义攻击限制效果的具体操作内容。
 function c11475049.atop(e,tp,eg,ep,ev,re,r,rp)
-	-- 效果原文：对方回合中这张卡特殊召唤成功的场合，这个回合对方不能把自己场上的名字带有「古遗物」的怪兽作为攻击对象。
+	-- 对方回合中这张卡特殊召唤成功的场合，这个回合对方不能把自己场上的名字带有「古遗物」的怪兽作为攻击对象。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_CANNOT_SELECT_BATTLE_TARGET)

@@ -6,7 +6,7 @@
 -- ●3张以上：对方场上的怪兽可以攻击的场合，必须向这张卡作出攻击。
 -- ●4张：这张卡用战斗或者这张卡的效果破坏怪兽的场合发动。自己从卡组抽1张。
 function c22200403.initial_effect(c)
-	-- 效果原文：●1张以上：这张卡的攻击力·守备力上升800。
+	-- ●1张以上：这张卡的攻击力·守备力上升800。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
@@ -19,7 +19,7 @@ function c22200403.initial_effect(c)
 	local e2=e1:Clone()
 	e2:SetCode(EFFECT_UPDATE_DEFENSE)
 	c:RegisterEffect(e2)
-	-- 效果原文：●2张以上：这张卡和灵摆召唤的怪兽进行战斗的伤害步骤开始时发动。那只怪兽破坏。
+	-- ●2张以上：这张卡和灵摆召唤的怪兽进行战斗的伤害步骤开始时发动。那只怪兽破坏。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(22200403,0))  --"破坏"
 	e3:SetCategory(CATEGORY_DESTROY)
@@ -30,7 +30,7 @@ function c22200403.initial_effect(c)
 	e3:SetOperation(c22200403.desop)
 	e3:SetLabel(2)
 	c:RegisterEffect(e3)
-	-- 效果原文：●3张以上：对方场上的怪兽可以攻击的场合，必须向这张卡作出攻击。
+	-- ●3张以上：对方场上的怪兽可以攻击的场合，必须向这张卡作出攻击。
 	local e4=Effect.CreateEffect(c)
 	e4:SetType(EFFECT_TYPE_FIELD)
 	e4:SetCode(EFFECT_MUST_ATTACK)
@@ -43,7 +43,7 @@ function c22200403.initial_effect(c)
 	e5:SetCode(EFFECT_MUST_ATTACK_MONSTER)
 	e5:SetValue(c22200403.atklimit)
 	c:RegisterEffect(e5)
-	-- 效果原文：●4张：这张卡用战斗或者这张卡的效果破坏怪兽的场合发动。自己从卡组抽1张。
+	-- ●4张：这张卡用战斗或者这张卡的效果破坏怪兽的场合发动。自己从卡组抽1张。
 	local e7=Effect.CreateEffect(c)
 	e7:SetDescription(aux.Stringid(22200403,1))  --"抽卡"
 	e7:SetCategory(CATEGORY_DRAW)
@@ -55,7 +55,7 @@ function c22200403.initial_effect(c)
 	e7:SetOperation(c22200403.drop)
 	e7:SetLabel(4)
 	c:RegisterEffect(e7)
-	-- 效果原文：●4张：这张卡用战斗或者这张卡的效果破坏怪兽的场合发动。自己从卡组抽1张。
+	-- ●4张：这张卡用战斗或者这张卡的效果破坏怪兽的场合发动。自己从卡组抽1张。
 	local e8=Effect.CreateEffect(c)
 	e8:SetDescription(aux.Stringid(22200403,1))  --"抽卡"
 	e8:SetCategory(CATEGORY_DRAW)

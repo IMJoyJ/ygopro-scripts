@@ -3,7 +3,7 @@
 -- ①：这张卡召唤·反转召唤成功时才能发动。把最多有自己场上的怪兽数量的「铳士衍生物」（恶魔族·暗·4星·攻/守500）在自己场上特殊召唤。
 -- ②：自己准备阶段才能发动。给与对方为自己场上的「铳士」怪兽数量×300伤害。这个效果发动的回合，自己的「铳士」怪兽不能攻击宣言。
 function c12958919.initial_effect(c)
-	-- 效果原文：①：这张卡召唤·反转召唤成功时才能发动。把最多有自己场上的怪兽数量的「铳士衍生物」（恶魔族·暗·4星·攻/守500）在自己场上特殊召唤。
+	-- ①：这张卡召唤·反转召唤成功时才能发动。把最多有自己场上的怪兽数量的「铳士衍生物」（恶魔族·暗·4星·攻/守500）在自己场上特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(12958919,0))  --"特殊召唤"
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_TOKEN)
@@ -15,7 +15,7 @@ function c12958919.initial_effect(c)
 	local e2=e1:Clone()
 	e2:SetCode(EVENT_FLIP_SUMMON_SUCCESS)
 	c:RegisterEffect(e2)
-	-- 效果原文：②：自己准备阶段才能发动。给与对方为自己场上的「铳士」怪兽数量×300伤害。这个效果发动的回合，自己的「铳士」怪兽不能攻击宣言。
+	-- ②：自己准备阶段才能发动。给与对方为自己场上的「铳士」怪兽数量×300伤害。这个效果发动的回合，自己的「铳士」怪兽不能攻击宣言。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(12958919,1))  --"伤害"
 	e2:SetCategory(CATEGORY_DAMAGE)
@@ -93,7 +93,7 @@ end
 function c12958919.damcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 判断玩家是否已发动过此效果
 	if chk==0 then return Duel.GetFlagEffect(tp,12958919)==0 end
-	-- 效果原文：②：自己准备阶段才能发动。给与对方为自己场上的「铳士」怪兽数量×300伤害。这个效果发动的回合，自己的「铳士」怪兽不能攻击宣言。
+	-- ②：自己准备阶段才能发动。给与对方为自己场上的「铳士」怪兽数量×300伤害。这个效果发动的回合，自己的「铳士」怪兽不能攻击宣言。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_CANNOT_ATTACK_ANNOUNCE)

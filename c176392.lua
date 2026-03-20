@@ -2,7 +2,7 @@
 -- 效果：
 -- 场上表侧表示存在的名字带有「核成」的怪兽在结束阶段时被破坏的场合，可以作为代替把这张卡破坏。此外，场上表侧表示存在的名字带有「核成」的怪兽在结束阶段时被破坏时，可以在自己场上把1只「核成衍生物」（岩石族·地·4星·攻/守1800）特殊召唤。
 function c176392.initial_effect(c)
-	-- 效果原文：场上表侧表示存在的名字带有「核成」的怪兽在结束阶段时被破坏的场合，可以作为代替把这张卡破坏。
+	-- 场上表侧表示存在的名字带有「核成」的怪兽在结束阶段时被破坏的场合，可以作为代替把这张卡破坏。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_CONTINUOUS+EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_DESTROY_REPLACE)
@@ -11,7 +11,7 @@ function c176392.initial_effect(c)
 	e1:SetTarget(c176392.destg)
 	e1:SetValue(c176392.repval)
 	c:RegisterEffect(e1)
-	-- 效果原文：此外，场上表侧表示存在的名字带有「核成」的怪兽在结束阶段时被破坏时，可以在自己场上把1只「核成衍生物」（岩石族·地·4星·攻/守1800）特殊召唤。
+	-- 此外，场上表侧表示存在的名字带有「核成」的怪兽在结束阶段时被破坏时，可以在自己场上把1只「核成衍生物」（岩石族·地·4星·攻/守1800）特殊召唤。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(176392,1))  --"特殊召唤"
 	e2:SetCategory(CATEGORY_SPECIAL_SUMMON)

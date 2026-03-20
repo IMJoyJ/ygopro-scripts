@@ -3,7 +3,7 @@
 -- 只要这张卡在场上表侧表示存在，自己场上表侧表示存在的光属性怪兽的攻击力上升自己墓地存在的光属性怪兽数量×100的数值。自己的结束阶段时，把自己场上表侧表示存在的1只光属性怪兽破坏。「雷-神」在场上只能有1只表侧表示存在。
 function c37829468.initial_effect(c)
 	c:SetUniqueOnField(1,1,37829468)
-	-- 效果原文：只要这张卡在场上表侧表示存在，自己场上表侧表示存在的光属性怪兽的攻击力上升自己墓地存在的光属性怪兽数量×100的数值。
+	-- 只要这张卡在场上表侧表示存在，自己场上表侧表示存在的光属性怪兽的攻击力上升自己墓地存在的光属性怪兽数量×100的数值。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_UPDATE_ATTACK)
@@ -12,7 +12,7 @@ function c37829468.initial_effect(c)
 	e1:SetTarget(c37829468.atktg)
 	e1:SetValue(c37829468.atkval)
 	c:RegisterEffect(e1)
-	-- 效果原文：自己的结束阶段时，把自己场上表侧表示存在的1只光属性怪兽破坏。
+	-- 自己的结束阶段时，把自己场上表侧表示存在的1只光属性怪兽破坏。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(37829468,0))  --"破坏"
 	e2:SetCategory(CATEGORY_DESTROY)

@@ -3,7 +3,7 @@
 -- ①：以自己墓地1只「魔玩具」怪兽为对象才能发动。那只怪兽特殊召唤。
 -- ②：把墓地的这张卡除外，以除外的1只自己的「毛绒动物」怪兽或者「魔玩具」怪兽为对象才能发动。那只怪兽回到墓地。这个效果在这张卡送去墓地的回合不能发动。
 function c28039390.initial_effect(c)
-	-- 效果原文：①：以自己墓地1只「魔玩具」怪兽为对象才能发动。那只怪兽特殊召唤。
+	-- ①：以自己墓地1只「魔玩具」怪兽为对象才能发动。那只怪兽特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(28039390,0))  --"特殊召唤"
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -13,7 +13,7 @@ function c28039390.initial_effect(c)
 	e1:SetTarget(c28039390.target)
 	e1:SetOperation(c28039390.activate)
 	c:RegisterEffect(e1)
-	-- 效果原文：②：把墓地的这张卡除外，以除外的1只自己的「毛绒动物」怪兽或者「魔玩具」怪兽为对象才能发动。那只怪兽回到墓地。这个效果在这张卡送去墓地的回合不能发动。
+	-- ②：把墓地的这张卡除外，以除外的1只自己的「毛绒动物」怪兽或者「魔玩具」怪兽为对象才能发动。那只怪兽回到墓地。这个效果在这张卡送去墓地的回合不能发动。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(28039390,1))  --"回到墓地"
 	e2:SetCategory(CATEGORY_TOGRAVE)

@@ -4,7 +4,7 @@
 -- ●使1张以场上1只怪兽为对象的魔法卡的发动与效果无效，并且把它破坏。
 -- ●从手卡把1张魔法卡送去墓地。使1张魔法卡的发动与效果无效，并且把它破坏。
 function c38275183.initial_effect(c)
-	-- 效果原文：●使1张以场上1只怪兽为对象的魔法卡的发动与效果无效，并且把它破坏。
+	-- ●使1张以场上1只怪兽为对象的魔法卡的发动与效果无效，并且把它破坏。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(38275183,0))  --"直接无效取1只怪兽为对象的魔法卡"
 	e1:SetCategory(CATEGORY_NEGATE+CATEGORY_DESTROY)
@@ -14,7 +14,7 @@ function c38275183.initial_effect(c)
 	e1:SetTarget(c38275183.target)
 	e1:SetOperation(c38275183.activate)
 	c:RegisterEffect(e1)
-	-- 效果原文：●从手卡把1张魔法卡送去墓地。使1张魔法卡的发动与效果无效，并且把它破坏。
+	-- ●从手卡把1张魔法卡送去墓地。使1张魔法卡的发动与效果无效，并且把它破坏。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(38275183,1))  --"把手卡送去墓地无效魔法卡"
 	e2:SetCategory(CATEGORY_NEGATE+CATEGORY_DESTROY)

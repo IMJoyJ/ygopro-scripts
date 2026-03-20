@@ -6,14 +6,14 @@
 -- ●自己·对方的主要阶段才能发动。从手卡把1只「时械神」怪兽特殊召唤。
 -- ●以自己墓地1只「时械神」怪兽为对象才能发动。那只怪兽回到卡组。那之后，可以从手卡·卡组选1张「无限光」在自己的魔法与陷阱区域盖放。
 function c36894320.initial_effect(c)
-	-- 效果原文：把自己的魔法与陷阱区域1张表侧表示的「虚无械」送去墓地才能把这张卡发动。
+	-- 把自己的魔法与陷阱区域1张表侧表示的「虚无械」送去墓地才能把这张卡发动。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetCost(c36894320.actcost)
 	e1:SetTarget(c36894320.acttg)
 	c:RegisterEffect(e1)
-	-- 效果原文：①：这张卡1回合只有1次不会被对方的效果破坏。
+	-- ①：这张卡1回合只有1次不会被对方的效果破坏。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_SINGLE)
 	e2:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
@@ -22,7 +22,7 @@ function c36894320.initial_effect(c)
 	e2:SetCountLimit(1)
 	e2:SetValue(c36894320.valcon)
 	c:RegisterEffect(e2)
-	-- 效果原文：②：1回合1次，可以从以下效果选择1个发动。
+	-- ②：1回合1次，可以从以下效果选择1个发动。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(36894320,0))  --"特殊召唤"
 	e3:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -34,7 +34,7 @@ function c36894320.initial_effect(c)
 	e3:SetTarget(c36894320.sptg)
 	e3:SetOperation(c36894320.spop)
 	c:RegisterEffect(e3)
-	-- 效果原文：●自己·对方的主要阶段才能发动。从手卡把1只「时械神」怪兽特殊召唤。
+	-- ●自己·对方的主要阶段才能发动。从手卡把1只「时械神」怪兽特殊召唤。
 	local e4=Effect.CreateEffect(c)
 	e4:SetDescription(aux.Stringid(36894320,1))  --"墓地回收"
 	e4:SetCategory(CATEGORY_TODECK+CATEGORY_SSET)

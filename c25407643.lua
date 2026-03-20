@@ -7,7 +7,7 @@ function c25407643.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- 效果原文：自己场上没有魔法师族怪兽存在的场合，这张卡破坏。
+	-- 自己场上没有魔法师族怪兽存在的场合，这张卡破坏。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_SINGLE)
 	e2:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
@@ -15,7 +15,7 @@ function c25407643.initial_effect(c)
 	e2:SetCode(EFFECT_SELF_DESTROY)
 	e2:SetCondition(c25407643.descon)
 	c:RegisterEffect(e2)
-	-- 效果原文：这张卡以外的魔法卡只有自己场上才有表侧表示存在的场合，魔法师族以外的怪兽在对方场上召唤·特殊召唤时，那个回合那些怪兽不能攻击，也不能作效果的发动。
+	-- 这张卡以外的魔法卡只有自己场上才有表侧表示存在的场合，魔法师族以外的怪兽在对方场上召唤·特殊召唤时，那个回合那些怪兽不能攻击，也不能作效果的发动。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(25407643,0))  --"攻击效果限制"
 	e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_F)
@@ -66,13 +66,13 @@ function c25407643.operation(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	while tc do
 		if tc:IsRelateToEffect(e) then
-			-- 效果原文：那个回合那些怪兽不能攻击。
+			-- 那个回合那些怪兽不能攻击。
 			local e1=Effect.CreateEffect(c)
 			e1:SetType(EFFECT_TYPE_SINGLE)
 			e1:SetCode(EFFECT_CANNOT_ATTACK)
 			e1:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END)
 			tc:RegisterEffect(e1)
-			-- 效果原文：也不能作效果的发动。
+			-- 也不能作效果的发动。
 			local e2=Effect.CreateEffect(c)
 			e2:SetType(EFFECT_TYPE_SINGLE)
 			e2:SetCode(EFFECT_CANNOT_TRIGGER)

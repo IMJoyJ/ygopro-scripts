@@ -6,7 +6,7 @@
 -- ③：场上的这张卡被破坏送去墓地的回合的结束阶段才能发动。这张卡从墓地特殊召唤。这个效果特殊召唤的这张卡从场上离开的场合回到卡组最下面。
 function c1966438.initial_effect(c)
 	c:SetSPSummonOnce(1966438)
-	-- 效果原文：①：自己场上的卡被战斗·效果破坏的场合才能发动。这张卡从手卡特殊召唤。
+	-- ①：自己场上的卡被战斗·效果破坏的场合才能发动。这张卡从手卡特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(1966438,0))
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -18,7 +18,7 @@ function c1966438.initial_effect(c)
 	e1:SetTarget(c1966438.sptg)
 	e1:SetOperation(c1966438.spop)
 	c:RegisterEffect(e1)
-	-- 效果原文：②：这张卡特殊召唤的场合，丢弃1张手卡才能发动。场上1张卡破坏。
+	-- ②：这张卡特殊召唤的场合，丢弃1张手卡才能发动。场上1张卡破坏。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(1966438,1))
 	e2:SetCategory(CATEGORY_DESTROY)
@@ -29,7 +29,7 @@ function c1966438.initial_effect(c)
 	e2:SetTarget(c1966438.destg)
 	e2:SetOperation(c1966438.desop)
 	c:RegisterEffect(e2)
-	-- 效果原文：③：场上的这张卡被破坏送去墓地的回合的结束阶段才能发动。这张卡从墓地特殊召唤。这个效果特殊召唤的这张卡从场上离开的场合回到卡组最下面。
+	-- ③：场上的这张卡被破坏送去墓地的回合的结束阶段才能发动。这张卡从墓地特殊召唤。这个效果特殊召唤的这张卡从场上离开的场合回到卡组最下面。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_CONTINUOUS)
 	e3:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
@@ -156,7 +156,7 @@ function c1966438.spop2(e,tp,eg,ep,ev,re,r,rp)
 	if c:IsRelateToEffect(e) then
 		-- 判断特殊召唤是否成功
 		if Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)~=0 then
-			-- 效果原文：这个效果特殊召唤的这张卡从场上离开的场合回到卡组最下面。
+			-- 这个效果特殊召唤的这张卡从场上离开的场合回到卡组最下面。
 			local e1=Effect.CreateEffect(c)
 			e1:SetType(EFFECT_TYPE_SINGLE)
 			e1:SetCode(EFFECT_LEAVE_FIELD_REDIRECT)

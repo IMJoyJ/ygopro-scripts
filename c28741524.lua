@@ -2,7 +2,7 @@
 -- 效果：
 -- 自己墓地存在的2星以下的念动力族怪兽任意数量特殊召唤。那之后，自己受到这个效果特殊召唤的怪兽等级合计×300的数值的伤害。
 function c28741524.initial_effect(c)
-	-- 效果原文：自己墓地存在的2星以下的念动力族怪兽任意数量特殊召唤。那之后，自己受到这个效果特殊召唤的怪兽等级合计×300的数值的伤害。
+	-- 自己墓地存在的2星以下的念动力族怪兽任意数量特殊召唤。那之后，自己受到这个效果特殊召唤的怪兽等级合计×300的数值的伤害。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)

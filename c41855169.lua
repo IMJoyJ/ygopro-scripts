@@ -2,7 +2,7 @@
 -- 效果：
 -- 把手卡随机1张丢弃去墓地才能发动。场上的特殊召唤的怪兽全部破坏。此外，只要这张卡在场上表侧表示存在，双方不能把怪兽特殊召唤。
 function c41855169.initial_effect(c)
-	-- 效果原文：双方不能把怪兽特殊召唤
+	-- 双方不能把怪兽特殊召唤
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetRange(LOCATION_MZONE)
@@ -10,7 +10,7 @@ function c41855169.initial_effect(c)
 	e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
 	e1:SetTargetRange(1,1)
 	c:RegisterEffect(e1)
-	-- 效果原文：场上的特殊召唤的怪兽全部破坏
+	-- 场上的特殊召唤的怪兽全部破坏
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(41855169,0))  --"特殊召唤的怪兽全部破坏"
 	e2:SetCategory(CATEGORY_DESTROY)

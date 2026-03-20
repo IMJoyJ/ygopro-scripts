@@ -4,19 +4,19 @@
 -- ①：通常召唤的这张卡不受魔法·陷阱卡的效果影响，也不受原本的等级或者阶级比这张卡的等级低的怪兽发动的效果影响。
 -- ②：1回合1次，以对方场上1只怪兽为对象才能发动。那只怪兽的控制权直到结束阶段得到。
 function c40061558.initial_effect(c)
-	-- 效果原文：这张卡不能特殊召唤
+	-- 这张卡不能特殊召唤
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
 	e1:SetCode(EFFECT_SPSUMMON_CONDITION)
 	c:RegisterEffect(e1)
-	-- 效果原文：把自己场上3只「机壳」怪兽解放的场合才能通常召唤
+	-- 把自己场上3只「机壳」怪兽解放的场合才能通常召唤
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_SINGLE)
 	e2:SetCode(EFFECT_TRIBUTE_LIMIT)
 	e2:SetValue(c40061558.tlimit)
 	c:RegisterEffect(e2)
-	-- 效果原文：①：通常召唤的这张卡不受魔法·陷阱卡的效果影响，也不受原本的等级或者阶级比这张卡的等级低的怪兽发动的效果影响
+	-- ①：通常召唤的这张卡不受魔法·陷阱卡的效果影响，也不受原本的等级或者阶级比这张卡的等级低的怪兽发动的效果影响
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(40061558,0))  --"把3只「机壳」怪兽解放"
 	e3:SetType(EFFECT_TYPE_SINGLE)
@@ -29,7 +29,7 @@ function c40061558.initial_effect(c)
 	local e4=e3:Clone()
 	e4:SetCode(EFFECT_LIMIT_SET_PROC)
 	c:RegisterEffect(e4)
-	-- 效果原文：②：1回合1次，以对方场上1只怪兽为对象才能发动。那只怪兽的控制权直到结束阶段得到
+	-- ②：1回合1次，以对方场上1只怪兽为对象才能发动。那只怪兽的控制权直到结束阶段得到
 	local e5=Effect.CreateEffect(c)
 	e5:SetType(EFFECT_TYPE_SINGLE)
 	e5:SetProperty(EFFECT_FLAG_SINGLE_RANGE+EFFECT_FLAG_UNCOPYABLE)

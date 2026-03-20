@@ -8,7 +8,7 @@ function c11501629.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- 效果原文：只要这张卡在场上存在，每次自己场上表侧表示存在的炎属性怪兽被卡的效果破坏，那些破坏的怪兽数量的指示物给这张卡放置。这个效果1回合只能适用1次。
+	-- 只要这张卡在场上存在，每次自己场上表侧表示存在的炎属性怪兽被卡的效果破坏，那些破坏的怪兽数量的指示物给这张卡放置。这个效果1回合只能适用1次。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e2:SetProperty(EFFECT_FLAG_DELAY)
@@ -18,7 +18,7 @@ function c11501629.initial_effect(c)
 	e2:SetCondition(c11501629.ctcon)
 	e2:SetOperation(c11501629.ctop)
 	c:RegisterEffect(e2)
-	-- 效果原文：此外，自己或者对方的准备阶段时把这张卡送去墓地才能发动。给与对方基本分这张卡的效果给这张卡放置的指示物数量×1000的数值的伤害。
+	-- 此外，自己或者对方的准备阶段时把这张卡送去墓地才能发动。给与对方基本分这张卡的效果给这张卡放置的指示物数量×1000的数值的伤害。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(11501629,0))  --"伤害"
 	e3:SetCategory(CATEGORY_DAMAGE)

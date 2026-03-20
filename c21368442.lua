@@ -4,7 +4,7 @@
 -- ①：这张卡召唤·特殊召唤成功的场合才能发动。从卡组把「治安战警队 引力微子」以外的1张「治安战警队」卡加入手卡。
 -- ②：只要这张卡在怪兽区域存在，自己的「治安战警队」怪兽的正对面的对方怪兽从场上离开的场合除外。
 function c21368442.initial_effect(c)
-	-- 效果原文：①：这张卡召唤·特殊召唤成功的场合才能发动。从卡组把「治安战警队 引力微子」以外的1张「治安战警队」卡加入手卡。
+	-- ①：这张卡召唤·特殊召唤成功的场合才能发动。从卡组把「治安战警队 引力微子」以外的1张「治安战警队」卡加入手卡。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(21368442,0))
 	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
@@ -18,7 +18,7 @@ function c21368442.initial_effect(c)
 	local e2=e1:Clone()
 	e2:SetCode(EVENT_SPSUMMON_SUCCESS)
 	c:RegisterEffect(e2)
-	-- 效果原文：②：只要这张卡在怪兽区域存在，自己的「治安战警队」怪兽的正对面的对方怪兽从场上离开的场合除外。
+	-- ②：只要这张卡在怪兽区域存在，自己的「治安战警队」怪兽的正对面的对方怪兽从场上离开的场合除外。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_FIELD)
 	e3:SetProperty(EFFECT_FLAG_SET_AVAILABLE+EFFECT_FLAG_IGNORE_IMMUNE)

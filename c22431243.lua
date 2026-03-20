@@ -2,7 +2,7 @@
 -- 效果：
 -- 祭掉自己场上1只爬虫类族怪兽。从手卡特殊召唤1只恐龙族怪兽上场。
 function c22431243.initial_effect(c)
-	-- 效果原文：祭掉自己场上1只爬虫类族怪兽。从手卡特殊召唤1只恐龙族怪兽上场。
+	-- 祭掉自己场上1只爬虫类族怪兽。从手卡特殊召唤1只恐龙族怪兽上场。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)

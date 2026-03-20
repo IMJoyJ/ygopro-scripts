@@ -4,7 +4,7 @@
 -- ②：自己结束阶段才能发动。从卡组把1只「武神」怪兽加入手卡。那之后，选自己1张手卡送去墓地。
 function c32339440.initial_effect(c)
 	c:SetUniqueOnField(1,0,32339440)
-	-- 效果原文：②：自己结束阶段才能发动。从卡组把1只「武神」怪兽加入手卡。那之后，选自己1张手卡送去墓地。
+	-- ②：自己结束阶段才能发动。从卡组把1只「武神」怪兽加入手卡。那之后，选自己1张手卡送去墓地。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(32339440,0))  --"检索"
 	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH+CATEGORY_HANDES)

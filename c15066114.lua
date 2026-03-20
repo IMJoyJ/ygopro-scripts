@@ -4,7 +4,7 @@
 -- ②：这张卡的①的方法通常召唤的这张卡的原本的攻击力·守备力变成一半。
 -- ③：1回合1次，这张卡是已通常召唤的场合才能发动。表侧表示的这张卡破坏，持有那个攻击力以下的攻击力的主要怪兽区域的怪兽全部破坏。这个效果在对方回合也能发动。
 function c15066114.initial_effect(c)
-	-- 效果原文：①：这张卡可以不用解放作通常召唤。
+	-- ①：这张卡可以不用解放作通常召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(15066114,0))  --"不用解放召唤"
 	e1:SetType(EFFECT_TYPE_SINGLE)
@@ -15,7 +15,7 @@ function c15066114.initial_effect(c)
 	local e2=e1:Clone()
 	e2:SetCode(EFFECT_SET_PROC)
 	c:RegisterEffect(e2)
-	-- 效果原文：③：1回合1次，这张卡是已通常召唤的场合才能发动。表侧表示的这张卡破坏，持有那个攻击力以下的攻击力的主要怪兽区域的怪兽全部破坏。这个效果在对方回合也能发动。
+	-- ③：1回合1次，这张卡是已通常召唤的场合才能发动。表侧表示的这张卡破坏，持有那个攻击力以下的攻击力的主要怪兽区域的怪兽全部破坏。这个效果在对方回合也能发动。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(15066114,1))  --"怪兽破坏"
 	e3:SetType(EFFECT_TYPE_QUICK_O)

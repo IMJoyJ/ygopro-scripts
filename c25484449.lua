@@ -5,7 +5,7 @@
 -- ●这张卡的等级直到回合结束时上升1星。
 -- ●这张卡的等级直到回合结束时下降1星。
 function c25484449.initial_effect(c)
-	-- 效果原文：①：自己场上有「发条」怪兽召唤·特殊召唤时才能发动。这张卡从手卡特殊召唤。
+	-- ①：自己场上有「发条」怪兽召唤·特殊召唤时才能发动。这张卡从手卡特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(25484449,0))  --"特殊召唤"
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -19,7 +19,7 @@ function c25484449.initial_effect(c)
 	local e2=e1:Clone()
 	e2:SetCode(EVENT_SPSUMMON_SUCCESS)
 	c:RegisterEffect(e2)
-	-- 效果原文：②：1回合1次，可以从以下效果选择1个发动。●这张卡的等级直到回合结束时上升1星。●这张卡的等级直到回合结束时下降1星。
+	-- ②：1回合1次，可以从以下效果选择1个发动。●这张卡的等级直到回合结束时上升1星。●这张卡的等级直到回合结束时下降1星。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(25484449,1))  --"等级变化"
 	e3:SetType(EFFECT_TYPE_IGNITION)

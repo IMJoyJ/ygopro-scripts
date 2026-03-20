@@ -3,7 +3,7 @@
 -- ①：自己场上有「沉默魔术师」怪兽存在，自己手卡比对方多的场合，自己·对方的战斗阶段才能发动（这张卡的发动和效果不会被无效化）。双方玩家各自直到手卡变成6张为止抽卡。
 -- ②：自己主要阶段把墓地的这张卡除外才能发动。从卡组把1只「沉默魔术师」怪兽加入手卡。
 function c44968459.initial_effect(c)
-	-- 效果原文：①：自己场上有「沉默魔术师」怪兽存在，自己手卡比对方多的场合，自己·对方的战斗阶段才能发动（这张卡的发动和效果不会被无效化）。双方玩家各自直到手卡变成6张为止抽卡。
+	-- ①：自己场上有「沉默魔术师」怪兽存在，自己手卡比对方多的场合，自己·对方的战斗阶段才能发动（这张卡的发动和效果不会被无效化）。双方玩家各自直到手卡变成6张为止抽卡。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(44968459,0))  --"抽卡"
 	e1:SetCategory(CATEGORY_DRAW)
@@ -14,7 +14,7 @@ function c44968459.initial_effect(c)
 	e1:SetTarget(c44968459.target)
 	e1:SetOperation(c44968459.activate)
 	c:RegisterEffect(e1)
-	-- 效果原文：②：自己主要阶段把墓地的这张卡除外才能发动。从卡组把1只「沉默魔术师」怪兽加入手卡。
+	-- ②：自己主要阶段把墓地的这张卡除外才能发动。从卡组把1只「沉默魔术师」怪兽加入手卡。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(44968459,1))  --"卡组检索"
 	e2:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)

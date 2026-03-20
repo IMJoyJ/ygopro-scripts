@@ -2,7 +2,7 @@
 -- 效果：
 -- 把自己场上存在的1只念动力族怪兽解放发动。自己回复解放怪兽的等级×300的数值的基本分。
 function c33323657.initial_effect(c)
-	-- 效果原文：把自己场上存在的1只念动力族怪兽解放发动。自己回复解放怪兽的等级×300的数值的基本分。
+	-- 把自己场上存在的1只念动力族怪兽解放发动。自己回复解放怪兽的等级×300的数值的基本分。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCategory(CATEGORY_RECOVER)

@@ -5,7 +5,7 @@
 -- ③：把这张卡解放才能发动。从卡组把1只攻击力0的「时械神」怪兽加入手卡。
 -- ④：把墓地的这张卡除外才能发动。从卡组把1只攻击力0的「时械神」怪兽无视召唤条件特殊召唤。这个效果发动的回合，自己不能用这个效果以外把怪兽特殊召唤。
 function c27107590.initial_effect(c)
-	-- 效果原文：①：自己场上没有怪兽存在的场合，这张卡可以从手卡特殊召唤。
+	-- ①：自己场上没有怪兽存在的场合，这张卡可以从手卡特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_SPSUMMON_PROC)
@@ -13,13 +13,13 @@ function c27107590.initial_effect(c)
 	e1:SetRange(LOCATION_HAND)
 	e1:SetCondition(c27107590.sprcon)
 	c:RegisterEffect(e1)
-	-- 效果原文：②：「时械神」怪兽上级召唤的场合，这张卡可以作为2只的数量解放。
+	-- ②：「时械神」怪兽上级召唤的场合，这张卡可以作为2只的数量解放。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_SINGLE)
 	e2:SetCode(EFFECT_DOUBLE_TRIBUTE)
 	e2:SetValue(c27107590.dtcon)
 	c:RegisterEffect(e2)
-	-- 效果原文：③：把这张卡解放才能发动。从卡组把1只攻击力0的「时械神」怪兽加入手卡。
+	-- ③：把这张卡解放才能发动。从卡组把1只攻击力0的「时械神」怪兽加入手卡。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(27107590,0))
 	e3:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
@@ -29,7 +29,7 @@ function c27107590.initial_effect(c)
 	e3:SetTarget(c27107590.thtg)
 	e3:SetOperation(c27107590.thop)
 	c:RegisterEffect(e3)
-	-- 效果原文：④：把墓地的这张卡除外才能发动。从卡组把1只攻击力0的「时械神」怪兽无视召唤条件特殊召唤。这个效果发动的回合，自己不能用这个效果以外把怪兽特殊召唤。
+	-- ④：把墓地的这张卡除外才能发动。从卡组把1只攻击力0的「时械神」怪兽无视召唤条件特殊召唤。这个效果发动的回合，自己不能用这个效果以外把怪兽特殊召唤。
 	local e4=Effect.CreateEffect(c)
 	e4:SetDescription(aux.Stringid(27107590,1))
 	e4:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -90,7 +90,7 @@ function c27107590.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.GetActivityCount(tp,ACTIVITY_SPSUMMON)==0 and c:IsAbleToRemoveAsCost() end
 	-- 规则层面：将此卡从墓地除外作为发动代价。
 	Duel.Remove(c,POS_FACEUP,REASON_COST)
-	-- 效果原文：④：把墓地的这张卡除外才能发动。从卡组把1只攻击力0的「时械神」怪兽无视召唤条件特殊召唤。这个效果发动的回合，自己不能用这个效果以外把怪兽特殊召唤。
+	-- ④：把墓地的这张卡除外才能发动。从卡组把1只攻击力0的「时械神」怪兽无视召唤条件特殊召唤。这个效果发动的回合，自己不能用这个效果以外把怪兽特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_CANNOT_SPECIAL_SUMMON)

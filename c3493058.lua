@@ -5,7 +5,7 @@
 -- ●5：选场上2张魔法·陷阱卡破坏。
 -- ●1·6：自己受到1000伤害。
 function c3493058.initial_effect(c)
-	-- 效果原文：①：掷1次骰子，出现的数目的效果适用。
+	-- ①：掷1次骰子，出现的数目的效果适用。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_DESTROY+CATEGORY_DAMAGE+CATEGORY_DICE)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -15,14 +15,14 @@ function c3493058.initial_effect(c)
 	e1:SetOperation(c3493058.activate)
 	c:RegisterEffect(e1)
 end
--- 效果原文：●2·3·4：选场上1张魔法·陷阱卡破坏。
+-- ●2·3·4：选场上1张魔法·陷阱卡破坏。
 function c3493058.filter(c)
 	return c:IsType(TYPE_SPELL+TYPE_TRAP)
 end
--- 效果原文：●5：选场上2张魔法·陷阱卡破坏。
+-- ●5：选场上2张魔法·陷阱卡破坏。
 function c3493058.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 效果原文：●1·6：自己受到1000伤害。
+	-- ●1·6：自己受到1000伤害。
 	Duel.SetOperationInfo(0,CATEGORY_DICE,nil,0,tp,1)
 end
 -- 创建效果对象并设置其类型为发动效果，触发条件为自由连锁，设置目标函数和发动函数

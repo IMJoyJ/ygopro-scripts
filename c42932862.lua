@@ -9,7 +9,7 @@ local s,id,o=GetID()
 -- 初始化卡片效果，启用仪式召唤限制并注册两个效果：①反转时特殊召唤；②速攻时改变表示形式
 function s.initial_effect(c)
 	c:EnableReviveLimit()
-	-- 效果原文：用仪式召唤以及「圣占术姬 塔罗光巫女」的效果才能特殊召唤
+	-- 用仪式召唤以及「圣占术姬 塔罗光巫女」的效果才能特殊召唤
 	local e0=Effect.CreateEffect(c)
 	e0:SetType(EFFECT_TYPE_SINGLE)
 	e0:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
@@ -17,7 +17,7 @@ function s.initial_effect(c)
 	-- 设置该卡必须通过仪式召唤方式特殊召唤
 	e0:SetValue(aux.ritlimit)
 	c:RegisterEffect(e0)
-	-- 效果原文：这张卡反转的场合才能发动。从卡组把1只反转怪兽里侧守备表示特殊召唤
+	-- 这张卡反转的场合才能发动。从卡组把1只反转怪兽里侧守备表示特殊召唤
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(id,0))  --"从卡组特殊召唤"
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_MSET)
@@ -27,7 +27,7 @@ function s.initial_effect(c)
 	e1:SetTarget(s.sptg)
 	e1:SetOperation(s.spop)
 	c:RegisterEffect(e1)
-	-- 效果原文：自己·对方回合，可以从以下效果选择1个发动。●选自己场上的里侧表示怪兽任意数量变成表侧守备表示。●选自己场上的表侧表示怪兽任意数量变成里侧守备表示
+	-- 自己·对方回合，可以从以下效果选择1个发动。●选自己场上的里侧表示怪兽任意数量变成表侧守备表示。●选自己场上的表侧表示怪兽任意数量变成里侧守备表示
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(id,1))  --"改变表示形式"
 	e2:SetCategory(CATEGORY_POSITION+CATEGORY_MSET)

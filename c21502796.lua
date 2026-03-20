@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：这张卡反转的场合发动。可以选场上1张卡破坏。从自己卡组上面把3张卡送去墓地。
 function c21502796.initial_effect(c)
-	-- 效果原文：①：这张卡反转的场合发动。可以选场上1张卡破坏。从自己卡组上面把3张卡送去墓地。
+	-- ①：这张卡反转的场合发动。可以选场上1张卡破坏。从自己卡组上面把3张卡送去墓地。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(21502796,0))  --"破坏"
 	e1:SetCategory(CATEGORY_DECKDES+CATEGORY_DESTROY)

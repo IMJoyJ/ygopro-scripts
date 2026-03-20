@@ -4,7 +4,7 @@
 -- ①：自己场上有2星或连接2的怪兽存在的场合，这张卡可以从手卡特殊召唤。
 -- ②：对方把魔法·陷阱卡的效果发动时，把自己场上1只其他的2星·2阶·连接2的怪兽解放才能发动。那个效果无效。把2阶或连接2的怪兽解放发动的场合，可以再把那张无效的卡破坏。
 function c2311090.initial_effect(c)
-	-- 效果原文：①：自己场上有2星或连接2的怪兽存在的场合，这张卡可以从手卡特殊召唤。
+	-- ①：自己场上有2星或连接2的怪兽存在的场合，这张卡可以从手卡特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(2311090,0))
 	e1:SetType(EFFECT_TYPE_FIELD)
@@ -14,7 +14,7 @@ function c2311090.initial_effect(c)
 	e1:SetCountLimit(1,2311090+EFFECT_COUNT_CODE_OATH)
 	e1:SetCondition(c2311090.spcon)
 	c:RegisterEffect(e1)
-	-- 效果原文：②：对方把魔法·陷阱卡的效果发动时，把自己场上1只其他的2星·2阶·连接2的怪兽解放才能发动。那个效果无效。把2阶或连接2的怪兽解放发动的场合，可以再把那张无效的卡破坏。
+	-- ②：对方把魔法·陷阱卡的效果发动时，把自己场上1只其他的2星·2阶·连接2的怪兽解放才能发动。那个效果无效。把2阶或连接2的怪兽解放发动的场合，可以再把那张无效的卡破坏。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(2311090,1))
 	e2:SetCategory(CATEGORY_DESTROY+CATEGORY_DISABLE)

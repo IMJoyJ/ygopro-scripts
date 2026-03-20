@@ -12,7 +12,7 @@ function c15177750.initial_effect(c)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetHintTiming(0,TIMINGS_CHECK_MONSTER+TIMING_END_PHASE)
 	c:RegisterEffect(e1)
-	-- 效果原文：从自己的手卡·场上（表侧表示）把1只植物族怪兽送去墓地才能发动。自己回复500基本分。
+	-- 从自己的手卡·场上（表侧表示）把1只植物族怪兽送去墓地才能发动。自己回复500基本分。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(15177750,0))  --"送去墓地回复基本分"
 	e2:SetCategory(CATEGORY_RECOVER)
@@ -25,7 +25,7 @@ function c15177750.initial_effect(c)
 	e2:SetTarget(c15177750.rectg)
 	e2:SetOperation(c15177750.recop)
 	c:RegisterEffect(e2)
-	-- 效果原文：以自己墓地1只植物族怪兽为对象才能发动。那只怪兽回到卡组。那之后，自己回复500基本分。
+	-- 以自己墓地1只植物族怪兽为对象才能发动。那只怪兽回到卡组。那之后，自己回复500基本分。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(15177750,1))  --"回到卡组回复基本分"
 	e3:SetCategory(CATEGORY_TODECK+CATEGORY_RECOVER)
@@ -39,7 +39,7 @@ function c15177750.initial_effect(c)
 	e3:SetTarget(c15177750.tdtg)
 	e3:SetOperation(c15177750.tdop)
 	c:RegisterEffect(e3)
-	-- 效果原文：支付1000基本分才能发动。从自己墓地把1只「芳香」怪兽特殊召唤。
+	-- 支付1000基本分才能发动。从自己墓地把1只「芳香」怪兽特殊召唤。
 	local e4=Effect.CreateEffect(c)
 	e4:SetDescription(aux.Stringid(15177750,2))  --"支付基本分特殊召唤"
 	e4:SetCategory(CATEGORY_SPECIAL_SUMMON)

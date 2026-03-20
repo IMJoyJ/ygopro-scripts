@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：这张卡在墓地存在的场合，让1张手卡回到卡组最上面才能发动。这张卡特殊召唤。这个效果特殊召唤的这张卡从场上离开的场合除外。
 function c33420078.initial_effect(c)
-	-- 效果原文：①：这张卡在墓地存在的场合，让1张手卡回到卡组最上面才能发动。这张卡特殊召唤。这个效果特殊召唤的这张卡从场上离开的场合除外。
+	-- ①：这张卡在墓地存在的场合，让1张手卡回到卡组最上面才能发动。这张卡特殊召唤。这个效果特殊召唤的这张卡从场上离开的场合除外。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(33420078,0))  --"特殊召唤"
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -37,7 +37,7 @@ function c33420078.operation(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	-- 判断此卡是否仍存在于场上且成功特殊召唤，若成功则设置其离场时的去向。
 	if c:IsRelateToEffect(e) and Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)>0 then
-		-- 效果原文：这个效果特殊召唤的这张卡从场上离开的场合除外。
+		-- 这个效果特殊召唤的这张卡从场上离开的场合除外。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_LEAVE_FIELD_REDIRECT)

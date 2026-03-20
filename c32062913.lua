@@ -2,7 +2,7 @@
 -- 效果：
 -- 把自己场上存在的10个魔力指示物取除发动。对方场上存在的卡全部破坏。
 function c32062913.initial_effect(c)
-	-- 效果原文：把自己场上存在的10个魔力指示物取除发动。对方场上存在的卡全部破坏。
+	-- 把自己场上存在的10个魔力指示物取除发动。对方场上存在的卡全部破坏。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_DESTROY)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)

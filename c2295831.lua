@@ -2,14 +2,14 @@
 -- 效果：
 -- ①：对方场上有怪兽3只以上存在，自己场上没有卡存在的场合，自己抽卡阶段通过把通常抽卡的这张卡持续公开，那个回合的主要阶段1才能发动。自己从卡组选1张卡，给双方确认加入手卡。
 function c2295831.initial_effect(c)
-	-- 效果原文：①：对方场上有怪兽3只以上存在，自己场上没有卡存在的场合，自己抽卡阶段通过把通常抽卡的这张卡持续公开，那个回合的主要阶段1才能发动。
+	-- ①：对方场上有怪兽3只以上存在，自己场上没有卡存在的场合，自己抽卡阶段通过把通常抽卡的这张卡持续公开，那个回合的主要阶段1才能发动。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_CONTINUOUS)
 	e1:SetCode(EVENT_DRAW)
 	e1:SetCondition(c2295831.regcon)
 	e1:SetOperation(c2295831.regop)
 	c:RegisterEffect(e1)
-	-- 效果原文：自己从卡组选1张卡，给双方确认加入手卡。
+	-- 自己从卡组选1张卡，给双方确认加入手卡。
 	local e2=Effect.CreateEffect(c)
 	e2:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
 	e2:SetType(EFFECT_TYPE_ACTIVATE)
@@ -33,7 +33,7 @@ function c2295831.regop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	-- 规则层面：询问玩家是否要持续公开「拼图之圈」。
 	if Duel.SelectYesNo(tp,aux.Stringid(2295831,0)) then  --"是否要持续公开「拼图之圈」？"
-		-- 效果原文：自己抽卡阶段通过把通常抽卡的这张卡持续公开。
+		-- 自己抽卡阶段通过把通常抽卡的这张卡持续公开。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_PUBLIC)

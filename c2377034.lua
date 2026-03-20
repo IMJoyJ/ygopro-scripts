@@ -2,7 +2,7 @@
 -- 效果：
 -- 这张卡被战斗破坏的场合，选择对方墓地存在的1张卡从游戏中除外。场上存在的这张卡被卡的效果破坏的场合，选择自己墓地存在的「新炎狱刺猬」以外的1只守备力200以下的炎属性怪兽加入手卡。
 function c2377034.initial_effect(c)
-	-- 效果原文：这张卡被战斗破坏的场合，选择对方墓地存在的1张卡从游戏中除外。
+	-- 这张卡被战斗破坏的场合，选择对方墓地存在的1张卡从游戏中除外。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(2377034,0))  --"除外"
 	e1:SetCategory(CATEGORY_REMOVE)
@@ -12,7 +12,7 @@ function c2377034.initial_effect(c)
 	e1:SetTarget(c2377034.rmtg)
 	e1:SetOperation(c2377034.rmop)
 	c:RegisterEffect(e1)
-	-- 效果原文：场上存在的这张卡被卡的效果破坏的场合，选择自己墓地存在的「新炎狱刺猬」以外的1只守备力200以下的炎属性怪兽加入手卡。
+	-- 场上存在的这张卡被卡的效果破坏的场合，选择自己墓地存在的「新炎狱刺猬」以外的1只守备力200以下的炎属性怪兽加入手卡。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(2377034,1))  --"加入手卡"
 	e2:SetCategory(CATEGORY_TOHAND)

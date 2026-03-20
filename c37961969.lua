@@ -4,7 +4,7 @@
 -- ①：对方把场上的怪兽的效果发动时才能发动。这张卡从手卡特殊召唤，从自己卡组上面把3张卡送去墓地。
 -- ②：这张卡被效果送去墓地的场合才能发动。融合怪兽卡决定的包含墓地的这张卡的融合素材怪兽从自己的手卡·场上·墓地用喜欢的顺序回到持有者卡组下面，把那1只融合怪兽从额外卡组融合召唤。
 function c37961969.initial_effect(c)
-	-- 效果原文：这个卡名的①②的效果1回合各能使用1次。
+	-- 这个卡名的①②的效果1回合各能使用1次。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(37961969,0))
 	e1:SetCategory(CATEGORY_DECKDES+CATEGORY_SPECIAL_SUMMON)
@@ -16,7 +16,7 @@ function c37961969.initial_effect(c)
 	e1:SetTarget(c37961969.tgtg)
 	e1:SetOperation(c37961969.tgop)
 	c:RegisterEffect(e1)
-	-- 效果原文：②：这张卡被效果送去墓地的场合才能发动。融合怪兽卡决定的包含墓地的这张卡的融合素材怪兽从自己的手卡·场上·墓地用喜欢的顺序回到持有者卡组下面，把那1只融合怪兽从额外卡组融合召唤。
+	-- ②：这张卡被效果送去墓地的场合才能发动。融合怪兽卡决定的包含墓地的这张卡的融合素材怪兽从自己的手卡·场上·墓地用喜欢的顺序回到持有者卡组下面，把那1只融合怪兽从额外卡组融合召唤。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(37961969,1))
 	e2:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_FUSION_SUMMON+CATEGORY_GRAVE_ACTION)

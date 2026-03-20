@@ -2,7 +2,7 @@
 -- 效果：
 -- 这张卡可以把1只名字带有「守墓」的怪兽解放作召唤。这张卡的攻击力上升自己墓地存在的名字带有「守墓」的怪兽数量×200的数值。场上表侧表示存在的这张卡被破坏的场合，可以作为代替从手卡把1只名字带有「守墓」的怪兽丢弃。
 function c3825890.initial_effect(c)
-	-- 效果原文：这张卡可以把1只名字带有「守墓」的怪兽解放作召唤。
+	-- 这张卡可以把1只名字带有「守墓」的怪兽解放作召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(3825890,0))  --"使用一只名字带有「守墓」的怪兽解放召唤"
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
@@ -12,7 +12,7 @@ function c3825890.initial_effect(c)
 	e1:SetOperation(c3825890.otop)
 	e1:SetValue(SUMMON_TYPE_ADVANCE)
 	c:RegisterEffect(e1)
-	-- 效果原文：这张卡的攻击力上升自己墓地存在的名字带有「守墓」的怪兽数量×200的数值。
+	-- 这张卡的攻击力上升自己墓地存在的名字带有「守墓」的怪兽数量×200的数值。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_SINGLE)
 	e2:SetCode(EFFECT_UPDATE_ATTACK)
@@ -20,7 +20,7 @@ function c3825890.initial_effect(c)
 	e2:SetRange(LOCATION_MZONE)
 	e2:SetValue(c3825890.atkval)
 	c:RegisterEffect(e2)
-	-- 效果原文：场上表侧表示存在的这张卡被破坏的场合，可以作为代替从手卡把1只名字带有「守墓」的怪兽丢弃。
+	-- 场上表侧表示存在的这张卡被破坏的场合，可以作为代替从手卡把1只名字带有「守墓」的怪兽丢弃。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_CONTINUOUS+EFFECT_TYPE_SINGLE)
 	e3:SetProperty(EFFECT_FLAG_SINGLE_RANGE)

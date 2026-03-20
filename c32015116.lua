@@ -8,7 +8,7 @@ function c32015116.initial_effect(c)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetHintTiming(0,TIMING_END_PHASE)
 	c:RegisterEffect(e1)
-	-- 诱发必发效果，于准备阶段发动，效果原文：每次自己的准备阶段丢1次骰子。和投出来的数目一样等级的怪兽全部破坏。（投出来的数目是6的场合包括6星以上的怪兽）
+	-- 诱发必发效果，于准备阶段发动，每次自己的准备阶段丢1次骰子。和投出来的数目一样等级的怪兽全部破坏。（投出来的数目是6的场合包括6星以上的怪兽）
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(32015116,0))  --"投掷骰子"
 	e2:SetCategory(CATEGORY_DESTROY+CATEGORY_DICE)

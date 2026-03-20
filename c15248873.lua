@@ -15,7 +15,7 @@ function c15248873.initial_effect(c)
 end
 -- 判断发动条件：自己场地区域没有卡，对方场地区域有卡
 function c15248873.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 效果原文：对方的场地区域有卡存在，自己的场地区域没有卡存在的场合才能发动
+	-- 对方的场地区域有卡存在，自己的场地区域没有卡存在的场合才能发动
 	return Duel.GetFieldCard(tp,LOCATION_FZONE,0)==nil and Duel.GetFieldCard(1-tp,LOCATION_FZONE,0)~=nil
 end
 -- 过滤函数：筛选卡组中可发动的场地魔法卡
@@ -24,7 +24,7 @@ function c15248873.filter(c,tp)
 end
 -- 设置发动目标：检查卡组中是否存在满足条件的场地魔法卡，若不在阶段开始时则设置标签为1
 function c15248873.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 效果原文：从卡组把1张场地魔法卡发动
+	-- 从卡组把1张场地魔法卡发动
 	if chk==0 then return Duel.IsExistingMatchingCard(c15248873.filter,tp,LOCATION_DECK,0,1,nil,tp) end
 	-- 若当前阶段未开始则设置标签为1，否则为0
 	if not Duel.CheckPhaseActivity() then e:SetLabel(1) else e:SetLabel(0) end

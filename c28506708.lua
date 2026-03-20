@@ -7,7 +7,7 @@ function c28506708.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- 效果原文：对方场上有怪兽存在，自己场上没有怪兽存在的场合，可以从手卡把1只名字带有「异虫」的爬虫类族怪兽里侧守备表示特殊召唤。这个效果1回合只能使用1次。
+	-- 对方场上有怪兽存在，自己场上没有怪兽存在的场合，可以从手卡把1只名字带有「异虫」的爬虫类族怪兽里侧守备表示特殊召唤。这个效果1回合只能使用1次。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(28506708,0))  --"特殊召唤"
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_MSET)

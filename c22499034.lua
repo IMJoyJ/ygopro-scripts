@@ -3,7 +3,7 @@
 -- 这张卡表侧表示上级召唤的场合，可以作为怪兽的代替而把自己场上的永续魔法·永续陷阱卡解放。
 -- ①：这张卡是已上级召唤的场合，1回合1次，对方把魔法·陷阱·怪兽的效果发动时才能发动。从卡组选1张「真龙」永续魔法卡加入手卡或在自己场上发动。
 function c22499034.initial_effect(c)
-	-- 效果原文：这张卡表侧表示上级召唤的场合，可以作为怪兽的代替而把自己场上的永续魔法·永续陷阱卡解放。
+	-- 这张卡表侧表示上级召唤的场合，可以作为怪兽的代替而把自己场上的永续魔法·永续陷阱卡解放。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
@@ -13,7 +13,7 @@ function c22499034.initial_effect(c)
 	e1:SetTarget(aux.TargetBoolFunction(Card.IsType,TYPE_CONTINUOUS))
 	e1:SetValue(POS_FACEUP_ATTACK)
 	c:RegisterEffect(e1)
-	-- 效果原文：①：这张卡是已上级召唤的场合，1回合1次，对方把魔法·陷阱·怪兽的效果发动时才能发动。从卡组选1张「真龙」永续魔法卡加入手卡或在自己场上发动。
+	-- ①：这张卡是已上级召唤的场合，1回合1次，对方把魔法·陷阱·怪兽的效果发动时才能发动。从卡组选1张「真龙」永续魔法卡加入手卡或在自己场上发动。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(22499034,1))  --"加入手卡或在自己场上发动"
 	e2:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
@@ -42,7 +42,7 @@ function c22499034.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 规则层面：设置连锁操作信息为检索1张卡加入手牌
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 效果原文：从卡组选1张「真龙」永续魔法卡加入手卡或在自己场上发动。
+-- 从卡组选1张「真龙」永续魔法卡加入手卡或在自己场上发动。
 function c22499034.thop(e,tp,eg,ep,ev,re,r,rp)
 	-- 规则层面：提示玩家选择要操作的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_OPERATECARD)  --"请选择要操作的卡"

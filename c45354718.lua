@@ -3,7 +3,7 @@
 -- 这个卡名的卡在1回合只能发动1张。
 -- ①：从卡组选1只「抒情歌鸲」怪兽加入手卡或送去墓地。那之后，可以把和那只怪兽卡名不同的1只「抒情歌鸲」怪兽从手卡特殊召唤。
 function c45354718.initial_effect(c)
-	-- 效果原文：①：从卡组选1只「抒情歌鸲」怪兽加入手卡或送去墓地。那之后，可以把和那只怪兽卡名不同的1只「抒情歌鸲」怪兽从手卡特殊召唤。
+	-- ①：从卡组选1只「抒情歌鸲」怪兽加入手卡或送去墓地。那之后，可以把和那只怪兽卡名不同的1只「抒情歌鸲」怪兽从手卡特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(45354718,0))  --"卡组检索"
 	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH+CATEGORY_TOGRAVE+CATEGORY_SPECIAL_SUMMON)

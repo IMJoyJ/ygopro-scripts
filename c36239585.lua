@@ -4,13 +4,13 @@
 -- ①：自己主要阶段才能发动。这张卡变成里侧守备表示（1回合只有1次）。
 -- ②：这张卡反转时，以自己墓地1张「鬼计」卡为对象才能发动。那张卡在自己场上盖放。那张卡从场上离开的场合除外。那之后，可以选最多有自己场上盖放的卡数量的对方场上的表侧表示怪兽变成里侧守备表示。
 function c36239585.initial_effect(c)
-	-- 效果原文：自己场上有「鬼计」怪兽存在的场合才能让这张卡表侧表示召唤。
+	-- 自己场上有「鬼计」怪兽存在的场合才能让这张卡表侧表示召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_CANNOT_SUMMON)
 	e1:SetCondition(c36239585.sumcon)
 	c:RegisterEffect(e1)
-	-- 效果原文：①：自己主要阶段才能发动。这张卡变成里侧守备表示（1回合只有1次）。
+	-- ①：自己主要阶段才能发动。这张卡变成里侧守备表示（1回合只有1次）。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(36239585,0))
 	e2:SetCategory(CATEGORY_POSITION+CATEGORY_MSET)
@@ -19,7 +19,7 @@ function c36239585.initial_effect(c)
 	e2:SetTarget(c36239585.postg)
 	e2:SetOperation(c36239585.posop)
 	c:RegisterEffect(e2)
-	-- 效果原文：②：这张卡反转时，以自己墓地1张「鬼计」卡为对象才能发动。那张卡在自己场上盖放。那张卡从场上离开的场合除外。那之后，可以选最多有自己场上盖放的卡数量的对方场上的表侧表示怪兽变成里侧守备表示。
+	-- ②：这张卡反转时，以自己墓地1张「鬼计」卡为对象才能发动。那张卡在自己场上盖放。那张卡从场上离开的场合除外。那之后，可以选最多有自己场上盖放的卡数量的对方场上的表侧表示怪兽变成里侧守备表示。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(36239585,1))
 	e3:SetCategory(CATEGORY_MSET+CATEGORY_SSET)

@@ -5,7 +5,7 @@
 -- ②：1回合1次，这张卡给与对方战斗伤害时才能发动。自己从卡组抽1张。
 function c16802689.initial_effect(c)
 	c:EnableReviveLimit()
-	-- 效果原文：把「花札卫-桐上凤凰-」以外的自己场上1只12星「花札卫」怪兽解放的场合可以特殊召唤。
+	-- 把「花札卫-桐上凤凰-」以外的自己场上1只12星「花札卫」怪兽解放的场合可以特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
 	e1:SetType(EFFECT_TYPE_FIELD)
@@ -15,7 +15,7 @@ function c16802689.initial_effect(c)
 	e1:SetTarget(c16802689.hsptg)
 	e1:SetOperation(c16802689.hspop)
 	c:RegisterEffect(e1)
-	-- 效果原文：①：这张卡特殊召唤成功的场合发动。自己从卡组抽1张，给双方确认。那是「花札卫」怪兽的场合，可以把那只怪兽特殊召唤。不是的场合，那张卡送去墓地。
+	-- ①：这张卡特殊召唤成功的场合发动。自己从卡组抽1张，给双方确认。那是「花札卫」怪兽的场合，可以把那只怪兽特殊召唤。不是的场合，那张卡送去墓地。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(16802689,0))  --"抽1张卡并给双方确认"
 	e2:SetCategory(CATEGORY_DRAW+CATEGORY_SPECIAL_SUMMON)
@@ -24,7 +24,7 @@ function c16802689.initial_effect(c)
 	e2:SetTarget(c16802689.target)
 	e2:SetOperation(c16802689.operation)
 	c:RegisterEffect(e2)
-	-- 效果原文：②：1回合1次，这张卡给与对方战斗伤害时才能发动。自己从卡组抽1张。
+	-- ②：1回合1次，这张卡给与对方战斗伤害时才能发动。自己从卡组抽1张。
 	local e3=Effect.CreateEffect(c)
 	e3:SetCategory(CATEGORY_DRAW)
 	e3:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)

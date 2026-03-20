@@ -3,7 +3,7 @@
 -- ①：这张卡可以从手卡丢弃1只5星以上的暗属性怪兽，从手卡特殊召唤。
 -- ②：1回合1次，从手卡丢弃1只暗属性怪兽才能发动。从卡组把1只暗属性怪兽送去墓地。
 function c14536035.initial_effect(c)
-	-- 效果原文：①：这张卡可以从手卡丢弃1只5星以上的暗属性怪兽，从手卡特殊召唤。
+	-- ①：这张卡可以从手卡丢弃1只5星以上的暗属性怪兽，从手卡特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(14536035,0))  --"特殊召唤"
 	e1:SetType(EFFECT_TYPE_FIELD)
@@ -14,7 +14,7 @@ function c14536035.initial_effect(c)
 	e1:SetTarget(c14536035.sptg)
 	e1:SetOperation(c14536035.spop)
 	c:RegisterEffect(e1)
-	-- 效果原文：②：1回合1次，从手卡丢弃1只暗属性怪兽才能发动。从卡组把1只暗属性怪兽送去墓地。
+	-- ②：1回合1次，从手卡丢弃1只暗属性怪兽才能发动。从卡组把1只暗属性怪兽送去墓地。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(14536035,1))  --"送去墓地"
 	e2:SetCategory(CATEGORY_TOGRAVE)

@@ -13,12 +13,12 @@ function c28566710.initial_effect(c)
 	e1:SetOperation(c28566710.operation)
 	c:RegisterEffect(e1)
 end
--- 效果原文：自己的基本分1000分以下时，在对方的回合才能发动
+-- 自己的基本分1000分以下时，在对方的回合才能发动
 function c28566710.condition(e,tp,eg,ep,ev,re,r,rp)
 	-- 规则层面：判断玩家LP是否小于等于1000且当前回合不是玩家自己
 	return Duel.GetLP(tp)<=1000 and Duel.GetTurnPlayer()~=tp
 end
--- 效果原文：选择自己的场上的1只怪兽，双方的其他的场上和手上的卡全部送去墓地
+-- 选择自己的场上的1只怪兽，双方的其他的场上和手上的卡全部送去墓地
 function c28566710.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 规则层面：检查玩家自己场上是否存在至少1张怪兽卡
 	if chk==0 then return Duel.IsExistingMatchingCard(nil,tp,LOCATION_MZONE,0,1,nil)
@@ -27,7 +27,7 @@ function c28566710.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 规则层面：设置操作信息，表示对方从卡组特殊召唤1只怪兽
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,1-tp,LOCATION_DECK)
 end
--- 效果原文：之后，对方从卡组选择1只怪兽攻击表示特殊召唤并进行战斗（玩家的战斗伤害为0）
+-- 之后，对方从卡组选择1只怪兽攻击表示特殊召唤并进行战斗（玩家的战斗伤害为0）
 function c28566710.spfilter(c,e,tp)
 	return c:IsCanBeSpecialSummoned(e,0,tp,false,false,POS_FACEUP_ATTACK)
 end
@@ -53,7 +53,7 @@ function c28566710.operation(e,tp,eg,ep,ev,re,r,rp)
 		Duel.BreakEffect()
 		-- 规则层面：将对方选择的怪兽特殊召唤到对方场上
 		Duel.SpecialSummon(sc,0,1-tp,1-tp,false,false,POS_FACEUP_ATTACK)
-		-- 效果原文：回合结束时场上还存在怪兽的玩家获得决斗的胜利。其他的情况算平局
+		-- 回合结束时场上还存在怪兽的玩家获得决斗的胜利。其他的情况算平局
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_FIELD)
 		e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
@@ -65,7 +65,7 @@ function c28566710.operation(e,tp,eg,ep,ev,re,r,rp)
 		-- 规则层面：计算战斗伤害
 		if tc then Duel.CalculateDamage(sc,tc) end
 	end
-	-- 效果原文：回合结束时场上还存在怪兽的玩家获得决斗的胜利。其他的情况算平局
+	-- 回合结束时场上还存在怪兽的玩家获得决斗的胜利。其他的情况算平局
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e1:SetCode(EVENT_PHASE+PHASE_END)
@@ -75,7 +75,7 @@ function c28566710.operation(e,tp,eg,ep,ev,re,r,rp)
 	-- 规则层面：注册回合结束时的胜利判定效果
 	Duel.RegisterEffect(e1,tp)
 end
--- 效果原文：回合结束时场上还存在怪兽的玩家获得决斗的胜利。其他的情况算平局
+-- 回合结束时场上还存在怪兽的玩家获得决斗的胜利。其他的情况算平局
 function c28566710.checkop(e,tp,eg,ep,ev,re,r,rp)
 	-- 规则层面：获取玩家0场上怪兽数量
 	local t1=Duel.GetFieldGroupCount(0,LOCATION_MZONE,0)

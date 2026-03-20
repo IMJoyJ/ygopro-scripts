@@ -2,7 +2,7 @@
 -- 效果：
 -- 支付1000基本分。对方场上·墓地的机械族怪兽全部从游戏中除外。
 function c18895832.initial_effect(c)
-	-- 效果原文：支付1000基本分。对方场上·墓地的机械族怪兽全部从游戏中除外。
+	-- 支付1000基本分。对方场上·墓地的机械族怪兽全部从游戏中除外。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_REMOVE)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)

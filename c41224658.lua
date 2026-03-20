@@ -2,7 +2,7 @@
 -- 效果：
 -- 1回合1次，选择对方场上存在的最多2只怪兽才能发动。对方可以把手卡1只怪兽给人观看让这张卡的效果无效。不给观看的场合，选择的怪兽破坏。
 function c41224658.initial_effect(c)
-	-- 效果原文：1回合1次，选择对方场上存在的最多2只怪兽才能发动。
+	-- 1回合1次，选择对方场上存在的最多2只怪兽才能发动。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(41224658,0))  --"破坏"
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET)

@@ -2,7 +2,7 @@
 -- 效果：
 -- 丢弃1张手卡。场上表侧表示存在的永续魔法全部破坏。
 function c1669772.initial_effect(c)
-	-- 效果原文：丢弃1张手卡。场上表侧表示存在的永续魔法全部破坏。
+	-- 丢弃1张手卡。场上表侧表示存在的永续魔法全部破坏。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_DESTROY)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)

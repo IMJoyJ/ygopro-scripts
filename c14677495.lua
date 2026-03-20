@@ -2,7 +2,7 @@
 -- 效果：
 -- 自己场上存在的怪兽被战斗破坏送去墓地时，这张卡可以从手卡特殊召唤。1回合1次，场上守备表示存在的这张卡变成表侧攻击表示时，可以从自己卡组把「极星兽 坦格乔斯特」以外的1只名字带有「极星兽」的怪兽表侧守备表示特殊召唤。
 function c14677495.initial_effect(c)
-	-- 效果原文：自己场上存在的怪兽被战斗破坏送去墓地时，这张卡可以从手卡特殊召唤。
+	-- 自己场上存在的怪兽被战斗破坏送去墓地时，这张卡可以从手卡特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(14677495,0))  --"从手卡特殊召唤"
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -13,7 +13,7 @@ function c14677495.initial_effect(c)
 	e1:SetTarget(c14677495.sptg1)
 	e1:SetOperation(c14677495.spop1)
 	c:RegisterEffect(e1)
-	-- 效果原文：1回合1次，场上守备表示存在的这张卡变成表侧攻击表示时，可以从自己卡组把「极星兽 坦格乔斯特」以外的1只名字带有「极星兽」的怪兽表侧守备表示特殊召唤。
+	-- 1回合1次，场上守备表示存在的这张卡变成表侧攻击表示时，可以从自己卡组把「极星兽 坦格乔斯特」以外的1只名字带有「极星兽」的怪兽表侧守备表示特殊召唤。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(14677495,1))  --"特殊召唤"
 	e2:SetCategory(CATEGORY_SPECIAL_SUMMON)

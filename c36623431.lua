@@ -2,7 +2,7 @@
 -- 效果：
 -- 这张卡在墓地存在的场合，可以作为自己的抽卡阶段时进行通常抽卡的代替，把这张卡加入手卡。此外，自己的抽卡阶段时可以从手卡把1只名字带有「核成」的怪兽送去墓地，自己墓地存在的这张卡加入手卡。
 function c36623431.initial_effect(c)
-	-- 效果原文：这张卡在墓地存在的场合，可以作为自己的抽卡阶段时进行通常抽卡的代替，把这张卡加入手卡。
+	-- 这张卡在墓地存在的场合，可以作为自己的抽卡阶段时进行通常抽卡的代替，把这张卡加入手卡。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(36623431,0))  --"代替抽卡加入手卡"
 	e1:SetCategory(CATEGORY_TOHAND)
@@ -13,7 +13,7 @@ function c36623431.initial_effect(c)
 	e1:SetTarget(c36623431.target1)
 	e1:SetOperation(c36623431.operation1)
 	c:RegisterEffect(e1)
-	-- 效果原文：此外，自己的抽卡阶段时可以从手卡把1只名字带有「核成」的怪兽送去墓地，自己墓地存在的这张卡加入手卡。
+	-- 此外，自己的抽卡阶段时可以从手卡把1只名字带有「核成」的怪兽送去墓地，自己墓地存在的这张卡加入手卡。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(36623431,1))  --"加入手卡"
 	e2:SetCategory(CATEGORY_TOHAND)

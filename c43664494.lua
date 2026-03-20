@@ -9,7 +9,7 @@ function c43664494.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- 效果原文：①：从手卡丢弃1张「调皮宝贝」卡才能发动。在自己场上把1只「调皮宝贝衍生物」（炎族·炎·1星·攻/守0）特殊召唤。这衍生物不能解放。
+	-- ①：从手卡丢弃1张「调皮宝贝」卡才能发动。在自己场上把1只「调皮宝贝衍生物」（炎族·炎·1星·攻/守0）特殊召唤。这衍生物不能解放。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(43664494,0))
 	e2:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_TOKEN)
@@ -20,7 +20,7 @@ function c43664494.initial_effect(c)
 	e2:SetTarget(c43664494.tktg)
 	e2:SetOperation(c43664494.tkop)
 	c:RegisterEffect(e2)
-	-- 效果原文：②：自己结束阶段以「调皮宝贝捣蛋记」以外的自己墓地3张「调皮宝贝」卡为对象才能发动。那3张卡加入卡组洗切。那之后，自己从卡组抽1张。
+	-- ②：自己结束阶段以「调皮宝贝捣蛋记」以外的自己墓地3张「调皮宝贝」卡为对象才能发动。那3张卡加入卡组洗切。那之后，自己从卡组抽1张。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(43664494,1))
 	e3:SetCategory(CATEGORY_TODECK+CATEGORY_DRAW)
@@ -67,7 +67,7 @@ function c43664494.tkop(e,tp,eg,ep,ev,re,r,rp)
 	local token=Duel.CreateToken(tp,43664495)
 	-- 操作：将衍生物特殊召唤到场上
 	Duel.SpecialSummonStep(token,0,tp,tp,false,false,POS_FACEUP)
-	-- 效果原文：①：从手卡丢弃1张「调皮宝贝」卡才能发动。在自己场上把1只「调皮宝贝衍生物」（炎族·炎·1星·攻/守0）特殊召唤。这衍生物不能解放。
+	-- ①：从手卡丢弃1张「调皮宝贝」卡才能发动。在自己场上把1只「调皮宝贝衍生物」（炎族·炎·1星·攻/守0）特殊召唤。这衍生物不能解放。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_UNRELEASABLE_SUM)

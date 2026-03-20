@@ -7,7 +7,7 @@ function c43644025.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- 效果原文：可以把自己场上表侧表示存在的1只名字带有「茧状体」的怪兽作为祭品，那张卡记述的1只名字带有「新空间侠」的怪兽从墓地特殊召唤。
+	-- 可以把自己场上表侧表示存在的1只名字带有「茧状体」的怪兽作为祭品，那张卡记述的1只名字带有「新空间侠」的怪兽从墓地特殊召唤。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(43644025,0))  --"特殊召唤"
 	e2:SetCategory(CATEGORY_SPECIAL_SUMMON)

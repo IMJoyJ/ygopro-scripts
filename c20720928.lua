@@ -8,7 +8,7 @@ function c20720928.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- 效果原文：①：只要这张卡在场地区域存在，自己在5星以上的「玄化」怪兽召唤的场合需要的解放可以不用。这个效果1回合只能适用1次。这个效果适用召唤的怪兽在下个回合的结束阶段除外。
+	-- ①：只要这张卡在场地区域存在，自己在5星以上的「玄化」怪兽召唤的场合需要的解放可以不用。这个效果1回合只能适用1次。这个效果适用召唤的怪兽在下个回合的结束阶段除外。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(20720928,0))  --"使用「玄化因子」效果不用解放召唤"
 	e2:SetType(EFFECT_TYPE_FIELD)
@@ -20,7 +20,7 @@ function c20720928.initial_effect(c)
 	e2:SetTarget(c20720928.nttg)
 	e2:SetOperation(c20720928.ntop)
 	c:RegisterEffect(e2)
-	-- 效果原文：②：只要这张卡在场地区域存在，对方不能对应自己的「玄化」怪兽的效果的发动把魔法·陷阱·怪兽的效果发动。
+	-- ②：只要这张卡在场地区域存在，对方不能对应自己的「玄化」怪兽的效果的发动把魔法·陷阱·怪兽的效果发动。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e3:SetCode(EVENT_CHAINING)
