@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：1回合1次，自己主要阶段才能发动。从卡组把1张「水族馆」卡加入手卡。
 function c39260991.initial_effect(c)
-	-- 效果原文内容：①：1回合1次，自己主要阶段才能发动。从卡组把1张「水族馆」卡加入手卡。
+	-- ①：1回合1次，自己主要阶段才能发动。从卡组把1张「水族馆」卡加入手卡。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
 	e1:SetType(EFFECT_TYPE_IGNITION)

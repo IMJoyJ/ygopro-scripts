@@ -2,7 +2,7 @@
 -- 效果：
 -- 这张卡召唤·反转时，可以把自己的手卡·墓地存在的1只「电池人-单四型」特殊召唤。
 function c47346845.initial_effect(c)
-	-- 效果原文内容：这张卡召唤·反转时，可以把自己的手卡·墓地存在的1只「电池人-单四型」特殊召唤。
+	-- 这张卡召唤·反转时，可以把自己的手卡·墓地存在的1只「电池人-单四型」特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(47346845,0))  --"特殊召唤"
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)

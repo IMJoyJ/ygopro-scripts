@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：只在这张卡在场上表侧表示存在才有1次，对方用抽卡以外的方法从卡组把卡加入手卡时才能发动。那卡送去墓地，给与对方800伤害。
 function c22530212.initial_effect(c)
-	-- 效果原文内容：①：只在这张卡在场上表侧表示存在才有1次，对方用抽卡以外的方法从卡组把卡加入手卡时才能发动。那卡送去墓地，给与对方800伤害。
+	-- ①：只在这张卡在场上表侧表示存在才有1次，对方用抽卡以外的方法从卡组把卡加入手卡时才能发动。那卡送去墓地，给与对方800伤害。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_TOGRAVE+CATEGORY_DAMAGE)
 	e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)

@@ -8,7 +8,7 @@ function c19814508.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- 效果原文内容：①：自己场上有「超级运动员」怪兽召唤的场合才能发动。从卡组把1只「超级运动员」怪兽加入手卡。
+	-- ①：自己场上有「超级运动员」怪兽召唤的场合才能发动。从卡组把1只「超级运动员」怪兽加入手卡。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(19814508,0))  --"卡组检索"
 	e2:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
@@ -19,7 +19,7 @@ function c19814508.initial_effect(c)
 	e2:SetTarget(c19814508.target)
 	e2:SetOperation(c19814508.operation)
 	c:RegisterEffect(e2)
-	-- 效果原文内容：②：1回合1次，自己场上有「超级运动员」怪兽特殊召唤的场合发动。自己场上的怪兽的攻击力上升500。
+	-- ②：1回合1次，自己场上有「超级运动员」怪兽特殊召唤的场合发动。自己场上的怪兽的攻击力上升500。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(19814508,1))  --"攻守变化"
 	e3:SetCategory(CATEGORY_ATKCHANGE)

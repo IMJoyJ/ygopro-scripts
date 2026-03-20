@@ -10,7 +10,7 @@ local s,id,o=GetID()
 function s.initial_effect(c)
 	aux.AddXyzProcedure(c,nil,7,3,s.ovfilter,aux.Stringid(id,0),3,s.xyzop)  --"是否在「俱舍怒威族」怪兽上面重叠来超量召唤？"
 	c:EnableReviveLimit()
-	-- 效果作用：被送去墓地的卡不去墓地而除外
+	-- 被送去墓地的卡不去墓地而除外
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetProperty(EFFECT_FLAG_SET_AVAILABLE+EFFECT_FLAG_IGNORE_RANGE+EFFECT_FLAG_IGNORE_IMMUNE)
@@ -19,9 +19,9 @@ function s.initial_effect(c)
 	e1:SetTargetRange(LOCATION_DECK,LOCATION_DECK)
 	e1:SetValue(LOCATION_REMOVED)
 	c:RegisterEffect(e1)
-	-- 效果作用：注册一个合并的除外事件监听器
+	-- 注册一个合并的除外事件监听器
 	local custom_code=aux.RegisterMergedDelayedEvent_ToSingleCard(c,id,EVENT_REMOVE)
-	-- 效果作用：每次卡被除外发动（同一连锁上最多1次）。选除外中的1张卡作为这张卡的超量素材
+	-- 每次卡被除外发动（同一连锁上最多1次）。选除外中的1张卡作为这张卡的超量素材
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(id,1))  --"选除外中的1张卡作为这张卡的超量素材"
 	e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_F)
@@ -30,7 +30,7 @@ function s.initial_effect(c)
 	e2:SetCountLimit(1,EFFECT_COUNT_CODE_CHAIN)
 	e2:SetOperation(s.mtop)
 	c:RegisterEffect(e2)
-	-- 效果作用：双方回合1次，把这张卡3个超量素材取除，以场上1张卡为对象才能发动。那张卡里侧表示除外
+	-- 双方回合1次，把这张卡3个超量素材取除，以场上1张卡为对象才能发动。那张卡里侧表示除外
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(id,2))  --"选择1张卡里侧表示除外"
 	e3:SetCategory(CATEGORY_REMOVE)
@@ -44,7 +44,7 @@ function s.initial_effect(c)
 	e3:SetTarget(s.rmtg)
 	e3:SetOperation(s.rmop)
 	c:RegisterEffect(e3)
-	-- 效果作用：添加一个用于记录连锁次数的自定义计数器
+	-- 添加一个用于记录连锁次数的自定义计数器
 	Duel.AddCustomActivityCounter(id,ACTIVITY_CHAIN,s.chainfilter)
 end
 -- 过滤函数：排除特定卡牌（73542331）的连锁计入

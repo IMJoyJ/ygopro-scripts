@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：场上有「X-剑士」怪兽存在的场合，以自己·对方的墓地的「X-剑士」怪兽合计2只为对象才能发动。那2只怪兽在自己场上特殊召唤。
 function c13504844.initial_effect(c)
-	-- 效果原文内容：①：场上有「X-剑士」怪兽存在的场合，以自己·对方的墓地的「X-剑士」怪兽合计2只为对象才能发动。那2只怪兽在自己场上特殊召唤。
+	-- ①：场上有「X-剑士」怪兽存在的场合，以自己·对方的墓地的「X-剑士」怪兽合计2只为对象才能发动。那2只怪兽在自己场上特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET)

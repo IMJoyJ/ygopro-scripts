@@ -2,7 +2,7 @@
 -- 效果：
 -- 1回合1次，自己的主要阶段时才能发动。这张卡的等级下降1星，从手卡把1只水属性·3星以下的怪兽特殊召唤。
 function c17201174.initial_effect(c)
-	-- 效果原文内容：1回合1次，自己的主要阶段时才能发动。这张卡的等级下降1星，从手卡把1只水属性·3星以下的怪兽特殊召唤。
+	-- 1回合1次，自己的主要阶段时才能发动。这张卡的等级下降1星，从手卡把1只水属性·3星以下的怪兽特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(17201174,0))  --"特殊召唤"
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -30,7 +30,7 @@ end
 function c17201174.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsFacedown() or not c:IsRelateToEffect(e) then return end
-	-- 效果原文内容：这张卡的等级下降1星
+	-- 这张卡的等级下降1星
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_UPDATE_LEVEL)

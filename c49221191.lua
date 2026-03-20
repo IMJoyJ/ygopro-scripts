@@ -6,7 +6,7 @@
 function c49221191.initial_effect(c)
 	c:EnableReviveLimit()
 	aux.AddXyzProcedure(c,aux.FilterBoolFunction(Card.IsAttribute,ATTRIBUTE_WATER),4,4,c49221191.ovfilter,aux.Stringid(49221191,0))  --"是否要在「No.32 海咬龙 鲨龙兽」上面把这张卡叠放超量召唤？"
-	-- 效果原文内容：①：自己·对方回合，自己基本分是1000以下的场合，从自己墓地把1只怪兽除外，把这张卡1个超量素材取除，以场上1只表侧表示怪兽为对象才能发动。那只怪兽的攻击力·守备力直到自己回合的结束时变成0。
+	-- ①：自己·对方回合，自己基本分是1000以下的场合，从自己墓地把1只怪兽除外，把这张卡1个超量素材取除，以场上1只表侧表示怪兽为对象才能发动。那只怪兽的攻击力·守备力直到自己回合的结束时变成0。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(49221191,1))  --"攻击变化"
 	e1:SetCategory(CATEGORY_ATKCHANGE)

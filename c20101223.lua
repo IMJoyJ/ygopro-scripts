@@ -2,7 +2,7 @@
 -- 效果：
 -- 场上表侧表示存在的岩石族怪兽全部破坏。
 function c20101223.initial_effect(c)
-	-- 效果原文内容：场上表侧表示存在的岩石族怪兽全部破坏。
+	-- 场上表侧表示存在的岩石族怪兽全部破坏。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_DESTROY)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)

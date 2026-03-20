@@ -3,7 +3,7 @@
 -- 这个卡名的卡在1回合只能发动1张。自己手卡是0张的场合，这张卡在盖放的回合也能发动。
 -- ①：自己场上有「永火」怪兽存在，对方把怪兽的效果发动时才能发动。那个效果无效。那之后，可以给与对方那只怪兽的等级×100伤害。
 function c12541409.initial_effect(c)
-	-- 效果原文内容：①：自己场上有「永火」怪兽存在，对方把怪兽的效果发动时才能发动。那个效果无效。那之后，可以给与对方那只怪兽的等级×100伤害。
+	-- ①：自己场上有「永火」怪兽存在，对方把怪兽的效果发动时才能发动。那个效果无效。那之后，可以给与对方那只怪兽的等级×100伤害。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(12541409,0))
 	e1:SetCategory(CATEGORY_DISABLE+CATEGORY_DAMAGE)
@@ -14,7 +14,7 @@ function c12541409.initial_effect(c)
 	e1:SetTarget(c12541409.target)
 	e1:SetOperation(c12541409.activate)
 	c:RegisterEffect(e1)
-	-- 效果原文内容：这个卡名的卡在1回合只能发动1张。自己手卡是0张的场合，这张卡在盖放的回合也能发动。
+	-- 这个卡名的卡在1回合只能发动1张。自己手卡是0张的场合，这张卡在盖放的回合也能发动。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(12541409,2))  --"适用「永火压制」的效果来发动"
 	e2:SetType(EFFECT_TYPE_SINGLE)

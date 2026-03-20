@@ -2,7 +2,7 @@
 -- 效果：
 -- 每用自己场上存在的这张卡以外的1只怪兽做祭品，这张卡的攻击力在回合结束前加700。
 function c25109950.initial_effect(c)
-	-- 效果原文内容：每用自己场上存在的这张卡以外的1只怪兽做祭品，这张卡的攻击力在回合结束前加700。
+	-- 每用自己场上存在的这张卡以外的1只怪兽做祭品，这张卡的攻击力在回合结束前加700。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(25109950,0))  --"攻击上升"
 	e1:SetCategory(CATEGORY_ATKCHANGE)

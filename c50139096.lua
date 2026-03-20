@@ -23,7 +23,7 @@ function c50139096.initial_effect(c)
 	e2:SetTarget(c50139096.target)
 	e2:SetOperation(c50139096.operation)
 	c:RegisterEffect(e2)
-	-- 效果作用：使此卡在手牌和场上的时候视为「破灭之女神 露茵」使用
+	-- 使此卡在手牌和场上的时候视为「破灭之女神 露茵」使用
 	aux.EnableChangeCode(c,46427957,LOCATION_MZONE+LOCATION_HAND)
 end
 -- 效果条件：判断此卡是否为仪式召唤成功
@@ -34,7 +34,7 @@ end
 function c50139096.atkop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) then
-		-- 效果作用：使此卡在同1次的战斗阶段中最多2次可以向怪兽攻击
+		-- 使此卡在同1次的战斗阶段中最多2次可以向怪兽攻击
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
@@ -63,7 +63,7 @@ function c50139096.operation(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取目标：获取当前连锁中被选中的目标卡片
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) and tc:IsFaceup() then
-		-- 效果作用：当自己的仪式怪兽进行攻击宣言时，禁止对方发动卡的效果
+		-- 当自己的仪式怪兽进行攻击宣言时，禁止对方发动卡的效果
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 		e1:SetCode(EVENT_ATTACK_ANNOUNCE)
@@ -84,7 +84,7 @@ end
 -- 效果处理：禁止对方在攻击宣言时发动卡的效果
 function c50139096.actop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 效果作用：禁止对方在攻击宣言时发动卡的效果
+	-- 禁止对方在攻击宣言时发动卡的效果
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_CANNOT_ACTIVATE)

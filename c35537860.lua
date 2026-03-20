@@ -19,13 +19,13 @@ function c35537860.cfilter(c)
 end
 -- 发动条件：判断自己场上是否存在至少1只表侧表示的同调怪兽
 function c35537860.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 规则层面作用：检查自己场上是否存在至少1只表侧表示的同调怪兽
+	-- 检查自己场上是否存在至少1只表侧表示的同调怪兽
 	return Duel.IsExistingMatchingCard(c35537860.cfilter,tp,LOCATION_MZONE,0,1,nil)
 end
 -- 效果目标：选择对方场上1只怪兽作为破坏对象
 function c35537860.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(1-tp) end
-	-- 规则层面作用：检查对方场上是否存在至少1只怪兽可以成为破坏对象
+	-- 检查对方场上是否存在至少1只怪兽可以成为破坏对象
 	if chk==0 then return Duel.IsExistingTarget(aux.TRUE,tp,0,LOCATION_MZONE,1,nil) end
 	-- 提示信息：向玩家提示选择要破坏的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
@@ -39,7 +39,7 @@ function c35537860.activate(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取目标：获取当前连锁中被选择的目标怪兽
 	local tc=Duel.GetFirstTarget()
 	if tc and tc:IsRelateToEffect(e) then
-		-- 规则层面作用：将目标怪兽以效果原因进行破坏
+		-- 将目标怪兽以效果原因进行破坏
 		Duel.Destroy(tc,REASON_EFFECT)
 	end
 end

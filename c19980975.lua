@@ -2,7 +2,7 @@
 -- 效果：
 -- 选择雾指示物放置有4个以上的1只怪兽发动。把选择怪兽破坏，破坏怪兽每放置有4个雾指示物，从自己卡组抽1张卡。
 function c19980975.initial_effect(c)
-	-- 效果原文内容：选择雾指示物放置有4个以上的1只怪兽发动。把选择怪兽破坏，破坏怪兽每放置有4个雾指示物，从自己卡组抽1张卡。
+	-- 选择雾指示物放置有4个以上的1只怪兽发动。把选择怪兽破坏，破坏怪兽每放置有4个雾指示物，从自己卡组抽1张卡。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_DESTROY+CATEGORY_DRAW)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -16,7 +16,7 @@ end
 function c19980975.filter(c)
 	return c:GetCounter(0x1019)>=4
 end
--- 效果作用：选择满足条件的怪兽作为对象
+-- 选择满足条件的怪兽作为对象
 function c19980975.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and c19980975.filter(chkc) end
 	-- 检查玩家是否可以抽卡
@@ -30,7 +30,7 @@ function c19980975.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	-- 设置连锁操作信息，确定要破坏的怪兽
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,1,0,0)
 end
--- 效果作用：处理破坏和抽卡效果
+-- 处理破坏和抽卡效果
 function c19980975.activate(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取当前连锁的破坏对象
 	local tc=Duel.GetFirstTarget()

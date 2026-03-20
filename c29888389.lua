@@ -3,7 +3,7 @@
 -- ①：水属性仪式怪兽1只仪式召唤的场合，可以用这1张卡作为仪式召唤需要的数值的解放使用。
 -- ②：把这张卡从手卡丢弃才能发动。从卡组把1张「遗式」仪式魔法卡加入手卡。
 function c29888389.initial_effect(c)
-	-- 效果原文内容：②：把这张卡从手卡丢弃才能发动。从卡组把1张「遗式」仪式魔法卡加入手卡。
+	-- ②：把这张卡从手卡丢弃才能发动。从卡组把1张「遗式」仪式魔法卡加入手卡。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(29888389,0))  --"仪式魔法卡加入手卡"
 	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
@@ -13,7 +13,7 @@ function c29888389.initial_effect(c)
 	e1:SetTarget(c29888389.target)
 	e1:SetOperation(c29888389.operation)
 	c:RegisterEffect(e1)
-	-- 效果原文内容：①：水属性仪式怪兽1只仪式召唤的场合，可以用这1张卡作为仪式召唤需要的数值的解放使用。
+	-- ①：水属性仪式怪兽1只仪式召唤的场合，可以用这1张卡作为仪式召唤需要的数值的解放使用。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_SINGLE)
 	e2:SetCode(EFFECT_RITUAL_LEVEL)

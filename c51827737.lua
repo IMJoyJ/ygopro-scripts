@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：1回合1次，以自己墓地1只「次世代」怪兽为对象才能发动。这张卡直到结束阶段当作和作为对象的怪兽同名卡使用。
 function c51827737.initial_effect(c)
-	-- 效果原文内容：①：1回合1次，以自己墓地1只「次世代」怪兽为对象才能发动。这张卡直到结束阶段当作和作为对象的怪兽同名卡使用。
+	-- ①：1回合1次，以自己墓地1只「次世代」怪兽为对象才能发动。这张卡直到结束阶段当作和作为对象的怪兽同名卡使用。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(51827737,0))  --"卡名变化"
 	e1:SetType(EFFECT_TYPE_IGNITION)
@@ -29,7 +29,7 @@ function c51827737.operation(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取当前连锁的效果对象卡
 	local tc=Duel.GetFirstTarget()
 	if not c:IsRelateToEffect(e) or c:IsFacedown() or not tc:IsRelateToEffect(e) then return end
-	-- 效果原文内容：这张卡直到结束阶段当作和作为对象的怪兽同名卡使用。
+	-- 这张卡直到结束阶段当作和作为对象的怪兽同名卡使用。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_CHANGE_CODE)

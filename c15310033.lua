@@ -3,7 +3,7 @@
 -- 「未知同调士」的①的方法的特殊召唤在决斗中只能有1次。
 -- ①：对方场上有怪兽存在，自己场上没有怪兽存在的场合，这张卡可以从手卡特殊召唤。
 function c15310033.initial_effect(c)
-	-- 效果原文内容：「未知同调士」的①的方法的特殊召唤在决斗中只能有1次。
+	-- 「未知同调士」的①的方法的特殊召唤在决斗中只能有1次。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_SPSUMMON_PROC)

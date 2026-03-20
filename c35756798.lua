@@ -3,7 +3,7 @@
 -- 这个卡名的卡在1回合只能发动1张。
 -- ①：同调怪兽被送去自己墓地的自己回合，以自己场上1只同调怪兽为对象才能发动。这个回合，那只怪兽在同1次的战斗阶段中可以作2次攻击。以原本卡名包含「战士」、「同调士」、「星尘」之内任意种的同调怪兽为对象把这张卡发动的场合，可以再选自己墓地1只同调怪兽让作为对象的怪兽的攻击力上升那个攻击力数值。
 function c35756798.initial_effect(c)
-	-- 效果原文内容：①：同调怪兽被送去自己墓地的自己回合，以自己场上1只同调怪兽为对象才能发动。这个回合，那只怪兽在同1次的战斗阶段中可以作2次攻击。以原本卡名包含「战士」、「同调士」、「星尘」之内任意种的同调怪兽为对象把这张卡发动的场合，可以再选自己墓地1只同调怪兽让作为对象的怪兽的攻击力上升那个攻击力数值。
+	-- ①：同调怪兽被送去自己墓地的自己回合，以自己场上1只同调怪兽为对象才能发动。这个回合，那只怪兽在同1次的战斗阶段中可以作2次攻击。以原本卡名包含「战士」、「同调士」、「星尘」之内任意种的同调怪兽为对象把这张卡发动的场合，可以再选自己墓地1只同调怪兽让作为对象的怪兽的攻击力上升那个攻击力数值。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_ATKCHANGE)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -16,7 +16,7 @@ function c35756798.initial_effect(c)
 	c:RegisterEffect(e1)
 	if not c35756798.global_check then
 		c35756798.global_check=true
-		-- 效果原文内容：这个卡名的卡在1回合只能发动1张。
+		-- 这个卡名的卡在1回合只能发动1张。
 		local ge1=Effect.CreateEffect(c)
 		ge1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 		ge1:SetCode(EVENT_TO_GRAVE)
@@ -85,7 +85,7 @@ function c35756798.atkop(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取当前连锁中的目标怪兽
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) and tc:IsFaceup() then
-		-- 效果作用：使目标怪兽在同1次的战斗阶段中可以作2次攻击
+		-- 使目标怪兽在同1次的战斗阶段中可以作2次攻击
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_EXTRA_ATTACK)
@@ -102,7 +102,7 @@ function c35756798.atkop(e,tp,eg,ep,ev,re,r,rp)
 			local ag=Duel.SelectMatchingCard(tp,c35756798.atkfilter,tp,LOCATION_GRAVE,0,1,1,nil)
 			-- 显示所选怪兽被选为对象的动画效果
 			Duel.HintSelection(ag)
-			-- 效果作用：使目标怪兽的攻击力上升所选怪兽的攻击力数值
+			-- 使目标怪兽的攻击力上升所选怪兽的攻击力数值
 			local e2=Effect.CreateEffect(c)
 			e2:SetType(EFFECT_TYPE_SINGLE)
 			e2:SetCode(EFFECT_UPDATE_ATTACK)

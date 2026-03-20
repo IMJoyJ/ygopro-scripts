@@ -6,7 +6,7 @@
 -- ④：对方不能选择这张卡作为攻击对象。
 -- ⑤：没有场地魔法卡表侧表示存在的场合这张卡破坏。
 function c41181774.initial_effect(c)
-	-- 效果作用：确保场上只能有1只表侧表示的「地缚神」怪兽
+	-- 确保场上只能有1只表侧表示的「地缚神」怪兽
 	c:SetUniqueOnField(1,1,aux.FilterBoolFunction(Card.IsSetCard,0x1021),LOCATION_MZONE)
 	-- ①：「地缚神」怪兽在场上只能有1只表侧表示存在。
 	local e4=Effect.CreateEffect(c)
@@ -22,7 +22,7 @@ function c41181774.initial_effect(c)
 	e5:SetCode(EFFECT_CANNOT_BE_BATTLE_TARGET)
 	e5:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
 	e5:SetRange(LOCATION_MZONE)
-	-- 效果作用：使该卡不能成为攻击对象
+	-- 使该卡不能成为攻击对象
 	e5:SetValue(aux.imval1)
 	c:RegisterEffect(e5)
 	-- ③：这张卡可以直接攻击。
@@ -43,10 +43,10 @@ function c41181774.initial_effect(c)
 end
 -- ⑤：没有场地魔法卡表侧表示存在的场合这张卡破坏。
 function c41181774.sdcon(e)
-	-- 效果作用：当没有场地魔法卡表侧表示存在时，该卡破坏
+	-- 当没有场地魔法卡表侧表示存在时，该卡破坏
 	return not Duel.IsExistingMatchingCard(Card.IsFaceup,0,LOCATION_FZONE,LOCATION_FZONE,1,nil)
 end
--- 效果作用：处理召唤成功时的效果，选择最多3张自己场上的卡返回卡组
+-- 处理召唤成功时的效果，选择最多3张自己场上的卡返回卡组
 function c41181774.hdtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsOnField() and chkc:IsControler(tp) and chkc:IsAbleToDeck() end
 	if chk==0 then return true end
@@ -61,7 +61,7 @@ function c41181774.hdtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	-- 设置连锁操作信息，记录将要返回卡组的卡
 	Duel.SetOperationInfo(0,CATEGORY_TODECK,g,g:GetCount(),0,0)
 end
--- 效果作用：执行返回卡组和丢弃手牌并提升攻击力
+-- 执行返回卡组和丢弃手牌并提升攻击力
 function c41181774.hdop(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取连锁中设定的目标卡组
 	local g=Duel.GetChainInfo(0,CHAININFO_TARGET_CARDS)
@@ -79,7 +79,7 @@ function c41181774.hdop(e,tp,eg,ep,ev,re,r,rp)
 	local dt=Duel.SendtoGrave(dg,REASON_EFFECT+REASON_DISCARD)
 	local c=e:GetHandler()
 	if dt~=0 and c:IsRelateToEffect(e) and c:IsFaceup() then
-		-- 效果作用：提升该卡的攻击力，提升值为丢弃卡数量×1000
+		-- 提升该卡的攻击力，提升值为丢弃卡数量×1000
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetProperty(EFFECT_FLAG_SINGLE_RANGE)

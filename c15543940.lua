@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：「恐龙摔跤手」融合怪兽卡决定的融合素材怪兽从自己场上送去墓地，把那1只融合怪兽从额外卡组融合召唤。这个效果特殊召唤的怪兽只在场上表侧表示存在才有1次不会被战斗·效果破坏。
 function c15543940.initial_effect(c)
-	-- 效果原文内容：①：「恐龙摔跤手」融合怪兽卡决定的融合素材怪兽从自己场上送去墓地，把那1只融合怪兽从额外卡组融合召唤。这个效果特殊召唤的怪兽只在场上表侧表示存在才有1次不会被战斗·效果破坏。
+	-- ①：「恐龙摔跤手」融合怪兽卡决定的融合素材怪兽从自己场上送去墓地，把那1只融合怪兽从额外卡组融合召唤。这个效果特殊召唤的怪兽只在场上表侧表示存在才有1次不会被战斗·效果破坏。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(15543940,0))
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_FUSION_SUMMON)
@@ -88,7 +88,7 @@ function c15543940.activate(e,tp,eg,ep,ev,re,r,rp)
 			fop(ce,e,tp,tc,mat2)
 		end
 		tc:CompleteProcedure()
-		-- 效果原文内容：这个效果特殊召唤的怪兽只在场上表侧表示存在才有1次不会被战斗·效果破坏。
+		-- 这个效果特殊召唤的怪兽只在场上表侧表示存在才有1次不会被战斗·效果破坏。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetDescription(aux.Stringid(15543940,1))  --"「暴君恐龙融合」特殊召唤"
 		e1:SetType(EFFECT_TYPE_SINGLE)

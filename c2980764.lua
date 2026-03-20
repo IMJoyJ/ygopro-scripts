@@ -35,11 +35,11 @@ function c2980764.initial_effect(c)
 	e5:SetCode(EFFECT_CANNOT_SPECIAL_SUMMON)
 	c:RegisterEffect(e5)
 end
--- 效果作用：判断目标是否为暗属性怪兽
+-- 判断目标是否为暗属性怪兽
 function c2980764.tglimit(e,c)
 	return c and c:IsAttribute(ATTRIBUTE_DARK)
 end
--- 效果作用：判断目标是否为暗属性怪兽
+-- 判断目标是否为暗属性怪兽
 function c2980764.sumlimit(e,c)
 	return c:IsAttribute(ATTRIBUTE_DARK)
 end

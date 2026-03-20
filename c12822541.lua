@@ -5,7 +5,7 @@
 -- ●以自己墓地1只「DD」怪兽为对象才能发动。那只怪兽加入手卡。
 -- ●从自己的额外卡组把1只表侧表示的「DD」灵摆怪兽加入手卡。
 function c12822541.initial_effect(c)
-	-- 效果原文内容：①：这张卡召唤·特殊召唤成功的场合，可以从以下效果选择1个发动。
+	-- ①：这张卡召唤·特殊召唤成功的场合，可以从以下效果选择1个发动。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_TOHAND)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)

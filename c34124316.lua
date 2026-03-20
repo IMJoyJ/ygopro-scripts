@@ -10,7 +10,7 @@ function c34124316.initial_effect(c)
 	e1:SetOperation(c34124316.operation)
 	c:RegisterEffect(e1)
 end
--- 效果作用：设置连锁处理时的破坏效果目标为场上的所有怪兽
+-- 设置连锁处理时的破坏效果目标为场上的所有怪兽
 function c34124316.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
 	-- 检索满足条件的场上怪兽组

@@ -92,7 +92,7 @@ function c50797682.activate(e,tp,eg,ep,ev,re,r,rp)
 	while tc do
 		-- 将卡特殊召唤至场上
 		Duel.SpecialSummonStep(tc,0,tp,tp,false,false,POS_FACEUP)
-		-- 效果原文内容：那只怪兽的效果无效
+		-- 那只怪兽的效果无效
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_DISABLE)

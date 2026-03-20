@@ -7,7 +7,7 @@ function c14154221.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- 效果原文内容：名字带有「进化虫」的怪兽的效果让怪兽特殊召唤的场合，可以选择场上1张卡破坏。这个效果1回合只能使用1次。
+	-- 名字带有「进化虫」的怪兽的效果让怪兽特殊召唤的场合，可以选择场上1张卡破坏。这个效果1回合只能使用1次。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(14154221,0))  --"破坏"
 	e2:SetCategory(CATEGORY_DESTROY)

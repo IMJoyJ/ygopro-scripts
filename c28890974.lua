@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：从手卡把1只天使族怪兽特殊召唤。这个效果特殊召唤的怪兽的攻击力变成一半，结束阶段破坏。
 function c28890974.initial_effect(c)
-	-- 效果原文内容：①：从手卡把1只天使族怪兽特殊召唤。这个效果特殊召唤的怪兽的攻击力变成一半，结束阶段破坏。
+	-- ①：从手卡把1只天使族怪兽特殊召唤。这个效果特殊召唤的怪兽的攻击力变成一半，结束阶段破坏。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -37,14 +37,14 @@ function c28890974.activate(e,tp,eg,ep,ev,re,r,rp)
 		local atk=tc:GetAttack()
 		-- 执行特殊召唤步骤
 		if Duel.SpecialSummonStep(tc,0,tp,tp,false,false,POS_FACEUP) then
-			-- 效果原文内容：这个效果特殊召唤的怪兽的攻击力变成一半
+			-- 这个效果特殊召唤的怪兽的攻击力变成一半
 			local e1=Effect.CreateEffect(e:GetHandler())
 			e1:SetType(EFFECT_TYPE_SINGLE)
 			e1:SetCode(EFFECT_SET_ATTACK)
 			e1:SetValue(math.ceil(atk/2))
 			e1:SetReset(RESET_EVENT+RESETS_STANDARD)
 			tc:RegisterEffect(e1)
-			-- 效果原文内容：结束阶段破坏
+			-- 结束阶段破坏
 			local e2=Effect.CreateEffect(e:GetHandler())
 			e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 			e2:SetProperty(EFFECT_FLAG_IGNORE_IMMUNE)

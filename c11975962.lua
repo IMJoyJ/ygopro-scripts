@@ -2,7 +2,7 @@
 -- 效果：
 -- 把自己场上1只名字带有「圣刻」的怪兽解放才能发动。选择对方场上1张卡从游戏中除外。
 function c11975962.initial_effect(c)
-	-- 效果原文内容：把自己场上1只名字带有「圣刻」的怪兽解放才能发动。选择对方场上1张卡从游戏中除外。
+	-- 把自己场上1只名字带有「圣刻」的怪兽解放才能发动。选择对方场上1张卡从游戏中除外。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_REMOVE)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)

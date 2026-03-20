@@ -32,10 +32,10 @@ function c24672164.initial_effect(c)
 	e4:SetOperation(c24672164.thop)
 	c:RegisterEffect(e4)
 end
--- 效果作用：根据融合素材数量提升攻击力
+-- 根据融合素材数量提升攻击力
 function c24672164.matcheck(e,c)
 	local ct=c:GetMaterialCount()
-	-- 效果作用：提升攻击力
+	-- 提升攻击力
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_UPDATE_ATTACK)
@@ -43,33 +43,33 @@ function c24672164.matcheck(e,c)
 	e1:SetReset(RESET_EVENT+0xff0000)
 	c:RegisterEffect(e1)
 end
--- 效果作用：判断是否为融合召唤且从主要怪兽区被送去墓地
+-- 判断是否为融合召唤且从主要怪兽区被送去墓地
 function c24672164.thcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	return c:IsPreviousLocation(LOCATION_MZONE) and c:IsSummonType(SUMMON_TYPE_FUSION)
 end
--- 效果作用：过滤墓地中的「幻奏」怪兽
+-- 过滤墓地中的「幻奏」怪兽
 function c24672164.filter(c)
 	return c:IsSetCard(0x9b) and c:IsType(TYPE_MONSTER) and c:IsAbleToHand()
 end
--- 效果作用：选择目标怪兽加入手牌
+-- 选择目标怪兽加入手牌
 function c24672164.thtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and c24672164.filter(chkc) end
-	-- 效果作用：判断是否存在符合条件的目标怪兽
+	-- 判断是否存在符合条件的目标怪兽
 	if chk==0 then return Duel.IsExistingTarget(c24672164.filter,tp,LOCATION_GRAVE,0,1,nil) end
-	-- 效果作用：提示玩家选择要加入手牌的卡
+	-- 提示玩家选择要加入手牌的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 效果作用：选择目标怪兽
+	-- 选择目标怪兽
 	local g=Duel.SelectTarget(tp,c24672164.filter,tp,LOCATION_GRAVE,0,1,1,nil)
-	-- 效果作用：设置连锁操作信息
+	-- 设置连锁操作信息
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,1,0,0)
 end
--- 效果作用：将目标怪兽加入手牌
+-- 将目标怪兽加入手牌
 function c24672164.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 效果作用：获取当前连锁的目标怪兽
+	-- 获取当前连锁的目标怪兽
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 效果作用：将目标怪兽送入手牌
+		-- 将目标怪兽送入手牌
 		Duel.SendtoHand(tc,nil,REASON_EFFECT)
 	end
 end

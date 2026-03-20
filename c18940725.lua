@@ -5,7 +5,7 @@
 -- ②：表侧表示的这张卡从场上离开的场合除外。
 -- ③：这张卡除外中的状态，自己场上有鸟兽族怪兽召唤的场合才能发动。这张卡加入手卡。
 function c18940725.initial_effect(c)
-	-- 效果原文内容：①：这张卡召唤成功的场合才能发动。从卡组把1只4星以下的鸟兽族怪兽加入手卡。那之后，可以把1只鸟兽族怪兽召唤。
+	-- ①：这张卡召唤成功的场合才能发动。从卡组把1只4星以下的鸟兽族怪兽加入手卡。那之后，可以把1只鸟兽族怪兽召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(18940725,0))
 	e1:SetCategory(CATEGORY_SEARCH+CATEGORY_TOHAND+CATEGORY_SUMMON)
@@ -19,7 +19,7 @@ function c18940725.initial_effect(c)
 	c:RegisterEffect(e1)
 	-- 将该卡的离场效果重定向为除外，实现“表侧表示的这张卡从场上离开的场合除外”的效果。
 	aux.AddBanishRedirect(c)
-	-- 效果原文内容：③：这张卡除外中的状态，自己场上有鸟兽族怪兽召唤的场合才能发动。这张卡加入手卡。
+	-- ③：这张卡除外中的状态，自己场上有鸟兽族怪兽召唤的场合才能发动。这张卡加入手卡。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(18940725,1))  --"这张卡加入手卡"
 	e3:SetCategory(CATEGORY_TOHAND)

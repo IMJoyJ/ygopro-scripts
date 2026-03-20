@@ -35,9 +35,9 @@ function c28112535.initial_effect(c)
 	e5:SetOperation(c28112535.desop)
 	c:RegisterEffect(e5)
 end
--- 效果作用：使该卡在召唤·反转召唤·特殊召唤成功时，获得不能攻击的效果
+-- 使该卡在召唤·反转召唤·特殊召唤成功时，获得不能攻击的效果
 function c28112535.atklimit(e,tp,eg,ep,ev,re,r,rp)
-	-- 效果作用：使该卡在召唤·反转召唤·特殊召唤成功时，获得不能攻击的效果
+	-- 使该卡在召唤·反转召唤·特殊召唤成功时，获得不能攻击的效果
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_CANNOT_ATTACK)
@@ -52,7 +52,7 @@ end
 function c28112535.cfilter2(c)
 	return c:IsFaceup() and c:IsType(TYPE_TOON)
 end
--- 效果作用：判断是否满足直接攻击的条件
+-- 判断是否满足直接攻击的条件
 function c28112535.dircon(e)
 	local tp=e:GetHandlerPlayer()
 	-- 检查自己场上是否存在「卡通世界」
@@ -60,7 +60,7 @@ function c28112535.dircon(e)
 		-- 检查对方场上是否存在卡通怪兽
 		and not Duel.IsExistingMatchingCard(c28112535.cfilter2,tp,0,LOCATION_MZONE,1,nil)
 end
--- 效果作用：设置发动时的选择目标和硬币投掷信息
+-- 设置发动时的选择目标和硬币投掷信息
 function c28112535.destg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsOnField() end
 	-- 检查是否满足发动条件：场上存在至少一张卡
@@ -72,7 +72,7 @@ function c28112535.destg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	-- 设置操作信息：将进行3次硬币投掷
 	Duel.SetOperationInfo(0,CATEGORY_COIN,nil,0,tp,3)
 end
--- 效果作用：执行投掷硬币并根据结果破坏目标卡
+-- 执行投掷硬币并根据结果破坏目标卡
 function c28112535.desop(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取当前连锁效果的目标卡
 	local tc=Duel.GetFirstTarget()

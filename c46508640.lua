@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：这张卡的攻击力上升自己的魔法与陷阱区域的永续魔法卡数量×300。
 function c46508640.initial_effect(c)
-	-- 效果原文内容：①：这张卡的攻击力上升自己的魔法与陷阱区域的永续魔法卡数量×300。
+	-- ①：这张卡的攻击力上升自己的魔法与陷阱区域的永续魔法卡数量×300。
 	local e1=Effect.CreateEffect(c)
 	e1:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
 	e1:SetType(EFFECT_TYPE_SINGLE)

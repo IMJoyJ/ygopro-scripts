@@ -2,7 +2,7 @@
 -- 效果：
 -- 自己把名字带有「魔导书」的魔法卡发动的自己回合的结束阶段时，把场上的这张卡从游戏中除外才能发动。从卡组把1只光属性或者暗属性的魔法师族·5星以上的怪兽和1张名字带有「魔导书」的魔法卡加入手卡。「魔导教士 朱丝蒂」的效果1回合只能使用1次。
 function c26732909.initial_effect(c)
-	-- 效果原文内容：自己把名字带有「魔导书」的魔法卡发动的自己回合的结束阶段时，把场上的这张卡从游戏中除外才能发动。
+	-- 自己把名字带有「魔导书」的魔法卡发动的自己回合的结束阶段时，把场上的这张卡从游戏中除外才能发动。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(26732909,0))  --"检索"
 	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
@@ -22,12 +22,12 @@ end
 function c26732909.chainfilter(re,tp,cid)
 	return not (re:IsHasType(EFFECT_TYPE_ACTIVATE) and re:IsActiveType(TYPE_SPELL) and re:GetHandler():IsSetCard(0x106e))
 end
--- 效果原文内容：自己把名字带有「魔导书」的魔法卡发动的自己回合的结束阶段时，把场上的这张卡从游戏中除外才能发动。
+-- 自己把名字带有「魔导书」的魔法卡发动的自己回合的结束阶段时，把场上的这张卡从游戏中除外才能发动。
 function c26732909.thcon(e,tp,eg,ep,ev,re,r,rp)
 	-- 判断当前回合玩家是否为效果持有者，确保效果只在自己回合发动。
 	return Duel.GetTurnPlayer()==tp
 end
--- 效果原文内容：自己把名字带有「魔导书」的魔法卡发动的自己回合的结束阶段时，把场上的这张卡从游戏中除外才能发动。
+-- 自己把名字带有「魔导书」的魔法卡发动的自己回合的结束阶段时，把场上的这张卡从游戏中除外才能发动。
 function c26732909.thcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 检查是否满足发动条件：当前回合玩家已发动过非「魔导书」魔法卡的连锁，且本卡可作为代价除外。
 	if chk==0 then return Duel.GetCustomActivityCount(26732909,tp,ACTIVITY_CHAIN)>0 and e:GetHandler():IsAbleToRemoveAsCost() end
@@ -42,7 +42,7 @@ end
 function c26732909.filter2(c)
 	return c:IsType(TYPE_SPELL) and c:IsSetCard(0x106e) and c:IsAbleToHand()
 end
--- 效果原文内容：从卡组把1只光属性或者暗属性的魔法师族·5星以上的怪兽和1张名字带有「魔导书」的魔法卡加入手卡。
+-- 从卡组把1只光属性或者暗属性的魔法师族·5星以上的怪兽和1张名字带有「魔导书」的魔法卡加入手卡。
 function c26732909.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 检查卡组中是否存在满足条件的光属性或暗属性魔法师族5星以上的怪兽。
 	if chk==0 then return Duel.IsExistingMatchingCard(c26732909.filter1,tp,LOCATION_DECK,0,1,nil)
@@ -51,7 +51,7 @@ function c26732909.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 设置效果处理信息，表示将从卡组检索2张卡加入手牌。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,2,tp,LOCATION_DECK)
 end
--- 效果原文内容：从卡组把1只光属性或者暗属性的魔法师族·5星以上的怪兽和1张名字带有「魔导书」的魔法卡加入手卡。
+-- 从卡组把1只光属性或者暗属性的魔法师族·5星以上的怪兽和1张名字带有「魔导书」的魔法卡加入手卡。
 function c26732909.thop(e,tp,eg,ep,ev,re,r,rp)
 	-- 检索满足条件的光属性或暗属性魔法师族5星以上的怪兽组。
 	local g1=Duel.GetMatchingGroup(c26732909.filter1,tp,LOCATION_DECK,0,nil)

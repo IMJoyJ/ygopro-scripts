@@ -9,7 +9,7 @@ function c19671102.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- 效果原文内容：①：自己主要阶段才能把这个效果发动。从手卡丢弃1张「廷达魔三角」卡，从以下效果选1个适用。这个回合，和这个效果丢弃的卡同名的卡不能用自己的「奇迹螺旋阶梯」的效果丢弃。
+	-- ①：自己主要阶段才能把这个效果发动。从手卡丢弃1张「廷达魔三角」卡，从以下效果选1个适用。这个回合，和这个效果丢弃的卡同名的卡不能用自己的「奇迹螺旋阶梯」的效果丢弃。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(19671102,0))
 	e2:SetCategory(CATEGORY_HANDES+CATEGORY_POSITION+CATEGORY_MSET)
@@ -65,7 +65,7 @@ function c19671102.posop(e,tp,eg,ep,ev,re,r,rp)
 	end
 	if tc then
 		local code=tc:GetCode()
-		-- 效果原文内容：●选自己场上1只里侧守备表示怪兽变成表侧攻击表示。●选自己场上1只表侧攻击表示怪兽变成里侧守备表示。
+		-- ●选自己场上1只里侧守备表示怪兽变成表侧攻击表示。●选自己场上1只表侧攻击表示怪兽变成里侧守备表示。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_FIELD)
 		e1:SetCode(19671102)

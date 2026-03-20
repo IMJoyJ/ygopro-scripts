@@ -4,7 +4,7 @@
 -- ①：从自己卡组上面把最多3张卡送去墓地才能发动。这张卡的等级直到回合结束时上升因为这个效果发动而送去墓地的卡数量的数值。
 -- ②：场上的这张卡被对方破坏送去墓地的场合发动。自己回复1500基本分。
 function c11851647.initial_effect(c)
-	-- 效果原文内容：①：从自己卡组上面把最多3张卡送去墓地才能发动。这张卡的等级直到回合结束时上升因为这个效果发动而送去墓地的卡数量的数值。
+	-- ①：从自己卡组上面把最多3张卡送去墓地才能发动。这张卡的等级直到回合结束时上升因为这个效果发动而送去墓地的卡数量的数值。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(11851647,0))
 	e1:SetType(EFFECT_TYPE_IGNITION)
@@ -13,7 +13,7 @@ function c11851647.initial_effect(c)
 	e1:SetCost(c11851647.lvcost)
 	e1:SetOperation(c11851647.lvop)
 	c:RegisterEffect(e1)
-	-- 效果原文内容：②：场上的这张卡被对方破坏送去墓地的场合发动。自己回复1500基本分。
+	-- ②：场上的这张卡被对方破坏送去墓地的场合发动。自己回复1500基本分。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(11851647,1))
 	e2:SetCategory(CATEGORY_RECOVER)

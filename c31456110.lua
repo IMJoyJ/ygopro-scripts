@@ -2,7 +2,7 @@
 -- 效果：
 -- 1回合1次，可以选择场上表侧表示存在的1只暗属性以外的5星以上的怪兽破坏。
 function c31456110.initial_effect(c)
-	-- 效果原文内容：1回合1次，可以选择场上表侧表示存在的1只暗属性以外的5星以上的怪兽破坏。
+	-- 1回合1次，可以选择场上表侧表示存在的1只暗属性以外的5星以上的怪兽破坏。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(31456110,0))  --"怪兽破坏"
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET)

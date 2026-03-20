@@ -3,7 +3,7 @@
 -- 这张卡的卡名在规则上也当作「传说之龙 赫谟」使用。「赫谟之爪」在1回合只能发动1张。
 -- ①：「赫谟之爪」的效果才能特殊召唤的融合怪兽卡记述的种族的1只怪兽从自己的手卡·场上送去墓地（那张卡在场上盖放的场合，翻开确认）。那之后，把那1只融合怪兽从额外卡组特殊召唤。
 function c46232525.initial_effect(c)
-	-- 效果原文内容：「赫谟之爪」在1回合只能发动1张。
+	-- 「赫谟之爪」在1回合只能发动1张。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -12,7 +12,7 @@ function c46232525.initial_effect(c)
 	e1:SetTarget(c46232525.target)
 	e1:SetOperation(c46232525.activate)
 	c:RegisterEffect(e1)
-	-- 效果原文内容：这张卡的卡名在规则上也当作「传说之龙 赫谟」使用。
+	-- 这张卡的卡名在规则上也当作「传说之龙 赫谟」使用。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_SINGLE)
 	e2:SetCode(EFFECT_ADD_CODE)

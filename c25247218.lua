@@ -2,7 +2,7 @@
 -- 效果：
 -- 对方场上有怪兽存在，自己场上没有怪兽存在的场合，这张卡可以不用解放作召唤。
 function c25247218.initial_effect(c)
-	-- 效果原文内容：对方场上有怪兽存在，自己场上没有怪兽存在的场合，这张卡可以不用解放作召唤。
+	-- 对方场上有怪兽存在，自己场上没有怪兽存在的场合，这张卡可以不用解放作召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(25247218,0))  --"不解放进行召唤"
 	e1:SetProperty(EFFECT_FLAG_UNCOPYABLE)

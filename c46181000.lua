@@ -7,7 +7,7 @@ function c46181000.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- 效果原文内容：1回合1次，自己的主要阶段时可以从手卡把1只4星以下的同盟怪兽特殊召唤。
+	-- 1回合1次，自己的主要阶段时可以从手卡把1只4星以下的同盟怪兽特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(46181000,0))  --"特殊召唤"
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)

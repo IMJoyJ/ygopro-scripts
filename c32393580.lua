@@ -2,7 +2,7 @@
 -- 效果：
 -- 自己场上有水属性怪兽表侧表示存在的场合，这张卡可以不用解放作召唤。
 function c32393580.initial_effect(c)
-	-- 效果原文内容：自己场上有水属性怪兽表侧表示存在的场合，这张卡可以不用解放作召唤。
+	-- 自己场上有水属性怪兽表侧表示存在的场合，这张卡可以不用解放作召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(32393580,0))  --"不用解放召唤"
 	e1:SetProperty(EFFECT_FLAG_UNCOPYABLE)

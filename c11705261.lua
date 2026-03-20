@@ -9,7 +9,7 @@ function c11705261.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- 效果原文内容：自己场上有「希望皇 霍普」怪兽超量召唤时，支付500基本分才能发动。自己抽1张。
+	-- 自己场上有「希望皇 霍普」怪兽超量召唤时，支付500基本分才能发动。自己抽1张。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(11705261,0))  --"抽卡"
 	e2:SetCategory(CATEGORY_DRAW)

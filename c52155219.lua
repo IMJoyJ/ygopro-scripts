@@ -5,7 +5,7 @@
 -- ●从卡组把1只「转生炎兽」怪兽加入手卡。
 -- ●以用和自身同名的怪兽为素材作连接召唤的自己场上1只「转生炎兽」连接怪兽为对象才能发动。这个回合，那只连接怪兽不受自身以外的怪兽的效果影响。
 function c52155219.initial_effect(c)
-	-- 效果原文内容：这个卡名的卡在1回合只能发动1张。
+	-- 这个卡名的卡在1回合只能发动1张。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
@@ -16,7 +16,7 @@ function c52155219.initial_effect(c)
 	c:RegisterEffect(e1)
 	if not c52155219.global_check then
 		c52155219.global_check=true
-		-- 效果原文内容：①：可以从以下效果选择1个发动。
+		-- ①：可以从以下效果选择1个发动。
 		local ge1=Effect.CreateEffect(c)
 		ge1:SetType(EFFECT_TYPE_FIELD)
 		ge1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_SET_AVAILABLE+EFFECT_FLAG_IGNORE_RANGE)
@@ -93,7 +93,7 @@ function c52155219.activate(e,tp,eg,ep,ev,re,r,rp)
 		-- 获取当前连锁的目标卡
 		local tc=Duel.GetFirstTarget()
 		if tc:IsRelateToEffect(e) then
-			-- 效果原文内容：●以用和自身同名的怪兽为素材作连接召唤的自己场上1只「转生炎兽」连接怪兽为对象才能发动。这个回合，那只连接怪兽不受自身以外的怪兽的效果影响。
+			-- ●以用和自身同名的怪兽为素材作连接召唤的自己场上1只「转生炎兽」连接怪兽为对象才能发动。这个回合，那只连接怪兽不受自身以外的怪兽的效果影响。
 			local e1=Effect.CreateEffect(e:GetHandler())
 			e1:SetType(EFFECT_TYPE_SINGLE)
 			e1:SetCode(EFFECT_IMMUNE_EFFECT)

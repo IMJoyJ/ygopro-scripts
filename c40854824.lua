@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：原本卡名是「究极宝玉神 虹龙」或者「究极宝玉神 虹暗龙」的怪兽在自己场上把效果发动的回合才能发动。从卡组把「宝玉兽」怪兽任意数量特殊召唤（同名卡最多1张）。
 function c40854824.initial_effect(c)
-	-- 效果原文内容：①：原本卡名是「究极宝玉神 虹龙」或者「究极宝玉神 虹暗龙」的怪兽在自己场上把效果发动的回合才能发动。
+	-- ①：原本卡名是「究极宝玉神 虹龙」或者「究极宝玉神 虹暗龙」的怪兽在自己场上把效果发动的回合才能发动。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)

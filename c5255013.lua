@@ -30,7 +30,7 @@ function c5255013.initial_effect(c)
 	e3:SetCondition(c5255013.tgcon)
 	e3:SetValue(1)
 	c:RegisterEffect(e3)
-	-- 效果作用：发动时判断灵摆区域是否满足条件并执行怪兽回卡组操作
+	-- 发动时判断灵摆区域是否满足条件并执行怪兽回卡组操作
 	local e4=Effect.CreateEffect(c)
 	e4:SetType(EFFECT_TYPE_CONTINUOUS+EFFECT_TYPE_FIELD)
 	e4:SetRange(LOCATION_SZONE)
@@ -39,7 +39,7 @@ function c5255013.initial_effect(c)
 	e4:SetOperation(c5255013.desop)
 	c:RegisterEffect(e4)
 end
--- 效果原文内容：自己的灵摆区域有2张「神数」卡存在，1和7的灵摆刻度适用中的场合才能把这张卡发动
+-- 自己的灵摆区域有2张「神数」卡存在，1和7的灵摆刻度适用中的场合才能把这张卡发动
 function c5255013.condition(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取玩家0号灵摆区的卡
 	local tc1=Duel.GetFieldCard(tp,LOCATION_PZONE,0)
@@ -55,7 +55,7 @@ end
 function c5255013.filter(c)
 	return (c:IsFacedown() or not c:IsSetCard(0xc4)) and c:IsAbleToDeck()
 end
--- 效果作用：检索满足条件的怪兽组并将其送回卡组
+-- 检索满足条件的怪兽组并将其送回卡组
 function c5255013.activate(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取玩家场上所有满足过滤条件的怪兽组
 	local g=Duel.GetMatchingGroup(c5255013.filter,tp,LOCATION_MZONE,0,nil)
@@ -64,11 +64,11 @@ function c5255013.activate(e,tp,eg,ep,ev,re,r,rp)
 		Duel.SendtoDeck(g,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
 	end
 end
--- 效果作用：限制从手牌或额外卡组特殊召唤怪兽
+-- 限制从手牌或额外卡组特殊召唤怪兽
 function c5255013.splimit(e,c,sump,sumtype,sumpos,targetp)
 	return not c:IsLocation(LOCATION_HAND+LOCATION_EXTRA)
 end
--- 效果作用：判断灵摆区域是否有卡存在以决定是否生效
+-- 判断灵摆区域是否有卡存在以决定是否生效
 function c5255013.tgcon(e)
 	local tp=e:GetHandlerPlayer()
 	-- 判断玩家灵摆区是否存在任意一张卡
@@ -78,11 +78,11 @@ end
 function c5255013.desfilter(c,tp)
 	return c:IsControler(tp) and c:IsLocation(LOCATION_PZONE)
 end
--- 效果作用：判断被破坏的卡是否为灵摆区的卡
+-- 判断被破坏的卡是否为灵摆区的卡
 function c5255013.descon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c5255013.desfilter,1,nil,tp)
 end
--- 效果作用：当满足条件时将自身破坏
+-- 当满足条件时将自身破坏
 function c5255013.desop(e,tp,eg,ep,ev,re,r,rp)
 	-- 以效果原因破坏自身
 	Duel.Destroy(e:GetHandler(),REASON_EFFECT)

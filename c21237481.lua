@@ -7,7 +7,7 @@ function c21237481.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- 效果原文内容：每把1张魔法卡从手卡丢弃，给与对方基本分500分的伤害。
+	-- 每把1张魔法卡从手卡丢弃，给与对方基本分500分的伤害。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(21237481,0))  --"伤害"
 	e2:SetCategory(CATEGORY_DAMAGE)

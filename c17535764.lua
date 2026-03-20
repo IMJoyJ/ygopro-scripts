@@ -3,7 +3,7 @@
 -- 这个卡名的效果1回合只能使用1次。
 -- ①：这张卡被送去墓地的场合才能发动。从卡组把1只4星昆虫族怪兽加入手卡。这个效果把通常怪兽加入的场合，可以再把那只怪兽从手卡特殊召唤。那之后，可以选持有这个效果特殊召唤的怪兽的攻击力以上的攻击力的场上1只怪兽破坏。
 function c17535764.initial_effect(c)
-	-- 效果原文内容：①：这张卡被送去墓地的场合才能发动。
+	-- ①：这张卡被送去墓地的场合才能发动。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(17535764,0))
 	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH+CATEGORY_DESTROY+CATEGORY_SPECIAL_SUMMON)

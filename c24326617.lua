@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：对方的魔法与陷阱区域有卡2张以上存在的场合，这张卡可以从手卡特殊召唤。
 function c24326617.initial_effect(c)
-	-- 效果原文内容：①：对方的魔法与陷阱区域有卡2张以上存在的场合，这张卡可以从手卡特殊召唤。
+	-- ①：对方的魔法与陷阱区域有卡2张以上存在的场合，这张卡可以从手卡特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_SPSUMMON_PROC)

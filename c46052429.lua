@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：等级合计直到变成和仪式召唤的怪兽相同为止，把卡组的通常怪兽送去墓地，从手卡把1只仪式怪兽仪式召唤。
 function c46052429.initial_effect(c)
-	-- 效果原文内容：①：等级合计直到变成和仪式召唤的怪兽相同为止，把卡组的通常怪兽送去墓地，从手卡把1只仪式怪兽仪式召唤。
+	-- ①：等级合计直到变成和仪式召唤的怪兽相同为止，把卡组的通常怪兽送去墓地，从手卡把1只仪式怪兽仪式召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)

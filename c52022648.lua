@@ -24,11 +24,11 @@ function c52022648.initial_effect(c)
 	e2:SetOperation(c52022648.eqop)
 	c:RegisterEffect(e2)
 end
--- 效果作用：限制目标怪兽不能成为魔法卡的效果对象
+-- 限制目标怪兽不能成为魔法卡的效果对象
 function c52022648.tglimit(e,c)
 	return c~=e:GetHandler()
 end
--- 效果作用：使魔法卡的效果无法指定该怪兽为对象
+-- 使魔法卡的效果无法指定该怪兽为对象
 function c52022648.tgval(e,re,rp)
 	return re:IsActiveType(TYPE_SPELL)
 end
@@ -38,7 +38,7 @@ function c52022648.costfilter(c,ec,tp)
 		-- 检查是否存在可以装备的装备魔法卡
 		and Duel.IsExistingMatchingCard(c52022648.eqfilter,tp,LOCATION_HAND+LOCATION_DECK+LOCATION_GRAVE,0,1,c,ec)
 end
--- 效果作用：丢弃1张魔法卡作为发动代价
+-- 丢弃1张魔法卡作为发动代价
 function c52022648.eqcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 判断是否满足丢弃魔法卡的条件
 	if chk==0 then return Duel.IsExistingMatchingCard(c52022648.costfilter,tp,LOCATION_HAND,0,1,nil,e:GetHandler(),tp) end
@@ -49,12 +49,12 @@ end
 function c52022648.eqfilter(c,ec)
 	return c:IsType(TYPE_EQUIP) and c:CheckEquipTarget(ec)
 end
--- 效果作用：判断是否可以进行装备操作
+-- 判断是否可以进行装备操作
 function c52022648.eqtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 判断场上是否有足够的魔法陷阱区域进行装备
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_SZONE)>0 end
 end
--- 效果作用：选择并装备一张装备魔法卡，结束后返回手卡
+-- 选择并装备一张装备魔法卡，结束后返回手卡
 function c52022648.eqop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	-- 判断是否满足装备条件（场地空位、卡片状态等）
@@ -78,7 +78,7 @@ function c52022648.eqop(e,tp,eg,ep,ev,re,r,rp)
 		tc:RegisterEffect(e1)
 	end
 end
--- 效果作用：在结束阶段将装备卡送回手卡
+-- 在结束阶段将装备卡送回手卡
 function c52022648.thop(e,tp,eg,ep,ev,re,r,rp)
 	-- 将装备卡送回玩家手卡
 	Duel.SendtoHand(e:GetHandler(),nil,REASON_EFFECT)

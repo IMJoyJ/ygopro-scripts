@@ -2,7 +2,7 @@
 -- 效果：
 -- 自己的主要阶段时，把这张卡从手卡送去墓地发动。自己场上表侧表示存在的1只炎属性怪兽的攻击力上升400。
 function c13761956.initial_effect(c)
-	-- 效果原文内容：自己的主要阶段时，把这张卡从手卡送去墓地发动。自己场上表侧表示存在的1只炎属性怪兽的攻击力上升400。
+	-- 自己的主要阶段时，把这张卡从手卡送去墓地发动。自己场上表侧表示存在的1只炎属性怪兽的攻击力上升400。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(13761956,0))  --"攻击上升"
 	e1:SetCategory(CATEGORY_ATKCHANGE)

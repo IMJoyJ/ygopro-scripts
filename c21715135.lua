@@ -3,7 +3,7 @@
 -- 这个卡名的卡在1回合只能发动1张，这张卡发动的回合，自己不能作超量召唤以外的特殊召唤。
 -- ①：只有对方场上才有怪兽存在的场合才能发动。从卡组把1只「我我我」怪兽特殊召唤。
 function c21715135.initial_effect(c)
-	-- 效果原文内容：这个卡名的卡在1回合只能发动1张，这张卡发动的回合，自己不能作超量召唤以外的特殊召唤。
+	-- 这个卡名的卡在1回合只能发动1张，这张卡发动的回合，自己不能作超量召唤以外的特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -21,7 +21,7 @@ end
 function c21715135.counterfilter(c)
 	return c:IsSummonType(SUMMON_TYPE_XYZ)
 end
--- 效果原文内容：只有对方场上才有怪兽存在的场合才能发动。
+-- 只有对方场上才有怪兽存在的场合才能发动。
 function c21715135.condition(e,tp,eg,ep,ev,re,r,rp)
 	-- 判断对方场上存在怪兽且自己场上没有怪兽的条件。
 	return Duel.GetFieldGroupCount(tp,0,LOCATION_MZONE)>0 and Duel.GetFieldGroupCount(tp,LOCATION_MZONE,0)==0

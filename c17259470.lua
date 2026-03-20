@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：1回合1次，从手卡把1只怪兽送去墓地，以自己或者对方的墓地1只4星以下的不死族怪兽为对象才能发动。那只不死族怪兽特殊召唤。这个效果在这张卡在怪兽区域表侧表示存在的场合才能发动和处理。
 function c17259470.initial_effect(c)
-	-- 效果原文内容：①：1回合1次，从手卡把1只怪兽送去墓地，以自己或者对方的墓地1只4星以下的不死族怪兽为对象才能发动。那只不死族怪兽特殊召唤。这个效果在这张卡在怪兽区域表侧表示存在的场合才能发动和处理。
+	-- ①：1回合1次，从手卡把1只怪兽送去墓地，以自己或者对方的墓地1只4星以下的不死族怪兽为对象才能发动。那只不死族怪兽特殊召唤。这个效果在这张卡在怪兽区域表侧表示存在的场合才能发动和处理。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(17259470,0))  --"特殊召唤"
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -19,7 +19,7 @@ end
 function c17259470.costfilter(c)
 	return c:IsType(TYPE_MONSTER) and c:IsAbleToGraveAsCost()
 end
--- 效果作用：选择1只手卡怪兽送去墓地作为代价
+-- 选择1只手卡怪兽送去墓地作为代价
 function c17259470.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 检查是否满足支付代价的条件，即手卡是否存在至少1只怪兽
 	if chk==0 then return Duel.IsExistingMatchingCard(c17259470.costfilter,tp,LOCATION_HAND,0,1,nil) end
@@ -34,7 +34,7 @@ end
 function c17259470.filter(c,e,tp)
 	return c:IsLevelBelow(4) and c:IsRace(RACE_ZOMBIE) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 效果作用：选择1只墓地的4星以下不死族怪兽作为特殊召唤对象
+-- 选择1只墓地的4星以下不死族怪兽作为特殊召唤对象
 function c17259470.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and c17259470.filter(chkc,e,tp) end
 	-- 检查场上是否有足够的空间进行特殊召唤
@@ -48,7 +48,7 @@ function c17259470.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	-- 设置效果处理时的操作信息，确定特殊召唤的卡
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,1,0,0)
 end
--- 效果作用：将目标不死族怪兽特殊召唤
+-- 将目标不死族怪兽特殊召唤
 function c17259470.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	-- 获取当前连锁中选择的目标怪兽

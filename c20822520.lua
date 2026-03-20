@@ -2,7 +2,7 @@
 -- 效果：
 -- 自己墓地的名字带有「魔导书」的魔法卡是5张以上的场合才能发动。从自己卡组上面把2张卡翻开。那之中的名字带有「魔导书」的魔法卡全部加入手卡，剩下的卡回到卡组。「魔导书库 苏雷」在1回合只能发动1张，这张卡发动的回合，自己不能把名字带有「魔导书」的卡以外的魔法卡发动。
 function c20822520.initial_effect(c)
-	-- 效果原文内容：自己墓地的名字带有「魔导书」的魔法卡是5张以上的场合才能发动。从自己卡组上面把2张卡翻开。那之中的名字带有「魔导书」的魔法卡全部加入手卡，剩下的卡回到卡组。「魔导书库 苏雷」在1回合只能发动1张，这张卡发动的回合，自己不能把名字带有「魔导书」的卡以外的魔法卡发动。
+	-- 自己墓地的名字带有「魔导书」的魔法卡是5张以上的场合才能发动。从自己卡组上面把2张卡翻开。那之中的名字带有「魔导书」的魔法卡全部加入手卡，剩下的卡回到卡组。「魔导书库 苏雷」在1回合只能发动1张，这张卡发动的回合，自己不能把名字带有「魔导书」的卡以外的魔法卡发动。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -16,7 +16,7 @@ function c20822520.initial_effect(c)
 	c:RegisterEffect(e1)
 	if not c20822520.global_check then
 		c20822520.global_check=true
-		-- 效果原文内容：自己墓地的名字带有「魔导书」的魔法卡是5张以上的场合才能发动。
+		-- 自己墓地的名字带有「魔导书」的魔法卡是5张以上的场合才能发动。
 		local ge1=Effect.CreateEffect(c)
 		ge1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 		ge1:SetCode(EVENT_CHAINING)

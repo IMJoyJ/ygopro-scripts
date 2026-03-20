@@ -34,9 +34,9 @@ function c31733941.initial_effect(c)
 	e5:SetOperation(c31733941.spop)
 	c:RegisterEffect(e5)
 end
--- 效果作用：使此卡在召唤·反转召唤·特殊召唤的回合不能攻击
+-- 使此卡在召唤·反转召唤·特殊召唤的回合不能攻击
 function c31733941.atklimit(e,tp,eg,ep,ev,re,r,rp)
-	-- 效果作用：使此卡在召唤·反转召唤·特殊召唤的回合不能攻击
+	-- 使此卡在召唤·反转召唤·特殊召唤的回合不能攻击
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_CANNOT_ATTACK)
@@ -51,7 +51,7 @@ end
 function c31733941.cfilter2(c)
 	return c:IsFaceup() and c:IsType(TYPE_TOON)
 end
--- 效果作用：判断是否满足直接攻击条件
+-- 判断是否满足直接攻击条件
 function c31733941.dircon(e)
 	local tp=e:GetHandlerPlayer()
 	-- 判断自己场上是否存在「卡通世界」
@@ -63,7 +63,7 @@ end
 function c31733941.spfilter(c,e,tp)
 	return c:IsType(TYPE_TOON) and not c:IsCode(31733941) and c:IsCanBeSpecialSummoned(e,0,tp,true,false)
 end
--- 效果作用：判断是否满足特殊召唤条件
+-- 判断是否满足特殊召唤条件
 function c31733941.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 判断自己场上是否有空位
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
@@ -72,7 +72,7 @@ function c31733941.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 设置连锁操作信息：准备特殊召唤1只卡通怪兽
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_HAND)
 end
--- 效果作用：执行特殊召唤操作
+-- 执行特殊召唤操作
 function c31733941.spop(e,tp,eg,ep,ev,re,r,rp)
 	-- 判断自己场上是否有空位
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<1 then return end

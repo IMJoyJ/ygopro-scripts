@@ -8,7 +8,7 @@ function c41930553.initial_effect(c)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetHintTiming(0,TIMING_END_PHASE)
 	c:RegisterEffect(e1)
-	-- 效果原文内容：1回合1次，选择对方墓地1只怪兽才能发动。从手卡丢弃1只恶魔族怪兽，选择的怪兽从游戏中除外。
+	-- 1回合1次，选择对方墓地1只怪兽才能发动。从手卡丢弃1只恶魔族怪兽，选择的怪兽从游戏中除外。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(41930553,1))  --"丢弃手牌并除外"
 	e2:SetProperty(EFFECT_FLAG_CARD_TARGET)

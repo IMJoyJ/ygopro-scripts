@@ -29,50 +29,50 @@ function c40352445.initial_effect(c)
 	e2:SetOperation(c40352445.tgop)
 	c:RegisterEffect(e2)
 end
--- 效果作用：限制自己从额外卡组特殊召唤怪兽
+-- 限制自己从额外卡组特殊召唤怪兽
 function c40352445.splimit(e,c,tp,sumtp,sumpos)
 	return c:IsLocation(LOCATION_EXTRA)
 end
--- 效果作用：判断是否为对方发动效果
+-- 判断是否为对方发动效果
 function c40352445.tgcon(e,tp,eg,ep,ev,re,r,rp)
 	return ep==1-tp
 end
--- 效果作用：设置发动条件，检查双方额外卡组是否有可送去墓地的怪兽
+-- 设置发动条件，检查双方额外卡组是否有可送去墓地的怪兽
 function c40352445.tgtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 效果作用：检查自己额外卡组是否有可送去墓地的怪兽
+	-- 检查自己额外卡组是否有可送去墓地的怪兽
 	if chk==0 then return Duel.IsExistingMatchingCard(Card.IsAbleToGrave,tp,LOCATION_EXTRA,0,1,nil)
-		-- 效果作用：检查对方额外卡组是否有可送去墓地的怪兽
+		-- 检查对方额外卡组是否有可送去墓地的怪兽
 		and Duel.IsExistingMatchingCard(Card.IsAbleToGrave,tp,0,LOCATION_EXTRA,1,nil) end
-	-- 效果作用：设置连锁操作信息，确定要处理的卡为双方额外卡组的怪兽
+	-- 设置连锁操作信息，确定要处理的卡为双方额外卡组的怪兽
 	Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,nil,2,PLAYER_ALL,LOCATION_EXTRA)
 end
--- 效果作用：执行效果处理流程，包括选择并送去墓地怪兽、确认对方额外卡组、计算攻击力提升值
+-- 执行效果处理流程，包括选择并送去墓地怪兽、确认对方额外卡组、计算攻击力提升值
 function c40352445.tgop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 效果作用：提示玩家选择要送去墓地的卡
+	-- 提示玩家选择要送去墓地的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
-	-- 效果作用：从自己额外卡组选择1只怪兽送去墓地
+	-- 从自己额外卡组选择1只怪兽送去墓地
 	local tc1=Duel.SelectMatchingCard(tp,Card.IsAbleToGrave,tp,LOCATION_EXTRA,0,1,1,nil):GetFirst()
-	-- 效果作用：确认第一只怪兽成功送去墓地后继续处理后续流程
+	-- 确认第一只怪兽成功送去墓地后继续处理后续流程
 	if tc1 and Duel.SendtoGrave(tc1,REASON_EFFECT)>0 and tc1:IsLocation(LOCATION_GRAVE) then
 		local atk=tc1:GetAttack()
-		-- 效果作用：获取对方额外卡组的所有怪兽
+		-- 获取对方额外卡组的所有怪兽
 		local rg=Duel.GetFieldGroup(tp,0,LOCATION_EXTRA)
 		if #rg>0 then
-			-- 效果作用：确认对方额外卡组的怪兽
+			-- 确认对方额外卡组的怪兽
 			Duel.ConfirmCards(tp,rg,true)
-			-- 效果作用：提示玩家选择要送去墓地的卡
+			-- 提示玩家选择要送去墓地的卡
 			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
 			local tc2=rg:FilterSelect(tp,Card.IsAbleToGrave,1,1,nil):GetFirst()
-			-- 效果作用：洗切对方额外卡组
+			-- 洗切对方额外卡组
 			Duel.ShuffleExtra(1-tp)
-			-- 效果作用：确认第二只怪兽成功送去墓地后更新攻击力总和
+			-- 确认第二只怪兽成功送去墓地后更新攻击力总和
 			if tc2 and Duel.SendtoGrave(tc2,REASON_EFFECT)>0 and tc2:IsLocation(LOCATION_GRAVE) then
 				atk=atk+tc2:GetAttack()
 			end
 		end
 		if c:IsRelateToEffect(e) and c:IsFaceup() then
-			-- 效果作用：使自身攻击力上升送去墓地的怪兽攻击力合计的一半
+			-- 使自身攻击力上升送去墓地的怪兽攻击力合计的一半
 			local e1=Effect.CreateEffect(c)
 			e1:SetType(EFFECT_TYPE_SINGLE)
 			e1:SetCode(EFFECT_UPDATE_ATTACK)

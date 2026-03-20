@@ -27,11 +27,11 @@ function c3846170.initial_effect(c)
 	e4:SetOperation(c3846170.spop)
 	c:RegisterEffect(e4)
 end
--- 效果作用：判断该卡是否处于攻击表示
+-- 判断该卡是否处于攻击表示
 function c3846170.poscon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsAttackPos()
 end
--- 效果作用：将该卡变为守备表示
+-- 将该卡变为守备表示
 function c3846170.posop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsFaceup() and c:IsRelateToEffect(e) then
@@ -39,7 +39,7 @@ function c3846170.posop(e,tp,eg,ep,ev,re,r,rp)
 		Duel.ChangePosition(c,POS_FACEUP_DEFENSE)
 	end
 end
--- 效果作用：判断该卡是否因战斗破坏而进入墓地
+-- 判断该卡是否因战斗破坏而进入墓地
 function c3846170.spcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsLocation(LOCATION_GRAVE) and e:GetHandler():IsReason(REASON_BATTLE)
 end
@@ -56,7 +56,7 @@ function c3846170.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 设置连锁操作信息，表示将要特殊召唤怪兽
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_DECK)
 end
--- 效果作用：执行特殊召唤操作
+-- 执行特殊召唤操作
 function c3846170.spop(e,tp,eg,ep,ev,re,r,rp)
 	-- 检查场上是否还有召唤位置
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end

@@ -91,7 +91,7 @@ function c2992036.activate(e,tp,eg,ep,ev,re,r,rp)
 		end
 	end
 	if e:IsHasType(EFFECT_TYPE_ACTIVATE) then
-		-- 设置效果作用：直到下次自己回合结束时，自己不能特殊召唤非机械族怪兽
+		-- 设置直到下次自己回合结束时，自己不能特殊召唤非机械族怪兽
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_FIELD)
 		e1:SetCode(EFFECT_CANNOT_SPECIAL_SUMMON)

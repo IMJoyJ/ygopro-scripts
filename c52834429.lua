@@ -10,7 +10,7 @@ function c52834429.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- 效果原文内容：●只让卡1张加入自己或者对方的手卡时，把这张卡除外才能发动。加入手卡的那张卡除外，那个玩家从卡组抽1张。
+	-- ●只让卡1张加入自己或者对方的手卡时，把这张卡除外才能发动。加入手卡的那张卡除外，那个玩家从卡组抽1张。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(52834429,0))  --"加入手卡的那张卡除外并抽卡（极光之天气模样）"
 	e2:SetCategory(CATEGORY_REMOVE+CATEGORY_DRAW)
@@ -22,7 +22,7 @@ function c52834429.initial_effect(c)
 	e2:SetCost(aux.bfgcost)
 	e2:SetTarget(c52834429.rmtg)
 	e2:SetOperation(c52834429.rmop)
-	-- 效果原文内容：和这张卡相同纵列的自己的主要怪兽区域以及那些两邻的自己的主要怪兽区域存在的「天气」效果怪兽得到以下效果。
+	-- 和这张卡相同纵列的自己的主要怪兽区域以及那些两邻的自己的主要怪兽区域存在的「天气」效果怪兽得到以下效果。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_GRANT)
 	e3:SetRange(LOCATION_SZONE)

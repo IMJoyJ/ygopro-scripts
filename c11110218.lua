@@ -3,7 +3,7 @@
 -- 这个卡名的卡在1回合只能发动1张。
 -- ①：以对方墓地最多5张卡为对象，并以那个数量的对方的除外状态的卡为对象才能发动。作为对象的墓地的卡除外，作为对象的除外状态的卡回到墓地。
 function c11110218.initial_effect(c)
-	-- 效果原文内容：这个卡名的卡在1回合只能发动1张。
+	-- 这个卡名的卡在1回合只能发动1张。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_TOGRAVE+CATEGORY_REMOVE)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -15,10 +15,10 @@ function c11110218.initial_effect(c)
 	e1:SetOperation(c11110218.activate)
 	c:RegisterEffect(e1)
 end
--- 效果原文内容：①：以对方墓地最多5张卡为对象，并以那个数量的对方的除外状态的卡为对象才能发动。
+-- ①：以对方墓地最多5张卡为对象，并以那个数量的对方的除外状态的卡为对象才能发动。
 function c11110218.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return false end
-	-- 效果原文内容：作为对象的墓地的卡除外，作为对象的除外状态的卡回到墓地。
+	-- 作为对象的墓地的卡除外，作为对象的除外状态的卡回到墓地。
 	if chk==0 then return Duel.IsExistingTarget(Card.IsAbleToRemove,tp,0,LOCATION_GRAVE,1,nil)
 		-- 检索满足条件的对方墓地的卡
 		and Duel.IsExistingTarget(Card.IsAbleToGrave,tp,0,LOCATION_REMOVED,1,nil) end

@@ -2,7 +2,7 @@
 -- 效果：
 -- 把自己场上表侧表示存在的1只融合怪兽回到融合卡组才能发动。双方选择从游戏中除外的怪兽最多2只，在各自场上特殊召唤。
 function c1896112.initial_effect(c)
-	-- 效果原文内容：把自己场上表侧表示存在的1只融合怪兽回到融合卡组才能发动。双方选择从游戏中除外的怪兽最多2只，在各自场上特殊召唤。
+	-- 把自己场上表侧表示存在的1只融合怪兽回到融合卡组才能发动。双方选择从游戏中除外的怪兽最多2只，在各自场上特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)

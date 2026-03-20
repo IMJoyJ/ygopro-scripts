@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：从自己手卡选1张魔法卡加入对方手卡。那之后，从自己卡组把1只7·8星的暗属性怪兽加入自己手卡。
 function c18809562.initial_effect(c)
-	-- 效果原文内容：①：从自己手卡选1张魔法卡加入对方手卡。那之后，从自己卡组把1只7·8星的暗属性怪兽加入自己手卡。
+	-- ①：从自己手卡选1张魔法卡加入对方手卡。那之后，从自己卡组把1只7·8星的暗属性怪兽加入自己手卡。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)

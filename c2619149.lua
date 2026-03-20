@@ -25,7 +25,7 @@ function c2619149.initial_effect(c)
 	e2:SetOperation(c2619149.spop)
 	c:RegisterEffect(e2)
 end
--- 效果作用：判断是否为通过「剑斗兽」怪兽效果特殊召唤成功且满足战斗破坏条件
+-- 判断是否为通过「剑斗兽」怪兽效果特殊召唤成功且满足战斗破坏条件
 function c2619149.scon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	-- 判断当前怪兽是否为通过「剑斗兽」怪兽效果特殊召唤成功且满足战斗破坏对方怪兽的条件
@@ -35,14 +35,14 @@ end
 function c2619149.sfilter(c)
 	return c:IsSetCard(0x1019) and c:IsAbleToHand()
 end
--- 效果作用：设置检索满足条件的卡组卡片
+-- 设置检索满足条件的卡组卡片
 function c2619149.stg(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 判断是否满足检索条件：卡组中是否存在至少1张名字带有「剑斗兽」且可以加入手牌的卡
 	if chk==0 then return Duel.IsExistingMatchingCard(c2619149.sfilter,tp,LOCATION_DECK,0,1,nil) end
 	-- 设置连锁操作信息：准备将1张卡加入手牌
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,0,0)
 end
--- 效果作用：执行检索并加入手牌
+-- 执行检索并加入手牌
 function c2619149.sop(e,tp,eg,ep,ev,re,r,rp)
 	-- 提示玩家选择要加入手牌的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
@@ -55,11 +55,11 @@ function c2619149.sop(e,tp,eg,ep,ev,re,r,rp)
 		Duel.ConfirmCards(1-tp,g)
 	end
 end
--- 效果作用：判断是否满足特殊召唤条件
+-- 判断是否满足特殊召唤条件
 function c2619149.spcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():GetBattledGroupCount()>0
 end
--- 效果作用：设置特殊召唤的代价
+-- 设置特殊召唤的代价
 function c2619149.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	if chk==0 then return c:IsAbleToDeckAsCost() end
@@ -70,7 +70,7 @@ end
 function c2619149.filter(c,e,tp)
 	return not c:IsCode(2619149) and c:IsSetCard(0x1019) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 效果作用：设置特殊召唤满足条件的怪兽
+-- 设置特殊召唤满足条件的怪兽
 function c2619149.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 判断是否满足特殊召唤条件：场上是否有空位且卡组中是否存在至少1张名字带有「剑斗兽」且可以特殊召唤的怪兽
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>-1
@@ -79,7 +79,7 @@ function c2619149.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 设置连锁操作信息：准备将1只怪兽特殊召唤
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_DECK)
 end
--- 效果作用：执行特殊召唤
+-- 执行特殊召唤
 function c2619149.spop(e,tp,eg,ep,ev,re,r,rp)
 	-- 判断场上是否有空位进行特殊召唤
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end

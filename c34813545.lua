@@ -5,7 +5,7 @@
 -- ●用包含「自然」怪兽的自己场上的怪兽为素材作同调召唤。
 -- ●从自己场上把融合怪兽卡决定的包含「自然」怪兽的融合素材怪兽送去墓地，把那1只融合怪兽从额外卡组融合召唤。
 function c34813545.initial_effect(c)
-	-- 效果原文内容：●从自己的手卡·墓地选1只「自然」怪兽特殊召唤。
+	-- ●从自己的手卡·墓地选1只「自然」怪兽特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(34813545,0))  --"特殊召唤"
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -14,7 +14,7 @@ function c34813545.initial_effect(c)
 	e1:SetTarget(c34813545.sptg)
 	e1:SetOperation(c34813545.spop)
 	c:RegisterEffect(e1)
-	-- 效果原文内容：●用包含「自然」怪兽的自己场上的怪兽为素材作同调召唤。
+	-- ●用包含「自然」怪兽的自己场上的怪兽为素材作同调召唤。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(34813545,1))  --"同调召唤"
 	e2:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -23,7 +23,7 @@ function c34813545.initial_effect(c)
 	e2:SetTarget(c34813545.sctg)
 	e2:SetOperation(c34813545.scop)
 	c:RegisterEffect(e2)
-	-- 效果原文内容：●从自己场上把融合怪兽卡决定的包含「自然」怪兽的融合素材怪兽送去墓地，把那1只融合怪兽从额外卡组融合召唤。
+	-- ●从自己场上把融合怪兽卡决定的包含「自然」怪兽的融合素材怪兽送去墓地，把那1只融合怪兽从额外卡组融合召唤。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(34813545,2))  --"融合召唤"
 	e3:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_FUSION_SUMMON)

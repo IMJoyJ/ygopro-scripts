@@ -11,13 +11,13 @@ function c21502796.initial_effect(c)
 	e1:SetOperation(c21502796.operation)
 	c:RegisterEffect(e1)
 end
--- 效果作用：设置连锁处理信息，标记将要从卡组送去墓地3张卡
+-- 设置连锁处理信息，标记将要从卡组送去墓地3张卡
 function c21502796.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
 	-- 设置操作信息：将要从卡组送去墓地3张卡
 	Duel.SetOperationInfo(0,CATEGORY_DECKDES,nil,0,tp,3)
 end
--- 效果作用：检索场上所有卡，询问是否破坏1张，然后从卡组破坏3张
+-- 检索场上所有卡，询问是否破坏1张，然后从卡组破坏3张
 function c21502796.operation(e,tp,eg,ep,ev,re,r,rp)
 	-- 检索场上所有卡作为可破坏对象
 	local g=Duel.GetFieldGroup(tp,LOCATION_ONFIELD,LOCATION_ONFIELD)

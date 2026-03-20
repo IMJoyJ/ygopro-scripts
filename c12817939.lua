@@ -24,7 +24,7 @@ function c12817939.initial_effect(c)
 end
 c12817939.lvup={85313220,58206034}
 c12817939.lvdn={85313220}
--- 效果作用：战斗破坏对方怪兽时，若满足条件则使对方怪兽效果无效化并记录flag
+-- 战斗破坏对方怪兽时，若满足条件则使对方怪兽效果无效化并记录flag
 function c12817939.disop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	-- 获取攻击目标怪兽
@@ -42,12 +42,12 @@ function c12817939.disop(e,tp,eg,ep,ev,re,r,rp)
 		c:RegisterFlagEffect(12817939,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END+RESET_SELF_TURN,0,2)
 	end
 end
--- 效果作用：判断是否为自己的准备阶段且已记录flag
+-- 判断是否为自己的准备阶段且已记录flag
 function c12817939.spcon(e,tp,eg,ep,ev,re,r,rp)
 	-- 判断是否为自己的回合且已记录flag
 	return tp==Duel.GetTurnPlayer() and e:GetHandler():GetFlagEffect(12817939)~=0
 end
--- 效果作用：支付特殊召唤的代价
+-- 支付特殊召唤的代价
 function c12817939.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsAbleToGraveAsCost() end
 	-- 将自身送去墓地作为特殊召唤的代价
@@ -57,7 +57,7 @@ end
 function c12817939.spfilter(c,e,tp)
 	return c:IsCode(58206034) and c:IsCanBeSpecialSummoned(e,0,tp,true,true)
 end
--- 效果作用：设置特殊召唤的目标
+-- 设置特殊召唤的目标
 function c12817939.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 检查是否有足够的召唤位置并存在满足条件的怪兽
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>-1
@@ -66,7 +66,7 @@ function c12817939.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 设置操作信息，表示将要特殊召唤怪兽
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_HAND+LOCATION_DECK)
 end
--- 效果作用：执行特殊召唤操作
+-- 执行特殊召唤操作
 function c12817939.spop(e,tp,eg,ep,ev,re,r,rp)
 	-- 检查是否有足够的召唤位置
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end

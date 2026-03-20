@@ -40,7 +40,7 @@ function c30646525.operation(e,tp,eg,ep,ev,re,r,rp)
 	-- 将满足条件的怪兽全部破坏，破坏原因为效果
 	local ct=Duel.Destroy(g,REASON_EFFECT)
 	if ct>0 then
-		-- 效果原文内容：破坏的怪兽每有1只这张卡的攻击力上升100
+		-- 破坏的怪兽每有1只这张卡的攻击力上升100
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)

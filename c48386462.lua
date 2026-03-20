@@ -8,7 +8,7 @@
 local s,id,o=GetID()
 -- 创建起动效果，设置效果描述、类型为起动效果、适用区域为主怪兽区、限制一回合一次、目标函数为s.target
 function s.initial_effect(c)
-	-- 效果原文内容：这个卡名的效果1回合只能使用1次。
+	-- 这个卡名的效果1回合只能使用1次。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(id,0))
 	e1:SetType(EFFECT_TYPE_IGNITION)
@@ -68,7 +68,7 @@ function s.discard(e,tp,eg,ep,ev,re,r,rp)
 end
 -- 处理回合结束阶段抽卡效果的注册函数
 function s.epdelay(e,tp,eg,ep,ev,re,r,rp)
-	-- 效果原文内容：这个回合的结束阶段，自己抽1张。
+	-- 这个回合的结束阶段，自己抽1张。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e1:SetCode(EVENT_PHASE+PHASE_END)

@@ -8,7 +8,7 @@ function c18478530.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- 效果原文内容：①：只要这张卡在魔法与陷阱区域存在并在自己场上有「女武神」怪兽存在，攻击力2000以下的对方怪兽不能攻击。
+	-- ①：只要这张卡在魔法与陷阱区域存在并在自己场上有「女武神」怪兽存在，攻击力2000以下的对方怪兽不能攻击。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD)
 	e2:SetCode(EFFECT_CANNOT_ATTACK)
@@ -17,7 +17,7 @@ function c18478530.initial_effect(c)
 	e2:SetCondition(c18478530.condition)
 	e2:SetTarget(c18478530.atktarget)
 	c:RegisterEffect(e2)
-	-- 效果原文内容：②：这张卡被对方的效果破坏的场合才能发动。从手卡·卡组把1只5星以上的「女武神」怪兽特殊召唤。
+	-- ②：这张卡被对方的效果破坏的场合才能发动。从手卡·卡组把1只5星以上的「女武神」怪兽特殊召唤。
 	local e3=Effect.CreateEffect(c)
 	e3:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e3:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)

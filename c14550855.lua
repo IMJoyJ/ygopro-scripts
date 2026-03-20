@@ -2,7 +2,7 @@
 -- 效果：
 -- 自己最多2张手卡丢弃。那之后，这个效果丢弃的数量的名字带有「永火」的卡从卡组送去墓地。
 function c14550855.initial_effect(c)
-	-- 效果原文内容：自己最多2张手卡丢弃。那之后，这个效果丢弃的数量的名字带有「永火」的卡从卡组送去墓地。
+	-- 自己最多2张手卡丢弃。那之后，这个效果丢弃的数量的名字带有「永火」的卡从卡组送去墓地。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_HANDES+CATEGORY_TOGRAVE)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)

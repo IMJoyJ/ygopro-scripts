@@ -3,7 +3,7 @@
 -- ①：这张卡不会被战斗破坏。
 -- ②：对方准备阶段发动。自己受到1000伤害。这个效果在这张卡在怪兽区域表侧守备表示存在的场合进行发动和处理。
 function c23093604.initial_effect(c)
-	-- 效果原文内容：②：对方准备阶段发动。自己受到1000伤害。这个效果在这张卡在怪兽区域表侧守备表示存在的场合进行发动和处理。
+	-- ②：对方准备阶段发动。自己受到1000伤害。这个效果在这张卡在怪兽区域表侧守备表示存在的场合进行发动和处理。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(23093604,0))  --"自己受到1000伤害"
 	e1:SetCategory(CATEGORY_DAMAGE)
@@ -16,7 +16,7 @@ function c23093604.initial_effect(c)
 	e1:SetTarget(c23093604.target)
 	e1:SetOperation(c23093604.operation)
 	c:RegisterEffect(e1)
-	-- 效果原文内容：①：这张卡不会被战斗破坏。
+	-- ①：这张卡不会被战斗破坏。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_SINGLE)
 	e2:SetCode(EFFECT_INDESTRUCTABLE_BATTLE)

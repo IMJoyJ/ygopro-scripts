@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：以自己墓地2只「六武众」怪兽为对象才能发动。那些怪兽攻击表示特殊召唤。这个效果特殊召唤的怪兽在这个回合的结束阶段破坏，自己受到破坏的怪兽的攻击力合计数值的伤害。
 function c21007444.initial_effect(c)
-	-- 效果原文内容：①：以自己墓地2只「六武众」怪兽为对象才能发动。
+	-- ①：以自己墓地2只「六武众」怪兽为对象才能发动。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET)
@@ -59,7 +59,7 @@ function c21007444.activate(e,tp,eg,ep,ev,re,r,rp)
 		-- 完成所有特殊召唤步骤。
 		Duel.SpecialSummonComplete()
 		sg:KeepAlive()
-		-- 效果原文内容：那些怪兽攻击表示特殊召唤。这个效果特殊召唤的怪兽在这个回合的结束阶段破坏，自己受到破坏的怪兽的攻击力合计数值的伤害。
+		-- 那些怪兽攻击表示特殊召唤。这个效果特殊召唤的怪兽在这个回合的结束阶段破坏，自己受到破坏的怪兽的攻击力合计数值的伤害。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 		e1:SetProperty(EFFECT_FLAG_IGNORE_IMMUNE)

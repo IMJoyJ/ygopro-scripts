@@ -11,7 +11,7 @@ function c12451640.initial_effect(c)
 	e1:SetOperation(c12451640.regop)
 	c:RegisterEffect(e1)
 end
--- 效果作用：在通常召唤成功时触发，注册后续效果
+-- 在通常召唤成功时触发，注册后续效果
 function c12451640.regop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	-- ②：这张卡召唤成功的场合，下次的自己回合的结束阶段，把这张卡解放才能发动。从卡组把1只地属性怪兽加入手卡。
@@ -26,7 +26,7 @@ function c12451640.regop(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetOperation(c12451640.thop1)
 	e1:SetReset(RESET_EVENT+RESETS_STANDARD-RESET_TURN_SET+RESET_PHASE+PHASE_END)
 	c:RegisterEffect(e1)
-	-- 效果作用：注册第二个效果，条件为下次自己回合结束阶段且需要解放自身
+	-- 注册第二个效果，条件为下次自己回合结束阶段且需要解放自身
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(12451640,1))
 	e2:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)

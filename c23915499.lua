@@ -2,7 +2,7 @@
 -- 效果：
 -- 这张卡召唤成功时，自己场上有「漏洞人Z」表侧表示存在的场合，可以从自己卡组把1只「漏洞人X」特殊召唤。
 function c23915499.initial_effect(c)
-	-- 效果原文内容：这张卡召唤成功时，自己场上有「漏洞人Z」表侧表示存在的场合，可以从自己卡组把1只「漏洞人X」特殊召唤。
+	-- 这张卡召唤成功时，自己场上有「漏洞人Z」表侧表示存在的场合，可以从自己卡组把1只「漏洞人X」特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(23915499,0))  --"特殊召唤"
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)

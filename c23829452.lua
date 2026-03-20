@@ -44,11 +44,11 @@ function s.initial_effect(c)
 	e3:SetOperation(s.thop)
 	c:RegisterEffect(e3)
 end
--- 效果作用：限制非融合怪兽从额外卡组特殊召唤
+-- 限制非融合怪兽从额外卡组特殊召唤
 function s.splimit(e,c)
 	return not c:IsType(TYPE_FUSION) and c:IsLocation(LOCATION_EXTRA)
 end
--- 效果作用：判断是否在主要阶段
+-- 判断是否在主要阶段
 function s.spcon(e,tp,eg,ep,ev,re,r,rp)
 	-- 判断是否在主要阶段
 	return Duel.IsMainPhase()
@@ -62,7 +62,7 @@ function s.spfilter2(c,e,tp,m,f,gc,chkf)
 	return c:IsType(TYPE_FUSION) and (c:IsSetCard(0x1cd) or c:IsCode(53589300)) and (not f or f(c))
 		and c:IsCanBeSpecialSummoned(e,SUMMON_TYPE_FUSION,tp,false,false) and c:CheckFusionMaterial(m,gc,chkf)
 end
--- 效果作用：判断是否能发动融合召唤效果
+-- 判断是否能发动融合召唤效果
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	if chk==0 then
@@ -87,7 +87,7 @@ function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 设置融合召唤效果的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_EXTRA)
 end
--- 效果作用：处理融合召唤效果
+-- 处理融合召唤效果
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local chkf=tp
@@ -137,7 +137,7 @@ function s.spop(e,tp,eg,ep,ev,re,r,rp)
 		tc:CompleteProcedure()
 	end
 end
--- 效果作用：判断是否满足检索效果发动条件
+-- 判断是否满足检索效果发动条件
 function s.thcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsPreviousLocation(LOCATION_HAND+LOCATION_ONFIELD)
 end
@@ -147,14 +147,14 @@ function s.thfilter(c,tp)
 		-- 判断该卡是否已在墓地存在
 		and not Duel.IsExistingMatchingCard(Card.IsCode,tp,LOCATION_GRAVE,0,1,nil,c:GetCode())
 end
--- 效果作用：判断是否能发动检索效果
+-- 判断是否能发动检索效果
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 检查是否存在满足检索条件的魔法或陷阱卡
 	if chk==0 then return Duel.IsExistingMatchingCard(s.thfilter,tp,LOCATION_DECK,0,1,nil,tp) end
 	-- 设置检索效果的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 效果作用：处理检索效果
+-- 处理检索效果
 function s.thop(e,tp,eg,ep,ev,re,r,rp)
 	-- 提示玩家选择要加入手牌的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"

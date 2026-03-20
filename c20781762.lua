@@ -2,7 +2,7 @@
 -- 效果：
 -- 选择自己卡组1只岩石族怪兽送去墓地。给与对方基本分500分的伤害。之后洗切卡组。
 function c20781762.initial_effect(c)
-	-- 效果原文内容：选择自己卡组1只岩石族怪兽送去墓地。给与对方基本分500分的伤害。之后洗切卡组。
+	-- 选择自己卡组1只岩石族怪兽送去墓地。给与对方基本分500分的伤害。之后洗切卡组。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(20781762,0))
 	e1:SetCategory(CATEGORY_DAMAGE)

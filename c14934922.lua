@@ -5,7 +5,7 @@
 -- ●从手卡以及自己场上的表侧表示怪兽之中把1只「转生炎兽」怪兽送去墓地，以场上1张卡为对象才能发动。那张卡破坏。
 -- ●以用和自身同名的怪兽为素材作连接召唤的自己场上1只「转生炎兽」连接怪兽为对象才能发动。选最多有那只怪兽的连接标记数量的对方场上的卡破坏。
 function c14934922.initial_effect(c)
-	-- 效果原文内容：这个卡名的卡在1回合只能发动1张。
+	-- 这个卡名的卡在1回合只能发动1张。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_DESTROY)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -18,7 +18,7 @@ function c14934922.initial_effect(c)
 	c:RegisterEffect(e1)
 	if not c14934922.global_check then
 		c14934922.global_check=true
-		-- 效果原文内容：①：可以从以下效果选择1个发动。
+		-- ①：可以从以下效果选择1个发动。
 		local ge1=Effect.CreateEffect(c)
 		ge1:SetType(EFFECT_TYPE_FIELD)
 		ge1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_SET_AVAILABLE+EFFECT_FLAG_IGNORE_RANGE)

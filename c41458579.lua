@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：自己场上有「六武众」怪兽存在，要让卡破坏的怪兽的效果·魔法·陷阱卡由对方发动时才能发动。那个发动无效并破坏。
 function c41458579.initial_effect(c)
-	-- 效果原文内容：①：自己场上有「六武众」怪兽存在，要让卡破坏的怪兽的效果·魔法·陷阱卡由对方发动时才能发动。那个发动无效并破坏。
+	-- ①：自己场上有「六武众」怪兽存在，要让卡破坏的怪兽的效果·魔法·陷阱卡由对方发动时才能发动。那个发动无效并破坏。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_NEGATE+CATEGORY_DESTROY)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)

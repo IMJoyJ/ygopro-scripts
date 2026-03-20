@@ -7,7 +7,7 @@ function c47596607.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- 效果原文内容：1回合1次，自己的主要阶段时，选择被战斗破坏送去自己墓地的1只名字带有「元素英雄」的怪兽才能发动。选择的怪兽从墓地特殊召唤。
+	-- 1回合1次，自己的主要阶段时，选择被战斗破坏送去自己墓地的1只名字带有「元素英雄」的怪兽才能发动。选择的怪兽从墓地特殊召唤。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(47596607,1))
 	e2:SetCategory(CATEGORY_SPECIAL_SUMMON)

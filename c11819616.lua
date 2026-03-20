@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：场上的卡为对象的魔法·陷阱·怪兽的效果发动时，把自己场上1只表侧表示的植物族怪兽解放才能发动。那个发动无效并破坏。
 function c11819616.initial_effect(c)
-	-- 效果原文内容：①：场上的卡为对象的魔法·陷阱·怪兽的效果发动时，把自己场上1只表侧表示的植物族怪兽解放才能发动。那个发动无效并破坏。
+	-- ①：场上的卡为对象的魔法·陷阱·怪兽的效果发动时，把自己场上1只表侧表示的植物族怪兽解放才能发动。那个发动无效并破坏。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(11819616,0))  --"发动无效并破坏"
 	e2:SetCategory(CATEGORY_NEGATE+CATEGORY_DESTROY)

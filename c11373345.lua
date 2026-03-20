@@ -2,7 +2,7 @@
 -- 效果：
 -- 自己场上有7星以上的怪兽表侧表示存在的场合才能发动。对方场上表侧表示存在的5星以下的怪兽全部破坏。这张卡发动的回合，自己场上存在的怪兽不能攻击。
 function c11373345.initial_effect(c)
-	-- 效果原文内容：自己场上有7星以上的怪兽表侧表示存在的场合才能发动。对方场上表侧表示存在的5星以下的怪兽全部破坏。这张卡发动的回合，自己场上存在的怪兽不能攻击。
+	-- 自己场上有7星以上的怪兽表侧表示存在的场合才能发动。对方场上表侧表示存在的5星以下的怪兽全部破坏。这张卡发动的回合，自己场上存在的怪兽不能攻击。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_DESTROY)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -27,7 +27,7 @@ end
 function c11373345.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 检查在当前回合中是否已经进行过攻击动作
 	if chk==0 then return Duel.GetActivityCount(tp,ACTIVITY_ATTACK)==0 end
-	-- 效果原文内容：自己场上有7星以上的怪兽表侧表示存在的场合才能发动。对方场上表侧表示存在的5星以下的怪兽全部破坏。这张卡发动的回合，自己场上存在的怪兽不能攻击。
+	-- 自己场上有7星以上的怪兽表侧表示存在的场合才能发动。对方场上表侧表示存在的5星以下的怪兽全部破坏。这张卡发动的回合，自己场上存在的怪兽不能攻击。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_CANNOT_ATTACK)

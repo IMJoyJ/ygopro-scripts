@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：这张卡召唤成功时才能发动。从卡组把「雷电哥哥」以外的1只雷族·光属性·4星怪兽加入手卡。
 function c27217742.initial_effect(c)
-	-- 效果原文内容：①：这张卡召唤成功时才能发动。从卡组把「雷电哥哥」以外的1只雷族·光属性·4星怪兽加入手卡。
+	-- ①：这张卡召唤成功时才能发动。从卡组把「雷电哥哥」以外的1只雷族·光属性·4星怪兽加入手卡。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(27217742,0))
 	e1:SetCategory(CATEGORY_SEARCH+CATEGORY_TOHAND)
@@ -16,14 +16,14 @@ end
 function c27217742.thfilter(c)
 	return c:IsRace(RACE_THUNDER) and c:IsAttribute(ATTRIBUTE_LIGHT) and c:IsLevel(4) and not c:IsCode(27217742) and c:IsAbleToHand()
 end
--- 效果作用：检查是否满足发动条件并设置操作信息
+-- 检查是否满足发动条件并设置操作信息
 function c27217742.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 判断是否满足发动条件：卡组中是否存在满足条件的怪兽
 	if chk==0 then return Duel.IsExistingMatchingCard(c27217742.thfilter,tp,LOCATION_DECK,0,1,nil) end
 	-- 设置操作信息：将从卡组检索1张卡加入手牌
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 效果作用：选择并处理目标卡片
+-- 选择并处理目标卡片
 function c27217742.thop(e,tp,eg,ep,ev,re,r,rp)
 	-- 提示玩家选择要加入手牌的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"

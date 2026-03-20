@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：怪兽被战斗破坏送去自己墓地时或者场上的怪兽被送去自己墓地时，以场上1只怪兽为对象才能发动。那只怪兽破坏。
 function c37580756.initial_effect(c)
-	-- 效果原文内容：①：怪兽被战斗破坏送去自己墓地时或者场上的怪兽被送去自己墓地时，以场上1只怪兽为对象才能发动。那只怪兽破坏。
+	-- ①：怪兽被战斗破坏送去自己墓地时或者场上的怪兽被送去自己墓地时，以场上1只怪兽为对象才能发动。那只怪兽破坏。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_DESTROY)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)

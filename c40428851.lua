@@ -12,7 +12,7 @@ function c40428851.initial_effect(c)
 	e1:SetRange(LOCATION_MZONE)
 	e1:SetCode(EFFECT_CANNOT_BE_BATTLE_TARGET)
 	e1:SetCondition(c40428851.atcon)
-	-- 效果作用：使该卡不能成为攻击对象
+	-- 使该卡不能成为攻击对象
 	e1:SetValue(aux.imval1)
 	c:RegisterEffect(e1)
 	-- ②：对方场上的怪兽数量比自己场上的怪兽多的场合，从自己的手卡·场上把1张卡送去墓地才能发动。从卡组把「战华之德-刘玄」以外的1只「战华」怪兽特殊召唤。

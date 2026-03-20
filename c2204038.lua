@@ -55,14 +55,14 @@ end
 function c2204038.ptop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) and c:IsFaceup() and c:GetDefense()>=1000 then
-		-- 效果作用：使此卡守备力减少1000。
+		-- 使此卡守备力减少1000。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_DISABLE)
 		e1:SetCode(EFFECT_UPDATE_DEFENSE)
 		e1:SetValue(-1000)
 		c:RegisterEffect(e1)
-		-- 效果作用：使己方女武神怪兽在本回合内不会被战斗破坏。
+		-- 使己方女武神怪兽在本回合内不会被战斗破坏。
 		local e2=Effect.CreateEffect(c)
 		e2:SetType(EFFECT_TYPE_FIELD)
 		e2:SetCode(EFFECT_INDESTRUCTABLE_BATTLE)

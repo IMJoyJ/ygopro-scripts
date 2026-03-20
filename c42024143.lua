@@ -2,7 +2,7 @@
 -- 效果：
 -- 自己墓地有名字带有「X-剑士」的怪兽2只以上存在，自己场上没有怪兽存在的场合，这张卡可以从手卡特殊召唤。
 function c42024143.initial_effect(c)
-	-- 效果原文内容：自己墓地有名字带有「X-剑士」的怪兽2只以上存在，自己场上没有怪兽存在的场合，这张卡可以从手卡特殊召唤。
+	-- 自己墓地有名字带有「X-剑士」的怪兽2只以上存在，自己场上没有怪兽存在的场合，这张卡可以从手卡特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_SPSUMMON_PROC)

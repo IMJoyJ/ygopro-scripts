@@ -3,7 +3,7 @@
 -- ①：这张卡召唤成功时才能发动。从自己墓地选1只光属性以外的「No.」怪兽效果无效特殊召唤，从自己场上把这张卡和1只「希望皇 霍普」怪兽各当作攻击力上升1700的装备卡使用给那只特殊召唤的怪兽装备。这个回合，自己只能有1次攻击宣言。
 -- ②：用这张卡的效果把这张卡装备的怪兽向对方怪兽攻击宣言时才能发动。那只攻击怪兽攻击力变成2倍并在结束阶段破坏。
 function c32281491.initial_effect(c)
-	-- 效果原文内容：①：这张卡召唤成功时才能发动。
+	-- ①：这张卡召唤成功时才能发动。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(32281491,0))
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_EQUIP)
@@ -12,7 +12,7 @@ function c32281491.initial_effect(c)
 	e1:SetTarget(c32281491.sptg)
 	e1:SetOperation(c32281491.spop)
 	c:RegisterEffect(e1)
-	-- 效果原文内容：从自己墓地选1只光属性以外的「No.」怪兽效果无效特殊召唤，从自己场上把这张卡和1只「希望皇 霍普」怪兽各当作攻击力上升1700的装备卡使用给那只特殊召唤的怪兽装备。这个回合，自己只能有1次攻击宣言。
+	-- 从自己墓地选1只光属性以外的「No.」怪兽效果无效特殊召唤，从自己场上把这张卡和1只「希望皇 霍普」怪兽各当作攻击力上升1700的装备卡使用给那只特殊召唤的怪兽装备。这个回合，自己只能有1次攻击宣言。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(32281491,1))
 	e2:SetCategory(CATEGORY_ATKCHANGE)
@@ -46,7 +46,7 @@ function c32281491.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 设置操作信息：装备目标
 	Duel.SetOperationInfo(0,CATEGORY_EQUIP,nil,1,tp,LOCATION_MZONE)
 end
--- 效果作用：选择并特殊召唤符合条件的怪兽，将其效果无效化并装备给目标怪兽，同时设置本回合只能攻击一次
+-- 选择并特殊召唤符合条件的怪兽，将其效果无效化并装备给目标怪兽，同时设置本回合只能攻击一次
 function c32281491.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	-- 提示玩家选择要特殊召唤的怪兽
@@ -56,13 +56,13 @@ function c32281491.spop(e,tp,eg,ep,ev,re,r,rp)
 	local tc=g:GetFirst()
 	-- 执行特殊召唤步骤
 	if tc and Duel.SpecialSummonStep(tc,0,tp,tp,false,false,POS_FACEUP) then
-		-- 效果原文内容：那只特殊召唤的怪兽效果无效
+		-- 那只特殊召唤的怪兽效果无效
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_DISABLE)
 		e1:SetReset(RESET_EVENT+RESETS_STANDARD)
 		tc:RegisterEffect(e1)
-		-- 效果原文内容：那只特殊召唤的怪兽效果无效
+		-- 那只特殊召唤的怪兽效果无效
 		local e2=Effect.CreateEffect(c)
 		e2:SetType(EFFECT_TYPE_SINGLE)
 		e2:SetCode(EFFECT_DISABLE_EFFECT)
@@ -84,7 +84,7 @@ function c32281491.spop(e,tp,eg,ep,ev,re,r,rp)
 	end
 	-- 完成特殊召唤流程
 	Duel.SpecialSummonComplete()
-	-- 效果原文内容：这个回合，自己只能有1次攻击宣言
+	-- 这个回合，自己只能有1次攻击宣言
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_FIELD)
 	e3:SetProperty(EFFECT_FLAG_IGNORE_IMMUNE)
@@ -95,7 +95,7 @@ function c32281491.spop(e,tp,eg,ep,ev,re,r,rp)
 	e3:SetReset(RESET_PHASE+PHASE_END)
 	-- 注册攻击限制效果
 	Duel.RegisterEffect(e3,tp)
-	-- 效果作用：设置攻击宣言时检查装备怪兽是否为指定目标
+	-- 设置攻击宣言时检查装备怪兽是否为指定目标
 	local e4=Effect.CreateEffect(c)
 	e4:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e4:SetCode(EVENT_ATTACK_ANNOUNCE)
@@ -105,11 +105,11 @@ function c32281491.spop(e,tp,eg,ep,ev,re,r,rp)
 	-- 注册攻击宣言检查效果
 	Duel.RegisterEffect(e4,tp)
 end
--- 效果作用：将装备卡装备给目标怪兽并设置攻击力加成
+-- 将装备卡装备给目标怪兽并设置攻击力加成
 function c32281491.zs_equip_monster(c,ec,tp,tc)
 	-- 判断装备是否成功
 	if not Duel.Equip(tp,ec,tc) then return end
-	-- 效果原文内容：各当作攻击力上升1700的装备卡使用
+	-- 各当作攻击力上升1700的装备卡使用
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_EQUIP_LIMIT)
@@ -118,7 +118,7 @@ function c32281491.zs_equip_monster(c,ec,tp,tc)
 	e1:SetValue(c32281491.eqlimit)
 	e1:SetLabelObject(tc)
 	ec:RegisterEffect(e1)
-	-- 效果原文内容：各当作攻击力上升1700的装备卡使用
+	-- 各当作攻击力上升1700的装备卡使用
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_EQUIP)
 	e2:SetCode(EFFECT_UPDATE_ATTACK)
@@ -138,24 +138,24 @@ end
 function c32281491.atklimittg(e,c)
 	return c:GetFieldID()~=e:GetLabel()
 end
--- 效果作用：记录攻击怪兽的FieldID
+-- 记录攻击怪兽的FieldID
 function c32281491.checkop(e,tp,eg,ep,ev,re,r,rp)
 	local fid=eg:GetFirst():GetFieldID()
 	e:GetLabelObject():SetLabel(fid)
 end
--- 效果原文内容：用这张卡的效果把这张卡装备的怪兽向对方怪兽攻击宣言时才能发动
+-- 用这张卡的效果把这张卡装备的怪兽向对方怪兽攻击宣言时才能发动
 function c32281491.atkcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	return c:GetFlagEffect(32281491)~=0
 		-- 判断攻击怪兽是否为装备怪兽
 		and Duel.GetAttacker()==c:GetEquipTarget()
 end
--- 效果作用：使攻击怪兽攻击力翻倍并在结束阶段破坏
+-- 使攻击怪兽攻击力翻倍并在结束阶段破坏
 function c32281491.atkop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local tc=c:GetEquipTarget()
 	if tc:IsImmuneToEffect(e) then return end
-	-- 效果原文内容：那只攻击怪兽攻击力变成2倍
+	-- 那只攻击怪兽攻击力变成2倍
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_SET_ATTACK_FINAL)
@@ -164,7 +164,7 @@ function c32281491.atkop(e,tp,eg,ep,ev,re,r,rp)
 	tc:RegisterEffect(e1)
 	local fid=e:GetHandler():GetFieldID()
 	tc:RegisterFlagEffect(32281491,RESET_EVENT+RESETS_STANDARD,0,1,fid)
-	-- 效果原文内容：并在结束阶段破坏
+	-- 并在结束阶段破坏
 	local e2=Effect.CreateEffect(e:GetHandler())
 	e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e2:SetProperty(EFFECT_FLAG_IGNORE_IMMUNE)
@@ -187,7 +187,7 @@ function c32281491.descon(e,tp,eg,ep,ev,re,r,rp)
 		return false
 	end
 end
--- 效果作用：破坏目标怪兽
+-- 破坏目标怪兽
 function c32281491.desop(e,tp,eg,ep,ev,re,r,rp)
 	local tc=e:GetLabelObject()
 	-- 实际破坏目标怪兽

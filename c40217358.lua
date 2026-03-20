@@ -39,16 +39,16 @@ function c40217358.initial_effect(c)
 	e6:SetOperation(c40217358.rmop)
 	c:RegisterEffect(e6)
 end
--- 效果作用：限制融合素材
+-- 限制融合素材
 function c40217358.fuslimit(e,c,sumtype)
 	return sumtype==SUMMON_TYPE_FUSION
 end
--- 效果作用：破坏时发动的条件判断
+-- 破坏时发动的条件判断
 function c40217358.rmcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	return c:IsReason(REASON_DESTROY) and c:IsPreviousLocation(LOCATION_ONFIELD)
 end
--- 效果作用：设置连锁操作信息
+-- 设置连锁操作信息
 function c40217358.rmtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
 	local pre=e:GetHandler():GetPreviousControler()
@@ -57,7 +57,7 @@ function c40217358.rmtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 设置连锁操作的类别为除外
 	Duel.SetOperationInfo(0,CATEGORY_REMOVE,nil,1,pre,LOCATION_HAND)
 end
--- 效果作用：处理破坏时的除外效果
+-- 处理破坏时的除外效果
 function c40217358.rmop(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取连锁的目标玩家
 	local p=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER)
@@ -82,12 +82,12 @@ function c40217358.rmop(e,tp,eg,ep,ev,re,r,rp)
 	-- 注册该持续效果
 	Duel.RegisterEffect(e1,tp)
 end
--- 效果作用：判断是否到达指定回合
+-- 判断是否到达指定回合
 function c40217358.retcon(e,tp,eg,ep,ev,re,r,rp)
 	-- 判断当前回合数是否等于设定的回合数
 	return Duel.GetTurnCount()==e:GetLabel()
 end
--- 效果作用：将除外的卡送回手牌
+-- 将除外的卡送回手牌
 function c40217358.retop(e,tp,eg,ep,ev,re,r,rp)
 	local tc=e:GetLabelObject()
 	if tc:GetFlagEffect(40217358)~=0 then

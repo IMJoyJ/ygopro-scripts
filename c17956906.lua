@@ -3,7 +3,7 @@
 -- 这个卡名的卡在1回合只能发动1张。
 -- ①：支付1000的倍数的基本分，以支付的基本分每1000为1只的自己墓地的「女武神」怪兽为对象才能发动（同名卡最多1张）。那些怪兽特殊召唤。那之后，对方可以从自身墓地选最多有这个效果特殊召唤的怪兽数量的攻击力2000以下的怪兽特殊召唤。
 function c17956906.initial_effect(c)
-	-- 效果原文内容：这个卡名的卡在1回合只能发动1张。
+	-- 这个卡名的卡在1回合只能发动1张。
 	local e1 = Effect.CreateEffect(c)
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET)
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -26,7 +26,7 @@ function c17956906.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 		return true
 	end
 end
--- 效果原文内容：①：支付1000的倍数的基本分，以支付的基本分每1000为1只的自己墓地的「女武神」怪兽为对象才能发动（同名卡最多1张）。那些怪兽特殊召唤。那之后，对方可以从自身墓地选最多有这个效果特殊召唤的怪兽数量的攻击力2000以下的怪兽特殊召唤。
+-- ①：支付1000的倍数的基本分，以支付的基本分每1000为1只的自己墓地的「女武神」怪兽为对象才能发动（同名卡最多1张）。那些怪兽特殊召唤。那之后，对方可以从自身墓地选最多有这个效果特殊召唤的怪兽数量的攻击力2000以下的怪兽特殊召唤。
 function c17956906.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	-- 获取玩家墓地中的「女武神」怪兽组
 	local g=Duel.GetMatchingGroup(c17956906.spfilter,tp,LOCATION_GRAVE,0,nil,e,tp)

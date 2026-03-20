@@ -4,7 +4,7 @@
 -- ①：只要这张卡在怪兽区域存在，自己不是超量怪兽不能从额外卡组特殊召唤。
 -- ②：丢弃1张手卡才能发动。从手卡·卡组把1只3星通常怪兽特殊召唤。把通常怪兽丢弃发动的场合，可以把特殊召唤的怪兽改成1只「原质炉」怪兽。
 function c33008376.initial_effect(c)
-	-- 效果原文内容：自己不是超量怪兽不能从额外卡组特殊召唤
+	-- 自己不是超量怪兽不能从额外卡组特殊召唤
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(33008376,0))  --"自己不是超量怪兽不能从额外卡组特殊召唤"
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -15,7 +15,7 @@ function c33008376.initial_effect(c)
 	e1:SetTarget(c33008376.sptg)
 	e1:SetOperation(c33008376.spop)
 	c:RegisterEffect(e1)
-	-- 效果原文内容：只要这张卡在怪兽区域存在，自己不是超量怪兽不能从额外卡组特殊召唤
+	-- 只要这张卡在怪兽区域存在，自己不是超量怪兽不能从额外卡组特殊召唤
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD)
 	e2:SetCode(EFFECT_CANNOT_SPECIAL_SUMMON)

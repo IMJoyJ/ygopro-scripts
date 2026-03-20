@@ -4,7 +4,7 @@
 -- ①：从卡组把1只「妮穆蕾莉娅」怪兽加入手卡。自己的额外卡组有表侧表示的「梦见之妮穆蕾莉娅」存在的场合，再在这个回合在「妮穆蕾莉娅」怪兽的召唤·特殊召唤成功时让对方不能把魔法·陷阱·怪兽的效果发动。
 -- ②：让墓地的这张卡回到卡组最下面，以自己场上1张「梦见之妮穆蕾莉娅」为对象才能发动。那张卡表侧表示加入持有者的额外卡组。
 function c44843954.initial_effect(c)
-	-- 效果原文内容：①：从卡组把1只「妮穆蕾莉娅」怪兽加入手卡。自己的额外卡组有表侧表示的「梦见之妮穆蕾莉娅」存在的场合，再在这个回合在「妮穆蕾莉娅」怪兽的召唤·特殊召唤成功时让对方不能把魔法·陷阱·怪兽的效果发动。
+	-- ①：从卡组把1只「妮穆蕾莉娅」怪兽加入手卡。自己的额外卡组有表侧表示的「梦见之妮穆蕾莉娅」存在的场合，再在这个回合在「妮穆蕾莉娅」怪兽的召唤·特殊召唤成功时让对方不能把魔法·陷阱·怪兽的效果发动。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(44843954,0))
 	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
@@ -14,7 +14,7 @@ function c44843954.initial_effect(c)
 	e1:SetTarget(c44843954.target)
 	e1:SetOperation(c44843954.activate)
 	c:RegisterEffect(e1)
-	-- 效果原文内容：②：让墓地的这张卡回到卡组最下面，以自己场上1张「梦见之妮穆蕾莉娅」为对象才能发动。那张卡表侧表示加入持有者的额外卡组。
+	-- ②：让墓地的这张卡回到卡组最下面，以自己场上1张「梦见之妮穆蕾莉娅」为对象才能发动。那张卡表侧表示加入持有者的额外卡组。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(44843954,1))
 	e2:SetProperty(EFFECT_FLAG_CARD_TARGET)
@@ -36,7 +36,7 @@ function c44843954.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 设置效果处理信息（将1张卡从卡组加入手牌）
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 效果作用：选择并加入手牌1只满足条件的怪兽，若加入手牌的怪兽为「妮穆蕾莉娅」怪兽且己方额外卡组存在表侧表示的「梦见之妮穆蕾莉娅」则注册连锁限制效果
+-- 选择并加入手牌1只满足条件的怪兽，若加入手牌的怪兽为「妮穆蕾莉娅」怪兽且己方额外卡组存在表侧表示的「梦见之妮穆蕾莉娅」则注册连锁限制效果
 function c44843954.activate(e,tp,eg,ep,ev,re,r,rp)
 	-- 提示玩家选择要加入手牌的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
@@ -55,7 +55,7 @@ function c44843954.activate(e,tp,eg,ep,ev,re,r,rp)
 		-- 提示对方宣言了「梦见之妮穆蕾莉娅」
 		Duel.Hint(HINT_CARD,0,70155677)
 		local c=e:GetHandler()
-		-- 效果原文内容：①：从卡组把1只「妮穆蕾莉娅」怪兽加入手卡。自己的额外卡组有表侧表示的「梦见之妮穆蕾莉娅」存在的场合，再在这个回合在「妮穆蕾莉娅」怪兽的召唤·特殊召唤成功时让对方不能把魔法·陷阱·怪兽的效果发动。
+		-- ①：从卡组把1只「妮穆蕾莉娅」怪兽加入手卡。自己的额外卡组有表侧表示的「梦见之妮穆蕾莉娅」存在的场合，再在这个回合在「妮穆蕾莉娅」怪兽的召唤·特殊召唤成功时让对方不能把魔法·陷阱·怪兽的效果发动。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 		e1:SetCode(EVENT_SUMMON_SUCCESS)
@@ -68,7 +68,7 @@ function c44843954.activate(e,tp,eg,ep,ev,re,r,rp)
 		e2:SetCode(EVENT_SPSUMMON_SUCCESS)
 		-- 注册特殊召唤成功时的连锁限制效果
 		Duel.RegisterEffect(e2,tp)
-		-- 效果原文内容：①：从卡组把1只「妮穆蕾莉娅」怪兽加入手卡。自己的额外卡组有表侧表示的「梦见之妮穆蕾莉娅」存在的场合，再在这个回合在「妮穆蕾莉娅」怪兽的召唤·特殊召唤成功时让对方不能把魔法·陷阱·怪兽的效果发动。
+		-- ①：从卡组把1只「妮穆蕾莉娅」怪兽加入手卡。自己的额外卡组有表侧表示的「梦见之妮穆蕾莉娅」存在的场合，再在这个回合在「妮穆蕾莉娅」怪兽的召唤·特殊召唤成功时让对方不能把魔法·陷阱·怪兽的效果发动。
 		local e3=Effect.CreateEffect(c)
 		e3:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 		e3:SetCode(EVENT_CHAIN_END)
@@ -85,7 +85,7 @@ end
 function c44843954.sumcon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c44843954.sumfilter,1,nil)
 end
--- 效果作用：根据当前连锁序号设置连锁限制
+-- 根据当前连锁序号设置连锁限制
 function c44843954.sumsuc(e,tp,eg,ep,ev,re,r,rp)
 	-- 判断当前连锁序号是否为0
 	if Duel.GetCurrentChain()==0 then
@@ -95,7 +95,7 @@ function c44843954.sumsuc(e,tp,eg,ep,ev,re,r,rp)
 	elseif Duel.GetCurrentChain()==1 then
 		-- 注册标识效果用于标记连锁限制
 		Duel.RegisterFlagEffect(tp,44843954,RESET_PHASE+PHASE_END,0,1)
-		-- 效果原文内容：①：从卡组把1只「妮穆蕾莉娅」怪兽加入手卡。自己的额外卡组有表侧表示的「梦见之妮穆蕾莉娅」存在的场合，再在这个回合在「妮穆蕾莉娅」怪兽的召唤·特殊召唤成功时让对方不能把魔法·陷阱·怪兽的效果发动。
+		-- ①：从卡组把1只「妮穆蕾莉娅」怪兽加入手卡。自己的额外卡组有表侧表示的「梦见之妮穆蕾莉娅」存在的场合，再在这个回合在「妮穆蕾莉娅」怪兽的召唤·特殊召唤成功时让对方不能把魔法·陷阱·怪兽的效果发动。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 		e1:SetCode(EVENT_CHAINING)
@@ -109,13 +109,13 @@ function c44843954.sumsuc(e,tp,eg,ep,ev,re,r,rp)
 		Duel.RegisterEffect(e2,tp)
 	end
 end
--- 效果作用：重置标识效果并清除效果
+-- 重置标识效果并清除效果
 function c44843954.resetop(e,tp,eg,ep,ev,re,r,rp)
 	-- 重置标识效果
 	Duel.ResetFlagEffect(tp,44843954)
 	e:Reset()
 end
--- 效果作用：根据标识效果状态设置连锁限制
+-- 根据标识效果状态设置连锁限制
 function c44843954.limop2(e,tp,eg,ep,ev,re,r,rp)
 	-- 判断是否存在标识效果
 	if Duel.GetFlagEffect(tp,44843954)>0 then
@@ -129,7 +129,7 @@ end
 function c44843954.chainlm(e,ep,tp)
 	return ep==tp
 end
--- 效果原文内容：②：让墓地的这张卡回到卡组最下面，以自己场上1张「梦见之妮穆蕾莉娅」为对象才能发动。那张卡表侧表示加入持有者的额外卡组。
+-- ②：让墓地的这张卡回到卡组最下面，以自己场上1张「梦见之妮穆蕾莉娅」为对象才能发动。那张卡表侧表示加入持有者的额外卡组。
 function c44843954.mvcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	if chk==0 then return c:IsAbleToDeckAsCost() end
@@ -152,7 +152,7 @@ function c44843954.mvtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	-- 设置效果处理信息（将1张卡送入额外卡组）
 	Duel.SetOperationInfo(0,CATEGORY_TOEXTRA,g,1,0,0)
 end
--- 效果作用：将选中的灵摆怪兽送入额外卡组
+-- 将选中的灵摆怪兽送入额外卡组
 function c44843954.mvop(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取当前效果的目标卡
 	local tc=Duel.GetFirstTarget()

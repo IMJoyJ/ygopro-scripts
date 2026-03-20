@@ -44,9 +44,9 @@ function c42386471.initial_effect(c)
 	e6:SetOperation(c42386471.operation)
 	c:RegisterEffect(e6)
 end
--- 效果作用：使此卡在召唤·反转召唤·特殊召唤的回合不能攻击
+-- 使此卡在召唤·反转召唤·特殊召唤的回合不能攻击
 function c42386471.atklimit(e,tp,eg,ep,ev,re,r,rp)
-	-- 效果作用：此卡在召唤·反转召唤·特殊召唤的回合不能攻击
+	-- 此卡在召唤·反转召唤·特殊召唤的回合不能攻击
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_CANNOT_ATTACK)
@@ -57,11 +57,11 @@ end
 function c42386471.sfilter(c)
 	return c:IsReason(REASON_DESTROY) and c:IsPreviousPosition(POS_FACEUP) and c:GetPreviousCodeOnField()==15259703 and c:IsPreviousLocation(LOCATION_ONFIELD)
 end
--- 效果作用：判断是否有「卡通世界」被破坏
+-- 判断是否有「卡通世界」被破坏
 function c42386471.sdescon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c42386471.sfilter,1,nil)
 end
--- 效果作用：将此卡破坏
+-- 将此卡破坏
 function c42386471.sdesop(e,tp,eg,ep,ev,re,r,rp)
 	-- 将此卡破坏
 	Duel.Destroy(e:GetHandler(),REASON_EFFECT)
@@ -74,25 +74,25 @@ end
 function c42386471.dirfilter2(c)
 	return c:IsFaceup() and c:IsType(TYPE_TOON)
 end
--- 效果作用：判断是否满足直接攻击条件
+-- 判断是否满足直接攻击条件
 function c42386471.dircon(e)
 	-- 判断自己场上是否存在「卡通世界」
 	return Duel.IsExistingMatchingCard(c42386471.dirfilter1,e:GetHandlerPlayer(),LOCATION_ONFIELD,0,1,nil)
 		-- 判断对方场上是否存在卡通怪兽
 		and not Duel.IsExistingMatchingCard(c42386471.dirfilter2,e:GetHandlerPlayer(),0,LOCATION_MZONE,1,nil)
 end
--- 效果作用：判断造成战斗伤害的玩家是否为对方
+-- 判断造成战斗伤害的玩家是否为对方
 function c42386471.condition(e,tp,eg,ep,ev,re,r,rp)
 	return ep~=tp
 end
--- 效果作用：设置丢弃手牌的连锁操作信息
+-- 设置丢弃手牌的连锁操作信息
 function c42386471.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 判断对方手牌数量是否大于0
 	if chk==0 then return Duel.GetFieldGroupCount(ep,LOCATION_HAND,0)>0 end
 	-- 设置丢弃手牌的连锁操作信息
 	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,1-tp,1)
 end
--- 效果作用：随机丢弃对方1张手牌
+-- 随机丢弃对方1张手牌
 function c42386471.operation(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取对方手牌组
 	local g=Duel.GetFieldGroup(ep,LOCATION_HAND,0)

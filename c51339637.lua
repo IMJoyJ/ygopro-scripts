@@ -4,7 +4,7 @@
 -- ①：自己场上有「转生炎兽」连接怪兽存在，怪兽的效果·魔法·陷阱卡发动时才能发动。那个发动无效并破坏。
 -- ②：这张卡在墓地存在的状态，和自身同名的怪兽作为素材让「转生炎兽」连接怪兽在自己场上连接召唤的场合才能发动。这张卡在自己场上盖放。这个效果盖放的这张卡从场上离开的场合除外。
 function c51339637.initial_effect(c)
-	-- 效果原文内容：①：自己场上有「转生炎兽」连接怪兽存在，怪兽的效果·魔法·陷阱卡发动时才能发动。那个发动无效并破坏。
+	-- ①：自己场上有「转生炎兽」连接怪兽存在，怪兽的效果·魔法·陷阱卡发动时才能发动。那个发动无效并破坏。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(51339637,0))
 	e1:SetCategory(CATEGORY_NEGATE+CATEGORY_DESTROY)
@@ -15,7 +15,7 @@ function c51339637.initial_effect(c)
 	e1:SetTarget(c51339637.target)
 	e1:SetOperation(c51339637.activate)
 	c:RegisterEffect(e1)
-	-- 效果原文内容：②：这张卡在墓地存在的状态，和自身同名的怪兽作为素材让「转生炎兽」连接怪兽在自己场上连接召唤的场合才能发动。这张卡在自己场上盖放。这个效果盖放的这张卡从场上离开的场合除外。
+	-- ②：这张卡在墓地存在的状态，和自身同名的怪兽作为素材让「转生炎兽」连接怪兽在自己场上连接召唤的场合才能发动。这张卡在自己场上盖放。这个效果盖放的这张卡从场上离开的场合除外。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(51339637,1))
 	e2:SetCategory(CATEGORY_SSET)

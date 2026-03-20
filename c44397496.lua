@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：以自己墓地1只「真红眼」怪兽为对象才能发动。那只怪兽特殊召唤。
 function c44397496.initial_effect(c)
-	-- 效果原文内容：①：以自己墓地1只「真红眼」怪兽为对象才能发动。那只怪兽特殊召唤。
+	-- ①：以自己墓地1只「真红眼」怪兽为对象才能发动。那只怪兽特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET)
@@ -17,7 +17,7 @@ end
 function c44397496.filter(c,e,tp)
 	return c:IsSetCard(0x3b) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 效果作用：判断是否满足发动条件
+-- 判断是否满足发动条件
 function c44397496.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(tp) and chkc:IsLocation(LOCATION_GRAVE) and c44397496.filter(chkc,e,tp) end
 	-- 判断场上是否有空位
@@ -31,7 +31,7 @@ function c44397496.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	-- 设置操作信息，确定特殊召唤的怪兽
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,1,0,0)
 end
--- 效果作用：处理特殊召唤
+-- 处理特殊召唤
 function c44397496.activate(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取当前连锁的目标怪兽
 	local tc=Duel.GetFirstTarget()

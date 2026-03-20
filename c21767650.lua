@@ -4,7 +4,7 @@
 -- ●自己场上的全部名字带有「水精鳞」的怪兽的等级上升1星。
 -- ●自己场上的全部名字带有「水精鳞」的怪兽的等级上升2星。
 function c21767650.initial_effect(c)
-	-- 效果原文内容：可以把墓地的这张卡从游戏中除外，从以下效果选择1个发动。
+	-- 可以把墓地的这张卡从游戏中除外，从以下效果选择1个发动。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(21767650,0))  --"等级上升"
 	e1:SetType(EFFECT_TYPE_IGNITION)
@@ -34,7 +34,7 @@ function c21767650.lvop(e,tp,eg,ep,ev,re,r,rp)
 	local g=Duel.GetMatchingGroup(c21767650.filter,tp,LOCATION_MZONE,0,nil)
 	local tc=g:GetFirst()
 	while tc do
-		-- 效果原文内容：●自己场上的全部名字带有「水精鳞」的怪兽的等级上升1星。●自己场上的全部名字带有「水精鳞」的怪兽的等级上升2星。
+		-- ●自己场上的全部名字带有「水精鳞」的怪兽的等级上升1星。●自己场上的全部名字带有「水精鳞」的怪兽的等级上升2星。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_LEVEL)

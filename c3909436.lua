@@ -74,19 +74,19 @@ function c3909436.operation(e,tp,eg,ep,ev,re,r,rp)
 	-- 把效果e作为玩家player的效果注册给全局环境
 	Duel.RegisterEffect(e1,tp)
 end
--- 效果作用：限制对方发动怪兽类型的效果
+-- 限制对方发动怪兽类型的效果
 function c3909436.aclimit1(e,re,tp)
 	return re:IsActiveType(TYPE_MONSTER)
 end
--- 效果作用：限制对方发动魔法类型的效果
+-- 限制对方发动魔法类型的效果
 function c3909436.aclimit2(e,re,tp)
 	return re:IsActiveType(TYPE_SPELL)
 end
--- 效果作用：限制对方发动陷阱类型的效果
+-- 限制对方发动陷阱类型的效果
 function c3909436.aclimit3(e,re,tp)
 	return re:IsActiveType(TYPE_TRAP)
 end
--- 效果作用：仪式召唤的这张卡被送去墓地的场合才能发动
+-- 仪式召唤的这张卡被送去墓地的场合才能发动
 function c3909436.thcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	return c:IsPreviousLocation(LOCATION_MZONE) and c:IsSummonType(SUMMON_TYPE_RITUAL)

@@ -3,7 +3,7 @@
 -- 「灵摆呼唤」在1回合只能发动1张，把「魔术师」灵摆怪兽的灵摆效果发动过的回合不能发动。
 -- ①：丢弃1张手卡才能发动。把2只卡名不同的「魔术师」灵摆怪兽从卡组加入手卡。这张卡的发动后，直到下次的对方回合结束时自己的灵摆区域的「魔术师」卡不会被效果破坏。
 function c53208660.initial_effect(c)
-	-- 效果原文内容：「灵摆呼唤」在1回合只能发动1张，把「魔术师」灵摆怪兽的灵摆效果发动过的回合不能发动。
+	-- 「灵摆呼唤」在1回合只能发动1张，把「魔术师」灵摆怪兽的灵摆效果发动过的回合不能发动。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_SEARCH+CATEGORY_TOHAND)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -66,7 +66,7 @@ function c53208660.activate(e,tp,eg,ep,ev,re,r,rp)
 		Duel.ConfirmCards(1-tp,g1)
 	end
 	if e:IsHasType(EFFECT_TYPE_ACTIVATE) then
-		-- 效果原文内容：这张卡的发动后，直到下次的对方回合结束时自己的灵摆区域的「魔术师」卡不会被效果破坏。
+		-- 这张卡的发动后，直到下次的对方回合结束时自己的灵摆区域的「魔术师」卡不会被效果破坏。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_FIELD)
 		e1:SetCode(EFFECT_INDESTRUCTABLE_EFFECT)

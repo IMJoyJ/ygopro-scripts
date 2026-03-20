@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：1回合1次，以对方场上1只表侧表示怪兽为对象才能发动。那只怪兽的攻击力下降对方场上的怪兽数量×1000。
 function c47474172.initial_effect(c)
-	-- 效果原文内容：①：1回合1次，以对方场上1只表侧表示怪兽为对象才能发动。
+	-- ①：1回合1次，以对方场上1只表侧表示怪兽为对象才能发动。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(47474172,0))
 	e1:SetCategory(CATEGORY_ATKCHANGE)

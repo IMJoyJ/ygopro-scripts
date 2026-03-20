@@ -18,19 +18,19 @@ end
 function c36442179.filter(c)
 	return c:IsFaceup() and c:IsType(TYPE_SYNCHRO)
 end
--- 效果作用：选择对方场上的1只表侧表示的同调怪兽作为对象
+-- 选择对方场上的1只表侧表示的同调怪兽作为对象
 function c36442179.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(1-tp) and chkc:IsLocation(LOCATION_MZONE) and c36442179.filter(chkc) end
-	-- 效果作用：确认是否满足选择对象的条件
+	-- 确认是否满足选择对象的条件
 	if chk==0 then return Duel.IsExistingTarget(c36442179.filter,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil) end
-	-- 效果作用：向玩家提示“请选择表侧表示的卡”
+	-- 向玩家提示“请选择表侧表示的卡”
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
-	-- 效果作用：选择满足条件的1只怪兽作为对象
+	-- 选择满足条件的1只怪兽作为对象
 	Duel.SelectTarget(tp,c36442179.filter,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,nil)
 end
--- 效果作用：将自身攻击力变成与对象怪兽的攻击力相同
+-- 将自身攻击力变成与对象怪兽的攻击力相同
 function c36442179.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 效果作用：获取当前连锁中的目标怪兽
+	-- 获取当前连锁中的目标怪兽
 	local tc=Duel.GetFirstTarget()
 	local c=e:GetHandler()
 	if c:IsFaceup() and c:IsRelateToEffect(e) and tc and tc:IsFaceup() and tc:IsRelateToEffect(e) then

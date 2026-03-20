@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：以自己墓地1张「融合」和1只融合召唤使用过的融合素材怪兽为对象才能发动。那些卡加入手卡。
 function c18511384.initial_effect(c)
-	-- 效果原文内容：①：以自己墓地1张「融合」和1只融合召唤使用过的融合素材怪兽为对象才能发动。那些卡加入手卡。
+	-- ①：以自己墓地1张「融合」和1只融合召唤使用过的融合素材怪兽为对象才能发动。那些卡加入手卡。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_TOHAND)
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET)

@@ -2,7 +2,7 @@
 -- 效果：
 -- 对方把墓地的卡加入手卡时才能发动。对方让加入手卡的那1张卡回到卡组。
 function c47247413.initial_effect(c)
-	-- 效果原文内容：对方把墓地的卡加入手卡时才能发动。对方让加入手卡的那1张卡回到卡组。
+	-- 对方把墓地的卡加入手卡时才能发动。对方让加入手卡的那1张卡回到卡组。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCategory(CATEGORY_TODECK)

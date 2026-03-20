@@ -2,7 +2,7 @@
 -- 效果：
 -- 自己的陷阱卡被对方控制的卡的效果破坏，从场地送去墓地时才能发动。场上的1张魔法·陷阱卡破坏。
 function c473469.initial_effect(c)
-	-- 效果原文内容：自己的陷阱卡被对方控制的卡的效果破坏，从场地送去墓地时才能发动。场上的1张魔法·陷阱卡破坏。
+	-- 自己的陷阱卡被对方控制的卡的效果破坏，从场地送去墓地时才能发动。场上的1张魔法·陷阱卡破坏。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_DESTROY)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)

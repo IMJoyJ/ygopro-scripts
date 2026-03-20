@@ -10,7 +10,7 @@ function c15758127.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- 效果原文内容：①：1回合1次，可以支付700基本分，从以下效果选择1个发动。
+	-- ①：1回合1次，可以支付700基本分，从以下效果选择1个发动。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_QUICK_O)
 	e2:SetCode(EVENT_FREE_CHAIN)
@@ -21,7 +21,7 @@ function c15758127.initial_effect(c)
 	e2:SetTarget(c15758127.target)
 	e2:SetOperation(c15758127.activate)
 	c:RegisterEffect(e2)
-	-- 效果原文内容：②：自己的「北极天熊」同调怪兽被对方的攻击破坏时才能发动。对方直到自身的手卡·场上·墓地的卡合计变成7张为止必须回到持有者卡组。
+	-- ②：自己的「北极天熊」同调怪兽被对方的攻击破坏时才能发动。对方直到自身的手卡·场上·墓地的卡合计变成7张为止必须回到持有者卡组。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(15758127,2))
 	e3:SetCategory(CATEGORY_TODECK)

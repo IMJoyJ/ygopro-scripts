@@ -5,7 +5,7 @@
 -- ●兽战士族：「鱼料理的食谱」
 -- ●战士族：「肉料理的食谱」
 function c41773061.initial_effect(c)
-	-- 效果原文内容：这个卡名的卡在1回合只能发动1张。
+	-- 这个卡名的卡在1回合只能发动1张。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_SEARCH+CATEGORY_TOHAND+CATEGORY_GRAVE_ACTION)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -19,7 +19,7 @@ end
 function c41773061.filter(c)
 	return c:IsSetCard(0x196) and c:IsType(TYPE_MONSTER) and c:IsAbleToHand()
 end
--- 效果作用：判断是否满足发动条件
+-- 判断是否满足发动条件
 function c41773061.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 检索满足条件的「新式魔厨」怪兽
 	local g=Duel.GetMatchingGroup(c41773061.filter,tp,LOCATION_DECK,0,nil)
@@ -31,7 +31,7 @@ end
 function c41773061.thfilter(c,code)
 	return c:IsCode(code) and c:IsAbleToHand()
 end
--- 效果作用：发动效果
+-- 发动效果
 function c41773061.activate(e,tp,eg,ep,ev,re,r,rp)
 	-- 检索满足条件的「新式魔厨」怪兽
 	local g=Duel.GetMatchingGroup(c41773061.filter,tp,LOCATION_DECK,0,nil)

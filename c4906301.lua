@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：对方回合把墓地的这张卡除外才能发动。这个回合，对方怪兽的攻击只有1次无效。
 function c4906301.initial_effect(c)
-	-- 效果原文内容：①：对方回合把墓地的这张卡除外才能发动。这个回合，对方怪兽的攻击只有1次无效。
+	-- ①：对方回合把墓地的这张卡除外才能发动。这个回合，对方怪兽的攻击只有1次无效。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(4906301,0))  --"1次攻击无效"
 	e1:SetType(EFFECT_TYPE_QUICK_O)
@@ -15,7 +15,7 @@ function c4906301.initial_effect(c)
 	e1:SetOperation(c4906301.operation)
 	c:RegisterEffect(e1)
 end
--- 效果原文内容：对方回合把墓地的这张卡除外才能发动。
+-- 对方回合把墓地的这张卡除外才能发动。
 function c4906301.condition(e,tp,eg,ep,ev,re,r,rp)
 	-- 当前回合玩家不是发动玩家且满足战斗阶段条件
 	return Duel.GetTurnPlayer()~=tp and aux.bpcon(e,tp,eg,ep,ev,re,r,rp)
@@ -25,7 +25,7 @@ function c4906301.operation(e,tp,eg,ep,ev,re,r,rp)
 	-- 如果此时有攻击怪兽则无效其攻击
 	if Duel.GetAttacker() then Duel.NegateAttack()
 	else
-		-- 效果原文内容：这个回合，对方怪兽的攻击只有1次无效。
+		-- 这个回合，对方怪兽的攻击只有1次无效。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 		e1:SetCode(EVENT_ATTACK_ANNOUNCE)

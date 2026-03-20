@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：这张卡反转的场合，以自己墓地1张魔法卡为对象发动。那张卡加入手卡。
 function c31560081.initial_effect(c)
-	-- 效果原文内容：①：这张卡反转的场合，以自己墓地1张魔法卡为对象发动。那张卡加入手卡。
+	-- ①：这张卡反转的场合，以自己墓地1张魔法卡为对象发动。那张卡加入手卡。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(31560081,0))  --"魔法回收"
 	e1:SetCategory(CATEGORY_TOHAND)

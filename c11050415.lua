@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：从自己的手卡·卡组·墓地选1只「娱乐伙伴 探寻河马」特殊召唤。那之后，可以在自己场上把「河马衍生物」（兽族·地·1星·攻/守0）尽可能特殊召唤。这衍生物不能解放。只要「河马衍生物」在怪兽区域存在，自己不能从额外卡组把怪兽特殊召唤。这个效果把「河马衍生物」特殊召唤的场合，直到回合结束时对方不能把「河马衍生物」以外的怪兽作为攻击对象。
 function c11050415.initial_effect(c)
-	-- 效果原文内容：①：从自己的手卡·卡组·墓地选1只「娱乐伙伴 探寻河马」特殊召唤。那之后，可以在自己场上把「河马衍生物」（兽族·地·1星·攻/守0）尽可能特殊召唤。这衍生物不能解放。只要「河马衍生物」在怪兽区域存在，自己不能从额外卡组把怪兽特殊召唤。这个效果把「河马衍生物」特殊召唤的场合，直到回合结束时对方不能把「河马衍生物」以外的怪兽作为攻击对象。
+	-- ①：从自己的手卡·卡组·墓地选1只「娱乐伙伴 探寻河马」特殊召唤。那之后，可以在自己场上把「河马衍生物」（兽族·地·1星·攻/守0）尽可能特殊召唤。这衍生物不能解放。只要「河马衍生物」在怪兽区域存在，自己不能从额外卡组把怪兽特殊召唤。这个效果把「河马衍生物」特殊召唤的场合，直到回合结束时对方不能把「河马衍生物」以外的怪兽作为攻击对象。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_TOKEN)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -51,7 +51,7 @@ function c11050415.activate(e,tp,eg,ep,ev,re,r,rp)
 				local token=Duel.CreateToken(tp,11050415+i)
 				-- 将「河马衍生物」特殊召唤到场上
 				Duel.SpecialSummonStep(token,0,tp,tp,false,false,POS_FACEUP)
-				-- 效果原文内容：这衍生物不能解放。
+				-- 这衍生物不能解放。
 				local e1=Effect.CreateEffect(c)
 				e1:SetType(EFFECT_TYPE_SINGLE)
 				e1:SetCode(EFFECT_UNRELEASABLE_SUM)
@@ -62,7 +62,7 @@ function c11050415.activate(e,tp,eg,ep,ev,re,r,rp)
 				local e2=e1:Clone()
 				e2:SetCode(EFFECT_UNRELEASABLE_NONSUM)
 				token:RegisterEffect(e2)
-				-- 效果原文内容：只要「河马衍生物」在怪兽区域存在，自己不能从额外卡组把怪兽特殊召唤。
+				-- 只要「河马衍生物」在怪兽区域存在，自己不能从额外卡组把怪兽特殊召唤。
 				local e3=Effect.CreateEffect(c)
 				e3:SetType(EFFECT_TYPE_FIELD)
 				e3:SetCode(EFFECT_CANNOT_SPECIAL_SUMMON)
@@ -75,7 +75,7 @@ function c11050415.activate(e,tp,eg,ep,ev,re,r,rp)
 			end
 			-- 完成所有衍生物的特殊召唤步骤
 			Duel.SpecialSummonComplete()
-			-- 效果原文内容：这个效果把「河马衍生物」特殊召唤的场合，直到回合结束时对方不能把「河马衍生物」以外的怪兽作为攻击对象。
+			-- 这个效果把「河马衍生物」特殊召唤的场合，直到回合结束时对方不能把「河马衍生物」以外的怪兽作为攻击对象。
 			local e1=Effect.CreateEffect(c)
 			e1:SetType(EFFECT_TYPE_FIELD)
 			e1:SetCode(EFFECT_CANNOT_SELECT_BATTLE_TARGET)

@@ -4,7 +4,7 @@
 -- ①：从自己墓地的怪兽以及除外的自己怪兽之中以2只地属性同名怪兽为对象才能发动。那2只攻击力·守备力变成0，效果无效守备表示特殊召唤。这个效果特殊召唤的怪兽在结束阶段破坏。
 -- ②：自己场上的「G石人」怪兽被战斗或者对方的效果破坏的场合，可以作为代替把墓地的这张卡除外。
 function c37930737.initial_effect(c)
-	-- 效果原文内容：①：从自己墓地的怪兽以及除外的自己怪兽之中以2只地属性同名怪兽为对象才能发动。那2只攻击力·守备力变成0，效果无效守备表示特殊召唤。这个效果特殊召唤的怪兽在结束阶段破坏。
+	-- ①：从自己墓地的怪兽以及除外的自己怪兽之中以2只地属性同名怪兽为对象才能发动。那2只攻击力·守备力变成0，效果无效守备表示特殊召唤。这个效果特殊召唤的怪兽在结束阶段破坏。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -14,7 +14,7 @@ function c37930737.initial_effect(c)
 	e1:SetTarget(c37930737.target)
 	e1:SetOperation(c37930737.activate)
 	c:RegisterEffect(e1)
-	-- 效果原文内容：②：自己场上的「G石人」怪兽被战斗或者对方的效果破坏的场合，可以作为代替把墓地的这张卡除外。
+	-- ②：自己场上的「G石人」怪兽被战斗或者对方的效果破坏的场合，可以作为代替把墓地的这张卡除外。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e2:SetCode(EFFECT_DESTROY_REPLACE)
@@ -51,7 +51,7 @@ function c37930737.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	-- 设置当前处理的连锁的操作信息：设置操作分类为特殊召唤，目标为sg，数量为2
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,sg,2,0,0)
 end
--- 效果作用：检测场上是否有足够的召唤位置、获取连锁对象卡片组、判断是否满足发动条件、特殊召唤目标怪兽、设置结束阶段破坏效果
+-- 检测场上是否有足够的召唤位置、获取连锁对象卡片组、判断是否满足发动条件、特殊召唤目标怪兽、设置结束阶段破坏效果
 function c37930737.activate(e,tp,eg,ep,ev,re,r,rp)
 	-- 检测场上是否有足够的召唤位置：判断玩家的主怪兽区域是否至少有2个空位
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=1 then return end
@@ -66,20 +66,20 @@ function c37930737.activate(e,tp,eg,ep,ev,re,r,rp)
 		-- 特殊召唤目标怪兽：将目标怪兽以守备表示特殊召唤
 		Duel.SpecialSummonStep(tc,0,tp,tp,false,false,POS_FACEUP_DEFENSE)
 		tc:RegisterFlagEffect(37930737,RESET_EVENT+RESETS_STANDARD,0,1,fid)
-		-- 效果作用：使目标怪兽效果无效
+		-- 使目标怪兽效果无效
 		local e2=Effect.CreateEffect(c)
 		e2:SetType(EFFECT_TYPE_SINGLE)
 		e2:SetCode(EFFECT_DISABLE)
 		e2:SetReset(RESET_EVENT+RESETS_STANDARD)
 		tc:RegisterEffect(e2)
-		-- 效果作用：使目标怪兽效果无效
+		-- 使目标怪兽效果无效
 		local e3=Effect.CreateEffect(c)
 		e3:SetType(EFFECT_TYPE_SINGLE)
 		e3:SetCode(EFFECT_DISABLE_EFFECT)
 		e3:SetReset(RESET_EVENT+RESETS_STANDARD)
 		e3:SetValue(RESET_TURN_SET)
 		tc:RegisterEffect(e3)
-		-- 效果作用：将目标怪兽攻击力设置为0
+		-- 将目标怪兽攻击力设置为0
 		local e4=Effect.CreateEffect(c)
 		e4:SetType(EFFECT_TYPE_SINGLE)
 		e4:SetCode(EFFECT_SET_ATTACK_FINAL)
@@ -94,7 +94,7 @@ function c37930737.activate(e,tp,eg,ep,ev,re,r,rp)
 	-- 完成特殊召唤流程：结束特殊召唤步骤
 	Duel.SpecialSummonComplete()
 	g:KeepAlive()
-	-- 效果作用：注册一个结束阶段破坏效果
+	-- 注册一个结束阶段破坏效果
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e1:SetCode(EVENT_PHASE+PHASE_END)
@@ -122,7 +122,7 @@ function c37930737.descon(e,tp,eg,ep,ev,re,r,rp)
 		return true
 	end
 end
--- 效果作用：破坏满足条件的怪兽
+-- 破坏满足条件的怪兽
 function c37930737.desop(e,tp,eg,ep,ev,re,r,rp)
 	local g=e:GetLabelObject()
 	local tg=g:Filter(c37930737.desfilter,nil,e:GetLabel())
@@ -144,7 +144,7 @@ end
 function c37930737.repval(e,c)
 	return c37930737.repfilter(c,e:GetHandlerPlayer())
 end
--- 效果作用：将自身除外
+-- 将自身除外
 function c37930737.repop(e,tp,eg,ep,ev,re,r,rp)
 	-- 将自身除外：以效果原因将自身除外
 	Duel.Remove(e:GetHandler(),POS_FACEUP,REASON_EFFECT)

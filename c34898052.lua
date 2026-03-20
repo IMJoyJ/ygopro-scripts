@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：把自己墓地的地·水·炎·风属性怪兽各1只除外才能发动。选场上1张卡回到持有者卡组。
 function c34898052.initial_effect(c)
-	-- 效果原文内容：①：把自己墓地的地·水·炎·风属性怪兽各1只除外才能发动。选场上1张卡回到持有者卡组。
+	-- ①：把自己墓地的地·水·炎·风属性怪兽各1只除外才能发动。选场上1张卡回到持有者卡组。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(34898052,0))
 	e1:SetCategory(CATEGORY_TODECK)

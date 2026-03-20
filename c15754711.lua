@@ -56,7 +56,7 @@ function c15754711.operation(e,tp,eg,ep,ev,re,r,rp)
 		Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP_DEFENSE)
 		-- 将目标怪兽送回手牌。
 		Duel.SendtoHand(tc,nil,REASON_EFFECT)
-		-- 效果作用：特殊召唤的怪兽直到下个回合结束时不会被战斗·效果破坏。
+		-- 特殊召唤的怪兽直到下个回合结束时不会被战斗·效果破坏。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_INDESTRUCTABLE_EFFECT)

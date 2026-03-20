@@ -3,7 +3,7 @@
 -- ①：这张卡可以从自己的手卡·场上·墓地把兽战士族怪兽和机械族怪兽各1只除外从手卡特殊召唤。
 -- ②：这张卡的战斗让对方受到的战斗伤害变成0。
 function c19028307.initial_effect(c)
-	-- 效果原文内容：①：这张卡可以从自己的手卡·场上·墓地把兽战士族怪兽和机械族怪兽各1只除外从手卡特殊召唤。
+	-- ①：这张卡可以从自己的手卡·场上·墓地把兽战士族怪兽和机械族怪兽各1只除外从手卡特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_SPSUMMON_PROC)
@@ -13,7 +13,7 @@ function c19028307.initial_effect(c)
 	e1:SetTarget(c19028307.sptg)
 	e1:SetOperation(c19028307.spop)
 	c:RegisterEffect(e1)
-	-- 效果原文内容：②：这张卡的战斗让对方受到的战斗伤害变成0。
+	-- ②：这张卡的战斗让对方受到的战斗伤害变成0。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_SINGLE)
 	e2:SetCode(EFFECT_NO_BATTLE_DAMAGE)

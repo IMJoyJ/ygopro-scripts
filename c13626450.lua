@@ -2,7 +2,7 @@
 -- 效果：
 -- 丢弃1张手卡。场上表侧表示存在的永续陷阱卡全部破坏。
 function c13626450.initial_effect(c)
-	-- 效果原文内容：丢弃1张手卡。场上表侧表示存在的永续陷阱卡全部破坏。
+	-- 丢弃1张手卡。场上表侧表示存在的永续陷阱卡全部破坏。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_DESTROY)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)

@@ -16,7 +16,7 @@ end
 function c14507213.filter(c)
 	return c:IsFaceup() and c:IsCanBeSynchroMaterial()
 end
--- 效果作用：支付费用，检查是否在本回合中已经进入过战斗阶段
+-- 支付费用，检查是否在本回合中已经进入过战斗阶段
 function c14507213.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 规则层面：若玩家在本回合中未进入过战斗阶段则满足费用条件
 	if chk==0 then return Duel.GetActivityCount(tp,ACTIVITY_BATTLE_PHASE)==0 end
@@ -30,7 +30,7 @@ function c14507213.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 规则层面：将不能进入战斗阶段的效果注册给玩家
 	Duel.RegisterEffect(e1,tp)
 end
--- 效果作用：设置选择目标，用于选择对方场上表侧表示的怪兽
+-- 设置选择目标，用于选择对方场上表侧表示的怪兽
 function c14507213.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and c14507213.filter(chkc) end
 	-- 规则层面：判断是否存在满足条件的目标怪兽
@@ -40,7 +40,7 @@ function c14507213.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	-- 规则层面：选择对方场上表侧表示的1只满足条件的怪兽作为目标
 	Duel.SelectTarget(tp,c14507213.filter,tp,0,LOCATION_MZONE,1,1,nil)
 end
--- 效果作用：处理效果发动后的操作，将目标怪兽设为同调素材
+-- 处理效果发动后的操作，将目标怪兽设为同调素材
 function c14507213.activate(e,tp,eg,ep,ev,re,r,rp)
 	-- 规则层面：获取当前连锁中被选择的目标怪兽
 	local tc=Duel.GetFirstTarget()

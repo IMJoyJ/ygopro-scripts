@@ -2,7 +2,7 @@
 -- 效果：
 -- 把自己场上1只名字带有「希望皇 霍普」的怪兽解放才能发动。对方场上盖放的魔法·陷阱卡全部破坏。
 function c38777931.initial_effect(c)
-	-- 效果原文内容：把自己场上1只名字带有「希望皇 霍普」的怪兽解放才能发动。对方场上盖放的魔法·陷阱卡全部破坏。
+	-- 把自己场上1只名字带有「希望皇 霍普」的怪兽解放才能发动。对方场上盖放的魔法·陷阱卡全部破坏。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_DESTROY)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)

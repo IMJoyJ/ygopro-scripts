@@ -3,7 +3,7 @@
 -- ①：这张卡召唤成功时才能发动。从手卡把1只4星以下的「六武众」怪兽特殊召唤。
 -- ②：自己场上有「真六武众-阴鬼」以外的「六武众」怪兽存在的场合，这张卡的攻击力上升1500。
 function c2511717.initial_effect(c)
-	-- 效果原文内容：①：这张卡召唤成功时才能发动。从手卡把1只4星以下的「六武众」怪兽特殊召唤。
+	-- ①：这张卡召唤成功时才能发动。从手卡把1只4星以下的「六武众」怪兽特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(2511717,0))  --"特殊召唤"
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -12,7 +12,7 @@ function c2511717.initial_effect(c)
 	e1:SetTarget(c2511717.sptg)
 	e1:SetOperation(c2511717.spop)
 	c:RegisterEffect(e1)
-	-- 效果原文内容：②：自己场上有「真六武众-阴鬼」以外的「六武众」怪兽存在的场合，这张卡的攻击力上升1500。
+	-- ②：自己场上有「真六武众-阴鬼」以外的「六武众」怪兽存在的场合，这张卡的攻击力上升1500。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_SINGLE)
 	e2:SetCode(EFFECT_UPDATE_ATTACK)

@@ -5,7 +5,7 @@
 -- ②：这张卡召唤·特殊召唤成功的场合才能发动。「光界王战 玛多尔女王」以外的，1张「王战」卡或者1只植物族怪兽从卡组加入手卡。
 function c13903402.initial_effect(c)
 	c:SetUniqueOnField(1,0,13903402)
-	-- 效果原文内容：②：这张卡召唤·特殊召唤成功的场合才能发动。「光界王战 玛多尔女王」以外的，1张「王战」卡或者1只植物族怪兽从卡组加入手卡。
+	-- ②：这张卡召唤·特殊召唤成功的场合才能发动。「光界王战 玛多尔女王」以外的，1张「王战」卡或者1只植物族怪兽从卡组加入手卡。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(13903402,0))
 	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)

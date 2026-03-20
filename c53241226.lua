@@ -3,7 +3,7 @@
 -- 这个卡名的卡在1回合只能发动1张。
 -- ①：以对方场上1只表侧表示怪兽和自己场上1只战士族怪兽为对象才能发动。那只对方的表侧表示怪兽当作装备卡使用给那只自己怪兽装备，直到回合结束时那只自己怪兽的战斗发生的对对方的战斗伤害变成0。装备怪兽被战斗·效果破坏的场合，作为代替把用这张卡的效果来装备的怪兽破坏。
 function c53241226.initial_effect(c)
-	-- 效果原文内容：这个卡名的卡在1回合只能发动1张。
+	-- 这个卡名的卡在1回合只能发动1张。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET)
@@ -21,7 +21,7 @@ end
 function c53241226.tgfilter(c)
 	return c:IsFaceup() and c:IsRace(RACE_WARRIOR)
 end
--- 效果作用：判断是否满足发动条件，即己方魔法陷阱区域有空位、对方场上存在符合条件的怪兽、己方场上存在符合条件的战士族怪兽
+-- 判断是否满足发动条件，即己方魔法陷阱区域有空位、对方场上存在符合条件的怪兽、己方场上存在符合条件的战士族怪兽
 function c53241226.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return false end
 	-- 获取己方魔法陷阱区域可用空格数
@@ -42,7 +42,7 @@ function c53241226.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	-- 选择己方场上的战士族怪兽作为效果对象
 	Duel.SelectTarget(tp,c53241226.tgfilter,tp,LOCATION_MZONE,0,1,1,nil)
 end
--- 效果作用：处理装备卡的装备过程，包括设置装备限制、代替破坏和战斗伤害归零效果
+-- 处理装备卡的装备过程，包括设置装备限制、代替破坏和战斗伤害归零效果
 function c53241226.activate(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local tc=e:GetLabelObject()
@@ -54,7 +54,7 @@ function c53241226.activate(e,tp,eg,ep,ev,re,r,rp)
 		and tc:IsControler(1-tp) and tc:IsLocation(LOCATION_MZONE)
 		-- 判断目标怪兽是否能被装备并执行装备操作
 		and tc:IsAbleToChangeControler() and Duel.Equip(tp,tc,hc,false) then
-		-- 效果原文内容：①：以对方场上1只表侧表示怪兽和自己场上1只战士族怪兽为对象才能发动。那只对方的表侧表示怪兽当作装备卡使用给那只自己怪兽装备，直到回合结束时那只自己怪兽的战斗发生的对对方的战斗伤害变成0。
+		-- ①：以对方场上1只表侧表示怪兽和自己场上1只战士族怪兽为对象才能发动。那只对方的表侧表示怪兽当作装备卡使用给那只自己怪兽装备，直到回合结束时那只自己怪兽的战斗发生的对对方的战斗伤害变成0。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetProperty(EFFECT_FLAG_OWNER_RELATE)
@@ -63,7 +63,7 @@ function c53241226.activate(e,tp,eg,ep,ev,re,r,rp)
 		e1:SetLabelObject(hc)
 		e1:SetValue(c53241226.eqlimit)
 		tc:RegisterEffect(e1,true)
-		-- 效果原文内容：装备怪兽被战斗·效果破坏的场合，作为代替把用这张卡的效果来装备的怪兽破坏。
+		-- 装备怪兽被战斗·效果破坏的场合，作为代替把用这张卡的效果来装备的怪兽破坏。
 		local e2=Effect.CreateEffect(c)
 		e2:SetType(EFFECT_TYPE_EQUIP)
 		e2:SetCode(EFFECT_DESTROY_SUBSTITUTE)
@@ -71,7 +71,7 @@ function c53241226.activate(e,tp,eg,ep,ev,re,r,rp)
 		e2:SetReset(RESET_EVENT+RESETS_STANDARD)
 		e2:SetValue(c53241226.desrepval)
 		tc:RegisterEffect(e2,true)
-		-- 效果原文内容：直到回合结束时那只自己怪兽的战斗发生的对对方的战斗伤害变成0。
+		-- 直到回合结束时那只自己怪兽的战斗发生的对对方的战斗伤害变成0。
 		local e3=Effect.CreateEffect(c)
 		e3:SetType(EFFECT_TYPE_SINGLE)
 		e3:SetCode(EFFECT_NO_BATTLE_DAMAGE)

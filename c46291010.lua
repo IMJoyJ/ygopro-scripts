@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：这张卡召唤成功时才能发动。从卡组把1只念动力族怪兽除外。这张卡的等级变成和这个效果除外的怪兽的等级相同。
 function c46291010.initial_effect(c)
-	-- 效果原文内容：①：这张卡召唤成功时才能发动。从卡组把1只念动力族怪兽除外。这张卡的等级变成和这个效果除外的怪兽的等级相同。
+	-- ①：这张卡召唤成功时才能发动。从卡组把1只念动力族怪兽除外。这张卡的等级变成和这个效果除外的怪兽的等级相同。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(46291010,0))  --"等级变化"
 	e1:SetCategory(CATEGORY_REMOVE)
@@ -34,7 +34,7 @@ function c46291010.rmop(e,tp,eg,ep,ev,re,r,rp)
 	-- 判断所选怪兽是否成功被除外且自身状态有效
 	if tc and Duel.Remove(tc,POS_FACEUP,REASON_EFFECT)>0
 		and c:IsRelateToEffect(e) and c:IsFaceup() then
-		-- 效果原文内容：①：这张卡召唤成功时才能发动。从卡组把1只念动力族怪兽除外。这张卡的等级变成和这个效果除外的怪兽的等级相同。
+		-- ①：这张卡召唤成功时才能发动。从卡组把1只念动力族怪兽除外。这张卡的等级变成和这个效果除外的怪兽的等级相同。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_CHANGE_LEVEL)

@@ -9,7 +9,7 @@ function c51858200.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- 效果原文内容：①：这张卡在魔法与陷阱区域存在，有捕食指示物放置的怪兽从场上离开的场合发动。
+	-- ①：这张卡在魔法与陷阱区域存在，有捕食指示物放置的怪兽从场上离开的场合发动。
 	local e0=Effect.CreateEffect(c)
 	e0:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e0:SetCode(EVENT_LEAVE_FIELD_P)
@@ -17,7 +17,7 @@ function c51858200.initial_effect(c)
 	e0:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
 	e0:SetOperation(c51858200.regop)
 	c:RegisterEffect(e0)
-	-- 效果原文内容：②：把墓地的这张卡除外才能发动。从自己的手卡·场上把融合怪兽卡决定的融合素材怪兽送去墓地，把那1只融合怪兽从额外卡组融合召唤。这个效果融合召唤的场合，不是「捕食植物」怪兽不能作为融合素材。
+	-- ②：把墓地的这张卡除外才能发动。从自己的手卡·场上把融合怪兽卡决定的融合素材怪兽送去墓地，把那1只融合怪兽从额外卡组融合召唤。这个效果融合召唤的场合，不是「捕食植物」怪兽不能作为融合素材。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(51858200,0))
 	e2:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
@@ -31,7 +31,7 @@ function c51858200.initial_effect(c)
 	e2:SetOperation(c51858200.thop)
 	e2:SetLabelObject(e0)
 	c:RegisterEffect(e2)
-	-- 效果原文内容：「捕食惑星」的①的效果1回合只能使用1次。
+	-- 「捕食惑星」的①的效果1回合只能使用1次。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(51858200,1))
 	e3:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_FUSION_SUMMON)

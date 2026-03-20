@@ -55,7 +55,7 @@ function c51227866.activate(e,tp,eg,ep,ev,re,r,rp)
 			and (not tc:IsAbleToRemove() or Duel.SelectYesNo(tp,aux.Stringid(51227866,0))) then  --"是否特殊召唤？"
 			-- 将目标怪兽特殊召唤到自己场上
 			Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP)
-			-- 效果原文内容：这个效果特殊召唤的怪兽不能攻击
+			-- 这个效果特殊召唤的怪兽不能攻击
 			local e1=Effect.CreateEffect(e:GetHandler())
 			e1:SetType(EFFECT_TYPE_SINGLE)
 			e1:SetCode(EFFECT_CANNOT_ATTACK)

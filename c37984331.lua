@@ -2,7 +2,7 @@
 -- 效果：
 -- 这张卡在怪兽区域存在，这张卡以外的双方场上的怪兽只有「被封印」通常怪兽4种类的场合，从这张卡的控制者来看的对方决斗胜利。
 function c37984331.initial_effect(c)
-	-- 效果原文内容：这张卡在怪兽区域存在，这张卡以外的双方场上的怪兽只有「被封印」通常怪兽4种类的场合，从这张卡的控制者来看的对方决斗胜利。
+	-- 这张卡在怪兽区域存在，这张卡以外的双方场上的怪兽只有「被封印」通常怪兽4种类的场合，从这张卡的控制者来看的对方决斗胜利。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)

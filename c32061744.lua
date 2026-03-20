@@ -2,7 +2,7 @@
 -- 效果：
 -- 选择自己墓地存在的1只4星以下的名字带有「电气」的怪兽发动。选择的怪兽从墓地特殊召唤。这个效果特殊召唤的怪兽在这个回合的结束阶段时破坏。
 function c32061744.initial_effect(c)
-	-- 效果原文内容：选择自己墓地存在的1只4星以下的名字带有「电气」的怪兽发动。
+	-- 选择自己墓地存在的1只4星以下的名字带有「电气」的怪兽发动。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET)
@@ -40,7 +40,7 @@ function c32061744.activate(e,tp,eg,ep,ev,re,r,rp)
 	if tc:IsRelateToEffect(e) and Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP)~=0 then
 		local fid=e:GetHandler():GetFieldID()
 		tc:RegisterFlagEffect(32061744,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END,0,1,fid)
-		-- 效果原文内容：这个效果特殊召唤的怪兽在这个回合的结束阶段时破坏。
+		-- 这个效果特殊召唤的怪兽在这个回合的结束阶段时破坏。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 		e1:SetCode(EVENT_PHASE+PHASE_END)

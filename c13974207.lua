@@ -29,12 +29,12 @@ function c13974207.initial_effect(c)
 	e3:SetCondition(c13974207.effcon)
 	c:RegisterEffect(e3)
 end
--- 效果作用：判断是否己方场上存在里侧表示的魔法·陷阱卡。
+-- 判断是否己方场上存在里侧表示的魔法·陷阱卡。
 function c13974207.effcon(e)
-	-- 效果作用：检查己方魔法·陷阱区域是否存在里侧表示的卡。
+	-- 检查己方魔法·陷阱区域是否存在里侧表示的卡。
 	return not Duel.IsExistingMatchingCard(Card.IsFacedown,e:GetHandlerPlayer(),LOCATION_SZONE,0,1,nil)
 end
--- 效果作用：目标卡为里侧表示的魔法·陷阱卡。
+-- 目标卡为里侧表示的魔法·陷阱卡。
 function c13974207.distg(e,c)
 	return c:IsFacedown()
 end

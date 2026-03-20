@@ -8,7 +8,7 @@ function c42425831.initial_effect(c)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetHintTiming(0,TIMING_END_PHASE)
 	c:RegisterEffect(e1)
-	-- 效果原文内容：1回合1次，可以让自己场上表侧表示存在的1只风属性怪兽回到卡组最下面，选择对方墓地最多2张卡从游戏中除外。
+	-- 1回合1次，可以让自己场上表侧表示存在的1只风属性怪兽回到卡组最下面，选择对方墓地最多2张卡从游戏中除外。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(42425831,0))  --"除外"
 	e2:SetProperty(EFFECT_FLAG_CARD_TARGET)

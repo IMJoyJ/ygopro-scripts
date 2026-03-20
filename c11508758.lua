@@ -44,7 +44,7 @@ function c11508758.ctlop(e,tp,eg,ep,ev,re,r,rp)
 	if tc:IsRelateToEffect(e) and tc:IsPosition(POS_FACEUP_ATTACK) and tc:IsControler(1-tp) then
 		-- 尝试获得目标怪兽的控制权，直到战斗阶段结束。
 		if Duel.GetControl(tc,tp,PHASE_BATTLE,1)~=0 then
-			-- 效果原文内容：作为对象的怪兽在这个回合不能直接攻击。
+			-- 作为对象的怪兽在这个回合不能直接攻击。
 			local e1=Effect.CreateEffect(c)
 			e1:SetType(EFFECT_TYPE_SINGLE)
 			e1:SetCode(EFFECT_CANNOT_DIRECT_ATTACK)

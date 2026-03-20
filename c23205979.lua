@@ -28,14 +28,14 @@ function c23205979.initial_effect(c)
 	e3:SetCode(EFFECT_SELF_DESTROY)
 	e3:SetCondition(c23205979.sdcon)
 	c:RegisterEffect(e3)
-	-- 效果作用：当此卡成为对方效果的对象时，若满足条件则破坏此卡。
+	-- 当此卡成为对方效果的对象时，若满足条件则破坏此卡。
 	local e4=Effect.CreateEffect(c)
 	e4:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_CONTINUOUS)
 	e4:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
 	e4:SetCode(EVENT_BECOME_TARGET)
 	e4:SetOperation(c23205979.desop1)
 	c:RegisterEffect(e4)
-	-- 效果作用：连锁处理结束时，若满足条件则破坏此卡。
+	-- 连锁处理结束时，若满足条件则破坏此卡。
 	local e5=Effect.CreateEffect(c)
 	e5:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e5:SetRange(LOCATION_MZONE)
@@ -43,7 +43,7 @@ function c23205979.initial_effect(c)
 	e5:SetOperation(c23205979.desop2)
 	e5:SetLabelObject(e4)
 	c:RegisterEffect(e5)
-	-- 效果作用：战斗阶段结束时，若满足条件则破坏此卡。
+	-- 战斗阶段结束时，若满足条件则破坏此卡。
 	local e6=Effect.CreateEffect(c)
 	e6:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e6:SetRange(LOCATION_MZONE)

@@ -3,7 +3,7 @@
 -- 这个卡名的效果1回合只能使用1次。
 -- ①：原本的种族·属性是天使族·地属性的怪兽从自己的手卡·场上送去墓地的场合才能发动。这张卡从手卡特殊召唤。
 function c12332865.initial_effect(c)
-	-- 效果原文内容：①：原本的种族·属性是天使族·地属性的怪兽从自己的手卡·场上送去墓地的场合才能发动。这张卡从手卡特殊召唤。
+	-- ①：原本的种族·属性是天使族·地属性的怪兽从自己的手卡·场上送去墓地的场合才能发动。这张卡从手卡特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(12332865,0))
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)

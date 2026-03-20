@@ -2,7 +2,7 @@
 -- 效果：
 -- 这张卡从游戏中除外时，可以把手卡1张卡送去墓地，从卡组抽1张卡。
 function c30042158.initial_effect(c)
-	-- 效果原文内容：这张卡从游戏中除外时，可以把手卡1张卡送去墓地，从卡组抽1张卡。
+	-- 这张卡从游戏中除外时，可以把手卡1张卡送去墓地，从卡组抽1张卡。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(30042158,0))  --"抽卡"
 	e1:SetCategory(CATEGORY_DRAW)

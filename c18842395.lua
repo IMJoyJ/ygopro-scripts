@@ -2,7 +2,7 @@
 -- 效果：
 -- 对方场上有怪兽2只以上存在的场合，这张卡可以不用解放作召唤。
 function c18842395.initial_effect(c)
-	-- 效果原文内容：对方场上有怪兽2只以上存在的场合，这张卡可以不用解放作召唤。
+	-- 对方场上有怪兽2只以上存在的场合，这张卡可以不用解放作召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(18842395,0))  --"不用解放召唤"
 	e1:SetProperty(EFFECT_FLAG_UNCOPYABLE)

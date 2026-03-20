@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：这张卡召唤成功时，以自己墓地1只「同调士」怪兽为对象才能发动。那只怪兽特殊召唤。这个效果特殊召唤的怪兽的效果无效化。
 function c36643046.initial_effect(c)
-	-- 效果原文内容：①：这张卡召唤成功时，以自己墓地1只「同调士」怪兽为对象才能发动。那只怪兽特殊召唤。这个效果特殊召唤的怪兽的效果无效化。
+	-- ①：这张卡召唤成功时，以自己墓地1只「同调士」怪兽为对象才能发动。那只怪兽特殊召唤。这个效果特殊召唤的怪兽的效果无效化。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(36643046,0))  --"特殊召唤"
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -31,7 +31,7 @@ function c36643046.sumtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	-- 设置连锁的操作信息，确定要特殊召唤的怪兽
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,1,0,0)
 end
--- 效果作用：将目标怪兽特殊召唤到场上，并使该怪兽的效果无效化
+-- 将目标怪兽特殊召唤到场上，并使该怪兽的效果无效化
 function c36643046.sumop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	-- 获取当前连锁的目标怪兽
@@ -39,13 +39,13 @@ function c36643046.sumop(e,tp,eg,ep,ev,re,r,rp)
 	if tc and tc:IsRelateToEffect(e) then
 		-- 将目标怪兽特殊召唤到场上
 		if Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP)==0 then return end
-		-- 效果原文内容：这个效果特殊召唤的怪兽的效果无效化。
+		-- 这个效果特殊召唤的怪兽的效果无效化。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_DISABLE)
 		e1:SetReset(RESET_EVENT+RESETS_STANDARD)
 		tc:RegisterEffect(e1)
-		-- 效果原文内容：这个效果特殊召唤的怪兽的效果无效化。
+		-- 这个效果特殊召唤的怪兽的效果无效化。
 		local e2=Effect.CreateEffect(c)
 		e2:SetType(EFFECT_TYPE_SINGLE)
 		e2:SetCode(EFFECT_DISABLE_EFFECT)

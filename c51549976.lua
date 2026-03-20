@@ -2,7 +2,7 @@
 -- 效果：
 -- 把自己场上表侧表示存在的5张名字带有「甲虫装机」的卡送去墓地才能发动。对方场上的卡全部破坏。对方在这个回合的战斗阶段中不能把手卡·墓地发动的效果怪兽的效果发动。
 function c51549976.initial_effect(c)
-	-- 效果原文内容：把自己场上表侧表示存在的5张名字带有「甲虫装机」的卡送去墓地才能发动。对方场上的卡全部破坏。对方在这个回合的战斗阶段中不能把手卡·墓地发动的效果怪兽的效果发动。
+	-- 把自己场上表侧表示存在的5张名字带有「甲虫装机」的卡送去墓地才能发动。对方场上的卡全部破坏。对方在这个回合的战斗阶段中不能把手卡·墓地发动的效果怪兽的效果发动。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_DESTROY)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -41,7 +41,7 @@ function c51549976.activate(e,tp,eg,ep,ev,re,r,rp)
 	local g=Duel.GetMatchingGroup(aux.TRUE,tp,0,LOCATION_ONFIELD,nil)
 	-- 将对方场上的所有卡破坏
 	Duel.Destroy(g,REASON_EFFECT)
-	-- 效果原文内容：把自己场上表侧表示存在的5张名字带有「甲虫装机」的卡送去墓地才能发动。对方场上的卡全部破坏。对方在这个回合的战斗阶段中不能把手卡·墓地发动的效果怪兽的效果发动。
+	-- 把自己场上表侧表示存在的5张名字带有「甲虫装机」的卡送去墓地才能发动。对方场上的卡全部破坏。对方在这个回合的战斗阶段中不能把手卡·墓地发动的效果怪兽的效果发动。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET)

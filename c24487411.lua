@@ -28,14 +28,14 @@ function c24487411.initial_effect(c)
 	e2:SetOperation(c24487411.desop2)
 	c:RegisterEffect(e2)
 end
--- 效果作用：判断是否满足破坏条件，即战斗中的对方怪兽为表侧表示且连接值不超过2
+-- 判断是否满足破坏条件，即战斗中的对方怪兽为表侧表示且连接值不超过2
 function c24487411.destg1(e,tp,eg,ep,ev,re,r,rp,chk)
 	local tc=e:GetHandler():GetBattleTarget()
 	if chk==0 then return tc and tc:IsFaceup() and not tc:IsLinkAbove(3) end
 	-- 设置连锁操作信息，指定将要破坏的怪兽
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,tc,1,0,0)
 end
--- 效果作用：破坏战斗中对方的怪兽
+-- 破坏战斗中对方的怪兽
 function c24487411.desop1(e,tp,eg,ep,ev,re,r,rp)
 	local tc=e:GetHandler():GetBattleTarget()
 	if tc:IsRelateToBattle() then
@@ -47,7 +47,7 @@ end
 function c24487411.cfilter(c,g)
 	return g:IsContains(c)
 end
--- 效果作用：支付解放连接怪兽的费用
+-- 支付解放连接怪兽的费用
 function c24487411.descost2(e,tp,eg,ep,ev,re,r,rp,chk)
 	local lg=e:GetHandler():GetLinkedGroup()
 	-- 检查是否满足解放连接怪兽的条件
@@ -57,7 +57,7 @@ function c24487411.descost2(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 将选中的连接怪兽以代价原因解放
 	Duel.Release(g,REASON_COST)
 end
--- 效果作用：选择对方场上1只怪兽作为破坏对象
+-- 选择对方场上1只怪兽作为破坏对象
 function c24487411.destg2(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(1-tp) end
 	-- 检查对方场上是否存在可破坏的怪兽
@@ -69,7 +69,7 @@ function c24487411.destg2(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	-- 设置连锁操作信息，指定将要破坏的怪兽
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,1,0,0)
 end
--- 效果作用：破坏选中的对方怪兽
+-- 破坏选中的对方怪兽
 function c24487411.desop2(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取当前连锁处理的目标怪兽
 	local tc=Duel.GetFirstTarget()

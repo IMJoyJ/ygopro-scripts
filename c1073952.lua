@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：把自己场上1张表侧表示的永续陷阱卡送去墓地才能发动。自己抽2张。
 function c1073952.initial_effect(c)
-	-- 效果原文内容：①：把自己场上1张表侧表示的永续陷阱卡送去墓地才能发动。自己抽2张。
+	-- ①：把自己场上1张表侧表示的永续陷阱卡送去墓地才能发动。自己抽2张。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_DRAW)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)

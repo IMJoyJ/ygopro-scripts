@@ -2,7 +2,7 @@
 -- 效果：
 -- 只要这张卡在自己场上表侧表示存在，给与基本分伤害的效果变成基本分回复的效果。此外，持有「把场上的怪兽破坏的效果」的魔法·陷阱·效果怪兽的效果发动时，可以把1张手卡送去墓地让那个发动无效并破坏。
 function c12298909.initial_effect(c)
-	-- 效果原文内容：持有「把场上的怪兽破坏的效果」的魔法·陷阱·效果怪兽的效果发动时，可以把1张手卡送去墓地让那个发动无效并破坏。
+	-- 持有「把场上的怪兽破坏的效果」的魔法·陷阱·效果怪兽的效果发动时，可以把1张手卡送去墓地让那个发动无效并破坏。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(12298909,0))  --"破坏场上怪物的效果发动无效并破坏"
 	e1:SetCategory(CATEGORY_NEGATE+CATEGORY_DESTROY)
@@ -15,7 +15,7 @@ function c12298909.initial_effect(c)
 	e1:SetTarget(c12298909.target)
 	e1:SetOperation(c12298909.operation)
 	c:RegisterEffect(e1)
-	-- 效果原文内容：只要这张卡在自己场上表侧表示存在，给与基本分伤害的效果变成基本分回复的效果。
+	-- 只要这张卡在自己场上表侧表示存在，给与基本分伤害的效果变成基本分回复的效果。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD)
 	e2:SetProperty(EFFECT_FLAG_PLAYER_TARGET)

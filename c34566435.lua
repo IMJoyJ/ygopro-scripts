@@ -3,7 +3,7 @@
 -- 这张卡在规则上也当作「魔玩具」卡使用。「锋利小鬼·仿DT」的效果1回合只能使用1次。
 -- ①：以自己的场上·墓地1只「魔玩具」融合怪兽为对象才能发动。这张卡的攻击力·守备力直到回合结束时变成和那只怪兽的原本数值相同。
 function c34566435.initial_effect(c)
-	-- 效果原文内容：①：以自己的场上·墓地1只「魔玩具」融合怪兽为对象才能发动。这张卡的攻击力·守备力直到回合结束时变成和那只怪兽的原本数值相同。
+	-- ①：以自己的场上·墓地1只「魔玩具」融合怪兽为对象才能发动。这张卡的攻击力·守备力直到回合结束时变成和那只怪兽的原本数值相同。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(34566435,0))  --"攻守变化"
 	e1:SetCategory(CATEGORY_ATKCHANGE)
@@ -19,7 +19,7 @@ end
 function c34566435.filter(c)
 	return (c:IsLocation(LOCATION_GRAVE) or c:IsFaceup()) and c:IsType(TYPE_FUSION) and c:IsSetCard(0xad)
 end
--- 效果作用：选择对象怪兽
+-- 选择对象怪兽
 function c34566435.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(tp) and chkc:IsLocation(LOCATION_MZONE+LOCATION_GRAVE) and c34566435.filter(chkc) end
 	-- 判断是否满足选择对象的条件
@@ -29,7 +29,7 @@ function c34566435.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	-- 选择满足条件的1只怪兽作为对象
 	Duel.SelectTarget(tp,c34566435.filter,tp,LOCATION_MZONE+LOCATION_GRAVE,0,1,1,nil)
 end
--- 效果作用：将自身攻守变为与对象怪兽的原本数值相同
+-- 将自身攻守变为与对象怪兽的原本数值相同
 function c34566435.operation(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	-- 获取当前连锁的效果对象卡

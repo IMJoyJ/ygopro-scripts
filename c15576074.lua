@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：以自己墓地2只「共鸣者」怪兽为对象才能发动。从卡组把1只4星怪兽加入手卡，作为对象的怪兽回到卡组。
 function c15576074.initial_effect(c)
-	-- 效果原文内容：①：以自己墓地2只「共鸣者」怪兽为对象才能发动。从卡组把1只4星怪兽加入手卡，作为对象的怪兽回到卡组。
+	-- ①：以自己墓地2只「共鸣者」怪兽为对象才能发动。从卡组把1只4星怪兽加入手卡，作为对象的怪兽回到卡组。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_TODECK+CATEGORY_TOHAND+CATEGORY_SEARCH)
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET)

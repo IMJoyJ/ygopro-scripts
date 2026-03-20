@@ -19,7 +19,7 @@ function c19406822.filter(c,g,pg)
 	local code=c:GetCode()
 	return g:IsExists(Card.IsCode,1,c,code) or pg:IsExists(Card.IsCode,1,c,code)
 end
--- 效果作用：在每次调整阶段检查场上同名怪兽并进行破坏处理
+-- 在每次调整阶段检查场上同名怪兽并进行破坏处理
 function c19406822.adjustop(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取当前游戏阶段
 	local phase=Duel.GetCurrentPhase()

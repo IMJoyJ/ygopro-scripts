@@ -2,7 +2,7 @@
 -- 效果：
 -- 从自己的墓地里选择1张装备魔法卡加入手卡。这张装备魔法卡本回合不能发动。
 function c20188127.initial_effect(c)
-	-- 效果原文内容：从自己的墓地里选择1张装备魔法卡加入手卡。这张装备魔法卡本回合不能发动。
+	-- 从自己的墓地里选择1张装备魔法卡加入手卡。这张装备魔法卡本回合不能发动。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_TOHAND)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -16,7 +16,7 @@ end
 function c20188127.tgfilter(c)
 	return c:IsType(TYPE_EQUIP) and c:IsAbleToHand()
 end
--- 效果作用：选择1张装备魔法卡加入手牌
+-- 选择1张装备魔法卡加入手牌
 function c20188127.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and c20188127.tgfilter(chkc) end
 	-- 判断是否满足发动条件，检查自己墓地是否存在装备魔法卡
@@ -28,7 +28,7 @@ function c20188127.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	-- 设置操作信息：将选择的装备魔法卡加入手牌
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,sg,sg:GetCount(),0,0)
 end
--- 效果作用：将装备魔法卡加入手牌并使其本回合不能发动
+-- 将装备魔法卡加入手牌并使其本回合不能发动
 function c20188127.activate(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取当前连锁的目标卡
 	local tc=Duel.GetFirstTarget()
@@ -37,7 +37,7 @@ function c20188127.activate(e,tp,eg,ep,ev,re,r,rp)
 		Duel.SendtoHand(tc,nil,REASON_EFFECT)
 		-- 向对方确认目标卡
 		Duel.ConfirmCards(1-tp,tc)
-		-- 效果原文内容：这张装备魔法卡本回合不能发动。
+		-- 这张装备魔法卡本回合不能发动。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_CANNOT_TRIGGER)

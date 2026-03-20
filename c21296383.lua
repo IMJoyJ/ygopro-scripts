@@ -2,7 +2,7 @@
 -- 效果：
 -- 把自己场上表侧表示存在的1只怪兽和这张卡从游戏中除外，从自己墓地选择持有那个原本等级合计数值以下的等级的1只同调怪兽发动。选择的怪兽从墓地特殊召唤。
 function c21296383.initial_effect(c)
-	-- 效果原文内容：把自己场上表侧表示存在的1只怪兽和这张卡从游戏中除外，从自己墓地选择持有那个原本等级合计数值以下的等级的1只同调怪兽发动。选择的怪兽从墓地特殊召唤。
+	-- 把自己场上表侧表示存在的1只怪兽和这张卡从游戏中除外，从自己墓地选择持有那个原本等级合计数值以下的等级的1只同调怪兽发动。选择的怪兽从墓地特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(21296383,0))  --"特殊召唤"
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -51,7 +51,7 @@ function c21296383.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	-- 设置当前连锁的操作信息为特殊召唤
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,1,0,0)
 end
--- 效果作用：将目标同调怪兽从墓地特殊召唤
+-- 将目标同调怪兽从墓地特殊召唤
 function c21296383.operation(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取当前连锁的目标怪兽
 	local tc=Duel.GetFirstTarget()

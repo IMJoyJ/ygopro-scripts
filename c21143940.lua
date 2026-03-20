@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：以自己场上1只「英雄」怪兽为对象才能发动。把那只怪兽的属性确认，送去墓地。这个效果让那只怪兽从场上离开的场合，再把持有相同属性的1只「假面英雄」怪兽从额外卡组特殊召唤。
 function c21143940.initial_effect(c)
-	-- 效果原文内容：①：以自己场上1只「英雄」怪兽为对象才能发动。把那只怪兽的属性确认，送去墓地。这个效果让那只怪兽从场上离开的场合，再把持有相同属性的1只「假面英雄」怪兽从额外卡组特殊召唤。
+	-- ①：以自己场上1只「英雄」怪兽为对象才能发动。把那只怪兽的属性确认，送去墓地。这个效果让那只怪兽从场上离开的场合，再把持有相同属性的1只「假面英雄」怪兽从额外卡组特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET)
@@ -29,7 +29,7 @@ end
 function c21143940.chkfilter(c,att)
 	return c:IsFaceup() and c:IsSetCard(0x8) and (c:GetAttribute()&att)==att
 end
--- 效果作用：选择一只自己场上的英雄怪兽作为对象，将其送去墓地，并特殊召唤一只与该怪兽属性相同的假面英雄怪兽。
+-- 选择一只自己场上的英雄怪兽作为对象，将其送去墓地，并特殊召唤一只与该怪兽属性相同的假面英雄怪兽。
 function c21143940.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(tp) and chkc:IsLocation(LOCATION_MZONE) and c21143940.chkfilter(chkc,e:GetLabel()) end
 	-- 判断是否满足发动条件，即场上是否存在符合条件的英雄怪兽。
@@ -42,7 +42,7 @@ function c21143940.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_EXTRA)
 	e:SetLabel(g:GetFirst():GetAttribute())
 end
--- 效果作用：将目标怪兽送去墓地，并从额外卡组特殊召唤一只与该怪兽属性相同的假面英雄怪兽。
+-- 将目标怪兽送去墓地，并从额外卡组特殊召唤一只与该怪兽属性相同的假面英雄怪兽。
 function c21143940.activate(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取当前效果的目标怪兽。
 	local tc=Duel.GetFirstTarget()

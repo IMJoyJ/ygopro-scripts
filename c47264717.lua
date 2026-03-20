@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：场上有「星尘」怪兽存在的场合，以场上1张卡为对象才能发动。那张卡破坏。
 function c47264717.initial_effect(c)
-	-- 效果原文内容：①：场上有「星尘」怪兽存在的场合，以场上1张卡为对象才能发动。那张卡破坏。
+	-- ①：场上有「星尘」怪兽存在的场合，以场上1张卡为对象才能发动。那张卡破坏。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_DESTROY)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)

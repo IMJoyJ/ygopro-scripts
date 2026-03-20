@@ -2,13 +2,13 @@
 -- 效果：
 -- 这张卡不能特殊召唤。选择场上表侧表示存在的1只名字带有「异虫」的爬虫类族怪兽变成里侧守备表示。这个效果1回合只能使用1次。
 function c14936691.initial_effect(c)
-	-- 效果原文内容：这张卡不能特殊召唤。
+	-- 这张卡不能特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_SPSUMMON_CONDITION)
 	c:RegisterEffect(e1)
-	-- 效果原文内容：选择场上表侧表示存在的1只名字带有「异虫」的爬虫类族怪兽变成里侧守备表示。这个效果1回合只能使用1次。
+	-- 选择场上表侧表示存在的1只名字带有「异虫」的爬虫类族怪兽变成里侧守备表示。这个效果1回合只能使用1次。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(14936691,0))  --"变更表示形式"
 	e2:SetType(EFFECT_TYPE_IGNITION)

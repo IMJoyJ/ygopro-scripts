@@ -7,7 +7,7 @@ function c10131855.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- 效果原文内容：①：自己手卡有3张以上存在，对方把怪兽的效果发动时，以场上1只「暗黑界」怪兽为对象才能把这个效果发动。作为对象的怪兽回到持有者手卡，那个对方的效果变成「对方手卡随机选1张丢弃」。
+	-- ①：自己手卡有3张以上存在，对方把怪兽的效果发动时，以场上1只「暗黑界」怪兽为对象才能把这个效果发动。作为对象的怪兽回到持有者手卡，那个对方的效果变成「对方手卡随机选1张丢弃」。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(10131855,1))  --"改变对方效果"
 	e2:SetCategory(CATEGORY_TOHAND)

@@ -11,7 +11,7 @@ function c35563539.initial_effect(c)
 	e1:SetOperation(c35563539.activate)
 	c:RegisterEffect(e1)
 end
--- 效果原文内容：玩家1人为对象的魔法的效果移给其他玩家。
+-- 玩家1人为对象的魔法的效果移给其他玩家。
 function c35563539.condition(e,tp,eg,ep,ev,re,r,rp)
 	return re:IsHasType(EFFECT_TYPE_ACTIVATE) and re:IsActiveType(TYPE_SPELL) and re:IsHasProperty(EFFECT_FLAG_PLAYER_TARGET)
 end

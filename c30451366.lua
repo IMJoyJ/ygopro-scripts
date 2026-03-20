@@ -9,7 +9,7 @@ function c30451366.initial_effect(c)
 	e1:SetCondition(c30451366.subcon)
 	c:RegisterEffect(e1)
 end
--- 效果作用：检查此卡是否在手牌、怪兽区或墓地
+-- 检查此卡是否在手牌、怪兽区或墓地
 function c30451366.subcon(e)
 	return e:GetHandler():IsLocation(LOCATION_HAND+LOCATION_MZONE+LOCATION_GRAVE)
 end

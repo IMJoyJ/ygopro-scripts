@@ -2,7 +2,7 @@
 -- 效果：
 -- 把自己场上表侧表示存在的2只名字带有「黑羽」的调整从游戏中除外发动。从自己卡组抽2张卡。
 function c53519297.initial_effect(c)
-	-- 效果原文内容：把自己场上表侧表示存在的2只名字带有「黑羽」的调整从游戏中除外发动。从自己卡组抽2张卡。
+	-- 把自己场上表侧表示存在的2只名字带有「黑羽」的调整从游戏中除外发动。从自己卡组抽2张卡。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_DRAW)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)

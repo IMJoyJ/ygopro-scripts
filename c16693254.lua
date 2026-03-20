@@ -16,12 +16,12 @@ end
 function c16693254.filter(c)
 	return c:IsSetCard(0x3a) and c:IsType(TYPE_MONSTER)
 end
--- 效果作用：检查自己卡组是否存在满足条件的卡片
+-- 检查自己卡组是否存在满足条件的卡片
 function c16693254.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 规则层面：检查以玩家tp来看的自己卡组中是否存在至少1张满足filter条件的卡
 	if chk==0 then return Duel.IsExistingMatchingCard(c16693254.filter,tp,LOCATION_DECK,0,1,nil) end
 end
--- 效果作用：选择并移动卡片到卡组最上方
+-- 选择并移动卡片到卡组最上方
 function c16693254.operation(e,tp,eg,ep,ev,re,r,rp)
 	-- 规则层面：向玩家tp发送提示信息“请选择要放置到卡组最上方的卡”
 	Duel.Hint(HINT_SELECTMSG,tp,aux.Stringid(16693254,1))  --"请选择要放置到卡组最上方的卡"

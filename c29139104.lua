@@ -2,7 +2,7 @@
 -- 效果：
 -- 可以把自己场上除这张卡以外的1只地属性怪兽做祭品，从手卡特殊召唤1只地属性怪兽。这个效果1回合只能使用1次。这个效果特殊召唤的怪兽，在「荒狂之奥丝」从自己场上离开的场合破坏。
 function c29139104.initial_effect(c)
-	-- 效果原文内容：可以把自己场上除这张卡以外的1只地属性怪兽做祭品，从手卡特殊召唤1只地属性怪兽。这个效果1回合只能使用1次。这个效果特殊召唤的怪兽，在「荒狂之奥丝」从自己场上离开的场合破坏。
+	-- 可以把自己场上除这张卡以外的1只地属性怪兽做祭品，从手卡特殊召唤1只地属性怪兽。这个效果1回合只能使用1次。这个效果特殊召唤的怪兽，在「荒狂之奥丝」从自己场上离开的场合破坏。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e1:SetType(EFFECT_TYPE_IGNITION)
@@ -46,7 +46,7 @@ function c29139104.spop(e,tp,eg,ep,ev,re,r,rp)
 	if g:GetCount()>0 then
 		-- 将选中的怪兽特殊召唤到场上
 		Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
-		-- 效果原文内容：这个效果特殊召唤的怪兽，在「荒狂之奥丝」从自己场上离开的场合破坏。
+		-- 这个效果特殊召唤的怪兽，在「荒狂之奥丝」从自己场上离开的场合破坏。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 		e1:SetCode(EVENT_LEAVE_FIELD)

@@ -21,9 +21,9 @@ function c35050257.initial_effect(c)
 	e2:SetOperation(c35050257.operation)
 	c:RegisterEffect(e2)
 end
--- 效果作用：使自己在该回合内不会受到战斗伤害
+-- 使自己在该回合内不会受到战斗伤害
 function c35050257.op1(e,tp,eg,ep,ev,re,r,rp)
-	-- 效果原文内容：使自己在该回合内不会受到战斗伤害
+	-- 使自己在该回合内不会受到战斗伤害
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_AVOID_BATTLE_DAMAGE)
@@ -34,15 +34,15 @@ function c35050257.op1(e,tp,eg,ep,ev,re,r,rp)
 	-- 将效果注册到玩家的全局环境
 	Duel.RegisterEffect(e1,tp)
 end
--- 效果作用：判断卡片是否因战斗破坏而送入墓地
+-- 判断卡片是否因战斗破坏而送入墓地
 function c35050257.condition(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsLocation(LOCATION_GRAVE) and e:GetHandler():IsReason(REASON_BATTLE)
 end
--- 效果作用：过滤满足条件的「电子幼体」卡片
+-- 过滤满足条件的「电子幼体」卡片
 function c35050257.filter(c,e,tp)
 	return c:IsCode(35050257) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 效果作用：判断是否满足发动特殊召唤的条件
+-- 判断是否满足发动特殊召唤的条件
 function c35050257.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 判断场上是否有足够的召唤区域
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
@@ -51,7 +51,7 @@ function c35050257.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 设置连锁操作信息，表示将要特殊召唤一张卡片
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_DECK)
 end
--- 效果作用：执行特殊召唤操作
+-- 执行特殊召唤操作
 function c35050257.operation(e,tp,eg,ep,ev,re,r,rp)
 	-- 判断场上是否有足够的召唤区域
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end

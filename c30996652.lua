@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：以自己墓地1只「机块」怪兽为对象才能发动。那只怪兽特殊召唤。这个效果特殊召唤的怪兽从场上离开的场合回到持有者卡组最下面。
 function c30996652.initial_effect(c)
-	-- 效果原文内容：①：以自己墓地1只「机块」怪兽为对象才能发动。那只怪兽特殊召唤。这个效果特殊召唤的怪兽从场上离开的场合回到持有者卡组最下面。
+	-- ①：以自己墓地1只「机块」怪兽为对象才能发动。那只怪兽特殊召唤。这个效果特殊召唤的怪兽从场上离开的场合回到持有者卡组最下面。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -36,7 +36,7 @@ function c30996652.activate(e,tp,eg,ep,ev,re,r,rp)
 	local tc=Duel.GetFirstTarget()
 	-- 确认目标怪兽有效且成功特殊召唤
 	if tc:IsRelateToEffect(e) and Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP)~=0 then
-		-- 效果原文内容：这个效果特殊召唤的怪兽从场上离开的场合回到持有者卡组最下面。
+		-- 这个效果特殊召唤的怪兽从场上离开的场合回到持有者卡组最下面。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)

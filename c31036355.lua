@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：双方玩家各自选自身场上1只怪兽。那2只怪兽的控制权交换。这个回合，那些怪兽不能把表示形式变更。
 function c31036355.initial_effect(c)
-	-- 效果原文内容：①：双方玩家各自选自身场上1只怪兽。那2只怪兽的控制权交换。这个回合，那些怪兽不能把表示形式变更。
+	-- ①：双方玩家各自选自身场上1只怪兽。那2只怪兽的控制权交换。这个回合，那些怪兽不能把表示形式变更。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_CONTROL)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -50,7 +50,7 @@ function c31036355.activate(e,tp,eg,ep,ev,re,r,rp)
 	local c2=g2:GetFirst()
 	-- 交换两只目标怪兽的控制权
 	if Duel.SwapControl(c1,c2,0,0) then
-		-- 效果原文内容：①：双方玩家各自选自身场上1只怪兽。那2只怪兽的控制权交换。这个回合，那些怪兽不能把表示形式变更。
+		-- ①：双方玩家各自选自身场上1只怪兽。那2只怪兽的控制权交换。这个回合，那些怪兽不能把表示形式变更。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_CANNOT_CHANGE_POSITION)

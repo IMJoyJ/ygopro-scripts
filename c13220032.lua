@@ -2,7 +2,7 @@
 -- 效果：
 -- 自己场上表侧表示存在的光属性怪兽的攻击力上升这张卡装备的装备卡数量×300的数值。
 function c13220032.initial_effect(c)
-	-- 效果原文内容：自己场上表侧表示存在的光属性怪兽的攻击力上升这张卡装备的装备卡数量×300的数值。
+	-- 自己场上表侧表示存在的光属性怪兽的攻击力上升这张卡装备的装备卡数量×300的数值。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetRange(LOCATION_MZONE)

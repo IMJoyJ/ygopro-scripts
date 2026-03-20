@@ -3,7 +3,7 @@
 -- 这个卡名的卡在1回合只能发动1张。
 -- ①：自己的墓地·除外状态的兽族·兽战士族·鸟兽族怪兽任意数量效果无效特殊召唤，只用那些怪兽为素材进行1只「铁兽」连接怪兽的连接召唤。
 function c40975243.initial_effect(c)
-	-- 效果原文内容：这个卡名的卡在1回合只能发动1张。
+	-- 这个卡名的卡在1回合只能发动1张。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -33,7 +33,7 @@ function c40975243.chkfilter(c,tp)
 	-- 检查额外卡组中是否存在「铁兽」连接怪兽且其召唤区域可用
 	return c:IsType(TYPE_LINK) and c:IsSetCard(0x14d) and Duel.GetLocationCountFromEx(tp,tp,nil,c)>0
 end
--- 效果作用：判断是否满足发动条件，包括特殊召唤次数、场地空位、是否存在可用的连接怪兽
+-- 判断是否满足发动条件，包括特殊召唤次数、场地空位、是否存在可用的连接怪兽
 function c40975243.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then
 		-- 检查玩家是否可以特殊召唤2次
@@ -55,7 +55,7 @@ function c40975243.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 设置连锁操作信息，提示将要特殊召唤的卡牌来源
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_GRAVE+LOCATION_REMOVED)
 end
--- 效果作用：执行发动效果，包括选择并特殊召唤怪兽、使其效果无效、进行连接召唤
+-- 执行发动效果，包括选择并特殊召唤怪兽、使其效果无效、进行连接召唤
 function c40975243.activate(e,tp,eg,ep,ev,re,r,rp)
 	-- 检查玩家是否可以特殊召唤2次
 	if not Duel.IsPlayerCanSpecialSummonCount(tp,2) then return end
@@ -78,7 +78,7 @@ function c40975243.activate(e,tp,eg,ep,ev,re,r,rp)
 		while tc do
 			-- 特殊召唤一张怪兽到场上
 			Duel.SpecialSummonStep(tc,0,tp,tp,false,false,POS_FACEUP)
-			-- 效果原文内容：①：自己的墓地·除外状态的兽族·兽战士族·鸟兽族怪兽任意数量效果无效特殊召唤，只用那些怪兽为素材进行1只「铁兽」连接怪兽的连接召唤。
+			-- ①：自己的墓地·除外状态的兽族·兽战士族·鸟兽族怪兽任意数量效果无效特殊召唤，只用那些怪兽为素材进行1只「铁兽」连接怪兽的连接召唤。
 			local e1=Effect.CreateEffect(e:GetHandler())
 			e1:SetType(EFFECT_TYPE_SINGLE)
 			e1:SetCode(EFFECT_DISABLE)

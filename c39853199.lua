@@ -46,18 +46,18 @@ function c39853199.initial_effect(c)
 		ge1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
 		-- 将效果注册给全局环境
 		ge1:SetOperation(aux.sumreg)
-		-- 效果作用：检索满足条件的卡片组
+		-- 检索满足条件的卡片组
 		Duel.RegisterEffect(ge1,0)
 	end
 end
--- 效果作用：将目标怪兽特殊召唤
+-- 将目标怪兽特殊召唤
 function c39853199.destg1(e,tp,eg,ep,ev,re,r,rp,chk)
 	local tc=e:GetHandler():GetBattleTarget()
 	if chk==0 then return tc and tc:IsFaceup() and tc:IsNonAttribute(ATTRIBUTE_WIND) end
 	-- 设置当前处理的连锁的操作信息此操作信息包含了效果处理中确定要处理的效果分类
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,tc,1,0,0)
 end
--- 效果作用：检索满足条件的卡片组
+-- 检索满足条件的卡片组
 function c39853199.desop1(e,tp,eg,ep,ev,re,r,rp)
 	local tc=e:GetHandler():GetBattleTarget()
 	if tc:IsRelateToBattle() then
@@ -65,11 +65,11 @@ function c39853199.desop1(e,tp,eg,ep,ev,re,r,rp)
 		Duel.Destroy(tc,REASON_EFFECT)
 	end
 end
--- 效果作用：将目标怪兽特殊召唤
+-- 将目标怪兽特殊召唤
 function c39853199.descon2(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsSummonType(SUMMON_TYPE_PENDULUM)
 end
--- 效果作用：检索满足条件的卡片组
+-- 检索满足条件的卡片组
 function c39853199.destg2(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsOnField() and chkc:IsControler(1-tp) end
 	-- 基本同Duel.IsExistingMatchingCard ，不同之处在于需要追加判定卡片是否能成为当前正在处理的效果的对象
@@ -81,7 +81,7 @@ function c39853199.destg2(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	-- 设置当前处理的连锁的操作信息此操作信息包含了效果处理中确定要处理的效果分类
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,1,0,0)
 end
--- 效果作用：检索满足条件的卡片组
+-- 检索满足条件的卡片组
 function c39853199.desop2(e,tp,eg,ep,ev,re,r,rp)
 	-- 返回当前连锁的所有的对象卡，一般只有一个对象时使用
 	local tc=Duel.GetFirstTarget()
@@ -90,17 +90,17 @@ function c39853199.desop2(e,tp,eg,ep,ev,re,r,rp)
 		Duel.Destroy(tc,REASON_EFFECT)
 	end
 end
--- 效果作用：将目标怪兽特殊召唤
+-- 将目标怪兽特殊召唤
 function c39853199.retcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():GetFlagEffect(39853199)~=0
 end
--- 效果作用：检索满足条件的卡片组
+-- 检索满足条件的卡片组
 function c39853199.rettg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
 	-- 设置当前处理的连锁的操作信息此操作信息包含了效果处理中确定要处理的效果分类
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,e:GetHandler(),1,0,0)
 end
--- 效果作用：将目标怪兽特殊召唤
+-- 将目标怪兽特殊召唤
 function c39853199.retop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) then

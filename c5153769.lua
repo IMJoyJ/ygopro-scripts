@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：以自己的灵摆区域1张「威风妖怪」卡为对象才能发动。那张卡特殊召唤。
 function c5153769.initial_effect(c)
-	-- 效果原文内容：①：以自己的灵摆区域1张「威风妖怪」卡为对象才能发动。那张卡特殊召唤。
+	-- ①：以自己的灵摆区域1张「威风妖怪」卡为对象才能发动。那张卡特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)

@@ -12,26 +12,26 @@ function c42994702.initial_effect(c)
 	e1:SetOperation(c42994702.operation)
 	c:RegisterEffect(e1)
 end
--- 效果作用：检查是否可以变回里侧守备表示且该回合未使用过此效果
+-- 检查是否可以变回里侧守备表示且该回合未使用过此效果
 function c42994702.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	if chk==0 then return c:IsCanTurnSet() and c:GetFlagEffect(42994702)==0 end
 	c:RegisterFlagEffect(42994702,RESET_EVENT+RESETS_STANDARD-RESET_TURN_SET+RESET_PHASE+PHASE_END,0,1)
-	-- 效果作用：设置连锁操作信息，表示将改变卡的表示形式
+	-- 设置连锁操作信息，表示将改变卡的表示形式
 	Duel.SetOperationInfo(0,CATEGORY_POSITION,c,1,0,0)
 end
--- 效果作用：过滤函数，筛选出位于主要怪兽区且为里侧表示的怪兽
+-- 过滤函数，筛选出位于主要怪兽区且为里侧表示的怪兽
 function c42994702.filter(c)
 	return c:IsFacedown() and c:GetSequence()<5
 end
--- 效果作用：执行效果操作，将自身变为里侧守备表示并处理其他里侧守备表示的怪兽
+-- 执行效果操作，将自身变为里侧守备表示并处理其他里侧守备表示的怪兽
 function c42994702.operation(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 效果作用：判断自身是否与效果相关且处于表侧表示，然后将自身变为里侧守备表示
+	-- 判断自身是否与效果相关且处于表侧表示，然后将自身变为里侧守备表示
 	if c:IsRelateToEffect(e) and c:IsFaceup() and Duel.ChangePosition(c,POS_FACEDOWN_DEFENSE)>0 then
-		-- 效果作用：获取所有位于主要怪兽区且为里侧表示的怪兽组成组
+		-- 获取所有位于主要怪兽区且为里侧表示的怪兽组成组
 		local g=Duel.GetMatchingGroup(c42994702.filter,tp,LOCATION_MZONE,0,nil)
-		-- 效果作用：对指定怪兽组进行洗切覆盖操作
+		-- 对指定怪兽组进行洗切覆盖操作
 		Duel.ShuffleSetCard(g)
 	end
 end

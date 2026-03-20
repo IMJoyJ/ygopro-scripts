@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：这张卡向对方怪兽攻击的伤害步骤内，攻击力上升500。这张卡被对方怪兽攻击的伤害步骤内，攻击力下降500。
 function c44729197.initial_effect(c)
-	-- 效果原文内容：①：这张卡向对方怪兽攻击的伤害步骤内，攻击力上升500。这张卡被对方怪兽攻击的伤害步骤内，攻击力下降500。
+	-- ①：这张卡向对方怪兽攻击的伤害步骤内，攻击力上升500。这张卡被对方怪兽攻击的伤害步骤内，攻击力下降500。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetProperty(EFFECT_FLAG_SINGLE_RANGE)

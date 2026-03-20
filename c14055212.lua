@@ -3,7 +3,7 @@
 -- 这个卡名的卡在1回合只能发动1张。
 -- ①：从卡组把1只怪兽送去墓地。这个回合，自己不能作这个效果送去墓地的卡以及那些同名卡的效果的发动。
 function c14055212.initial_effect(c)
-	-- 效果原文内容：这个卡名的卡在1回合只能发动1张。
+	-- 这个卡名的卡在1回合只能发动1张。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_TOGRAVE)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -36,7 +36,7 @@ function c14055212.activate(e,tp,eg,ep,ev,re,r,rp)
 		Duel.SendtoGrave(g,REASON_EFFECT)
 		local tc=g:GetFirst()
 		if tc:IsLocation(LOCATION_GRAVE) then
-			-- 效果原文内容：①：从卡组把1只怪兽送去墓地。这个回合，自己不能作这个效果送去墓地的卡以及那些同名卡的效果的发动。
+			-- ①：从卡组把1只怪兽送去墓地。这个回合，自己不能作这个效果送去墓地的卡以及那些同名卡的效果的发动。
 			local e1=Effect.CreateEffect(e:GetHandler())
 			e1:SetType(EFFECT_TYPE_FIELD)
 			e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET)

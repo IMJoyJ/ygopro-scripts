@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：这张卡召唤成功时才能发动。从自己的手卡·墓地选1只调整特殊召唤。这个效果特殊召唤的怪兽的效果无效化。
 function c27750191.initial_effect(c)
-	-- 效果原文内容：①：这张卡召唤成功时才能发动。从自己的手卡·墓地选1只调整特殊召唤。这个效果特殊召唤的怪兽的效果无效化。
+	-- ①：这张卡召唤成功时才能发动。从自己的手卡·墓地选1只调整特殊召唤。这个效果特殊召唤的怪兽的效果无效化。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(27750191,0))
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -37,13 +37,13 @@ function c27750191.sumop(e,tp,eg,ep,ev,re,r,rp)
 	if not tc then return end
 	-- 执行特殊召唤步骤
 	if Duel.SpecialSummonStep(tc,0,tp,tp,false,false,POS_FACEUP) then
-		-- 效果原文内容：这个效果特殊召唤的怪兽的效果无效化。
+		-- 这个效果特殊召唤的怪兽的效果无效化。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_DISABLE)
 		e1:SetReset(RESET_EVENT+RESETS_STANDARD)
 		tc:RegisterEffect(e1)
-		-- 效果原文内容：这个效果特殊召唤的怪兽的效果无效化。
+		-- 这个效果特殊召唤的怪兽的效果无效化。
 		local e2=Effect.CreateEffect(e:GetHandler())
 		e2:SetType(EFFECT_TYPE_SINGLE)
 		e2:SetCode(EFFECT_DISABLE_EFFECT)

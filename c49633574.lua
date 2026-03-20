@@ -2,7 +2,7 @@
 -- 效果：
 -- 把1张手卡送去墓地发动。从手卡把1只3星的名字带有「魔轰神」的怪兽特殊召唤。这个效果1回合只能使用1次。
 function c49633574.initial_effect(c)
-	-- 效果原文内容：把1张手卡送去墓地发动。从手卡把1只3星的名字带有「魔轰神」的怪兽特殊召唤。这个效果1回合只能使用1次。
+	-- 把1张手卡送去墓地发动。从手卡把1只3星的名字带有「魔轰神」的怪兽特殊召唤。这个效果1回合只能使用1次。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(49633574,0))  --"特殊召唤"
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -23,7 +23,7 @@ end
 function c49633574.spfilter(c,e,tp)
 	return c:IsSetCard(0x35) and c:IsLevel(3) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 效果作用：选择1张手卡送去墓地作为代价
+-- 选择1张手卡送去墓地作为代价
 function c49633574.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 判断是否满足发动条件：手卡中存在符合条件的卡
 	if chk==0 then return Duel.IsExistingMatchingCard(c49633574.cfilter,tp,LOCATION_HAND,0,1,nil,e,tp) end
@@ -34,14 +34,14 @@ function c49633574.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 将选中的卡送去墓地作为效果的代价
 	Duel.SendtoGrave(g,REASON_COST)
 end
--- 效果作用：设置特殊召唤怪兽的目标信息
+-- 设置特殊召唤怪兽的目标信息
 function c49633574.tg(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 判断是否满足发动条件：玩家场上存在可特殊召唤怪兽的位置
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0 end
 	-- 设置操作信息，表示将要特殊召唤1只怪兽
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_HAND)
 end
--- 效果作用：从手卡特殊召唤符合条件的怪兽
+-- 从手卡特殊召唤符合条件的怪兽
 function c49633574.op(e,tp,eg,ep,ev,re,r,rp)
 	-- 判断是否满足发动条件：玩家场上存在可特殊召唤怪兽的位置
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end

@@ -43,7 +43,7 @@ end
 function c45247637.costfilter(c)
 	return c:IsRace(RACE_PLANT) and c:IsAbleToRemove()
 end
--- 效果作用：从自己墓地把1只植物族怪兽除外作为cost
+-- 从自己墓地把1只植物族怪兽除外作为cost
 function c45247637.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 检查是否满足除外条件
 	if chk==0 then return Duel.IsExistingMatchingCard(c45247637.costfilter,tp,LOCATION_GRAVE,0,1,nil) end
@@ -58,7 +58,7 @@ end
 function c45247637.filter(c)
 	return c:IsFaceup()
 end
--- 效果作用：选择对方场上1只表侧表示怪兽作为对象
+-- 选择对方场上1只表侧表示怪兽作为对象
 function c45247637.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(1-tp) and c45247637.filter(chkc) end
 	-- 检查是否满足选择对象条件
@@ -76,7 +76,7 @@ end
 function c45247637.eqlimit(e,c)
 	return e:GetHandlerPlayer()~=c:GetControler() or e:GetHandler():GetEquipTarget()==c
 end
--- 效果作用：将装备卡装备给目标怪兽
+-- 将装备卡装备给目标怪兽
 function c45247637.operation(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	-- 获取当前连锁的目标怪兽
@@ -86,12 +86,12 @@ function c45247637.operation(e,tp,eg,ep,ev,re,r,rp)
 		Duel.Equip(tp,c,tc)
 	end
 end
--- 效果作用：在自己结束阶段发动
+-- 在自己结束阶段发动
 function c45247637.retcon(e,tp,eg,ep,ev,re,r,rp)
 	-- 判断是否为当前回合玩家
 	return tp==Duel.GetTurnPlayer()
 end
--- 效果作用：注册标记，使①效果无效
+-- 注册标记，使①效果无效
 function c45247637.retop(e,tp,eg,ep,ev,re,r,rp)
 	e:GetHandler():RegisterFlagEffect(45247637,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_STANDBY+RESET_SELF_TURN,0,1)
 end

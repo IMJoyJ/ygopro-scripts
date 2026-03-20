@@ -8,7 +8,7 @@ function c12385638.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- 效果原文内容：①：只要这张卡在魔法与陷阱区域存在，自己的「星际仙踪」怪兽战斗破坏的怪兽不送去墓地回到持有者卡组。
+	-- ①：只要这张卡在魔法与陷阱区域存在，自己的「星际仙踪」怪兽战斗破坏的怪兽不送去墓地回到持有者卡组。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD)
 	e2:SetRange(LOCATION_SZONE)
@@ -17,7 +17,7 @@ function c12385638.initial_effect(c)
 	e2:SetTarget(c12385638.tdtg)
 	e2:SetValue(LOCATION_DECKSHF)
 	c:RegisterEffect(e2)
-	-- 效果原文内容：②：把墓地的这张卡除外才能发动。这个回合，自己的「星际仙踪」怪兽的战斗让自己受到战斗伤害的场合只有1次，作为代替让自己基本分回复那个数值。
+	-- ②：把墓地的这张卡除外才能发动。这个回合，自己的「星际仙踪」怪兽的战斗让自己受到战斗伤害的场合只有1次，作为代替让自己基本分回复那个数值。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_QUICK_O)
 	e3:SetCode(EVENT_FREE_CHAIN)
@@ -33,7 +33,7 @@ function c12385638.tdtg(e,c)
 end
 -- 将一个让玩家基本分回复的伤害效果注册给玩家
 function c12385638.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 效果原文内容：②：把墓地的这张卡除外才能发动。这个回合，自己的「星际仙踪」怪兽的战斗让自己受到战斗伤害的场合只有1次，作为代替让自己基本分回复那个数值。
+	-- ②：把墓地的这张卡除外才能发动。这个回合，自己的「星际仙踪」怪兽的战斗让自己受到战斗伤害的场合只有1次，作为代替让自己基本分回复那个数值。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET)

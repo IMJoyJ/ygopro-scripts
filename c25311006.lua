@@ -6,7 +6,7 @@
 -- ●对方场上1只怪兽的控制权直到结束阶段得到。
 -- ●把对方手卡确认，选那之内的1张回到卡组。
 function c25311006.initial_effect(c)
-	-- 效果原文内容：这个卡名的卡在1回合只能发动1张。
+	-- 这个卡名的卡在1回合只能发动1张。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
@@ -24,12 +24,12 @@ function c25311006.chainfilter(re,tp,cid)
 	local ph=Duel.GetCurrentPhase()
 	return not (re:IsActiveType(TYPE_MONSTER) and (ph==PHASE_MAIN1 or ph==PHASE_MAIN2))
 end
--- 效果原文内容：①：这个回合的自己主要阶段对方是已把怪兽的效果发动的场合，可以从以下效果选择1个发动。
+-- ①：这个回合的自己主要阶段对方是已把怪兽的效果发动的场合，可以从以下效果选择1个发动。
 function c25311006.condition(e,tp,eg,ep,ev,re,r,rp)
 	-- 检查对方是否在主要阶段发动过怪兽效果。
 	return Duel.GetCustomActivityCount(25311006,1-tp,ACTIVITY_CHAIN)~=0
 end
--- 效果原文内容：●自己抽2张。●对方场上1只怪兽的控制权直到结束阶段得到。●把对方手卡确认，选那之内的1张回到卡组。
+-- ●自己抽2张。●对方场上1只怪兽的控制权直到结束阶段得到。●把对方手卡确认，选那之内的1张回到卡组。
 function c25311006.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 检查自己是否可以抽2张卡。
 	local b1=Duel.IsPlayerCanDraw(tp,2)

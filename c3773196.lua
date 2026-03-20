@@ -2,13 +2,13 @@
 -- 效果：
 -- ①：这张卡被除外的回合的结束阶段发动。除外的这张卡攻击表示特殊召唤（1回合只有1次）。
 function c3773196.initial_effect(c)
-	-- 效果原文内容：①：这张卡被除外的回合的结束阶段发动。
+	-- ①：这张卡被除外的回合的结束阶段发动。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_CONTINUOUS)
 	e1:SetCode(EVENT_REMOVE)
 	e1:SetOperation(c3773196.rmop)
 	c:RegisterEffect(e1)
-	-- 效果原文内容：除外的这张卡攻击表示特殊召唤（1回合只有1次）。
+	-- 除外的这张卡攻击表示特殊召唤（1回合只有1次）。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(3773196,0))  --"特殊召唤"
 	e2:SetCategory(CATEGORY_SPECIAL_SUMMON)

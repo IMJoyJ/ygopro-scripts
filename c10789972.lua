@@ -3,7 +3,7 @@
 -- 「觉醒之证」降临。1回合1次，选择自己墓地存在的1只通常怪兽才能发动。选择的怪兽从游戏中除外，直到下次的自己回合的准备阶段时这张卡的攻击力上升除外的那只通常怪兽的攻击力数值。
 function c10789972.initial_effect(c)
 	c:EnableReviveLimit()
-	-- 效果原文内容：「觉醒之证」降临。1回合1次，选择自己墓地存在的1只通常怪兽才能发动。选择的怪兽从游戏中除外，直到下次的自己回合的准备阶段时这张卡的攻击力上升除外的那只通常怪兽的攻击力数值。
+	-- 「觉醒之证」降临。1回合1次，选择自己墓地存在的1只通常怪兽才能发动。选择的怪兽从游戏中除外，直到下次的自己回合的准备阶段时这张卡的攻击力上升除外的那只通常怪兽的攻击力数值。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(10789972,0))  --"攻击上升"
 	e1:SetCategory(CATEGORY_REMOVE+CATEGORY_ATKCHANGE)
@@ -38,7 +38,7 @@ function c10789972.operation(e,tp,eg,ep,ev,re,r,rp)
 	local tc=Duel.GetFirstTarget()
 	-- 判断目标怪兽是否仍然在场且满足除外条件，同时确认自身怪兽处于正面表示状态
 	if tc:IsRelateToEffect(e) and Duel.Remove(tc,POS_FACEUP,REASON_EFFECT)~=0 and c:IsFaceup() and c:IsRelateToEffect(e) then
-		-- 效果原文内容：直到下次的自己回合的准备阶段时这张卡的攻击力上升除外的那只通常怪兽的攻击力数值。
+		-- 直到下次的自己回合的准备阶段时这张卡的攻击力上升除外的那只通常怪兽的攻击力数值。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)

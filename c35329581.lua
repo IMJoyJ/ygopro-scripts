@@ -3,7 +3,7 @@
 -- 「暗影脉冲」在1回合只能发动1张。
 -- ①：自己场上的同调怪兽被战斗·效果破坏送去墓地时，以那1只怪兽为对象才能发动。和那只怪兽相同等级·种族而卡名不同的1只同调怪兽从额外卡组特殊召唤。
 function c35329581.initial_effect(c)
-	-- 效果原文内容：「暗影脉冲」在1回合只能发动1张。
+	-- 「暗影脉冲」在1回合只能发动1张。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET+EFFECT_FLAG_DAMAGE_STEP)
@@ -29,7 +29,7 @@ function c35329581.spfilter(c,e,tp,tc)
 		-- 检查场上是否有足够的位置特殊召唤该怪兽
 		and Duel.GetLocationCountFromEx(tp,tp,nil,c)>0
 end
--- 效果原文内容：①：自己场上的同调怪兽被战斗·效果破坏送去墓地时，以那1只怪兽为对象才能发动。
+-- ①：自己场上的同调怪兽被战斗·效果破坏送去墓地时，以那1只怪兽为对象才能发动。
 function c35329581.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return eg:IsContains(chkc) and c35329581.filter(chkc,e,tp) end
 	if chk==0 then return eg:IsExists(c35329581.filter,1,nil,e,tp) end
@@ -41,7 +41,7 @@ function c35329581.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	-- 设置操作信息为特殊召唤1只怪兽
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_EXTRA)
 end
--- 效果原文内容：和那只怪兽相同等级·种族而卡名不同的1只同调怪兽从额外卡组特殊召唤。
+-- 和那只怪兽相同等级·种族而卡名不同的1只同调怪兽从额外卡组特殊召唤。
 function c35329581.activate(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取当前连锁的效果对象
 	local tc=Duel.GetFirstTarget()

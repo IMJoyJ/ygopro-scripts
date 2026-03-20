@@ -2,7 +2,7 @@
 -- 效果：
 -- 可以把自己墓地存在的1只名字带有「废品」的怪兽从游戏中除外，这张卡的攻击力直到结束阶段时上升400。
 function c51855378.initial_effect(c)
-	-- 效果原文内容：可以把自己墓地存在的1只名字带有「废品」的怪兽从游戏中除外，这张卡的攻击力直到结束阶段时上升400。
+	-- 可以把自己墓地存在的1只名字带有「废品」的怪兽从游戏中除外，这张卡的攻击力直到结束阶段时上升400。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(51855378,0))  --"攻击上升"
 	e1:SetCategory(CATEGORY_ATKCHANGE)
@@ -31,7 +31,7 @@ end
 function c51855378.operation(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsFaceup() and c:IsRelateToEffect(e) then
-		-- 效果原文内容：这张卡的攻击力直到结束阶段时上升400。
+		-- 这张卡的攻击力直到结束阶段时上升400。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)

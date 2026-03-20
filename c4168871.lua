@@ -2,7 +2,7 @@
 -- 效果：
 -- 从手卡把1只名字带有「黑羽」的怪兽从游戏中除外发动。从自己卡组抽2张卡。这张卡发动的回合，自己不能把怪兽特殊召唤。「黑羽之宝札」在1回合只能发动1张。
 function c4168871.initial_effect(c)
-	-- 效果原文内容：从手卡把1只名字带有「黑羽」的怪兽从游戏中除外发动。从自己卡组抽2张卡。这张卡发动的回合，自己不能把怪兽特殊召唤。「黑羽之宝札」在1回合只能发动1张。
+	-- 从手卡把1只名字带有「黑羽」的怪兽从游戏中除外发动。从自己卡组抽2张卡。这张卡发动的回合，自己不能把怪兽特殊召唤。「黑羽之宝札」在1回合只能发动1张。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_DRAW)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -30,7 +30,7 @@ function c4168871.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	local g=Duel.SelectMatchingCard(tp,c4168871.filter,tp,LOCATION_HAND,0,1,1,nil)
 	-- 将选中的怪兽以正面表示的形式从游戏中除外，作为发动此效果的费用。
 	Duel.Remove(g,POS_FACEUP,REASON_COST)
-	-- 效果原文内容：这张卡发动的回合，自己不能把怪兽特殊召唤。
+	-- 这张卡发动的回合，自己不能把怪兽特殊召唤。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET+EFFECT_FLAG_OATH)

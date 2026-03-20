@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：把最多有自己场上的「灵兽」怪兽数量的场上的怪兽破坏。
 function c11556339.initial_effect(c)
-	-- 效果原文内容：①：把最多有自己场上的「灵兽」怪兽数量的场上的怪兽破坏。
+	-- ①：把最多有自己场上的「灵兽」怪兽数量的场上的怪兽破坏。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_DESTROY)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)

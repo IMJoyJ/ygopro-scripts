@@ -2,7 +2,7 @@
 -- 效果：
 -- 自己场上的怪兽被战斗破坏的场合才能发动。从手卡特殊召唤1只「电子食人魔」。
 function c36935434.initial_effect(c)
-	-- 效果原文内容：自己场上的怪兽被战斗破坏的场合才能发动。从手卡特殊召唤1只「电子食人魔」。
+	-- 自己场上的怪兽被战斗破坏的场合才能发动。从手卡特殊召唤1只「电子食人魔」。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)

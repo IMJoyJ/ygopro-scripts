@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：以对方场上1张魔法·陷阱卡为对象才能发动。那张对方的卡回到持有者手卡。这张卡的发动和效果不会被无效化。
 function c15866454.initial_effect(c)
-	-- 效果原文内容：①：以对方场上1张魔法·陷阱卡为对象才能发动。那张对方的卡回到持有者手卡。这张卡的发动和效果不会被无效化。
+	-- ①：以对方场上1张魔法·陷阱卡为对象才能发动。那张对方的卡回到持有者手卡。这张卡的发动和效果不会被无效化。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_TOHAND)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -16,7 +16,7 @@ end
 function c15866454.filter(c)
 	return c:IsAbleToHand() and c:IsType(TYPE_SPELL+TYPE_TRAP)
 end
--- 效果作用：选择对方场上的1张魔法·陷阱卡作为对象
+-- 选择对方场上的1张魔法·陷阱卡作为对象
 function c15866454.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsOnField() and chkc:IsControler(1-tp) and c15866454.filter(chkc) end
 	-- 判断是否满足发动条件：对方场上存在满足条件的魔法·陷阱卡
@@ -28,7 +28,7 @@ function c15866454.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	-- 设置操作信息：将选择的卡送回手牌
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,1,0,0)
 end
--- 效果作用：将对象卡送回持有者手卡
+-- 将对象卡送回持有者手卡
 function c15866454.activate(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取当前连锁的效果对象卡
 	local tc=Duel.GetFirstTarget()

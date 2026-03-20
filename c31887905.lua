@@ -3,7 +3,7 @@
 -- ①：这张卡可以把自己场上的表侧表示的1只「地灵使 奥丝」和1只地属性怪兽送去墓地，从手卡·卡组特殊召唤。
 -- ②：这张卡的①的方法特殊召唤的这张卡向守备表示怪兽攻击的场合，给与对方为攻击力超过那个守备力的数值的战斗伤害。
 function c31887905.initial_effect(c)
-	-- 效果原文内容：①：这张卡可以把自己场上的表侧表示的1只「地灵使 奥丝」和1只地属性怪兽送去墓地，从手卡·卡组特殊召唤。
+	-- ①：这张卡可以把自己场上的表侧表示的1只「地灵使 奥丝」和1只地属性怪兽送去墓地，从手卡·卡组特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_SPSUMMON_PROC)
@@ -14,7 +14,7 @@ function c31887905.initial_effect(c)
 	e1:SetOperation(c31887905.spop)
 	e1:SetValue(SUMMON_VALUE_SELF)
 	c:RegisterEffect(e1)
-	-- 效果原文内容：②：这张卡的①的方法特殊召唤的这张卡向守备表示怪兽攻击的场合，给与对方为攻击力超过那个守备力的数值的战斗伤害。
+	-- ②：这张卡的①的方法特殊召唤的这张卡向守备表示怪兽攻击的场合，给与对方为攻击力超过那个守备力的数值的战斗伤害。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_SINGLE)
 	e2:SetCode(EFFECT_PIERCE)

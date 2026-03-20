@@ -22,16 +22,16 @@ function c10979723.initial_effect(c)
 	e2:SetValue(c10979723.atlimit)
 	c:RegisterEffect(e2)
 end
--- 效果作用：计算场上「亚马逊」怪兽数量并乘以400作为攻击力加成
+-- 计算场上「亚马逊」怪兽数量并乘以400作为攻击力加成
 function c10979723.val(e,c)
-	-- 规则层面操作：检索满足条件的「亚马逊」怪兽数量并乘以400作为攻击力增加值
+	-- 检索满足条件的「亚马逊」怪兽数量并乘以400作为攻击力增加值
 	return Duel.GetMatchingGroupCount(c10979723.filter,c:GetControler(),LOCATION_MZONE,0,nil)*400
 end
--- 效果作用：判断怪兽是否为表侧表示且为「亚马逊」卡
+-- 判断怪兽是否为表侧表示且为「亚马逊」卡
 function c10979723.filter(c)
 	return c:IsFaceup() and c:IsSetCard(0x4)
 end
--- 规则层面操作：设置对方怪兽不能攻击非自身且为「亚马逊」的怪兽
+-- 设置对方怪兽不能攻击非自身且为「亚马逊」的怪兽
 function c10979723.atlimit(e,c)
 	return c:IsFaceup() and c:IsSetCard(0x4) and c~=e:GetHandler()
 end

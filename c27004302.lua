@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：这张卡召唤时才能发动。从卡组把1只「宝石骑士」怪兽加入手卡。
 function c27004302.initial_effect(c)
-	-- 效果原文内容：①：这张卡召唤时才能发动。从卡组把1只「宝石骑士」怪兽加入手卡。
+	-- ①：这张卡召唤时才能发动。从卡组把1只「宝石骑士」怪兽加入手卡。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(27004302,0))  --"检索"
 	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)

@@ -3,7 +3,7 @@
 -- ①：丢弃1张手卡才能发动。自己场上的怪兽在这个回合战斗破坏对方怪兽的场合，只再1次可以继续攻击。
 -- ②：这张卡在墓地存在的场合，自己主要阶段从手卡丢弃1张魔法卡才能发动。这张卡在自己的魔法与陷阱区域盖放。这个效果在这张卡送去墓地的回合不能发动。
 function c35498188.initial_effect(c)
-	-- 效果原文内容：①：丢弃1张手卡才能发动。自己场上的怪兽在这个回合战斗破坏对方怪兽的场合，只再1次可以继续攻击。
+	-- ①：丢弃1张手卡才能发动。自己场上的怪兽在这个回合战斗破坏对方怪兽的场合，只再1次可以继续攻击。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
@@ -13,7 +13,7 @@ function c35498188.initial_effect(c)
 	e1:SetTarget(c35498188.target)
 	e1:SetOperation(c35498188.activate)
 	c:RegisterEffect(e1)
-	-- 效果原文内容：②：这张卡在墓地存在的场合，自己主要阶段从手卡丢弃1张魔法卡才能发动。这张卡在自己的魔法与陷阱区域盖放。这个效果在这张卡送去墓地的回合不能发动。
+	-- ②：这张卡在墓地存在的场合，自己主要阶段从手卡丢弃1张魔法卡才能发动。这张卡在自己的魔法与陷阱区域盖放。这个效果在这张卡送去墓地的回合不能发动。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(35498188,0))  --"这张卡盖放"
 	e2:SetCategory(CATEGORY_SSET)

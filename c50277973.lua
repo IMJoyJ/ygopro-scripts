@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：宣言种族和属性各1个才能把这张卡发动。这张卡变成持有宣言的种族·属性的通常怪兽（4星·攻1800/守1000）在怪兽区域特殊召唤（也当作陷阱卡使用）。
 function c50277973.initial_effect(c)
-	-- 效果原文内容：①：宣言种族和属性各1个才能把这张卡发动。这张卡变成持有宣言的种族·属性的通常怪兽（4星·攻1800/守1000）在怪兽区域特殊召唤（也当作陷阱卡使用）。
+	-- ①：宣言种族和属性各1个才能把这张卡发动。这张卡变成持有宣言的种族·属性的通常怪兽（4星·攻1800/守1000）在怪兽区域特殊召唤（也当作陷阱卡使用）。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -57,7 +57,7 @@ function c50277973.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 设置当前处理的连锁的操作信息，确定特殊召唤此卡。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 效果原文内容：①：宣言种族和属性各1个才能把这张卡发动。这张卡变成持有宣言的种族·属性的通常怪兽（4星·攻1800/守1000）在怪兽区域特殊召唤（也当作陷阱卡使用）。
+-- ①：宣言种族和属性各1个才能把这张卡发动。这张卡变成持有宣言的种族·属性的通常怪兽（4星·攻1800/守1000）在怪兽区域特殊召唤（也当作陷阱卡使用）。
 function c50277973.activate(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local rac=e:GetLabel()

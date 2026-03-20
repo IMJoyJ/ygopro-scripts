@@ -27,7 +27,7 @@ function c48156348.initial_effect(c)
 	e3:SetTarget(c48156348.destg)
 	e3:SetOperation(c48156348.desop)
 	c:RegisterEffect(e3)
-	-- 效果作用：使该卡只能从额外卡组特殊召唤，且必须满足特定条件（即自己场上的融合素材送回卡组）
+	-- 使该卡只能从额外卡组特殊召唤，且必须满足特定条件（即自己场上的融合素材送回卡组）
 	local e4=Effect.CreateEffect(c)
 	e4:SetDescription(aux.Stringid(48156348,1))  --"特殊召唤"
 	e4:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -40,7 +40,7 @@ function c48156348.initial_effect(c)
 	e4:SetOperation(c48156348.spop)
 	c:RegisterEffect(e4)
 end
--- 效果原文内容：让自己场上的上记卡回到卡组的场合才能从额外卡组特殊召唤（不需要「融合」）
+-- 让自己场上的上记卡回到卡组的场合才能从额外卡组特殊召唤（不需要「融合」）
 function c48156348.splimit(e,se,sp,st)
 	return e:GetHandler():GetLocation()~=LOCATION_EXTRA
 end

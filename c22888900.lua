@@ -22,7 +22,7 @@ function c22888900.condition(e,tp,eg,ep,ev,re,r,rp)
 end
 -- 效果处理函数：设置双方不能进行同调·超量召唤，场上的同调·超量怪兽效果无效化，不能攻击。
 function c22888900.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 效果原文内容：直到下次的对方回合的结束时，双方不能进行同调·超量召唤，场上的同调·超量怪兽效果无效化，不能攻击。
+	-- 直到下次的对方回合的结束时，双方不能进行同调·超量召唤，场上的同调·超量怪兽效果无效化，不能攻击。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetTargetRange(LOCATION_MZONE,LOCATION_MZONE)
@@ -40,7 +40,7 @@ function c22888900.operation(e,tp,eg,ep,ev,re,r,rp)
 	e2:SetCode(EFFECT_CANNOT_ATTACK)
 	-- 将效果e2注册给玩家tp，使其生效。
 	Duel.RegisterEffect(e2,tp)
-	-- 效果原文内容：直到下次的对方回合的结束时，双方不能进行同调·超量召唤，场上的同调·超量怪兽效果无效化，不能攻击。
+	-- 直到下次的对方回合的结束时，双方不能进行同调·超量召唤，场上的同调·超量怪兽效果无效化，不能攻击。
 	local e3=Effect.CreateEffect(e:GetHandler())
 	e3:SetType(EFFECT_TYPE_FIELD)
 	e3:SetCode(EFFECT_CANNOT_SPECIAL_SUMMON)

@@ -43,14 +43,14 @@ function c43986064.activate(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取当前效果的目标怪兽。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) and tc:IsFaceup() then
-		-- 效果原文内容：直到回合结束时攻击力变成0。
+		-- 直到回合结束时攻击力变成0。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_SET_ATTACK_FINAL)
 		e1:SetValue(0)
 		e1:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END)
 		tc:RegisterEffect(e1)
-		-- 效果原文内容：不能把效果发动，不会被战斗破坏。这个回合，那只表侧表示怪兽的战斗发生的对双方的战斗伤害变成一半。
+		-- 不能把效果发动，不会被战斗破坏。这个回合，那只表侧表示怪兽的战斗发生的对双方的战斗伤害变成一半。
 		local e2=Effect.CreateEffect(c)
 		e2:SetType(EFFECT_TYPE_SINGLE)
 		e2:SetCode(EFFECT_CANNOT_TRIGGER)

@@ -2,13 +2,13 @@
 -- 效果：
 -- 各自场上存在的卡都在5张以下时这张卡才能发动。双方出场的卡各自不能超过5张。
 function c20644748.initial_effect(c)
-	-- 效果原文内容：各自场上存在的卡都在5张以下时这张卡才能发动。双方出场的卡各自不能超过5张。
+	-- 各自场上存在的卡都在5张以下时这张卡才能发动。双方出场的卡各自不能超过5张。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetCondition(c20644748.condition)
 	c:RegisterEffect(e1)
-	-- 效果原文内容：各自场上存在的卡都在5张以下时这张卡才能发动。双方出场的卡各自不能超过5张。
+	-- 各自场上存在的卡都在5张以下时这张卡才能发动。双方出场的卡各自不能超过5张。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e2:SetProperty(EFFECT_FLAG_IGNORE_IMMUNE)
@@ -16,7 +16,7 @@ function c20644748.initial_effect(c)
 	e2:SetRange(LOCATION_SZONE)
 	e2:SetOperation(c20644748.adjustop)
 	c:RegisterEffect(e2)
-	-- 效果原文内容：各自场上存在的卡都在5张以下时这张卡才能发动。双方出场的卡各自不能超过5张。
+	-- 各自场上存在的卡都在5张以下时这张卡才能发动。双方出场的卡各自不能超过5张。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_FIELD)
 	e3:SetRange(LOCATION_SZONE)
@@ -25,7 +25,7 @@ function c20644748.initial_effect(c)
 	e3:SetTargetRange(1,1)
 	e3:SetValue(c20644748.mvalue)
 	c:RegisterEffect(e3)
-	-- 效果原文内容：各自场上存在的卡都在5张以下时这张卡才能发动。双方出场的卡各自不能超过5张。
+	-- 各自场上存在的卡都在5张以下时这张卡才能发动。双方出场的卡各自不能超过5张。
 	local e4=Effect.CreateEffect(c)
 	e4:SetType(EFFECT_TYPE_FIELD)
 	e4:SetRange(LOCATION_SZONE)
@@ -34,7 +34,7 @@ function c20644748.initial_effect(c)
 	e4:SetTargetRange(1,1)
 	e4:SetValue(c20644748.svalue)
 	c:RegisterEffect(e4)
-	-- 效果原文内容：各自场上存在的卡都在5张以下时这张卡才能发动。双方出场的卡各自不能超过5张。
+	-- 各自场上存在的卡都在5张以下时这张卡才能发动。双方出场的卡各自不能超过5张。
 	local e5=Effect.CreateEffect(c)
 	e5:SetType(EFFECT_TYPE_FIELD)
 	e5:SetRange(LOCATION_SZONE)
@@ -43,7 +43,7 @@ function c20644748.initial_effect(c)
 	e5:SetTargetRange(1,1)
 	e5:SetValue(c20644748.aclimit)
 	c:RegisterEffect(e5)
-	-- 效果原文内容：各自场上存在的卡都在5张以下时这张卡才能发动。双方出场的卡各自不能超过5张。
+	-- 各自场上存在的卡都在5张以下时这张卡才能发动。双方出场的卡各自不能超过5张。
 	local e6=Effect.CreateEffect(c)
 	e6:SetType(EFFECT_TYPE_FIELD)
 	e6:SetRange(LOCATION_SZONE)

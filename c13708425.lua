@@ -11,11 +11,11 @@ function c13708425.initial_effect(c)
 	e1:SetOperation(c13708425.atkop)
 	c:RegisterEffect(e1)
 end
--- 效果作用：判断是否因同调召唤成为素材
+-- 判断是否因同调召唤成为素材
 function c13708425.atkcon(e,tp,eg,ep,ev,re,r,rp)
 	return r==REASON_SYNCHRO
 end
--- 效果作用：使同调怪兽攻击力上升300
+-- 使同调怪兽攻击力上升300
 function c13708425.atkop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local sync=c:GetReasonCard()

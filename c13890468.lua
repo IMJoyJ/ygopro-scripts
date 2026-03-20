@@ -4,7 +4,7 @@
 -- ①：1回合1次，从手卡把1张「灵兽」卡除外，以对方场上1张卡为对象才能发动。那张卡回到手卡。
 function c13890468.initial_effect(c)
 	c:SetSPSummonOnce(13890468)
-	-- 效果原文内容：①：1回合1次，从手卡把1张「灵兽」卡除外，以对方场上1张卡为对象才能发动。那张卡回到手卡。
+	-- ①：1回合1次，从手卡把1张「灵兽」卡除外，以对方场上1张卡为对象才能发动。那张卡回到手卡。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_TOHAND)
 	e1:SetType(EFFECT_TYPE_IGNITION)

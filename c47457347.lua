@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：以除外的自己的「召唤兽」怪兽任意数量为对象才能发动（同名卡最多1张）。那些怪兽守备表示特殊召唤。
 function c47457347.initial_effect(c)
-	-- 效果原文内容：①：以除外的自己的「召唤兽」怪兽任意数量为对象才能发动（同名卡最多1张）。那些怪兽守备表示特殊召唤。
+	-- ①：以除外的自己的「召唤兽」怪兽任意数量为对象才能发动（同名卡最多1张）。那些怪兽守备表示特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET)

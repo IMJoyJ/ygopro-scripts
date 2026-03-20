@@ -4,7 +4,7 @@
 -- ①：以自己墓地1只「秘旋谍」怪兽为对象才能把这张卡发动。那只怪兽特殊召唤，把这张卡装备。
 -- ②：装备怪兽不会被战斗破坏。
 function c30979619.initial_effect(c)
-	-- 效果原文内容：①：以自己墓地1只「秘旋谍」怪兽为对象才能把这张卡发动。那只怪兽特殊召唤，把这张卡装备。
+	-- ①：以自己墓地1只「秘旋谍」怪兽为对象才能把这张卡发动。那只怪兽特殊召唤，把这张卡装备。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_EQUIP)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -14,7 +14,7 @@ function c30979619.initial_effect(c)
 	e1:SetTarget(c30979619.target)
 	e1:SetOperation(c30979619.operation)
 	c:RegisterEffect(e1)
-	-- 效果原文内容：②：装备怪兽不会被战斗破坏。
+	-- ②：装备怪兽不会被战斗破坏。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_EQUIP)
 	e2:SetCode(EFFECT_INDESTRUCTABLE_BATTLE)

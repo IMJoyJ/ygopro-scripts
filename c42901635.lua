@@ -5,7 +5,7 @@
 -- ②：这张卡被战斗或者对方的效果破坏的场合，以除外的自己的「电磁石战士α」「电磁石战士β」「电磁石战士γ」各1只为对象才能发动。那些怪兽特殊召唤。
 function c42901635.initial_effect(c)
 	c:EnableReviveLimit()
-	-- 效果原文内容：这张卡不能通常召唤。从自己的手卡·场上·墓地把「电磁石战士α」「电磁石战士β」「电磁石战士γ」各1只除外的场合可以特殊召唤。
+	-- 这张卡不能通常召唤。从自己的手卡·场上·墓地把「电磁石战士α」「电磁石战士β」「电磁石战士γ」各1只除外的场合可以特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_SPSUMMON_PROC)
@@ -15,7 +15,7 @@ function c42901635.initial_effect(c)
 	e1:SetTarget(c42901635.sptg)
 	e1:SetOperation(c42901635.spop)
 	c:RegisterEffect(e1)
-	-- 效果原文内容：①：从自己墓地把1只4星以下的「磁石战士」怪兽除外，以对方场上1张卡为对象才能发动。那张卡破坏。
+	-- ①：从自己墓地把1只4星以下的「磁石战士」怪兽除外，以对方场上1张卡为对象才能发动。那张卡破坏。
 	local e2=Effect.CreateEffect(c)
 	e2:SetCategory(CATEGORY_DESTROY)
 	e2:SetType(EFFECT_TYPE_IGNITION)
@@ -25,7 +25,7 @@ function c42901635.initial_effect(c)
 	e2:SetTarget(c42901635.target)
 	e2:SetOperation(c42901635.activate)
 	c:RegisterEffect(e2)
-	-- 效果原文内容：②：这张卡被战斗或者对方的效果破坏的场合，以除外的自己的「电磁石战士α」「电磁石战士β」「电磁石战士γ」各1只为对象才能发动。那些怪兽特殊召唤。
+	-- ②：这张卡被战斗或者对方的效果破坏的场合，以除外的自己的「电磁石战士α」「电磁石战士β」「电磁石战士γ」各1只为对象才能发动。那些怪兽特殊召唤。
 	local e3=Effect.CreateEffect(c)
 	e3:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e3:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)

@@ -2,7 +2,7 @@
 -- 效果：
 -- 对方场上存在的特殊召唤的怪兽的效果发动时才能发动。那次发动无效。这个效果1回合只能使用1次。
 function c26842483.initial_effect(c)
-	-- 效果原文内容：对方场上存在的特殊召唤的怪兽的效果发动时才能发动。
+	-- 对方场上存在的特殊召唤的怪兽的效果发动时才能发动。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(26842483,0))  --"效果无效"
 	e1:SetCategory(CATEGORY_NEGATE)
@@ -16,9 +16,9 @@ function c26842483.initial_effect(c)
 	e1:SetOperation(c26842483.operation)
 	c:RegisterEffect(e1)
 end
--- 效果原文内容：那次发动无效。
+-- 那次发动无效。
 function c26842483.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 效果原文内容：这个效果1回合只能使用1次。
+	-- 这个效果1回合只能使用1次。
 	local loc=Duel.GetChainInfo(ev,CHAININFO_TRIGGERING_LOCATION)
 	-- 检索当前连锁的发动位置信息
 	return ep~=tp and loc==LOCATION_MZONE and re:IsActiveType(TYPE_MONSTER) and Duel.IsChainNegatable(ev)

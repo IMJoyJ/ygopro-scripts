@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：从自己墓地把1只怪兽除外才能发动。这张卡的攻击力直到对方回合结束时上升300。这个效果1回合可以使用最多2次。
 function c4058065.initial_effect(c)
-	-- 效果原文内容：①：从自己墓地把1只怪兽除外才能发动。这张卡的攻击力直到对方回合结束时上升300。这个效果1回合可以使用最多2次。
+	-- ①：从自己墓地把1只怪兽除外才能发动。这张卡的攻击力直到对方回合结束时上升300。这个效果1回合可以使用最多2次。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(4058065,0))  --"攻击上升"
 	e1:SetCategory(CATEGORY_ATKCHANGE)
@@ -32,7 +32,7 @@ end
 function c4058065.operation(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsFaceup() and c:IsRelateToEffect(e) then
-		-- 效果原文内容：这张卡的攻击力直到对方回合结束时上升300。
+		-- 这张卡的攻击力直到对方回合结束时上升300。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)

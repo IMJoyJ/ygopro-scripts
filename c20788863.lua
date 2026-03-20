@@ -9,7 +9,7 @@ function c20788863.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- 效果原文内容：①：从手卡丢弃1只「转生炎兽」怪兽才能发动。从卡组把1只「转生炎兽」怪兽送去墓地。那之后，自己从卡组抽1张。
+	-- ①：从手卡丢弃1只「转生炎兽」怪兽才能发动。从卡组把1只「转生炎兽」怪兽送去墓地。那之后，自己从卡组抽1张。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(20788863,0))  --"堆墓并抽1张卡"
 	e2:SetCategory(CATEGORY_TOGRAVE+CATEGORY_DRAW)
@@ -22,7 +22,7 @@ function c20788863.initial_effect(c)
 	e2:SetOperation(c20788863.drop1)
 	e2:SetHintTiming(0,TIMING_END_PHASE)
 	c:RegisterEffect(e2)
-	-- 效果原文内容：②：用和自身同名的怪兽为素材作连接召唤的「转生炎兽」连接怪兽在自己场上存在的场合，从手卡丢弃1只「转生炎兽」怪兽才能发动。自己从卡组抽2张。
+	-- ②：用和自身同名的怪兽为素材作连接召唤的「转生炎兽」连接怪兽在自己场上存在的场合，从手卡丢弃1只「转生炎兽」怪兽才能发动。自己从卡组抽2张。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(20788863,1))  --"抽2张卡"
 	e3:SetCategory(CATEGORY_DRAW)
@@ -39,7 +39,7 @@ function c20788863.initial_effect(c)
 	c:RegisterEffect(e3)
 	if not c20788863.global_check then
 		c20788863.global_check=true
-		-- 效果原文内容：这个卡名的①②的效果1回合只能有1次使用其中任意1个。
+		-- 这个卡名的①②的效果1回合只能有1次使用其中任意1个。
 		local ge1=Effect.CreateEffect(c)
 		ge1:SetType(EFFECT_TYPE_FIELD)
 		ge1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_SET_AVAILABLE+EFFECT_FLAG_IGNORE_RANGE)
@@ -60,7 +60,7 @@ end
 function c20788863.cfilter(c)
 	return c:IsSetCard(0x119) and c:IsType(TYPE_MONSTER) and c:IsDiscardable()
 end
--- 效果作用：检查玩家手卡是否存在满足条件的怪兽并将其丢弃作为发动cost
+-- 检查玩家手卡是否存在满足条件的怪兽并将其丢弃作为发动cost
 function c20788863.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 检查玩家手卡是否存在满足条件的怪兽
 	if chk==0 then return Duel.IsExistingMatchingCard(c20788863.cfilter,tp,LOCATION_HAND,0,1,nil) end
@@ -71,7 +71,7 @@ end
 function c20788863.filter(c)
 	return c:IsSetCard(0x119) and c:IsType(TYPE_MONSTER) and c:IsAbleToGrave()
 end
--- 效果作用：检查玩家是否可以发动①效果
+-- 检查玩家是否可以发动①效果
 function c20788863.drtg1(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 检查玩家是否可以抽1张卡
 	if chk==0 then return Duel.IsPlayerCanDraw(tp,1)
@@ -82,7 +82,7 @@ function c20788863.drtg1(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 设置操作信息：将要抽1张卡
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,1)
 end
--- 效果作用：选择卡组中的一只「转生炎兽」怪兽送去墓地，并洗切卡组后抽1张卡
+-- 选择卡组中的一只「转生炎兽」怪兽送去墓地，并洗切卡组后抽1张卡
 function c20788863.drop1(e,tp,eg,ep,ev,re,r,rp)
 	-- 提示玩家选择要送去墓地的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
@@ -102,12 +102,12 @@ end
 function c20788863.lfilter(c)
 	return c:IsFaceup() and c:IsSetCard(0x119) and c:IsSummonType(SUMMON_TYPE_LINK) and c:GetFlagEffect(20788863)~=0
 end
--- 效果作用：检查是否满足②效果的发动条件
+-- 检查是否满足②效果的发动条件
 function c20788863.drcon(e,tp,eg,ep,ev,re,r,rp)
 	-- 检查场上是否存在满足条件的「转生炎兽」连接怪兽
 	return Duel.IsExistingMatchingCard(c20788863.lfilter,tp,LOCATION_MZONE,0,1,nil)
 end
--- 效果作用：检查玩家是否可以发动②效果
+-- 检查玩家是否可以发动②效果
 function c20788863.drtg2(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 检查玩家是否可以抽2张卡
 	if chk==0 then return Duel.IsPlayerCanDraw(tp,2) end
@@ -118,7 +118,7 @@ function c20788863.drtg2(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 设置操作信息：将要抽2张卡
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,2)
 end
--- 效果作用：让玩家抽2张卡
+-- 让玩家抽2张卡
 function c20788863.drop2(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取当前处理的连锁的目标玩家和目标参数
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)

@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：这张卡反转的场合，以自己墓地1只4星以下的魔法师族怪兽为对象才能发动。那只魔法师族怪兽特殊召唤。
 function c30608985.initial_effect(c)
-	-- 效果原文内容：①：这张卡反转的场合，以自己墓地1只4星以下的魔法师族怪兽为对象才能发动。那只魔法师族怪兽特殊召唤。
+	-- ①：这张卡反转的场合，以自己墓地1只4星以下的魔法师族怪兽为对象才能发动。那只魔法师族怪兽特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(30608985,0))  --"特殊召唤"
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)

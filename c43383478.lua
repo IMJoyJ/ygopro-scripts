@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：自己场上的「急袭猛禽」超量怪兽被破坏送去墓地的回合，以自己墓地1只「急袭猛禽」超量怪兽为对象才能发动。那只怪兽特殊召唤，比那只怪兽阶级高1阶的1只「急袭猛禽」怪兽在作为对象的怪兽上面重叠当作超量召唤从额外卡组特殊召唤。
 function c43383478.initial_effect(c)
-	-- 效果原文内容：①：自己场上的「急袭猛禽」超量怪兽被破坏送去墓地的回合，以自己墓地1只「急袭猛禽」超量怪兽为对象才能发动。
+	-- ①：自己场上的「急袭猛禽」超量怪兽被破坏送去墓地的回合，以自己墓地1只「急袭猛禽」超量怪兽为对象才能发动。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -15,7 +15,7 @@ function c43383478.initial_effect(c)
 	c:RegisterEffect(e1)
 	if not c43383478.globle_check then
 		c43383478.globle_check=true
-		-- 效果原文内容：那只怪兽特殊召唤，比那只怪兽阶级高1阶的1只「急袭猛禽」怪兽在作为对象的怪兽上面重叠当作超量召唤从额外卡组特殊召唤。
+		-- 那只怪兽特殊召唤，比那只怪兽阶级高1阶的1只「急袭猛禽」怪兽在作为对象的怪兽上面重叠当作超量召唤从额外卡组特殊召唤。
 		local ge1=Effect.CreateEffect(c)
 		ge1:SetType(EFFECT_TYPE_CONTINUOUS+EFFECT_TYPE_FIELD)
 		ge1:SetCode(EVENT_TO_GRAVE)
@@ -40,7 +40,7 @@ function c43383478.checkop(e,tp,eg,ep,ev,re,r,rp)
 	-- 若对方有「急袭猛禽」超量怪兽被破坏，则注册标识效果
 	if p2 then Duel.RegisterFlagEffect(1,43383478,RESET_PHASE+PHASE_END,0,1) end
 end
--- 效果原文内容：自己场上的「急袭猛禽」超量怪兽被破坏送去墓地的回合
+-- 自己场上的「急袭猛禽」超量怪兽被破坏送去墓地的回合
 function c43383478.condition(e,tp,eg,ep,ev,re,r,rp)
 	-- 检查是否己方有「急袭猛禽」超量怪兽被破坏的标识效果
 	return Duel.GetFlagEffect(tp,43383478)~=0

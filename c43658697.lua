@@ -3,7 +3,7 @@
 -- 这个卡名的卡在1回合只能发动1张。
 -- ①：从卡组把1只「超级运动员」怪兽特殊召唤。这个效果特殊召唤的怪兽不能作为同调·超量召唤的素材，效果无效化。那之后，自己失去那只怪兽的等级×300基本分。
 function c43658697.initial_effect(c)
-	-- 效果作用：设置卡名限制、发动条件、特殊召唤目标和处理函数
+	-- 设置卡名限制、发动条件、特殊召唤目标和处理函数
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)

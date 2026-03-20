@@ -12,7 +12,7 @@ function c28859794.initial_effect(c)
 	e1:SetValue(c28859794.valcon)
 	c:RegisterEffect(e1)
 end
--- 效果作用：只有在战斗破坏的情况下才生效
+-- 只有在战斗破坏的情况下才生效
 function c28859794.valcon(e,re,r,rp)
 	return bit.band(r,REASON_BATTLE)~=0
 end

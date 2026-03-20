@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：对方把怪兽的召唤·特殊召唤无效的场合或者对方把魔法·陷阱·怪兽的效果的发动无效的场合才能发动。对方的手卡·场上的卡全部破坏。
 function c36458063.initial_effect(c)
-	-- 效果原文内容：①：对方把怪兽的召唤·特殊召唤无效的场合或者对方把魔法·陷阱·怪兽的效果的发动无效的场合才能发动。对方的手卡·场上的卡全部破坏。
+	-- ①：对方把怪兽的召唤·特殊召唤无效的场合或者对方把魔法·陷阱·怪兽的效果的发动无效的场合才能发动。对方的手卡·场上的卡全部破坏。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_DESTROY)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -20,7 +20,7 @@ function c36458063.initial_effect(c)
 	c:RegisterEffect(e3)
 	if not c36458063.global_check then
 		c36458063.global_check=true
-		-- 效果原文内容：①：对方把怪兽的召唤·特殊召唤无效的场合或者对方把魔法·陷阱·怪兽的效果的发动无效的场合才能发动。对方的手卡·场上的卡全部破坏。
+		-- ①：对方把怪兽的召唤·特殊召唤无效的场合或者对方把魔法·陷阱·怪兽的效果的发动无效的场合才能发动。对方的手卡·场上的卡全部破坏。
 		local ge1=Effect.CreateEffect(c)
 		ge1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 		ge1:SetCode(EVENT_CHAIN_NEGATED)

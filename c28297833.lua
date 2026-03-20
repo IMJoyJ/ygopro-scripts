@@ -3,7 +3,7 @@
 -- ①：这张卡召唤成功的场合发动。除外的双方的卡全部回到持有者卡组。这张卡的攻击力上升这个效果回到卡组的数量×100。
 -- ②：这张卡被除外的场合发动。双方玩家各自从自身卡组上面把5张卡除外。
 function c28297833.initial_effect(c)
-	-- 效果原文内容：①：这张卡召唤成功的场合发动。除外的双方的卡全部回到持有者卡组。这张卡的攻击力上升这个效果回到卡组的数量×100。
+	-- ①：这张卡召唤成功的场合发动。除外的双方的卡全部回到持有者卡组。这张卡的攻击力上升这个效果回到卡组的数量×100。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(28297833,0))  --"除外的卡全部回到卡组"
 	e1:SetCategory(CATEGORY_TODECK+CATEGORY_ATKCHANGE)
@@ -12,7 +12,7 @@ function c28297833.initial_effect(c)
 	e1:SetTarget(c28297833.tdtg)
 	e1:SetOperation(c28297833.tdop)
 	c:RegisterEffect(e1)
-	-- 效果原文内容：②：这张卡被除外的场合发动。双方玩家各自从自身卡组上面把5张卡除外。
+	-- ②：这张卡被除外的场合发动。双方玩家各自从自身卡组上面把5张卡除外。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(28297833,1))  --"双方从卡组上面把5张卡从游戏中除外"
 	e2:SetCategory(CATEGORY_REMOVE)
@@ -37,7 +37,7 @@ function c28297833.tdop(e,tp,eg,ep,ev,re,r,rp)
 	Duel.SendtoDeck(g,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
 	local ct=g:FilterCount(Card.IsLocation,nil,LOCATION_DECK)
 	if c:IsFaceup() and c:IsRelateToEffect(e) then
-		-- 效果原文内容：①：这张卡召唤成功的场合发动。除外的双方的卡全部回到持有者卡组。这张卡的攻击力上升这个效果回到卡组的数量×100。
+		-- ①：这张卡召唤成功的场合发动。除外的双方的卡全部回到持有者卡组。这张卡的攻击力上升这个效果回到卡组的数量×100。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)

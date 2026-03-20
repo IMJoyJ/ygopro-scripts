@@ -16,7 +16,7 @@ end
 function c35486099.filter(c)
 	return c:IsSetCard(0x1034) and c:IsType(TYPE_MONSTER) and not c:IsForbidden()
 end
--- 效果作用：选择1~2只自己墓地的宝玉兽怪兽作为对象
+-- 选择1~2只自己墓地的宝玉兽怪兽作为对象
 function c35486099.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(tp) and chkc:IsLocation(LOCATION_GRAVE) and c35486099.filter(chkc) end
 	if chk==0 then
@@ -38,7 +38,7 @@ function c35486099.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	-- 设置效果处理信息，记录将要处理的墓地怪兽
 	Duel.SetOperationInfo(0,CATEGORY_LEAVE_GRAVE,g,g:GetCount(),0,0)
 end
--- 效果作用：将选中的宝玉兽怪兽当作永续魔法卡使用并放置到魔法陷阱区域
+-- 将选中的宝玉兽怪兽当作永续魔法卡使用并放置到魔法陷阱区域
 function c35486099.activate(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取当前玩家魔法陷阱区域的可用空位数
 	local ft=Duel.GetLocationCount(tp,LOCATION_SZONE)

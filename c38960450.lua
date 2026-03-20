@@ -3,7 +3,7 @@
 -- 这个卡名的卡在1回合只能发动1张。
 -- ①：从卡组把1张装备魔法卡加入手卡。那之后，可以给可以把那张卡装备的自己场上1只怪兽装备。
 function c38960450.initial_effect(c)
-	-- 效果原文内容：这个卡名的卡在1回合只能发动1张。
+	-- 这个卡名的卡在1回合只能发动1张。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -17,7 +17,7 @@ end
 function c38960450.filter(c)
 	return c:IsType(TYPE_EQUIP) and c:IsAbleToHand()
 end
--- 效果原文内容：①：从卡组把1张装备魔法卡加入手卡。
+-- ①：从卡组把1张装备魔法卡加入手卡。
 function c38960450.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 检查自己卡组是否存在满足条件的装备魔法卡。
 	if chk==0 then return Duel.IsExistingMatchingCard(c38960450.filter,tp,LOCATION_DECK,0,1,nil) end
@@ -28,7 +28,7 @@ end
 function c38960450.eqfilter(c,tc)
 	return c:IsFaceup() and tc:CheckEquipTarget(c)
 end
--- 效果原文内容：①：从卡组把1张装备魔法卡加入手卡。那之后，可以给可以把那张卡装备的自己场上1只怪兽装备。
+-- ①：从卡组把1张装备魔法卡加入手卡。那之后，可以给可以把那张卡装备的自己场上1只怪兽装备。
 function c38960450.activate(e,tp,eg,ep,ev,re,r,rp)
 	-- 提示玩家选择一张要加入手牌的装备魔法卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"

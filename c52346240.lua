@@ -2,7 +2,7 @@
 -- 效果：
 -- 这张卡召唤成功时，可以选择自己墓地存在的1只1星的兽族怪兽表侧守备表示特殊召唤。这个效果特殊召唤的怪兽的效果无效化。
 function c52346240.initial_effect(c)
-	-- 效果原文内容：这张卡召唤成功时，可以选择自己墓地存在的1只1星的兽族怪兽表侧守备表示特殊召唤。
+	-- 这张卡召唤成功时，可以选择自己墓地存在的1只1星的兽族怪兽表侧守备表示特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(52346240,0))  --"特殊召唤"
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -38,13 +38,13 @@ function c52346240.spop(e,tp,eg,ep,ev,re,r,rp)
 	local tc=Duel.GetFirstTarget()
 	-- 确认目标怪兽有效且为兽族，并尝试特殊召唤
 	if tc:IsRelateToEffect(e) and tc:IsRace(RACE_BEAST) and Duel.SpecialSummonStep(tc,0,tp,tp,false,false,POS_FACEUP_DEFENSE) then
-		-- 效果原文内容：这个效果特殊召唤的怪兽的效果无效化。
+		-- 这个效果特殊召唤的怪兽的效果无效化。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_DISABLE)
 		e1:SetReset(RESET_EVENT+RESETS_STANDARD)
 		tc:RegisterEffect(e1)
-		-- 效果原文内容：这个效果特殊召唤的怪兽的效果无效化。
+		-- 这个效果特殊召唤的怪兽的效果无效化。
 		local e2=Effect.CreateEffect(c)
 		e2:SetType(EFFECT_TYPE_SINGLE)
 		e2:SetCode(EFFECT_DISABLE_EFFECT)

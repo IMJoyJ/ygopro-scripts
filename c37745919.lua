@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：以自己墓地1只4星以下的「变形斗士」怪兽为对象才能发动。那只怪兽特殊召唤。这个效果特殊召唤的怪兽在这个回合的结束阶段破坏。
 function c37745919.initial_effect(c)
-	-- 效果原文内容：①：以自己墓地1只4星以下的「变形斗士」怪兽为对象才能发动。
+	-- ①：以自己墓地1只4星以下的「变形斗士」怪兽为对象才能发动。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET)
@@ -40,7 +40,7 @@ function c37745919.activate(e,tp,eg,ep,ev,re,r,rp)
 	if tc:IsRelateToEffect(e) and Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP)~=0 then
 		local fid=e:GetHandler():GetFieldID()
 		tc:RegisterFlagEffect(37745919,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END,0,1,fid)
-		-- 效果原文内容：那只怪兽特殊召唤。这个效果特殊召唤的怪兽在这个回合的结束阶段破坏。
+		-- 那只怪兽特殊召唤。这个效果特殊召唤的怪兽在这个回合的结束阶段破坏。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 		e1:SetCode(EVENT_PHASE+PHASE_END)

@@ -10,7 +10,7 @@ function c27561302.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- 效果原文内容：●把这张卡除外，以对方场上1张魔法·陷阱卡为对象才能发动。那张卡回到持有者手卡。这个效果在对方回合也能发动。
+	-- ●把这张卡除外，以对方场上1张魔法·陷阱卡为对象才能发动。那张卡回到持有者手卡。这个效果在对方回合也能发动。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(27561302,0))  --"魔法·陷阱卡回到持有者手卡（雨之天气模样）"
 	e2:SetCategory(CATEGORY_TOHAND)
@@ -23,7 +23,7 @@ function c27561302.initial_effect(c)
 	e2:SetCost(aux.bfgcost)
 	e2:SetTarget(c27561302.thtg)
 	e2:SetOperation(c27561302.thop)
-	-- 效果原文内容：和这张卡相同纵列的自己的主要怪兽区域以及那些两邻的自己的主要怪兽区域存在的「天气」效果怪兽得到以下效果。
+	-- 和这张卡相同纵列的自己的主要怪兽区域以及那些两邻的自己的主要怪兽区域存在的「天气」效果怪兽得到以下效果。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_GRANT)
 	e3:SetRange(LOCATION_SZONE)

@@ -8,7 +8,7 @@ function c40204620.initial_effect(c)
 	e0:SetType(EFFECT_TYPE_ACTIVATE)
 	e0:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e0)
-	-- 效果原文内容：①：以自己场上1只4星以下的怪兽为对象才能发动。那只怪兽的等级直到回合结束时变成原本等级的2倍。
+	-- ①：以自己场上1只4星以下的怪兽为对象才能发动。那只怪兽的等级直到回合结束时变成原本等级的2倍。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(40204620,0))
 	e1:SetType(EFFECT_TYPE_QUICK_O)
@@ -24,7 +24,7 @@ end
 function c40204620.filter(c)
 	return c:IsFaceup() and c:IsLevelAbove(1) and c:IsLevelBelow(4)
 end
--- 效果作用：选择对象怪兽（必须是自己场上的表侧表示的4星以下怪兽）
+-- 选择对象怪兽（必须是自己场上的表侧表示的4星以下怪兽）
 function c40204620.lvtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and c40204620.filter(chkc) end
 	-- 判断是否满足发动条件（场上是否存在符合条件的怪兽）
@@ -34,13 +34,13 @@ function c40204620.lvtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	-- 选择符合条件的怪兽作为效果对象
 	Duel.SelectTarget(tp,c40204620.filter,tp,LOCATION_MZONE,0,1,1,nil)
 end
--- 效果作用：将选定怪兽的等级变为原本等级的2倍
+-- 将选定怪兽的等级变为原本等级的2倍
 function c40204620.lvop(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取当前效果的对象怪兽
 	local tc=Duel.GetFirstTarget()
 	if tc:IsFaceup() and tc:IsLevelAbove(1) and tc:IsRelateToEffect(e) then
 		local lv=tc:GetOriginalLevel()
-		-- 效果原文内容：①：以自己场上1只4星以下的怪兽为对象才能发动。那只怪兽的等级直到回合结束时变成原本等级的2倍。
+		-- ①：以自己场上1只4星以下的怪兽为对象才能发动。那只怪兽的等级直到回合结束时变成原本等级的2倍。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_CHANGE_LEVEL)

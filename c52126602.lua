@@ -41,13 +41,13 @@ function s.initial_effect(c)
 	e3:SetOperation(s.disop)
 	c:RegisterEffect(e3)
 end
--- 效果作用：设置回到手卡效果的目标
+-- 设置回到手卡效果的目标
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
 	-- 设置操作信息为将自身送回手牌
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,e:GetHandler(),1,0,0)
 end
--- 效果作用：执行回到手卡效果
+-- 执行回到手卡效果
 function s.thop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) then
@@ -59,7 +59,7 @@ end
 function s.spfilter(c,e,tp)
 	return c:IsCode(25131968) and c:IsCanBeSpecialSummoned(e,0,tp,false,false,POS_FACEUP_DEFENSE)
 end
--- 效果作用：设置特殊召唤毘龙之谦的效果目标
+-- 设置特殊召唤毘龙之谦的效果目标
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 检查对方场上是否有空位
 	if chk==0 then return Duel.GetLocationCount(1-tp,LOCATION_MZONE)>0
@@ -68,7 +68,7 @@ function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 设置操作信息为特殊召唤一张毘龙之谦
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_DECK+LOCATION_HAND)
 end
--- 效果作用：执行特殊召唤毘龙之谦
+-- 执行特殊召唤毘龙之谦
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
 	-- 检查对方场上是否有空位
 	if Duel.GetLocationCount(1-tp,LOCATION_MZONE)<=0 then return end
@@ -84,17 +84,17 @@ function s.spop(e,tp,eg,ep,ev,re,r,rp)
 		Duel.SpecialSummonComplete()
 	end
 end
--- 效果作用：判断是否被毘龙之谦特殊召唤
+-- 判断是否被毘龙之谦特殊召唤
 function s.discon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():GetFlagEffect(25131968)>0
 end
--- 效果作用：设置丢弃手卡的效果目标
+-- 设置丢弃手卡的效果目标
 function s.distg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
 	-- 设置操作信息为丢弃一张手牌
 	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
 end
--- 效果作用：执行丢弃手卡效果
+-- 执行丢弃手卡效果
 function s.disop(e,tp,eg,ep,ev,re,r,rp)
 	-- 提示选择要丢弃的手牌
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DISCARD)  --"请选择要丢弃的手牌"

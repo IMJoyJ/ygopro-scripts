@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：1回合1次，把自己场上1只「急袭猛禽」怪兽解放，以自己墓地1张「升阶魔法」魔法卡为对象才能发动。那张卡加入手卡。这个效果的发动后，直到回合结束时自己不用「升阶魔法」魔法卡的效果不能把怪兽超量召唤。
 function c51814159.initial_effect(c)
-	-- 效果原文内容：①：1回合1次，把自己场上1只「急袭猛禽」怪兽解放，以自己墓地1张「升阶魔法」魔法卡为对象才能发动。那张卡加入手卡。这个效果的发动后，直到回合结束时自己不用「升阶魔法」魔法卡的效果不能把怪兽超量召唤。
+	-- ①：1回合1次，把自己场上1只「急袭猛禽」怪兽解放，以自己墓地1张「升阶魔法」魔法卡为对象才能发动。那张卡加入手卡。这个效果的发动后，直到回合结束时自己不用「升阶魔法」魔法卡的效果不能把怪兽超量召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(51814159,0))
 	e1:SetCategory(CATEGORY_TOHAND)
@@ -48,7 +48,7 @@ function c51814159.thop(e,tp,eg,ep,ev,re,r,rp)
 		-- 将目标卡以REASON_EFFECT原因送入手牌。
 		Duel.SendtoHand(tc,nil,REASON_EFFECT)
 	end
-	-- 效果原文内容：这个效果的发动后，直到回合结束时自己不用「升阶魔法」魔法卡的效果不能把怪兽超量召唤。
+	-- 这个效果的发动后，直到回合结束时自己不用「升阶魔法」魔法卡的效果不能把怪兽超量召唤。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_CANNOT_SPECIAL_SUMMON)

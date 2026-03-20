@@ -2,7 +2,7 @@
 -- 效果：
 -- 这张卡的发动时场上表侧表示存在的全部怪兽的原本攻击力与原本守备力直到结束阶段时交换。
 function c52097679.initial_effect(c)
-	-- 效果原文内容：这张卡的发动时场上表侧表示存在的全部怪兽的原本攻击力与原本守备力直到结束阶段时交换。
+	-- 这张卡的发动时场上表侧表示存在的全部怪兽的原本攻击力与原本守备力直到结束阶段时交换。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_ATKCHANGE+CATEGORY_DEFCHANGE)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)

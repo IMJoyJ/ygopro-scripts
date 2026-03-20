@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：把自己场上1只炎属性怪兽解放才能发动。给与对方解放的怪兽的原本攻击力数值的伤害。
 function c42945701.initial_effect(c)
-	-- 效果原文内容：①：把自己场上1只炎属性怪兽解放才能发动。给与对方解放的怪兽的原本攻击力数值的伤害。
+	-- ①：把自己场上1只炎属性怪兽解放才能发动。给与对方解放的怪兽的原本攻击力数值的伤害。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_DAMAGE)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)

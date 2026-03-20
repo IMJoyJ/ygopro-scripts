@@ -12,14 +12,14 @@ function s.initial_effect(c)
 	-- 设置连接召唤所需素材为满足s.matfilter条件的怪兽，最少1个，最多1个
 	aux.AddLinkProcedure(c,s.matfilter,1,1)
 	c:EnableReviveLimit()
-	-- 效果作用：该卡不能作为超量召唤的素材
+	-- 该卡不能作为超量召唤的素材
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
 	e1:SetCode(EFFECT_CANNOT_BE_XYZ_MATERIAL)
 	e1:SetValue(1)
 	c:RegisterEffect(e1)
-	-- 效果作用：特殊召唤成功时，使自己在本回合不能特殊召唤同名卡
+	-- 特殊召唤成功时，使自己在本回合不能特殊召唤同名卡
 	local e2=Effect.CreateEffect(c)
 	e2:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
 	e2:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_CONTINUOUS)
@@ -27,7 +27,7 @@ function s.initial_effect(c)
 	e2:SetCondition(s.regcon)
 	e2:SetOperation(s.regop)
 	c:RegisterEffect(e2)
-	-- 效果作用：从手牌送去墓地检索「星遗物」怪兽或「自奏圣乐的通天塔」加入手牌
+	-- 从手牌送去墓地检索「星遗物」怪兽或「自奏圣乐的通天塔」加入手牌
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(id,0))  --"检索"
 	e3:SetCategory(CATEGORY_TOHAND|CATEGORY_SEARCH)
@@ -44,7 +44,7 @@ function s.initial_effect(c)
 	e4:SetCode(EVENT_FREE_CHAIN)
 	e4:SetCondition(s.accon2)
 	c:RegisterEffect(e4)
-	-- 效果作用：从墓地特殊召唤，需要除外一张其他「自奏圣乐」卡作为代价
+	-- 从墓地特殊召唤，需要除外一张其他「自奏圣乐」卡作为代价
 	local e5=Effect.CreateEffect(c)
 	e5:SetDescription(aux.Stringid(id,1))  --"墓地特殊召唤"
 	e5:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -72,7 +72,7 @@ function s.regcon(e,tp,eg,ep,ev,re,r,rp)
 end
 -- 操作函数，注册一个在本回合不能特殊召唤同名卡的效果
 function s.regop(e,tp,eg,ep,ev,re,r,rp)
-	-- 效果作用：检索满足条件的卡片并加入手牌，以及墓地特殊召唤效果的处理函数
+	-- 检索满足条件的卡片并加入手牌，以及墓地特殊召唤效果的处理函数
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_CANNOT_SPECIAL_SUMMON)

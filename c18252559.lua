@@ -23,7 +23,7 @@ function c18252559.initial_effect(c)
 	e2:SetOperation(c18252559.damop)
 	c:RegisterEffect(e2)
 end
--- 效果作用：计算对方场上卡的数量并设置伤害值
+-- 计算对方场上卡的数量并设置伤害值
 function c18252559.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 条件判断：对方场上存在卡牌
 	if chk==0 then return Duel.GetFieldGroupCount(1-tp,LOCATION_ONFIELD,0)>0 end
@@ -34,7 +34,7 @@ function c18252559.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 设置操作信息为对对方造成指定伤害
 	Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,1-tp,dam)
 end
--- 效果作用：执行①效果的伤害处理
+-- 执行①效果的伤害处理
 function c18252559.activate(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取连锁的目标玩家
 	local p=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER)
@@ -43,13 +43,13 @@ function c18252559.activate(e,tp,eg,ep,ev,re,r,rp)
 	-- 对目标玩家造成计算出的伤害
 	Duel.Damage(p,dam,REASON_EFFECT)
 end
--- 效果作用：判断是否满足②效果的发动条件
+-- 判断是否满足②效果的发动条件
 function c18252559.damcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	return rp==1-tp and c:IsReason(REASON_DESTROY)
 		and c:IsPreviousLocation(LOCATION_ONFIELD) and c:IsPreviousControler(tp)
 end
--- 效果作用：设置②效果的目标和伤害值
+-- 设置②效果的目标和伤害值
 function c18252559.damtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
 	-- 设置连锁目标玩家为对方
@@ -59,7 +59,7 @@ function c18252559.damtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 设置操作信息为对对方造成1000伤害
 	Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,1-tp,1000)
 end
--- 效果作用：执行②效果的伤害处理
+-- 执行②效果的伤害处理
 function c18252559.damop(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取连锁的目标玩家和参数
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)

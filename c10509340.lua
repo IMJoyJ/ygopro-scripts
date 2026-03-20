@@ -27,7 +27,7 @@ function c10509340.initial_effect(c)
 	e3:SetCondition(c10509340.actcon)
 	c:RegisterEffect(e3)
 end
--- 效果作用：当此卡参与战斗时触发
+-- 当此卡参与战斗时触发
 function c10509340.disop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	-- 获取攻击目标怪兽
@@ -48,11 +48,11 @@ function c10509340.disop(e,tp,eg,ep,ev,re,r,rp)
 	e2:SetReset(RESET_EVENT+0x17a0000)
 	d:RegisterEffect(e2)
 end
--- 效果作用：限制对方发动魔法·陷阱卡
+-- 限制对方发动魔法·陷阱卡
 function c10509340.aclimit(e,re,tp)
 	return re:IsHasType(EFFECT_TYPE_ACTIVATE)
 end
--- 效果作用：判断是否为攻击怪兽
+-- 判断是否为攻击怪兽
 function c10509340.actcon(e)
 	-- 判断攻击怪兽是否为自身
 	return Duel.GetAttacker()==e:GetHandler()

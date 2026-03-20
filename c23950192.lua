@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：只要自己场上有其他的「冰结界」怪兽存在，4星以上的怪兽不能攻击宣言。
 function c23950192.initial_effect(c)
-	-- 效果原文内容：①：只要自己场上有其他的「冰结界」怪兽存在，4星以上的怪兽不能攻击宣言。
+	-- ①：只要自己场上有其他的「冰结界」怪兽存在，4星以上的怪兽不能攻击宣言。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD)
 	e2:SetCode(EFFECT_CANNOT_ATTACK_ANNOUNCE)

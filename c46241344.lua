@@ -9,7 +9,7 @@ function c46241344.initial_effect(c)
 	-- 为卡片添加连接召唤手续，需要2个兽战士族怪兽作为连接素材
 	aux.AddLinkProcedure(c,aux.FilterBoolFunction(Card.IsLinkRace,RACE_BEASTWARRIOR),2,2)
 	c:EnableReviveLimit()
-	-- 效果原文内容：自己对「炎星仙-鹫真人」1回合只能有1次特殊召唤，那个②的效果1回合只能使用1次。
+	-- 自己对「炎星仙-鹫真人」1回合只能有1次特殊召唤，那个②的效果1回合只能使用1次。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
@@ -17,7 +17,7 @@ function c46241344.initial_effect(c)
 	e1:SetRange(LOCATION_MZONE)
 	e1:SetTargetRange(1,0)
 	c:RegisterEffect(e1)
-	-- 效果原文内容：②：以自己的场上·墓地1张「炎舞」魔法·陷阱卡为对象才能发动。那张卡回到持有者手卡。那之后，从卡组把1只「炎星」怪兽送去墓地。
+	-- ②：以自己的场上·墓地1张「炎舞」魔法·陷阱卡为对象才能发动。那张卡回到持有者手卡。那之后，从卡组把1只「炎星」怪兽送去墓地。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(46241344,1))
 	e2:SetCategory(CATEGORY_TOHAND+CATEGORY_DECKDES)

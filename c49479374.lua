@@ -2,7 +2,7 @@
 -- 效果：
 -- 把自己墓地存在的2只4星以下的名字带有「电池人」的怪兽加入手卡。
 function c49479374.initial_effect(c)
-	-- 效果原文内容：把自己墓地存在的2只4星以下的名字带有「电池人」的怪兽加入手卡。
+	-- 把自己墓地存在的2只4星以下的名字带有「电池人」的怪兽加入手卡。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_TOHAND)
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET)
@@ -16,7 +16,7 @@ end
 function c49479374.filter(c)
 	return c:IsSetCard(0x28) and c:IsLevelBelow(4) and c:IsAbleToHand()
 end
--- 效果作用：选择目标，从自己墓地选择2只满足条件的怪兽作为对象
+-- 选择目标，从自己墓地选择2只满足条件的怪兽作为对象
 function c49479374.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(tp) and chkc:IsLocation(LOCATION_GRAVE) and c49479374.filter(chkc) end
 	-- 判断是否满足发动条件：确认自己墓地是否存在至少2只满足条件的怪兽
