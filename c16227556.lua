@@ -7,7 +7,7 @@ function c16227556.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- 每次对方的准备阶段可以支付500基本分，随机看对方1张手卡。
+	-- 效果原文：每次对方的准备阶段可以支付500基本分，随机看对方1张手卡。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(16227556,0))  --"查看手牌"
 	e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
@@ -19,26 +19,26 @@ function c16227556.initial_effect(c)
 	e2:SetOperation(c16227556.cfop)
 	c:RegisterEffect(e2)
 end
--- 效果作用
+-- 设置触发条件函数：判断当前是否为自己回合且对方手牌数不为0
 function c16227556.cfcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 对方回合且对方手牌不为空时才能发动
+	-- 返回条件：当前回合玩家不是自己且对方手牌数不为0
 	return Duel.GetTurnPlayer()~=tp and Duel.GetFieldGroupCount(tp,0,LOCATION_HAND)~=0
 end
--- 效果作用
+-- 设置费用支付函数：支付500基本分作为发动费用
 function c16227556.cfcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否能支付500基本分
+	-- 费用检查：判断玩家是否能支付500点LP
 	if chk==0 then return Duel.CheckLPCost(tp,500) end
-	-- 支付500基本分
+	-- 执行支付：玩家支付500点LP
 	Duel.PayLPCost(tp,500)
 end
--- 效果作用
+-- 设置效果处理函数：随机查看对方1张手卡并展示后洗切
 function c16227556.cfop(e,tp,eg,ep,ev,re,r,rp)
-	-- 从对方手牌中随机选择1张
+	-- 获取对方手牌并随机选择1张
 	local g=Duel.GetFieldGroup(tp,0,LOCATION_HAND):RandomSelect(tp,1)
 	if g:GetCount()~=0 then
-		-- 确认对方手牌
+		-- 展示选中的卡给玩家确认
 		Duel.ConfirmCards(tp,g)
-		-- 洗切对方手牌
+		-- 洗切对方的手牌
 		Duel.ShuffleHand(1-tp)
 	end
 end

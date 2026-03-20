@@ -11,23 +11,23 @@ function c19959742.initial_effect(c)
 	e1:SetOperation(c19959742.operation)
 	c:RegisterEffect(e1)
 end
--- 效果作用
+-- 定义效果的发动条件函数
 function c19959742.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 满足条件：因效果送入墓地且自己卡组至少有3张牌
+	-- 检查是否由效果送去墓地且卡组数量不少于3张
 	return bit.band(r,REASON_EFFECT)~=0 and Duel.GetFieldGroupCount(tp,LOCATION_DECK,0)>=3
 end
--- 效果作用
+-- 定义效果的处理操作函数
 function c19959742.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 若自己卡组少于3张牌则不执行后续操作
+	-- 若卡组数量不足3张则不进行后续处理
 	if Duel.GetFieldGroupCount(tp,LOCATION_DECK,0)<3 then return end
-	-- 将自己卡组最上方的3张牌进行排序
+	-- 让玩家确认卡组最上方的3张卡并按喜欢的顺序排序
 	Duel.SortDecktop(tp,tp,3)
-	-- 选择将排序后的牌放回卡组顶部或底部
+	-- 判断玩家是否选择了将卡片回到卡组最下面这一选项
 	if Duel.SelectOption(tp,aux.Stringid(19959742,1),aux.Stringid(19959742,2))==1 then  --"回到卡组最上面/回到卡组最下面"
 		for i=1,3 do
-			-- 获取卡组最上方的1张牌
+			-- 获取当前卡组最上方的一张卡片
 			local mg=Duel.GetDecktopGroup(tp,1)
-			-- 将该牌移动到卡组底部
+			-- 将该卡片移动到卡组最底端
 			Duel.MoveSequence(mg:GetFirst(),SEQ_DECKBOTTOM)
 		end
 	end

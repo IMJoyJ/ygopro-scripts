@@ -25,7 +25,7 @@ function c16008155.initial_effect(c)
 	e3:SetOperation(c16008155.desop2)
 	e3:SetLabelObject(e2)
 	c:RegisterEffect(e3)
-	-- 效果作用
+	-- 场上有这张卡以外的怪兽表侧表示存在的场合，这张卡破坏。
 	local e4=Effect.CreateEffect(c)
 	e4:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e4:SetRange(LOCATION_MZONE)
@@ -33,7 +33,7 @@ function c16008155.initial_effect(c)
 	e4:SetOperation(c16008155.desop3)
 	e4:SetLabelObject(e2)
 	c:RegisterEffect(e4)
-	-- 效果原文内容
+	-- 这张卡成为魔法·陷阱卡的效果的对象时，这张卡破坏。
 	local e5=Effect.CreateEffect(c)
 	e5:SetType(EFFECT_TYPE_FIELD)
 	e5:SetCode(EFFECT_CANNOT_SUMMON)
@@ -43,13 +43,13 @@ function c16008155.initial_effect(c)
 	e5:SetValue(1)
 	c:RegisterEffect(e5)
 end
--- 检查是否满足破坏条件：存在其他表侧表示的怪兽或自己以外的怪兽
+-- 检查是否满足破坏条件：自己场上存在其他怪兽或对方场上存在怪兽
 function c16008155.sdcon(e)
 	return e:GetHandler():GetOwnerTargetCount()>0
-		-- 检查对方场上是否存在至少1张表侧表示的怪兽
+		-- 检查对方场上是否存在至少1只表侧表示的怪兽
 		or Duel.IsExistingMatchingCard(Card.IsFaceup,0,LOCATION_MZONE,LOCATION_MZONE,1,e:GetHandler())
 end
--- 当成为魔法·陷阱卡效果的对象时，记录该效果并设置标签为0
+-- 当卡片成为魔法·陷阱卡效果的对象时，记录该效果并设置标签为0
 function c16008155.desop1(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if re:GetHandler():IsType(TYPE_SPELL+TYPE_TRAP) and c:IsLocation(LOCATION_MZONE) and c:IsFaceup() then
@@ -57,11 +57,11 @@ function c16008155.desop1(e,tp,eg,ep,ev,re,r,rp)
 		e:SetLabel(0)
 	end
 end
--- 连锁处理结束后，若处于伤害步骤且未计算伤害，则标记为1；否则直接破坏卡片
+-- 连锁处理结束后，若该效果为之前记录的效果且卡片仍存在，则判断是否在伤害步骤且未计算伤害，否则直接破坏卡片
 function c16008155.desop2(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if re==e:GetLabelObject():GetLabelObject() and c:IsRelateToEffect(re) then
-		-- 判断当前是否处于伤害步骤且尚未计算伤害
+		-- 当前阶段为伤害步骤且尚未计算战斗伤害
 		if Duel.GetCurrentPhase()==PHASE_DAMAGE and not Duel.IsDamageCalculated() then
 			e:GetLabelObject():SetLabel(1)
 		else
@@ -70,13 +70,13 @@ function c16008155.desop2(e,tp,eg,ep,ev,re,r,rp)
 		end
 	end
 end
--- 战斗结束后，若之前标记为1，则破坏该卡片
+-- 战斗阶段结束后，若标签为1则破坏卡片
 function c16008155.desop3(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local des=e:GetLabelObject():GetLabel()
 	e:GetLabelObject():SetLabel(0)
 	if des==1 and not c:IsDisabled() then
-		-- 将卡片以效果原因破坏
+		-- 将卡片破坏
 		Duel.Destroy(c,REASON_EFFECT)
 	end
 end

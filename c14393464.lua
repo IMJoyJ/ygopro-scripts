@@ -22,7 +22,7 @@ function c14393464.initial_effect(c)
 	e2:SetTarget(c14393464.atktg)
 	e2:SetValue(500)
 	c:RegisterEffect(e2)
-	-- 效果作用
+	-- 破坏对方场上一张卡。
 	local e3=Effect.CreateEffect(c)
 	e3:SetCategory(CATEGORY_DESTROY)
 	e3:SetType(EFFECT_TYPE_QUICK_O)
@@ -36,43 +36,43 @@ function c14393464.initial_effect(c)
 	e3:SetOperation(c14393464.desop)
 	c:RegisterEffect(e3)
 end
--- 判断目标怪兽是否为电子界族
+-- 只对电子界族怪兽生效。
 function c14393464.atktg(e,c)
 	return c:IsRace(RACE_CYBERSE)
 end
--- 过滤函数，用于判断场上是否存在「斩机」怪兽
+-- 筛选场上存在的「斩机」怪兽。
 function c14393464.cfilter(c)
 	return c:IsFaceup() and c:IsSetCard(0x132) and c:IsType(TYPE_MONSTER)
 end
--- 判断效果发动条件是否满足
+-- 判断是否满足发动条件。
 function c14393464.descon(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查自己场上是否存在「斩机」怪兽且此卡处于表侧表示状态
+	-- 判断场上是否存在「斩机」怪兽且此卡处于启用状态。
 	return Duel.IsExistingMatchingCard(c14393464.cfilter,tp,LOCATION_MZONE,0,1,nil) and e:GetHandler():IsStatus(STATUS_EFFECT_ENABLED)
 end
--- 设置发动代价
+-- 支付将此卡送去墓地的代价。
 function c14393464.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsAbleToGraveAsCost() end
-	-- 将此卡送去墓地作为发动代价
+	-- 将此卡送去墓地作为代价。
 	Duel.SendtoGrave(e:GetHandler(),REASON_COST)
 end
--- 设置效果对象选择
+-- 选择对方场上一张卡作为破坏对象。
 function c14393464.destg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(1-tp) and chkc:IsOnField() end
-	-- 检查是否能选择对方场上的卡作为对象
+	-- 检查是否有符合条件的目标卡。
 	if chk==0 then return Duel.IsExistingTarget(aux.TRUE,tp,0,LOCATION_ONFIELD,1,nil) end
-	-- 提示玩家选择要破坏的卡
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)
-	-- 选择对方场上的一张卡作为破坏对象
+	-- 提示玩家选择要破坏的卡。
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
+	-- 选择对方场上的一张卡作为目标。
 	local g=Duel.SelectTarget(tp,aux.TRUE,tp,0,LOCATION_ONFIELD,1,1,nil)
-	-- 设置连锁操作信息，确定破坏效果的对象数量
+	-- 设置连锁操作信息，确定破坏效果的对象。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,1,0,0)
 end
--- 效果处理函数
+-- 执行破坏操作。
 function c14393464.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的效果对象
+	-- 获取连锁中指定的目标卡。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 以效果原因破坏对象卡
+		-- 以效果原因破坏目标卡。
 		Duel.Destroy(tc,REASON_EFFECT)
 	end
 end
