@@ -29,7 +29,7 @@ end
 -- 处理发动此效果所需的费用，可选择丢弃2张手牌或解放自身与1只「自然」怪兽
 function c16940215.discost(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
-	-- 检查玩家是否受效果29942771影响
+	-- 检测【自然山茶】(29942771)的效果是否生效中。若在生效中，，自己为让「自然」怪兽的效果发动而把怪兽解放的场合，可以作为代替从自己卡组上面把2张卡送去墓地。
 	local fe=Duel.IsPlayerAffectedByEffect(tp,29942771)
 	-- 判断玩家是否能作为费用丢弃2张卡到墓地
 	local b1=fe and Duel.IsPlayerCanDiscardDeckAsCost(tp,2)
@@ -38,7 +38,7 @@ function c16940215.discost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return b1 or b2 end
 	-- 若选择丢弃2张卡的费用，则执行丢弃操作
 	if b1 and (not b2 or Duel.SelectYesNo(tp,fe:GetDescription())) then
-		-- 提示使用卡号29942771的效果
+		-- 提示使用自然山茶的效果
 		Duel.Hint(HINT_CARD,0,29942771)
 		fe:UseCountLimit(tp)
 		-- 执行丢弃2张卡到墓地的操作

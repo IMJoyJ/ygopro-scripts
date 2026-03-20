@@ -36,7 +36,7 @@ function c34568403.coinop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local res=0
 	local toss=false
-	-- 判断玩家是否受到效果影响
+	-- 检测【光之结界】(73206827)的效果是否生效中。若在生效中，自己的「秘仪之力」怪兽的召唤·反转召唤·特殊召唤时发动的效果不进行投掷硬币而选里表的其中1个适用。
 	if Duel.IsPlayerAffectedByEffect(tp,73206827) then
 		-- 通过选择选项模拟硬币投掷结果
 		res=1-Duel.SelectOption(tp,60,61)

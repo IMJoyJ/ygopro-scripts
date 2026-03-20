@@ -69,7 +69,7 @@ function c30929786.setcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if Duel.IsExistingMatchingCard(c30929786.filter2,tp,LOCATION_DECK,0,1,nil) then ft=ft+1 end
 	-- 判断是否满足支付费用条件
 	if chk==0 then return Duel.IsExistingMatchingCard(c30929786.cfilter,tp,LOCATION_ONFIELD,0,1,nil)
-		-- 若玩家受到效果影响且场上存在可用区域，则满足支付费用条件
+		-- 检测【炎星仙-鹫真人】(46241344)的效果是否生效中。自己把「炎星」怪兽的效果发动的场合，也能不把自己的手卡·场上的「炎星」卡以及「炎舞」卡送去墓地来发动。
 		or (Duel.IsPlayerAffectedByEffect(tp,46241344) and ft>0) end
 	-- 判断场上是否存在满足条件的「炎舞」魔法·陷阱卡
 	if Duel.IsExistingMatchingCard(c30929786.cfilter,tp,LOCATION_ONFIELD,0,1,nil)

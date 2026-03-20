@@ -48,7 +48,7 @@ end
 -- 设置攻击上升效果的费用：可以选择支付2张手牌或解放自身作为费用。
 function c19605133.atcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
-	-- 检查是否受到效果影响，用于判断是否可以使用特定的费用支付方式。
+	-- 检测【自然山茶】(29942771)的效果是否生效中。若在生效中，，自己为让「自然」怪兽的效果发动而把怪兽解放的场合，可以作为代替从自己卡组上面把2张卡送去墓地。
 	local fe=Duel.IsPlayerAffectedByEffect(tp,29942771)
 	-- 判断是否可以支付2张手牌作为费用。
 	local b1=fe and Duel.IsPlayerCanDiscardDeckAsCost(tp,2)
@@ -56,7 +56,7 @@ function c19605133.atcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return b1 or b2 end
 	-- 如果可以支付2张手牌费用，则选择使用该方式支付。
 	if b1 and (not b2 or Duel.SelectYesNo(tp,fe:GetDescription())) then
-		-- 提示对方玩家使用了特定卡牌效果。
+		-- 提示对方玩家使用了自然山茶的效果。
 		Duel.Hint(HINT_CARD,0,29942771)
 		fe:UseCountLimit(tp)
 		-- 将玩家的2张卡从卡组送去墓地作为费用。

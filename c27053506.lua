@@ -12,25 +12,25 @@ function c27053506.initial_effect(c)
 	e1:SetOperation(c27053506.activate)
 	c:RegisterEffect(e1)
 end
--- 效果作用
+-- 效果发动时的目标选择函数，负责检查发动条件并预置伤害参数。
 function c27053506.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查对方场上是否存在至少1张卡
+	-- 检查对方的手卡或场上是否存在至少1张卡，作为发动的条件。
 	if chk==0 then return Duel.IsExistingMatchingCard(aux.TRUE,tp,0,0xe,1,nil) end
-	-- 将连锁的目标玩家设置为对方
+	-- 将效果的对象玩家设置为对方。
 	Duel.SetTargetPlayer(1-tp)
-	-- 计算对方手卡和场上的卡数量并乘以200作为伤害值
+	-- 计算对方手卡与场上的卡数量之和乘以200，作为伤害数值。
 	local dam=Duel.GetFieldGroupCount(1-tp,0xe,0)*200
-	-- 将伤害值设置为连锁的目标参数
+	-- 将计算得到的伤害数值设定为效果的对象参数。
 	Duel.SetTargetParam(dam)
-	-- 设置连锁的操作信息为伤害效果，目标玩家为对方，伤害值为dam
+	-- 设置效果操作信息，声明即将对对方造成伤害。
 	Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,1-tp,dam)
 end
--- 效果作用
+-- 效果处理函数，负责执行造成伤害的操作。
 function c27053506.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁的目标玩家
+	-- 获取效果的对象玩家（即对方）。
 	local p=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER)
-	-- 计算对方手卡和场上的卡数量并乘以200作为伤害值
+	-- 重新计算对方手卡与场上的卡数量之和乘以200，作为实际伤害值。
 	local dam=Duel.GetFieldGroupCount(1-tp,0xe,0)*200
-	-- 对目标玩家造成指定伤害
+	-- 对对象玩家造成计算出的效果伤害。
 	Duel.Damage(p,dam,REASON_EFFECT)
 end

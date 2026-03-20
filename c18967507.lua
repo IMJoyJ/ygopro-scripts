@@ -54,7 +54,7 @@ function c18967507.eqfilter(c,tp)
 end
 -- 效果发动时判断是否满足条件：场上存在装备区域且墓地存在符合条件的装备卡
 function c18967507.eqtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断是否受到64753988效果影响，决定装备卡检索位置
+	-- 检测【电子暗黑世界】(64753988)的效果是否生效中。若在生效中，「电子暗黑」怪兽的召唤·特殊召唤成功时发动的自身的效果让自己从自己墓地把怪兽装备的场合，也能作为代替从对方墓地装备。
 	local loc=Duel.IsPlayerAffectedByEffect(tp,64753988) and LOCATION_GRAVE or 0
 	-- 判断场上是否存在装备区域
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_SZONE)>0
@@ -69,7 +69,7 @@ function c18967507.eqop(e,tp,eg,ep,ev,re,r,rp)
 	-- 判断场上是否存在装备区域
 	if Duel.GetLocationCount(tp,LOCATION_SZONE)<=0 then return end
 	if c:IsFacedown() or not c:IsRelateToEffect(e) then return end
-	-- 判断是否受到64753988效果影响，决定装备卡检索位置
+	-- 检测【电子暗黑世界】(64753988)的效果是否生效中。若在生效中，「电子暗黑」怪兽的召唤·特殊召唤成功时发动的自身的效果让自己从自己墓地把怪兽装备的场合，也能作为代替从对方墓地装备。
 	local loc=Duel.IsPlayerAffectedByEffect(tp,64753988) and LOCATION_GRAVE or 0
 	-- 提示玩家选择要装备的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_EQUIP)  --"请选择要装备的卡"

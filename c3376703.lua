@@ -7,7 +7,7 @@
 local s,id,o=GetID()
 -- 初始化卡片效果，注册两个效果：①丢弃手牌发动，限制对方效果发动；②召唤/特殊召唤时投掷硬币决定特殊召唤效果
 function s.initial_effect(c)
-	-- 记录该卡与编号73206827的卡为同名卡
+	-- 记录该卡上记载了【光之结界】
 	aux.AddCodeList(c,73206827)
 	-- ①：把这张卡从手卡丢弃才能发动。这个回合，在自己场上有「秘仪之力」怪兽召唤·反转召唤·特殊召唤时对方不能把效果发动。
 	local e1=Effect.CreateEffect(c)
@@ -148,7 +148,7 @@ end
 function s.coinop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local res=-1
-	-- 判断是否被效果73206827影响
+	-- 检测【光之结界】(73206827)的效果是否生效中。若在生效中，自己的「秘仪之力」怪兽的召唤·反转召唤·特殊召唤时发动的效果不进行投掷硬币而选里表的其中1个适用。
 	if Duel.IsPlayerAffectedByEffect(tp,73206827) then
 		-- 判断自己卡组是否有满足条件的怪兽
 		local b1=Duel.GetLocationCount(tp,LOCATION_MZONE)>0 and Duel.IsExistingMatchingCard(s.spfilter,tp,LOCATION_DECK,0,1,nil,e,tp)

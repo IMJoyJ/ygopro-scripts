@@ -83,7 +83,7 @@ end
 function s.coinop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local res=-1
-	-- 判断玩家是否受到卡号73206827效果影响
+	-- 检测【光之结界】(73206827)的效果是否生效中。若在生效中，自己的「秘仪之力」怪兽的召唤·反转召唤·特殊召唤时发动的效果不进行投掷硬币而选里表的其中1个适用。
 	if Duel.IsPlayerAffectedByEffect(tp,73206827) then
 		-- 检查卡组中是否存在可盖放的投掷硬币魔法卡
 		local b1=Duel.IsExistingMatchingCard(s.setfilter,tp,LOCATION_DECK,0,1,nil)

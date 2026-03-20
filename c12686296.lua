@@ -70,7 +70,7 @@ end
 function s.coinop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local res=-1
-	-- 判断玩家是否受「秘仪之力EX-混沌支配者」效果影响
+	-- 检测【光之结界】(73206827)的效果是否生效中。若在生效中，自己的「秘仪之力」怪兽的召唤·反转召唤·特殊召唤时发动的效果不进行投掷硬币而选里表的其中1个适用。
 	if Duel.IsPlayerAffectedByEffect(tp,73206827) then
 		-- 判断是否满足特殊召唤10星「秘仪之力」怪兽的条件
 		local b1=Duel.GetLocationCount(tp,LOCATION_MZONE)>0 and Duel.IsExistingMatchingCard(s.spfilter,tp,LOCATION_DECK+LOCATION_HAND,0,1,nil,e,tp)

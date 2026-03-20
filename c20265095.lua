@@ -47,7 +47,7 @@ end
 function c20265095.ctcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 检查场上是否存在满足条件的卡
 	if chk==0 then return Duel.IsExistingMatchingCard(c20265095.costfilter,tp,LOCATION_ONFIELD,0,1,nil)
-		-- 检查玩家是否受到特定效果影响
+		-- 检测【炎星仙-鹫真人】(46241344)的效果是否生效中。自己把「炎星」怪兽的效果发动的场合，也能不把自己的手卡·场上的「炎星」卡以及「炎舞」卡送去墓地来发动。
 		or Duel.IsPlayerAffectedByEffect(tp,46241344) end
 	-- 检查场上是否存在满足条件的卡
 	if Duel.IsExistingMatchingCard(c20265095.costfilter,tp,LOCATION_ONFIELD,0,1,nil)

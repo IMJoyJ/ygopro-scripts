@@ -31,7 +31,7 @@ function c48829461.sfilter(c)
 end
 -- 唯一性过滤函数，当玩家受到效果影响且场上存在符合条件的「罪」怪兽时，该卡在场上只能存在一张。
 function c48829461.uqfilter(c)
-	-- 检查当前玩家是否受到某个效果影响（如「罪」怪兽效果限制）。
+	-- 检测【罪 领域】(75223115)的效果是否生效中。若在生效中，受影响玩家的「「罪」怪兽在场上只能有1只表侧表示存在」效果作为「「罪」怪兽每1种类在场上只能有1只表侧表示存在」适用。
 	if Duel.IsPlayerAffectedByEffect(c:GetControler(),75223115)
 		-- 检查当前玩家场上是否存在至少1张符合条件的「罪」怪兽。
 		and Duel.IsExistingMatchingCard(c48829461.sfilter,c:GetControler(),LOCATION_MZONE,LOCATION_MZONE,1,nil) then

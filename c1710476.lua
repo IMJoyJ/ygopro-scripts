@@ -44,7 +44,7 @@ function c1710476.initial_effect(c)
 end
 -- 用于判断是否为「罪」系列怪兽的过滤函数。
 function c1710476.uqfilter(c)
-	-- 若玩家受到效果75223115影响，则只判断是否为罪电子终结龙。
+	-- 检测【罪 领域】(75223115)的效果是否生效中。若在生效中，受影响玩家的「「罪」怪兽在场上只能有1只表侧表示存在」效果作为「「罪」怪兽每1种类在场上只能有1只表侧表示存在」适用。
 	if Duel.IsPlayerAffectedByEffect(c:GetControler(),75223115) then
 		return c:IsCode(1710476)
 	else

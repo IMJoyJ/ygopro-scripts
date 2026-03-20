@@ -47,7 +47,7 @@ function c1127737.damop1(e,tp,eg,ep,ev,re,r,rp)
 	if e:GetHandler():IsRelateToEffect(e) then
 		-- 从当前连锁中获取目标玩家和伤害值
 		local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-		-- 检查目标玩家是否被免疫效果影响（如王家长眠之谷）
+		-- 检查目标玩家是否被「死域海的灯塔」影响，该卡会让受影响的玩家受到此卡的效果伤害变成0
 		if not Duel.IsPlayerAffectedByEffect(p,37511832) then
 			-- 对目标玩家造成指定点数的伤害
 			Duel.Damage(p,d,REASON_EFFECT)
@@ -67,7 +67,7 @@ end
 function c1127737.damop2(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取当前回合玩家
 	local p=Duel.GetTurnPlayer()
-	-- 检查当前回合玩家是否被免疫效果影响
+	-- 检查目标玩家是否被「死域海的灯塔」影响，该卡会让受影响的玩家受到此卡的效果伤害变成0
 	if not Duel.IsPlayerAffectedByEffect(p,37511832) then
 		-- 向玩家发送卡片发动提示动画
 		Duel.Hint(HINT_CARD,0,1127737)

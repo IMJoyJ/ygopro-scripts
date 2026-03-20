@@ -53,9 +53,9 @@ function c36521459.initial_effect(c)
 	ea:SetValue(aux.FALSE)
 	c:RegisterEffect(ea)
 end
--- 用于判断是否为「罪」怪兽的过滤函数，若玩家受75223115效果影响则判断为36521459，否则判断为0x23属性
+-- 用于判断是否为「罪」怪兽的过滤函数
 function c36521459.uqfilter(c)
-	-- 判断该玩家是否受到75223115效果影响
+	-- 检测【罪 领域】(75223115)的效果是否生效中。若在生效中，受影响玩家的「「罪」怪兽在场上只能有1只表侧表示存在」效果作为「「罪」怪兽每1种类在场上只能有1只表侧表示存在」适用。
 	if Duel.IsPlayerAffectedByEffect(c:GetControler(),75223115) then
 		return c:IsCode(36521459)
 	else

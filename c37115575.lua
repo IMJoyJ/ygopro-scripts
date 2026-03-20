@@ -49,9 +49,9 @@ function c37115575.initial_effect(c)
 	e9:SetOperation(c37115575.deop)
 	c:RegisterEffect(e9)
 end
--- 用于判断是否为「罪」系列怪兽，若受75223115效果影响则视为真实龙。
+-- 用于判断是否为「罪」系列怪兽
 function c37115575.uqfilter(c)
-	-- 判断是否受75223115效果影响，若受则视为真实龙。
+	-- 检测【罪 领域】(75223115)的效果是否生效中。若在生效中，受影响玩家的「「罪」怪兽在场上只能有1只表侧表示存在」效果作为「「罪」怪兽每1种类在场上只能有1只表侧表示存在」适用。
 	if Duel.IsPlayerAffectedByEffect(c:GetControler(),75223115) then
 		return c:IsCode(37115575)
 	else

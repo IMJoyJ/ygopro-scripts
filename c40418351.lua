@@ -41,10 +41,10 @@ function c40418351.filter(c)
 end
 -- 设置效果目标，选择满足条件的墓地龙族怪兽
 function c40418351.eqtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	-- 判断目标是否满足位置和种族条件
+	-- 检测【电子暗黑世界】(64753988)的效果是否生效中。若在生效中，「电子暗黑」怪兽的召唤·特殊召唤成功时发动的自身的效果让自己从自己墓地把怪兽装备的场合，也能作为代替从对方墓地装备。
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and (chkc:IsControler(tp) or Duel.IsPlayerAffectedByEffect(tp,64753988)) and c40418351.filter(chkc) end
 	if chk==0 then return true end
-	-- 根据是否受到效果影响确定可选位置
+	-- 检测【电子暗黑世界】(64753988)的效果是否生效中。若在生效中，「电子暗黑」怪兽的召唤·特殊召唤成功时发动的自身的效果让自己从自己墓地把怪兽装备的场合，也能作为代替从对方墓地装备。
 	local loc=Duel.IsPlayerAffectedByEffect(tp,64753988) and LOCATION_GRAVE or 0
 	-- 提示玩家选择要装备的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_EQUIP)  --"请选择要装备的卡"

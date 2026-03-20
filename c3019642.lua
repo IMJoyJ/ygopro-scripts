@@ -36,7 +36,7 @@ function c3019642.eqtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	-- 判断选择的卡片是否满足墓地、控制者和种族条件
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and (chkc:IsControler(tp) or Duel.IsPlayerAffectedByEffect(tp,64753988)) and c3019642.filter(chkc) end
 	if chk==0 then return true end
-	-- 根据是否受到64753988效果影响，决定选择目标的区域
+	-- 检测【电子暗黑世界】(64753988)的效果是否生效中。若在生效中，「电子暗黑」怪兽的召唤·特殊召唤成功时发动的自身的效果让自己从自己墓地把怪兽装备的场合，也能作为代替从对方墓地装备。
 	local loc=Duel.IsPlayerAffectedByEffect(tp,64753988) and LOCATION_GRAVE or 0
 	-- 提示玩家选择要装备的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_EQUIP)  --"请选择要装备的卡"

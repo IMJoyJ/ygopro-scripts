@@ -29,7 +29,7 @@ function c1697104.splimit(e,se,sp,st)
 end
 -- 规则层面：判定是否满足发动条件，即自己场上无怪兽且对方发动陷阱卡。
 function c1697104.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 规则层面：判断自己场上是否没有怪兽。
+	-- 规则层面：判断自己是否受到「PSY骨架王·Λ」影响。只要这张卡在怪兽区域存在，自己在自己场上有怪兽存在的场合也能把手卡的「PSY骨架装备」怪兽的效果发动。
 	return (Duel.GetFieldGroupCount(tp,LOCATION_MZONE,0)==0 or Duel.IsPlayerAffectedByEffect(tp,8802510))
 		-- 规则层面：判断对方发动的是陷阱卡且该发动可被无效。
 		and ep~=tp and re:IsActiveType(TYPE_TRAP) and re:IsHasType(EFFECT_TYPE_ACTIVATE) and Duel.IsChainNegatable(ev)
