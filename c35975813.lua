@@ -43,43 +43,43 @@ function c35975813.exfilter(c)
 end
 -- 判断是否满足召唤条件，即自己场上不存在名称中含有「恶魔」字样的怪兽卡
 function c35975813.excon(e)
-	-- 当自己场上不存在名称中含有「恶魔」字样的怪兽卡时，返回true以阻止召唤
+	-- 若场上不存在名称中含有「恶魔」字样的怪兽卡则返回true，表示不能召唤
 	return not Duel.IsExistingMatchingCard(c35975813.exfilter,e:GetHandlerPlayer(),LOCATION_MZONE,0,1,nil)
 end
 -- 判断是否为自己的准备阶段
 function c35975813.mtcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 当轮到自己准备阶段时，返回true以触发效果
+	-- 若当前回合玩家为自身则返回true，表示触发效果
 	return Duel.GetTurnPlayer()==tp
 end
--- 准备阶段支付基本分或因其他效果不支付基本分的处理逻辑
+-- 准备阶段时处理支付基本分或破坏效果
 function c35975813.mtop(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查玩家是否能支付800基本分或是否受到特定效果影响
+	-- 检查玩家是否能支付800基本分或是否受到「万魔殿-恶魔的巢窟-」效果影响
 	if Duel.CheckLPCost(tp,800) or Duel.IsPlayerAffectedByEffect(tp,94585852) then
-		-- 判断玩家是否未受到特定效果影响
+		-- 若未受到「万魔殿-恶魔的巢窟-」效果影响
 		if not Duel.IsPlayerAffectedByEffect(tp,94585852)
-			-- 若未受到特定效果影响，则询问是否使用该效果不支付基本分
+			-- 或未选择使用「万魔殿-恶魔的巢窟-」效果不支付基本分，则执行支付基本分操作
 			or not Duel.SelectEffectYesNo(tp,e:GetHandler(),aux.Stringid(94585852,1)) then  --"是否使用「万魔殿-恶魔的巢窟-」的效果不支付基本分？"
 			-- 支付800基本分
 			Duel.PayLPCost(tp,800)
 		end
 	else
-		-- 若无法支付基本分，则将自身破坏
+		-- 若无法支付基本分则将自身破坏
 		Duel.Destroy(e:GetHandler(),REASON_COST)
 	end
 end
--- 连锁处理时判断是否为对方效果作用于自身，若满足条件则投掷骰子并根据结果无效效果并破坏目标卡
+-- 连锁处理时判断是否为对方效果且目标包含自身，若满足条件则投掷骰子并根据结果无效效果并破坏目标卡
 function c35975813.disop(e,tp,eg,ep,ev,re,r,rp)
 	if ep==tp then return end
 	if not re:IsHasProperty(EFFECT_FLAG_CARD_TARGET) then return false end
 	-- 获取当前连锁的目标卡片组
 	local tg=Duel.GetChainInfo(ev,CHAININFO_TARGET_CARDS)
-	-- 若目标卡片组为空、不包含自身或该连锁不可无效，则返回false
+	-- 若目标卡片组为空、不包含自身或该连锁不可无效则返回false
 	if not tg or not tg:IsContains(e:GetHandler()) or not Duel.IsChainDisablable(ev) then return false end
 	local rc=re:GetHandler()
 	-- 投掷一次骰子
 	local dc=Duel.TossDice(tp,1)
 	if dc~=2 and dc~=5 then return end
-	-- 若成功无效效果且目标卡存在，则将其破坏
+	-- 若成功无效效果且目标卡存在则将其破坏
 	if Duel.NegateEffect(ev,true) and rc:IsRelateToEffect(re) then
 		-- 破坏目标卡
 		Duel.Destroy(rc,REASON_EFFECT)
