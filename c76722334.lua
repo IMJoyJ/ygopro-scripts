@@ -1,6 +1,11 @@
 --カプシェル
+-- 效果：
+-- 这个卡名的①②③的效果1回合只能有1次使用其中任意1个。
+-- ①：这张卡被解放的场合才能发动。自己抽1张。
+-- ②：这张卡成为融合·同调·连接召唤的素材，被送去墓地的场合或者被除外的场合才能发动。自己抽1张。
+-- ③：超量素材的这张卡为让超量怪兽的效果发动而被取除的场合才能发动。自己抽1张。
 function c76722334.initial_effect(c)
-	--draw
+	-- ①：这张卡被解放的场合才能发动。自己抽1张。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(76722334,0))
 	e1:SetCategory(CATEGORY_DRAW)
@@ -24,21 +29,31 @@ function c76722334.initial_effect(c)
 	e4:SetCondition(c76722334.drcon2)
 	c:RegisterEffect(e4)
 end
+-- 检查这张卡是否作为融合、同调或连接召唤的素材。
 function c76722334.drcon1(e,tp,eg,ep,ev,re,r,rp)
 	return bit.band(r,REASON_FUSION+REASON_SYNCHRO+REASON_LINK)~=0
 end
+-- 检查这张卡是否作为超量素材，为了发动超量怪兽的效果而被取除。
 function c76722334.drcon2(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	return c:IsReason(REASON_COST) and re:IsActivated() and re:IsActiveType(TYPE_XYZ)
 		and c:IsPreviousLocation(LOCATION_OVERLAY)
 end
+-- 效果发动的目标选择与确认，设置抽卡参数。
 function c76722334.drtg(e,tp,eg,ep,ev,re,r,rp,chk)
+	-- 在发动准备阶段，检查玩家是否可以抽卡。
 	if chk==0 then return Duel.IsPlayerCanDraw(tp,1) end
+	-- 设置效果处理的目标玩家为当前发动效果的玩家。
 	Duel.SetTargetPlayer(tp)
+	-- 设置效果处理的目标参数为抽1张卡。
 	Duel.SetTargetParam(1)
+	-- 向系统宣告此效果包含抽卡操作，数量为1张。
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,1)
 end
+-- 效果处理函数，执行抽卡操作。
 function c76722334.drop(e,tp,eg,ep,ev,re,r,rp)
+	-- 获取在发动时设置的目标玩家和抽卡数量。
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
+	-- 执行抽卡，让目标玩家因效果抽指定数量的卡。
 	Duel.Draw(p,d,REASON_EFFECT)
 end
