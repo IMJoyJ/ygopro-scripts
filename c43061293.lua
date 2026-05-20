@@ -13,27 +13,27 @@ function c43061293.initial_effect(c)
 	e1:SetOperation(c43061293.damop)
 	c:RegisterEffect(e1)
 end
--- 效果作用
+-- 定义damcon条件函数，用于检测发动条件是否满足
 function c43061293.damcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查自己手卡是否为0张
+	-- 检测自己手卡数量是否为0（即手卡为空）
 	return Duel.GetFieldGroupCount(tp,LOCATION_HAND,0)==0
 end
--- 效果作用
+-- 定义damg目标函数，设置连锁目标玩家和操作信息
 function c43061293.damtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置连锁对象玩家为对方
+	-- 设置连锁的目标玩家为对方玩家（1-tp）
 	Duel.SetTargetPlayer(1-tp)
-	-- 设置连锁操作信息为投掷3次骰子
+	-- 设置操作信息为CATEGORY_DICE类型，表示本次连锁涉及骰子投掷，参数3表示投掷3次
 	Duel.SetOperationInfo(0,CATEGORY_DICE,nil,0,tp,3)
-	-- 设置连锁操作信息为造成伤害
+	-- 设置操作信息为CATEGORY_DAMAGE类型，表示本次连锁涉及伤害，目标玩家为对方（1-tp）
 	Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,1-tp,0)
 end
--- 效果作用
+-- 定义damop效果处理函数，执行骰子投掷并造成伤害
 function c43061293.damop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁对象玩家
+	-- 从连锁信息中获取目标玩家（即对方玩家）
 	local p=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER)
-	-- 投掷3次骰子并获取结果
+	-- 让己方玩家投掷3次骰子，并分别获取三次结果d1、d2、d3
 	local d1,d2,d3=Duel.TossDice(tp,3)
-	-- 对对方造成骰子点数合计乘以100的伤害
+	-- 对目标玩家造成（d1+d2+d3）×100点伤害，伤害原因为REASON_EFFECT
 	Duel.Damage(p,(d1+d2+d3)*100,REASON_EFFECT)
 end

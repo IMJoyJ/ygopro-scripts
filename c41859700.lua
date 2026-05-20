@@ -13,20 +13,20 @@ function c41859700.initial_effect(c)
 	e1:SetOperation(c41859700.operation)
 	c:RegisterEffect(e1)
 end
--- 效果作用
+-- 效果的目标设定阶段：确认可以发动后，设定对方玩家为效果对象并声明回复1000LP的操作信息
 function c41859700.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 将对方玩家设置为效果的对象玩家
+	-- 设置当前连锁的效果对象玩家为对方玩家（1-tp）
 	Duel.SetTargetPlayer(1-tp)
-	-- 将回复的LP数值设置为1000
+	-- 设置当前连锁的效果参数为1000（回复LP的数值）
 	Duel.SetTargetParam(1000)
-	-- 设置连锁的操作信息为回复效果，对象玩家为对方，回复值为1000
+	-- 设置操作信息：声明此效果将让对方玩家回复1000LP（CATEGORY_RECOVER），用于系统检测和连锁确认
 	Duel.SetOperationInfo(0,CATEGORY_RECOVER,nil,0,1-tp,1000)
 end
--- 效果作用
+-- 效果的处理执行阶段：获取目标玩家和回复数值，执行回复LP的操作
 function c41859700.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁中设置的目标玩家和目标参数
+	-- 从当前连锁信息中获取之前设定的目标玩家（p）和回复数值（d）
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 使目标玩家回复对应数值的LP，原因来自效果
+	-- 以效果原因（REASON_EFFECT）让目标玩家（p）回复（d）1000LP
 	Duel.Recover(p,d,REASON_EFFECT)
 end
