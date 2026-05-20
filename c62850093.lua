@@ -1,6 +1,9 @@
 --氷天禍チルブレイン
+-- 效果：
+-- 这个卡名的效果1回合只能使用1次。
+-- ①：自己场上的表侧表示的水属性怪兽被战斗或者对方的效果破坏的场合才能发动。这张卡从手卡特殊召唤。那之后，可以把对方手卡随机选1张送去墓地。
 function c62850093.initial_effect(c)
-	--spsummon
+	-- ①：自己场上的表侧表示的水属性怪兽被战斗或者对方的效果破坏的场合才能发动。这张卡从手卡特殊召唤。那之后，可以把对方手卡随机选1张送去墓地。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(62850093,0))
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_HANDES)
@@ -14,28 +17,40 @@ function c62850093.initial_effect(c)
 	e1:SetOperation(c62850093.spop)
 	c:RegisterEffect(e1)
 end
+-- 过滤被破坏的卡是否为自己场上表侧表示的水属性怪兽，且是被战斗或对方的效果破坏
 function c62850093.cfilter(c,tp,rp)
 	return c:IsPreviousControler(tp) and c:IsPreviousLocation(LOCATION_MZONE)
 		and c:IsPreviousPosition(POS_FACEUP) and bit.band(c:GetPreviousAttributeOnField(),ATTRIBUTE_WATER)~=0
 		and (c:IsReason(REASON_BATTLE) or c:IsReason(REASON_EFFECT) and c:GetReasonPlayer()==1-tp)
 end
+-- 检查被破坏的卡片中是否存在满足条件的卡
 function c62850093.spcon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c62850093.cfilter,1,nil,tp)
 end
+-- 效果发动的可行性检测，判断自身是否能特殊召唤以及怪兽区域是否有空位
 function c62850093.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
+	-- 在发动准备阶段，检查自己场上是否有可用的怪兽区域空格
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
+	-- 设置当前连锁的操作信息为特殊召唤自身
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
+	-- 设置当前连锁的操作信息为将对方手牌送去墓地
 	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,1-tp,0)
 end
+-- 效果处理的执行函数，处理特殊召唤以及后续的随机送墓对方手牌
 function c62850093.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if not c:IsRelateToEffect(e) then return end
+	-- 将这张卡以表侧表示特殊召唤到自己场上，并判断是否特殊召唤成功
 	if Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)~=0 then
+		-- 获取对方手牌中可以送去墓地的卡片组
 		local g=Duel.GetMatchingGroup(Card.IsAbleToGrave,tp,0,LOCATION_HAND,nil)
-		if g:GetCount()>0 and Duel.SelectYesNo(tp,aux.Stringid(62850093,1)) then
+		-- 如果对方手牌数量大于0，则询问玩家是否选择将对方手牌送去墓地
+		if g:GetCount()>0 and Duel.SelectYesNo(tp,aux.Stringid(62850093,1)) then  --"是否把对方手卡随机选1张送去墓地？"
+			-- 中断当前效果处理，使后续的送墓处理与特殊召唤不视为同时进行
 			Duel.BreakEffect()
 			local sg=g:RandomSelect(tp,1)
+			-- 将选中的对方手牌因效果送去墓地
 			Duel.SendtoGrave(sg,REASON_EFFECT)
 		end
 	end
