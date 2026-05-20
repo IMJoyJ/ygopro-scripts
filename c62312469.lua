@@ -1,8 +1,13 @@
 --ダーク・ドリアード
+-- 效果：
+-- ←5 【灵摆】 5→
+-- ①：自己场上的地·水·炎·风属性怪兽的攻击力·守备力上升自己场上的怪兽的属性种类×200。
+-- 【怪兽效果】
+-- ①：这张卡召唤·特殊召唤成功的场合才能发动。从卡组选地·水·炎·风属性怪兽各1只用喜欢的顺序回到卡组上面。
 function c62312469.initial_effect(c)
-	--pendulum summon
+	-- 注册灵摆怪兽的灵摆召唤和灵摆卡发动效果。
 	aux.EnablePendulumAttribute(c)
-	--atk
+	-- ①：自己场上的地·水·炎·风属性怪兽的攻击力·守备力上升自己场上的怪兽的属性种类×200。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD)
 	e2:SetCode(EFFECT_UPDATE_ATTACK)
@@ -14,7 +19,7 @@ function c62312469.initial_effect(c)
 	local e3=e2:Clone()
 	e3:SetCode(EFFECT_UPDATE_DEFENSE)
 	c:RegisterEffect(e3)
-	--deck sort
+	-- ①：这张卡召唤·特殊召唤成功的场合才能发动。从卡组选地·水·炎·风属性怪兽各1只用喜欢的顺序回到卡组上面。
 	local e4=Effect.CreateEffect(c)
 	e4:SetDescription(aux.Stringid(62312469,0))
 	e4:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
@@ -27,43 +32,69 @@ function c62312469.initial_effect(c)
 	e5:SetCode(EVENT_SPSUMMON_SUCCESS)
 	c:RegisterEffect(e5)
 end
+-- 过滤条件：自己场上的地、水、炎、风属性怪兽。
 function c62312469.atktg(e,c)
 	return c:IsAttribute(ATTRIBUTE_EARTH+ATTRIBUTE_WATER+ATTRIBUTE_FIRE+ATTRIBUTE_WIND)
 end
+-- 计算攻击力/守备力上升的数值（自己场上怪兽的属性种类×200）。
 function c62312469.value(e,c)
 	local tp=e:GetHandlerPlayer()
+	-- 获取自己场上所有表侧表示的怪兽。
 	local g=Duel.GetMatchingGroup(Card.IsFaceup,tp,LOCATION_MZONE,0,nil)
+	-- 返回这些怪兽的属性种类数量乘以200的数值。
 	return aux.GetAttributeCount(g)*200
 end
+-- 召唤·特殊召唤成功效果的启动条件与可行性检查（卡组中必须同时存在地、水、炎、风属性怪兽各至少1只）。
 function c62312469.sttg(e,tp,eg,ep,ev,re,r,rp,chk)
+	-- 检查卡组中是否存在地属性怪兽。
 	if chk==0 then return Duel.IsExistingMatchingCard(Card.IsAttribute,tp,LOCATION_DECK,0,1,nil,ATTRIBUTE_EARTH)
+		-- 检查卡组中是否存在水属性怪兽。
 		and Duel.IsExistingMatchingCard(Card.IsAttribute,tp,LOCATION_DECK,0,1,nil,ATTRIBUTE_WATER)
+		-- 检查卡组中是否存在炎属性怪兽。
 		and Duel.IsExistingMatchingCard(Card.IsAttribute,tp,LOCATION_DECK,0,1,nil,ATTRIBUTE_FIRE)
+		-- 检查卡组中是否存在风属性怪兽。
 		and Duel.IsExistingMatchingCard(Card.IsAttribute,tp,LOCATION_DECK,0,1,nil,ATTRIBUTE_WIND) end
 end
+-- 召唤·特殊召唤成功效果的执行：从卡组选地、水、炎、风属性怪兽各1只，展示并洗卡，然后以任意顺序放回卡组最上方。
 function c62312469.stop(e,tp,eg,ep,ev,re,r,rp)
+	-- 效果处理时，再次检查卡组中是否存在地属性怪兽。
 	if Duel.IsExistingMatchingCard(Card.IsAttribute,tp,LOCATION_DECK,0,1,nil,ATTRIBUTE_EARTH)
+		-- 效果处理时，再次检查卡组中是否存在水属性怪兽。
 		and Duel.IsExistingMatchingCard(Card.IsAttribute,tp,LOCATION_DECK,0,1,nil,ATTRIBUTE_WATER)
+		-- 效果处理时，再次检查卡组中是否存在炎属性怪兽。
 		and Duel.IsExistingMatchingCard(Card.IsAttribute,tp,LOCATION_DECK,0,1,nil,ATTRIBUTE_FIRE)
+		-- 效果处理时，再次检查卡组中是否存在风属性怪兽。
 		and Duel.IsExistingMatchingCard(Card.IsAttribute,tp,LOCATION_DECK,0,1,nil,ATTRIBUTE_WIND) then
-		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)
+		-- 提示玩家选择目标卡片。
+		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)  --"请选择效果的对象"
+		-- 从卡组选择1只地属性怪兽。
 		local g1=Duel.SelectMatchingCard(tp,Card.IsAttribute,tp,LOCATION_DECK,0,1,1,nil,ATTRIBUTE_EARTH)
-		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)
+		-- 提示玩家选择目标卡片。
+		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)  --"请选择效果的对象"
+		-- 从卡组选择1只水属性怪兽。
 		local g2=Duel.SelectMatchingCard(tp,Card.IsAttribute,tp,LOCATION_DECK,0,1,1,nil,ATTRIBUTE_WATER)
-		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)
+		-- 提示玩家选择目标卡片。
+		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)  --"请选择效果的对象"
+		-- 从卡组选择1只炎属性怪兽。
 		local g3=Duel.SelectMatchingCard(tp,Card.IsAttribute,tp,LOCATION_DECK,0,1,1,nil,ATTRIBUTE_FIRE)
-		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)
+		-- 提示玩家选择目标卡片。
+		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)  --"请选择效果的对象"
+		-- 从卡组选择1只风属性怪兽。
 		local g4=Duel.SelectMatchingCard(tp,Card.IsAttribute,tp,LOCATION_DECK,0,1,1,nil,ATTRIBUTE_WIND)
 		g1:Merge(g2)
 		g1:Merge(g3)
 		g1:Merge(g4)
+		-- 给对方玩家确认选出的4只怪兽。
 		Duel.ConfirmCards(1-tp,g1)
+		-- 洗切卡组（在将选出的卡放回卡组顶端前，先洗切卡组其余部分）。
 		Duel.ShuffleDeck(tp)
 		local tc=g1:GetFirst()
 		while tc do
+			-- 将选出的怪兽移动到卡组最上方。
 			Duel.MoveSequence(tc,SEQ_DECKTOP)
 			tc=g1:GetNext()
 		end
+		-- 让玩家对卡组最上方的4张卡（即选出的4只怪兽）按喜欢的顺序进行排序。
 		Duel.SortDecktop(tp,tp,4)
 	end
 end
