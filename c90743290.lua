@@ -1,6 +1,8 @@
 --魔導老士 エアミット
+-- 效果：
+-- 只要这张卡在场上表侧表示存在，每次名字带有「魔导书」的魔法卡发动，这张卡的等级上升2星，攻击力上升300。
 function c90743290.initial_effect(c)
-	--atk/lvup
+	-- 只要这张卡在场上表侧表示存在，每次名字带有「魔导书」的魔法卡发动，这张卡的等级上升2星，攻击力上升300。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e1:SetRange(LOCATION_MZONE)
@@ -9,11 +11,14 @@ function c90743290.initial_effect(c)
 	e1:SetOperation(c90743290.operation)
 	c:RegisterEffect(e1)
 end
+-- 判断连锁处理中的效果是否为「魔导书」魔法卡的发动
 function c90743290.condition(e,tp,eg,ep,ev,re,r,rp)
 	return re:IsHasType(EFFECT_TYPE_ACTIVATE) and re:IsActiveType(TYPE_SPELL) and re:GetHandler():IsSetCard(0x106e)
 end
+-- 使自身等级上升2星，攻击力上升300
 function c90743290.operation(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
+	-- 这张卡的等级上升2星
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_UPDATE_LEVEL)
