@@ -1,15 +1,17 @@
 --レベル・ウォリアー
+-- 效果：
+-- 场上没有怪兽存在的场合，这张卡可以作为2星怪兽从手卡召唤。对方场上有怪兽存在，自己场上没有怪兽存在的场合，这张卡可以作为4星怪兽从手卡特殊召唤。
 function c97385276.initial_effect(c)
-	--summon
+	-- 场上没有怪兽存在的场合，这张卡可以作为2星怪兽从手卡召唤。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(97385276,0))
+	e1:SetDescription(aux.Stringid(97385276,0))  --"作为2星怪兽召唤"
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_SUMMON_PROC)
 	e1:SetProperty(EFFECT_FLAG_UNCOPYABLE)
 	e1:SetCondition(c97385276.sumcon)
 	e1:SetOperation(c97385276.sumop)
 	c:RegisterEffect(e1)
-	--special summon
+	-- 对方场上有怪兽存在，自己场上没有怪兽存在的场合，这张卡可以作为4星怪兽从手卡特殊召唤。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD)
 	e2:SetCode(EFFECT_SPSUMMON_PROC)
@@ -19,13 +21,18 @@ function c97385276.initial_effect(c)
 	e2:SetOperation(c97385276.spop)
 	c:RegisterEffect(e2)
 end
+-- 判断是否满足作为2星怪兽召唤的条件
 function c97385276.sumcon(e,c,minc)
 	if c==nil then return true end
 	local tp=c:GetControler()
+	-- 检查是否不需要解放怪兽，且双方场上都没有怪兽存在
 	return minc==0 and Duel.GetFieldGroupCount(tp,LOCATION_MZONE,LOCATION_MZONE)==0
+		-- 检查自己场上是否有可用的怪兽区域
 		and Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 end
+-- 在作为2星怪兽召唤成功时，将自身等级变更为2星
 function c97385276.sumop(e,tp,eg,ep,ev,re,r,rp,c)
+	-- 作为2星怪兽
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_CHANGE_LEVEL)
@@ -33,14 +40,20 @@ function c97385276.sumop(e,tp,eg,ep,ev,re,r,rp,c)
 	e1:SetReset(RESET_EVENT+0xff0000)
 	c:RegisterEffect(e1)
 end
+-- 判断是否满足作为4星怪兽特殊召唤的条件
 function c97385276.spcon(e,c)
 	if c==nil then return true end
 	local tp=c:GetControler()
+	-- 检查自己场上是否没有怪兽存在
 	return Duel.GetFieldGroupCount(tp,LOCATION_MZONE,0)==0
+		-- 检查对方场上是否有怪兽存在
 		and	Duel.GetFieldGroupCount(tp,0,LOCATION_MZONE)>0
+		-- 检查自己场上是否有可用的怪兽区域
 		and Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 end
+-- 在作为4星怪兽特殊召唤成功时，将自身等级变更为4星
 function c97385276.spop(e,tp,eg,ep,ev,re,r,rp,c)
+	-- 作为4星怪兽
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_CHANGE_LEVEL)
