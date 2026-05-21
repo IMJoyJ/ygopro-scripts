@@ -1,9 +1,15 @@
 --闇の支配者－ゾーク
+-- 效果：
+-- 「与暗之支配者的契约」降临。
+-- ①：1回合1次，自己主要阶段才能发动。掷1次骰子，出现的数目的效果适用。
+-- ●1·2：对方场上的怪兽全部破坏。
+-- ●3·4·5：选对方场上1只怪兽破坏。
+-- ●6：自己场上的怪兽全部破坏。
 function c97642679.initial_effect(c)
 	c:EnableReviveLimit()
-	--dice
+	-- ①：1回合1次，自己主要阶段才能发动。掷1次骰子，出现的数目的效果适用。●1·2：对方场上的怪兽全部破坏。●3·4·5：选对方场上1只怪兽破坏。●6：自己场上的怪兽全部破坏。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(97642679,0))
+	e1:SetDescription(aux.Stringid(97642679,0))  --"掷骰子"
 	e1:SetCategory(CATEGORY_DESTROY+CATEGORY_DICE)
 	e1:SetType(EFFECT_TYPE_IGNITION)
 	e1:SetRange(LOCATION_MZONE)
@@ -12,27 +18,41 @@ function c97642679.initial_effect(c)
 	e1:SetOperation(c97642679.operation)
 	c:RegisterEffect(e1)
 end
+-- 定义效果发动的目标确认函数
 function c97642679.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
+	-- 设置操作信息：掷1次骰子
 	Duel.SetOperationInfo(0,CATEGORY_DICE,nil,0,tp,1)
+	-- 获取对方场上的所有怪兽
 	local g1=Duel.GetMatchingGroup(aux.TRUE,tp,0,LOCATION_MZONE,nil)
+	-- 获取自己场上的所有怪兽
 	local g2=Duel.GetMatchingGroup(aux.TRUE,tp,LOCATION_MZONE,0,nil)
 	if g1:GetCount()~=0 and g2:GetCount()~=0 then
 		g1:Merge(g2)
+		-- 设置操作信息：破坏卡片
 		Duel.SetOperationInfo(0,CATEGORY_DESTROY,g1,1,0,0)
 	end
 end
+-- 定义效果处理的执行函数
 function c97642679.operation(e,tp,eg,ep,ev,re,r,rp)
+	-- 进行1次掷骰子，并获取结果
 	local d=Duel.TossDice(tp,1)
 	if d==1 or d==2 then
+		-- 获取对方场上的所有怪兽
 		local g=Duel.GetMatchingGroup(aux.TRUE,tp,0,LOCATION_MZONE,nil)
+		-- 破坏对方场上的全部怪兽
 		Duel.Destroy(g,REASON_EFFECT)
 	elseif d==6 then
+		-- 获取自己场上的所有怪兽
 		local g=Duel.GetMatchingGroup(aux.TRUE,tp,LOCATION_MZONE,0,nil)
+		-- 破坏自己场上的全部怪兽
 		Duel.Destroy(g,REASON_EFFECT)
 	elseif d>=3 and d<=5 then
-		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)
+		-- 提示玩家选择要破坏的卡片
+		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
+		-- 让玩家选择对方场上的1只怪兽
 		local g=Duel.SelectMatchingCard(tp,aux.TRUE,tp,0,LOCATION_MZONE,1,1,nil)
+		-- 破坏选中的怪兽
 		Duel.Destroy(g,REASON_EFFECT)
 	end
 end
