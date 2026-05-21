@@ -1,6 +1,8 @@
 --閃光の追放者
+-- 效果：
+-- 只要这张卡在场上表侧表示存在，被送去墓地的卡不去墓地从游戏中除外。
 function c94853057.initial_effect(c)
-	--remove
+	-- 只要这张卡在场上表侧表示存在，被送去墓地的卡不去墓地从游戏中除外。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetProperty(EFFECT_FLAG_SET_AVAILABLE+EFFECT_FLAG_IGNORE_RANGE+EFFECT_FLAG_IGNORE_IMMUNE)
