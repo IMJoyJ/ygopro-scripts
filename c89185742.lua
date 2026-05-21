@@ -1,9 +1,13 @@
 --風征竜－ライトニング
+-- 效果：
+-- 这个卡名的效果1回合只能使用1次。
+-- ①：把1只龙族或风属性的怪兽和这张卡从手卡丢弃才能发动。从卡组把1只「岚征龙-飙龙」特殊召唤。这个效果特殊召唤的怪兽在这个回合不能攻击。
 function c89185742.initial_effect(c)
+	-- 注册卡片记有「岚征龙-飙龙」卡名的信息
 	aux.AddCodeList(c,89399912)
-	--spsummon
+	-- ①：把1只龙族或风属性的怪兽和这张卡从手卡丢弃才能发动。从卡组把1只「岚征龙-飙龙」特殊召唤。这个效果特殊召唤的怪兽在这个回合不能攻击。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(89185742,0))
+	e1:SetDescription(aux.Stringid(89185742,0))  --"特殊召唤"
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e1:SetType(EFFECT_TYPE_IGNITION)
 	e1:SetRange(LOCATION_HAND)
@@ -13,35 +17,52 @@ function c89185742.initial_effect(c)
 	e1:SetOperation(c89185742.spop)
 	c:RegisterEffect(e1)
 end
+-- 过滤手卡中可丢弃的龙族或风属性怪兽
 function c89185742.costfilter(c)
 	return (c:IsRace(RACE_DRAGON) or c:IsAttribute(ATTRIBUTE_WIND)) and c:IsDiscardable()
 end
+-- 发动代价：检查自身是否可以丢弃，以及手卡中是否存在其他可丢弃的龙族或风属性怪兽
 function c89185742.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	if chk==0 then return c:IsDiscardable()
+		-- 检查手卡中是否存在除自身以外的1只龙族或风属性怪兽
 		and Duel.IsExistingMatchingCard(c89185742.costfilter,tp,LOCATION_HAND,0,1,c) end
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DISCARD)
+	-- 提示玩家选择要丢弃的手卡
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DISCARD)  --"请选择要丢弃的手牌"
+	-- 玩家选择手卡中除自身以外的1只龙族或风属性怪兽
 	local g=Duel.SelectMatchingCard(tp,c89185742.costfilter,tp,LOCATION_HAND,0,1,1,c)
 	g:AddCard(c)
+	-- 将选中的怪兽和这张卡作为发动代价一起丢弃送去墓地
 	Duel.SendtoGrave(g,REASON_COST+REASON_DISCARD)
 end
+-- 过滤卡组中可以特殊召唤的「岚征龙-飙龙」
 function c89185742.spfilter(c,e,tp)
 	return c:IsCode(89399912) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
+-- 效果发动时的目标检查：确认怪兽区域有空位且卡组有可特殊召唤的「岚征龙-飙龙」
 function c89185742.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
+	-- 检查自己场上是否有可用于特殊召唤怪兽的空位
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
+		-- 检查卡组中是否存在可以特殊召唤的「岚征龙-飙龙」
 		and Duel.IsExistingMatchingCard(c89185742.spfilter,tp,LOCATION_DECK,0,1,nil,e,tp) end
+	-- 设置特殊召唤的操作信息，表示从卡组特殊召唤1只怪兽
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_DECK)
 end
+-- 效果处理：从卡组特殊召唤「岚征龙-飙龙」并使其在本回合不能攻击
 function c89185742.spop(e,tp,eg,ep,ev,re,r,rp)
+	-- 检查自己场上是否有可用于特殊召唤怪兽的空位，若无则不处理
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
+	-- 获取卡组中第1张满足条件的「岚征龙-飙龙」
 	local tc=Duel.GetFirstMatchingCard(c89185742.spfilter,tp,LOCATION_DECK,0,nil,e,tp)
+	-- 若存在该卡，则尝试将其以表侧表示特殊召唤
 	if tc and Duel.SpecialSummonStep(tc,0,tp,tp,false,false,POS_FACEUP) then
+		-- 这个效果特殊召唤的怪兽在这个回合不能攻击。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_CANNOT_ATTACK)
 		e1:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END)
 		tc:RegisterEffect(e1)
 	end
+	-- 完成特殊召唤的后续处理
 	Duel.SpecialSummonComplete()
 end

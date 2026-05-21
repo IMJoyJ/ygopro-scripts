@@ -1,12 +1,15 @@
 --儀式魔人リリーサー
+-- 效果：
+-- ①：仪式召唤进行的场合，可以作为那次仪式召唤需要的等级数值的1只怪兽，把墓地的这张卡除外。
+-- ②：从使用这张卡仪式召唤的玩家来看的对方，只要仪式召唤的那只怪兽在怪兽区域表侧表示存在，不能把怪兽特殊召唤。
 function c8903700.initial_effect(c)
-	--ritual material
+	-- ①：仪式召唤进行的场合，可以作为那次仪式召唤需要的等级数值的1只怪兽，把墓地的这张卡除外。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_EXTRA_RITUAL_MATERIAL)
 	e1:SetValue(1)
 	c:RegisterEffect(e1)
-	--become material
+	-- ②：从使用这张卡仪式召唤的玩家来看的对方，只要仪式召唤的那只怪兽在怪兽区域表侧表示存在，不能把怪兽特殊召唤。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_CONTINUOUS)
 	e2:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_EVENT_PLAYER)
@@ -15,16 +18,18 @@ function c8903700.initial_effect(c)
 	e2:SetOperation(c8903700.operation)
 	c:RegisterEffect(e2)
 end
+-- 判断是否作为仪式召唤的素材被送去墓地（且之前不是超量素材）
 function c8903700.condition(e,tp,eg,ep,ev,re,r,rp)
 	return r==REASON_RITUAL and not e:GetHandler():IsPreviousLocation(LOCATION_OVERLAY)
 end
+-- 遍历仪式召唤出的怪兽，并为这些怪兽注册限制对方特殊召唤的效果
 function c8903700.operation(e,tp,eg,ep,ev,re,r,rp)
 	local rc=eg:GetFirst()
 	while rc do
 		if rc:GetFlagEffect(8903700)==0 then
-			--cannot special summon
+			-- 从使用这张卡仪式召唤的玩家来看的对方，只要仪式召唤的那只怪兽在怪兽区域表侧表示存在，不能把怪兽特殊召唤。
 			local e1=Effect.CreateEffect(e:GetHandler())
-			e1:SetDescription(aux.Stringid(8903700,0))
+			e1:SetDescription(aux.Stringid(8903700,0))  --"「仪式魔人 解放者」效果适用中"
 			e1:SetProperty(EFFECT_FLAG_CLIENT_HINT+EFFECT_FLAG_PLAYER_TARGET)
 			e1:SetType(EFFECT_TYPE_FIELD)
 			e1:SetRange(LOCATION_MZONE)
