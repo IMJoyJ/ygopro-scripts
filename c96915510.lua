@@ -4,6 +4,7 @@
 -- ①：自己·对方的主要阶段，把手卡的这张卡给对方观看才能发动。选1张手卡丢弃，那之后，等级合计直到10星为止选自己墓地的「魔神仪」怪兽特殊召唤。这个效果特殊召唤的怪兽在结束阶段回到持有者卡组。
 -- ②：只要这张卡在怪兽区域存在，仪式怪兽以外的自己场上的「魔神仪」怪兽攻击力上升2000，效果无效化。
 function c96915510.initial_effect(c)
+	-- 登记卡片效果中记有「魔神仪的祝诞」的卡片密码
 	aux.AddCodeList(c,86758915)
 	c:EnableReviveLimit()
 	-- ①：自己·对方的主要阶段，把手卡的这张卡给对方观看才能发动。选1张手卡丢弃，那之后，等级合计直到10星为止选自己墓地的「魔神仪」怪兽特殊召唤。这个效果特殊召唤的怪兽在结束阶段回到持有者卡组。
@@ -32,52 +33,52 @@ function c96915510.initial_effect(c)
 	e3:SetValue(2000)
 	c:RegisterEffect(e3)
 end
--- 判断当前是否为自己或对方的主要阶段
+-- 发动条件：自己·对方的主要阶段
 function c96915510.spcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前的阶段
+	-- 获取当前阶段
 	local ph=Duel.GetCurrentPhase()
 	return ph==PHASE_MAIN1 or ph==PHASE_MAIN2
 end
--- 发动代价：确认手卡的这张卡未给对方观看（用于展示手卡的这张卡）
+-- 发动代价：把手卡的这张卡给对方观看
 function c96915510.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return not e:GetHandler():IsPublic() end
 end
--- 过滤函数：筛选自己墓地中可以特殊召唤的「魔神仪」怪兽
+-- 过滤条件：自己墓地中可以特殊召唤的「魔神仪」怪兽
 function c96915510.spfilter(c,e,tp)
 	return c:IsSetCard(0x117) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 检测函数：所选怪兽的等级合计是否等于10
+-- 过滤条件：特殊召唤的怪兽等级合计为10
 function c96915510.spcheck(g)
 	return g:GetSum(Card.GetLevel)==10
 end
--- 效果发动时的可行性检测与目标选择，并设置特殊召唤的操作信息
+-- 效果目标：检测手卡是否有卡、怪兽区域是否有空位，以及墓地中是否有满足等级合计为10的「魔神仪」怪兽
 function c96915510.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then
-		-- 获取自己场上可用的怪兽区域空格数
+		-- 获取自己场上可使用的怪兽区域空格数
 		local ft=Duel.GetLocationCount(tp,LOCATION_MZONE)
-		-- 若怪兽区域无空位，或手卡数量小于1（无法丢弃手卡），则不能发动
+		-- 若没有可使用的怪兽区域或者手卡中没有卡片，则不能发动
 		if ft<=0 or Duel.GetFieldGroupCount(tp,LOCATION_HAND,0)<1 then return false end
 		-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中。禁止双方同时特殊召唤2只以上怪兽
 		if ft>1 and Duel.IsPlayerAffectedByEffect(tp,59822133) then ft=1 end
-		-- 获取自己墓地中所有满足特殊召唤条件的「魔神仪」怪兽
+		-- 获取自己墓地中所有满足过滤条件的「魔神仪」怪兽
 		local g=Duel.GetMatchingGroup(c96915510.spfilter,tp,LOCATION_GRAVE,0,nil,e,tp)
 		return g:CheckSubGroup(c96915510.spcheck,1,ft)
 	end
-	-- 设置连锁操作信息：从墓地特殊召唤怪兽
+	-- 设置当前效果分类为特殊召唤，目标为自己墓地的怪兽
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_GRAVE)
 end
--- 效果处理：丢弃1张手卡，并特殊召唤等级合计为10的墓地「魔神仪」怪兽，注册结束阶段回到卡组的效果
+-- 效果处理：选1张手卡丢弃，特殊召唤等级合计直到10星为止的自己墓地的「魔神仪」怪兽，并在结束阶段让其回到持有者卡组
 function c96915510.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 让玩家选择并丢弃1张手卡，若成功丢弃则继续处理
+	-- 丢弃1张手卡成功时
 	if Duel.DiscardHand(tp,nil,1,1,REASON_EFFECT+REASON_DISCARD)>0 then
-		-- 重新获取自己场上可用的怪兽区域空格数
+		-- 重新获取自己场上可使用的怪兽区域空格数
 		local ft=Duel.GetLocationCount(tp,LOCATION_MZONE)
 		if ft<=0 then return end
 		-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中。禁止双方同时特殊召唤2只以上怪兽
 		if ft>1 and Duel.IsPlayerAffectedByEffect(tp,59822133) then ft=1 end
-		-- 重新获取自己墓地中所有满足特殊召唤条件的「魔神仪」怪兽
+		-- 重新获取自己墓地中所有满足过滤条件的「魔神仪」怪兽
 		local g=Duel.GetMatchingGroup(c96915510.spfilter,tp,LOCATION_GRAVE,0,nil,e,tp)
-		-- 向玩家提示选择要特殊召唤的卡
+		-- 提示玩家选择要特殊召唤的卡
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
 		local sg=g:SelectSubGroup(tp,c96915510.spcheck,false,1,ft)
 		if sg then
@@ -85,7 +86,7 @@ function c96915510.spop(e,tp,eg,ep,ev,re,r,rp)
 			local fid=c:GetFieldID()
 			local tc=sg:GetFirst()
 			while tc do
-				-- 将目标怪兽以表侧表示特殊召唤（分解步骤）
+				-- 将选中的「魔神仪」怪兽逐一特殊召唤
 				Duel.SpecialSummonStep(tc,0,tp,tp,false,false,POS_FACEUP)
 				tc:RegisterFlagEffect(96915510,RESET_EVENT+RESETS_STANDARD,0,1,fid)
 				tc=sg:GetNext()
@@ -103,16 +104,16 @@ function c96915510.spop(e,tp,eg,ep,ev,re,r,rp)
 			e1:SetLabelObject(sg)
 			e1:SetCondition(c96915510.retcon)
 			e1:SetOperation(c96915510.retop)
-			-- 注册全局的结束阶段回到卡组的延迟触发效果
+			-- 注册该回合结束阶段的回到持有者卡组的效果
 			Duel.RegisterEffect(e1,tp)
 		end
 	end
 end
--- 过滤函数：筛选出带有本次特殊召唤标记的怪兽
+-- 过滤条件：带有对应特殊召唤标记的怪兽
 function c96915510.retfilter(c,fid)
 	return c:GetFlagEffectLabel(96915510)==fid
 end
--- 回到卡组效果的触发条件：若不存在带有标记的怪兽，则清理并重置该效果
+-- 发动条件：确认场上是否存在依然带有特殊召唤标记的怪兽
 function c96915510.retcon(e,tp,eg,ep,ev,re,r,rp)
 	local g=e:GetLabelObject()
 	if not g:IsExists(c96915510.retfilter,1,nil,e:GetLabel()) then
@@ -121,14 +122,14 @@ function c96915510.retcon(e,tp,eg,ep,ev,re,r,rp)
 		return false
 	else return true end
 end
--- 回到卡组效果的处理：将所有带有标记的怪兽送回持有者卡组
+-- 效果处理：让特殊召唤的怪兽回到持有者卡组
 function c96915510.retop(e,tp,eg,ep,ev,re,r,rp)
 	local g=e:GetLabelObject()
 	local tg=g:Filter(c96915510.retfilter,nil,e:GetLabel())
-	-- 将目标怪兽群送回卡组并洗牌
+	-- 将对应特殊召唤的怪兽送回持有者卡组并洗牌
 	Duel.SendtoDeck(tg,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
 end
--- 过滤函数：筛选仪式怪兽以外的自己场上的「魔神仪」怪兽
+-- 过滤条件：自己场上仪式怪兽以外的「魔神仪」怪兽
 function c96915510.atktg(e,c)
 	return c:IsSetCard(0x117) and not c:IsType(TYPE_RITUAL)
 end
