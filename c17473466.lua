@@ -8,10 +8,11 @@
 -- ①：从卡组上面把3张卡里侧除外才能发动。这张卡破坏，从额外卡组把1只「创狱神 涅瓦」当作融合召唤作特殊召唤。
 -- ②：这张卡表侧加入额外卡组的场合才能发动。除「狱神影兽-涅瓦红化兽」外的1只「狱神」怪兽或「神艺」怪兽从自己的卡组·额外卡组（表侧）特殊召唤。
 local s,id,o=GetID()
--- 初始化卡片效果，注册灵摆效果和两个怪兽效果
+-- 注册卡片效果的初始化函数
 function s.initial_effect(c)
+	-- 登记本卡关系代码列表：记载了「狱神影兽-涅瓦红化兽」自身以及融合怪兽「创狱神 涅瓦」
 	aux.AddCodeList(c,17473466,53589300)
-	--pendulum summon
+	-- 为灵摆怪兽添加灵摆怪兽属性与灵摆召唤手续
 	aux.EnablePendulumAttribute(c)
 	-- ①：对方连锁「狱神」怪兽或「神艺」怪兽的效果的发动来发动的怪兽的效果的处理时，可以把那个效果无效。那之后，这张卡破坏。
 	local e1=Effect.CreateEffect(c)
@@ -45,127 +46,139 @@ function s.initial_effect(c)
 	e3:SetOperation(s.spop2)
 	c:RegisterEffect(e3)
 end
--- 连锁处理时的无效效果条件判断函数
+-- 灵摆效果①的发动条件判断
 function s.negcon(e,tp,eg,ep,ev,re,r,rp)
 	if ev<2 then return false end
-	-- 获取当前连锁的触发效果
+	-- 获取前一个连锁的效果
 	local te=Duel.GetChainInfo(ev-1,CHAININFO_TRIGGERING_EFFECT)
 	return rp==1-tp and te and te:GetHandler():IsSetCard(0x1cd,0x1ce) and te:IsActiveType(TYPE_MONSTER)
 		and re:IsActiveType(TYPE_MONSTER)
-		-- 检查该玩家是否已使用过此效果
+		-- 检查本回合是否还没有使用过该无效效果
 		and Duel.GetFlagEffect(tp,id)==0
-		-- 检查当前连锁是否可以被无效
+		-- 检查正在处理的连锁是否可以被无效，并且尚未被无效
 		and Duel.IsChainDisablable(ev) and not Duel.IsChainDisabled(ev)
 end
--- 连锁处理时的无效效果操作函数
+-- 灵摆效果①的效果处理操作
 function s.negop(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查是否已使用过此效果并询问是否无效
-	if Duel.GetFlagEffect(tp,id)==0 and Duel.SelectYesNo(tp,aux.Stringid(id,0)) then  --"是否把那个效果无效？"
-		-- 提示玩家该卡被发动
+	-- 若本回合还未使用过该无效效果，且玩家选择发动此效果
+	if Duel.GetFlagEffect(tp,id)==0 and Duel.SelectYesNo(tp,aux.Stringid(id,0)) then  --"是否适用「狱神影兽-涅瓦红化兽」的效果来无效？"
+		-- 展示该卡的卡片发动动画效果
 		Duel.Hint(HINT_CARD,0,id)
-		-- 注册该玩家已使用过此效果
+		-- 为玩家注册本回合使用过该效果的全局标识
 		Duel.RegisterFlagEffect(tp,id,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END,0,1)
-		-- 尝试无效当前连锁效果
+		-- 尝试使对方发动的怪兽效果无效
 		if Duel.NegateEffect(ev) then
-			-- 中断当前效果处理
+			-- 中断效果处理，使后续的破坏步骤与前面的无效动作不视为同时处理
 			Duel.BreakEffect()
-			-- 破坏自身
+			-- 将自己灵摆区域的这张卡破坏
 			Duel.Destroy(e:GetHandler(),REASON_EFFECT)
 		end
 	end
 end
+-- 代替除外过滤函数：过滤墓地中满足条件的「绝境的狱神域-威利亚」
 function s.costfilter(c,e,tp)
 	return e:GetHandler():IsSetCard(0x1ce) and c:IsAbleToRemove() and c:IsHasEffect(99311889,tp)
 end
+-- 怪兽效果①的发动代价判断：检查是否可以里侧除外卡组最上方3张卡，或存在墓地代替除外卡
 function s.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 获取玩家卡组最上方3张卡
+	-- 获取卡组最上方的3张卡
 	local g=Duel.GetDecktopGroup(tp,3)
 	if chk==0 then return g:FilterCount(Card.IsAbleToRemoveAsCost,nil,POS_FACEDOWN)==3
+		-- 检查卡组中是否有至少3张卡可供操作
 		and Duel.GetFieldGroupCount(tp,LOCATION_DECK,0)>=3
+		-- 检查墓地中是否存在可代替除外的卡片
 		or Duel.IsExistingMatchingCard(s.costfilter,tp,LOCATION_GRAVE,0,1,nil,e,tp) end
 	if g:FilterCount(Card.IsAbleToRemoveAsCost,nil,POS_FACEDOWN)==3
+		-- 检查卡组中是否有至少3张卡
 		and Duel.GetFieldGroupCount(tp,LOCATION_DECK,0)>=3
+		-- 检查墓地中是否存在可代替除外的卡片
 		and (not Duel.IsExistingMatchingCard(s.costfilter,tp,LOCATION_GRAVE,0,1,nil,e,tp)
-		or not Duel.SelectYesNo(tp,aux.Stringid(99311889,1))) then
+		-- 让玩家选择是否适用墓地卡片的代替除外效果
+		or not Duel.SelectYesNo(tp,aux.Stringid(99311889,1))) then  --"是否作为代替把「绝境的狱神域-威利亚」除外？"
+		-- 关闭洗牌检测（为接下来的里侧除外做准备）
 		Duel.DisableShuffleCheck()
+		-- 将卡组最上方的3张卡里侧除外作为发动代价
 		Duel.Remove(g,POS_FACEDOWN,REASON_COST)
 	else
-		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)
+		-- 提示玩家选择从墓地除外的卡片
+		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
+		-- 让玩家选择墓地中用于代替除外的卡片
 		local sg=Duel.SelectMatchingCard(tp,s.costfilter,tp,LOCATION_GRAVE,0,1,1,nil,e,tp)
 		local tc=sg:GetFirst()
 		local te=tc:IsHasEffect(99311889,tp)
 		if te then
 			te:UseCountLimit(tp)
+			-- 将选择的代替卡片除外作为发动代价
 			Duel.Remove(tc,POS_FACEUP,REASON_COST+REASON_REPLACE)
 		end
 	end
 end
--- 融合召唤目标卡筛选函数
+-- 怪兽过滤函数：过滤额外卡组中的「创狱神 涅瓦」
 function s.spfilter(c,e,tp,mc)
 	return c:IsType(TYPE_FUSION) and c:IsCode(53589300) and c:CheckFusionMaterial()
-		-- 检查目标卡是否可以特殊召唤并满足召唤条件
+		-- 检查目标融合怪兽是否可以被特殊召唤，以及额外怪兽区域是否有可用空格
 		and c:IsCanBeSpecialSummoned(e,SUMMON_TYPE_FUSION,tp,false,false) and Duel.GetLocationCountFromEx(tp,tp,mc,c)>0
 end
--- 怪兽效果①的发动目标设定函数
+-- 怪兽效果①的发动目标：检查并设置破坏自己以及从额外卡组特殊召唤的操作信息
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
-	-- 检查是否满足融合召唤所需素材
+	-- 在效果发动时，检查是否满足融合召唤特殊召唤的前置条件
 	if chk==0 then return aux.MustMaterialCheck(nil,tp,EFFECT_MUST_BE_FMATERIAL)
-		-- 检查是否存在满足条件的融合召唤目标
+		-- 检查额外卡组中是否存在合法的特殊召唤目标
 		and Duel.IsExistingMatchingCard(s.spfilter,tp,LOCATION_EXTRA,0,1,nil,e,tp,c) end
-	-- 设置操作信息：破坏自身
+	-- 设置操作信息：将这张卡破坏
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,e:GetHandler(),1,0,0)
-	-- 设置操作信息：特殊召唤融合怪兽
+	-- 设置操作信息：从额外卡组特殊召唤1只怪兽
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_EXTRA)
 end
--- 怪兽效果①的发动处理函数
+-- 怪兽效果①的效果处理：破坏自身并从额外卡组特殊召唤「创狱神 涅瓦」
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 检查自身是否仍在连锁中并破坏自身
+	-- 将这张卡自身破坏
 	if not c:IsRelateToChain() or Duel.Destroy(c,REASON_EFFECT)==0 then return end
-	-- 检查是否满足融合召唤所需素材
+	-- 检查特殊召唤相关的规则限制
 	if not aux.MustMaterialCheck(nil,tp,EFFECT_MUST_BE_FMATERIAL) then return end
-	-- 提示玩家选择要特殊召唤的卡
+	-- 提示玩家选择要特殊召唤的怪兽
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 选择满足条件的融合召唤目标
+	-- 从额外卡组中选择「创狱神 涅瓦」
 	local g=Duel.SelectMatchingCard(tp,s.spfilter,tp,LOCATION_EXTRA,0,1,1,nil,e,tp,nil)
 	local tc=g:GetFirst()
 	if not tc then return end
 	tc:SetMaterial(nil)
-	-- 执行融合召唤
+	-- 将选择的怪兽当作融合召唤特殊召唤到场上
 	Duel.SpecialSummon(tc,SUMMON_TYPE_FUSION,tp,tp,false,false,POS_FACEUP)
 	tc:CompleteProcedure()
 end
--- 怪兽效果②的发动条件判断函数
+-- 怪兽效果②的发动条件判断：此卡表侧加入额外卡组
 function s.spcon2(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	return c:IsLocation(LOCATION_EXTRA)
 		and c:IsFaceup()
 end
--- 特殊召唤目标卡筛选函数
+-- 特殊召唤怪兽过滤函数：过滤除自身外的「狱神」或「神艺」怪兽
 function s.spfilter2(c,e,tp)
 	return not c:IsCode(id)
 		and c:IsSetCard(0x1cd,0x1ce) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
-		-- 检查目标卡是否在卡组且场上存在空位
+		-- 检查特殊召唤目标是否来自卡组且主怪兽区域有空位
 		and (c:IsLocation(LOCATION_DECK) and Duel.GetMZoneCount(tp)>0
-			-- 检查目标卡是否在额外卡组且满足召唤条件
+			-- 检查特殊召唤目标是否来自额外卡组且有空闲的额外怪兽区域
 			or c:IsLocation(LOCATION_EXTRA) and c:IsFaceup() and Duel.GetLocationCountFromEx(tp,tp,nil,c)>0)
 end
--- 怪兽效果②的发动目标设定函数
+-- 怪兽效果②的发动目标判断：检查卡组·额外卡组是否存在满足条件的特殊召唤怪兽并设置操作信息
 function s.sptg2(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否存在满足条件的特殊召唤目标
+	-- 在效果发动时，检查是否存在合法的特殊召唤对象
 	if chk==0 then return Duel.IsExistingMatchingCard(s.spfilter2,tp,LOCATION_DECK+LOCATION_EXTRA,0,1,nil,e,tp) end
-	-- 设置操作信息：特殊召唤目标卡
+	-- 设置操作信息：特殊召唤1只怪兽
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_DECK+LOCATION_EXTRA)
 end
--- 怪兽效果②的发动处理函数
+-- 怪兽效果②的效果处理：特殊召唤1只「狱神」或「神艺」怪兽
 function s.spop2(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要特殊召唤的卡
+	-- 提示玩家选择要特殊召唤的怪兽
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 选择满足条件的特殊召唤目标
+	-- 从卡组或额外卡组选择1只满足条件的怪兽
 	local g=Duel.SelectMatchingCard(tp,s.spfilter2,tp,LOCATION_DECK+LOCATION_EXTRA,0,1,1,nil,e,tp)
 	if g:GetCount()>0 then
-		-- 执行特殊召唤
+		-- 将选择的怪兽特殊召唤到场上
 		Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
 	end
 end

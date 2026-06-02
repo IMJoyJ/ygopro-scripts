@@ -4,9 +4,9 @@
 -- ①：这张卡召唤·特殊召唤的场合才能发动。从卡组把1只恶魔族·5星怪兽或1张「合成兽融合」加入手卡。
 -- ②：这张卡成为融合召唤的素材送去墓地的场合才能发动。从卡组把1只幻想魔族怪兽加入手卡。
 local s,id,o=GetID()
--- 初始化卡片效果，注册两个触发效果和一个条件效果
+-- 初始化此卡的效果注册：在卡片关联列表中注册「合成兽融合」；注册①效果（召唤・特殊召唤成功的场合，从卡组检索恶魔族5星怪兽或「合成兽融合」）；注册②效果（作为融合素材送去墓地的场合，从卡组检索幻想魔族怪兽）。
 function s.initial_effect(c)
-	-- 记录该卡拥有「合成兽融合」的卡号，用于效果判定
+	-- 在卡片的关联卡片列表中注册「合成兽融合」，以便进行相关卡名检测。
 	aux.AddCodeList(c,63136489)
 	-- ①：这张卡召唤·特殊召唤的场合才能发动。从卡组把1只恶魔族·5星怪兽或1张「合成兽融合」加入手卡。
 	local e1=Effect.CreateEffect(c)
@@ -35,38 +35,38 @@ function s.initial_effect(c)
 	e3:SetOperation(s.thop(s.ifilter))
 	c:RegisterEffect(e3)
 end
--- 过滤函数，用于检索满足条件的恶魔族5星怪兽或「合成兽融合」
+-- 过滤卡组中卡密码为63136489（「合成兽融合」）或等级为5的恶魔族怪兽，且可以加入手卡的卡。
 function s.filter(c)
 	return (c:IsCode(63136489) or c:IsLevel(5) and c:IsRace(RACE_FIEND)) and c:IsAbleToHand()
 end
--- 条件函数，判断该卡是否因融合召唤而进入墓地
+-- 检查此卡是否作为融合召唤的素材被送入墓地，以判断是否满足效果发动条件。
 function s.condition(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	return c:IsLocation(LOCATION_GRAVE) and r==REASON_FUSION and not c:IsReason(REASON_RETURN)
 end
--- 过滤函数，用于检索满足条件的幻想魔族怪兽
+-- 过滤卡组中种族为幻想魔族的怪兽，且可以加入手卡的卡。
 function s.ifilter(c)
 	return c:IsRace(RACE_ILLUSION) and c:IsAbleToHand()
 end
--- 构造效果的处理函数，设置检索和回手的处理信息
+-- 效果发动的合法性检查与操作准备通用函数，确认卡组中是否存在可以加入手卡的卡，并设置加入手卡的操作信息。
 function s.thtg(f)
 	return  function(e,tp,eg,ep,ev,re,r,rp,chk)
-				-- 检查是否满足检索条件，即卡组中是否存在符合条件的卡
+				-- 判断卡组中是否存在满足检索过滤条件的卡，以作为效果发动的可行性检查。
 				if chk==0 then return Duel.IsExistingMatchingCard(f,tp,LOCATION_DECK,0,1,nil) end
-				-- 设置连锁操作信息，表示将从卡组检索1张卡并加入手牌
+				-- 设置当前连锁的操作信息，标记该效果包含从卡组将1张卡加入手卡的效果分类。
 				Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 			end
 end
--- 构造效果的发动函数，执行检索和加入手牌的操作
+-- 效果实效处理通用函数：提示并让玩家从卡组检索满足条件的卡片，加入手卡后向对方展示。
 function s.thop(f)
 	return  function(e,tp,eg,ep,ev,re,r,rp)
-				-- 提示玩家选择要加入手牌的卡
+				-- 提示玩家选择要加入手牌的卡。
 				Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-				-- 从卡组中选择1张满足条件的卡
+				-- 让玩家从卡组中选择1张满足过滤条件的卡。
 				local g=Duel.SelectMatchingCard(tp,f,tp,LOCATION_DECK,0,1,1,nil)
-				-- 将选中的卡加入手牌
+				-- 通过卡片效果将选中的卡片加入玩家手卡。
 				Duel.SendtoHand(g,nil,REASON_EFFECT)
-				-- 向对方确认加入手牌的卡
+				-- 将加入手牌的卡展示给对方玩家确认。
 				Duel.ConfirmCards(1-tp,g)
 			end
 end

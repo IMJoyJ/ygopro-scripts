@@ -21,7 +21,7 @@ function c22180094.initial_effect(c)
 	e2:SetTargetRange(0,LOCATION_MZONE)
 	e2:SetTarget(c22180094.attg)
 	c:RegisterEffect(e2)
-	-- ②：从手卡把1张「治安战警队」卡除外才能发动。这张卡回到持有者手卡，从卡组把「治安战警队 乱破小夜丸」以外的1只「治安战警队」怪兽守备表示特殊召唤。这个效果在对方回合也能发动。
+	-- ②：自己·对方回合，从手卡把1张「治安战警队」卡除外才能发动。场上的这张卡回到手卡，从卡组把「治安战警队 乱破小夜丸」以外的1只「治安战警队」怪兽守备表示特殊召唤。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(22180094,0))
 	e3:SetCategory(CATEGORY_TOHAND+CATEGORY_SPECIAL_SUMMON)
@@ -35,83 +35,93 @@ function c22180094.initial_effect(c)
 	e3:SetOperation(c22180094.spop)
 	c:RegisterEffect(e3)
 end
--- 过滤函数，用于判断目标怪兽是否为己方「治安战警队」怪兽。
+-- 过滤自己场上表侧表示的「治安战警队」怪兽。
 function c22180094.atfilter(c,tp)
 	return c:IsFaceup() and c:IsSetCard(0x156) and c:IsLocation(LOCATION_MZONE) and c:IsControler(tp)
 end
--- 判断目标怪兽是否在己方场上，并且与当前怪兽在同一纵列。
+-- 判断对方场上的怪兽的正对面是否存在自己的表侧表示「治安战警队」怪兽，作为不能选择为攻击对象效果的影响目标判断。
 function c22180094.attg(e,c)
 	local cg=c:GetColumnGroup()
 	e:SetLabelObject(c)
 	return cg:IsExists(c22180094.atfilter,1,nil,e:GetHandlerPlayer())
 end
--- 限制对方怪兽不能攻击非同纵列的己方怪兽。
+-- 限制攻击对象：对方场上的怪兽不能选择自身所在纵列以外的怪兽作为攻击对象。
 function c22180094.atlimit(e,c)
 	local lc=e:GetLabelObject()
 	return not lc:GetColumnGroup():IsContains(c)
 end
--- 过滤函数，用于判断手卡或墓地中的「治安战警队」卡是否可以作为除外的代价。
+-- 过滤可以作为发动代价从手卡除外（或受其他卡片效果代替除外）的「治安战警队」卡片。
 function c22180094.costfilter(c,e,tp)
 	if c:IsHasEffect(55049722,tp) then
 		return e:GetHandler():IsSetCard(0x156) and c:IsAbleToRemoveAsCost()
 	elseif c:IsHasEffect(11642993,tp) then
 		return e:GetHandler():IsSetCard(0x156) and not c:IsCode(11642993)
 			and c:IsSetCard(0x156) and c:IsAbleToGraveAsCost()
+			-- 判断卡组中是否存在可以被特殊召唤的「治安战警队」怪兽（排除了用作代价的卡本身）。
 			and Duel.IsExistingMatchingCard(c22180094.spfilter,tp,LOCATION_DECK,0,1,c,e,tp)
 	elseif c:IsLocation(LOCATION_HAND) then
 		return c:IsSetCard(0x156) and c:IsAbleToRemoveAsCost()
 	end
 end
--- 处理效果发动的除外代价，根据是否拥有特定效果来决定除外方式。
+-- ②效果的发动代价处理：从手卡将1张「治安战警队」卡除外（根据适用场上其他卡的效果，也可能是将卡送去墓地或以其他方式代替除外）。
 function c22180094.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
+	-- 在效果发动前，检查是否存在可以作为发动代价除外的「治安战警队」卡。
 	if chk==0 then return Duel.IsExistingMatchingCard(c22180094.costfilter,tp,LOCATION_HAND+LOCATION_GRAVE+LOCATION_DECK,0,1,nil,e,tp) end
+	-- 获取所有满足代价过滤条件的卡片组。
 	local cg=Duel.GetMatchingGroup(c22180094.costfilter,tp,LOCATION_HAND+LOCATION_GRAVE+LOCATION_DECK,0,nil,e,tp)
 	if cg:IsExists(Card.IsHasEffect,1,nil,11642993,tp) then
-		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_OPERATECARD)
+		-- 提示玩家选择要操作的卡。
+		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_OPERATECARD)  --"请选择要操作的卡"
 	else
-		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)
+		-- 提示玩家选择要除外的卡。
+		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
 	end
+	-- 让玩家选择1张用于作为发动代价除外的「治安战警队」卡。
 	local tg=Duel.SelectMatchingCard(tp,c22180094.costfilter,tp,LOCATION_HAND+LOCATION_GRAVE+LOCATION_DECK,0,1,1,nil,e,tp)
 	local te=tg:GetFirst():IsHasEffect(11642993,tp)
 	if te then
+		-- 显示代替除外效果的卡片发动的动画。
 		Duel.Hint(HINT_CARD,0,11642993)
 		te:UseCountLimit(tp)
+		-- 作为效果发动代价，将用于代替除外的卡片送去墓地。
 		Duel.SendtoGrave(tg,REASON_COST+REASON_REPLACE)
 	else
 		local te2=tg:GetFirst():IsHasEffect(55049722,tp)
 		if te2 then
 			te2:UseCountLimit(tp)
+			-- 作为效果发动代价，将卡片除外（以此卡片本身的代替效果）。
 			Duel.Remove(tg,POS_FACEUP,REASON_COST+REASON_REPLACE)
 		else
+			-- 作为效果发动代价，将玩家选择的卡表侧表示除外。
 			Duel.Remove(tg,POS_FACEUP,REASON_COST)
 		end
 	end
 end
--- 过滤函数，用于筛选可以特殊召唤的「治安战警队」怪兽。
+-- 过滤卡组中除「治安战警队 乱破小夜丸」以外，且可以特殊召唤的「治安战警队」怪兽。
 function c22180094.spfilter(c,e,tp)
 	return c:IsSetCard(0x156) and not c:IsCode(22180094) and c:IsCanBeSpecialSummoned(e,0,tp,false,false,POS_FACEUP_DEFENSE)
 end
--- 设置效果发动时的操作信息，包括回手和特殊召唤。
+-- ②效果的发动准备与合法性检查，确认此卡是否能回到手卡，并且检查卡组是否存在可以特殊召唤的「治安战警队」怪兽以及主怪兽区是否有空位，并注册回到手卡和特殊召唤的操作信息。
 function c22180094.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
-	-- 检查是否满足发动条件：自身可以回手、场上存在空位、卡组存在符合条件的怪兽。
+	-- 判断此卡是否能回到手卡，且主怪兽区域有空位，并且卡组中存在可以特殊召唤的「治安战警队」怪兽。
 	if chk==0 then return c:IsAbleToHand() and Duel.GetMZoneCount(tp,c)>0 and Duel.IsExistingMatchingCard(c22180094.spfilter,tp,LOCATION_DECK,0,1,nil,e,tp) end
-	-- 设置操作信息：将自身送回手牌。
+	-- 设置当前连锁的操作信息，标记该效果包含将此卡送回手卡的效果分类。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,c,1,0,0)
-	-- 设置操作信息：从卡组特殊召唤一只「治安战警队」怪兽。
+	-- 设置当前连锁的操作信息，标记该效果包含从卡组特殊召唤怪兽的效果分类。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_DECK)
 end
--- 处理效果发动后的操作：将自身送回手牌并从卡组特殊召唤一只怪兽。
+-- ②效果的实效处理：将场上的这张卡送回持有者手卡，如果成功回手并且场上有怪兽格，从卡组选择1只「治安战警队 乱破小夜丸」以外的「治安战警队」怪兽表侧守备表示特殊召唤。
 function c22180094.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 检查效果是否可以发动：自身在场、可以送回手牌、场上存在空位。
+	-- 判断此卡是否仍在场，并将此卡送回手卡，若成功回手且己方怪兽区有空位则进行后续处理。
 	if c:IsRelateToEffect(e) and Duel.SendtoHand(c,nil,REASON_EFFECT)~=0 and c:IsLocation(LOCATION_HAND) and Duel.GetMZoneCount(tp)>0 then
-		-- 提示玩家选择要特殊召唤的怪兽。
+		-- 提示玩家选择要特殊召唤的卡片。
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-		-- 选择满足条件的「治安战警队」怪兽进行特殊召唤。
+		-- 让玩家从卡组中选择1只满足特殊召唤条件的「治安战警队」怪兽。
 		local g=Duel.SelectMatchingCard(tp,c22180094.spfilter,tp,LOCATION_DECK,0,1,1,nil,e,tp)
 		if #g>0 then
-			-- 将选中的怪兽以守备表示特殊召唤到场上。
+			-- 将选中的「治安战警队」怪兽守备表示特殊召唤到自己场上。
 			Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP_DEFENSE)
 		end
 	end
