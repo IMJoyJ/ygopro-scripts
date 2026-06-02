@@ -23,52 +23,52 @@ function c799183.initial_effect(c)
 	e2:SetOperation(c799183.setop)
 	c:RegisterEffect(e2)
 end
--- 检查发动条件：自己场上有「混沌战士」怪兽存在，且当前连锁的效果是选择场上的怪兽为对象、可以被无效的怪兽效果或魔法·陷阱卡的发动
+-- 发动条件：自己场上存在「混沌战士」怪兽，且有以场上的怪兽为对象的怪兽的效果或魔法·陷阱卡发动时，且该发动可以被无效
 function c799183.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查自己场上是否存在「混沌战士」怪兽，若不存在则不能发动
+	-- 检查自己场上是否存在表侧表示的「混沌战士」怪兽
 	if not Duel.IsExistingMatchingCard(Card.IsSetCard,tp,LOCATION_MZONE,0,1,nil,0x10cf) then return false end
 	if not re:IsHasProperty(EFFECT_FLAG_CARD_TARGET) then return false end
-	-- 获取当前连锁效果所选择的对象卡片组
+	-- 获取该连锁效果的对象卡片组
 	local g=Duel.GetChainInfo(ev,CHAININFO_TARGET_CARDS)
 	return g and g:IsExists(Card.IsLocation,1,nil,LOCATION_MZONE)
-		-- 且该发动可以被无效，并且该效果是怪兽的效果或者是魔法·陷阱卡的发动
+		-- 检查该连锁的发动是否可以被无效，且发动的卡片为怪兽的效果或魔法·陷阱卡的发动
 		and Duel.IsChainNegatable(ev) and (re:IsActiveType(TYPE_MONSTER) or re:IsHasType(EFFECT_TYPE_ACTIVATE))
 end
--- 检查发动的目标，并设置“使发动无效”和“破坏”的操作信息
+-- 效果目标：设置无效该连锁发动以及破坏该卡的操作信息
 function c799183.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置操作信息，表示该效果包含“使发动无效”的操作
+	-- 设置将该连锁的发动无效的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_NEGATE,eg,1,0,0)
 	if re:GetHandler():IsDestructable() and re:GetHandler():IsRelateToEffect(re) then
-		-- 若被无效的对象在场且可以被破坏，则设置操作信息，表示该效果包含“破坏”的操作
+		-- 如果该连锁的卡片可以被破坏且仍在场，设置破坏该卡的操作信息
 		Duel.SetOperationInfo(0,CATEGORY_DESTROY,eg,1,0,0)
 	end
 end
--- 效果处理：使该发动无效并破坏
+-- 效果处理：使该连锁的发动无效并破坏那张卡
 function c799183.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 成功使发动无效，且该卡在连锁处理时仍与效果相关联
+	-- 尝试无效该连锁的发动并确认该卡依然存在
 	if Duel.NegateActivation(ev) and re:GetHandler():IsRelateToEffect(re) then
-		-- 破坏该发动无效的卡
+		-- 破坏触发该连锁发动的卡
 		Duel.Destroy(eg,REASON_EFFECT)
 	end
 end
--- 检查并执行发动代价：去除自己场上的1个魔力指示物
+-- 发动代价：从自己场上移去1个魔力指示物
 function c799183.setcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查自己场上是否能去除1个魔力指示物
+	-- 检查自己场上是否能移去1个魔力指示物作为代价
 	if chk==0 then return Duel.IsCanRemoveCounter(tp,1,0,0x1,1,REASON_COST) end
-	-- 去除自己场上的1个魔力指示物作为发动代价
+	-- 从自己场上移去1个魔力指示物
 	Duel.RemoveCounter(tp,1,0,0x1,1,REASON_COST)
 end
--- 检查目标，并设置“从墓地离开”的操作信息
+-- 效果目标：检查此卡是否可以盖放，并设置此卡离开墓地的操作信息
 function c799183.settg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsSSetable() end
-	-- 设置操作信息，表示该效果包含“卡片离开墓地”的操作
+	-- 设置此卡离开墓地的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_LEAVE_GRAVE,e:GetHandler(),1,0,0)
 end
--- 效果处理：将墓地的这张卡在自己场上盖放，并添加离场时除外的效果
+-- 效果处理：将墓地的这张卡盖放在自己场上，并设置其离场时除外的效果
 function c799183.setop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 若这张卡仍存在于墓地，则将其在自己场上盖放
+	-- 如果此卡仍与效果相关，则将其盖放在自己场上
 	if c:IsRelateToEffect(e) and Duel.SSet(tp,c)~=0 then
 		-- 这个效果盖放的这张卡从场上离开的场合除外。
 		local e1=Effect.CreateEffect(c)

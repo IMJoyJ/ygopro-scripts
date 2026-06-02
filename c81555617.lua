@@ -27,21 +27,21 @@ function c81555617.initial_effect(c)
 	e2:SetOperation(c81555617.spop)
 	c:RegisterEffect(e2)
 end
--- 过滤条件：场上表侧表示且有等级的怪兽
+-- 过滤条件：场上表侧表示且等级在0以上的怪兽
 function c81555617.atkfilter(c)
 	return c:IsFaceup() and c:IsLevelAbove(0)
 end
--- 效果①的发动准备（检查场上是否存在符合条件的怪兽）
+-- ①效果的发动准备：检查场上是否存在满足攻击力上升条件的怪兽
 function c81555617.atktg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查场上是否存在至少1只表侧表示且有等级的怪兽
+	-- 判断场上是否存在至少1只表侧表示且等级在0以上的怪兽
 	if chk==0 then return Duel.IsExistingMatchingCard(c81555617.atkfilter,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil) end
 end
--- 效果①的实际处理（使场上所有怪兽的攻击力上升自身等级×100）
+-- ①效果的执行：使双方场上所有符合条件的怪兽攻击力上升各自等级×100，直到对方回合结束时
 function c81555617.atkop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取场上所有表侧表示且有等级的怪兽
+	-- 获取双方场上所有表侧表示且等级在0以上的怪兽
 	local g=Duel.GetMatchingGroup(c81555617.atkfilter,tp,LOCATION_MZONE,LOCATION_MZONE,nil)
 	local tc=g:GetFirst()
-	-- 遍历这些怪兽并逐一进行处理
+	-- 遍历所有满足条件的怪兽进行处理
 	for tc in aux.Next(g) do
 		local lv=tc:GetLevel()
 		-- 攻击力直到对方回合结束时上升自身的等级×100
@@ -54,37 +54,37 @@ function c81555617.atkop(e,tp,eg,ep,ev,re,r,rp)
 		tc:RegisterEffect(e1)
 	end
 end
--- 判定是否满足“手卡·场上的这张卡作为融合素材被送去墓地或除外”的发动条件
+-- ②效果的发动条件：手卡·场上的这张卡作为融合素材被送去墓地或被除外
 function c81555617.spcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	return c:IsPreviousLocation(LOCATION_HAND+LOCATION_ONFIELD)
 		and c:IsLocation(LOCATION_GRAVE+LOCATION_REMOVED) and r==REASON_FUSION and not c:IsReason(REASON_RETURN)
 end
--- 过滤条件：墓地或除外状态的「死狱乡的凶剧」以外的「死狱乡」怪兽或8星以上的融合怪兽，且可以特殊召唤
+-- 过滤条件：「死狱乡的凶剧」以外的自己墓地或除外状态的「死狱乡」怪兽或8星以上融合怪兽且可以特殊召唤
 function c81555617.spfilter(c,e,tp)
 	return (c:IsFaceup() or c:IsLocation(LOCATION_GRAVE)) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 		and (not c:IsCode(81555617) and c:IsSetCard(0x164) or c:IsLevelAbove(8) and c:IsType(TYPE_FUSION))
 end
--- 效果②的发动准备（检查并选择特殊召唤的对象）
+-- ②效果的发动准备：选择「死狱乡的凶剧」以外的自己墓地或除外状态的1只「死狱乡」怪兽或8星以上的融合怪兽为对象才能发动
 function c81555617.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(tp) and chkc:IsLocation(LOCATION_GRAVE+LOCATION_REMOVED) and c81555617.spfilter(chkc,e,tp) end
-	-- 检查自己场上是否有空余的怪兽区域
+	-- 判断自己场上是否有空余的怪兽区域
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查自己墓地或除外状态是否存在符合条件的怪兽作为对象
+		-- 且自己墓地或除外状态存在至少1只可以作为对象的符合特殊召唤条件的怪兽
 		and Duel.IsExistingTarget(c81555617.spfilter,tp,LOCATION_GRAVE+LOCATION_REMOVED,0,1,nil,e,tp) end
-	-- 提示玩家选择要特殊召唤的卡片
+	-- 给玩家提示选择要特殊召唤的卡片
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 选择墓地或除外状态的1只符合条件的怪兽作为效果对象
+	-- 选择自己墓地或除外状态的1只符合条件的怪兽作为对象
 	local g=Duel.SelectTarget(tp,c81555617.spfilter,tp,LOCATION_GRAVE+LOCATION_REMOVED,0,1,1,nil,e,tp)
-	-- 设置效果处理信息为“特殊召唤选中的怪兽”
+	-- 设置操作信息：包含特殊召唤选定对象的操作
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,1,0,0)
 end
--- 效果②的实际处理（将作为对象的怪兽特殊召唤）
+-- ②效果的执行：将选择的对象怪兽特殊召唤
 function c81555617.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取在发动时选择的效果对象
+	-- 获取当前连锁选择的对象怪兽
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 将目标怪兽以表侧表示特殊召唤到自己场上
+		-- 将对象怪兽以表侧表示特殊召唤
 		Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
