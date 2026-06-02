@@ -2,9 +2,10 @@
 -- 效果：
 -- 「觉醒之证」降临。1回合1次，选择自己墓地存在的1只通常怪兽才能发动。选择的怪兽从游戏中除外，直到下次的自己回合的准备阶段时这张卡的攻击力上升除外的那只通常怪兽的攻击力数值。
 function c10789972.initial_effect(c)
+	-- 在卡片中记录关联卡片「觉醒之证」（卡号9845733）
 	aux.AddCodeList(c,9845733)
 	c:EnableReviveLimit()
-	-- 「觉醒之证」降临。1回合1次，选择自己墓地存在的1只通常怪兽才能发动。选择的怪兽从游戏中除外，直到下次的自己回合的准备阶段时这张卡的攻击力上升除外的那只通常怪兽的攻击力数值。
+	-- 1回合1次，选择自己墓地存在的1只通常怪兽才能发动。选择的怪兽从游戏中除外，直到下次的自己回合的准备阶段时这张卡的攻击力上升除外的那只通常怪兽的攻击力数值。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(10789972,0))  --"攻击上升"
 	e1:SetCategory(CATEGORY_REMOVE+CATEGORY_ATKCHANGE)
@@ -16,28 +17,28 @@ function c10789972.initial_effect(c)
 	e1:SetOperation(c10789972.operation)
 	c:RegisterEffect(e1)
 end
--- 检索满足条件的墓地通常怪兽
+-- 过滤条件：自己墓地存在的通常怪兽，且可以被除外
 function c10789972.filter(c)
 	return c:IsType(TYPE_NORMAL) and c:IsAbleToRemove()
 end
--- 效果处理时的选卡阶段，用于设置目标怪兽
+-- 起动效果的发动目标（检查并选择墓地中的通常怪兽作为效果的对象）
 function c10789972.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and c10789972.filter(chkc) end
-	-- 判断是否满足发动条件，即自己墓地是否存在符合条件的怪兽
+	-- 在进行合法性检测时，确认自己墓地中是否存在至少1只通常怪兽
 	if chk==0 then return Duel.IsExistingTarget(c10789972.filter,tp,LOCATION_GRAVE,0,1,nil) end
-	-- 向玩家提示选择要除外的卡片
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)
-	-- 选择1只符合条件的墓地怪兽作为效果对象
+	-- 提示玩家选择一张需要除外的卡
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
+	-- 让玩家选择自己墓地的一只通常怪兽作为效果的对象
 	local g=Duel.SelectTarget(tp,c10789972.filter,tp,LOCATION_GRAVE,0,1,1,nil)
-	-- 设置效果处理信息，表明将要除外1只墓地怪兽
+	-- 设置连锁处理信息：将选中的墓地怪兽除外
 	Duel.SetOperationInfo(0,CATEGORY_REMOVE,g,1,tp,LOCATION_GRAVE)
 end
--- 效果处理时的执行阶段，用于处理效果的发动
+-- 起动效果的效果处理（将目标通常怪兽除外，并在规定时间内使自身攻击力上升被除外怪兽的攻击力）
 function c10789972.operation(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取当前连锁效果的目标怪兽
+	-- 获取在效果发动时选择的目标通常怪兽
 	local tc=Duel.GetFirstTarget()
-	-- 判断目标怪兽是否仍然在场且满足除外条件，同时确认自身怪兽处于正面表示状态
+	-- 确认目标怪兽与该效果关联，将其成功除外，并且自身表侧表示存在于场上
 	if tc:IsRelateToEffect(e) and Duel.Remove(tc,POS_FACEUP,REASON_EFFECT)~=0 and c:IsFaceup() and c:IsRelateToEffect(e) then
 		-- 直到下次的自己回合的准备阶段时这张卡的攻击力上升除外的那只通常怪兽的攻击力数值。
 		local e1=Effect.CreateEffect(c)
