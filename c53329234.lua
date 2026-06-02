@@ -4,7 +4,7 @@
 -- ①：以场上1只特殊召唤的表侧表示怪兽为对象才能发动。那只怪兽变成里侧守备表示。
 -- ②：这张卡在墓地存在，自己场上有5星以上的幻想魔族怪兽存在的场合才能发动。这张卡在自己场上盖放。这个效果盖放的这张卡从场上离开的场合除外。
 local s,id,o=GetID()
--- 创建两个效果，分别对应①和②的效果
+-- 初始化卡片效果：注册此卡作为魔法卡发动时改变怪兽表示形式的效果，以及在墓地存在时可以盖放到场上的起动效果
 function s.initial_effect(c)
 	-- ①：以场上1只特殊召唤的表侧表示怪兽为对象才能发动。那只怪兽变成里侧守备表示。
 	local e1=Effect.CreateEffect(c)
@@ -31,52 +31,52 @@ function s.initial_effect(c)
 	e2:SetOperation(s.setop)
 	c:RegisterEffect(e2)
 end
--- 过滤函数，用于判断是否为特殊召唤且表侧表示且可以变为里侧守备表示的怪兽
+-- 过滤场上特殊召唤上场且处于表侧表示、能变成里侧守备表示的怪兽
 function s.filter(c)
 	return c:IsSummonType(SUMMON_TYPE_SPECIAL) and c:IsFaceup() and c:IsCanTurnSet()
 end
--- 处理①效果的目标选择，检查场上是否存在满足条件的怪兽并选择目标
+-- 魔法卡发动效果的目标判定与注册：判定并选择场上1只符合条件的特殊召唤的表侧表示怪兽为效果对象，并注册改变表示形式的操作信息
 function s.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and s.filter(chkc) end
-	-- 检查是否有满足条件的怪兽作为目标
+	-- 判断场上是否存在至少1只可成为效果对象的特殊召唤的表侧表示怪兽
 	if chk==0 then return Duel.IsExistingTarget(s.filter,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil) end
-	-- 提示玩家选择表侧表示的卡
+	-- 在界面上提示玩家选择表侧表示的卡片
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
-	-- 选择满足条件的怪兽作为目标
+	-- 让玩家在场上选择1只满足条件的表侧表示怪兽作为效果的对象
 	local g=Duel.SelectTarget(tp,s.filter,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,nil)
-	-- 设置操作信息，指定将要改变表示形式的怪兽
+	-- 注册将选中的怪兽改变表示形式的效果分类和操作信息
 	Duel.SetOperationInfo(0,CATEGORY_POSITION,g,1,0,0)
 end
--- 处理①效果的发动，将目标怪兽变为里侧守备表示
+-- 效果处理：若选中的对象怪兽仍合法存在于场上，则将其变成里侧守备表示
 function s.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的目标怪兽
+	-- 获取该效果所选中的唯一对象怪兽
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) and tc:IsLocation(LOCATION_MZONE) and tc:IsFaceup() then
-		-- 将目标怪兽变为里侧守备表示
+		-- 将选中的对象怪兽的表示形式变更为里侧守备表示
 		Duel.ChangePosition(tc,POS_FACEDOWN_DEFENSE)
 	end
 end
--- 过滤函数，用于判断是否为5星以上幻想魔族且表侧表示的怪兽
+-- 过滤自己场上表侧表示的5星以上幻想魔族怪兽
 function s.setfilter(c)
 	return c:IsRace(RACE_ILLUSION) and c:IsLevelAbove(5) and c:IsFaceup()
 end
--- 处理②效果的发动条件，检查场上是否存在满足条件的幻想魔族怪兽
+-- 判定发动条件：自己场上是否存在5星以上的幻想魔族怪兽
 function s.setcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查场上是否存在满足条件的幻想魔族怪兽
+	-- 判断自己场上是否存在至少1只表侧表示的5星以上的幻想魔族怪兽
 	return Duel.IsExistingMatchingCard(s.setfilter,tp,LOCATION_MZONE,0,1,nil)
 end
--- 处理②效果的目标选择，检查此卡是否可以盖放
+-- 判定发动目标：检测墓地中的此卡是否可以在场上盖放，并注册涉及离开墓地的操作信息
 function s.settg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsSSetable() end
-	-- 设置操作信息，指定将要离开墓地的卡
+	-- 注册将墓地中的此卡移动（离开墓地）的效果分类和操作信息
 	Duel.SetOperationInfo(0,CATEGORY_LEAVE_GRAVE,e:GetHandler(),1,0,0)
 end
--- 处理②效果的发动，将此卡盖放到场上并设置其离场时的去向
+-- 效果处理：若此卡在墓地中状态合法，则在自己场上盖放，并为其注册“从场上离开的场合除外”的重定向效果
 function s.setop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 检查此卡是否可以盖放且未被无效化
+	-- 如果此卡因该效果成功在自己场上盖放
 	if c:IsRelateToEffect(e) and Duel.SSet(tp,c)~=0 then
-		-- 设置此卡离场时的去向为除外
+		-- 这个效果盖放的这张卡从场上离开的场合除外。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_LEAVE_FIELD_REDIRECT)

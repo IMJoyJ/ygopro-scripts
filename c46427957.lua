@@ -3,6 +3,7 @@
 -- 「世界末日」降临。
 -- ①：这张卡的攻击破坏对方怪兽时才能发动。这张卡只再1次可以继续攻击。
 function c46427957.initial_effect(c)
+	-- 将「世界末日」（8198712）加入卡片记述的相关卡片列表中
 	aux.AddCodeList(c,8198712)
 	c:EnableReviveLimit()
 	-- ①：这张卡的攻击破坏对方怪兽时才能发动。这张卡只再1次可以继续攻击。
@@ -14,13 +15,13 @@ function c46427957.initial_effect(c)
 	e1:SetOperation(c46427957.atop)
 	c:RegisterEffect(e1)
 end
--- 检测本次战斗是否为该卡攻击并破坏对方怪兽，且该卡是否可以进行连续攻击
+-- 攻击破坏怪兽时继续攻击效果的发动条件判断
 function c46427957.atcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 满足战斗破坏条件且该卡可连续攻击时效果才发动
+	-- 检查是否因战斗破坏对方怪兽，且自身能进行追加攻击
 	return aux.bdocon(e,tp,eg,ep,ev,re,r,rp) and e:GetHandler():IsChainAttackable()
 end
--- 使该卡进行1次额外攻击
+-- 攻击破坏怪兽时继续攻击效果的执行过程
 function c46427957.atop(e,tp,eg,ep,ev,re,r,rp)
-	-- 执行使该卡进行1次额外攻击的操作
+	-- 使此卡可以再进行1次攻击
 	Duel.ChainAttack()
 end

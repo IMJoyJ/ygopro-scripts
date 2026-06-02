@@ -5,6 +5,7 @@
 -- ②：这张卡仪式召唤成功的场合发动。这个回合，这张卡在同1次的战斗阶段中最多2次可以向怪兽攻击。
 -- ③：这张卡被送去墓地的场合，以自己场上1只仪式怪兽为对象才能发动。只要那只怪兽在自己场上表侧表示存在，在自己的仪式怪兽的攻击宣言时对方不能把卡的效果发动。
 function c50139096.initial_effect(c)
+	-- 放入「世界不灭」的卡名列表
 	aux.AddCodeList(c,32828635)
 	c:EnableReviveLimit()
 	-- ②：这张卡仪式召唤成功的场合发动。这个回合，这张卡在同1次的战斗阶段中最多2次可以向怪兽攻击。
@@ -24,18 +25,18 @@ function c50139096.initial_effect(c)
 	e2:SetTarget(c50139096.target)
 	e2:SetOperation(c50139096.operation)
 	c:RegisterEffect(e2)
-	-- 使此卡在手牌和场上的时候视为「破灭之女神 露茵」使用
+	-- ①：这张卡的卡名只要在手卡·场上存在当作「破灭之女神 露茵」使用。
 	aux.EnableChangeCode(c,46427957,LOCATION_MZONE+LOCATION_HAND)
 end
--- 效果条件：判断此卡是否为仪式召唤成功
+-- 同1次战斗阶段可以进行2次怪兽攻击效果的发动条件
 function c50139096.atkcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsSummonType(SUMMON_TYPE_RITUAL)
 end
--- 效果处理：若此卡在场上，则使其在本回合内可以额外攻击一次
+-- 同1次战斗阶段可以进行2次怪兽攻击效果的处理
 function c50139096.atkop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) then
-		-- 使此卡在同1次的战斗阶段中最多2次可以向怪兽攻击
+		-- 这个回合，这张卡在同1次的战斗阶段中最多2次可以向怪兽攻击。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
@@ -45,26 +46,26 @@ function c50139096.atkop(e,tp,eg,ep,ev,re,r,rp)
 		c:RegisterEffect(e1)
 	end
 end
--- 过滤函数：筛选场上表侧表示的仪式怪兽
+-- 过滤自己场上表侧表示的仪式怪兽
 function c50139096.filter(c)
 	return c:IsFaceup() and c:IsType(TYPE_RITUAL)
 end
--- 选择目标：选择自己场上的1只表侧表示的仪式怪兽作为对象
+-- 攻击宣言时对方不能发动效果之效的发动靶点
 function c50139096.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and c50139096.filter(chkc) end
-	-- 条件判断：确认自己场上是否存在符合条件的仪式怪兽
+	-- 靶点检查：自己场上是否存在表侧表示的仪式怪兽
 	if chk==0 then return Duel.IsExistingTarget(c50139096.filter,tp,LOCATION_MZONE,0,1,nil) end
-	-- 提示信息：提示玩家选择表侧表示的卡
+	-- 给玩家提示信息：请选择表侧表示的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
-	-- 选择卡片：从自己场上选择一只表侧表示的仪式怪兽作为目标
+	-- 选择自己场上1只表侧表示的仪式怪兽作为对象
 	Duel.SelectTarget(tp,c50139096.filter,tp,LOCATION_MZONE,0,1,1,nil)
 end
--- 效果处理：若目标怪兽存在且表侧表示，则注册一个在攻击宣言时禁止对方发动卡的效果的持续效果
+-- 攻击宣言时对方不能发动效果之效的处理
 function c50139096.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取目标：获取当前连锁中被选中的目标卡片
+	-- 获取作为效果对象的表侧表示仪式怪兽
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) and tc:IsFaceup() then
-		-- 当自己的仪式怪兽进行攻击宣言时，禁止对方发动卡的效果
+		-- 只要那只怪兽在自己场上表侧表示存在，在自己的仪式怪兽的攻击宣言时对方不能把卡的效果发动。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 		e1:SetCode(EVENT_ATTACK_ANNOUNCE)
@@ -76,16 +77,16 @@ function c50139096.operation(e,tp,eg,ep,ev,re,r,rp)
 		tc:RegisterFlagEffect(0,RESET_EVENT+RESETS_STANDARD,EFFECT_FLAG_CLIENT_HINT,1,0,aux.Stringid(50139096,2))  --"「破灭之天使 露茵」效果适用中"
 	end
 end
--- 条件判断：确认攻击方是否为己方的仪式怪兽
+-- 攻击宣言时对方不能把卡的效果发动的条件
 function c50139096.actcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取攻击者：获取当前正在攻击的卡片
+	-- 获取进行攻击宣言的怪兽
 	local ac=Duel.GetAttacker()
 	return ac and ac:IsControler(tp) and ac:IsType(TYPE_RITUAL)
 end
--- 效果处理：禁止对方在攻击宣言时发动卡的效果
+-- 攻击宣言时限制对方卡片效果发动的处理
 function c50139096.actop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 禁止对方在攻击宣言时发动卡的效果
+	-- 在自己的仪式怪兽的攻击宣言时对方不能把卡的效果发动。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_CANNOT_ACTIVATE)
@@ -94,6 +95,6 @@ function c50139096.actop(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetTargetRange(0,1)
 	e1:SetValue(1)
 	e1:SetReset(RESET_PHASE+PHASE_DAMAGE)
-	-- 注册效果：将该效果注册到全局环境中，使对方无法发动卡的效果
+	-- 为对方玩家注册不能发动效果的限制
 	Duel.RegisterEffect(e1,tp)
 end

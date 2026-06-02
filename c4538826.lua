@@ -9,7 +9,7 @@
 -- ②：特殊召唤的表侧表示的这张卡从场上离开的场合回到卡组最下面。
 function c4538826.initial_effect(c)
 	c:EnableReviveLimit()
-	-- 为卡片添加灵摆怪兽属性，使其可以进行灵摆召唤
+	-- 启用灵摆怪兽属性及灵摆卡发动效果
 	aux.EnablePendulumAttribute(c)
 	-- ①：支付1000基本分，以除外的1只自己的龙族怪兽为对象才能发动。这张卡破坏，那只怪兽加入手卡。
 	local e1=Effect.CreateEffect(c)
@@ -60,66 +60,66 @@ function c4538826.initial_effect(c)
 	e5:SetCondition(c4538826.rmcon)
 	c:RegisterEffect(e5)
 end
--- 支付1000基本分作为此效果的发动费用
+-- 灵摆效果①的发动代价（支付1000基本分）
 function c4538826.thcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 检查玩家是否能支付1000基本分
 	if chk==0 then return Duel.CheckLPCost(tp,1000) end
-	-- 让玩家支付1000基本分
+	-- 支付1000基本分
 	Duel.PayLPCost(tp,1000)
 end
--- 定义灵摆效果中可选择的目标怪兽的过滤条件：必须是表侧表示、龙族且能加入手牌
+-- 过滤满足条件的除外的龙族怪兽（表侧表示且能加入手卡）
 function c4538826.thfilter(c)
 	return c:IsFaceup() and c:IsRace(RACE_DRAGON) and c:IsAbleToHand()
 end
--- 设置灵摆效果的目标选择逻辑，确保选择的是除外的己方龙族怪兽
+-- 灵摆效果①的靶向与发动检测（选择1只除外的龙族怪兽为对象）
 function c4538826.thtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_REMOVED) and chkc:IsControler(tp) and c4538826.thfilter(chkc) end
-	-- 检查是否存在满足条件的除外的己方龙族怪兽作为目标
+	-- 检查是否存在可以成为对象的除外的龙族怪兽
 	if chk==0 then return Duel.IsExistingTarget(c4538826.thfilter,tp,LOCATION_REMOVED,0,1,nil) end
 	-- 提示玩家选择要加入手牌的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择满足条件的除外的己方龙族怪兽作为目标
+	-- 选择除外的1只龙族怪兽作为效果的对象
 	local g=Duel.SelectTarget(tp,c4538826.thfilter,tp,LOCATION_REMOVED,0,1,1,nil)
-	-- 设置操作信息：将此卡破坏
+	-- 设置破坏自身这张灵摆卡的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,e:GetHandler(),1,0,0)
-	-- 设置操作信息：将目标怪兽加入手牌
+	-- 设置把目标怪兽加入手卡的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,1,0,0)
 end
--- 执行灵摆效果的操作：破坏此卡并把目标怪兽加入手牌
+-- 灵摆效果①的效果处理（破坏这张卡并将对象加入手卡）
 function c4538826.thop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取当前连锁效果的目标怪兽
+	-- 获取效果的对象卡
 	local tc=Duel.GetFirstTarget()
-	-- 检查此卡和目标怪兽是否仍然存在于游戏中
+	-- 检查此卡是否与效果相关并成功破坏，若成功破坏且对象卡亦相关则继续
 	if c:IsRelateToEffect(e) and Duel.Destroy(c,REASON_EFFECT)~=0 and tc:IsRelateToEffect(e) then
-		-- 将目标怪兽加入手牌
+		-- 将对象怪兽加入持有者的手卡
 		Duel.SendtoHand(tc,nil,REASON_EFFECT)
 	end
 end
--- 定义特殊召唤所需满足的墓地怪兽过滤条件：必须是光属性或暗属性且能除外
+-- 过滤墓地中用于特殊召唤的光属性或暗属性怪兽
 function c4538826.spfilter(c)
 	return c:IsAttribute(ATTRIBUTE_LIGHT+ATTRIBUTE_DARK) and c:IsAbleToRemoveAsCost()
 end
--- 判断是否满足特殊召唤条件：手牌或额外卡组中是否有足够的召唤位置，并且墓地是否有符合条件的光暗属性怪兽
+-- 特殊召唤规程的发动条件
 function c4538826.spcon(e,c)
 	if c==nil then return true end
 	local tp=c:GetControler()
-	-- 获取玩家墓地中所有符合条件的怪兽
+	-- 获取自己墓地中满足除外条件的卡片组
 	local g=Duel.GetMatchingGroup(c4538826.spfilter,tp,LOCATION_GRAVE,0,nil)
-	-- 判断是否在手牌位置且场上存在召唤位置
+	-- 检查从手卡特殊召唤时自己场上是否有空余 of 怪兽区域
 	return ((c:IsLocation(LOCATION_HAND) and Duel.GetLocationCount(tp,LOCATION_MZONE)>0) or
-		-- 判断是否在额外卡组位置且有足够特殊召唤区域
+		-- 从额外卡组特殊召唤时，检查额外怪兽区域或可用的主怪兽区域是否有空格
 		(c:IsLocation(LOCATION_EXTRA) and Duel.GetLocationCountFromEx(tp,tp,nil,c)>0))
-		-- 检查墓地中的怪兽是否包含光属性和暗属性各一只
+		-- 且检查墓地中是否存在光属性和暗属性怪兽各1只
 		and g:CheckSubGroup(aux.gfcheck,2,2,Card.IsAttribute,ATTRIBUTE_LIGHT,ATTRIBUTE_DARK)
 end
--- 设置特殊召唤的目标选择逻辑：选择两张符合条件的墓地怪兽
+-- 特殊召唤规程的卡片选择阶段
 function c4538826.sptg(e,tp,eg,ep,ev,re,r,rp,chk,c)
-	-- 获取玩家墓地中所有符合条件的怪兽
+	-- 获取自己墓地中符合除外条件的卡片
 	local g=Duel.GetMatchingGroup(c4538826.spfilter,tp,LOCATION_GRAVE,0,nil)
 	-- 提示玩家选择要除外的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
-	-- 从符合条件的墓地怪兽中选择两张光属性和暗属性各一张
+	-- 选择光属性和暗属性的怪兽各1只
 	local sg=g:SelectSubGroup(tp,aux.gfcheck,true,2,2,Card.IsAttribute,ATTRIBUTE_LIGHT,ATTRIBUTE_DARK)
 	if sg then
 		sg:KeepAlive()
@@ -127,67 +127,68 @@ function c4538826.sptg(e,tp,eg,ep,ev,re,r,rp,chk,c)
 		return true
 	else return false end
 end
--- 执行特殊召唤的操作：将选中的怪兽除外
+-- 特殊召唤规程的效果执行（将所选卡片除外）
 function c4538826.spop(e,tp,eg,ep,ev,re,r,rp,c)
 	local g=e:GetLabelObject()
-	-- 将选中的怪兽除外
+	-- 将选择的2只怪兽表侧表示除外以进行特殊召唤
 	Duel.Remove(g,POS_FACEUP,REASON_SPSUMMON)
 	g:DeleteGroup()
 end
--- 支付一半基本分作为此效果的发动费用
+-- 怪兽效果①的发动代价（支付一半基本分）
 function c4538826.gycost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 让玩家支付一半基本分
+	-- 支付一半的基本分
 	Duel.PayLPCost(tp,math.floor(Duel.GetLP(tp)/2))
 end
--- 定义场上的卡过滤条件：不在怪兽区域或在怪兽区域但序号小于5
+-- 过滤额外怪兽区域以外的自己场上的卡
 function c4538826.gyfilter(c)
 	return not c:IsLocation(LOCATION_MZONE) or c:GetSequence()<5
 end
--- 定义墓地卡过滤条件：在墓地且属于指定玩家
+-- 检查卡片是否在对应玩家墓地中
 function c4538826.sgfilter(c,p)
 	return c:IsLocation(LOCATION_GRAVE) and c:IsControler(p)
 end
--- 设置伤害效果的目标选择逻辑：选择场上所有卡并确定伤害值
+-- 怪兽效果①的靶向与发动检测（确认场上有卡并设置操作信息）
 function c4538826.gytg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 获取玩家场上的所有卡
+	-- 获取额外怪兽区域以外的自己场上的所有卡
 	local g=Duel.GetMatchingGroup(c4538826.gyfilter,tp,LOCATION_ONFIELD,0,nil)
 	-- 获取对方场上的所有卡
 	local og=Duel.GetFieldGroup(tp,0,LOCATION_ONFIELD)
 	if chk==0 then return g:GetCount()>0 and og:GetCount()>0 end
 	local oc=og:GetCount()
 	g:Merge(og)
-	-- 设置操作信息：将场上所有卡送去墓地
+	-- 设置将自己场上的卡送去墓地的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,g,g:GetCount(),0,0)
-	-- 设置操作信息：给与对方伤害
+	-- 设置给与对方基本分伤害的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_DAMAGE,0,0,1-tp,oc*300)
 end
--- 执行伤害效果的操作：将场上卡送去墓地并计算伤害
+-- 怪兽效果①的效果处理（送去墓地并给予对方伤害）
 function c4538826.gyop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取玩家场上的所有卡
+	-- 获取额外怪兽区域以外的自己场上的所有卡
 	local g=Duel.GetMatchingGroup(c4538826.gyfilter,tp,LOCATION_ONFIELD,0,nil)
-	-- 检查是否有场上的卡需要送去墓地
+	-- 如果自己场上可操作的卡数量为0或送去墓地失败则处理终止
 	if g:GetCount()==0 or Duel.SendtoGrave(g,REASON_EFFECT)==0 then return end
-	-- 获取实际被送去墓地的卡数量
+	-- 计算在此操作中实际被送去自己墓地的卡片数量
 	local oc=Duel.GetOperatedGroup():FilterCount(Card.IsLocation,nil,LOCATION_GRAVE)
 	if oc==0 then return end
-	-- 计算被送去对方墓地的卡数量
+	-- 计算已被送去对方墓地的卡片数量
 	local dc=Duel.GetOperatedGroup():FilterCount(c4538826.sgfilter,nil,1-tp)
-	-- 提示玩家选择要送去墓地的卡
+	-- 提示玩家选择要送去墓地的对方场上的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
-	-- 选择最多与送去墓地数量相等的对方场上的卡
+	-- 选择最多有自己送去墓地的数量的对方场上的卡
 	local og=Duel.SelectMatchingCard(tp,nil,tp,0,LOCATION_ONFIELD,1,oc,nil)
-	-- 将选中的卡送去墓地
+	-- 将选择的对方场上的卡送去墓地，并检查是否成功
 	if Duel.SendtoGrave(og,REASON_EFFECT)>0 then
-		-- 更新被送去对方墓地的卡数量
+		-- 累计对方场上因该效果被送去墓地的卡的数量
 		dc=dc+Duel.GetOperatedGroup():FilterCount(c4538826.sgfilter,nil,1-tp)
 		if dc==0 then return end
-		-- 中断当前效果处理，使后续效果视为不同时处理
+		-- 中断效果，使伤害与送去墓地不视为同时处理
 		Duel.BreakEffect()
-		-- 给与对方相应数量×300的伤害
+		-- 给与对方送去对方墓地的数量×300伤害
 		Duel.Damage(1-tp,dc*300,REASON_EFFECT)
 	end
 end
+-- 特殊召唤的此卡离场重定向的条件判断（必须是特殊召唤且表侧表示）
 function c4538826.rmcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	return c:IsSummonType(SUMMON_TYPE_SPECIAL) and c:IsFaceup()
