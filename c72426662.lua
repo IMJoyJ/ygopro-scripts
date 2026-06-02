@@ -3,6 +3,7 @@
 -- 「世界末日」降临。
 -- ①：支付2000基本分才能发动。场上的其他卡全部破坏。
 function c72426662.initial_effect(c)
+	aux.AddCodeList(c,8198712)
 	c:EnableReviveLimit()
 	-- ①：支付2000基本分才能发动。场上的其他卡全部破坏。
 	local e1=Effect.CreateEffect(c)

@@ -4,7 +4,8 @@
 -- ①：把这张卡解放，以自己墓地2只卡名不同的「弹丸」怪兽为对象才能发动。那些怪兽守备表示特殊召唤。
 -- ②：把墓地的这张卡除外才能发动。从自己的卡组·墓地选1张「速射扳机」或者「重型扳机」加入手卡。
 function c93612434.initial_effect(c)
-	-- ①：把这张卡解放，以自己墓地2只卡名不同的「弹丸」怪兽为对象才能发动。那些怪兽守备表示特殊召唤。
+	aux.AddCodeList(c,20071842,67526112)
+	--spsummon
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET)

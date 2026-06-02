@@ -35,7 +35,7 @@ end
 -- 效果①的发动条件：这张卡在墓地且因融合召唤被送去墓地
 function s.setcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	return c:IsLocation(LOCATION_GRAVE) and r==REASON_FUSION
+	return c:IsLocation(LOCATION_GRAVE) and r==REASON_FUSION and not c:IsReason(REASON_RETURN)
 end
 -- 过滤函数：满足「星辰」属性且为魔法或陷阱卡且可盖放
 function s.setfilter(c)

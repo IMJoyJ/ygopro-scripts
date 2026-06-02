@@ -6,7 +6,7 @@
 -- ③：表侧表示的这张卡因对方的效果从场上离开的场合才能发动。从卡组把1张「魔法名-「大兽」」加入手卡。
 function c97973962.initial_effect(c)
 	c:EnableReviveLimit()
-	-- 设置连接召唤的手续，需要2只满足特定条件的怪兽作为素材
+	aux.AddCodeList(c,74063034,458748,47457347)
 	aux.AddLinkProcedure(c,nil,2,2,c97973962.spcheck)
 	-- 使这张卡在怪兽区域和墓地存在时，卡名当作「召唤师 阿莱斯特」使用
 	aux.EnableChangeCode(c,86120751,LOCATION_MZONE+LOCATION_GRAVE)

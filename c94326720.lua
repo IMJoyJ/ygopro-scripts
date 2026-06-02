@@ -79,7 +79,7 @@ function s.lvtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	Duel.Hint(HINT_SELECTMSG,tp,aux.Stringid(id,2))  --"请选择要改变的等级"
 	-- 让玩家宣言1～10中与当前等级不同的任意等级
 	local ac=Duel.AnnounceLevel(tp,1,10,lv)
-    e:SetLabel(ac)
+	e:SetLabel(ac)
 end
 -- ②效果的实际处理（Operation）函数
 function s.lvop(e,tp,eg,ep,ev,re,r,rp)

@@ -31,7 +31,7 @@ function c76722334.initial_effect(c)
 end
 -- 检查这张卡是否作为融合、同调或连接召唤的素材。
 function c76722334.drcon1(e,tp,eg,ep,ev,re,r,rp)
-	return bit.band(r,REASON_FUSION+REASON_SYNCHRO+REASON_LINK)~=0
+	return bit.band(r,REASON_FUSION+REASON_SYNCHRO+REASON_LINK)~=0 and not e:GetHandler():IsReason(REASON_RETURN)
 end
 -- 检查这张卡是否作为超量素材，为了发动超量怪兽的效果而被取除。
 function c76722334.drcon2(e,tp,eg,ep,ev,re,r,rp)

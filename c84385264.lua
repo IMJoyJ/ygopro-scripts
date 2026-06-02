@@ -2,6 +2,7 @@
 -- 效果：
 -- 用「合成魔术」降临。这张卡给与对方基本分战斗伤害时，给与对方基本分自己墓地存在的通常怪兽数量×200的数值的伤害。
 function c84385264.initial_effect(c)
+	aux.AddCodeList(c,72446038)
 	c:EnableReviveLimit()
 	-- 这张卡给与对方基本分战斗伤害时，给与对方基本分自己墓地存在的通常怪兽数量×200的数值的伤害。
 	local e1=Effect.CreateEffect(c)

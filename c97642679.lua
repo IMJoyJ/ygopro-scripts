@@ -6,6 +6,7 @@
 -- ●3·4·5：选对方场上1只怪兽破坏。
 -- ●6：自己场上的怪兽全部破坏。
 function c97642679.initial_effect(c)
+	aux.AddCodeList(c,96420087)
 	c:EnableReviveLimit()
 	-- ①：1回合1次，自己主要阶段才能发动。掷1次骰子，出现的数目的效果适用。●1·2：对方场上的怪兽全部破坏。●3·4·5：选对方场上1只怪兽破坏。●6：自己场上的怪兽全部破坏。
 	local e1=Effect.CreateEffect(c)

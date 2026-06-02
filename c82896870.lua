@@ -70,7 +70,8 @@ function c82896870.tgop(e,tp,eg,ep,ev,re,r,rp)
 end
 -- 触发条件：这张卡作为融合召唤的素材送去墓地的场合
 function c82896870.condition(e,tp,eg,ep,ev,re,r,rp)
-	return e:GetHandler():IsLocation(LOCATION_GRAVE) and r==REASON_FUSION
+	local c=e:GetHandler()
+	return c:IsLocation(LOCATION_GRAVE) and r==REASON_FUSION and not c:IsReason(REASON_RETURN)
 end
 -- 过滤条件：自己墓地或除外状态的「融合」魔法卡，且能回到卡组
 function c82896870.filter(c)

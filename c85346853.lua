@@ -2,6 +2,7 @@
 -- 效果：
 -- 「光子龙降临」降临。把这张卡解放才能发动。从手卡·卡组把1只「银河眼光子龙」特殊召唤。此外，这张卡战斗破坏对方怪兽送去墓地时，从卡组抽1张卡。
 function c85346853.initial_effect(c)
+	aux.AddCodeList(c,34834619)
 	c:EnableReviveLimit()
 	-- 把这张卡解放才能发动。从手卡·卡组把1只「银河眼光子龙」特殊召唤。
 	local e1=Effect.CreateEffect(c)

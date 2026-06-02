@@ -6,6 +6,7 @@
 -- ③：为只使用仪式怪兽作仪式召唤的这张卡的效果发动而支付的基本分变成不需要。
 -- ④：1回合1次，支付2000基本分才能发动。场上的其他卡全部破坏，给与对方破坏的对方场上的卡数量×200伤害。
 function c59913418.initial_effect(c)
+	aux.AddCodeList(c,32828635)
 	c:EnableReviveLimit()
 	-- 注册卡名变更效果，使这张卡在手卡和怪兽区域存在时卡名当作「终焉之王 迪米斯」使用。
 	aux.EnableChangeCode(c,72426662,LOCATION_MZONE+LOCATION_HAND)

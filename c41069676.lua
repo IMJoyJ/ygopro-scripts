@@ -72,7 +72,7 @@ function s.cptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local te=tc.killer_tune_be_material_effect
 	-- 将选中的怪兽除外作为代价
 	Duel.Remove(g,POS_FACEUP,REASON_COST)
-	-- 清除当前连锁中的目标卡片
+	e:SetProperty(te:GetProperty()&EFFECT_FLAG_CARD_TARGET)
 	Duel.ClearTargetCard()
 	e:SetLabelObject(te)
 	local tg=te:GetTarget()

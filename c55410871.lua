@@ -5,6 +5,7 @@
 -- ①：只要这张卡在怪兽区域存在，这张卡不会被对方的效果破坏，对方不能把这张卡作为效果的对象。
 -- ②：这张卡向守备表示怪兽攻击的场合，给与对方为攻击力超过那个守备力的数值的2倍数值的战斗伤害。
 function c55410871.initial_effect(c)
+	aux.AddCodeList(c,21082832)
 	c:EnableReviveLimit()
 	-- 这张卡不用仪式召唤不能特殊召唤。
 	local e1=Effect.CreateEffect(c)

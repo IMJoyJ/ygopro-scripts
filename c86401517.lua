@@ -4,6 +4,7 @@
 -- ①：这张卡向怪兽攻击的伤害步骤开始时才能发动。那只怪兽回到持有者手卡。
 -- ②：把这张卡解放才能发动。从手卡·卡组把1只5星以上的电子界族怪兽特殊召唤。这个效果特殊召唤的怪兽在这个回合不能把效果发动。
 function c86401517.initial_effect(c)
+	aux.AddCodeList(c,34767865)
 	c:EnableReviveLimit()
 	-- ①：这张卡向怪兽攻击的伤害步骤开始时才能发动。那只怪兽回到持有者手卡。
 	local e1=Effect.CreateEffect(c)

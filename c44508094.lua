@@ -49,9 +49,10 @@ function c44508094.excostfilter(c,tp)
 end
 -- 处理①效果的解放费用，从墓地选择满足条件的卡进行解放或除外
 function c44508094.cost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 获取满足解放条件的卡组
-	local g=Duel.GetMatchingGroup(c44508094.excostfilter,tp,LOCATION_GRAVE,0,nil,tp)
-	if e:GetHandler():IsReleasable() then g:AddCard(e:GetHandler()) end
+	local g=Group.CreateGroup()
+	local c=e:GetHandler()
+	if c:IsReleasable() then g:AddCard(c) end
+	if c:IsSetCard(0xa3) then g:Merge(Duel.GetMatchingGroup(c44508094.excostfilter,tp,LOCATION_GRAVE,0,nil,tp)) end
 	if chk==0 then return #g>0 end
 	local tc
 	if #g>1 then

@@ -19,7 +19,7 @@ end
 function c18236002.damcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local rc=c:GetReasonCard()
-	return c:IsLocation(LOCATION_GRAVE) and rc:IsSetCard(0x120) and r&REASON_FUSION+REASON_LINK~=0
+	return c:IsLocation(LOCATION_GRAVE) and rc:IsSetCard(0x120) and r&(REASON_FUSION+REASON_LINK)~=0 and not c:IsReason(REASON_RETURN)
 end
 -- 设置效果处理时的伤害信息，给与对方500伤害
 function c18236002.damtg(e,tp,eg,ep,ev,re,r,rp,chk)

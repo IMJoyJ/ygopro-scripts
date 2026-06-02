@@ -5,6 +5,7 @@
 -- ②：1回合1次，魔法·陷阱卡的效果发动时，以场上1张卡为对象才能发动。那张卡破坏。
 -- ③：仪式召唤的这张卡被战斗·效果破坏的场合才能发动。从手卡把「混沌之魔术师」以外的1只「混沌」仪式怪兽无视召唤条件特殊召唤。
 function c47963370.initial_effect(c)
+	aux.AddCodeList(c,21082832)
 	c:EnableReviveLimit()
 	-- 使该卡在场上和墓地时视为黑魔术师（卡号46986414）
 	aux.EnableChangeCode(c,46986414,LOCATION_MZONE+LOCATION_GRAVE)

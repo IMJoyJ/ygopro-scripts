@@ -42,7 +42,7 @@ end
 -- 条件函数，判断该卡是否因融合召唤而进入墓地
 function s.condition(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	return c:IsLocation(LOCATION_GRAVE) and r==REASON_FUSION
+	return c:IsLocation(LOCATION_GRAVE) and r==REASON_FUSION and not c:IsReason(REASON_RETURN)
 end
 -- 过滤函数，用于检索满足条件的幻想魔族怪兽
 function s.ifilter(c)

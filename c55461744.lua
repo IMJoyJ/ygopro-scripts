@@ -81,7 +81,7 @@ end
 -- 效果②（墓地特召）的发动条件：作为融合素材送去墓地的场合
 function s.spcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	return c:IsLocation(LOCATION_GRAVE) and r==REASON_FUSION
+	return c:IsLocation(LOCATION_GRAVE) and r==REASON_FUSION and not c:IsReason(REASON_RETURN)
 end
 -- 过滤墓地中满足条件的卡：幻想魔族怪兽且可以特殊召唤
 function s.sfilter(c,e,tp)

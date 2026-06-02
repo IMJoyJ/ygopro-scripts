@@ -7,6 +7,7 @@
 function c11674673.initial_effect(c)
 	-- 为卡片添加连接召唤手续，要求使用2只电子界族怪兽作为连接素材
 	aux.AddLinkProcedure(c,aux.FilterBoolFunction(Card.IsLinkRace,RACE_CYBERSE),2,2)
+	aux.AddCodeList(c,34767865)
 	c:EnableReviveLimit()
 	-- ①：这张卡所连接区有怪兽特殊召唤的场合，从自己墓地把1张魔法卡除外才能发动。从卡组把1只电子界族仪式怪兽和1张「电脑网仪式」加入手卡。
 	local e1=Effect.CreateEffect(c)

@@ -52,21 +52,46 @@ function c98127546.initial_effect(c)
 	e4:SetOperation(c98127546.negop)
 	c:RegisterEffect(e4)
 end
--- 检查对方场上的怪兽是否可以作为额外的连接素材（排除其他已经适用的额外连接素材效果）。
-function c98127546.exmatcheck(c,lc,tp)
-	if not c:IsControler(1-tp) then return false end
+function c98127546.is_external_exmat(c,lc,mg,tp)
 	local le={c:IsHasEffect(EFFECT_EXTRA_LINK_MATERIAL,tp)}
-	for _,te in pairs(le) do
-		local f=te:GetValue()
-		local related,valid=f(te,lc,nil,c,tp)
-		if related and not te:GetHandler():IsCode(98127546) then return false end
+	for _,te in ipairs(le) do
+		local h=te:GetHandler()
+		-- external = any ex-mat effect not created by 閉ザサレシ世界ノ冥神 herself
+		if h and not h:IsCode(98127546) then
+			local f=te:GetValue()
+			if f then
+				local related,valid=f(te,lc,mg,c,tp)
+				if related and valid~=false then
+					return true
+				end
+			end
+		end
 	end
-	return true
+	return false
+end
+function c98127546.is_goddess_opp(mc,lc,mg,tp)
+	return mc:IsControler(1-tp) and not c98127546.is_external_exmat(mc,lc,mg,tp)
 end
 -- 限制对方场上最多只能有1只怪兽作为此卡的连接素材。
 function c98127546.matval(e,lc,mg,c,tp)
+	-- Only while Link Summoning this card
 	if e:GetHandler()~=lc then return false,nil end
-	return true,not mg or not mg:IsExists(c98127546.exmatcheck,1,nil,lc,tp)
+	-- 閉ザサレシ世界ノ冥神 only concerns opponent monsters
+	if not c:IsControler(1-tp) then return false,nil end
+	-- related=true
+	if not mg then
+		return true,true
+	end
+	-- If this opponent monster is already permitted by some OTHER ex-mat effect,
+	-- 閉ザサレシ世界ノ冥神 should not block it and should not count it as "her 1".
+	if c98127546.is_external_exmat(c,lc,mg,tp) then
+		return true,true
+	end
+	-- Otherwise this would be "via 閉ザサレシ世界ノ冥神": allow at most one such opponent monster.
+	if mg:IsExists(c98127546.is_goddess_opp,1,c,lc,mg,tp) then
+		return true,false
+	end
+	return true,true
 end
 -- 检查此卡是否是通过连接召唤成功特殊召唤，作为效果①的发动条件。
 function c98127546.discon(e,tp,eg,ep,ev,re,r,rp)

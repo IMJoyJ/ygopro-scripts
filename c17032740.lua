@@ -18,9 +18,9 @@ function c17032740.initial_effect(c)
 	e1:SetCode(EFFECT_SPSUMMON_CONDITION)
 	e1:SetValue(c17032740.splimit)
 	c:RegisterEffect(e1)
-	-- 为卡片注册结束阶段返回卡组效果，使该卡在结束阶段回到融合卡组并使场上表侧表示怪兽变为盖放状态
-	aux.EnableNeosReturn(c,c17032740.retop,CATEGORY_MSET)
-	-- 设置投掷硬币效果，该效果只能在主要阶段1发动，投掷3次硬币并根据结果执行不同处理
+	--return
+	aux.EnableNeosReturn(c,c17032740.retop,c17032740.set_category)
+	--coin
 	local e5=Effect.CreateEffect(c)
 	e5:SetDescription(aux.Stringid(17032740,1))  --"投掷硬币"
 	e5:SetCategory(CATEGORY_COIN+CATEGORY_DESTROY+CATEGORY_TOHAND)
@@ -37,7 +37,9 @@ c17032740.material_setcode=0x8
 function c17032740.splimit(e,se,sp,st)
 	return not e:GetHandler():IsLocation(LOCATION_EXTRA)
 end
--- 结束阶段返回卡组并使场上表侧表示怪兽变为盖放状态
+function c17032740.set_category(e,tp,eg,ep,ev,re,r,rp)
+	e:SetCategory(CATEGORY_MSET)
+end
 function c17032740.retop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if not c:IsRelateToEffect(e) or c:IsFacedown() then return end

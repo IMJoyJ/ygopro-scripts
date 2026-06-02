@@ -6,6 +6,7 @@
 -- ③：只在这张卡和连接怪兽进行战斗的伤害计算时让这张卡的攻击力上升1000。
 -- ④：这张卡被对方的效果破坏的场合才能发动。从卡组把1只电子界族怪兽加入手卡。
 function c24731391.initial_effect(c)
+	aux.AddCodeList(c,34767865)
 	c:EnableReviveLimit()
 	-- ①：只要这张卡在怪兽区域存在，自己受到的全部伤害变成一半。
 	local e1=Effect.CreateEffect(c)

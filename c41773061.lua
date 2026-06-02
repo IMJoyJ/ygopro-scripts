@@ -5,7 +5,8 @@
 -- ●兽战士族：「鱼料理的食谱」
 -- ●战士族：「肉料理的食谱」
 function c41773061.initial_effect(c)
-	-- 这个卡名的卡在1回合只能发动1张。
+	aux.AddCodeList(c,87778106,14166715)
+	--Activate
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_SEARCH+CATEGORY_TOHAND+CATEGORY_GRAVE_ACTION)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)

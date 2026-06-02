@@ -60,7 +60,7 @@ end
 -- 检查此卡是否在墓地且是因为作为融合素材而被送去墓地，作为效果发动的条件
 function s.setcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	return c:IsLocation(LOCATION_GRAVE) and r==REASON_FUSION
+	return c:IsLocation(LOCATION_GRAVE) and r==REASON_FUSION and not c:IsReason(REASON_RETURN)
 end
 -- 过滤卡组中可以盖放在场上的「星辰」魔法·陷阱卡
 function s.setfilter(c)

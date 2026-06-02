@@ -82,73 +82,42 @@ function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
 		Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 	end
 end
--- 过滤条件：额外卡组中表侧表示的灵摆怪兽或连接怪兽。
-function s.filter(c)
-	return (c:IsFaceup() and c:IsType(TYPE_PENDULUM)
-		or c:IsType(TYPE_LINK))
-		and c:IsLocation(LOCATION_EXTRA)
+function s.exfilter2(c)
+	return c:IsLocation(LOCATION_EXTRA) and c:IsFacedown() and c:IsType(TYPE_FUSION+TYPE_SYNCHRO+TYPE_XYZ)
 end
--- 过滤条件：存在于额外卡组的卡。
-function s.filter2(c)
-	return c:IsLocation(LOCATION_EXTRA)
+function s.exfilter3(c)
+	return c:IsLocation(LOCATION_EXTRA) and (c:IsType(TYPE_LINK) or (c:IsFaceup() and c:IsType(TYPE_PENDULUM)))
 end
--- 组过滤条件：确保从额外卡组特殊召唤的怪兽数量不超过可用额外怪兽区域数量。
-function s.gcheck(g,tp,eft,ect)
-	return g:FilterCount(s.filter,nil)<=eft and g:FilterCount(s.filter2,nil)<=ect
+function s.gcheck(g,ft1,ft2,ft3,ect,ft)
+	return #g<=ft
+		and g:FilterCount(Card.IsLocation,nil,LOCATION_DECK)<=ft1
+		and g:FilterCount(s.exfilter2,nil)<=ft2
+		and g:FilterCount(s.exfilter3,nil)<=ft3
+		and g:FilterCount(Card.IsLocation,nil,LOCATION_EXTRA)<=ect
 end
 -- ①效果的处理：根据选择的分支执行特殊召唤或加入手卡，并适用“不能把从卡组·额外卡组特殊召唤的怪兽的效果发动”的限制。
 function s.activate(e,tp,eg,ep,ev,re,r,rp)
 	if e:GetLabel()==1 then
-		-- 获取自己场上可用的怪兽区域数量。
+		local ft1=Duel.GetLocationCount(tp,LOCATION_MZONE)
+		local ft2=Duel.GetLocationCountFromEx(tp,tp,nil,TYPE_FUSION+TYPE_SYNCHRO+TYPE_XYZ)
+		local ft3=Duel.GetLocationCountFromEx(tp,tp,nil,TYPE_PENDULUM+TYPE_LINK)
 		local ft=Duel.GetUsableMZoneCount(tp)
-		-- 获取自己场上可用于特殊召唤额外卡组灵摆怪兽的区域数量。
-		local eft=Duel.GetLocationCountFromEx(tp,tp,nil,TYPE_PENDULUM)
-		if ft>0 then
-			if ft>=2 then ft=2 end
-			local ct=2
-			-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中。禁止双方同时特殊召唤2只以上怪兽
-			if Duel.IsPlayerAffectedByEffect(tp,59822133) then ct=1 end
-			-- 考虑额外卡组特殊召唤限制后，计算可从额外卡组特殊召唤的怪兽数量上限。
-			local ect=(c29724053 and Duel.IsPlayerAffectedByEffect(tp,29724053) and c29724053[tp]) or ft
-			local loc=LOCATION_DECK
-			if ect>0 then loc=loc+LOCATION_EXTRA end
-			-- 获取卡组·额外卡组中所有满足特殊召唤条件的「道化一座」怪兽。
-			local g=Duel.GetMatchingGroup(s.spfilter,tp,loc,0,nil,e,tp)
-			if g:GetCount()>0 then
-				-- 提示玩家选择要特殊召唤的卡。
-				Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-				local sg=g:SelectSubGroup(tp,s.gcheck,false,1,ct,tp,eft,ect)
-				if sg:GetCount()>0 then
-					local exg=sg:Filter(s.filter,nil)
-					sg:Sub(exg)
-					if exg:GetCount()>0 then
-						-- 遍历需要从额外卡组特殊召唤的灵摆/连接怪兽。
-						for tc in aux.Next(exg) do
-							-- 逐步特殊召唤该怪兽（无视召唤条件，表侧表示）。
-							Duel.SpecialSummonStep(tc,0,tp,tp,true,false,POS_FACEUP)
-						end
-					end
-					local exg2=sg:Filter(s.filter2,nil)
-					sg:Sub(exg2)
-					if exg2:GetCount()>0 then
-						-- 遍历需要从额外卡组特殊召唤的其他怪兽。
-						for tc in aux.Next(exg2) do
-							-- 逐步特殊召唤该额外卡组怪兽（无视召唤条件，表侧表示）。
-							Duel.SpecialSummonStep(tc,0,tp,tp,true,false,POS_FACEUP)
-						end
-					end
-					if sg:GetCount()>0 then
-						-- 遍历需要从主卡组特殊召唤的怪兽。
-						for tc in aux.Next(sg) do
-							-- 逐步特殊召唤该主卡组怪兽（无视召唤条件，表侧表示）。
-							Duel.SpecialSummonStep(tc,0,tp,tp,true,false,POS_FACEUP)
-						end
-					end
-					-- 完成所有怪兽的特殊召唤处理。
-					Duel.SpecialSummonComplete()
-				end
-			end
+		if Duel.IsPlayerAffectedByEffect(tp,59822133) then
+			if ft1>0 then ft1=1 end
+			if ft2>0 then ft2=1 end
+			if ft3>0 then ft3=1 end
+			ft=1
 		end
+		local ect=(c29724053 and Duel.IsPlayerAffectedByEffect(tp,29724053) and c29724053[tp]) or ft
+		local loc=0
+		if ft1>0 then loc=loc+LOCATION_DECK end
+		if ect>0 and (ft2>0 or ft3>0) then loc=loc+LOCATION_EXTRA end
+		if loc==0 then return end
+		local sg=Duel.GetMatchingGroup(s.spfilter,tp,loc,0,nil,e,tp)
+		if sg:GetCount()==0 then return end
+		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
+		local rg=sg:SelectSubGroup(tp,s.gcheck,false,1,2,ft1,ft2,ft3,ect,ft)
+		Duel.SpecialSummon(rg,0,tp,tp,true,false,POS_FACEUP)
 	elseif e:GetLabel()==2 then
 		-- 提示玩家选择要加入手牌的卡。
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"

@@ -4,6 +4,7 @@
 -- ①：这张卡仪式召唤成功的场合才能发动。从自己的卡组·墓地选1张仪式魔法卡加入手卡。
 -- ②：这张卡被解放的场合才能发动。自己场上的全部仪式怪兽的攻击力·守备力上升1000。
 function c3629090.initial_effect(c)
+	aux.AddCodeList(c,39996157)
 	c:EnableReviveLimit()
 	-- ①：这张卡仪式召唤成功的场合才能发动。从自己的卡组·墓地选1张仪式魔法卡加入手卡。
 	local e1=Effect.CreateEffect(c)

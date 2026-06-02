@@ -9,6 +9,7 @@
 local s,id,o=GetID()
 -- 初始化卡片效果，启用复活限制，设置卡名变更效果，创建②效果、③效果和④效果
 function s.initial_effect(c)
+	aux.AddCodeList(c,73055622)
 	c:EnableReviveLimit()
 	-- 使该卡在手牌或场上时视为「灵魂鸟神-姬孔雀」
 	aux.EnableChangeCode(c,25415052,LOCATION_HAND+LOCATION_ONFIELD)

@@ -81,34 +81,20 @@ function s.tgop(e,tp,eg,ep,ev,re,r,rp)
 	-- 将选中的卡送去墓地
 	Duel.SendtoGrave(g,REASON_EFFECT)
 end
--- 效果②中用于选择场上「莫忘」怪兽的过滤函数
-function s.desfilter(c)
-	return c:IsFaceup() and c:IsSetCard(0x1a1)
+function s.desfilter(c,e)
+	return c:IsFaceup() and c:IsSetCard(0x1a1) and c:IsCanBeEffectTarget(e)
 end
 -- 效果②的发动时处理，检查是否满足条件
 function s.destg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return false end
-	-- 检查是否满足效果②的发动条件，即本回合未发动过
+	local g1=Duel.GetMatchingGroup(s.desfilter,tp,LOCATION_MZONE,0,nil,e)
+	local g2=Duel.GetMatchingGroup(Card.IsCanBeEffectTarget,tp,0,LOCATION_ONFIELD,nil,e)
 	if chk==0 then return Duel.GetFlagEffect(tp,id)==0
-		-- 检查自己场上是否有「莫忘」怪兽
-		and Duel.IsExistingTarget(s.desfilter,tp,LOCATION_MZONE,0,1,nil)
-		-- 检查对方场上是否有卡
-		and Duel.IsExistingTarget(nil,tp,0,LOCATION_ONFIELD,1,nil) end
-	-- 获取对方场上的卡数量
-	local ct=Duel.GetMatchingGroupCount(Card.IsCanBeEffectTarget,tp,0,LOCATION_ONFIELD,nil,e)
-	-- 提示玩家选择要破坏的卡
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 选择自己场上的「莫忘」怪兽
-	local g1=Duel.SelectTarget(tp,s.desfilter,tp,LOCATION_MZONE,0,1,ct,nil)
-	local ect=g1:GetCount()
-	-- 提示玩家选择要破坏的卡
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 选择对方场上的卡，数量与自己场上的「莫忘」怪兽相同
-	local g2=Duel.SelectTarget(tp,nil,tp,0,LOCATION_ONFIELD,ect,ect,nil)
-	g1:Merge(g2)
-	-- 设置连锁操作信息，表示将要破坏的卡
-	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g1,g1:GetCount(),0,0)
-	-- 注册标识效果，防止本回合再次发动效果②
+		and #g1>0 and #g2>0 end
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)
+	local sg=aux.SelectSameCount(tp,g1,g2)
+	Duel.SetTargetCard(sg)
+	Duel.SetOperationInfo(0,CATEGORY_DESTROY,sg,sg:GetCount(),0,0)
 	Duel.RegisterFlagEffect(tp,id,RESET_CHAIN,EFFECT_FLAG_OATH,1)
 end
 -- 效果②的处理，破坏指定数量的卡

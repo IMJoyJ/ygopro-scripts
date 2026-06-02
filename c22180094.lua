@@ -52,28 +52,39 @@ function c22180094.atlimit(e,c)
 end
 -- 过滤函数，用于判断手卡或墓地中的「治安战警队」卡是否可以作为除外的代价。
 function c22180094.costfilter(c,e,tp)
-	if c:IsLocation(LOCATION_HAND) then
+	if c:IsHasEffect(55049722,tp) then
+		return e:GetHandler():IsSetCard(0x156) and c:IsAbleToRemoveAsCost()
+	elseif c:IsHasEffect(11642993,tp) then
+		return e:GetHandler():IsSetCard(0x156) and not c:IsCode(11642993)
+			and c:IsSetCard(0x156) and c:IsAbleToGraveAsCost()
+			and Duel.IsExistingMatchingCard(c22180094.spfilter,tp,LOCATION_DECK,0,1,c,e,tp)
+	elseif c:IsLocation(LOCATION_HAND) then
 		return c:IsSetCard(0x156) and c:IsAbleToRemoveAsCost()
-	else
-		return e:GetHandler():IsSetCard(0x156) and c:IsHasEffect(55049722,tp) and c:IsAbleToRemoveAsCost()
 	end
 end
 -- 处理效果发动的除外代价，根据是否拥有特定效果来决定除外方式。
 function c22180094.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否有满足条件的「治安战警队」卡可以作为除外的代价。
-	if chk==0 then return Duel.IsExistingMatchingCard(c22180094.costfilter,tp,LOCATION_HAND+LOCATION_GRAVE,0,1,nil,e,tp) end
-	-- 提示玩家选择要除外的卡。
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
-	-- 选择满足条件的「治安战警队」卡作为除外的代价。
-	local tg=Duel.SelectMatchingCard(tp,c22180094.costfilter,tp,LOCATION_HAND+LOCATION_GRAVE,0,1,1,nil,e,tp)
-	local te=tg:GetFirst():IsHasEffect(55049722,tp)
-	if te then
-		te:UseCountLimit(tp)
-		-- 以代替方式将选中的卡除外。
-		Duel.Remove(tg,POS_FACEUP,REASON_REPLACE)
+	if chk==0 then return Duel.IsExistingMatchingCard(c22180094.costfilter,tp,LOCATION_HAND+LOCATION_GRAVE+LOCATION_DECK,0,1,nil,e,tp) end
+	local cg=Duel.GetMatchingGroup(c22180094.costfilter,tp,LOCATION_HAND+LOCATION_GRAVE+LOCATION_DECK,0,nil,e,tp)
+	if cg:IsExists(Card.IsHasEffect,1,nil,11642993,tp) then
+		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_OPERATECARD)
 	else
-		-- 以代价方式将选中的卡除外。
-		Duel.Remove(tg,POS_FACEUP,REASON_COST)
+		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)
+	end
+	local tg=Duel.SelectMatchingCard(tp,c22180094.costfilter,tp,LOCATION_HAND+LOCATION_GRAVE+LOCATION_DECK,0,1,1,nil,e,tp)
+	local te=tg:GetFirst():IsHasEffect(11642993,tp)
+	if te then
+		Duel.Hint(HINT_CARD,0,11642993)
+		te:UseCountLimit(tp)
+		Duel.SendtoGrave(tg,REASON_COST+REASON_REPLACE)
+	else
+		local te2=tg:GetFirst():IsHasEffect(55049722,tp)
+		if te2 then
+			te2:UseCountLimit(tp)
+			Duel.Remove(tg,POS_FACEUP,REASON_COST+REASON_REPLACE)
+		else
+			Duel.Remove(tg,POS_FACEUP,REASON_COST)
+		end
 	end
 end
 -- 过滤函数，用于筛选可以特殊召唤的「治安战警队」怪兽。

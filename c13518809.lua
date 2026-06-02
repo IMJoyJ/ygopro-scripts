@@ -6,6 +6,7 @@
 -- ③：只使用仪式怪兽作仪式召唤的这张卡在同1次的战斗阶段中可以作2次攻击。
 -- ④：这张卡战斗破坏对方怪兽时才能发动。给与对方那只怪兽的原本攻击力数值的伤害。
 function c13518809.initial_effect(c)
+	aux.AddCodeList(c,32828635)
 	c:EnableReviveLimit()
 	-- 使该卡在手牌和场上时视为「破灭之女神 露茵」使用
 	aux.EnableChangeCode(c,46427957,LOCATION_MZONE+LOCATION_HAND)

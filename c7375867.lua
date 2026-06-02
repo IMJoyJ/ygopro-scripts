@@ -133,7 +133,7 @@ end
 -- ②效果的发动条件：这张卡作为融合素材送去墓地的场合。
 function s.setcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	return c:IsLocation(LOCATION_GRAVE) and r==REASON_FUSION
+	return c:IsLocation(LOCATION_GRAVE) and r==REASON_FUSION and not c:IsReason(REASON_RETURN)
 end
 -- 过滤函数：过滤卡组中可盖放的「星辰」魔法·陷阱卡。
 function s.setfilter(c)

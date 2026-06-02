@@ -59,7 +59,7 @@ end
 -- ②效果的发动条件判定（作为「魔玩具」融合怪兽的融合素材送去墓地）
 function c87246309.tgcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	return c:IsLocation(LOCATION_GRAVE) and r==REASON_FUSION and c:GetReasonCard():IsSetCard(0xad)
+	return c:IsLocation(LOCATION_GRAVE) and r==REASON_FUSION and c:GetReasonCard():IsSetCard(0xad) and not c:IsReason(REASON_RETURN)
 end
 -- 过滤除外区表侧表示的怪兽
 function c87246309.tgfilter(c)

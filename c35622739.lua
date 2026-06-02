@@ -75,7 +75,7 @@ end
 -- 判断是否满足发动条件
 function c35622739.thcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	return (c:IsLocation(LOCATION_GRAVE) or c:IsLocation(LOCATION_REMOVED) and c:IsFaceup()) and r==REASON_FUSION
+	return (c:IsLocation(LOCATION_GRAVE) or c:IsLocation(LOCATION_REMOVED) and c:IsFaceup()) and r==REASON_FUSION and not c:IsReason(REASON_RETURN)
 end
 -- 定义检索目标卡片的过滤条件
 function c35622739.thfilter(c)

@@ -8,7 +8,7 @@
 -- ①：每次对方从额外卡组把怪兽特殊召唤，给与对方300伤害。
 -- ②：1回合1次，对方把魔法卡的效果发动时才能发动。这张卡在自己的灵摆区域放置，那个对方的效果无效。把仪式召唤的这张卡在灵摆区域放置的场合，可以再从额外卡组把1只「异色眼」怪兽特殊召唤。
 function c66425726.initial_effect(c)
-	-- 为卡片添加灵摆怪兽属性（注册灵摆召唤和灵摆卡的发动效果）
+	aux.AddCodeList(c,16494704)
 	aux.EnablePendulumAttribute(c)
 	-- 允许这张卡从手卡进行灵摆召唤，并在此情况下解除苏生限制
 	aux.EnableReviveLimitPendulumSummonable(c,LOCATION_HAND)

@@ -44,7 +44,7 @@ function s.initial_effect(c)
 end
 -- 过滤满足条件的融合素材怪兽：原本由自己控制、被送去墓地或除外，且原本在场上时是「元素英雄」怪兽，或者不在场上时是「元素英雄」怪兽
 function s.dspconfilter(c,tp)
-	return c:IsPreviousControler(tp) and c:IsLocation(LOCATION_GRAVE+LOCATION_REMOVED)
+	return c:IsPreviousControler(tp) and c:IsLocation(LOCATION_GRAVE+LOCATION_REMOVED) and not c:IsReason(REASON_RETURN)
 		and (c:IsPreviousLocation(LOCATION_ONFIELD) and c:IsPreviousSetCard(0x3008)
 			or not c:IsPreviousLocation(LOCATION_ONFIELD) and c:IsSetCard(0x3008))
 end

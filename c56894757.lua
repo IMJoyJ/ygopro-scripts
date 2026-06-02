@@ -37,8 +37,7 @@ function c56894757.cfilter(c)
 end
 -- 效果①的发动准备与合法性检测（包括对象合法性检测和发动条件检测）
 function c56894757.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc,exc)
-	if chkc then return chkc:IsOnField() and chkc:IsControler(1-tp) and chkc:IsAbleToHand() end
-	-- 检测自己场上是否存在至少1只「魔女术」怪兽
+	if chkc then return chkc:IsOnField() and chkc:IsControler(1-tp) and chkc:IsAbleToHand() and c56894757.filter(chkc) end
 	if chk==0 then return Duel.IsExistingMatchingCard(c56894757.cfilter,tp,LOCATION_MZONE,0,1,exc)
 		-- 检测对方魔陷区是否存在至少1张可以回到手牌的卡
 		and Duel.IsExistingTarget(Card.IsAbleToHand,tp,0,LOCATION_SZONE,1,nil) end

@@ -42,11 +42,7 @@ function s.distg(e,tp,eg,ep,ev,re,r,rp,chk)
 end
 -- 效果处理：使该连锁的效果无效，若自己墓地有陷阱卡则破坏该卡，若从手牌发动则注册决斗中不能发动暗、水、炎属性怪兽效果的限制。
 function s.disop(e,tp,eg,ep,ev,re,r,rp)
-	-- 使该连锁的效果无效。
-	Duel.NegateEffect(ev)
-	-- 检查自己墓地是否存在陷阱卡，且被无效效果的卡是否仍与该效果相关联。
-	if Duel.IsExistingMatchingCard(Card.IsType,tp,LOCATION_GRAVE,0,1,nil,TYPE_TRAP) and re:GetHandler():IsRelateToEffect(re) then
-		-- 因效果将该卡破坏。
+	if Duel.NegateEffect(ev) and Duel.IsExistingMatchingCard(Card.IsType,tp,LOCATION_GRAVE,0,1,nil,TYPE_TRAP) and re:GetHandler():IsRelateToEffect(re) then
 		Duel.Destroy(eg,REASON_EFFECT)
 	end
 	if e:GetLabel()==100 then

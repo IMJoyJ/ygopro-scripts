@@ -8,8 +8,7 @@
 local s,id,o=GetID()
 -- 初始化函数，注册仪式召唤限制、检索、战破抗性、战斗伤害免疫以及战后破坏并伤害的效果
 function s.initial_effect(c)
-	-- 记录该卡关联的卡片密码（「斗牛士降临的仪式 暗之入场式」）
-	aux.AddCodeList(c,33017966)
+	aux.AddCodeList(c,70105073)
 	c:EnableReviveLimit()
 	-- ①：这张卡仪式召唤的场合才能发动。从卡组把「恶魔斗牛士」以外的2张「恶魔」卡加入手卡。这个回合，这张卡不能攻击。
 	local e1=Effect.CreateEffect(c)

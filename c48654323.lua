@@ -6,6 +6,7 @@
 -- ②：8星以上的自己的「教导」怪兽不会被战斗破坏。
 -- ③：从对方的额外卡组有怪兽特殊召唤的场合才能发动。把对方的额外卡组确认，那之内的1只怪兽送去墓地。
 function c48654323.initial_effect(c)
+	aux.AddCodeList(c,60921537)
 	c:EnableReviveLimit()
 	-- ①：这张卡仪式召唤的场合，以场上2只表侧表示怪兽为对象才能发动。那之内1只的攻击力上升另1只的攻击力数值。
 	local e1=Effect.CreateEffect(c)

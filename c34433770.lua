@@ -42,57 +42,14 @@ end
 function s.mfilter(c,e)
 	return c:IsType(TYPE_MONSTER) and c:IsSetCard(0x1115) and (not e or c:IsCanBeEffectTarget(e))
 end
--- 判断一个卡组是否满足「闪刀」魔法卡和「闪刀姬」怪兽数量相等的条件。
-function s.fselect(g)
-	return g:FilterCount(s.sfilter,nil)==g:FilterCount(s.mfilter,nil)
-end
--- 实现选择满足条件的「闪刀」魔法卡和「闪刀姬」怪兽的交互逻辑。
-function s.SelectSub(g1,g2,tp)
-	local max=math.min(#g1,#g2)
-	local sg1=Group.CreateGroup()
-	local sg2=Group.CreateGroup()
-	local sg=sg1+sg2
-	local fg=g1+g2
-	local finish=false
-	while true do
-		finish=#sg1==#sg2 and #sg>0
-		local sc=fg:SelectUnselect(sg,tp,finish,finish,2,max*2)
-		if not sc then break end
-		if sg:IsContains(sc) then
-			if g1:IsContains(sc) then
-				sg1:RemoveCard(sc)
-			else
-				sg2:RemoveCard(sc)
-			end
-		else
-			if g1:IsContains(sc) then
-				sg1:AddCard(sc)
-			else
-				sg2:AddCard(sc)
-			end
-		end
-		sg=sg1+sg2
-		fg=g1+g2-sg
-		if #sg1>=max then
-			fg=fg-g1
-		end
-		if #sg2>=max then
-			fg=fg-g2
-		end
-	end
-	return sg
-end
--- ①效果的发动时点处理函数，用于选择目标卡并设置操作信息。
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	local c=e:GetHandler()
-	-- 获取自己墓地中所有「闪刀」魔法卡。
+	if chkc then return false end
 	local g1=Duel.GetMatchingGroup(s.sfilter,tp,LOCATION_GRAVE,0,nil,e)
 	-- 获取自己墓地中所有「闪刀姬」怪兽。
 	local g2=Duel.GetMatchingGroup(s.mfilter,tp,LOCATION_GRAVE,0,nil,e)
-	if chkc then return false end
 	if chk==0 then return g1:GetCount()>0 and g2:GetCount()>0 end
-	local tg=s.SelectSub(g1,g2,tp)
-	-- 设置选中的卡为效果的目标。
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TODECK)
+	local tg=aux.SelectSameCount(tp,g1,g2)
 	Duel.SetTargetCard(tg)
 	-- 设置效果操作信息，表示将目标卡送入卡组。
 	Duel.SetOperationInfo(0,CATEGORY_TODECK,tg,#tg,0,0)

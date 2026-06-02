@@ -5,6 +5,7 @@
 -- ②：陷阱卡在场上表侧表示存在的场合，这张卡的攻击力·守备力上升3000。
 -- ③：仪式召唤的这张卡被对方破坏的场合，以自己或者对方的墓地1张陷阱卡为对象才能发动。那张卡在自己的魔法与陷阱区域盖放。
 function c72566043.initial_effect(c)
+	aux.AddCodeList(c,8955148)
 	c:EnableReviveLimit()
 	-- ①：这张卡只要在怪兽区域存在，不受陷阱卡的效果影响
 	local e1=Effect.CreateEffect(c)

@@ -7,6 +7,7 @@
 local s,id,o=GetID()
 -- 注册卡片的全局效果，包括同调召唤手续、素材检查、特殊召唤限制、效果①（无效并破坏并增加攻击力）以及效果②（因对方离场时从额外卡组特召）。
 function s.initial_effect(c)
+	aux.AddMaterialCodeList(c,82044279)
 	c:EnableReviveLimit()
 	-- 注册同调召唤手续：以「幻透翼同调龙」为非调整，搭配调整怪兽，并使用自定义过滤函数进行素材合法性检查。
 	aux.AddSynchroMixProcedure(c,aux.FilterBoolFunction(Card.IsCode,82044279),nil,nil,aux.Tuner(nil),1,99,s.syncheck)

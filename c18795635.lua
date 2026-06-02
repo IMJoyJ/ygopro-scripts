@@ -71,9 +71,11 @@ function s.activate(e,tp,eg,ep,ev,re,r,rp)
 	local excavate_count=dcount-seq
 	-- 确认玩家卡组最上方的翻开数量张卡
 	Duel.ConfirmDecktop(tp,excavate_count)
-	-- 玩家失去翻开卡数量×400的基本分
+	if e:GetHandler():IsSetCard(0x1dd) then
+		Duel.RaiseEvent(e:GetHandler(),EVENT_CUSTOM+1595137,e,0,tp,tp,0)
+	end
 	Duel.SetLP(tp,Duel.GetLP(tp)-excavate_count*400)
-	-- 获取翻开的卡中所有怪兽
+	if Duel.GetLP(tp)<=0 then return end
 	local mg=Duel.GetDecktopGroup(tp,excavate_count):Filter(Card.IsType,nil,TYPE_MONSTER)
 	local chkf=tp
 	-- 获取满足融合条件的融合怪兽

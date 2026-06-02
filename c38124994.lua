@@ -18,7 +18,8 @@ function c38124994.initial_effect(c)
 end
 -- 效果发动条件：此卡在墓地且因融合召唤被送入墓地
 function c38124994.condition(e,tp,eg,ep,ev,re,r,rp)
-	return e:GetHandler():IsLocation(LOCATION_GRAVE) and r==REASON_FUSION
+	local c=e:GetHandler()
+	return c:IsLocation(LOCATION_GRAVE) and r==REASON_FUSION and not c:IsReason(REASON_RETURN)
 end
 -- 筛选条件：墓地中的「锋利小鬼·剪刀」或「毛绒动物」卡组中除兔子外的怪兽，且能加入手牌
 function c38124994.filter(c)

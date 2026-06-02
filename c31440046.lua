@@ -20,7 +20,7 @@ end
 function c31440046.reccon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local rc=c:GetReasonCard()
-	return c:IsLocation(LOCATION_GRAVE) and rc:IsSetCard(0x120) and r&REASON_FUSION+REASON_LINK~=0
+	return c:IsLocation(LOCATION_GRAVE) and rc:IsSetCard(0x120) and r&(REASON_FUSION+REASON_LINK)~=0 and not c:IsReason(REASON_RETURN)
 end
 -- 检查玩家是否可以抽卡且手牌中是否存在可除外的卡
 function c31440046.rectg(e,tp,eg,ep,ev,re,r,rp,chk)

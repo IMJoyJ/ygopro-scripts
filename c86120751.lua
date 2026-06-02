@@ -3,7 +3,8 @@
 -- ①：自己·对方回合，把这张卡从手卡送去墓地，以自己场上1只融合怪兽为对象才能发动。那只怪兽的攻击力·守备力直到回合结束时上升1000。
 -- ②：这张卡召唤·反转的场合才能发动。从卡组把1张「召唤魔术」加入手卡。
 function c86120751.initial_effect(c)
-	-- ①：自己·对方回合，把这张卡从手卡送去墓地，以自己场上1只融合怪兽为对象才能发动。那只怪兽的攻击力·守备力直到回合结束时上升1000。
+	aux.AddCodeList(c,74063034)
+	--boost
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(86120751,0))
 	e1:SetCategory(CATEGORY_ATKCHANGE+CATEGORY_DEFCHANGE)

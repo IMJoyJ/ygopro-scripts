@@ -2,6 +2,7 @@
 -- 效果：
 -- 「破灭的仪式」降临。这张卡仪式召唤成功时，持有这张卡的攻击力以下的守备力的这张卡以外的场上表侧表示存在的怪兽全部破坏，破坏的怪兽每有1只这张卡的攻击力上升100。
 function c30646525.initial_effect(c)
+	aux.AddCodeList(c,52913738)
 	c:EnableReviveLimit()
 	-- 创建一个诱发必发效果，用于处理仪式召唤成功时的破坏效果
 	local e1=Effect.CreateEffect(c)

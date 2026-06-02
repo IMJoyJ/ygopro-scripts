@@ -130,7 +130,7 @@ end
 -- 效果②的发动条件：自身因融合召唤被送入墓地
 function s.setcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	return c:IsLocation(LOCATION_GRAVE) and r==REASON_FUSION
+	return c:IsLocation(LOCATION_GRAVE) and r==REASON_FUSION and not c:IsReason(REASON_RETURN)
 end
 -- 过滤函数：筛选「星辰」魔法·陷阱卡
 function s.setfilter(c)

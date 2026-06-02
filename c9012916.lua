@@ -74,7 +74,7 @@ end
 function c9012916.operation(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取当前效果锁定的对象怪兽。
 	local tc=Duel.GetFirstTarget()
-	if tc:IsRelateToEffect(e) and tc:IsFaceup() then
+	if tc:IsRelateToEffect(e) and tc:IsFaceup() and not tc:IsImmuneToEffect(e) then
 		local val=e:GetLabel()
 		local atk=tc:GetAttack()
 		-- 那只对方怪兽的攻击力下降取除的黑羽指示物数量×700
@@ -84,7 +84,7 @@ function c9012916.operation(e,tp,eg,ep,ev,re,r,rp)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)
 		e1:SetValue(-val)
 		tc:RegisterEffect(e1)
-		-- 如果下降数值大于该怪兽当前的攻击力，则给与对方该怪兽当前攻击力数值的伤害（实际下降数值为当前攻击力）。
+		if tc:IsHasEffect(EFFECT_REVERSE_UPDATE) then return end
 		if val>atk then Duel.Damage(1-tp,atk,REASON_EFFECT)
 		-- 否则，给与对方该下降数值的伤害。
 		else Duel.Damage(1-tp,val,REASON_EFFECT) end

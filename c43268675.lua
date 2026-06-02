@@ -32,7 +32,8 @@ function c43268675.atklimit(e,tp,eg,ep,ev,re,r,rp)
 end
 -- 判断是否为融合召唤的素材并进入墓地
 function c43268675.indcon(e,tp,eg,ep,ev,re,r,rp)
-	return r==REASON_FUSION and e:GetHandler():IsLocation(LOCATION_GRAVE)
+	local c=e:GetHandler()
+	return r==REASON_FUSION and c:IsLocation(LOCATION_GRAVE) and not c:IsReason(REASON_RETURN)
 end
 -- 使自己场上「幻奏」怪兽不会被战斗·效果破坏
 function c43268675.indop(e,tp,eg,ep,ev,re,r,rp)

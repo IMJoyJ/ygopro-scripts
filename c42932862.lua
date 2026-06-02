@@ -8,6 +8,7 @@
 local s,id,o=GetID()
 -- 初始化卡片效果，启用仪式召唤限制并注册两个效果：①反转时特殊召唤；②速攻时改变表示形式
 function s.initial_effect(c)
+	aux.AddCodeList(c,8428836,94997874)
 	c:EnableReviveLimit()
 	-- 用仪式召唤以及「圣占术姬 塔罗光巫女」的效果才能特殊召唤
 	local e0=Effect.CreateEffect(c)

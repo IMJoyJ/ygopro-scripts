@@ -41,11 +41,7 @@ function s.distg(e,tp,eg,ep,ev,re,r,rp,chk)
 end
 -- 执行效果：使连锁效果无效，并在满足条件时破坏该效果对应的卡。
 function s.disop(e,tp,eg,ep,ev,re,r,rp)
-	-- 使连锁效果无效。
-	Duel.NegateEffect(ev)
-	-- 检查自己墓地是否存在陷阱卡，若存在则破坏被无效的卡。
-	if Duel.IsExistingMatchingCard(Card.IsType,tp,LOCATION_GRAVE,0,1,nil,TYPE_TRAP) and re:GetHandler():IsRelateToEffect(re) then
-		-- 破坏被无效的卡。
+	if Duel.NegateEffect(ev) and Duel.IsExistingMatchingCard(Card.IsType,tp,LOCATION_GRAVE,0,1,nil,TYPE_TRAP) and re:GetHandler():IsRelateToEffect(re) then
 		Duel.Destroy(eg,REASON_EFFECT)
 	end
 	if e:GetLabel()==100 then

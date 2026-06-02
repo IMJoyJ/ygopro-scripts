@@ -3,6 +3,7 @@
 -- 「宣告者的预言」降临。
 -- ①：对方把怪兽的效果·魔法·陷阱卡发动时，从手卡把1只天使族怪兽送去墓地才能发动。那个发动无效并破坏。
 function c44665365.initial_effect(c)
+	aux.AddCodeList(c,27383110)
 	c:EnableReviveLimit()
 	-- 创建效果怪兽的效果·魔法·陷阱卡的发动无效并破坏
 	local e1=Effect.CreateEffect(c)

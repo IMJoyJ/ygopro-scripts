@@ -58,7 +58,7 @@ end
 function c81555617.spcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	return c:IsPreviousLocation(LOCATION_HAND+LOCATION_ONFIELD)
-		and c:IsLocation(LOCATION_GRAVE+LOCATION_REMOVED) and r==REASON_FUSION
+		and c:IsLocation(LOCATION_GRAVE+LOCATION_REMOVED) and r==REASON_FUSION and not c:IsReason(REASON_RETURN)
 end
 -- 过滤条件：墓地或除外状态的「死狱乡的凶剧」以外的「死狱乡」怪兽或8星以上的融合怪兽，且可以特殊召唤
 function c81555617.spfilter(c,e,tp)

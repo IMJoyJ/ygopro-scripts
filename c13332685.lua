@@ -8,6 +8,7 @@
 local s,id,o=GetID()
 -- 注册卡片效果，包括①起动效果（特殊召唤并解放）、②场上的怪兽攻击力下降800、③解放时的检索效果
 function s.initial_effect(c)
+	aux.AddCodeList(c,81560239)
 	c:EnableReviveLimit()
 	-- ①：把手卡的这张卡给对方观看才能发动。从卡组把1只「巳剑」怪兽特殊召唤。那之后，自己场上1只怪兽解放。
 	local e1=Effect.CreateEffect(c)

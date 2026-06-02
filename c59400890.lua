@@ -61,6 +61,7 @@ function s.spfilter(c,tp,sc)
 		-- 检查该怪兽是否能作为Cost除外，且除外该怪兽后额外卡组怪兽出场的可用区域是否大于0
 		and c:IsAbleToRemoveAsCost() and Duel.GetLocationCountFromEx(tp,tp,c,sc)>0
 		and c:IsAbleToRemove(tp,POS_FACEUP,REASON_SPSUMMON)
+		and c:IsCanBeFusionMaterial(sc,SUMMON_TYPE_SPECIAL)
 end
 -- 自身特殊召唤规则的条件函数，检查场上是否有可除外的怪兽、本回合是否未特殊召唤过此卡，且本回合有魔法卡的效果发动
 function s.spcon(e,c)

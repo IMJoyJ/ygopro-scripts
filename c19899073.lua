@@ -8,6 +8,7 @@
 local s,id,o=GetID()
 -- 初始化卡片效果，注册三个效果，分别对应①②③效果
 function s.initial_effect(c)
+	aux.AddCodeList(c,81560239)
 	c:EnableReviveLimit()
 	-- ①：这张卡特殊召唤的场合才能发动。对方场上的怪兽全部破坏。
 	local e1=Effect.CreateEffect(c)

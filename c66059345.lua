@@ -151,15 +151,12 @@ end
 function s.ovop(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取自己卡组最上面的1张卡
 	local g=Duel.GetDecktopGroup(tp,1)
-	if g:GetCount()==1 then
+	if Duel.IsExistingMatchingCard(s.matfilter,tp,LOCATION_MZONE,0,1,nil) and g:GetCount()==1 then
 		local tc=g:GetFirst()
 		-- 使接下来的操作不触发卡组洗牌检测
 		Duel.DisableShuffleCheck()
-		-- 检查场上是否存在「原质炉」超量怪兽，且卡组顶端的卡可以作为超量素材叠放
-		if Duel.IsExistingMatchingCard(s.matfilter,tp,LOCATION_MZONE,0,1,nil) and tc:IsCanOverlay() then
-			-- 提示玩家选择表侧表示的怪兽
-			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
-			-- 选择自己场上1只表侧表示的「原质炉」超量怪兽
+		if tc:IsCanOverlay() then
+			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)
 			local sg=Duel.SelectMatchingCard(tp,s.matfilter,tp,LOCATION_MZONE,0,1,1,nil)
 			-- 为选择的怪兽显示靶向动画效果
 			Duel.HintSelection(sg)

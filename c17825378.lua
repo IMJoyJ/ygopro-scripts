@@ -37,7 +37,7 @@ end
 -- 效果发动条件：该卡在墓地或额外卡组且因融合召唤而成为素材
 function c17825378.ctcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	return c:IsLocation(LOCATION_GRAVE+LOCATION_EXTRA) and r==REASON_FUSION
+	return c:IsLocation(LOCATION_GRAVE+LOCATION_EXTRA) and r==REASON_FUSION and not c:IsReason(REASON_RETURN)
 end
 -- 效果的发动条件判断函数，检查场上是否存在可放置指示物的怪兽
 function c17825378.cttg(e,tp,eg,ep,ev,re,r,rp,chk)

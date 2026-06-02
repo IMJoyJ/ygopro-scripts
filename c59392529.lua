@@ -54,7 +54,7 @@ end
 -- ②号效果的发动条件：此卡在墓地或除外状态，且作为「HERO」融合怪兽的融合素材
 function c59392529.drcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	return c:IsLocation(LOCATION_GRAVE+LOCATION_REMOVED) and r==REASON_FUSION and c:GetReasonCard():IsSetCard(0x8)
+	return c:IsLocation(LOCATION_GRAVE+LOCATION_REMOVED) and r==REASON_FUSION and c:GetReasonCard():IsSetCard(0x8) and not c:IsReason(REASON_RETURN)
 end
 -- ②号效果的发动准备：检查是否能抽卡，并设置抽卡和丢弃手牌的连锁信息
 function c59392529.drtg(e,tp,eg,ep,ev,re,r,rp,chk)

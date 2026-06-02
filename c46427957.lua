@@ -3,6 +3,7 @@
 -- 「世界末日」降临。
 -- ①：这张卡的攻击破坏对方怪兽时才能发动。这张卡只再1次可以继续攻击。
 function c46427957.initial_effect(c)
+	aux.AddCodeList(c,8198712)
 	c:EnableReviveLimit()
 	-- ①：这张卡的攻击破坏对方怪兽时才能发动。这张卡只再1次可以继续攻击。
 	local e1=Effect.CreateEffect(c)

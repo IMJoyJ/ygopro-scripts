@@ -3,7 +3,8 @@
 -- 这个卡名的效果1回合只能使用1次。
 -- ①：这张卡召唤·反转召唤·特殊召唤成功的场合才能发动。从卡组把1只「电子化天使」怪兽或者1张「机械天使的仪式」加入手卡。
 function c76103404.initial_effect(c)
-	-- 这个卡名的效果1回合只能使用1次。①：这张卡召唤·反转召唤·特殊召唤成功的场合才能发动。从卡组把1只「电子化天使」怪兽或者1张「机械天使的仪式」加入手卡。
+	aux.AddCodeList(c,39996157)
+	--tohand
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(76103404,0))
 	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)

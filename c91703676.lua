@@ -35,26 +35,13 @@ end
 -- ①效果的发动准备与对象选择
 function s.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return false end
-	-- 检查对方场上是否存在至少1张可以成为效果对象的卡
-	if chk==0 then return Duel.IsExistingTarget(aux.TRUE,tp,0,LOCATION_ONFIELD,1,nil)
-		-- 检查自己场上是否存在至少1只可以成为效果对象的表侧表示「炎王」怪兽
-		and Duel.IsExistingTarget(s.filter,tp,LOCATION_MZONE,0,1,nil,e) end
-	-- 获取自己场上满足条件的「炎王」怪兽数量
-	local ct1=Duel.GetMatchingGroupCount(s.filter,tp,LOCATION_MZONE,0,nil,e)
-	-- 获取对方场上可以成为效果对象的卡片数量
-	local ct2=Duel.GetMatchingGroupCount(Card.IsCanBeEffectTarget,tp,0,LOCATION_ONFIELD,nil,e)
-	local mc=math.min(ct1,ct2)
-	-- 提示玩家选择要破坏的卡
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 选择自己场上1到mc张「炎王」怪兽作为效果对象
-	local g1=Duel.SelectTarget(tp,s.filter,tp,LOCATION_MZONE,0,1,mc,nil,e)
-	-- 提示玩家选择要破坏的卡
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 选择对方场上与自己选择的「炎王」怪兽相同数量的卡作为效果对象
-	local g2=Duel.SelectTarget(tp,aux.TRUE,tp,0,LOCATION_ONFIELD,#g1,#g1,nil)
-	g1:Merge(g2)
-	-- 设置破坏操作的信息，包含所有被选择的对象卡片
-	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g1,#g1,0,0)
+	local g1=Duel.GetMatchingGroup(s.filter,tp,LOCATION_MZONE,0,nil,e)
+	local g2=Duel.GetMatchingGroup(Card.IsCanBeEffectTarget,tp,0,LOCATION_ONFIELD,nil,e)
+	if chk==0 then return #g1>0 and #g2>0 end
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)
+	local sg=aux.SelectSameCount(tp,g1,g2)
+	Duel.SetTargetCard(sg)
+	Duel.SetOperationInfo(0,CATEGORY_DESTROY,sg,#sg,0,0)
 end
 -- ①效果的实际处理函数（破坏选中的卡）
 function s.activate(e,tp,eg,ep,ev,re,r,rp)

@@ -9,6 +9,7 @@
 local s,id,o=GetID()
 -- 初始化卡片效果，设置仪式召唤限制、免疫效果和起动效果
 function s.initial_effect(c)
+	aux.AddCodeList(c,31002402)
 	c:EnableReviveLimit()
 	-- 这张卡不用「教导」卡的效果不能仪式召唤
 	local e1=Effect.CreateEffect(c)

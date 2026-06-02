@@ -7,6 +7,7 @@
 local s,id,o=GetID()
 -- 初始化卡片效果，设置仪式召唤限制，注册①效果（对方特召时特召墓地爬虫类）和②效果（被解放时检索并可选特召自身）
 function s.initial_effect(c)
+	aux.AddCodeList(c,81560239)
 	c:EnableReviveLimit()
 	-- ①：对方把怪兽特殊召唤的场合，以「布都御魂之巳剑」以外的自己墓地1只爬虫类族怪兽为对象才能发动。那只怪兽特殊召唤。这个卡名的①的效果在同一连锁上只能发动1次。
 	local e1=Effect.CreateEffect(c)

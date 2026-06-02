@@ -18,7 +18,8 @@ function c2729285.initial_effect(c)
 end
 -- 效果发动的条件：卡片在墓地且因融合召唤被送去墓地
 function c2729285.condition(e,tp,eg,ep,ev,re,r,rp)
-	return e:GetHandler():IsLocation(LOCATION_GRAVE) and r==REASON_FUSION
+	local c=e:GetHandler()
+	return c:IsLocation(LOCATION_GRAVE) and r==REASON_FUSION and not c:IsReason(REASON_RETURN)
 end
 -- 过滤器函数：筛选卡号为24094653（融合）且能加入手牌的卡片
 function c2729285.filter(c)

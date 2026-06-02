@@ -119,50 +119,41 @@ function c48654267.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 设置连锁操作信息，表示将特殊召唤最多2只「霸王眷龙」怪兽
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_DECK+LOCATION_EXTRA+LOCATION_GRAVE)
 end
--- 用于筛选额外卡组中的灵摆怪兽的过滤函数
-function c48654267.filter(c)
-	return c:IsFaceup() and c:IsType(TYPE_PENDULUM) and c:IsLocation(LOCATION_EXTRA)
+function c48654267.exfilter2(c)
+	return c:IsLocation(LOCATION_EXTRA) and c:IsFacedown() and c:IsType(TYPE_FUSION+TYPE_SYNCHRO+TYPE_XYZ)
 end
--- 用于判断所选怪兽组中额外卡组灵摆怪兽数量是否符合限制条件的函数
-function c48654267.gcheck(g,tp,eft)
-	return g:FilterCount(c48654267.filter,nil)<=eft
+function c48654267.exfilter3(c)
+	return c:IsLocation(LOCATION_EXTRA) and (c:IsType(TYPE_LINK) or (c:IsFaceup() and c:IsType(TYPE_PENDULUM)))
+end
+function c48654267.gcheck(g,ft1,ft2,ft3,ect,ft)
+	return #g<=ft
+		and g:FilterCount(Card.IsLocation,nil,LOCATION_DECK+LOCATION_GRAVE)<=ft1
+		and g:FilterCount(c48654267.exfilter2,nil)<=ft2
+		and g:FilterCount(c48654267.exfilter3,nil)<=ft3
+		and g:FilterCount(Card.IsLocation,nil,LOCATION_EXTRA)<=ect
 end
 -- 设置特殊召唤效果的处理函数，从卡组、额外卡组或墓地选择最多2只「霸王眷龙」怪兽守备表示特殊召唤
 function c48654267.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取玩家场上可用的怪兽区数量
-	local ft=Duel.GetLocationCount(tp,LOCATION_MZONE)
-	-- 获取玩家额外卡组可用的召唤区数量
-	local eft=Duel.GetLocationCountFromEx(tp,tp,nil,TYPE_PENDULUM)
-	if ft<=0 then return end
-	if ft>=2 then ft=2 end
-	-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中。禁止双方同时特殊召唤2只以上怪兽
-	if Duel.IsPlayerAffectedByEffect(tp,59822133) then ft=1 end
-	-- 获取满足条件的「霸王眷龙」怪兽组
-	local g=Duel.GetMatchingGroup(c48654267.spfilter,tp,LOCATION_DECK+LOCATION_EXTRA+LOCATION_GRAVE,0,nil,e,tp)
-	if g:GetCount()==0 then return end
-	-- 提示玩家选择要特殊召唤的卡
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	local sg=g:SelectSubGroup(tp,c48654267.gcheck,false,1,ft,tp,eft)
-	if sg:GetCount()>0 then
-		local exg=sg:Filter(c48654267.filter,nil)
-		sg:Sub(exg)
-		if exg:GetCount()>0 then
-			-- 遍历额外卡组灵摆怪兽组并进行特殊召唤处理
-			for tc in aux.Next(exg) do
-				-- 将额外卡组灵摆怪兽以守备表示特殊召唤到场上
-				Duel.SpecialSummonStep(tc,0,tp,tp,false,false,POS_FACEUP_DEFENSE)
-			end
-		end
-		if sg:GetCount()>0 then
-			-- 遍历非额外卡组灵摆怪兽组并进行特殊召唤处理
-			for tc in aux.Next(sg) do
-				-- 将非额外卡组灵摆怪兽以守备表示特殊召唤到场上
-				Duel.SpecialSummonStep(tc,0,tp,tp,false,false,POS_FACEUP_DEFENSE)
-			end
-		end
-		-- 完成所有特殊召唤步骤的处理
-		Duel.SpecialSummonComplete()
+	local ft1=Duel.GetLocationCount(tp,LOCATION_MZONE)
+	local ft2=Duel.GetLocationCountFromEx(tp,tp,nil,TYPE_FUSION+TYPE_SYNCHRO+TYPE_XYZ)
+	local ft3=Duel.GetLocationCountFromEx(tp,tp,nil,TYPE_PENDULUM+TYPE_LINK)
+	local ft=Duel.GetUsableMZoneCount(tp)
+	if Duel.IsPlayerAffectedByEffect(tp,59822133) then
+		if ft1>0 then ft1=1 end
+		if ft2>0 then ft2=1 end
+		if ft3>0 then ft3=1 end
+		ft=1
 	end
+	local ect=(c29724053 and Duel.IsPlayerAffectedByEffect(tp,29724053) and c29724053[tp]) or ft
+	local loc=0
+	if ft1>0 then loc=loc+LOCATION_DECK+LOCATION_GRAVE end
+	if ect>0 and (ft2>0 or ft3>0) then loc=loc+LOCATION_EXTRA end
+	if loc==0 then return end
+	local sg=Duel.GetMatchingGroup(aux.NecroValleyFilter(c48654267.spfilter),tp,loc,0,nil,e,tp)
+	if sg:GetCount()==0 then return end
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
+	local rg=sg:SelectSubGroup(tp,c48654267.gcheck,false,1,2,ft1,ft2,ft3,ect,ft)
+	Duel.SpecialSummon(rg,0,tp,tp,false,false,POS_FACEUP_DEFENSE)
 end
 -- 判断该卡是否在怪兽区被破坏且为表侧表示的条件函数
 function c48654267.pencon(e,tp,eg,ep,ev,re,r,rp)

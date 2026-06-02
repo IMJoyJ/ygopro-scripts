@@ -105,7 +105,9 @@ function s.desop(e,tp,eg,ep,ev,re,r,rp)
 	if seq>-1 then
 		-- 从卡组最上方开始确认（翻开）卡片，直到出现满足条件的卡为止
 		Duel.ConfirmDecktop(tp,dct-seq)
-		-- 防止系统在后续操作中自动洗牌
+		if e:GetHandler():IsSetCard(0x1dd) then
+			Duel.RaiseEvent(e:GetHandler(),EVENT_CUSTOM+1595137,e,0,tp,tp,0)
+		end
 		Duel.DisableShuffleCheck()
 		-- 扣除自己相当于翻开卡片数量×400的基本分
 		Duel.SetLP(tp,Duel.GetLP(tp)-(dct-seq)*400)

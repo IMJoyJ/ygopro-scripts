@@ -31,27 +31,30 @@ function s.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
 	-- 选择符合条件的墓地魔法卡作为效果对象
 	local g=Duel.SelectTarget(tp,s.filter,tp,LOCATION_GRAVE,LOCATION_GRAVE,1,1,nil)
+	local tc=g:GetFirst()
+	Duel.ClearTargetCard()
+	tc:CreateEffectRelation(e)
+	e:SetLabelObject(tc)
 	local te,ceg,cep,cev,cre,cr,crp=g:GetFirst():CheckActivateEffect(true,true,true)
 	e:SetProperty(te:GetProperty())
 	local tg=te:GetTarget()
 	if tg then tg(e,tp,ceg,cep,cev,cre,cr,crp,1) end
-	te:SetLabelObject(e:GetLabelObject())
-	e:SetLabelObject(te)
-	-- 清除当前连锁的操作信息
 	Duel.ClearOperationInfo(0)
 	-- 设置当前连锁的操作信息，指定将要除外的卡
 	Duel.SetOperationInfo(0,CATEGORY_REMOVE,g,1,0,0)
 end
 -- 处理效果发动后的实际操作，将目标卡除外并触发其发动时的效果
 function s.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁选择的目标卡
-	local tc=Duel.GetFirstTarget()
-	local te=e:GetLabelObject()
-	-- 判断目标卡是否有效且成功除外
-	if tc and tc:IsRelateToEffect(e) and Duel.Remove(tc,POS_FACEUP,REASON_EFFECT)>0
-		and tc:IsLocation(LOCATION_REMOVED) and te then
-		e:SetLabelObject(te:GetLabelObject())
-		local op=te:GetOperation()
-		if op then op(e,tp,eg,ep,ev,re,r,rp) end
+	local fc=e:GetLabelObject()
+	if fc and fc:IsRelateToChain() and Duel.Remove(fc,POS_FACEUP,REASON_EFFECT)>0
+		and fc:IsLocation(LOCATION_REMOVED) then
+		local fe=fc:CheckActivateEffect(true,true,true)
+		if fe then
+			local op=fe:GetOperation()
+			if op then
+				Duel.BreakEffect()
+				op(e,tp,eg,ep,ev,re,r,rp)
+			end
+		end
 	end
 end

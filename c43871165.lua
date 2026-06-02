@@ -109,17 +109,31 @@ function s.desop(e,tp,eg,ep,ev,re,r,rp)
 		end
 	end
 end
--- 设置怪兽效果①的费用函数，从卡组顶部除外3张卡作为费用
+function s.costfilter(c,e,tp)
+	return e:GetHandler():IsSetCard(0x1ce) and c:IsAbleToRemove() and c:IsHasEffect(99311889,tp)
+end
 function s.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 获取卡组顶部的3张卡
 	local g=Duel.GetDecktopGroup(tp,3)
 	if chk==0 then return g:FilterCount(Card.IsAbleToRemoveAsCost,nil,POS_FACEDOWN)==3
-		-- 检查卡组中是否有至少3张卡
-		and Duel.GetFieldGroupCount(tp,LOCATION_DECK,0)>=3 end
-	-- 禁止自动洗切卡组
-	Duel.DisableShuffleCheck()
-	-- 将卡组顶部的3张卡除外作为费用
-	Duel.Remove(g,POS_FACEDOWN,REASON_COST)
+		and Duel.GetFieldGroupCount(tp,LOCATION_DECK,0)>=3
+		or Duel.IsExistingMatchingCard(s.costfilter,tp,LOCATION_GRAVE,0,1,nil,e,tp) end
+	if g:FilterCount(Card.IsAbleToRemoveAsCost,nil,POS_FACEDOWN)==3
+		and Duel.GetFieldGroupCount(tp,LOCATION_DECK,0)>=3
+		and (not Duel.IsExistingMatchingCard(s.costfilter,tp,LOCATION_GRAVE,0,1,nil,e,tp)
+		or not Duel.SelectYesNo(tp,aux.Stringid(99311889,1))) then
+		Duel.DisableShuffleCheck()
+		Duel.Remove(g,POS_FACEDOWN,REASON_COST)
+	else
+		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)
+		local sg=Duel.SelectMatchingCard(tp,s.costfilter,tp,LOCATION_GRAVE,0,1,1,nil,e,tp)
+		local tc=sg:GetFirst()
+		local te=tc:IsHasEffect(99311889,tp)
+		if te then
+			te:UseCountLimit(tp)
+			Duel.Remove(tc,POS_FACEUP,REASON_COST+REASON_REPLACE)
+		end
+	end
 end
 -- 定义特殊召唤的筛选函数，用于判断额外卡组中是否有符合条件的「坏狱神 朱庇特」
 function s.spfilter(c,e,tp,mc)

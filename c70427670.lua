@@ -115,7 +115,7 @@ end
 -- 检索效果的发动条件：这张卡作为融合素材被送去墓地，或者表侧表示加入额外卡组。
 function c70427670.thcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	return (c:IsLocation(LOCATION_GRAVE) or c:IsFaceup() and c:IsLocation(LOCATION_EXTRA)) and r==REASON_FUSION
+	return (c:IsLocation(LOCATION_GRAVE) or c:IsFaceup() and c:IsLocation(LOCATION_EXTRA)) and r==REASON_FUSION and not c:IsReason(REASON_RETURN)
 end
 -- 检索卡片的过滤条件：额外卡组中表侧表示的、除「捕食植物 土瓶草蟾蜍」以外的暗属性灵摆怪兽。
 function c70427670.thfilter(c)

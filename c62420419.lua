@@ -2,6 +2,7 @@
 -- 效果：
 -- 「大邪神的仪式」降临。从手卡丢弃1张魔法卡。结束阶段前获得对方场上1只怪兽的控制权。这个效果1个回合只能使用1次。
 function c62420419.initial_effect(c)
+	aux.AddCodeList(c,60369732)
 	c:EnableReviveLimit()
 	-- 从手卡丢弃1张魔法卡。结束阶段前获得对方场上1只怪兽的控制权。这个效果1个回合只能使用1次。
 	local e1=Effect.CreateEffect(c)

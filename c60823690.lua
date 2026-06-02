@@ -9,6 +9,7 @@
 local s,id,o=GetID()
 -- 注册卡片效果的初始化函数，包含仪式召唤限制、卡名变更、检索效果、除外时标记、下个回合准备阶段特殊召唤以及灵魂怪兽回手效果。
 function s.initial_effect(c)
+	aux.AddCodeList(c,73055622)
 	c:EnableReviveLimit()
 	-- 设置这张卡在手卡·场上存在时，卡名当作「灵魂鸟神-彦孔雀」使用。
 	aux.EnableChangeCode(c,52900000,LOCATION_HAND+LOCATION_MZONE)

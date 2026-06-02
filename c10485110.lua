@@ -36,8 +36,7 @@ function c10485110.initial_effect(c)
 end
 -- 定义用于判断是否可以解放的过滤函数，检查场上是否存在满足条件的「海龙-泰达路斯」
 function c10485110.spfilter(c,tp)
-	-- 检查目标卡片是否为表侧表示、卡片代码为「海龙-泰达路斯」且当前玩家场上存在可用怪兽区
-	return c:IsFaceup() and c:IsCode(37721209) and Duel.GetMZoneCount(tp,c)>0
+	return c:IsCode(37721209) and Duel.GetMZoneCount(tp,c)>0
 end
 -- 定义特殊召唤条件函数，用于判断是否满足特殊召唤的条件
 function c10485110.spcon(e,c)

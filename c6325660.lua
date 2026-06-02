@@ -42,7 +42,7 @@ end
 -- 效果①的发动准备与目标选择函数，若从手卡发动则标记Label为100。
 function s.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(1-tp) and chkc:IsLocation(LOCATION_MZONE) and chkc:IsAbleToRemove() end
-	-- 判定对方场上是否存在可以被除外的怪兽作为对象。
+	e:SetLabel(0)
 	if chk==0 then return Duel.IsExistingTarget(Card.IsAbleToRemove,tp,0,LOCATION_MZONE,1,nil) end
 	-- 提示玩家选择要除外的卡片。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"

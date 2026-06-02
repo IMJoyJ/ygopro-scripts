@@ -53,10 +53,11 @@ function c4538826.initial_effect(c)
 	c:RegisterEffect(e4)
 	-- ②：特殊召唤的表侧表示的这张卡从场上离开的场合回到卡组最下面。
 	local e5=Effect.CreateEffect(c)
-	e5:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_CONTINUOUS)
+	e5:SetType(EFFECT_TYPE_SINGLE)
 	e5:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
-	e5:SetCode(EVENT_SPSUMMON_SUCCESS)
-	e5:SetOperation(c4538826.spreg)
+	e5:SetCode(EFFECT_LEAVE_FIELD_REDIRECT)
+	e5:SetValue(LOCATION_DECKBOT)
+	e5:SetCondition(c4538826.rmcon)
 	c:RegisterEffect(e5)
 end
 -- 支付1000基本分作为此效果的发动费用
@@ -187,15 +188,7 @@ function c4538826.gyop(e,tp,eg,ep,ev,re,r,rp)
 		Duel.Damage(1-tp,dc*300,REASON_EFFECT)
 	end
 end
--- 设置特殊召唤成功后的效果：此卡离开场时回到卡组最下面
-function c4538826.spreg(e,tp,eg,ep,ev,re,r,rp)
+function c4538826.rmcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 设置此卡离开场时回到卡组最下面的效果
-	local e1=Effect.CreateEffect(c)
-	e1:SetType(EFFECT_TYPE_SINGLE)
-	e1:SetCode(EFFECT_LEAVE_FIELD_REDIRECT)
-	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
-	e1:SetReset(RESET_EVENT+RESETS_REDIRECT)
-	e1:SetValue(LOCATION_DECKBOT)
-	c:RegisterEffect(e1)
+	return c:IsSummonType(SUMMON_TYPE_SPECIAL) and c:IsFaceup()
 end

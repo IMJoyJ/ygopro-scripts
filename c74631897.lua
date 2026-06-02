@@ -88,8 +88,10 @@ function s.regop(e,tp,eg,ep,ev,re,r,rp)
 end
 -- 过滤满足特殊召唤解放条件的卡：7星以上的「神艺」怪兽，且解放后能腾出额外怪兽区域的空格
 function s.spfilter(c,tp,sc)
-	-- 检查卡片是否为「神艺」怪兽、等级是否在7星以上、解放后是否能腾出额外怪兽区域的空格，且属于自己控制或在场上表侧表示
-	return c:IsFusionSetCard(0x1cd) and c:IsLevelAbove(7) and Duel.GetLocationCountFromEx(tp,tp,c,sc)>0 and (c:IsControler(tp) or c:IsFaceup())
+	return c:IsFusionSetCard(0x1cd) and c:IsLevelAbove(7)
+		and (c:IsControler(tp) or c:IsFaceup())
+		and Duel.GetLocationCountFromEx(tp,tp,c,sc)>0
+		and c:IsCanBeFusionMaterial(sc,SUMMON_TYPE_SPECIAL)
 end
 -- 过滤满足丢弃条件的卡：手卡中的魔法·陷阱卡
 function s.cfilter(c)

@@ -4,6 +4,7 @@
 -- ①：从额外卡组特殊召唤的怪兽和这张卡进行战斗的伤害步骤开始时才能发动。那只怪兽回到持有者卡组。
 -- ②：把这张卡解放才能发动。从手卡·卡组把1只5星以上的龙族·风属性怪兽特殊召唤。
 function c75901113.initial_effect(c)
+	aux.AddCodeList(c,58827995)
 	c:EnableReviveLimit()
 	-- ①：从额外卡组特殊召唤的怪兽和这张卡进行战斗的伤害步骤开始时才能发动。那只怪兽回到持有者卡组。
 	local e1=Effect.CreateEffect(c)

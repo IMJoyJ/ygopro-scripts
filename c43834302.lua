@@ -8,9 +8,8 @@
 local s,id,o=GetID()
 -- 初始化卡片效果，注册两个效果：①检索效果和②等级下降效果
 function s.initial_effect(c)
-	-- 为该卡添加允许作为融合/仪式召唤素材的卡牌代码列表，包括废品同调士、废品战士和星尘龙
-	aux.AddMaterialCodeList(c,63977008,60800381,44508094)
-	-- ①：从卡组把以下怪兽各1只加入手卡。那之后，选自己1张手卡丢弃。
+	aux.AddCodeList(c,63977008,60800381,44508094)
+	--Activate
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(id,0))  --"检索"
 	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH+CATEGORY_HANDES)

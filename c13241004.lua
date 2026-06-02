@@ -57,7 +57,7 @@ end
 -- 判断是否满足效果发动条件的函数
 function c13241004.drcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	return c:IsLocation(LOCATION_GRAVE) and r==REASON_FUSION and c:GetReasonCard():IsSetCard(0xad)
+	return c:IsLocation(LOCATION_GRAVE) and r==REASON_FUSION and c:GetReasonCard():IsSetCard(0xad) and not c:IsReason(REASON_RETURN)
 end
 -- 效果发动时的处理函数，用于判断是否满足发动条件
 function c13241004.drtg(e,tp,eg,ep,ev,re,r,rp,chk)

@@ -5,6 +5,7 @@
 -- ●对方把怪兽的效果·魔法·陷阱卡发动时才能发动。那个发动无效并破坏。
 -- ●对方把怪兽特殊召唤之际才能发动。那次特殊召唤无效，那些怪兽破坏。
 function c48546368.initial_effect(c)
+	aux.AddCodeList(c,79306385)
 	c:EnableReviveLimit()
 	-- 「宣告者的神托」降临。这张卡不用仪式召唤不能特殊召唤。
 	local e1=Effect.CreateEffect(c)

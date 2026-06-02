@@ -4,7 +4,8 @@
 -- ①：自己场上有「@火灵天星」怪兽存在的场合才能发动。这张卡从手卡特殊召唤。
 -- ②：把这张卡以外的自己场上1只电子界族怪兽解放才能发动。从卡组把1只5星以上的「@火灵天星」怪兽加入手卡，这张卡的等级直到回合结束时变成4星。为这个效果发动而把连接怪兽解放的场合，可以再从卡组把1张「“艾”之仪式」加入手卡。
 function c41306080.initial_effect(c)
-	-- ①：自己场上有「@火灵天星」怪兽存在的场合才能发动。这张卡从手卡特殊召唤。
+	aux.AddCodeList(c,85327820)
+	--special summon
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(41306080,0))
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)

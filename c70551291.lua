@@ -8,6 +8,7 @@
 local s,id,o=GetID()
 -- 注册卡片效果的初始化函数，包含特殊召唤限制、抽卡阶段检索仪式魔法、战斗阶段封锁对方效果、战斗破坏怪兽时洗全场，以及检测仪式素材是否包含通常怪兽的辅助效果。
 function s.initial_effect(c)
+	aux.AddCodeList(c,21082832,14094090)
 	c:EnableReviveLimit()
 	-- 这张卡不用仪式召唤不能特殊召唤。
 	local e1=Effect.CreateEffect(c)

@@ -6,6 +6,7 @@
 -- ●对方手卡随机选1张丢弃去墓地。
 -- ●选自己墓地1只光属性怪兽加入手卡。
 function c56350972.initial_effect(c)
+	aux.AddCodeList(c,80566312)
 	c:EnableReviveLimit()
 	-- ①：这张卡仪式召唤的回合的结束阶段……可以从以下效果选择1个发动。
 	local e1=Effect.CreateEffect(c)

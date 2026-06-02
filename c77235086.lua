@@ -4,6 +4,7 @@
 -- ①：这张卡战斗破坏怪兽送去墓地的场合发动。给与对方那只怪兽的原本守备力数值的伤害。
 -- ②：这张卡被解放的场合才能发动。从卡组把1只天使族·光属性怪兽加入手卡。
 function c77235086.initial_effect(c)
+	aux.AddCodeList(c,39996157)
 	c:EnableReviveLimit()
 	-- ①：这张卡战斗破坏怪兽送去墓地的场合发动。给与对方那只怪兽的原本守备力数值的伤害。
 	local e1=Effect.CreateEffect(c)

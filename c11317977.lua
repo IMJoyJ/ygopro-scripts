@@ -94,7 +94,8 @@ function c11317977.scop(e,tp,eg,ep,ev,re,r,rp)
 end
 -- 效果②的发动条件函数
 function c11317977.thcon2(e,tp,eg,ep,ev,re,r,rp)
-	return e:GetHandler():IsLocation(LOCATION_GRAVE) and r==REASON_FUSION
+	local c=e:GetHandler()
+	return c:IsLocation(LOCATION_GRAVE) and r==REASON_FUSION and not c:IsReason(REASON_RETURN)
 end
 -- 检索满足条件的怪兽的过滤函数
 function c11317977.thfilter2(c)

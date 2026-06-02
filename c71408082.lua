@@ -4,6 +4,7 @@
 -- ①：这张卡向守备表示怪兽攻击的伤害步骤开始时发动。那只怪兽破坏。
 -- ②：把这张卡解放才能发动。从手卡·卡组把1只「真红眼」怪兽特殊召唤。
 function c71408082.initial_effect(c)
+	aux.AddCodeList(c,18803791)
 	c:EnableReviveLimit()
 	-- ①：这张卡向守备表示怪兽攻击的伤害步骤开始时发动。那只怪兽破坏。
 	local e1=Effect.CreateEffect(c)

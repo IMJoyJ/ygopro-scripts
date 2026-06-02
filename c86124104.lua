@@ -5,6 +5,7 @@
 -- ②：这张卡仪式召唤成功的场合发动。选场上1只表侧表示怪兽破坏。
 -- ③：这张卡被送去墓地的场合，以自己场上1只仪式怪兽为对象才能发动。只要那只怪兽在自己场上表侧表示存在，对方不能对应自己的仪式怪兽的效果的发动把卡的效果发动。
 function c86124104.initial_effect(c)
+	aux.AddCodeList(c,32828635)
 	c:EnableReviveLimit()
 	-- 设置此卡在手卡·场上存在时，卡名当作「终焉之王 迪米斯」使用
 	aux.EnableChangeCode(c,72426662,LOCATION_MZONE+LOCATION_HAND)

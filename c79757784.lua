@@ -59,7 +59,8 @@ function c79757784.thop(e,tp,eg,ep,ev,re,r,rp)
 end
 -- 效果②的发动条件：作为融合召唤的素材送去墓地
 function c79757784.damcon(e,tp,eg,ep,ev,re,r,rp)
-	return r==REASON_FUSION and e:GetHandler():IsLocation(LOCATION_GRAVE)
+	local c=e:GetHandler()
+	return r==REASON_FUSION and c:IsLocation(LOCATION_GRAVE) and not c:IsReason(REASON_RETURN)
 end
 -- 过滤条件：自己场上表侧表示、攻击力在500以上且是「幻奏」的怪兽
 function c79757784.atkfilter(c)

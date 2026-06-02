@@ -29,9 +29,8 @@ function s.initial_effect(c)
 end
 -- 设置效果目标选择函数，用于选择对方场上的怪兽
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	e:SetLabel(0)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(1-tp) and (chkc:IsAbleToHand() or chkc:IsAbleToExtra()) end
-	-- 检查是否满足发动条件，即对方场上是否存在可返回手卡或额外卡组的怪兽
+	e:SetLabel(0)
 	if chk==0 then return Duel.IsExistingTarget(aux.OR(Card.IsAbleToHand,Card.IsAbleToExtra),tp,0,LOCATION_MZONE,1,nil) end
 	-- 提示玩家选择要返回手卡的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_RTOHAND)  --"请选择要返回手牌的卡"

@@ -123,8 +123,8 @@ function c30983281.sccost(e,tp,eg,ep,ev,re,r,rp,chk)
 	local ect2=aux.ExtraDeckSummonCountLimit and Duel.IsPlayerAffectedByEffect(tp,92345028)
 		-- 获取玩家受到的额外卡组特殊召唤次数限制的具体数值
 		and aux.ExtraDeckSummonCountLimit[tp]
-	-- 获取墓地中可以作为代价除外代替解放的卡片组
-	local g=Duel.GetMatchingGroup(c30983281.excostfilter,tp,LOCATION_GRAVE,0,nil,tp)
+	local g=Group.CreateGroup()
+	if c:IsSetCard(0xa3) then g:Merge(Duel.GetMatchingGroup(c30983281.excostfilter,tp,LOCATION_GRAVE,0,nil,tp)) end
 	local chkrel=c:IsReleasable()
 	local chknotrel=g:GetCount()>0
 	-- 检查如果解放这张卡，是否存在符合条件的额外卡组怪兽可以特殊召唤
