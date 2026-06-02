@@ -115,7 +115,8 @@ function s.disop(e,tp,eg,ep,ev,re,r,rp)
 	-- 让玩家宣言硬币的正反面（进行猜测）
 	local coin=Duel.AnnounceCoin(tp)
 	-- 进行1次硬币投掷
-	local res=Duel.TossCoin(tp,1)
+	-- 注意：YGOPro 引擎中，AnnounceCoin 猜硬币时正面是 0 反面是 1；而 TossCoin 投硬币时正面是 1 反面是 0。
+	-- 因此两者定义刚好相反，这里使用 coin ~= res 恰好代表的是“猜中（两者物理状态一致）”的场合。
 	if coin~=res then
 		-- 将该项发动的效果无效
 		Duel.NegateEffect(ev)
