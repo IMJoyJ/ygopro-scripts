@@ -31,59 +31,59 @@ function c87246309.initial_effect(c)
 	e3:SetOperation(c87246309.tgop)
 	c:RegisterEffect(e3)
 end
--- 过滤自己墓地中属于「毛绒动物」或「锋利小鬼」字段且能加入手牌的怪兽
+-- 过滤自己墓地的「毛绒动物」或「锋利小鬼」怪兽且能加入手卡的卡片
 function c87246309.thfilter(c)
 	return c:IsSetCard(0xa9,0xc3) and c:IsType(TYPE_MONSTER) and c:IsAbleToHand()
 end
--- ①效果的发动准备（检查墓地目标、选择对象并设置操作信息）
+-- 效果①的发动准备与取对象
 function c87246309.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and c87246309.thfilter(chkc) end
-	-- 检查自己墓地是否存在至少1只符合条件的「毛绒动物」或「锋利小鬼」怪兽
+	-- 在发动准备阶段，检查自己墓地是否存在能成为效果对象的「毛绒动物」或「锋利小鬼」怪兽
 	if chk==0 then return Duel.IsExistingTarget(c87246309.thfilter,tp,LOCATION_GRAVE,0,1,nil) end
-	-- 提示玩家选择要加入手牌的卡片
+	-- 给玩家发送选择加入手卡卡片的提示信息
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择自己墓地1只符合条件的怪兽作为效果对象
+	-- 选择自己墓地1只「毛绒动物」或「锋利小鬼」怪兽作为效果的对象
 	local g=Duel.SelectTarget(tp,c87246309.thfilter,tp,LOCATION_GRAVE,0,1,1,nil)
-	-- 设置当前连锁的操作信息为“将选中的1张卡加入手牌”
+	-- 设置在效果处理时将选择的卡片加入手卡的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,1,0,0)
 end
--- ①效果的处理（将选中的对象怪兽加入手牌）
+-- 效果①的效果处理
 function c87246309.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁中被选为对象的怪兽
+	-- 获取连锁中作为效果对象的卡片
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 将目标怪兽加入持有者的手牌
+		-- 将成为对象的怪兽加入持有者的手卡
 		Duel.SendtoHand(tc,nil,REASON_EFFECT)
 	end
 end
--- ②效果的发动条件判定（作为「魔玩具」融合怪兽的融合素材送去墓地）
+-- 判定此卡是否作为「魔玩具」融合怪兽的融合素材送去墓地
 function c87246309.tgcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	return c:IsLocation(LOCATION_GRAVE) and r==REASON_FUSION and c:GetReasonCard():IsSetCard(0xad) and not c:IsReason(REASON_RETURN)
 end
--- 过滤除外区表侧表示的怪兽
+-- 过滤除外区中表侧表示的怪兽
 function c87246309.tgfilter(c)
 	return c:IsFaceup() and c:IsType(TYPE_MONSTER)
 end
--- ②效果的发动准备（检查除外区目标、选择最多2个对象并设置操作信息）
+-- 效果②的发动准备与取对象
 function c87246309.tgtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_REMOVED) and chkc:IsControler(tp) and c87246309.tgfilter(chkc) end
-	-- 检查除外区是否存在至少1只符合条件的怪兽
+	-- 在发动准备阶段，检查自己除外区是否存在可以成为对象的怪兽
 	if chk==0 then return Duel.IsExistingTarget(c87246309.tgfilter,tp,LOCATION_REMOVED,0,1,nil) end
-	-- 提示玩家选择要送去墓地的卡片
+	-- 给玩家发送选择送去墓地卡片的提示信息
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
-	-- 选择除外区最多2只符合条件的怪兽作为效果对象
+	-- 选择除外区的最多2只自己怪兽作为效果的对象
 	local g=Duel.SelectTarget(tp,c87246309.tgfilter,tp,LOCATION_REMOVED,0,1,2,nil)
-	-- 设置当前连锁的操作信息为“将选中的怪兽送去墓地”
+	-- 设置在效果处理时将被选择的卡片送去墓地的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,g,g:GetCount(),0,0)
 end
--- ②效果的处理（将选中的对象怪兽送回墓地）
+-- 效果②的效果处理
 function c87246309.tgop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁中被选为对象的所有卡片
+	-- 获取连锁中作为效果对象的所有卡片
 	local tg=Duel.GetChainInfo(0,CHAININFO_TARGET_CARDS)
 	local sg=tg:Filter(Card.IsRelateToEffect,nil,e)
 	if sg:GetCount()>0 then
-		-- 将仍适用于效果的对象怪兽送回墓地
+		-- 将除外的成为对象的怪兽送回墓地
 		Duel.SendtoGrave(sg,REASON_EFFECT+REASON_RETURN)
 	end
 end

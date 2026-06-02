@@ -6,7 +6,7 @@
 -- ③：1回合1次，把这张卡的黑羽指示物全部取除，以对方场上1只表侧表示怪兽为对象才能发动。那只对方怪兽的攻击力下降取除的黑羽指示物数量×700，给与对方下降数值的伤害。
 function c9012916.initial_effect(c)
 	c:EnableCounterPermit(0x10)
-	-- 为这张卡添加同调召唤手续（需要1只调整和1只以上调整以外的怪兽）。
+	-- 设置同调召唤手续，需要调整+调整以外的怪兽1只以上
 	aux.AddSynchroProcedure(c,nil,aux.NonTuner(nil),1)
 	c:EnableReviveLimit()
 	-- ①：自己受到效果伤害的场合，作为代替给这张卡放置1个黑羽指示物。
@@ -41,7 +41,7 @@ function c9012916.initial_effect(c)
 	e3:SetOperation(c9012916.operation)
 	c:RegisterEffect(e3)
 end
--- 代替伤害的价值函数，若受到的是效果伤害，则在自身放置1个黑羽指示物，并将受到的伤害变为0。
+-- 判断伤害原因是否为效果伤害，若是则作为代替在这张卡上放置1个黑羽指示物并使伤害为0
 function c9012916.damval(e,re,val,r,rp,rc)
 	if bit.band(r,REASON_EFFECT)~=0 then
 		e:GetHandler():AddCounter(0x10,1)
@@ -49,30 +49,30 @@ function c9012916.damval(e,re,val,r,rp,rc)
 	end
 	return val
 end
--- 计算并返回这张卡因黑羽指示物数量而下降的攻击力数值。
+-- 计算攻击力下降的数值，为黑羽指示物数量×700
 function c9012916.atkval(e,c)
 	return c:GetCounter(0x10)*-700
 end
--- 效果③的代价处理：检查并取除自身所有的黑羽指示物，并将取除数量×700的数值记录在效果中。
+-- 发动代价：检查并取除这张卡所有的黑羽指示物，并记录下降的攻击力数值
 function c9012916.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():GetCounter(0x10)>0 end
 	local ct=e:GetHandler():GetCounter(0x10)
 	e:SetLabel(ct*700)
 	e:GetHandler():RemoveCounter(tp,0x10,ct,REASON_COST)
 end
--- 效果③的对象选择与发动条件判定：选择对方场上1只表侧表示且攻击力大于0的怪兽作为对象。
+-- 效果的目标判定，选择对方场上1只表侧表示的攻击力不为0的怪兽为对象
 function c9012916.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(1-tp) and chkc:IsFaceup() end
-	-- 在发动时，检查对方场上是否存在可以作为对象的表侧表示且攻击力大于0的怪兽。
+	-- 检查对方场上是否存在可以成为对象且攻击力大于0的表侧表示怪兽
 	if chk==0 then return Duel.IsExistingTarget(aux.nzatk,tp,0,LOCATION_MZONE,1,nil) end
-	-- 在客户端提示玩家选择表侧表示的卡片。
+	-- 提示玩家选择表侧表示的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
-	-- 选择对方场上1只表侧表示且攻击力大于0的怪兽作为效果对象。
+	-- 选择对方场上1只表侧表示的攻击力不为0的怪兽作为对象
 	Duel.SelectTarget(tp,aux.nzatk,tp,0,LOCATION_MZONE,1,1,nil)
 end
--- 效果③的效果处理：使作为对象的怪兽攻击力下降，并给与对方实际下降数值的伤害。
+-- 效果处理：使作为对象的怪兽攻击力下降，并给与对方相应数值的效果伤害
 function c9012916.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前效果锁定的对象怪兽。
+	-- 获取效果的对象怪兽
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) and tc:IsFaceup() and not tc:IsImmuneToEffect(e) then
 		local val=e:GetLabel()
@@ -85,8 +85,9 @@ function c9012916.operation(e,tp,eg,ep,ev,re,r,rp)
 		e1:SetValue(-val)
 		tc:RegisterEffect(e1)
 		if tc:IsHasEffect(EFFECT_REVERSE_UPDATE) then return end
+		-- 若下降数值大于该怪兽的攻击力，则给与对方该怪兽攻击力数值的效果伤害
 		if val>atk then Duel.Damage(1-tp,atk,REASON_EFFECT)
-		-- 否则，给与对方该下降数值的伤害。
+		-- 若下降数值不大于该怪兽的攻击力，则给与对方下降数值的效果伤害
 		else Duel.Damage(1-tp,val,REASON_EFFECT) end
 	end
 end
