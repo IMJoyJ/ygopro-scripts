@@ -5,9 +5,10 @@
 -- ②：这张卡的攻击力·守备力变成这张卡的效果装备的怪兽的各自数值，这张卡被战斗破坏的场合，作为代替把装备的那只怪兽破坏。
 -- ③：用这张卡的效果把怪兽装备的这张卡的战斗让自己受到战斗伤害时，对方也受到相同数值的效果伤害。
 function c64631466.initial_effect(c)
+	-- 在卡片的关联卡列表中添加「幻想的仪式」的卡片密码
 	aux.AddCodeList(c,41426869)
 	c:EnableReviveLimit()
-	-- ①：1回合1次，以对方场上1只怪兽为对象才能发动。那只对方怪兽当作装备卡使用给这张卡装备（只有1只可以装备）。
+	-- 1回合1次，以对方场上1只怪兽为对象才能发动。那只对方怪兽当作装备卡使用给这张卡装备（只有1只可以装备）。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(64631466,0))  --"装备"
 	e1:SetType(EFFECT_TYPE_IGNITION)
@@ -18,7 +19,7 @@ function c64631466.initial_effect(c)
 	e1:SetTarget(c64631466.eqtg)
 	e1:SetOperation(c64631466.eqop)
 	c:RegisterEffect(e1)
-	-- ②：这张卡的攻击力·守备力变成这张卡的效果装备的怪兽的各自数值
+	-- 这张卡的攻击力·守备力变成这张卡的效果装备的怪兽的各自数值
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_SINGLE)
 	e2:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
@@ -27,7 +28,7 @@ function c64631466.initial_effect(c)
 	e2:SetCondition(c64631466.adcon)
 	e2:SetValue(c64631466.atkval)
 	c:RegisterEffect(e2)
-	-- ②：这张卡的攻击力·守备力变成这张卡的效果装备的怪兽的各自数值
+	-- 这张卡的攻击力·守备力变成这张卡的效果装备的怪兽的各自数值
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_SINGLE)
 	e3:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
@@ -36,7 +37,7 @@ function c64631466.initial_effect(c)
 	e3:SetCondition(c64631466.adcon)
 	e3:SetValue(c64631466.defval)
 	c:RegisterEffect(e3)
-	-- ③：用这张卡的效果把怪兽装备的这张卡的战斗让自己受到战斗伤害时，对方也受到相同数值的效果伤害。
+	-- 用这张卡的效果把怪兽装备的这张卡的战斗让自己受到战斗伤害时，对方也受到相同数值的效果伤害。
 	local e4=Effect.CreateEffect(c)
 	e4:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e4:SetCode(EVENT_BATTLE_DAMAGE)
@@ -45,46 +46,46 @@ function c64631466.initial_effect(c)
 	e4:SetOperation(c64631466.damop)
 	c:RegisterEffect(e4)
 end
--- 判定是否满足发动条件：自身当前没有通过自身效果装备的怪兽
+-- 发动条件：检查这张卡是否没有通过自身效果装备怪兽
 function c64631466.eqcon(e,tp,eg,ep,ev,re,r,rp)
 	return c64631466.can_equip_monster(e:GetHandler())
 end
--- 过滤函数：筛选带有本卡卡号标记（即通过本卡效果装备）的卡片
+-- 过滤条件：通过该卡自身效果装备的卡片
 function c64631466.eqfilter(c)
 	return c:GetFlagEffect(64631466)~=0
 end
--- 判断自身当前是否未装备通过自身效果装备的怪兽
+-- 检查自身是否没有通过自身效果装备怪兽
 function c64631466.can_equip_monster(c)
 	local g=c:GetEquipGroup():Filter(c64631466.eqfilter,nil)
 	return g:GetCount()==0
 end
--- 效果①的Target函数：检查魔法与陷阱区域是否有空位，并选择对方场上1只可以转移控制权的怪兽作为对象
+-- 选择对方场上1只怪兽作为效果的对象，并进行魔法陷阱区域空余格数的检查
 function c64631466.eqtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(1-tp) and chkc:IsAbleToChangeControler() end
-	-- 在发动准备阶段，检查当前玩家的魔法与陷阱区域是否有空位
+	-- 检查自己的魔法与陷阱区域是否有空余的格子
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_SZONE)>0
-		-- 并且对方场上存在可以转移控制权的怪兽
+		-- 检查对方场上是否存在可以作为效果对象且能够夺取控制权的怪兽
 		and Duel.IsExistingTarget(Card.IsAbleToChangeControler,tp,0,LOCATION_MZONE,1,nil) end
-	-- 提示玩家选择要装备的卡
+	-- 提示玩家选择要装备的怪兽
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_EQUIP)  --"请选择要装备的卡"
-	-- 选择对方场上1只可以转移控制权的怪兽作为效果对象
+	-- 选择对方场上1只怪兽作为效果的对象
 	local g=Duel.SelectTarget(tp,Card.IsAbleToChangeControler,tp,0,LOCATION_MZONE,1,1,nil)
 end
--- 装备限制函数：该装备卡只能装备给本卡
+-- 装备限制条件：限制只能装备在自身上面
 function c64631466.eqlimit(e,c)
 	return e:GetOwner()==c
 end
--- 执行装备怪兽的操作：若本卡已装备其他怪兽则将目标送去墓地，否则将目标作为装备卡装备给本卡，并注册装备限制与代替破坏效果
+-- 将目标怪兽作为装备卡装备给这张卡，并为该装备卡注册装备限制以及代替破坏的效果
 function c64631466.equip_monster(c,tp,tc)
 	if c:IsLocation(LOCATION_MZONE) and c:IsFaceup() and not c64631466.can_equip_monster(c) then
-		-- 根据规则，将无法装备的目标怪兽送去墓地
+		-- 当这张卡已经装备了自身效果的怪兽时，试图装备的怪兽将因为规则送入墓地
 		Duel.SendtoGrave(tc,REASON_RULE)
 		return
 	end
-	-- 将目标怪兽作为装备卡装备给本卡，若装备失败则结束处理
+	-- 将目标怪兽作为装备卡装备给这张卡，若装备失败则结束处理
 	if not Duel.Equip(tp,tc,c,false) then return end
 	tc:RegisterFlagEffect(64631466,RESET_EVENT+RESETS_STANDARD,0,0)
-	-- 那只对方怪兽当作装备卡使用给这张卡装备（只有1只可以装备）。
+	-- 那只对方怪兽当作装备卡使用给这张卡装备（只有1只可以装备）
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetProperty(EFFECT_FLAG_OWNER_RELATE)
@@ -101,7 +102,7 @@ function c64631466.equip_monster(c,tp,tc)
 	e2:SetValue(c64631466.repval)
 	tc:RegisterEffect(e2)
 end
--- 效果①的Operation函数：获取选择的对象，若其仍满足条件则将其作为装备卡装备给本卡
+-- 效果处理：将选择的对方场上的怪兽作为装备卡装备给自身
 function c64631466.eqop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	-- 获取当前连锁中被选择的效果对象怪兽
@@ -110,30 +111,30 @@ function c64631466.eqop(e,tp,eg,ep,ev,re,r,rp)
 		c64631466.equip_monster(c,tp,tc)
 	end
 end
--- 代替破坏的判定：仅在因战斗破坏时可以进行代替破坏
+-- 代替破坏的判定条件：检查破坏原因是否为战斗破坏
 function c64631466.repval(e,re,r,rp)
 	return bit.band(r,REASON_BATTLE)~=0
 end
--- 效果③的发动条件：本卡装备有通过自身效果装备的怪兽，且本卡进行战斗使自身受到战斗伤害
+-- 反弹战斗伤害效果的触发条件：这张卡已装备自身效果的怪兽、自己受到战斗伤害且这张卡参与了该次战斗
 function c64631466.damcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local g=c:GetEquipGroup():Filter(c64631466.eqfilter,nil)
 	return g:GetCount()>0 and ep==tp
-		-- 且本卡是本次战斗的攻击怪兽或被攻击怪兽
+		-- 检查这张卡是否是本次战斗的攻击怪兽或是被攻击的目标
 		and (Duel.GetAttacker()==e:GetHandler() or Duel.GetAttackTarget()==e:GetHandler())
 end
--- 效果③的Operation函数：给与对方与自身受到的战斗伤害相同数值的效果伤害
+-- 反弹战斗伤害效果的处理：给对方造成与自己受到的战斗伤害相同数值的效果伤害
 function c64631466.damop(e,tp,eg,ep,ev,re,r,rp)
-	-- 给与对方玩家相同数值的效果伤害
+	-- 给对方玩家造成与本次战斗中自己受到的战斗伤害相同数值的效果伤害
 	Duel.Damage(1-tp,ev,REASON_EFFECT)
 end
--- 攻击力·守备力变化效果的适用条件：本卡装备有通过自身效果装备的怪兽
+-- 攻击力·守备力改变效果的适用条件：检查自身是否装备了通过自身效果装备的怪兽
 function c64631466.adcon(e)
 	local c=e:GetHandler()
 	local g=c:GetEquipGroup():Filter(c64631466.eqfilter,nil)
 	return g:GetCount()>0
 end
--- 攻击力数值计算：获取装备怪兽的原本攻击力，若装备怪兽里侧表示、非怪兽卡或攻击力小于0，则攻击力变为0
+-- 数值计算：计算这张卡效果装备的怪兽的攻击力数值，若不是怪兽卡或小于0则返回0
 function c64631466.atkval(e,c)
 	local c=e:GetHandler()
 	local g=c:GetEquipGroup():Filter(c64631466.eqfilter,nil)
@@ -144,7 +145,7 @@ function c64631466.atkval(e,c)
 		return atk
 	end
 end
--- 守备力数值计算：获取装备怪兽的原本守备力，若装备怪兽里侧表示、非怪兽卡或守备力小于0，则守备力变为0
+-- 数值计算：计算这张卡效果装备的怪兽的守备力数值，若不是怪兽卡或小于0则返回0
 function c64631466.defval(e,c)
 	local c=e:GetHandler()
 	local g=c:GetEquipGroup():Filter(c64631466.eqfilter,nil)
