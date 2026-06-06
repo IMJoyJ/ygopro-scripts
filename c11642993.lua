@@ -65,9 +65,7 @@ function s.rmop(e,tp,eg,ep,ev,re,r,rp)
 	local tc=Duel.GetFirstTarget()
 	-- 确认目标卡片与该效果关联，且在考虑「王家长眠之谷」影响下依然合法
 	if tc:IsRelateToChain() and aux.NecroValleyFilter()(tc)
-		-- 将对方的目标卡片以表侧表示除外
-		and Duel.Remove(tc,POS_FACEUP,REASON_EFFECT)
-		-- 检查自己主要怪兽区域是否存在可移动的「治安战警队」怪兽
+		and Duel.Remove(tc,POS_FACEUP,REASON_EFFECT)>0
 		and Duel.IsExistingMatchingCard(s.eqfiltter,tp,LOCATION_MZONE,0,1,nil)
 		-- 检查自己场上主要怪兽区域是否还存在可用于移动的空余格子
 		and Duel.GetLocationCount(tp,LOCATION_MZONE,PLAYER_NONE,0)>0
