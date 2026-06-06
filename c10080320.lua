@@ -13,7 +13,7 @@ function c10080320.initial_effect(c)
 	e2:SetCode(EFFECT_UPDATE_ATTACK)
 	e2:SetRange(LOCATION_FZONE)
 	e2:SetTargetRange(LOCATION_MZONE,LOCATION_MZONE)
-	-- 设置效果目标为满足条件的恐龙族怪兽
+	-- 设置效果的对象为恐龙族怪兽
 	e2:SetTarget(aux.TargetBoolFunction(Card.IsRace,RACE_DINOSAUR))
 	e2:SetValue(300)
 	c:RegisterEffect(e2)

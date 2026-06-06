@@ -5,7 +5,7 @@
 -- ②：这张卡可以直接攻击。
 -- ③：这张卡直接攻击给与对方战斗伤害时才能发动。这张卡和除调整以外的自己的手卡·场上（表侧表示）的怪兽1只以上解放，把持有和解放的怪兽的等级合计相同等级的1只「电气」同调怪兽从额外卡组特殊召唤。
 local s,id,o=GetID()
--- 初始化卡片效果的函数入口
+-- 注册卡片效果的初始化函数
 function s.initial_effect(c)
 	-- ②：这张卡可以直接攻击。
 	local e1=Effect.CreateEffect(c)
@@ -26,13 +26,13 @@ function s.initial_effect(c)
 	c:RegisterEffect(e2)
 	if not s.global_check then
 		s.global_check=true
-		-- 注册全局效果用于记录战斗伤害事件，以便后续效果①使用
+		-- 自己怪兽给与对方战斗伤害
 		local e3=Effect.CreateEffect(c)
 		e3:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 		e3:SetCode(EVENT_BATTLE_DAMAGE)
 		e3:SetCondition(s.regcon)
 		e3:SetOperation(s.regop)
-		-- 将效果e3注册为全局环境下的持续效果，监听战斗伤害事件
+		-- 注册全局战斗伤害监听效果
 		Duel.RegisterEffect(e3,0)
 	end
 	-- ③：这张卡直接攻击给与对方战斗伤害时才能发动。这张卡和除调整以外的自己的手卡·场上（表侧表示）的怪兽1只以上解放，把持有和解放的怪兽的等级合计相同等级的1只「电气」同调怪兽从额外卡组特殊召唤。
@@ -47,80 +47,80 @@ function s.initial_effect(c)
 	e4:SetOperation(s.ssop)
 	c:RegisterEffect(e4)
 end
--- 判断是否满足①效果的发动条件，即在伤害步骤结束时是否有标记。
+-- 自己怪兽特殊召唤效果的发动条件检查
 function s.spcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查玩家在伤害步骤结束时是否有标记。
+	-- 返回本回合自己是否曾给与对方战斗伤害的标志数量是否大于0
 	return Duel.GetFlagEffect(tp,id)>0
 end
--- 设置①效果的目标，判断是否可以特殊召唤该卡。
+-- 自己怪兽特殊召唤效果的靶向与可行性检查
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
-	-- 检查场上是否有足够的空间进行特殊召唤。
+	-- 在效果发动检查时，检查主要怪兽区域是否有空位
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and c:IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置连锁操作信息，表示将要特殊召唤该卡。
+	-- 设置特殊召唤自身的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,c,1,0,0)
 end
--- 执行①效果的处理，将该卡特殊召唤到场上。
+-- 自己怪兽特殊召唤效果的效果处理
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 确认该卡是否还在场上，若在则进行特殊召唤。
+	-- 如果此卡依然存在于手卡中，则将其特殊召唤
 	if c:IsRelateToEffect(e) then Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP) end
 end
--- 判断是否满足③效果的发动条件，即是否为对方造成的战斗伤害且没有攻击目标。
+-- 检查是否是战斗伤害（伤害接受者不等于伤害造成者）
 function s.regcon(e,tp,eg,ep,ev,re,r,rp)
 	return ep~=rp
 end
--- 注册一个场地区域的持续效果，用于记录战斗伤害发生时的状态。
+-- 记录战斗伤害发生的标记处理
 function s.regop(e,tp,eg,ep,ev,re,r,rp)
-	-- 为对方玩家注册一个标记效果，在伤害步骤结束时重置。
+	-- 为造成伤害的玩家注册本回合已造成战斗伤害的标记
 	Duel.RegisterFlagEffect(rp,id,RESET_PHASE+PHASE_DAMAGE,0,1)
 end
--- 判断是否满足③效果的发动条件，即是否为对方造成的战斗伤害且没有攻击目标。
+-- 同调怪兽特殊召唤效果的发动条件：直接攻击给与对方战斗伤害时
 function s.sscon(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查是否为对方造成的战斗伤害且当前没有攻击目标。
+	-- 返回本次战斗伤害是否由直接攻击造成
 	return ep==1-tp and Duel.GetAttackTarget()==nil
 end
--- 过滤函数，用于筛选非调整类的表侧表示怪兽。
+-- 过滤手卡或场上表侧表示的非调整怪兽
 function s.mfilter(c)
 	return not c:IsType(TYPE_TUNER) and c:IsFaceupEx() and c:GetLevel()>0
 end
--- 过滤函数，用于筛选满足同调条件的「电气」同调怪兽。
+-- 过滤可以特殊召唤且等级符合解放怪兽等级合计的「电气」同调怪兽
 function s.spfilter(c,e,tp,g)
 	return c:IsSetCard(0xe) and c:IsType(TYPE_SYNCHRO) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 		and g:CheckSubGroup(s.gcheck,1,#g,tp,e:GetHandler(),c)
 end
--- 检查函数，用于判断所选怪兽数量和等级是否满足同调召唤条件。
+-- 检查解放怪兽的等级合计与额外区域位置是否满足的辅助函数
 function s.gcheck(g,tp,ec,sc)
-	-- 检查所选怪兽的等级总和是否等于目标同调怪兽的等级。
+	-- 返回解放所选怪兽后是否能将该同调怪兽特殊召唤，并且它们的等级合计是否等于该同调怪兽的等级
 	return Duel.GetLocationCountFromEx(tp,tp,g+ec,sc)>0 and g:GetSum(Card.GetLevel)+ec:GetLevel()==sc:GetLevel()
 end
--- 设置③效果的目标，判断是否可以解放怪兽并特殊召唤同调怪兽。
+-- 同调怪兽特殊召唤效果的靶向与可行性检查
 function s.sstg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
-	-- 获取玩家可解放的怪兽组，包括手牌和场上的表侧表示怪兽。
+	-- 获取自己可解放的、符合非调整怪兽条件的卡片组
 	local g=Duel.GetReleaseGroup(tp,true,REASON_EFFECT):Filter(s.mfilter,c)
 	if chk==0 then return c:IsReleasableByEffect() and c:GetLevel()>0
-		-- 检查是否存在满足条件的「电气」同调怪兽。
+		-- 检查额外卡组中是否存在符合条件的可以特殊召唤的「电气」同调怪兽
 		and Duel.IsExistingMatchingCard(s.spfilter,tp,LOCATION_EXTRA,0,1,nil,e,tp,g) end
-	-- 设置连锁操作信息，表示将要解放怪兽。
+	-- 设置解放怪兽的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_RELEASE,g,2,0,0)
 end
--- 执行③效果的处理，选择要特殊召唤的同调怪兽并解放符合条件的怪兽。
+-- 同调怪兽特殊召唤效果的效果处理
 function s.ssop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取玩家可解放的怪兽组，包括手牌和场上的表侧表示怪兽。
+	-- 在效果处理时再次获取可解放的非调整怪兽组
 	local g=Duel.GetReleaseGroup(tp,true,REASON_EFFECT):Filter(s.mfilter,c)
 	if not (c:IsRelateToEffect(e) and c:IsReleasableByEffect()) or #g==0 then return end
-	-- 提示玩家选择要特殊召唤的同调怪兽。
+	-- 提示玩家选择要特殊召唤的怪兽
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 选择满足条件的「电气」同调怪兽。
+	-- 玩家从额外卡组中选择1只「电气」同调怪兽
 	local tc=Duel.SelectMatchingCard(tp,s.spfilter,tp,LOCATION_EXTRA,0,1,1,nil,e,tp,g):GetFirst()
 	if tc then
-		-- 提示玩家选择要解放的怪兽。
+		-- 提示玩家选择要解放的怪兽
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_RELEASE)  --"请选择要解放的卡"
 		local sg=g:SelectSubGroup(tp,s.gcheck,false,1,#g,tp,c,tc)+c
-		-- 执行解放并特殊召唤操作。
+		-- 如果成功解放被选中的怪兽，则特殊召唤该「电气」同调怪兽
 		if Duel.Release(sg,REASON_EFFECT)>0 then Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP) end
 	end
 end

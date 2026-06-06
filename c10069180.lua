@@ -12,26 +12,26 @@ function c10069180.initial_effect(c)
 	e1:SetOperation(c10069180.activate)
 	c:RegisterEffect(e1)
 end
--- 检查是否满足发动条件
+-- 发动条件的判断
 function c10069180.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 确认是对方发动的永续魔法卡且该连锁可以被无效
+	-- 对方发动永续魔法卡，且该连锁的发动可以被无效的场合
 	return rp==1-tp and re:IsHasType(EFFECT_TYPE_ACTIVATE) and re:GetActiveType()==TYPE_SPELL+TYPE_CONTINUOUS and Duel.IsChainNegatable(ev)
 end
--- 设置发动时的处理目标
+-- 效果发动时的处理
 function c10069180.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置使对方发动无效的操作信息
+	-- 设置无效发动的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_NEGATE,eg,1,0,0)
 	if re:GetHandler():IsDestructable() and re:GetHandler():IsRelateToEffect(re) then
-		-- 设置破坏对方卡片的操作信息
+		-- 设置破坏该卡的操作信息
 		Duel.SetOperationInfo(0,CATEGORY_DESTROY,eg,1,0,0)
 	end
 end
--- 执行发动后的处理流程
+-- 效果处理的实现
 function c10069180.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 使对方发动无效并判断是否可以破坏
+	-- 使该连锁的发动无效，且该卡与此效果有联系的场合
 	if Duel.NegateActivation(ev) and re:GetHandler():IsRelateToEffect(re) then
-		-- 将对方的卡片破坏
+		-- 破坏该卡
 		Duel.Destroy(eg,REASON_EFFECT)
 	end
 end

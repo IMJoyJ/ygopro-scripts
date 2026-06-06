@@ -21,48 +21,48 @@ function c10131855.initial_effect(c)
 	e2:SetOperation(c10131855.operation)
 	c:RegisterEffect(e2)
 end
--- 函数定义：处理效果发动后对方手卡丢弃的函数
+-- 被替换的对方效果：对方手卡随机选1张丢弃
 function c10131855.repop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前玩家手卡的卡片组
+	-- 获取对方手卡卡片组
 	local g=Duel.GetFieldGroup(tp,0,LOCATION_HAND)
 	if g:GetCount()>0 then
 		local sg=g:RandomSelect(1-tp,1)
-		-- 将sg中的卡片以效果和丢弃的原因送去墓地
+		-- 以效果丢弃的方式将选中的卡片送去墓地
 		Duel.SendtoGrave(sg,REASON_EFFECT+REASON_DISCARD)
 	end
 end
--- 函数定义：判断是否满足发动条件
+-- 效果发动的条件检查函数
 function c10131855.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 条件判断：对方发动效果且自己手卡不少于3张
+	-- 返回是否是对方发动的怪兽效果且自己手卡有3张以上
 	return ep~=tp and re:IsActiveType(TYPE_MONSTER) and Duel.GetFieldGroupCount(tp,LOCATION_HAND,0)>=3
 end
--- 函数定义：筛选符合条件的「暗黑界」怪兽
+-- 过滤场上表侧表示且可回到手卡的「暗黑界」怪兽
 function c10131855.thfilter(c)
 	return c:IsFaceup() and c:IsSetCard(0x6) and c:IsAbleToHand()
 end
--- 函数定义：设置效果的目标
+-- 效果发动的靶向与可行性检查
 function c10131855.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and c10131855.thfilter(chkc) end
-	-- 检查阶段：判断是否存在符合条件的怪兽作为目标
+	-- 在效果发动检查时，检查场上是否存在符合条件的「暗黑界」怪兽
 	if chk==0 then return Duel.IsExistingTarget(c10131855.thfilter,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil) end
-	-- 提示选择：向玩家提示选择要返回手牌的卡
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_RTOHAND)
-	-- 选择目标：从场上选择一只符合条件的怪兽作为目标
+	-- 提示玩家选择要返回手牌的卡片
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_RTOHAND)  --"请选择要返回手牌的卡"
+	-- 选择场上1只「暗黑界」怪兽作为效果对象
 	local g=Duel.SelectTarget(tp,c10131855.thfilter,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,nil)
-	-- 设置操作信息：将要返回手牌的怪兽设置为操作对象
+	-- 设置返回手牌操作的信息
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,1,0,0)
 end
--- 函数定义：执行效果处理
+-- 效果实际处理函数
 function c10131855.operation(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取当前连锁的效果对象
+	-- 获取作为效果对象的怪兽
 	local tc=Duel.GetFirstTarget()
-	-- 判断目标怪兽是否仍然有效并将其送入手卡
+	-- 如果目标怪兽与效果有关联，则将其送回持有者手卡
 	if tc:IsRelateToEffect(e) and Duel.SendtoHand(tc,nil,REASON_EFFECT)>0 then
 		local g=Group.CreateGroup()
-		-- 更改连锁的目标卡片为一个空组
+		-- 清空原连锁的效果对象
 		Duel.ChangeTargetCard(ev,g)
-		-- 更改连锁的处理函数为repop函数，实现效果变为对方手卡丢弃
+		-- 将原连锁的效果处理替换为随机丢弃手卡的效果
 		Duel.ChangeChainOperation(ev,c10131855.repop)
 	end
 end
