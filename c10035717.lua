@@ -21,47 +21,47 @@ function c10035717.initial_effect(c)
 	e2:SetOperation(c10035717.adop)
 	c:RegisterEffect(e2)
 end
--- 检查是否为自己的准备阶段
+-- 攻守互换效果的Condition条件函数：必须是自己的回合
 function c10035717.adcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 当前回合玩家为效果发动者
+	-- 检查当前回合玩家是否为自己
 	return Duel.GetTurnPlayer()==tp
 end
--- 支付700基本分
+-- 攻守互换效果的Cost费用函数：检查并支付700点基本分
 function c10035717.adcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否能支付700基本分
+	-- 检查自己是否能支付700点基本分
 	if chk==0 then return Duel.CheckLPCost(tp,700) end
-	-- 支付700基本分
+	-- 支付700点基本分
 	Duel.PayLPCost(tp,700)
 end
--- 筛选场上表侧表示的战士族或机械族怪兽
+-- 过滤自己场上表侧表示、且是战士族或机械族的怪兽的条件
 function c10035717.filter(c)
 	return c:IsFaceup() and c:IsRace(RACE_MACHINE+RACE_WARRIOR) and c:IsDefenseAbove(0)
 end
--- 选择目标怪兽
+-- 攻守互换效果的Target目标函数：选择自己场上1只表侧表示的战士族·机械族怪兽为对象
 function c10035717.adtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(tp) and chkc:IsLocation(LOCATION_MZONE) and c10035717.filter(chkc) end
-	-- 确认场上是否存在符合条件的怪兽
+	-- 检查自己场上是否存在满足条件的战士族或机械族怪兽
 	if chk==0 then return Duel.IsExistingTarget(c10035717.filter,tp,LOCATION_MZONE,0,1,nil) end
-	-- 提示选择表侧表示的怪兽
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)
-	-- 选择1只符合条件的怪兽作为目标
+	-- 给玩家提示选择表侧表示的卡
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
+	-- 以自己场上1只满足过滤条件的战士族或机械族怪兽为对象发动
 	Duel.SelectTarget(tp,c10035717.filter,tp,LOCATION_MZONE,0,1,1,nil)
 end
--- 发动效果，交换目标怪兽的攻守数值
+-- 攻守互换效果的Operation处理函数：获取目标怪兽的攻击力和守备力，然后使它们的数值互换，并持续到对方下一个结束阶段终了时
 function c10035717.adop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取效果的目标怪兽
+	-- 获取作为效果对象的怪兽
 	local tc=Duel.GetFirstTarget()
 	if tc:IsFaceup() and tc:IsRelateToEffect(e) and tc:IsRace(RACE_MACHINE+RACE_WARRIOR) then
 		local atk=tc:GetAttack()
 		local def=tc:GetDefense()
-		-- 将目标怪兽的攻击力设为原本的守备力
+		-- 使自己场上1只战士族·机械族怪兽的攻击力与守备力互换直到对方的下一个结束阶段终了时为止。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_SET_ATTACK_FINAL)
 		e1:SetValue(def)
 		e1:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END,2)
 		tc:RegisterEffect(e1)
-		-- 将目标怪兽的守备力设为原本的攻击力
+		-- 使自己场上1只战士族·机械族怪兽的攻击力与守备力互换直到对方的下一个结束阶段终了时为止。
 		local e2=Effect.CreateEffect(e:GetHandler())
 		e2:SetType(EFFECT_TYPE_SINGLE)
 		e2:SetCode(EFFECT_SET_DEFENSE_FINAL)
