@@ -8,7 +8,7 @@
 -- ●3只：对方发动的魔法·陷阱·怪兽的效果无效化。
 function c10248389.initial_effect(c)
 	c:EnableReviveLimit()
-	-- 为卡片添加融合召唤手续，必须使用'电子化明星'（卡号97023549）和'利刃滑冰者'（卡号11460577）作为融合素材。
+	-- 注册融合素材为「电子化明星」与「利刃滑冰者」的融合召唤手续
 	aux.AddFusionProcCode2(c,97023549,11460577,false,false)
 	-- ●1只：这张卡不会被战斗破坏。
 	local e1=Effect.CreateEffect(c)
@@ -35,29 +35,29 @@ function c10248389.initial_effect(c)
 	e4:SetOperation(c10248389.disop)
 	c:RegisterEffect(e4)
 end
--- 定义条件函数，检查对方场上怪兽数量是否为1。
+-- 战斗不破效果的发动条件：对方场上的怪兽数量为1只
 function c10248389.indcon(e)
-	-- 获取对方场上怪兽数量并判断是否等于1。
+	-- 返回对方怪兽区的怪兽数量是否为1只
 	return Duel.GetFieldGroupCount(e:GetHandlerPlayer(),0,LOCATION_MZONE)==1
 end
--- 定义条件函数，检查对方场上怪兽数量是否为2。
+-- 攻击力变成2倍效果的发动条件：对方场上的怪兽数量为2只
 function c10248389.atkcon(e)
-	-- 获取对方场上怪兽数量并判断是否等于2。
+	-- 返回对方怪兽区的怪兽数量是否为2只
 	return Duel.GetFieldGroupCount(e:GetHandlerPlayer(),0,LOCATION_MZONE)==2
 end
--- 定义条件函数，检查对方场上怪兽数量是否为3。
+-- 效果无效化效果的发动条件：对方场上的怪兽数量为3只
 function c10248389.discon(e)
-	-- 获取对方场上怪兽数量并判断是否等于3。
+	-- 返回对方怪兽区的怪兽数量是否为3只
 	return Duel.GetFieldGroupCount(e:GetHandlerPlayer(),0,LOCATION_MZONE)==3
 end
--- 定义值函数，计算并返回当前攻击力的两倍。
+-- 攻击力数值计算函数：返回此卡当前攻击力2倍的值
 function c10248389.atkval(e,c)
 	return c:GetAttack()*2
 end
--- 定义操作函数，处理无效化效果。
+-- 效果无效化效果的执行操作：若是对方玩家发动的效果，将其无效化
 function c10248389.disop(e,tp,eg,ep,ev,re,r,rp)
 	if rp==1-tp then
-		-- 使当前连锁的效果无效。
+		-- 将该连锁的效果无效化
 		Duel.NegateEffect(ev)
 	end
 end

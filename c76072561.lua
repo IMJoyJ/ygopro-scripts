@@ -5,13 +5,13 @@
 -- ①：这张卡特殊召唤的场合才能发动。从自己的卡组·墓地把1张「闪刀」魔法卡加入手卡。
 -- ②：自己·对方回合，把这张卡解放才能发动。「闪刀姬-零衣」「闪刀姬-露世」各1只从自己的卡组·墓地特殊召唤。那之后，可以把场上1张卡破坏。
 local s,id,o=GetID()
--- 注册卡片初始效果，包括记载卡名、特殊召唤限制、连接召唤手续、不能作为连接素材、特殊召唤成功时检索「闪刀」魔法卡，以及解放自身特殊召唤「闪刀姬-零衣」和「闪刀姬-露世」并破坏场上卡片的效果。
+-- 初始化效果注册
 function s.initial_effect(c)
-	-- 记录该卡效果中记载了「闪刀姬-零衣」与「闪刀姬-露世」的卡名。
+	-- 将「闪刀姬-零衣」与「闪刀姬-露世」加入该卡的关联卡片列表
 	aux.AddCodeList(c,26077387,37351133)
 	c:SetSPSummonOnce(id)
 	c:EnableReviveLimit()
-	-- 添加连接召唤手续：需要2只「闪刀姬」怪兽作为连接素材。
+	-- 添加连接召唤手续：使用2只「闪刀姬」怪兽作为连接素材
 	aux.AddLinkProcedure(c,aux.FilterBoolFunction(Card.IsLinkSetCard,0x1115),2,2)
 	-- 这张卡不能作为连接素材。
 	local e0=Effect.CreateEffect(c)
@@ -45,88 +45,88 @@ function s.initial_effect(c)
 	e2:SetOperation(s.spop)
 	c:RegisterEffect(e2)
 end
--- 过滤函数：检索卡组或墓地中属于「闪刀」系列且是魔法卡、能加入手牌的卡。
+-- 过滤满足属于「闪刀」魔法卡且可加入手牌条件的卡片
 function s.filter(c)
 	return c:IsSetCard(0x115) and c:IsType(TYPE_SPELL) and c:IsAbleToHand()
 end
--- 效果①（检索「闪刀」魔法卡）的发动准备与合法性检测函数。
+-- ①号效果的检索发动检测与操作信息设置
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查卡组或墓地中是否存在至少1张满足条件的「闪刀」魔法卡。
+	-- 检测自己的卡组或墓地是否存在可以加入手牌的「闪刀」魔法卡
 	if chk==0 then return Duel.IsExistingMatchingCard(s.filter,tp,LOCATION_DECK+LOCATION_GRAVE,0,1,nil) end
-	-- 设置连锁操作信息：从卡组或墓地将1张卡加入手牌。
+	-- 设置连锁操作信息，声明该效果包含将自己卡组或墓地中的1张卡加入手牌的操作
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK+LOCATION_GRAVE)
 end
--- 效果①（检索「闪刀」魔法卡）的效果处理函数。
+-- ①号效果的效果处理函数（检索「闪刀」魔法卡）
 function s.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要加入手牌的卡。
+	-- 向发动效果的玩家提示选择要加入手牌的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 让玩家从卡组或墓地（受王家长眠之谷影响）选择1张满足条件的「闪刀」魔法卡。
+	-- 从自己的卡组或墓地选择1张不受「王家之谷」影响的「闪刀」魔法卡
 	local g=Duel.SelectMatchingCard(tp,aux.NecroValleyFilter(s.filter),tp,LOCATION_DECK+LOCATION_GRAVE,0,1,1,nil)
 	if #g>0 then
-		-- 将选中的卡因效果加入手牌。
+		-- 将选中的卡片加入玩家手牌
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 向对方玩家展示加入手牌的卡。
+		-- 向对方玩家展示加入手牌的卡片
 		Duel.ConfirmCards(1-tp,g)
 	end
 end
--- 效果②（特殊召唤「零衣」和「露世」）的发动代价（Cost）函数。
+-- ②号效果的发动代价检测与处理
 function s.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
-	-- 检查此卡是否可以解放，且解放此卡后自己场上是否有2个以上的空怪兽区域。
+	-- 在效果发动时，检测自身是否可解放且解放后有2个以上的空怪兽位
 	if chk==0 then return c:IsReleasable() and Duel.GetMZoneCount(tp,c,tp)>1 end
-	-- 解放此卡作为发动的代价。
+	-- 解放自身作为效果发动的代价
 	Duel.Release(c,REASON_COST)
 end
--- 过滤函数：检查卡片是否为「闪刀姬-零衣」且可以被特殊召唤。
+-- 过滤满足从自己卡组或墓地特殊召唤条件的「闪刀姬-零衣」
 function s.spfilter1(c,e,tp)
 	return c:IsCode(26077387) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 过滤函数：检查卡片是否为「闪刀姬-露世」且可以被特殊召唤。
+-- 过滤满足从自己卡组或墓地特殊召唤条件的「闪刀姬-露世」
 function s.spfilter2(c,e,tp)
 	return c:IsCode(37351133) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 过滤函数：确保选择的卡片组中包含2种不同卡名的卡（即「零衣」和「露世」各1只）。
+-- 过滤保证选择的卡片组中包含2张卡名不同的卡片
 function s.fselect(g)
 	return g:GetClassCount(Card.GetCode)==2
 end
--- 效果②（特殊召唤「零衣」和「露世」）的发动准备与合法性检测函数。
+-- ②号效果的特殊召唤发动检测与操作信息设置
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中。禁止双方同时特殊召唤2只以上怪兽
 	if chk==0 then return not Duel.IsPlayerAffectedByEffect(tp,59822133)
-		-- 检查卡组或墓地中是否存在至少1只可以特殊召唤的「闪刀姬-零衣」。
+		-- 检测自己的卡组或墓地是否存在可以特殊召唤的「闪刀姬-零衣」
 		and Duel.IsExistingMatchingCard(s.spfilter1,tp,LOCATION_DECK+LOCATION_GRAVE,0,1,nil,e,tp)
-		-- 检查卡组或墓地中是否存在至少1只可以特殊召唤的「闪刀姬-露世」。
+		-- 检测自己的卡组或墓地是否存在可以特殊召唤的「闪刀姬-露世」
 		and Duel.IsExistingMatchingCard(s.spfilter2,tp,LOCATION_DECK+LOCATION_GRAVE,0,1,nil,e,tp) end
-	-- 设置连锁操作信息：从卡组或墓地特殊召唤2只怪兽。
+	-- 设置连锁操作信息，声明该效果包含特殊召唤2张卡片的操作
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,2,tp,LOCATION_DECK+LOCATION_GRAVE)
 end
--- 效果②（特殊召唤「零衣」和「露世」并可选破坏场上卡片）的效果处理函数。
+-- ②号效果的效果处理函数（特殊召唤两只怪兽并可选破坏场上的一张卡）
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
 	-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中。禁止双方同时特殊召唤2只以上怪兽
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<2 or Duel.IsPlayerAffectedByEffect(tp,59822133) then return end
-	-- 获取卡组或墓地中所有满足条件的「闪刀姬-零衣」（受王家长眠之谷影响）。
+	-- 获取自己卡组和墓地中所有不受「王家之谷」影响且可特殊召唤的「闪刀姬-零衣」
 	local g1=Duel.GetMatchingGroup(aux.NecroValleyFilter(s.spfilter1),tp,LOCATION_DECK+LOCATION_GRAVE,0,nil,e,tp)
-	-- 获取卡组或墓地中所有满足条件的「闪刀姬-露世」（受王家长眠之谷影响）。
+	-- 获取自己卡组和墓地中所有不受「王家之谷」影响且可特殊召唤的「闪刀姬-露世」
 	local g2=Duel.GetMatchingGroup(aux.NecroValleyFilter(s.spfilter2),tp,LOCATION_DECK+LOCATION_GRAVE,0,nil,e,tp)
 	if #g1>=1 and #g2>=1 then
 		g1:Merge(g2)
 		local sg=g1:SelectSubGroup(tp,s.fselect,false,2,2)
-		-- 将选中的「闪刀姬-零衣」和「闪刀姬-露世」以表侧表示特殊召唤，并判断是否特殊召唤成功。
+		-- 判断这2只怪兽是否成功特殊召唤
 		if Duel.SpecialSummon(sg,0,tp,tp,false,false,POS_FACEUP)>0
-			-- 检查场上是否存在至少1张卡（用于后续的破坏效果）。
+			-- 检测场上是否存在可以作为破坏对象的卡片
 			and Duel.IsExistingMatchingCard(aux.TRUE,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,nil)
-			-- 询问玩家是否选择发动后续的破坏效果。
+			-- 询问玩家是否选择执行卡片破坏的效果
 			and Duel.SelectYesNo(tp,aux.Stringid(id,2)) then  --"是否选卡破坏？"
-			-- 提示玩家选择要破坏的卡。
+			-- 向选择破坏卡片的玩家提示选择要破坏的卡
 			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-			-- 让玩家选择场上的1张卡。
+			-- 选择场上1张卡作为破坏的目标
 			local dg=Duel.SelectMatchingCard(tp,aux.TRUE,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,1,nil)
 			if #dg>0 then
-				-- 中断当前效果处理，使后续的破坏处理与特殊召唤不视为同时进行（造成错时点）。
+				-- 中断当前效果处理，使后续的破坏效果不与特殊召唤同时处理
 				Duel.BreakEffect()
-				-- 闪烁显示被选为破坏对象的卡片。
+				-- 手动为选中的目标卡片显示被选为对象的动画效果
 				Duel.HintSelection(dg)
-				-- 将选中的卡因效果破坏。
+				-- 因效果破坏选中的目标卡片
 				Duel.Destroy(dg,REASON_EFFECT)
 			end
 		end

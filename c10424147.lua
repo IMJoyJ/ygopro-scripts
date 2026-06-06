@@ -31,121 +31,121 @@ function c10424147.initial_effect(c)
 	e3:SetOperation(c10424147.spop2)
 	c:RegisterEffect(e3)
 end
--- 检索满足条件的1张手卡并丢弃，作为效果发动的代价。
+-- ①效果的发动Cost：丢弃1张手卡
 function c10424147.spcost1(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断是否满足丢弃手卡的条件。
+	-- 检查手卡中是否存在可丢弃的卡片
 	if chk==0 then return Duel.IsExistingMatchingCard(Card.IsDiscardable,tp,LOCATION_HAND,0,1,nil) end
-	-- 执行丢弃手卡的操作。
+	-- 从手卡选择并以Cost原因丢弃1张卡
 	Duel.DiscardHand(tp,Card.IsDiscardable,1,1,REASON_COST+REASON_DISCARD)
 end
--- 筛选满足条件的「超级量子战士」怪兽，作为效果发动的对象。
+-- 过滤场上符合①效果特殊召唤条件的「超级量子战士」怪兽的条件函数
 function c10424147.spfilter1(c,e,tp)
 	return c:IsFaceup() and c:IsSetCard(0x10dc)
-		-- 判断是否满足在额外卡组检索符合条件的「超级量子机兽」超量怪兽的条件。
+		-- 检查额外卡组中是否存在满足与该战士相同属性、能进行重叠超量召唤的「超级量子机兽」超量怪兽
 		and Duel.IsExistingMatchingCard(c10424147.spfilter2,tp,LOCATION_EXTRA,0,1,nil,e,tp,c,c:GetAttribute())
-		-- 判断目标怪兽是否满足作为超量素材的条件。
+		-- 检查该战士怪兽是否满足必须作为超量素材的限制规则
 		and aux.MustMaterialCheck(c,tp,EFFECT_MUST_BE_XMATERIAL)
 end
--- 筛选满足条件的「超级量子机兽」超量怪兽，作为特殊召唤的对象。
+-- 过滤额外卡组中能将选定的战士怪兽作为素材重叠超量召唤的、相同属性的「超级量子机兽」的条件函数
 function c10424147.spfilter2(c,e,tp,mc,att)
 	return c:IsType(TYPE_XYZ) and c:IsSetCard(0x20dc) and c:IsAttribute(att) and mc:IsCanBeXyzMaterial(c)
-		-- 判断目标怪兽是否满足特殊召唤的条件。
+		-- 检查该机兽是否可以被特殊召唤，且场上有能够容纳来自额外卡组怪兽出场的区域
 		and c:IsCanBeSpecialSummoned(e,SUMMON_TYPE_XYZ,tp,false,false) and Duel.GetLocationCountFromEx(tp,tp,mc,c)>0
 end
--- 设置效果的目标怪兽并准备特殊召唤。
+-- ①效果的Target函数：以自己场上1只「超级量子战士」怪兽为对象发动
 function c10424147.sptg1(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(tp) and chkc:IsLocation(LOCATION_MZONE) and c10424147.spfilter1(chkc,e,tp) end
-	-- 判断是否满足选择目标怪兽的条件。
+	-- 检查场上是否存在可以作为效果对象的「超级量子战士」
 	if chk==0 then return Duel.IsExistingTarget(c10424147.spfilter1,tp,LOCATION_MZONE,0,1,nil,e,tp) end
-	-- 提示玩家选择目标怪兽。
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)
-	-- 选择目标怪兽。
+	-- 提示玩家选择效果的指向对象
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)  --"请选择效果的对象"
+	-- 选择自己场上的1只「超级量子战士」怪兽作为效果的对象
 	Duel.SelectTarget(tp,c10424147.spfilter1,tp,LOCATION_MZONE,0,1,1,nil,e,tp)
-	-- 设置效果操作信息，表示将特殊召唤1只怪兽。
+	-- 设置特殊召唤的超量怪兽的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_EXTRA)
 end
--- 处理效果的执行过程，包括特殊召唤和叠放素材。
+-- ①效果的Operation函数：在作为对象的怪兽上面重叠当作超量召唤从额外卡组特殊召唤对应的「超级量子机兽」
 function c10424147.spop1(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前效果的目标怪兽。
+	-- 获取作为超量素材对象的「超级量子战士」怪兽
 	local tc=Duel.GetFirstTarget()
-	-- 判断目标怪兽是否满足作为超量素材的条件。
+	-- 如果目标怪兽此时不满足必须作为超量素材的限制，则不能继续处理
 	if not aux.MustMaterialCheck(tc,tp,EFFECT_MUST_BE_XMATERIAL) then return end
 	if tc:IsFacedown() or not tc:IsRelateToEffect(e) or tc:IsControler(1-tp) or tc:IsImmuneToEffect(e) then return end
-	-- 提示玩家选择要特殊召唤的怪兽。
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
-	-- 从额外卡组选择符合条件的「超级量子机兽」超量怪兽。
+	-- 提示玩家选择要特殊召唤的卡
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
+	-- 从额外卡组选择1只相同属性的「超级量子机兽」
 	local g=Duel.SelectMatchingCard(tp,c10424147.spfilter2,tp,LOCATION_EXTRA,0,1,1,nil,e,tp,tc,tc:GetAttribute())
 	local sc=g:GetFirst()
 	if sc then
 		local mg=tc:GetOverlayGroup()
 		if mg:GetCount()~=0 then
-			-- 将目标怪兽的叠放素材叠放到新召唤的怪兽上。
+			-- 将原本被叠放的超量素材重叠转移给新特殊召唤的超量怪兽
 			Duel.Overlay(sc,mg)
 		end
 		sc:SetMaterial(Group.FromCards(tc))
-		-- 将目标怪兽叠放到新召唤的怪兽上。
+		-- 把作为对象的怪兽重叠作为新超量怪兽的超量素材
 		Duel.Overlay(sc,Group.FromCards(tc))
-		-- 将符合条件的怪兽特殊召唤到场上。
+		-- 将该「超级量子机兽」超量怪兽在作为对象的怪兽上面重叠当作超量召唤特殊召唤
 		Duel.SpecialSummon(sc,SUMMON_TYPE_XYZ,tp,tp,false,false,POS_FACEUP)
 		sc:CompleteProcedure()
 	end
 end
--- 筛选满足条件的「超级量子机兽」超量怪兽，作为效果的目标。
+-- 过滤自己场上或墓地中，可以重叠作为大磁炎素材的「超级量子机兽」超量怪兽的条件函数
 function c10424147.spfilter3(c,e)
 	return (c:IsLocation(LOCATION_GRAVE) or c:IsFaceup()) and c:IsSetCard(0x20dc) and c:IsType(TYPE_XYZ) and c:IsCanBeEffectTarget(e) and c:IsCanOverlay()
 end
--- 筛选满足条件的「超级量子机神王 大磁炎」，作为特殊召唤的对象。
+-- 检查额外卡组的「超级量子机神王 大磁炎」是否可以被特殊召唤的条件函数
 function c10424147.spfilter4(c,e,tp)
-	-- 判断目标怪兽是否满足特殊召唤的条件。
+	-- 检查该怪兽是大磁炎，且能够从额外卡组特殊召唤到场上
 	return c:IsCode(84025439) and c:IsCanBeSpecialSummoned(e,0,tp,false,false) and Duel.GetLocationCountFromEx(tp,tp,nil,c)>0
 end
--- 判断是否满足将场地卡送去墓地的条件。
+-- ②效果的Cost：把场地区域的这张卡送去墓地
 function c10424147.spcost2(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsAbleToGraveAsCost() end
-	-- 将场地卡送去墓地，作为效果发动的代价。
+	-- 将作为场地卡的此卡送去墓地支付发动代价
 	Duel.SendtoGrave(e:GetHandler(),REASON_COST)
 end
--- 设置效果的目标怪兽并准备特殊召唤。
+-- ②效果的Target函数：以自己的场上·墓地的「超级量子机兽」超量怪兽3种类各1只为对象发动
 function c10424147.sptg2(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return false end
-	-- 检索满足条件的「超级量子机兽」超量怪兽。
+	-- 获取场上与墓地中所有符合条件的「超级量子机兽」超量怪兽
 	local g=Duel.GetMatchingGroup(c10424147.spfilter3,tp,LOCATION_MZONE+LOCATION_GRAVE,0,nil,e)
 	if chk==0 then return g:GetClassCount(Card.GetCode)>=3
-		-- 判断是否满足在额外卡组检索符合条件的「超级量子机神王 大磁炎」的条件。
+		-- 检查额外卡组中必须存在可特殊召唤的「超级量子机神王 大磁炎」
 		and Duel.IsExistingMatchingCard(c10424147.spfilter4,tp,LOCATION_EXTRA,0,1,nil,e,tp) end
-	-- 提示玩家选择要作为超量素材的怪兽。
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_XMATERIAL)
-	-- 选择3种类不同的「超级量子机兽」超量怪兽作为目标。
+	-- 提示选择要作为超量素材的卡
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_XMATERIAL)  --"请选择要作为超量素材的卡"
+	-- 从符合条件的卡中选择3种类卡名互不相同的怪兽
 	local sg=g:SelectSubGroup(tp,aux.dncheck,false,3,3)
-	-- 设置当前效果的目标怪兽。
+	-- 以这3只怪兽作为效果的对象
 	Duel.SetTargetCard(sg)
-	-- 设置效果操作信息，表示将特殊召唤1只怪兽。
+	-- 设置操作信息为从额外卡组特殊召唤1只怪兽
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_EXTRA)
 end
--- 筛选满足条件的怪兽，作为叠放素材的条件。
+-- 过滤依然在场/墓地、与该连锁相关且未对效果免疫的可重叠素材卡的条件函数
 function c10424147.mtfilter(c,e)
 	return c:IsRelateToEffect(e) and not c:IsImmuneToEffect(e) and c:IsCanOverlay()
 end
--- 处理效果的执行过程，包括特殊召唤和叠放素材。
+-- ②效果的Operation函数：从额外卡组把1只「超级量子机神王 大磁炎」特殊召唤，并将对象怪兽及其超量素材全部重叠作为超量素材
 function c10424147.spop2(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要特殊召唤的怪兽。
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
-	-- 从额外卡组选择符合条件的「超级量子机神王 大磁炎」。
+	-- 提示玩家选择要特殊召唤的怪兽
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
+	-- 从额外卡组选择1只「超级量子机神王 大磁炎」
 	local sg=Duel.SelectMatchingCard(tp,c10424147.spfilter4,tp,LOCATION_EXTRA,0,1,1,nil,e,tp)
 	local sc=sg:GetFirst()
-	-- 执行特殊召唤操作。
+	-- 若成功将「超级量子机神王 大磁炎」特殊召唤
 	if sc and Duel.SpecialSummon(sc,0,tp,tp,false,false,POS_FACEUP)~=0 then
-		-- 获取当前效果的目标怪兽。
+		-- 获取作为发动效果对象的3只「超级量子机兽」
 		local tg=Duel.GetChainInfo(0,CHAININFO_TARGET_CARDS)
 		local g=tg:Filter(c10424147.mtfilter,nil,e)
 		local tc=g:GetFirst()
 		while tc do
 			local mg=tc:GetOverlayGroup()
 			if mg:GetCount()~=0 then
-				-- 将目标怪兽的叠放素材叠放到新召唤的怪兽上。
+				-- 将被重叠的机兽原本拥有的全部超量素材重叠到大磁炎下面
 				Duel.Overlay(sc,mg)
 			end
-			-- 将目标怪兽叠放到新召唤的怪兽上。
+			-- 把该「超级量子机兽」重叠作为大磁炎的超量素材
 			Duel.Overlay(sc,Group.FromCards(tc))
 			tc=g:GetNext()
 		end

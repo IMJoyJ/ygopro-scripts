@@ -28,55 +28,55 @@ function c10286023.initial_effect(c)
 	e2:SetOperation(c10286023.dtop)
 	c:RegisterEffect(e2)
 end
--- 定义效果条件判断函数，检查该卡是否通过「魔救」系列效果特殊召唤（通过检查怪兽是否属于0x140系列）
+-- 检查这张卡是否是由「魔救」卡的效果特殊召唤成功
 function c10286023.drcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsSpecialSummonSetCard(0x140)
 end
--- 定义抽卡效果的处理目标函数，用于检测和设置抽卡相关操作信息
+-- ①之效果的靶向判定与操作信息注册
 function c10286023.drtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 在目标处理阶段检查玩家是否可以抽卡（检查玩家是否有卡可抽且未被禁止抽卡）
+	-- 判定当前玩家是否能够抽卡
 	if chk==0 then return Duel.IsPlayerCanDraw(tp,1) end
-	-- 设置当前连锁的目标玩家为发动效果的玩家
+	-- 设置抽卡效果的目标玩家为自己
 	Duel.SetTargetPlayer(tp)
-	-- 设置目标参数为1（抽卡数量）
+	-- 设置抽卡数量为1张
 	Duel.SetTargetParam(1)
-	-- 设置操作信息：抽卡效果，目标是玩家，抽1张卡
+	-- 注册抽卡的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,1)
 end
--- 定义抽卡效果的处理操作函数，实际执行抽卡效果
+-- ①之效果的效果处理：执行抽卡
 function c10286023.drop(e,tp,eg,ep,ev,re,r,rp)
-	-- 从当前连锁信息中获取目标玩家和目标参数（即抽卡数量）
+	-- 获取当前连锁中抽卡效果的目标玩家和抽卡数量
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 执行抽卡操作，让目标玩家抽取指定数量的卡
+	-- 由效果让目标玩家抽卡
 	Duel.Draw(p,d,REASON_EFFECT)
 end
--- 定义筛选函数，用于过滤符合条件的怪兽（场上或墓地的水属性同调怪兽）
+-- 过滤出自己场上表侧表示或自己墓地中，且可回到额外卡组的水属性同调怪兽
 function c10286023.texfilter(c)
 	return (c:IsFaceup() or c:IsLocation(LOCATION_GRAVE)) and c:IsAttribute(ATTRIBUTE_WATER) and c:IsType(TYPE_SYNCHRO) and c:IsAbleToExtra()
 end
--- 定义②效果的处理目标函数，检测对象选择和卡片移动相关操作
+-- ②之效果的发动准备：进行取对象和注册操作信息
 function c10286023.dttg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	local c=e:GetHandler()
 	if chkc then return chkc:IsLocation(LOCATION_MZONE+LOCATION_GRAVE) and chkc:IsControler(tp) and c10286023.texfilter(chkc) and chkc~=c end
-	-- 在目标处理阶段检查是否存在符合条件的对象（场上或墓地水属性同调怪兽）且本卡可以回卡组
+	-- 判定场上或墓地是否存在符合条件的自己水属性同调怪兽，且此卡可以回到卡组
 	if chk==0 then return Duel.IsExistingTarget(c10286023.texfilter,tp,LOCATION_MZONE+LOCATION_GRAVE,0,1,c) and c:IsAbleToDeck() end
-	-- 提示玩家选择目标卡（选择对象）
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)
-	-- 让玩家从符合条件的怪兽中选择1只作为对象
+	-- 提示玩家选择作为效果对象的卡片
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)  --"请选择效果的对象"
+	-- 选择自己场上或墓地1只符合条件的水属性同调怪兽作为效果对象
 	local g=Duel.SelectTarget(tp,c10286023.texfilter,tp,LOCATION_MZONE+LOCATION_GRAVE,0,1,1,c)
-	-- 设置操作信息：对象怪兽回到额外卡组
+	-- 注册将选择的对象怪兽送回额外卡组的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_TOEXTRA,g,1,0,0)
-	-- 设置操作信息：本卡回到卡组
+	-- 注册将此卡送回卡组的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_TODECK,c,1,0,0)
 end
--- 定义②效果的处理操作函数，执行怪兽回额外和本卡回卡组
+-- ②之效果的效果处理：同调怪兽返回额外卡组且此卡回到卡组最上面
 function c10286023.dtop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取当前连锁的对象卡（即玩家选择的水属性同调怪兽）
+	-- 获取作为效果对象的同调怪兽
 	local tc=Duel.GetFirstTarget()
-	-- 如果对象卡与效果关联且成功回到额外卡组，且本卡也与效果关联，则执行本卡回卡组操作
+	-- 判断对象同调怪兽是否仍适用此效果，将其送回额外卡组，并在其成功回到额外卡组且此卡也仍适用此效果时执行后续处理
 	if tc:IsRelateToEffect(e) and Duel.SendtoDeck(tc,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)~=0 and tc:IsLocation(LOCATION_EXTRA) and c:IsRelateToEffect(e) then
-		-- 将本卡回到卡组最上面
+		-- 将此卡送回卡组最上面
 		Duel.SendtoDeck(c,nil,SEQ_DECKTOP,REASON_EFFECT)
 	end
 end

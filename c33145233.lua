@@ -18,16 +18,16 @@ function c33145233.initial_effect(c)
 	e2:SetOperation(c33145233.operation)
 	c:RegisterEffect(e2)
 end
--- 规则层面：判断是否为仪式召唤作为素材，且不是从超量素材位置被送入墓地
+-- 作为素材判定函数，判定被用作素材的原因是否为仪式召唤，且在此之前不能作为超量素材存在。
 function c33145233.condition(e,tp,eg,ep,ev,re,r,rp)
 	return r==REASON_RITUAL and not e:GetHandler():IsPreviousLocation(LOCATION_OVERLAY)
 end
--- 规则层面：为使用该卡仪式召唤的怪兽设置不能成为对方效果的对象
+-- 作为素材时的处理函数，遍历所有通过此卡仪式召唤出来的怪兽，为其注册“不会成为对方效果的对象”的效果，并注册相应的标记。
 function c33145233.operation(e,tp,eg,ep,ev,re,r,rp)
 	local rc=eg:GetFirst()
 	while rc do
 		if rc:GetFlagEffect(33145233)==0 then
-			-- 规则层面：设置怪兽不能成为对方效果的对象的效果
+			-- ②：使用这张卡仪式召唤的怪兽不会成为对方的效果的对象。
 			local e1=Effect.CreateEffect(e:GetHandler())
 			e1:SetDescription(aux.Stringid(33145233,0))  --"「仪式魔人 摧毁者」效果适用中"
 			e1:SetType(EFFECT_TYPE_SINGLE)
@@ -43,7 +43,7 @@ function c33145233.operation(e,tp,eg,ep,ev,re,r,rp)
 		rc=eg:GetNext()
 	end
 end
--- 规则层面：当对方发动效果时，若效果的发动玩家是当前玩家的对手，则该效果不适用
+-- 不能被对象效果指向的值判定函数，判断对方（非获得此效果的仪式怪兽的控制者）发动效果指向自己时该抗性生效。
 function c33145233.tgval(e,re,rp)
 	return rp==1-e:GetLabel()
 end

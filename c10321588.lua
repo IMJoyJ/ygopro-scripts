@@ -13,29 +13,29 @@ function c10321588.initial_effect(c)
 	e1:SetOperation(c10321588.operation)
 	c:RegisterEffect(e1)
 end
--- 设置效果目标函数
+-- 效果发动的目标
 function c10321588.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断是否满足发动条件（卡组不为空）
+	-- 检查自己卡组的卡片数量是否大于0
 	if chk==0 then return Duel.GetFieldGroupCount(tp,LOCATION_DECK,0)>0 end
 end
--- 设置效果发动函数
+-- 效果发动的具体操作
 function c10321588.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断卡组是否为空，为空则返回
+	-- 如果自己卡组已没有卡，则效果处理结束
 	if Duel.GetFieldGroupCount(tp,LOCATION_DECK,0)==0 then return end
-	-- 确认玩家卡组最上方1张卡
+	-- 确认自己卡组最上方的1张卡
 	Duel.ConfirmDecktop(tp,1)
-	-- 获取玩家卡组最上方1张卡组成的组
+	-- 获取自己卡组最上方1张卡
 	local g=Duel.GetDecktopGroup(tp,1)
 	local tc=g:GetFirst()
 	if tc:IsType(TYPE_EQUIP) and tc:IsAbleToHand() then
-		-- 禁用接下来的操作的洗卡检测
+		-- 使接下来的操作不进行洗切卡组或手卡的检测
 		Duel.DisableShuffleCheck()
-		-- 将目标卡送入手牌
+		-- 将翻开的卡加入手卡
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 洗切玩家手牌
+		-- 洗切手卡
 		Duel.ShuffleHand(tp)
 	else
-		-- 将目标卡移至卡组最下方
+		-- 将翻开的卡回到卡组最下面
 		Duel.MoveSequence(tc,SEQ_DECKBOTTOM)
 	end
 end

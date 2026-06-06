@@ -11,7 +11,7 @@ function c10282757.initial_effect(c)
 	e1:SetOperation(c10282757.activate)
 	c:RegisterEffect(e1)
 end
--- 效果处理函数开始
+-- 此卡发动时的效果处理：在此回合内注册适用的攻击力·守备力上升以及不能攻击的场地效果
 function c10282757.activate(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	-- ●双方场上的全部3阶以下的超量怪兽的攻击力·守备力上升500。
@@ -22,11 +22,11 @@ function c10282757.activate(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetValue(500)
 	e1:SetTarget(c10282757.filter1)
 	e1:SetReset(RESET_PHASE+PHASE_END)
-	-- 将攻击力上升效果注册给全局环境
+	-- 在全局注册使3阶以下超量怪兽攻击力上升的效果
 	Duel.RegisterEffect(e1,tp)
 	local e2=e1:Clone()
 	e2:SetCode(EFFECT_UPDATE_DEFENSE)
-	-- 将守备力上升效果注册给全局环境
+	-- 在全局注册使3阶以下超量怪兽守备力上升的效果
 	Duel.RegisterEffect(e2,tp)
 	-- ●双方场上的全部4阶以上的超量怪兽不能攻击。
 	local e3=Effect.CreateEffect(c)
@@ -35,14 +35,14 @@ function c10282757.activate(e,tp,eg,ep,ev,re,r,rp)
 	e3:SetTargetRange(LOCATION_MZONE,LOCATION_MZONE)
 	e3:SetReset(RESET_PHASE+PHASE_END)
 	e3:SetTarget(c10282757.filter2)
-	-- 将不能攻击效果注册给全局环境
+	-- 在全局注册使4阶以上超量怪兽不能攻击的效果
 	Duel.RegisterEffect(e3,tp)
 end
--- 3阶以下超量怪兽的筛选函数
+-- 过滤双方场上3阶以下的超量怪兽
 function c10282757.filter1(e,c)
 	return c:IsType(TYPE_XYZ) and c:IsRankBelow(3)
 end
--- 4阶以上超量怪兽的筛选函数
+-- 过滤双方场上4阶以上的超量怪兽
 function c10282757.filter2(e,c)
 	return c:IsType(TYPE_XYZ) and c:IsRankAbove(4)
 end
