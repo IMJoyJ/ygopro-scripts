@@ -26,7 +26,7 @@ function c1357146.initial_effect(c)
 end
 -- 定义用于判断除外代价的卡片过滤器，筛选墓地中的青蛙族怪兽
 function c1357146.costfilter(c)
-	return c:IsSetCard(0x12) and c:IsAbleToRemoveAsCost()
+	return c:IsSetCard(0x12) and c:IsType(TYPE_MONSTER) and c:IsAbleToRemoveAsCost()
 end
 -- 定义效果的除外代价处理函数，检查并选择1只青蛙族怪兽除外
 function c1357146.cost(e,tp,eg,ep,ev,re,r,rp,chk)

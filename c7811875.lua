@@ -21,8 +21,7 @@ function c7811875.initial_effect(c)
 end
 -- 定义发动条件函数
 function c7811875.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查当前没有正在处理的连锁，且被召唤的怪兽中存在对方控制的怪兽
-	return aux.NegateSummonCondition() and eg:IsExists(Card.IsControler,1,nil,1-tp)
+	return aux.NegateSummonCondition() and eg:IsExists(Card.IsSummonPlayer,1,nil,1-tp)
 end
 -- 过滤条件：自己场上表侧表示且能作为代价送去墓地的同调怪兽
 function c7811875.cfilter(c)
@@ -42,16 +41,14 @@ end
 -- 定义效果目标函数
 function c7811875.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	local g=eg:Filter(Card.IsControler,nil,1-tp)
-	-- 设置操作信息：无效召唤
+	local g=eg:Filter(Card.IsSummonPlayer,nil,1-tp)
 	Duel.SetOperationInfo(0,CATEGORY_DISABLE_SUMMON,g,g:GetCount(),0,0)
 	-- 设置操作信息：破坏怪兽
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,g:GetCount(),0,0)
 end
 -- 定义效果处理函数
 function c7811875.activate(e,tp,eg,ep,ev,re,r,rp)
-	local g=eg:Filter(Card.IsControler,nil,1-tp)
-	-- 使对方怪兽的召唤无效
+	local g=eg:Filter(Card.IsSummonPlayer,nil,1-tp)
 	Duel.NegateSummon(g)
 	-- 破坏那些召唤被无效的怪兽
 	Duel.Destroy(g,REASON_EFFECT)

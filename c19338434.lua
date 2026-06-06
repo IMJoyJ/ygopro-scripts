@@ -69,10 +69,10 @@ function s.activate(e,tp,eg,ep,ev,re,r,rp)
 	else
 		-- 将目标怪兽送去墓地
 		Duel.SendtoGrave(tc,REASON_EFFECT)
-		-- 中断当前效果，使后续处理视为不同时处理
-		Duel.BreakEffect()
-		-- 让目标怪兽的持有者抽2张卡
-		Duel.Draw(p,2,REASON_EFFECT)
+		if tc:IsLocation(LOCATION_GRAVE) then
+			Duel.BreakEffect()
+			Duel.Draw(p,2,REASON_EFFECT)
+		end
 	end
 end
 -- 检索过滤函数，用于判断卡组中是否有此卡
