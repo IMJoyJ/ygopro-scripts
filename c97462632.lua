@@ -89,9 +89,7 @@ function s.effop(e,tp,eg,ep,ev,re,r,rp)
 		-- 从卡组中选择并获取1张满足条件的速攻魔法或陷阱卡
 		local g=Duel.SelectMatchingCard(tp,s.setfilter,tp,LOCATION_DECK,0,1,1,nil)
 		local tc=g:GetFirst()
-		-- 将选择的卡片在自己场上盖放，若成功则执行后续处理
-		if Duel.SSet(tp,tc)>0 then
-			-- 这个效果盖放的卡在盖放的回合也能发动。
+		if tc and Duel.SSet(tp,tc)>0 then
 			local e1=Effect.CreateEffect(e:GetHandler())
 			e1:SetDescription(aux.Stringid(id,3))  --"适用「栗球兽卫」的效果来发动"
 			e1:SetType(EFFECT_TYPE_SINGLE)
