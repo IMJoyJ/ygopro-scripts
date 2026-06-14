@@ -59,8 +59,9 @@ function s.drop(e,tp,eg,ep,ev,re,r,rp)
 	if not Duel.IsExistingMatchingCard(Card.IsPublic,tp,LOCATION_HAND,0,1,nil) then
 		-- 获取己方所有的手牌。
 		local g=Duel.GetMatchingGroup(aux.TRUE,tp,LOCATION_HAND,0,nil)
+		local sflag=false
 		if g:GetCount()>0 then
-			-- 将手牌全部向对方公开进行确认。
+			sflag=true
 			Duel.ConfirmCards(1-tp,g)
 			if g:IsExists(s.cfilter2,1,nil)
 				-- 判断当前玩家是否可以抽3张卡。
@@ -74,7 +75,7 @@ function s.drop(e,tp,eg,ep,ev,re,r,rp)
 				-- 让玩家从手牌中选择2张可丢弃的卡片。
 				local dg=Duel.SelectMatchingCard(tp,Card.IsDiscardable,tp,LOCATION_HAND,0,2,2,nil,REASON_EFFECT+REASON_DISCARD)
 				if dg:GetCount()>0 then
-					-- 洗切手牌并重置手牌状态。
+					sflag=false
 					Duel.ShuffleHand(tp)
 					-- 中断当前处理，使抽卡和丢弃手牌不视为同时处理。
 					Duel.BreakEffect()
@@ -82,6 +83,9 @@ function s.drop(e,tp,eg,ep,ev,re,r,rp)
 					Duel.SendtoGrave(dg,REASON_EFFECT+REASON_DISCARD)
 				end
 			end
+		end
+		if sflag then
+			Duel.ShuffleHand(tp)
 		end
 	end
 	-- 在全局注册“直到回合结束限制从额外卡组特殊召唤”的玩家限制效果。

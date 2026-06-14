@@ -38,19 +38,16 @@ end
 -- 破坏事件注册操作：若有怪兽被破坏，则为双方玩家注册回合结束时重置的标记效果
 function s.regop(e,tp,eg,ep,ev,re,r,rp)
 	if eg:IsExists(s.dcfilter,1,nil) then
-		-- 注册在本回合内已有怪兽被破坏的标记效果（通过获取破坏操作者或相关玩家来记录）
-		Duel.RegisterFlagEffect(rp,id,RESET_PHASE+PHASE_END,0,1)
+		Duel.RegisterFlagEffect(0,id,RESET_PHASE+PHASE_END,0,1)
 	end
 end
 -- 卡组中雷族或岩石族怪兽的过滤条件
 function s.tdfilter(c)
 	return c:IsRace(RACE_THUNDER+RACE_ROCK)
 end
--- 加入手牌的雷族或岩石族怪兽过滤条件：若卡片在卡组中，则必须在当前回合内已有怪兽被破坏的条件下才可以被检索
-function s.thfilter(c,tp)
+function s.thfilter(c)
 	return c:IsFaceupEx() and c:IsRace(RACE_THUNDER+RACE_ROCK) and c:IsAbleToHand()
-		-- 限制条件：只有在当前回合内已有怪兽被破坏的情况下，才允许从卡组中选择怪兽加入手牌
-		and (not c:IsLocation(LOCATION_DECK) or Duel.GetFlagEffect(tp,id)>0)
+		and (not c:IsLocation(LOCATION_DECK) or Duel.GetFlagEffect(0,id)>0)
 end
 -- 卡片发动时的目标检测，区分自己回合（选卡放置在卡组最上方）与对方回合（雷族·岩石族怪兽加入手牌）进行不同条件的检测，并注册相应的操作分类
 function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
@@ -60,8 +57,7 @@ function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
 			-- 在自己回合，检查卡组中是否存在雷族或岩石族怪兽
 			return Duel.IsExistingMatchingCard(s.tdfilter,tp,LOCATION_DECK,0,1,nil)
 		else
-			-- 在对方回合，检查各区域中是否存在可加入手牌的雷族或岩石族怪兽
-			return Duel.IsExistingMatchingCard(s.thfilter,tp,LOCATION_DECK+LOCATION_MZONE+LOCATION_GRAVE+LOCATION_REMOVED,0,1,nil,tp)
+			return Duel.IsExistingMatchingCard(s.thfilter,tp,LOCATION_DECK+LOCATION_MZONE+LOCATION_GRAVE+LOCATION_REMOVED,0,1,nil)
 		end
 	end
 	-- 效果处理的目标注册阶段，判断当前是否为自己回合
@@ -114,10 +110,8 @@ function s.activate(e,tp,eg,ep,ev,re,r,rp)
 			end
 		end
 	else
-		-- 向玩家发送提示，指示选择要加入手牌的卡
-		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-		-- 让玩家从卡组、场上、墓地或除外区选择1张雷族或岩石族怪兽，若在墓地选择时受「王家长眠之谷」影响
-		local g=Duel.SelectMatchingCard(tp,aux.NecroValleyFilter(s.thfilter),tp,LOCATION_DECK+LOCATION_MZONE+LOCATION_GRAVE+LOCATION_REMOVED,0,1,1,nil,tp)
+		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)
+		local g=Duel.SelectMatchingCard(tp,aux.NecroValleyFilter(s.thfilter),tp,LOCATION_DECK+LOCATION_MZONE+LOCATION_GRAVE+LOCATION_REMOVED,0,1,1,nil)
 		if g:GetCount()>0 then
 			-- 将选择的怪兽卡加入手牌
 			Duel.SendtoHand(g,nil,REASON_EFFECT)
