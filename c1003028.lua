@@ -19,24 +19,24 @@ function c1003028.initial_effect(c)
 	e2:SetValue(c1003028.xyzlimit)
 	c:RegisterEffect(e2)
 end
--- 过滤非4星表侧表示怪兽的条件
+-- 过滤条件：判断卡片是否为表侧表示，且等级不是4星
 function c1003028.cfilter(c)
 	return c:IsFaceup() and not c:IsLevel(4)
 end
--- 手卡特殊召唤的条件判定
+-- 特殊召唤规则的条件检查：判断自己怪兽区是否有空位，且自己场上有怪兽存在，且对方场上有怪兽存在，且自己场上不存在4星以外的表侧表示怪兽
 function c1003028.spcon(e,c)
 	if c==nil then return true end
 	local tp=c:GetControler()
-	-- 检查自己场上是否有可用的怪兽区域空格
+	-- 判断自己场上是否有可用的空格
 	return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查自己场上是否存在怪兽
+		-- 并判断自己场上的怪兽数量是否大于0
 		and Duel.GetFieldGroupCount(tp,LOCATION_MZONE,0)>0
-		-- 检查对方场上是否存在怪兽
+		-- 并判断对方场上的怪兽数量是否大于0
 		and Duel.GetFieldGroupCount(tp,0,LOCATION_MZONE)>0
-		-- 检查自己场上是否不存在非4星的表侧表示怪兽
+		-- 并判断自己场上不存在除4星以外的表侧表示怪兽
 		and not Duel.IsExistingMatchingCard(c1003028.cfilter,tp,LOCATION_MZONE,0,1,nil)
 end
--- 作为超量素材的限制判定（只能作为战士族怪兽的超量素材）
+-- 超量素材限制的判定：限制不能作为除战士族怪兽以外的超量召唤素材
 function c1003028.xyzlimit(e,c)
 	if not c then return false end
 	return not c:IsRace(RACE_WARRIOR)
