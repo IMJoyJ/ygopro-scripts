@@ -57,8 +57,8 @@ function c18175965.initial_effect(c)
 	c:RegisterEffect(e7)
 	-- 这张卡从场上送去墓地的场合发动。把1张手卡送去墓地，这张卡从墓地特殊召唤。
 	local e8=Effect.CreateEffect(c)
-	e8:SetDescription(aux.Stringid(18175965,2))  --"特殊召唤"
-	e8:SetCategory(CATEGORY_HANDES+CATEGORY_SPECIAL_SUMMON)
+	e8:SetDescription(aux.Stringid(18175965,2))
+	e8:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e8:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_F)
 	e8:SetCode(EVENT_TO_GRAVE)
 	e8:SetCondition(c18175965.spcon2)
@@ -126,16 +126,18 @@ function c18175965.sptg2(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
 	-- 设置操作信息，表示将要特殊召唤该卡
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
-	-- 设置操作信息，表示将要丢弃1张手卡
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,0,0,tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,nil,1,tp,LOCATION_HAND)
 end
 -- 执行墓地发动效果，丢弃1张手卡并特殊召唤该卡
 function c18175965.spop2(e,tp,eg,ep,ev,re,r,rp)
-	local c=e:GetHandler()
-	-- 判断是否成功丢弃1张手卡
-	if Duel.DiscardHand(tp,nil,1,1,REASON_EFFECT)==0 then return end
-	if c:IsRelateToEffect(e) then
-		-- 执行特殊召唤操作，以特殊召唤方式将该卡从墓地召唤
-		Duel.SpecialSummon(c,0,tp,tp,true,false,POS_FACEUP)
+	local hg=Duel.GetMatchingGroup(Card.IsAbleToGrave,tp,LOCATION_HAND,0,nil)
+	if hg:GetCount()==0 then return end
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)
+	local sg=hg:Select(tp,1,1,nil)
+	if Duel.SendtoGrave(sg,REASON_EFFECT)>0 and sg:IsExists(Card.IsLocation,1,nil,LOCATION_GRAVE) then
+		local c=e:GetHandler()
+		if c:IsRelateToChain() then
+			Duel.SpecialSummon(c,0,tp,tp,true,false,POS_FACEUP)
+		end
 	end
 end

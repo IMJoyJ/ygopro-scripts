@@ -6,8 +6,8 @@
 function c49959355.initial_effect(c)
 	-- ①：以场上1只表侧表示怪兽为对象才能发动。丢弃1张手卡，作为对象的怪兽的等级上升1星。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(49959355,0))  --"丢弃手卡"
-	e1:SetCategory(CATEGORY_HANDES)
+	e1:SetDescription(aux.Stringid(49959355,0))
+	e1:SetCategory(CATEGORY_HANDES_SELF)
 	e1:SetType(EFFECT_TYPE_IGNITION)
 	e1:SetRange(LOCATION_MZONE)
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET)
@@ -50,8 +50,7 @@ function c49959355.lvtg1(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
 	-- 选择一个满足条件的怪兽作为效果对象
 	Duel.SelectTarget(tp,c49959355.filter,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,nil)
-	-- 设置操作信息，表明将要丢弃一张手牌
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 end
 -- 处理效果①的发动：丢弃一张手牌并提升目标怪兽等级
 function c49959355.lvop1(e,tp,eg,ep,ev,re,r,rp)

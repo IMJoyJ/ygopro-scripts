@@ -5,8 +5,8 @@
 function c39180960.initial_effect(c)
 	-- ①：这张卡反转的场合发动。双方玩家各自选自己1张手卡丢弃。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(39180960,0))  --"丢弃手牌"
-	e1:SetCategory(CATEGORY_HANDES)
+	e1:SetDescription(aux.Stringid(39180960,0))
+	e1:SetCategory(CATEGORY_HANDES_SELF+CATEGORY_HANDES_OPPO)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_FLIP)
 	e1:SetTarget(c39180960.target)
 	e1:SetOperation(c39180960.operation)
@@ -23,8 +23,8 @@ end
 -- 设置效果目标为丢弃手牌
 function c39180960.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置连锁操作信息为丢弃手牌效果
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,PLAYER_ALL,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_OPPO,nil,0,1-tp,1)
 end
 -- 执行丢弃手牌效果，双方各丢弃一张手牌
 function c39180960.operation(e,tp,eg,ep,ev,re,r,rp)

@@ -21,7 +21,7 @@ function c51686645.initial_effect(c)
 	-- ②：装备怪兽从场上离开让这张卡被送去墓地的场合发动。自己从卡组抽1张。这张卡是这个回合发动的场合作为代替让以下效果适用。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(51686645,0))
-	e2:SetCategory(CATEGORY_DRAW)
+	e2:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES_SELF)
 	e2:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_F)
 	e2:SetCode(EVENT_TO_GRAVE)
 	e2:SetCountLimit(1,51686645)
@@ -122,13 +122,12 @@ function c51686645.drtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
 	if e:GetHandler():GetFlagEffect(51686645)>0 then
 		e:SetLabel(1)
-		-- 设置操作信息，表示将从卡组抽2张卡
+		e:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES_SELF)
 		Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,2)
-		-- 设置操作信息，表示之后需要选择1张手卡丢弃
-		Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
+		Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 	else
 		e:SetLabel(0)
-		-- 设置操作信息，表示将从卡组抽1张卡
+		e:SetCategory(CATEGORY_DRAW)
 		Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,1)
 	end
 end

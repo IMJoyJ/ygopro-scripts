@@ -14,7 +14,7 @@ function c75884822.initial_effect(c)
 	-- ①：自己·对方的主要阶段才能发动。从卡组把1张「扰乱」卡加入手卡，那之后选1张手卡丢弃。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(75884822,0))
-	e2:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH+CATEGORY_HANDES)
+	e2:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH+CATEGORY_HANDES_SELF)
 	e2:SetType(EFFECT_TYPE_QUICK_O)
 	e2:SetCode(EVENT_FREE_CHAIN)
 	e2:SetRange(LOCATION_SZONE)
@@ -54,7 +54,7 @@ function c75884822.target(e,tp,eg,ep,ev,re,r,rp,chk)
 		and Duel.SelectYesNo(tp,94) then
 		-- 给玩家注册一个本回合已发动过该效果的标记（用于限制一回合一次）
 		Duel.RegisterFlagEffect(tp,75884822,RESET_PHASE+PHASE_END,0,0)
-		e:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH+CATEGORY_HANDES)
+		e:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH+CATEGORY_HANDES_SELF)
 		e:SetOperation(c75884822.thop)
 		c75884822.thtg(e,tp,eg,ep,ev,re,r,rp,1)
 	else

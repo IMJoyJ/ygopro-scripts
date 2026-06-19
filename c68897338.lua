@@ -8,8 +8,8 @@ local s,id,o=GetID()
 function s.initial_effect(c)
 	-- ①：这张卡在手卡存在的场合才能发动。从手卡选包含这张卡的「魔轰神」怪兽2只以上丢弃，把持有和丢弃的怪兽的原本等级合计相同等级的1只「魔轰神」同调怪兽当作同调召唤从额外卡组特殊召唤。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_HANDES|CATEGORY_SPECIAL_SUMMON)
-	e1:SetDescription(aux.Stringid(id,0))  --"当作同调召唤特殊召唤"
+	e1:SetCategory(CATEGORY_HANDES_SELF|CATEGORY_SPECIAL_SUMMON)
+	e1:SetDescription(aux.Stringid(id,0))
 	e1:SetType(EFFECT_TYPE_IGNITION)
 	e1:SetRange(LOCATION_HAND)
 	e1:SetCountLimit(1,id)
@@ -54,9 +54,7 @@ function s.syntg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local g=Duel.GetMatchingGroup(s.dfilter,tp,LOCATION_HAND,0,nil)
 	-- 检查是否存在必须作为同调素材的限制，并检查手卡中是否存在包含这张卡在内的2张以上可以丢弃的「魔轰神」怪兽，且其原本等级合计有对应的额外卡组同调怪兽。
 	if chk==0 then return aux.MustMaterialCheck(nil,tp,EFFECT_MUST_BE_SMATERIAL) and g:CheckSubGroup(s.fselect,2,99,e,tp) end
-	-- 设置连锁处理中的操作信息：从手卡丢弃卡片。
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,LOCATION_HAND)
-	-- 设置连锁处理中的操作信息：从额外卡组特殊召唤1只怪兽。
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,LOCATION_HAND)
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_EXTRA)
 end
 -- ①效果的实际处理函数（Operation）。

@@ -18,7 +18,7 @@ function c31230289.initial_effect(c)
 	-- ②：这张卡召唤·特殊召唤成功的场合才能发动。从卡组把1张「涂鸦本」魔法·陷阱卡加入手卡。那之后，选自己1张手卡丢弃。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(31230289,1))
-	e2:SetCategory(CATEGORY_SEARCH+CATEGORY_TOHAND+CATEGORY_HANDES)
+	e2:SetCategory(CATEGORY_SEARCH+CATEGORY_TOHAND+CATEGORY_HANDES_SELF)
 	e2:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e2:SetCode(EVENT_SUMMON_SUCCESS)
 	e2:SetProperty(EFFECT_FLAG_DELAY)

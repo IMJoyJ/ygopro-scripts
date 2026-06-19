@@ -31,8 +31,8 @@ function c26400609.initial_effect(c)
 	c:RegisterEffect(e2)
 	-- ①：从手卡把这张卡和1只水属性怪兽丢弃去墓地才能发动。从卡组把1只怪兽送去墓地。
 	local e3=Effect.CreateEffect(c)
-	e3:SetDescription(aux.Stringid(26400609,2))  --"从卡组把1只怪兽送去墓地"
-	e3:SetCategory(CATEGORY_HANDES)
+	e3:SetDescription(aux.Stringid(26400609,2))
+	e3:SetCategory(CATEGORY_TOGRAVE)
 	e3:SetType(EFFECT_TYPE_IGNITION)
 	e3:SetRange(LOCATION_HAND)
 	e3:SetCountLimit(1,26400609)

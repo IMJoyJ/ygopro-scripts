@@ -4,7 +4,7 @@
 function c37406863.initial_effect(c)
 	-- 看对方手卡。对方手卡有灵魂怪兽存在的场合，选择1只灵魂怪兽丢弃去墓地。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_HANDES)
+	e1:SetCategory(CATEGORY_HANDES_OPPO)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
 	e1:SetCode(EVENT_FREE_CHAIN)

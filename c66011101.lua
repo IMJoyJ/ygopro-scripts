@@ -51,15 +51,13 @@ function c66011101.target1(e,tp,eg,ep,ev,re,r,rp,chk)
 		{b3,aux.Stringid(66011101,2)})  --"攻击力变成2倍"
 	e:SetLabel(op)
 	if op==1 then
-		e:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES)
-		-- 设置当前连锁的对象玩家为自己
+		e:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES_SELF)
 		Duel.SetTargetPlayer(tp)
 		-- 设置当前连锁的对象参数为2（抽卡张数）
 		Duel.SetTargetParam(2)
 		-- 设置连锁的操作信息为：自己抽2张卡
 		Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,2)
-		-- 设置连锁的操作信息为：自己丢弃1张手卡
-		Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
+		Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 	elseif op==2 then
 		e:SetCategory(CATEGORY_SPECIAL_SUMMON)
 		-- 设置连锁的操作信息为：从自己墓地特殊召唤1只怪兽

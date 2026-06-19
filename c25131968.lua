@@ -30,8 +30,8 @@ function s.initial_effect(c)
 	c:RegisterEffect(e2)
 	-- ②这张卡用「虎菱之玄」的效果特殊召唤的场合发动。对方抽2张。那之后，对方选1张手卡丢弃。
 	local e3=Effect.CreateEffect(c)
-	e3:SetDescription(aux.Stringid(id,2))  --"抽卡&丢弃"
-	e3:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES)
+	e3:SetDescription(aux.Stringid(id,2))
+	e3:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES_OPPO)
 	e3:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_F)
 	e3:SetCode(EVENT_SPSUMMON_SUCCESS)
 	e3:SetProperty(EFFECT_FLAG_DELAY)
@@ -91,9 +91,7 @@ end
 -- 效果处理时设置操作信息，设置对方抽2张和丢弃1张手牌
 function s.distg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置对方丢弃1张手牌的操作信息
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,1-tp,1)
-	-- 设置对方抽2张卡的操作信息
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_OPPO,nil,0,1-tp,1)
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,1-tp,2)
 end
 -- 效果处理时执行对方抽2张并丢弃1张手牌的操作

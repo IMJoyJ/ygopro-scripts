@@ -8,7 +8,7 @@ local s,id,o=GetID()
 function s.initial_effect(c)
 	-- 这个卡名的卡在1回合只能发动1张。①：以自己场上1只5星以下的怪兽为对象才能发动。原本种族和那只怪兽相同的1只10星怪兽从卡组加入手卡。那之后，以下效果可以适用。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH+CATEGORY_SPECIAL_SUMMON+CATEGORY_HANDES)
+	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH+CATEGORY_SPECIAL_SUMMON+CATEGORY_HANDES_SELF)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET)

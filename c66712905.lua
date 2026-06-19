@@ -11,7 +11,7 @@ function s.initial_effect(c)
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(id,0))  --"手卡丢弃"
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
-	e1:SetCategory(CATEGORY_TOGRAVE+CATEGORY_HANDES+CATEGORY_REMOVE)
+	e1:SetCategory(CATEGORY_TOGRAVE+CATEGORY_HANDES_OPPO+CATEGORY_REMOVE)
 	e1:SetProperty(EFFECT_FLAG_DELAY)
 	e1:SetCode(EVENT_TO_HAND)
 	e1:SetCountLimit(1,id+EFFECT_COUNT_CODE_OATH)
@@ -47,9 +47,7 @@ function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
 		and Duel.GetDecktopGroup(1-tp,2):FilterCount(Card.IsAbleToRemove,nil)==2 end
 	-- 向对方玩家提示选择了发动该效果。
 	Duel.Hint(HINT_OPSELECTED,1-tp,e:GetDescription())
-	-- 设置丢弃对方1张手卡的操作信息。
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,0,0,1-tp,1)
-	-- 设置从对方卡组除外2张卡的操作信息。
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_OPPO,nil,0,1-tp,1)
 	Duel.SetOperationInfo(0,CATEGORY_REMOVE,nil,2,1-tp,LOCATION_DECK)
 end
 -- 效果1的效果处理：随机丢弃对方1张手卡，之后除外对方卡组最上方的2张卡，并跳过下次战斗阶段。

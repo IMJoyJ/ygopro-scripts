@@ -5,7 +5,7 @@ function c55773067.initial_effect(c)
 	-- 对方抽卡阶段时发动。对方的抽卡阶段抽的1张卡丢弃送去墓地。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
-	e1:SetCategory(CATEGORY_TOGRAVE+CATEGORY_HANDES)
+	e1:SetCategory(CATEGORY_TOGRAVE+CATEGORY_HANDES_OPPO)
 	e1:SetCode(EVENT_DRAW)
 	e1:SetCondition(c55773067.condition)
 	e1:SetTarget(c55773067.target)
@@ -21,8 +21,7 @@ function c55773067.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
 	-- 将对方抽到的卡设定为当前连锁的处理对象
 	Duel.SetTargetCard(eg)
-	-- 设置操作信息，表示该效果包含丢弃对方1张手牌的操作
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,1-tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_OPPO,nil,0,1-tp,1)
 end
 -- 效果处理，将对方抽到的卡（若有多张则由对方选择1张）作为效果丢弃送去墓地
 function c55773067.activate(e,tp,eg,ep,ev,re,r,rp)

@@ -4,8 +4,8 @@
 function c15150365.initial_effect(c)
 	-- 这张卡造成对方玩家基本分伤害的时候，对方随机丢弃1张卡。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(15150365,0))  --"丢弃手牌"
-	e1:SetCategory(CATEGORY_HANDES)
+	e1:SetDescription(aux.Stringid(15150365,0))
+	e1:SetCategory(CATEGORY_HANDES_OPPO)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_F)
 	e1:SetCode(EVENT_BATTLE_DAMAGE)
 	e1:SetCondition(c15150365.condition)
@@ -20,8 +20,7 @@ end
 -- 设置连锁操作信息，指定对方丢弃手牌
 function c15150365.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置连锁操作信息，指定对方丢弃手牌
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,0,0,1-tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_OPPO,0,0,1-tp,1)
 end
 -- 检索对方场上的手牌并随机选择一张丢弃
 function c15150365.operation(e,tp,eg,ep,ev,re,r,rp)

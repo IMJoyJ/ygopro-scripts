@@ -6,7 +6,7 @@
 function c57940938.initial_effect(c)
 	-- ①：这张卡作为电子界族连接怪兽的连接素材送去墓地的场合才能发动。从卡组把1张「电脑网」魔法·陷阱卡加入手卡。那之后，选自己1张手卡丢弃。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_SEARCH+CATEGORY_TOHAND+CATEGORY_HANDES)
+	e1:SetCategory(CATEGORY_SEARCH+CATEGORY_TOHAND+CATEGORY_HANDES_SELF)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e1:SetProperty(EFFECT_FLAG_DELAY)
 	e1:SetCode(EVENT_BE_MATERIAL)
@@ -42,8 +42,7 @@ function c57940938.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.IsExistingMatchingCard(c57940938.thfilter,tp,LOCATION_DECK,0,1,nil) end
 	-- 设置操作信息，表示此效果包含从卡组将1张卡加入手牌的处理
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
-	-- 设置操作信息，表示此效果包含丢弃1张手牌的处理
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 end
 -- 效果①的处理，从卡组检索1张「电脑网」魔陷加入手牌，之后丢弃1张手牌
 function c57940938.thop(e,tp,eg,ep,ev,re,r,rp)

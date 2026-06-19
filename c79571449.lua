@@ -4,7 +4,7 @@
 function c79571449.initial_effect(c)
 	-- 从卡组抽3张卡，之后从手卡选2张丢弃。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES)
+	e1:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES_SELF)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
 	e1:SetCode(EVENT_FREE_CHAIN)
@@ -22,8 +22,7 @@ function c79571449.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	Duel.SetTargetParam(3)
 	-- 设置当前连锁的操作信息为：玩家tp从卡组抽3张卡
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,3)
-	-- 设置当前连锁的操作信息为：玩家tp丢弃2张手卡
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,2)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,2)
 end
 -- 效果处理：执行抽3张卡并丢弃2张手卡的操作
 function c79571449.activate(e,tp,eg,ep,ev,re,r,rp)

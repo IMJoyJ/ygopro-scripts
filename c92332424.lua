@@ -34,7 +34,7 @@ function c92332424.initial_effect(c)
 	-- ②：这张卡灵摆召唤或者用「龙剑士」卡的效果特殊召唤的场合才能发动。从卡组把1张场地魔法卡加入手卡。那之后，选自己1张手卡丢弃。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(92332424,3))
-	e3:SetCategory(CATEGORY_SEARCH+CATEGORY_TOHAND+CATEGORY_HANDES)
+	e3:SetCategory(CATEGORY_SEARCH+CATEGORY_TOHAND+CATEGORY_HANDES_SELF)
 	e3:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e3:SetCode(EVENT_SPSUMMON_SUCCESS)
 	e3:SetProperty(EFFECT_FLAG_DELAY)
@@ -153,8 +153,7 @@ function c92332424.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.IsExistingMatchingCard(c92332424.thfilter,tp,LOCATION_DECK,0,1,nil) end
 	-- 设置连锁处理的操作信息：从卡组将1张卡加入手牌
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
-	-- 设置连锁处理的操作信息：丢弃1张手牌
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 end
 -- 怪兽效果②的效果处理：从卡组将1张场地魔法卡加入手牌，之后选自己1张手牌丢弃
 function c92332424.thop(e,tp,eg,ep,ev,re,r,rp)

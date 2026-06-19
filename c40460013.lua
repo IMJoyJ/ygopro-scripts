@@ -8,7 +8,7 @@ local s,id,o=GetID()
 function c40460013.initial_effect(c)
 	-- ①：把手卡的这张卡和手卡1只恶魔族怪兽给对方观看才能发动。那2只之内的1只特殊召唤，另1只丢弃。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_HANDES)
+	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_HANDES_SELF)
 	e1:SetType(EFFECT_TYPE_IGNITION)
 	e1:SetRange(LOCATION_HAND)
 	e1:SetCountLimit(1,40460013)
@@ -59,8 +59,7 @@ function c40460013.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	Duel.ShuffleHand(tp)
 	-- 设置操作信息，表示将要特殊召唤1只怪兽
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_HAND)
-	-- 设置操作信息，表示将要丢弃1张手牌
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 end
 -- 过滤函数，用于筛选可以被特殊召唤的怪兽
 function c40460013.checkfilter(c,e,tp)

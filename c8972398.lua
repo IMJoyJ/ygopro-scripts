@@ -19,8 +19,8 @@ function c8972398.initial_effect(c)
 	c:RegisterEffect(e1)
 	-- ②：这张卡特殊召唤成功的场合，以场上1只表侧表示怪兽为对象才能发动。选自己1张手卡丢弃，和作为对象的怪兽相同种族·属性而卡名不同的1只怪兽从卡组加入手卡。
 	local e2=Effect.CreateEffect(c)
-	e2:SetDescription(aux.Stringid(8972398,1))  --"卡组检索"
-	e2:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
+	e2:SetDescription(aux.Stringid(8972398,1))
+	e2:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH+CATEGORY_HANDES_SELF)
 	e2:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e2:SetProperty(EFFECT_FLAG_CARD_TARGET+EFFECT_FLAG_DELAY)
 	e2:SetCode(EVENT_SPSUMMON_SUCCESS)
@@ -82,9 +82,7 @@ function c8972398.thtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
 	-- 选择场上1只表侧表示怪兽作为效果的对象
 	Duel.SelectTarget(tp,c8972398.tgfilter,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,nil,tp)
-	-- 设置丢弃手牌的操作信息
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
-	-- 设置从卡组将卡加入手牌的操作信息
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
 -- ②号效果处理：丢弃1张手牌，将与对象怪兽相同种族·属性且卡名不同的1只怪兽从卡组加入手牌

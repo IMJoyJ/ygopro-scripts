@@ -60,11 +60,9 @@ function c88685329.drtg(e,tp,eg,ep,ev,re,r,rp,chk)
 		-- 设置操作信息：玩家抽1张卡
 		Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,1)
 	elseif label==3 then
-		e:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES)
-		-- 设置操作信息：玩家抽2张卡
+		e:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES_SELF)
 		Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,2)
-		-- 设置操作信息：玩家丢弃1张手牌
-		Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
+		Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 	end
 end
 -- ①效果的处理：根据除外的卡片数量（Label值）执行对应的抽卡及后续手牌处理效果

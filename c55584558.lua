@@ -9,7 +9,7 @@ local s,id,o=GetID()
 function s.initial_effect(c)
 	-- ①：选场上1只怪兽，那只怪兽直到下个回合的结束时不会被战斗破坏。并且，可以再让以下效果适用。●选自己1张手卡丢弃，从卡组把1只1星「纯爱妖精」怪兽特殊召唤。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_HANDES)
+	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_HANDES_SELF)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetTarget(s.tg)

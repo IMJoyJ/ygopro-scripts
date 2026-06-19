@@ -6,8 +6,8 @@
 function c77150143.initial_effect(c)
 	-- ①：这张卡召唤·特殊召唤成功的场合才能发动。从手卡丢弃1张「十二兽」卡，自己从卡组抽1张。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(77150143,0))  --"从手卡丢弃1张「十二兽」卡，自己从卡组抽1张"
-	e1:SetCategory(CATEGORY_DRAW)
+	e1:SetDescription(aux.Stringid(77150143,0))
+	e1:SetCategory(CATEGORY_HANDES_SELF+CATEGORY_DRAW)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e1:SetCode(EVENT_SUMMON_SUCCESS)
 	e1:SetProperty(EFFECT_FLAG_DELAY)

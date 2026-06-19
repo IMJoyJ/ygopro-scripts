@@ -22,8 +22,8 @@ function c30336082.initial_effect(c)
 	c:RegisterEffect(e2)
 	-- ②：自己主要阶段才能发动。从卡组把1只「天杯龙」怪兽加入手卡。那之后，选自己1张手卡丢弃。
 	local e3=Effect.CreateEffect(c)
-	e3:SetDescription(aux.Stringid(30336082,1))  --"检索"
-	e3:SetCategory(CATEGORY_SEARCH+CATEGORY_TOHAND+CATEGORY_HANDES)
+	e3:SetDescription(aux.Stringid(30336082,1))
+	e3:SetCategory(CATEGORY_SEARCH+CATEGORY_TOHAND+CATEGORY_HANDES_SELF)
 	e3:SetType(EFFECT_TYPE_IGNITION)
 	e3:SetRange(LOCATION_FZONE)
 	e3:SetCountLimit(1,30336082)
@@ -65,8 +65,7 @@ function c30336082.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.IsExistingMatchingCard(c30336082.filter,tp,LOCATION_DECK,0,1,nil) end
 	-- 设置将卡从卡组加入手牌的效果信息
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
-	-- 设置丢弃手卡的效果信息
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 end
 -- 执行检索与丢弃手卡效果
 function c30336082.thop(e,tp,eg,ep,ev,re,r,rp)

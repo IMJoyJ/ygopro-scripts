@@ -6,8 +6,8 @@
 function c73640163.initial_effect(c)
 	-- 这个卡名的①的效果1回合只能使用1次。①：「企鹅」怪兽被对方从自己的怪兽区域送去自己墓地的场合，以那之内的1只为对象才能发动（伤害步骤也能发动）。这张卡从手卡丢弃，作为对象的怪兽里侧守备表示特殊召唤。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(73640163,0))  --"丢弃并特殊召唤"
-	e1:SetCategory(CATEGORY_HANDES+CATEGORY_SPECIAL_SUMMON+CATEGORY_MSET)
+	e1:SetDescription(aux.Stringid(73640163,0))
+	e1:SetCategory(CATEGORY_HANDES_SELF+CATEGORY_SPECIAL_SUMMON+CATEGORY_MSET)
 	e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
 	e1:SetCode(EVENT_TO_GRAVE)
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET+EFFECT_FLAG_DELAY+EFFECT_FLAG_DAMAGE_STEP)
@@ -57,8 +57,7 @@ function c73640163.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	local sg=Duel.SelectTarget(tp,c73640163.spfilter,tp,LOCATION_GRAVE,0,1,1,nil,e,tp,g)
 	-- 设置特殊召唤的操作信息（特殊召唤对象怪兽）
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,sg,1,0,0)
-	-- 设置丢弃手牌的操作信息（丢弃这张卡）
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,e:GetHandler(),1,0,0)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,e:GetHandler(),1,0,0)
 end
 -- 效果①的效果处理（将自身从手卡丢弃，并将对象怪兽里侧守备表示特殊召唤）
 function c73640163.spop(e,tp,eg,ep,ev,re,r,rp)

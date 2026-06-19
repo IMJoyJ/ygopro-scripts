@@ -23,8 +23,8 @@ function c6133894.initial_effect(c)
 	c:RegisterEffect(e2)
 	-- 这张卡特殊召唤成功时，对方随机丢弃3张手卡。此效果仅当自己场上存在「万魔殿-恶魔的巢窟-」时才适用。
 	local e3=Effect.CreateEffect(c)
-	e3:SetDescription(aux.Stringid(6133894,0))  --"手牌丢弃"
-	e3:SetCategory(CATEGORY_HANDES)
+	e3:SetDescription(aux.Stringid(6133894,0))
+	e3:SetCategory(CATEGORY_HANDES_OPPO)
 	e3:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_F)
 	e3:SetCode(EVENT_SPSUMMON_SUCCESS)
 	e3:SetTarget(c6133894.hdtg)
@@ -64,8 +64,7 @@ end
 -- 定义丢弃手牌效果的发动准备与目标确认函数
 function c6133894.hdtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置连锁处理信息为对方丢弃3张手牌
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,1-tp,3)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_OPPO,nil,0,1-tp,3)
 end
 -- 定义丢弃手牌效果的执行操作函数
 function c6133894.hdop(e,tp,eg,ep,ev,re,r,rp)

@@ -36,8 +36,8 @@ function s.initial_effect(c)
 	c:RegisterEffect(e2)
 	-- ③：这张卡被送去墓地的场合才能发动。自己抽出自己场上的「魔轰神」同调怪兽的数量。那之后，选自己1张手卡丢弃。
 	local e3=Effect.CreateEffect(c)
-	e3:SetDescription(aux.Stringid(id,2))  --"抽卡并丢弃"
-	e3:SetCategory(CATEGORY_DRAW|CATEGORY_HANDES)
+	e3:SetDescription(aux.Stringid(id,2))
+	e3:SetCategory(CATEGORY_DRAW|CATEGORY_HANDES_SELF)
 	e3:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e3:SetCode(EVENT_TO_GRAVE)
 	e3:SetProperty(EFFECT_FLAG_DELAY)
@@ -90,9 +90,7 @@ function s.drtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return ct>0 and Duel.IsPlayerCanDraw(tp,ct) end
 	-- 设置当前连锁的目标玩家为自己
 	Duel.SetTargetPlayer(tp)
-	-- 设置连锁的操作信息，表示此效果包含丢弃1张手卡的处理
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,1,tp,LOCATION_HAND)
-	-- 设置连锁的操作信息，表示此效果包含抽对应数量卡的处理
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,1,tp,LOCATION_HAND)
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,ct,tp,1)
 end
 -- 效果③的效果处理：抽出自己场上「魔轰神」同调怪兽数量的卡，那之后选自己1张手卡丢弃

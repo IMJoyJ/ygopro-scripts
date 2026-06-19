@@ -4,7 +4,7 @@
 function c33508719.initial_effect(c)
 	-- ①：这张卡反转的场合发动。有手卡的玩家把那些手卡全部丢弃。双方从卡组抽5张。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_HANDES+CATEGORY_DRAW)
+	e1:SetCategory(CATEGORY_HANDES_SELF+CATEGORY_HANDES_OPPO+CATEGORY_DRAW)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_FLIP)
 	e1:SetTarget(c33508719.target)
 	e1:SetOperation(c33508719.operation)
@@ -13,9 +13,8 @@ end
 -- 设置效果的处理目标为双方手牌丢弃和双方抽卡
 function c33508719.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置操作信息为双方手牌丢弃
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,PLAYER_ALL,0)
-	-- 设置操作信息为双方各抽5张卡
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,0)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_OPPO,nil,0,1-tp,0)
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,PLAYER_ALL,5)
 end
 -- 效果处理函数，执行手牌丢弃和抽卡效果

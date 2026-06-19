@@ -45,8 +45,8 @@ function c32354768.initial_effect(c)
 	e4:SetLabel(TYPE_SYNCHRO)
 	c:RegisterEffect(e4)
 	local e5=e2:Clone()
-	e5:SetDescription(aux.Stringid(32354768,3))  --"从卡组抽1张，那之后丢弃1张手卡"
-	e5:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES)
+	e5:SetDescription(aux.Stringid(32354768,3))
+	e5:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES_SELF)
 	e5:SetTarget(c32354768.drtg)
 	e5:SetOperation(c32354768.drop)
 	e5:SetLabel(TYPE_XYZ)
@@ -184,9 +184,7 @@ end
 function c32354768.drtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 检查玩家是否可以抽卡
 	if chk==0 then return Duel.IsPlayerCanDraw(tp,1) end
-	-- 设置效果处理信息，表示丢弃1张手牌
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
-	-- 设置效果处理信息，表示抽1张卡
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,1)
 end
 -- 执行效果处理，抽卡并丢弃手牌

@@ -4,7 +4,7 @@
 function c41142615.initial_effect(c)
 	-- 从自己的手卡中丢弃最多3张怪兽卡送去墓地。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_HANDES)
+	e1:SetCategory(CATEGORY_HANDES_SELF)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetTarget(c41142615.target)
@@ -19,8 +19,7 @@ end
 function c41142615.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 检查以玩家tp来看，手牌中是否存在至少1张满足过滤条件的怪兽卡。
 	if chk==0 then return Duel.IsExistingMatchingCard(c41142615.filter,tp,LOCATION_HAND,0,1,nil) end
-	-- 设置当前处理的连锁的操作信息为CATEGORY_HANDES（丢弃手牌），预计丢弃1张手牌。
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 end
 -- 效果发动时的处理函数，执行丢弃手牌的操作。
 function c41142615.activate(e,tp,eg,ep,ev,re,r,rp)

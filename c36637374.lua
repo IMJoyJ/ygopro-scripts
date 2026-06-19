@@ -6,7 +6,7 @@
 function c36637374.initial_effect(c)
 	-- ①：选自己1张手卡丢弃。那之后，从卡组选1只「死狱乡」怪兽加入手卡或守备表示特殊召唤。这张卡的发动后，直到回合结束时自己不是融合怪兽不能从额外卡组特殊召唤。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH+CATEGORY_SPECIAL_SUMMON+CATEGORY_HANDES)
+	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH+CATEGORY_SPECIAL_SUMMON+CATEGORY_HANDES_SELF)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetCountLimit(1,36637374)
@@ -37,8 +37,7 @@ function c36637374.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.IsExistingMatchingCard(Card.IsDiscardable,tp,LOCATION_HAND,0,1,e:GetHandler())
 		-- 检查玩家卡组中是否存在符合条件的「死狱乡」怪兽。
 		and Duel.IsExistingMatchingCard(c36637374.selfilter,tp,LOCATION_DECK,0,1,nil,e,tp,check) end
-	-- 设置连锁操作信息，表示将要丢弃1张手牌。
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 end
 -- ①效果的处理函数，发动后设置场上不能特殊召唤非融合怪兽的效果，并丢弃手牌后选择卡组中的「死狱乡」怪兽进行处理。
 function c36637374.activate(e,tp,eg,ep,ev,re,r,rp)

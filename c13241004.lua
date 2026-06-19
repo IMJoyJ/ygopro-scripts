@@ -18,7 +18,7 @@ function c13241004.initial_effect(c)
 	-- ②：这张卡成为「魔玩具」融合怪兽的融合召唤的素材送去墓地的场合才能发动。自己从卡组抽2张，那之后选1张手卡丢弃。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(13241004,1))
-	e2:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES)
+	e2:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES_SELF)
 	e2:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e2:SetProperty(EFFECT_FLAG_DELAY+EFFECT_FLAG_PLAYER_TARGET)
 	e2:SetCode(EVENT_BE_MATERIAL)
@@ -69,8 +69,7 @@ function c13241004.drtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	Duel.SetTargetParam(2)
 	-- 设置抽卡操作信息（自己抽2张）
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,2)
-	-- 设置丢弃手卡操作信息（丢弃1张手卡）
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 end
 -- 效果②的处理逻辑，自己抽2张卡，并选择1张手卡丢弃
 function c13241004.drop(e,tp,eg,ep,ev,re,r,rp)

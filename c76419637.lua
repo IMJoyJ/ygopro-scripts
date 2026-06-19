@@ -9,8 +9,8 @@ function c76419637.initial_effect(c)
 	c:EnableReviveLimit()
 	-- 对方的结束阶段时只有1次在对方手卡比自己手卡多的场合发动。对方选1张手卡丢弃。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(76419637,0))  --"丢弃手牌"
-	e1:SetCategory(CATEGORY_HANDES)
+	e1:SetDescription(aux.Stringid(76419637,0))
+	e1:SetCategory(CATEGORY_HANDES_OPPO)
 	e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_F)
 	e1:SetCode(EVENT_PHASE+PHASE_END)
 	e1:SetRange(LOCATION_MZONE)
@@ -44,8 +44,7 @@ function c76419637.dctg(e,tp,eg,ep,ev,re,r,rp,chk)
 	Duel.SetTargetPlayer(1-tp)
 	-- 将效果的目标参数（丢弃数量）设置为1
 	Duel.SetTargetParam(1)
-	-- 设置当前连锁的操作信息：对方丢弃1张手牌
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,1-tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_OPPO,nil,0,1-tp,1)
 end
 -- 丢弃手牌效果的执行函数
 function c76419637.dcop(e,tp,eg,ep,ev,re,r,rp)

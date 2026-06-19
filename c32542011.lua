@@ -6,7 +6,7 @@
 function c32542011.initial_effect(c)
 	-- 效果设定：将此卡注册为发动时点为自由连锁的魔法卡，条件为己方场上存在7星以上水属性或炎属性的怪兽，效果分类为特殊召唤与破坏，触发时机为结束阶段。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DESTROY)
+	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DESTROY+CATEGORY_HANDES_SELF)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetHintTiming(0,TIMING_END_PHASE)

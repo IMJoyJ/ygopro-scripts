@@ -64,7 +64,6 @@ function c82734805.tg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local cat=0
 	if ct>=3 or ct>=8 then cat=cat+CATEGORY_TOGRAVE end
 	if ct>=5 then cat=cat+CATEGORY_DECKDES end
-	if ct>=10 then cat=cat+CATEGORY_HANDES end
 	e:SetCategory(cat)
 end
 -- 效果处理：根据融合素材的种类数量，依次适用对应的效果

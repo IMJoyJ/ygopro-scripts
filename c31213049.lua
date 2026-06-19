@@ -4,7 +4,7 @@
 function c31213049.initial_effect(c)
 	-- ①：对方把手卡的怪兽的效果发动时才能发动。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_NEGATE+CATEGORY_HANDES)
+	e1:SetCategory(CATEGORY_NEGATE+CATEGORY_HANDES_OPPO)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_CHAINING)
 	e1:SetCondition(c31213049.condition)
@@ -26,8 +26,7 @@ function c31213049.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	Duel.SetOperationInfo(0,CATEGORY_NEGATE,eg,1,0,0)
 	-- 判断对方手卡是否存在，用于决定是否触发后续丢弃手卡效果。
 	if Duel.GetFieldGroupCount(tp,0,LOCATION_HAND)>0 then
-		-- 设置连锁操作信息，标记将使对方丢弃1张手卡。
-		Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,1-tp,1)
+		Duel.SetOperationInfo(0,CATEGORY_HANDES_OPPO,nil,0,1-tp,1)
 	end
 end
 -- 执行效果处理，先使连锁无效，再判断对方是否有手卡，若有则令其丢弃1张手卡。

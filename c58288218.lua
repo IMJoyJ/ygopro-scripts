@@ -9,7 +9,7 @@ function s.initial_effect(c)
 	-- 这个卡名的①的效果1回合只能使用1次。①：把手卡的这张卡给双方确认才能发动。从卡组把1张「マスク・チェンジ」或「フォーム・チェンジ」加入手卡。那之后，选1张手卡丢弃。这个效果的发动后，直到回合结束时自己不是「HERO」怪兽不能从额外卡组特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(id,0))
-	e1:SetCategory(CATEGORY_SEARCH+CATEGORY_TOHAND+CATEGORY_HANDES)
+	e1:SetCategory(CATEGORY_SEARCH+CATEGORY_TOHAND+CATEGORY_HANDES_SELF)
 	e1:SetType(EFFECT_TYPE_IGNITION)
 	e1:SetRange(LOCATION_HAND)
 	e1:SetCountLimit(1,id)
@@ -68,8 +68,7 @@ function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.IsExistingMatchingCard(s.thfilter,tp,LOCATION_DECK,0,1,nil) end
 	-- 设置连锁信息：从卡组将1张卡加入手卡。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
-	-- 设置连锁信息：玩家丢弃1张手卡。
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 end
 -- 检索并丢弃效果的处理：将卡加入手卡，确认后，再选择1张手卡丢弃。
 function s.thop(e,tp,eg,ep,ev,re,r,rp)

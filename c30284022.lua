@@ -6,8 +6,8 @@
 function c30284022.initial_effect(c)
 	-- ①：以双方墓地的卡合计最多3张为对象才能发动。那些卡除外。那之后，从手卡选1只恶魔族怪兽丢弃。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(30284022,0))  --"双方墓地除外"
-	e1:SetCategory(CATEGORY_REMOVE+CATEGORY_HANDES)
+	e1:SetDescription(aux.Stringid(30284022,0))
+	e1:SetCategory(CATEGORY_REMOVE+CATEGORY_HANDES_SELF)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET)
@@ -47,8 +47,7 @@ function c30284022.rmtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	local g=Duel.SelectTarget(tp,Card.IsAbleToRemove,tp,LOCATION_GRAVE,LOCATION_GRAVE,1,3,nil)
 	-- 设置效果处理时要除外的卡组及数量
 	Duel.SetOperationInfo(0,CATEGORY_REMOVE,g,g:GetCount(),0,0)
-	-- 设置效果处理时要丢弃的手牌数量
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 end
 -- 效果发动时的处理函数，执行除外和丢弃操作
 function c30284022.rmop(e,tp,eg,ep,ev,re,r,rp)

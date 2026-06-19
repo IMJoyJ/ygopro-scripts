@@ -8,8 +8,8 @@ function c34116027.initial_effect(c)
 	c:EnableReviveLimit()
 	-- ①：1回合1次，自己主要阶段才能发动。从卡组把1只4星以下的龙族·鸟兽族怪兽加入手卡。那之后，从手卡选1只龙族·鸟兽族怪兽丢弃。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(34116027,0))  --"检索"
-	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH+CATEGORY_HANDES)
+	e1:SetDescription(aux.Stringid(34116027,0))
+	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH+CATEGORY_HANDES_SELF)
 	e1:SetType(EFFECT_TYPE_IGNITION)
 	e1:SetCountLimit(1)
 	e1:SetRange(LOCATION_MZONE)
@@ -27,8 +27,7 @@ function c34116027.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.IsExistingMatchingCard(c34116027.filter,tp,LOCATION_DECK,0,1,nil) end
 	-- 设置操作信息：将1张符合条件的卡从卡组加入手牌
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
-	-- 设置操作信息：丢弃1张手牌
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,1,tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,1,tp,1)
 end
 -- 效果处理函数，执行检索和丢弃操作
 function c34116027.operation(e,tp,eg,ep,ev,re,r,rp)

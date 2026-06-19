@@ -22,7 +22,7 @@ function c71133680.initial_effect(c)
 	c:RegisterEffect(e1)
 	-- ②：这张卡从场上送去墓地的场合才能发动。自己从卡组抽1张，那之后选1张手卡丢弃。
 	local e2=Effect.CreateEffect(c)
-	e2:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES)
+	e2:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES_SELF)
 	e2:SetDescription(aux.Stringid(71133680,1))
 	e2:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e2:SetCode(EVENT_TO_GRAVE)
@@ -97,9 +97,7 @@ end
 function c71133680.drtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 检查玩家当前是否可以进行抽卡
 	if chk==0 then return Duel.IsPlayerCanDraw(tp,1) end
-	-- 设置效果处理信息为：丢弃1张手卡
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
-	-- 设置效果处理信息为：从卡组抽1张卡
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,1)
 end
 -- 效果②的效果处理：自己从卡组抽1张，那之后选1张手卡丢弃

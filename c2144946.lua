@@ -24,7 +24,7 @@ function c2144946.initial_effect(c)
 	-- ②：自己的「方程式运动员」怪兽被战斗破坏时才能发动。对方手卡随机选1张丢弃。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(2144946,0))
-	e3:SetCategory(CATEGORY_HANDES)
+	e3:SetCategory(CATEGORY_HANDES_OPPO)
 	e3:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
 	e3:SetCode(EVENT_BATTLE_DESTROYED)
 	e3:SetRange(LOCATION_FZONE)
@@ -64,8 +64,7 @@ end
 function c2144946.destg(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 判断对方手牌数量是否大于0
 	if chk==0 then return Duel.GetFieldGroupCount(tp,0,LOCATION_HAND)>0 end
-	-- 设置连锁操作信息为对方丢弃1张手牌
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,0,0,1-tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_OPPO,0,0,1-tp,1)
 end
 -- 执行对方随机丢弃1张手牌的操作
 function c2144946.desop(e,tp,eg,ep,ev,re,r,rp)

@@ -12,8 +12,8 @@ function c23205979.initial_effect(c)
 	c:RegisterEffect(e1)
 	-- ②：这张卡直接攻击给与对方战斗伤害的场合发动。对方手卡随机选1张丢弃。
 	local e2=Effect.CreateEffect(c)
-	e2:SetDescription(aux.Stringid(23205979,0))  --"丢弃手牌"
-	e2:SetCategory(CATEGORY_HANDES)
+	e2:SetDescription(aux.Stringid(23205979,0))
+	e2:SetCategory(CATEGORY_HANDES_OPPO)
 	e2:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_F)
 	e2:SetCode(EVENT_BATTLE_DAMAGE)
 	e2:SetCondition(c23205979.condition)
@@ -60,8 +60,7 @@ end
 -- 规则层面：设置丢弃手牌的效果信息
 function c23205979.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 规则层面：设置丢弃对方1张手牌的操作信息
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,0,0,1-tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_OPPO,0,0,1-tp,1)
 end
 -- 规则层面：随机选择对方1张手牌丢弃
 function c23205979.operation(e,tp,eg,ep,ev,re,r,rp)

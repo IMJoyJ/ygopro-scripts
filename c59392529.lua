@@ -17,8 +17,8 @@ function c59392529.initial_effect(c)
 	c:RegisterEffect(e1)
 	-- ②：这张卡成为「英雄」融合怪兽的融合召唤的素材，被送去墓地的场合或者被除外的场合才能发动。自己抽2张。那之后，选自己1张手卡丢弃。
 	local e2=Effect.CreateEffect(c)
-	e2:SetDescription(aux.Stringid(59392529,1))  --"抽卡"
-	e2:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES)
+	e2:SetDescription(aux.Stringid(59392529,1))
+	e2:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES_SELF)
 	e2:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e2:SetProperty(EFFECT_FLAG_DELAY+EFFECT_FLAG_PLAYER_TARGET)
 	e2:SetCode(EVENT_BE_MATERIAL)
@@ -70,8 +70,7 @@ function c59392529.drtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	Duel.SetTargetParam(2)
 	-- 设置操作信息：自己抽2张卡
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,2)
-	-- 设置操作信息：自己丢弃1张手卡
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 end
 -- 效果②的效果处理：获取目标玩家与抽卡数量，执行抽卡。若成功抽到2张，则洗牌、中断效果，然后选自己1张手卡丢弃
 function c59392529.drop(e,tp,eg,ep,ev,re,r,rp)

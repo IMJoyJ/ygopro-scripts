@@ -8,8 +8,8 @@ function c52352005.initial_effect(c)
 	c:EnableReviveLimit()
 	-- ①：把自己场上1只「X-剑士」怪兽解放才能发动。对方手卡随机1张丢弃。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(52352005,0))  --"对方随机丢弃1张手卡"
-	e1:SetCategory(CATEGORY_HANDES)
+	e1:SetDescription(aux.Stringid(52352005,0))
+	e1:SetCategory(CATEGORY_HANDES_OPPO)
 	e1:SetType(EFFECT_TYPE_IGNITION)
 	e1:SetRange(LOCATION_MZONE)
 	e1:SetCost(c52352005.cost)
@@ -49,8 +49,7 @@ end
 function c52352005.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 检查对方手卡数量是否大于0
 	if chk==0 then return Duel.GetFieldGroupCount(tp,0,LOCATION_HAND)>0 end
-	-- 设置连锁处理的操作信息：对方手卡随机丢弃1张
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,1-tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_OPPO,nil,0,1-tp,1)
 end
 -- 效果①的Operation阶段：随机选择对方1张手卡送去墓地
 function c52352005.operation(e,tp,eg,ep,ev,re,r,rp)

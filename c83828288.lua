@@ -4,7 +4,7 @@
 function c83828288.initial_effect(c)
 	-- ①：以对方场上1只表侧表示怪兽为对象才能发动。选那只怪兽的等级数量的自己手卡丢弃，自己从卡组抽出丢弃的数量。那之后，作为对象的怪兽回到持有者手卡。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_HANDES+CATEGORY_DRAW+CATEGORY_TOHAND)
+	e1:SetCategory(CATEGORY_HANDES_SELF+CATEGORY_DRAW+CATEGORY_TOHAND)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET)
 	e1:SetCode(EVENT_FREE_CHAIN)
@@ -28,9 +28,7 @@ function c83828288.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	-- 玩家选择对方场上1只满足条件的表侧表示怪兽作为效果对象
 	local g=Duel.SelectTarget(tp,c83828288.filter,tp,0,LOCATION_MZONE,1,1,nil,tp)
 	local lv=g:GetFirst():GetLevel()
-	-- 设置操作信息：丢弃手卡，数量为对象怪兽的等级
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,lv)
-	-- 设置操作信息：从卡组抽卡，数量为对象怪兽的等级
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,lv)
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,lv)
 	-- 设置操作信息：将选中的对象怪兽送回手卡
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,1,0,0)

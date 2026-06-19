@@ -6,7 +6,7 @@ function c62632427.initial_effect(c)
 	-- 这个卡名的卡在1回合只能发动1张。①：对方可以丢弃1张手卡让这个效果无效。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(62632427,0))
-	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
+	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH+CATEGORY_HANDES_OPPO)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetCountLimit(1,62632427+EFFECT_COUNT_CODE_OATH)

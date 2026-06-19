@@ -19,7 +19,7 @@ function c74426895.initial_effect(c)
 	-- ②：这张卡的①的方法特殊召唤时才能发动。对方手卡随机1张送去墓地。那之后，双方各自抽1张。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(74426895,0))
-	e2:SetCategory(CATEGORY_HANDES+CATEGORY_DRAW)
+	e2:SetCategory(CATEGORY_TOGRAVE+CATEGORY_DRAW)
 	e2:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e2:SetCode(EVENT_SPSUMMON_SUCCESS)
 	e2:SetCountLimit(1,74426895)
@@ -91,9 +91,6 @@ function c74426895.hdtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.GetFieldGroupCount(tp,0,LOCATION_HAND)>0
 		-- 并且判定双方玩家是否都可以进行抽卡
 		and Duel.IsPlayerCanDraw(tp,1) and Duel.IsPlayerCanDraw(1-tp,1) end
-	-- 设置连锁信息：对方手牌送去墓地1张
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,1-tp,1)
-	-- 设置连锁信息：双方玩家各抽1张卡
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,PLAYER_ALL,1)
 end
 -- 丢弃手牌和抽卡效果的具体处理逻辑

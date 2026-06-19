@@ -13,10 +13,10 @@ function c22555834.initial_effect(c)
 	e1:SetCountLimit(1,22555834+EFFECT_COUNT_CODE_OATH)
 	e1:SetOperation(c22555834.activate)
 	c:RegisterEffect(e1)
-	-- ②：以自己墓地1只「魔轰神」怪兽为对象才能发动。选自己2张手卡丢弃，作为对象的怪兽加入手卡。
+	--tohand
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(22555834,1))
-	e2:SetCategory(CATEGORY_TOHAND+CATEGORY_HANDES)
+	e2:SetCategory(CATEGORY_TOHAND+CATEGORY_HANDES_SELF)
 	e2:SetProperty(EFFECT_FLAG_CARD_TARGET)
 	e2:SetType(EFFECT_TYPE_IGNITION)
 	e2:SetRange(LOCATION_FZONE)
@@ -69,8 +69,7 @@ function c22555834.thtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	local g1=Duel.SelectTarget(tp,c22555834.thfilter,tp,LOCATION_GRAVE,0,1,1,nil)
 	-- 设置效果操作信息，指定将怪兽加入手牌
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,0,0)
-	-- 设置效果操作信息，指定丢弃2张手牌
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,2)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,2)
 end
 -- 效果处理函数，丢弃2张手牌并将目标怪兽加入手牌
 function c22555834.thop(e,tp,eg,ep,ev,re,r,rp)

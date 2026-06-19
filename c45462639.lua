@@ -38,8 +38,8 @@ function c45462639.initial_effect(c)
 	c:RegisterEffect(e3)
 	-- 1回合1次，可以把这张卡放置的2个魔力指示物取除，对方手卡随机丢弃1张。
 	local e4=Effect.CreateEffect(c)
-	e4:SetDescription(aux.Stringid(45462639,1))  --"丢弃手牌"
-	e4:SetCategory(CATEGORY_HANDES)
+	e4:SetDescription(aux.Stringid(45462639,1))
+	e4:SetCategory(CATEGORY_HANDES_OPPO)
 	e4:SetType(EFFECT_TYPE_IGNITION)
 	e4:SetRange(LOCATION_MZONE)
 	e4:SetCountLimit(1)
@@ -79,8 +79,7 @@ end
 function c45462639.destarg(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 在发动阶段检测对方手牌数量是否大于0
 	if chk==0 then return Duel.GetFieldGroupCount(tp,0,LOCATION_HAND)>0 end
-	-- 设置对方丢弃1张手牌的操作信息
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,0,0,1-tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_OPPO,nil,0,1-tp,1)
 end
 -- 丢弃手牌效果的处理函数，随机选择对方1张手牌并以效果丢弃的方式送去墓地
 function c45462639.desop(e,tp,eg,ep,ev,re,r,rp)

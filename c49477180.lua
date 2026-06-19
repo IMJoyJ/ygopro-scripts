@@ -83,7 +83,7 @@ function c49477180.mtop(e,tp,eg,ep,ev,re,r,rp)
 	-- 为该怪兽添加一个诱发效果，使其在战斗伤害计算后发动抽卡丢卡效果
 	local e1=Effect.CreateEffect(rc)
 	e1:SetDescription(aux.Stringid(49477180,1))
-	e1:SetCategory(CATEGORY_HANDES+CATEGORY_DRAW)
+	e1:SetCategory(CATEGORY_HANDES_SELF+CATEGORY_DRAW)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e1:SetCode(EVENT_BATTLED)
 	e1:SetTarget(c49477180.drtg)
@@ -105,9 +105,7 @@ end
 function c49477180.drtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 检查是否满足发动条件：攻击怪兽存在且玩家可以抽卡
 	if chk==0 then return Duel.GetAttackTarget()~=nil and Duel.IsPlayerCanDraw(tp,1) end
-	-- 设置操作信息：准备丢弃一张手牌
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
-	-- 设置操作信息：准备让玩家抽一张卡
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,1)
 end
 -- 效果处理：执行抽卡并丢弃手牌的操作

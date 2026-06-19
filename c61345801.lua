@@ -8,8 +8,8 @@ local s,id,o=GetID()
 function s.initial_effect(c)
 	-- ①：把手卡1张「影依」卡给对方观看才能发动。和给人观看的卡种类（怪兽·魔法·陷阱）不同的2张「影依」卡从卡组加入手卡（相同种类最多1张）。那之后，选自己1张手卡丢弃。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(id,0))  --"检索并丢弃"
-	e1:SetCategory(CATEGORY_SEARCH+CATEGORY_TOHAND+CATEGORY_HANDES)
+	e1:SetDescription(aux.Stringid(id,0))
+	e1:SetCategory(CATEGORY_SEARCH+CATEGORY_TOHAND+CATEGORY_HANDES_SELF)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetCountLimit(1,id)

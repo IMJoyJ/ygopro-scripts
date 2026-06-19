@@ -23,8 +23,8 @@ function c41482598.initial_effect(c)
 	c:RegisterEffect(e2)
 	-- 设置魔陷发动时的处理流程
 	local e3=Effect.CreateEffect(c)
-	e3:SetDescription(aux.Stringid(41482598,1))  --"丢弃"
-	e3:SetCategory(CATEGORY_HANDES)
+	e3:SetDescription(aux.Stringid(41482598,1))
+	e3:SetCategory(CATEGORY_HANDES_SELF)
 	e3:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_F)
 	e3:SetRange(LOCATION_SZONE)
 	e3:SetCountLimit(1)
@@ -74,8 +74,7 @@ function c41482598.dctg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local de=e:GetLabelObject()
 	e:SetLabel(de:GetLabel())
 	de:SetLabel(0)
-	-- 设置丢弃操作信息，目标为丢弃指定数量的手牌
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,e:GetLabel())
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,e:GetLabel())
 end
 -- 执行随机丢弃手牌操作
 function c41482598.dcop(e,tp,eg,ep,ev,re,r,rp)

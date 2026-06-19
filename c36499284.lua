@@ -4,7 +4,7 @@
 function c36499284.initial_effect(c)
 	-- 这张卡的发动时可以选择对方场上表侧表示存在的1张卡。那个场合，从自己手卡丢弃1只兽战士族怪兽，选择的卡破坏。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_DESTROY)
+	e1:SetCategory(CATEGORY_HANDES_SELF+CATEGORY_DESTROY)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetTarget(c36499284.target)
@@ -37,8 +37,8 @@ function c36499284.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if Duel.IsExistingTarget(c36499284.filter,tp,0,LOCATION_ONFIELD,1,nil)
 		-- 检查自己手卡中是否存在满足条件的兽战士族怪兽
 		and Duel.IsExistingMatchingCard(c36499284.filter2,tp,LOCATION_HAND,0,1,nil)
-		-- 询问玩家是否发动效果
-		and Duel.SelectYesNo(tp,aux.Stringid(36499284,0)) then  --"是否要选择对方场上表侧表示存在的1张卡破坏？"
+		and Duel.SelectYesNo(tp,aux.Stringid(36499284,0)) then
+		e:SetCategory(CATEGORY_HANDES_SELF+CATEGORY_DESTROY)
 		e:SetProperty(EFFECT_FLAG_CARD_TARGET)
 		-- 提示玩家选择要破坏的卡
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
@@ -47,6 +47,7 @@ function c36499284.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 		-- 设置连锁操作信息为破坏效果
 		Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,1,0,0)
 	else
+		e:SetCategory(0)
 		e:SetProperty(0)
 	end
 end

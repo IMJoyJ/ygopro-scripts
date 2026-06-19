@@ -8,8 +8,8 @@ local s,id,o=GetID()
 function s.initial_effect(c)
 	-- ①：从卡组把3只卡名不同的「三幻魔」怪兽加入手卡。那之后，选自己2张手卡丢弃。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(id,0))  --"发动"
-	e1:SetCategory(CATEGORY_HANDES+CATEGORY_SEARCH+CATEGORY_TOHAND)
+	e1:SetDescription(aux.Stringid(id,0))
+	e1:SetCategory(CATEGORY_HANDES_SELF+CATEGORY_SEARCH+CATEGORY_TOHAND)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetCountLimit(1,id)
@@ -42,8 +42,7 @@ function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return g:GetClassCount(Card.GetCode)>=3 end
 	-- 设置操作信息：从卡组将3张卡加入手卡
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,3,tp,LOCATION_DECK)
-	-- 设置操作信息：将2张手卡丢弃
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,2)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,2)
 end
 -- 效果1的实际处理：从卡组检索3只卡名不同的「三幻魔」怪兽加入手卡，然后从手卡选择2张卡片丢弃
 function s.activate(e,tp,eg,ep,ev,re,r,rp)

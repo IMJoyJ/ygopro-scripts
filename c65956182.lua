@@ -7,7 +7,7 @@ function c65956182.initial_effect(c)
 	-- ①：双方的主要阶段才能发动。从自己的场上·墓地把恶魔族融合怪兽卡决定的融合素材怪兽除外，把那1只融合怪兽从额外卡组融合召唤。「暗黑界」怪兽融合召唤的场合，也能把手卡的怪兽丢弃作为融合素材。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(65956182,0))
-	e1:SetCategory(CATEGORY_REMOVE+CATEGORY_SPECIAL_SUMMON+CATEGORY_FUSION_SUMMON+CATEGORY_HANDES)
+	e1:SetCategory(CATEGORY_REMOVE+CATEGORY_SPECIAL_SUMMON+CATEGORY_FUSION_SUMMON+CATEGORY_HANDES_SELF)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetProperty(EFFECT_FLAG_DELAY)
@@ -19,7 +19,7 @@ function c65956182.initial_effect(c)
 	-- ②：这张卡在墓地存在的场合，自己主要阶段才能发动。这张卡加入手卡。那之后，从手卡选1只「暗黑界」怪兽丢弃。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(65956182,1))
-	e2:SetCategory(CATEGORY_TOHAND+CATEGORY_HANDES)
+	e2:SetCategory(CATEGORY_TOHAND+CATEGORY_HANDES_SELF)
 	e2:SetType(EFFECT_TYPE_IGNITION)
 	e2:SetRange(LOCATION_GRAVE)
 	e2:SetCountLimit(1,65956183)
@@ -155,8 +155,7 @@ function c65956182.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
 		and Duel.IsExistingMatchingCard(c65956182.thfilter,tp,LOCATION_HAND,0,1,nil) end
 	-- 设置回收的操作信息（将墓地的这张卡加入手牌）
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,c,1,0,0)
-	-- 设置丢弃手牌的操作信息（从手牌丢弃1张卡）
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 end
 -- 定义②号效果的效果处理（回收此卡并丢弃1张手牌中的「暗黑界」怪兽）
 function c65956182.thop(e,tp,eg,ep,ev,re,r,rp)

@@ -4,8 +4,8 @@
 function c10809984.initial_effect(c)
 	-- 每当这张卡给与对方战斗伤害时，宣言1张卡的名字。检视对方手卡，若其中有被宣言名字的卡，则将其全部扔进墓地。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(10809984,0))  --"宣言"
-	e1:SetCategory(CATEGORY_HANDES)
+	e1:SetDescription(aux.Stringid(10809984,0))
+	e1:SetCategory(CATEGORY_HANDES_OPPO)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_F)
 	e1:SetCode(EVENT_BATTLE_DAMAGE)
 	e1:SetCondition(c10809984.drcon)

@@ -23,8 +23,8 @@ function c25811989.initial_effect(c)
 	c:RegisterEffect(e2)
 	-- ①：这张卡向对方怪兽的攻击给与对方战斗伤害时才能发动。对方手卡随机1张送去墓地。
 	local e3=Effect.CreateEffect(c)
-	e3:SetDescription(aux.Stringid(25811989,0))  --"手卡破坏"
-	e3:SetCategory(CATEGORY_HANDES)
+	e3:SetDescription(aux.Stringid(25811989,0))
+	e3:SetCategory(CATEGORY_TOGRAVE)
 	e3:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e3:SetCode(EVENT_BATTLE_DAMAGE)
 	e3:SetCondition(c25811989.thcon)
@@ -104,8 +104,7 @@ end
 function c25811989.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 判断对方手牌数量是否大于0。
 	if chk==0 then return Duel.GetFieldGroupCount(tp,0,LOCATION_HAND)>0 end
-	-- 设置效果处理时要丢弃对方手牌。
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,0,0,1-tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,nil,1,1-tp,LOCATION_HAND)
 end
 -- 随机选择对方1张手牌并送去墓地。
 function c25811989.thop(e,tp,eg,ep,ev,re,r,rp)

@@ -9,7 +9,7 @@ local s,id,o=GetID()
 function s.initial_effect(c)
 	-- ①：这个回合，自己受到的战斗·效果伤害只有1次变成0。并且，可以再让以下效果适用。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_HANDES)
+	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_HANDES_SELF)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetOperation(s.op)

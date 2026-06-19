@@ -4,7 +4,6 @@
 function c95096437.initial_effect(c)
 	-- 选择自己场上表侧表示存在的1只通常怪兽发动。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_ATKCHANGE)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET)
 	e1:SetCode(EVENT_FREE_CHAIN)
@@ -34,8 +33,8 @@ function c95096437.activate(e,tp,eg,ep,ev,re,r,rp)
 		tc:RegisterFlagEffect(95096437,RESET_EVENT+0x1220000+RESET_PHASE+PHASE_END,0,1)
 		-- 这个回合选择怪兽给与对方基本分战斗伤害时，对方随机丢弃2张手卡。
 		local e1=Effect.CreateEffect(e:GetHandler())
-		e1:SetDescription(aux.Stringid(95096437,0))  --"丢弃手牌"
-		e1:SetCategory(CATEGORY_HANDES)
+		e1:SetDescription(aux.Stringid(95096437,0))
+		e1:SetCategory(CATEGORY_HANDES_OPPO)
 		e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
 		e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_F)
 		e1:SetCode(EVENT_BATTLE_DAMAGE)
@@ -58,8 +57,7 @@ function c95096437.hdtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
 	-- 设置当前效果的目标玩家为发动此卡效果的玩家
 	Duel.SetTargetPlayer(tp)
-	-- 设置操作信息：对方手牌随机丢弃2张
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,1-tp,2)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_OPPO,nil,0,1-tp,2)
 end
 -- 丢弃手牌效果的具体处理：对方随机选择2张手牌送去墓地
 function c95096437.hdop(e,tp,eg,ep,ev,re,r,rp)

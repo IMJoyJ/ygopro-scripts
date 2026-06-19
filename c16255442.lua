@@ -4,7 +4,7 @@
 function c16255442.initial_effect(c)
 	-- 创建效果，设置效果分类为丢弃手牌和回手牌，效果类型为发动，时点为自由时点，设置效果目标和处理函数
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_HANDES+CATEGORY_TOHAND)
+	e1:SetCategory(CATEGORY_HANDES_SELF+CATEGORY_TOHAND)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetTarget(c16255442.target)
@@ -26,9 +26,7 @@ function c16255442.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	end
 	-- 获取自己场上的所有手牌
 	local sg=Duel.GetFieldGroup(tp,LOCATION_HAND,0)
-	-- 设置操作信息，标记将要丢弃手牌
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,sg,sg:GetCount(),0,0)
-	-- 设置操作信息，标记将要从墓地选光属性怪兽加入手牌
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,sg,sg:GetCount(),0,0)
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,sg:GetCount(),tp,LOCATION_GRAVE)
 end
 -- 效果处理函数，执行丢弃手牌并从墓地选光属性怪兽加入手牌的操作

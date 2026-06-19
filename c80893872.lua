@@ -15,7 +15,7 @@ function c80893872.initial_effect(c)
 	-- ②：1回合1次，自己主要阶段才能发动。从手卡以及自己场上的表侧表示怪兽之中选1只「企鹅」怪兽，那只怪兽的等级直到回合结束时下降1星。那之后，选自己1张手卡丢弃。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(80893872,1))
-	e2:SetCategory(CATEGORY_HANDES)
+	e2:SetCategory(CATEGORY_HANDES_SELF)
 	e2:SetType(EFFECT_TYPE_IGNITION)
 	e2:SetRange(LOCATION_SZONE)
 	e2:SetCountLimit(1)
@@ -52,8 +52,7 @@ function c80893872.lvtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.IsExistingMatchingCard(c80893872.lvfilter,tp,LOCATION_HAND+LOCATION_MZONE,0,1,nil)
 		-- 检查玩家手牌数量是否大于0（用于后续的丢弃手牌处理）
 		and Duel.GetFieldGroupCount(tp,LOCATION_HAND,0)>0 end
-	-- 设置丢弃1张手牌的操作信息
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 end
 -- 效果②的效果处理：选择1只「企鹅」怪兽使其等级下降1星，之后丢弃1张手牌
 function c80893872.lvop(e,tp,eg,ep,ev,re,r,rp)

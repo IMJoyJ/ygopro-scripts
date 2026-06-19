@@ -12,7 +12,7 @@ function c81260679.initial_effect(c)
 	-- ①：把手卡的这张卡给对方观看才能发动。从卡组把「大日女之御巫」以外的1张「御巫」卡加入手卡。那之后，选自己1张手卡丢弃。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(81260679,0))
-	e1:SetCategory(CATEGORY_SEARCH+CATEGORY_TOHAND+CATEGORY_HANDES)
+	e1:SetCategory(CATEGORY_SEARCH+CATEGORY_TOHAND+CATEGORY_HANDES_SELF)
 	e1:SetType(EFFECT_TYPE_IGNITION)
 	e1:SetRange(LOCATION_HAND)
 	e1:SetCountLimit(1,81260679)
@@ -59,8 +59,7 @@ function c81260679.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.IsExistingMatchingCard(c81260679.thfilter,tp,LOCATION_DECK,0,1,nil) end
 	-- 设置将卡组的1张卡加入手牌的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
-	-- 设置将1张手牌丢弃的操作信息
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 end
 -- 效果处理：从卡组将1张「大日女之御巫」以外的「御巫」卡加入手牌，那之后从手牌中选1张卡丢弃
 function c81260679.thop(e,tp,eg,ep,ev,re,r,rp)

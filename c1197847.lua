@@ -30,7 +30,7 @@ function c1197847.initial_effect(c)
 	-- 装备怪兽进行战斗的战斗阶段结束时才能发动。从自己的手卡·卡组·墓地选1只「幻煌龙 螺旋」特殊召唤，这张卡给那只怪兽装备。那之后，有对方手卡的场合，对方选1张手卡丢弃。
 	local e4=Effect.CreateEffect(c)
 	e4:SetDescription(aux.Stringid(1197847,0))
-	e4:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_HANDES)
+	e4:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_HANDES_OPPO)
 	e4:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
 	e4:SetCode(EVENT_PHASE+PHASE_BATTLE)
 	e4:SetRange(LOCATION_SZONE)
@@ -95,8 +95,7 @@ function c1197847.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	Duel.SetOperationInfo(0,CATEGORY_EQUIP,e:GetHandler(),1,0,0)
 	-- 检查对方是否有手卡。
 	if Duel.GetFieldGroupCount(tp,0,LOCATION_HAND)>0 then
-		-- 设置丢弃手卡的处理信息。
-		Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,1-tp,1)
+		Duel.SetOperationInfo(0,CATEGORY_HANDES_OPPO,nil,0,1-tp,1)
 	end
 end
 -- 设置②效果的处理流程。

@@ -5,7 +5,7 @@
 function c43455065.initial_effect(c)
 	-- ①：自己从卡组抽出对方场上的表侧表示的魔法·陷阱卡的数量。那之后，从自己手卡选自己场上的表侧表示的魔法·陷阱卡数量的卡丢弃。这张卡的发动后，直到下次的对方回合的结束时，对方场上的魔法·陷阱卡不会被破坏，发动和效果不会被无效化。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_DRAW)
+	e1:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES_SELF)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET)

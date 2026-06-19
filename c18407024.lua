@@ -4,8 +4,8 @@
 function c18407024.initial_effect(c)
 	-- 这张卡直接攻击给与对方基本分战斗伤害时，对方选择1张手卡丢弃。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(18407024,0))  --"丢弃手牌"
-	e1:SetCategory(CATEGORY_HANDES)
+	e1:SetDescription(aux.Stringid(18407024,0))
+	e1:SetCategory(CATEGORY_HANDES_OPPO)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_F)
 	e1:SetCode(EVENT_BATTLE_DAMAGE)
 	e1:SetCondition(c18407024.condition)
@@ -21,8 +21,7 @@ end
 -- 效果的处理目标设定：对方选择1张手卡丢弃
 function c18407024.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设定连锁操作信息为对方丢弃手牌
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,0,0,1-tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_OPPO,0,0,1-tp,1)
 end
 -- 效果的处理流程：对方选择并丢弃1张手牌
 function c18407024.operation(e,tp,eg,ep,ev,re,r,rp)

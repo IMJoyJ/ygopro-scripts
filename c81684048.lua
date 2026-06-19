@@ -10,8 +10,8 @@ function s.initial_effect(c)
 	aux.AddCodeList(c,97077563)
 	-- 可以把手卡的这张卡给对方出示；从自己的卡组·墓地把1张「活死人的呼声」在自己场上盖放，丢弃1张手卡。这个效果盖放的卡在盖放的回合也能发动。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(id,0))  --"盖放"
-	e1:SetCategory(CATEGORY_SSET+CATEGORY_HANDES)
+	e1:SetDescription(aux.Stringid(id,0))
+	e1:SetCategory(CATEGORY_SSET+CATEGORY_HANDES_SELF)
 	e1:SetType(EFFECT_TYPE_IGNITION)
 	e1:SetRange(LOCATION_HAND)
 	e1:SetCountLimit(1,id)

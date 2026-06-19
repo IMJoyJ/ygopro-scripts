@@ -16,8 +16,8 @@ function c29590752.initial_effect(c)
 	c:RegisterEffect(e1)
 	-- 这张卡进行战斗的自己的战斗阶段结束时，丢弃1张手卡或这张卡回到卡组。
 	local e2=Effect.CreateEffect(c)
-	e2:SetDescription(aux.Stringid(29590752,1))  --"丢手卡或回卡组"
-	e2:SetCategory(CATEGORY_HANDES+CATEGORY_TODECK)
+	e2:SetDescription(aux.Stringid(29590752,1))
+	e2:SetCategory(CATEGORY_HANDES_SELF+CATEGORY_TODECK)
 	e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_F)
 	e2:SetCode(EVENT_PHASE+PHASE_BATTLE)
 	e2:SetRange(LOCATION_MZONE)
@@ -59,8 +59,6 @@ end
 function c29590752.dtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():GetFlagEffect(29590753)==0 end
 	e:GetHandler():RegisterFlagEffect(29590753,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_BATTLE,EFFECT_FLAG_OATH,1)
-	-- 设置操作信息：准备处理丢弃手牌效果
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,1,tp,0)
 end
 -- 执行丢弃手卡或回卡组效果的操作函数
 function c29590752.dop(e,tp,eg,ep,ev,re,r,rp)

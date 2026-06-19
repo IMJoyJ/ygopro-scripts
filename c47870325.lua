@@ -14,7 +14,7 @@ function c47870325.initial_effect(c)
 	c:RegisterEffect(e1)
 	-- ②：怪兽的攻击宣言时发动。被攻击的玩家可以让以下效果适用。
 	local e2=Effect.CreateEffect(c)
-	e2:SetCategory(CATEGORY_TOHAND+CATEGORY_HANDES)
+	e2:SetCategory(CATEGORY_TOHAND+CATEGORY_HANDES_SELF+CATEGORY_HANDES_OPPO)
 	e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_F)
 	e2:SetCode(EVENT_ATTACK_ANNOUNCE)
 	e2:SetRange(LOCATION_FZONE)
@@ -88,10 +88,14 @@ end
 function c47870325.atktg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
 	local p=1-ep
-	-- 设置连锁操作信息中涉及从除外区加入手牌
+	if e:IsCostChecked() then
+		if Duel.GetTurnPlayer()==tp then
+			e:SetCategory(CATEGORY_TOHAND+CATEGORY_HANDES_OPPO)
+		else
+			e:SetCategory(CATEGORY_TOHAND+CATEGORY_HANDES_SELF)
+		end
+	end
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,p,LOCATION_REMOVED)
-	-- 设置连锁操作信息中涉及对方丢弃手牌
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,1,p,LOCATION_HAND)
 end
 -- 定义过滤函数，用于筛选可加入手牌的卡
 function c47870325.thfilter(c,rc,p)

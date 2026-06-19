@@ -20,8 +20,8 @@ function c63789924.initial_effect(c)
 	c:RegisterEffect(e2)
 	-- 装备在怪兽上的这张卡被其他卡的效果破坏时，看对方手卡并选择1张丢弃。
 	local e3=Effect.CreateEffect(c)
-	e3:SetDescription(aux.Stringid(63789924,0))  --"手牌丢弃"
-	e3:SetCategory(CATEGORY_HANDES)
+	e3:SetDescription(aux.Stringid(63789924,0))
+	e3:SetCategory(CATEGORY_HANDES_OPPO)
 	e3:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_F)
 	e3:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
 	e3:SetCode(EVENT_LEAVE_FIELD)
@@ -60,8 +60,7 @@ function c63789924.distg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
 	-- 将当前连锁的对象玩家设置为发动效果的玩家
 	Duel.SetTargetPlayer(tp)
-	-- 设置连锁信息，表示该效果包含丢弃对方1张手牌的操作
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,1-tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_OPPO,nil,0,1-tp,1)
 end
 -- 丢弃手牌效果的具体处理：确认对方手牌并选择1张丢弃
 function c63789924.disop(e,tp,eg,ep,ev,re,r,rp)

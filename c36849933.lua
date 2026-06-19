@@ -8,7 +8,7 @@ function c36849933.initial_effect(c)
 	-- ①：这张卡仪式召唤成功的场合才能发动。自己从卡组抽1张。那之后，选1张手卡丢弃。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(36849933,0))
-	e1:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES)
+	e1:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES_SELF)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e1:SetCode(EVENT_SPSUMMON_SUCCESS)
 	e1:SetProperty(EFFECT_FLAG_DELAY)
@@ -44,8 +44,7 @@ function c36849933.drtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	Duel.SetTargetParam(1)
 	-- 设置操作信息：抽卡效果
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,1)
-	-- 设置操作信息：丢弃手卡效果
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 end
 -- 效果处理：执行抽卡并丢弃手牌
 function c36849933.drop(e,tp,eg,ep,ev,re,r,rp)

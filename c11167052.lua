@@ -41,8 +41,8 @@ function c11167052.initial_effect(c)
 	c:RegisterEffect(e4)
 	-- 把魔法与陷阱区域的表侧表示的这张卡送去墓地才能发动。手卡全部丢弃。那之后，从自己墓地选这个效果丢弃的卡数量的「灵神」怪兽加入手卡。
 	local e5=Effect.CreateEffect(c)
-	e5:SetDescription(aux.Stringid(11167052,1))  --"墓地回收"
-	e5:SetCategory(CATEGORY_HANDES+CATEGORY_TOHAND)
+	e5:SetDescription(aux.Stringid(11167052,1))
+	e5:SetCategory(CATEGORY_HANDES_SELF+CATEGORY_TOHAND)
 	e5:SetType(EFFECT_TYPE_QUICK_O)
 	e5:SetCode(EVENT_FREE_CHAIN)
 	e5:SetHintTiming(0,TIMING_END_PHASE)
@@ -124,9 +124,7 @@ function c11167052.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local ct=hg:GetCount()
 	-- 检查是否存在满足条件的「灵神」怪兽
 	if chk==0 then return ct>0 and Duel.IsExistingMatchingCard(c11167052.thfilter,tp,LOCATION_GRAVE,0,ct,nil) end
-	-- 设置操作信息，表示将丢弃手牌
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,hg,ct,0,0)
-	-- 设置操作信息，表示将从墓地回收怪兽
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,hg,ct,0,0)
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,ct,tp,LOCATION_GRAVE)
 end
 -- 执行墓地回收效果的处理逻辑

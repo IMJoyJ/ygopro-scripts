@@ -10,8 +10,8 @@ function c9061682.initial_effect(c)
 	c:EnableReviveLimit()
 	-- ①：这张卡特殊召唤的场合才能发动。对方可以选1张手卡丢弃让这个效果无效。没丢弃的场合，自己抽2张。抽卡的场合，再选自己1张手卡丢弃。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(9061682,0))  --"抽卡并丢弃手卡"
-	e1:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES)
+	e1:SetDescription(aux.Stringid(9061682,0))
+	e1:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES_SELF+CATEGORY_HANDES_OPPO)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e1:SetProperty(EFFECT_FLAG_DELAY)
 	e1:SetCode(EVENT_SPSUMMON_SUCCESS)
@@ -36,10 +36,6 @@ end
 function c9061682.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 检查自身是否可以从卡组抽卡
 	if chk==0 then return Duel.IsPlayerCanDraw(tp,2) end
-	-- 设置连锁信息：包含抽卡的操作
-	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,2)
-	-- 设置连锁信息：包含丢弃手卡的操作
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
 end
 -- 效果①的处理函数：处理对方是否丢弃手卡使效果无效，以及后续的抽卡和丢弃手卡处理
 function c9061682.operation(e,tp,eg,ep,ev,re,r,rp)

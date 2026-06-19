@@ -6,8 +6,8 @@ function c40591390.initial_effect(c)
 	aux.AddCodeList(c,75041269)
 	-- 「幽狱之时计塔」的效果特殊召唤的场合，自己场上名字带有「命运英雄」的怪兽以外的自己怪兽全部破坏。那之后，可以从自己墓地把最多2只名字带有「命运英雄」的怪兽特殊召唤。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(40591390,0))  --"特殊召唤"
-	e1:SetCategory(CATEGORY_DESTROY+CATEGORY_SPECIAL_SUMMON)
+	e1:SetDescription(aux.Stringid(40591390,0))
+	e1:SetCategory(CATEGORY_DESTROY+CATEGORY_SPECIAL_SUMMON+CATEGORY_GRAVE_SPSUMMON)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_F)
 	e1:SetCode(EVENT_SPSUMMON_SUCCESS)
 	e1:SetCondition(c40591390.spcon)

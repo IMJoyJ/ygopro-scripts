@@ -15,8 +15,8 @@ function c73001017.initial_effect(c)
 	c:RegisterEffect(e1)
 	-- 这张卡被战斗破坏送去墓地时，对方随机丢弃1张手卡。
 	local e2=Effect.CreateEffect(c)
-	e2:SetDescription(aux.Stringid(73001017,0))  --"手牌丢弃"
-	e2:SetCategory(CATEGORY_HANDES)
+	e2:SetDescription(aux.Stringid(73001017,0))
+	e2:SetCategory(CATEGORY_HANDES_OPPO)
 	e2:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_F)
 	e2:SetCode(EVENT_BATTLE_DESTROYED)
 	e2:SetCondition(c73001017.condition)
@@ -62,8 +62,7 @@ end
 -- 效果发动的目标确认与操作信息设置函数
 function c73001017.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置连锁的操作信息，表示该效果会使对方丢弃1张手卡
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,0,0,1-tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_OPPO,nil,0,1-tp,1)
 end
 -- 效果的具体处理函数，执行对方随机丢弃手卡的操作
 function c73001017.operation(e,tp,eg,ep,ev,re,r,rp)

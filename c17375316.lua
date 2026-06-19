@@ -4,7 +4,7 @@
 function c17375316.initial_effect(c)
 	-- 创建效果，设置为魔法卡发动效果，具有支付LP费用、选择对象、处理手牌丢弃的效果
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_HANDES)
+	e1:SetCategory(CATEGORY_HANDES_OPPO)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
 	e1:SetCode(EVENT_FREE_CHAIN)
@@ -26,8 +26,7 @@ function c17375316.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.GetFieldGroupCount(tp,0,LOCATION_HAND)>0 end
 	-- 设置当前效果的目标玩家为发动者
 	Duel.SetTargetPlayer(tp)
-	-- 设置连锁操作信息为丢弃对方1张手牌
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,1-tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_OPPO,nil,0,1-tp,1)
 end
 -- 处理效果发动后的实际操作
 function c17375316.activate(e,tp,eg,ep,ev,re,r,rp)

@@ -60,8 +60,7 @@ end
 function c5969957.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	local g=eg:Filter(c5969957.tgfilter,nil,e,tp)
 	if chkc then return g:IsContains(chkc) end
-	-- 检查自己场上是否有空余的怪兽区域，以及是否存在可选的符合条件的对象
-	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0 and g:GetCount()>0 end
+	if chk==0 then return Duel.GetMZoneCount(tp,c)>0 and g:GetCount()>0 end
 	local c=nil
 	if g:GetCount()>1 then
 		-- 提示玩家选择作为效果对象的卡片

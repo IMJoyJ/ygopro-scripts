@@ -19,8 +19,7 @@ function s.initial_effect(c)
 	c:RegisterEffect(e1)
 	-- ②：把墓地的这张卡除外，以自己场上1只表侧表示怪兽为对象才能发动。把最多2张那只怪兽可以装备的装备魔法卡从自己的手卡·墓地给那只怪兽装备（同名卡最多1张）。只要这个效果把装备魔法卡装备中，那只怪兽给与对方的战斗伤害变成一半
 	local e2=Effect.CreateEffect(c)
-	e2:SetDescription(aux.Stringid(id,1))  --"装备"
-	e2:SetCategory(CATEGORY_EQUIP)
+	e2:SetDescription(aux.Stringid(id,1))
 	e2:SetType(EFFECT_TYPE_QUICK_O)
 	e2:SetCode(EVENT_FREE_CHAIN)
 	e2:SetRange(LOCATION_GRAVE)

@@ -19,8 +19,8 @@ function c69230391.initial_effect(c)
 	c:RegisterEffect(e2)
 	-- ①：这张卡上级召唤的场合发动。把对方手卡确认，选那之内的1张丢弃。丢弃的卡是怪兽的场合，给与对方那只怪兽的等级×200伤害。这张卡把炎属性怪兽解放作上级召唤的场合，那个时候的效果加上以下效果。●给与对方1000伤害。
 	local e3=Effect.CreateEffect(c)
-	e3:SetDescription(aux.Stringid(69230391,1))  --"确认手卡"
-	e3:SetCategory(CATEGORY_HANDES+CATEGORY_DAMAGE)
+	e3:SetDescription(aux.Stringid(69230391,1))
+	e3:SetCategory(CATEGORY_HANDES_OPPO+CATEGORY_DAMAGE)
 	e3:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_F)
 	e3:SetCode(EVENT_SUMMON_SUCCESS)
 	e3:SetCondition(c69230391.condition)
@@ -64,9 +64,7 @@ end
 -- 效果发动时的目标确认与操作信息设置
 function c69230391.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置操作信息：对方手牌丢弃1张
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,1-tp,1)
-	-- 设置操作信息：给与对方伤害
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_OPPO,nil,0,1-tp,1)
 	Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,1-tp,0)
 	if e:GetLabel()==1 then
 		-- 若满足炎属性解放条件，追加设置操作信息：给与对方1000点伤害

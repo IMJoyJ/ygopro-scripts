@@ -7,8 +7,8 @@ function c22377815.initial_effect(c)
 	aux.EnableDualAttribute(c)
 	-- ●这张卡战斗破坏对方怪兽送去墓地时，对方手卡随机丢弃1张。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(22377815,0))  --"手牌丢弃"
-	e1:SetCategory(CATEGORY_HANDES)
+	e1:SetDescription(aux.Stringid(22377815,0))
+	e1:SetCategory(CATEGORY_HANDES_OPPO)
 	e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_F)
 	e1:SetCode(EVENT_BATTLE_DESTROYING)
@@ -25,8 +25,7 @@ end
 -- 设置效果的处理目标，确定对方手牌丢弃的数量
 function c22377815.tg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置连锁处理信息，指定对方手牌丢弃1张
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,0,0,1-tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_OPPO,0,0,1-tp,1)
 end
 -- 执行效果的处理操作，随机选择对方手牌并丢弃
 function c22377815.op(e,tp,eg,ep,ev,re,r,rp)

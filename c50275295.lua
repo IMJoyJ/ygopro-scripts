@@ -23,8 +23,8 @@ function c50275295.initial_effect(c)
 	c:RegisterEffect(e2)
 	-- ②：把墓地的这张卡除外才能发动。从卡组把1只「电脑堺」怪兽加入手卡。那之后选1张手卡送去墓地。
 	local e3=Effect.CreateEffect(c)
-	e3:SetDescription(aux.Stringid(50275295,1))  --"加入手卡"
-	e3:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH+CATEGORY_HANDES)
+	e3:SetDescription(aux.Stringid(50275295,1))
+	e3:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH+CATEGORY_TOGRAVE)
 	e3:SetType(EFFECT_TYPE_IGNITION)
 	e3:SetRange(LOCATION_GRAVE)
 	e3:SetCountLimit(1,50275296)

@@ -24,8 +24,8 @@ function s.initial_effect(c)
 	c:RegisterEffect(e2)
 	-- 自己主要阶段才能发动。从卡组把1只「空牙团」怪兽加入手卡。那之后，选自己1张手卡丢弃
 	local e3=Effect.CreateEffect(c)
-	e3:SetDescription(aux.Stringid(id,0))  --"检索"
-	e3:SetCategory(CATEGORY_SEARCH+CATEGORY_TOHAND+CATEGORY_HANDES)
+	e3:SetDescription(aux.Stringid(id,0))
+	e3:SetCategory(CATEGORY_SEARCH+CATEGORY_TOHAND+CATEGORY_HANDES_SELF)
 	e3:SetType(EFFECT_TYPE_IGNITION)
 	e3:SetRange(LOCATION_FZONE)
 	e3:SetCountLimit(1,id)
@@ -70,9 +70,7 @@ function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.IsExistingMatchingCard(s.thfilter,tp,LOCATION_DECK,0,1,nil) end
 	-- 设置将卡加入手牌的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
-	-- 设置丢弃手牌的操作信息
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
-	-- 提示对方玩家选择了检索效果
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 	Duel.Hint(HINT_OPSELECTED,1-tp,e:GetDescription())
 end
 -- 执行检索效果的操作流程

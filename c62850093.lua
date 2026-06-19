@@ -6,7 +6,7 @@ function c62850093.initial_effect(c)
 	-- ①：自己场上的表侧表示的水属性怪兽被战斗或者对方的效果破坏的场合才能发动。这张卡从手卡特殊召唤。那之后，可以把对方手卡随机选1张送去墓地。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(62850093,0))
-	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_HANDES)
+	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_TOGRAVE)
 	e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
 	e1:SetCode(EVENT_DESTROYED)
 	e1:SetProperty(EFFECT_FLAG_DAMAGE_STEP+EFFECT_FLAG_DELAY)
@@ -34,8 +34,6 @@ function c62850093.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
 	-- 设置当前连锁的操作信息为特殊召唤自身
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
-	-- 设置当前连锁的操作信息为将对方手牌送去墓地
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,1-tp,0)
 end
 -- 效果处理的执行函数，处理特殊召唤以及后续的随机送墓对方手牌
 function c62850093.spop(e,tp,eg,ep,ev,re,r,rp)

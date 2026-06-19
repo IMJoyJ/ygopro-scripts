@@ -106,6 +106,7 @@ function s.pthop(e,tp,eg,ep,ev,re,r,rp)
 		-- 提示玩家选择效果②的目标
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)  --"请选择效果的对象"
 		local og=mg:Select(tp,1,1,nil)
+		Duel.HintSelection(og)
 		local tc=og:GetFirst()
 		-- 判断灵摆区域是否可用以供放置怪兽
 		local b1=Duel.CheckLocation(tp,LOCATION_PZONE,0) or Duel.CheckLocation(tp,LOCATION_PZONE,1)
@@ -115,12 +116,10 @@ function s.pthop(e,tp,eg,ep,ev,re,r,rp)
 			{b1,aux.Stringid(id,3),1},  --"放置灵摆区域"
 			{b2,aux.Stringid(id,4),2})  --"加入手卡"
 		if op==1 then
-			-- 将目标怪兽移动到灵摆区域
-			Duel.MoveToField(tc,tp,tp,LOCATION_PZONE,POS_FACEUP,true)
+			if not tc:IsImmuneToEffect(e) then
+				Duel.MoveToField(tc,tp,tp,LOCATION_PZONE,POS_FACEUP,true)
+			end
 		else
-			-- 显示目标怪兽被选中的动画效果
-			Duel.HintSelection(og)
-			-- 将目标怪兽送回手牌
 			Duel.SendtoHand(tc,nil,REASON_EFFECT)
 		end
 	end

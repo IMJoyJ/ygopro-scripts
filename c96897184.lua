@@ -33,7 +33,7 @@ function c96897184.initial_effect(c)
 	-- ③：对方回合，以对方墓地1只怪兽为对象才能发动。选自己1张手卡丢弃，作为对象的怪兽在自己场上特殊召唤。这个卡名的③的效果1回合只能使用1次。
 	local e4=Effect.CreateEffect(c)
 	e4:SetDescription(aux.Stringid(96897184,0))
-	e4:SetCategory(CATEGORY_SPECIAL_SUMMON)
+	e4:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_HANDES_SELF)
 	e4:SetProperty(EFFECT_FLAG_CARD_TARGET)
 	e4:SetType(EFFECT_TYPE_QUICK_O)
 	e4:SetCode(EVENT_FREE_CHAIN)
@@ -71,8 +71,7 @@ function c96897184.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	local g=Duel.SelectTarget(tp,c96897184.spfilter,tp,0,LOCATION_GRAVE,1,1,nil,e,tp)
 	-- 设置连锁操作信息，表示该效果包含特殊召唤选中的怪兽的操作
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,1,0,0)
-	-- 设置连锁操作信息，表示该效果包含丢弃自己1张手卡的操作
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 end
 -- 效果③的效果处理（Operation）函数
 function c96897184.spop(e,tp,eg,ep,ev,re,r,rp)

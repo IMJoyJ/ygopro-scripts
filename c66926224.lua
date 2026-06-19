@@ -4,7 +4,7 @@
 function c66926224.initial_effect(c)
 	-- 这张卡仅当自己场上存在5只2星以下的表侧表示的通常怪兽时才能发动。玩家各自丢弃全部手卡，并破坏场上除2星以下通常怪兽以外的所有卡。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_DESTROY+CATEGORY_HANDES)
+	e1:SetCategory(CATEGORY_DESTROY+CATEGORY_HANDES_SELF+CATEGORY_HANDES_OPPO)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetCondition(c66926224.condition)
@@ -36,9 +36,8 @@ function c66926224.target(e,tp,eg,ep,ev,re,r,rp,chk)
 		and Duel.IsExistingMatchingCard(c66926224.dfilter,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,c) end
 	-- 获取场上除2星以下表侧表示通常怪兽及这张卡以外的所有卡
 	local g=Duel.GetMatchingGroup(c66926224.dfilter,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,c)
-	-- 设置操作信息：双方玩家丢弃手牌
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,PLAYER_ALL,1)
-	-- 设置操作信息：破坏场上除2星以下表侧表示通常怪兽以外的所有卡
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_OPPO,nil,0,1-tp,1)
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,g:GetCount(),0,0)
 end
 -- 效果处理：双方丢弃全部手牌，并破坏场上除2星以下通常怪兽以外的所有卡

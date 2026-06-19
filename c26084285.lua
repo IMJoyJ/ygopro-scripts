@@ -21,9 +21,8 @@ function c26084285.condition(e,tp,eg,ep,ev,re,r,rp)
 	if ep==tp or (not re:IsHasType(EFFECT_TYPE_ACTIVATE) and not re:IsActiveType(TYPE_MONSTER))
 		-- 对方发动效果中含有丢弃对方自己手卡的卡的效果时，可以将这张卡从手卡送去墓地，那张卡的发动与效果无效并且破坏。
 		or (not Duel.IsChainNegatable(ev)) then return false end
-	-- 检索当前连锁中是否包含丢弃手牌效果的信息
-	local ex,tg,tc,p=Duel.GetOperationInfo(ev,CATEGORY_HANDES)
-	return ex and (p==ep or p==PLAYER_ALL)
+	local ex,tg,tc,p=Duel.GetOperationInfo(ev,CATEGORY_HANDES_SELF)
+	return re:IsHasCategory(CATEGORY_HANDES_SELF) or ex
 end
 -- 将此卡送入墓地作为发动代价
 function c26084285.cost(e,tp,eg,ep,ev,re,r,rp,chk)

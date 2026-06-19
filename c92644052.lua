@@ -45,8 +45,8 @@ function s.initial_effect(c)
 	c:RegisterEffect(e3)
 	-- ③：1回合1次，自己或者对方的怪兽的攻击宣言时发动。被攻击的玩家可以让以下效果适用。●选除外的1张自身的魔法卡加入手卡。那之后，那张卡丢弃，那次攻击无效。
 	local e4=Effect.CreateEffect(c)
-	e4:SetDescription(aux.Stringid(id,3))  --"用除外的魔法卡把攻击无效"
-	e4:SetCategory(CATEGORY_TOHAND+CATEGORY_HANDES)
+	e4:SetDescription(aux.Stringid(id,3))
+	e4:SetCategory(CATEGORY_TOHAND+CATEGORY_HANDES_SELF+CATEGORY_HANDES_OPPO)
 	e4:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_F)
 	e4:SetCode(EVENT_ATTACK_ANNOUNCE)
 	e4:SetRange(LOCATION_MZONE)
@@ -161,8 +161,13 @@ end
 -- 怪兽效果③的发动准备：将效果适用的目标玩家设为被攻击的玩家
 function s.atktg2(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 将当前连锁的目标玩家设置为被攻击的玩家（攻击怪兽控制者的对手）
-	Duel.SetTargetPlayer(1-Duel.GetAttacker():GetControler())
+	local p=1-Duel.GetAttacker():GetControler()
+	Duel.SetTargetPlayer(p)
+	if p==tp then
+		e:SetCategory(CATEGORY_TOHAND+CATEGORY_HANDES_SELF)
+	else
+		e:SetCategory(CATEGORY_TOHAND+CATEGORY_HANDES_OPPO)
+	end
 end
 -- 过滤条件：除外状态的表侧表示且可以加入手卡的魔法卡
 function s.disfilter(c)

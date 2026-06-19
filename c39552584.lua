@@ -22,7 +22,7 @@ function c39552584.initial_effect(c)
 	-- ②：融合召唤的这张卡因对方从场上离开的场合才能发动。从自己墓地的怪兽以及除外的自己怪兽之中选1只「暗黑界的龙神 格拉法」特殊召唤。那之后，有手卡的玩家选自身1张手卡丢弃。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(39552584,1))
-	e2:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_HANDES)
+	e2:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_HANDES_SELF+CATEGORY_HANDES_OPPO)
 	e2:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e2:SetCode(EVENT_LEAVE_FIELD)
 	e2:SetProperty(EFFECT_FLAG_DELAY)
@@ -75,8 +75,6 @@ function c39552584.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 		and Duel.IsExistingMatchingCard(c39552584.spfilter,tp,LOCATION_GRAVE+LOCATION_REMOVED,0,1,nil,e,tp) end
 	-- 设置操作信息：特殊召唤1只怪兽
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_GRAVE+LOCATION_REMOVED)
-	-- 设置操作信息：双方各丢弃1张手卡
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,PLAYER_ALL,1)
 end
 -- 特殊召唤效果处理阶段：选择并特殊召唤1只怪兽，然后双方各丢弃1张手卡
 function c39552584.spop(e,tp,eg,ep,ev,re,r,rp)

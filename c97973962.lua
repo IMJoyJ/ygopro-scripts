@@ -15,7 +15,7 @@ function c97973962.initial_effect(c)
 	-- ②：这张卡在怪兽区域存在的状态，融合怪兽融合召唤的场合才能发动。选自己1张手卡丢弃，从卡组把1张「召唤魔术」或「法之圣典」加入手卡。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(97973962,0))
-	e2:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
+	e2:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH+CATEGORY_HANDES_SELF)
 	e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
 	e2:SetProperty(EFFECT_FLAG_DELAY)
 	e2:SetCode(EVENT_SPSUMMON_SUCCESS)
@@ -54,9 +54,7 @@ function c97973962.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.GetFieldGroupCount(tp,LOCATION_HAND,0)>0
 		-- 并且卡组里存在满足检索条件的卡
 		and Duel.IsExistingMatchingCard(c97973962.thfilter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置效果处理的分类为丢弃1张手牌
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
-	-- 设置效果处理的分类为从卡组将1张卡加入手牌
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
 -- 效果②的效果处理函数：丢弃1张手牌，从卡组将1张「召唤魔术」或「法之圣典」加入手牌

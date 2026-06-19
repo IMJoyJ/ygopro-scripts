@@ -10,7 +10,8 @@ function c41930553.initial_effect(c)
 	c:RegisterEffect(e1)
 	-- 1回合1次，选择对方墓地1只怪兽才能发动。从手卡丢弃1只恶魔族怪兽，选择的怪兽从游戏中除外。
 	local e2=Effect.CreateEffect(c)
-	e2:SetDescription(aux.Stringid(41930553,1))  --"丢弃手牌并除外"
+	e2:SetDescription(aux.Stringid(41930553,1))
+	e2:SetCategory(CATEGORY_HANDES_SELF+CATEGORY_REMOVE)
 	e2:SetProperty(EFFECT_FLAG_CARD_TARGET)
 	e2:SetType(EFFECT_TYPE_QUICK_O)
 	e2:SetRange(LOCATION_SZONE)
@@ -40,9 +41,7 @@ function c41930553.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
 	-- 选择对方墓地1只怪兽作为效果对象
 	local g=Duel.SelectTarget(tp,c41930553.rfilter,tp,0,LOCATION_GRAVE,1,1,nil)
-	-- 设置效果发动信息：将要丢弃1张手牌
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
-	-- 设置效果发动信息：将要除外1只怪兽
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 	Duel.SetOperationInfo(0,CATEGORY_REMOVE,g,1,0,0)
 end
 -- 效果处理函数，执行丢弃手牌和除外怪兽的操作

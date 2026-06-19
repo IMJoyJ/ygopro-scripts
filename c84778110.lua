@@ -8,8 +8,8 @@ function c84778110.initial_effect(c)
 	aux.AddCodeList(c,59419719)
 	-- ①：这张卡特殊召唤成功的场合才能发动。选自己1张手卡丢弃，从额外卡组把1只「化石」融合怪兽送去墓地。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(84778110,0))  --"额外卡组送去墓地"
-	e1:SetCategory(CATEGORY_TOGRAVE)
+	e1:SetDescription(aux.Stringid(84778110,0))
+	e1:SetCategory(CATEGORY_TOGRAVE+CATEGORY_HANDES_SELF)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e1:SetCode(EVENT_SPSUMMON_SUCCESS)
 	e1:SetProperty(EFFECT_FLAG_DELAY)
@@ -39,9 +39,7 @@ function c84778110.tgtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.GetFieldGroupCount(tp,LOCATION_HAND,0)>0
 		-- 检查额外卡组是否存在至少1只可以送去墓地的「化石」融合怪兽
 		and Duel.IsExistingMatchingCard(c84778110.tgfilter,tp,LOCATION_EXTRA,0,1,nil) end
-	-- 设置连锁信息，表示该效果包含丢弃1张手牌的操作
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
-	-- 设置连锁信息，表示该效果包含将额外卡组的1张卡送去墓地的操作
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 	Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,nil,1,tp,LOCATION_EXTRA)
 end
 -- 效果①的处理：丢弃1张手牌，并将额外卡组的1只「化石」融合怪兽送去墓地

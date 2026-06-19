@@ -4,7 +4,7 @@
 function c54762426.initial_effect(c)
 	-- 要让盖放的这张卡回到手卡的效果发动时才能发动。从自己卡组抽2张卡，那之后丢弃1张手卡。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES)
+	e1:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES_SELF)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
 	e1:SetCode(EVENT_CHAINING)
@@ -29,8 +29,7 @@ function c54762426.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	Duel.SetTargetParam(2)
 	-- 注册效果处理包含“抽卡”分类，预计由自己抽2张卡
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,2)
-	-- 注册效果处理包含“丢弃手卡”分类，预计由自己丢弃1张手卡
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 end
 -- 效果处理：执行抽卡，并在之后丢弃手卡
 function c54762426.activate(e,tp,eg,ep,ev,re,r,rp)

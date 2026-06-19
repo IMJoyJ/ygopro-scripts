@@ -6,7 +6,7 @@ function c42517468.initial_effect(c)
 	-- 创建一张诱发选发效果，用于处理卡牌从手牌或场上送去墓地时的连锁效果
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(42517468,1))
-	e1:SetCategory(CATEGORY_HANDES+CATEGORY_DRAW)
+	e1:SetCategory(CATEGORY_HANDES_SELF+CATEGORY_HANDES_OPPO+CATEGORY_DRAW)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e1:SetProperty(EFFECT_FLAG_DAMAGE_STEP+EFFECT_FLAG_DELAY)
 	e1:SetCode(EVENT_TO_GRAVE)
@@ -24,9 +24,8 @@ end
 function c42517468.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 判断是否可以进行抽卡操作
 	if chk==0 then return Duel.IsPlayerCanDraw(tp,1) and Duel.IsPlayerCanDraw(1-tp,1) end
-	-- 设置操作信息：双方各丢弃一张手卡
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,PLAYER_ALL,1)
-	-- 设置操作信息：双方各抽一张卡
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_OPPO,nil,0,1-tp,1)
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,PLAYER_ALL,1)
 end
 -- 效果的处理流程：双方各抽一张卡，若有人抽卡成功则中断效果处理，然后各自丢弃一张手卡，若丢弃的是扰乱卡则可选择让对方怪兽区域不能使用

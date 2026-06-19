@@ -4,7 +4,7 @@
 function c69091732.initial_effect(c)
 	-- 对方手卡有5张以上时才能发动。对方随机丢弃1张手卡。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_HANDES)
+	e1:SetCategory(CATEGORY_HANDES_OPPO)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetHintTiming(0,TIMING_TOHAND)
 	e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
@@ -24,8 +24,7 @@ function c69091732.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
 	-- 设置当前连锁的对象玩家为对方
 	Duel.SetTargetPlayer(1-tp)
-	-- 设置操作信息为：对方丢弃1张手卡
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,1-tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_OPPO,nil,0,1-tp,1)
 end
 -- 效果处理的执行函数
 function c69091732.activate(e,tp,eg,ep,ev,re,r,rp)

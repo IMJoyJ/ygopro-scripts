@@ -7,7 +7,7 @@ function c43694650.initial_effect(c)
 	-- ①：把手卡的这张卡给对方观看才能发动。从自己的全部手卡之中由对方随机选1张，自己把那张卡丢弃。那是「未界域的鹿角兔」以外的场合，再从手卡把1只「未界域的鹿角兔」特殊召唤，自己从卡组抽1张。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(43694650,0))
-	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_HANDES+CATEGORY_DRAW)
+	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_HANDES_SELF+CATEGORY_DRAW)
 	e1:SetType(EFFECT_TYPE_IGNITION)
 	e1:SetRange(LOCATION_HAND)
 	e1:SetCost(c43694650.spcost)
@@ -38,8 +38,7 @@ end
 function c43694650.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 检查手卡中是否存在可丢弃的卡
 	if chk==0 then return Duel.IsExistingMatchingCard(Card.IsDiscardable,tp,LOCATION_HAND,0,1,nil,REASON_EFFECT) end
-	-- 设置丢弃手卡的效果信息
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 end
 -- 处理①效果的主要流程：随机选择对方手卡并丢弃，若非「未界域的鹿角兔」则特殊召唤并抽卡
 function c43694650.spop(e,tp,eg,ep,ev,re,r,rp)

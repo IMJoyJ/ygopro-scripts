@@ -20,8 +20,8 @@ function c3429238.initial_effect(c)
 	c:RegisterEffect(e1)
 	-- 1回合1次，自己的主要阶段时才能发动。丢弃1张手卡并把这张卡从游戏中除外。下次的自己的准备阶段时，这个效果除外的这张卡在自己场上特殊召唤。那之后，选自己墓地1只怪兽加入手卡。
 	local e2=Effect.CreateEffect(c)
-	e2:SetDescription(aux.Stringid(3429238,1))  --"把这张卡从游戏中除外"
-	e2:SetCategory(CATEGORY_REMOVE)
+	e2:SetDescription(aux.Stringid(3429238,1))
+	e2:SetCategory(CATEGORY_REMOVE+CATEGORY_HANDES_SELF)
 	e2:SetType(EFFECT_TYPE_IGNITION)
 	e2:SetCountLimit(1)
 	e2:SetRange(LOCATION_MZONE)
@@ -81,7 +81,7 @@ function c3429238.rmtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.GetFieldGroupCount(tp,LOCATION_HAND,0)>0 and e:GetHandler():IsAbleToRemove() end
 	-- 向对方玩家提示发动了效果
 	Duel.Hint(HINT_OPSELECTED,1-tp,e:GetDescription())
-	-- 设置操作信息，表示将要除外该怪兽
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 	Duel.SetOperationInfo(0,CATEGORY_REMOVE,e:GetHandler(),1,0,0)
 end
 -- 执行除外效果，丢弃一张手牌并将该怪兽除外

@@ -70,11 +70,9 @@ function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	end
 	e:SetLabel(op)
 	if op==0 then
-		e:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
-		-- 设置操作信息：将一张卡从卡组加入手牌
+		e:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH+CATEGORY_HANDES_SELF)
 		Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
-		-- 设置操作信息：丢弃一张手卡
-		Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
+		Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 	else
 		e:SetCategory(CATEGORY_SPECIAL_SUMMON)
 		-- 设置操作信息：特殊召唤一只怪兽

@@ -11,7 +11,8 @@ function c8279188.initial_effect(c)
 	c:RegisterEffect(e1)
 	-- 对方怪兽的攻击宣言时才能发动。把1张手卡丢弃去墓地，让1只对方怪兽的攻击无效。
 	local e2=Effect.CreateEffect(c)
-	e2:SetDescription(aux.Stringid(8279188,1))  --"攻击无效"
+	e2:SetDescription(aux.Stringid(8279188,1))
+	e2:SetCategory(CATEGORY_HANDES_SELF)
 	e2:SetProperty(EFFECT_FLAG_CARD_TARGET)
 	e2:SetType(EFFECT_TYPE_QUICK_O)
 	e2:SetRange(LOCATION_SZONE)

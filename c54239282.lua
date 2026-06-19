@@ -7,7 +7,7 @@
 function c54239282.initial_effect(c)
 	-- 这个卡名的卡在1回合只能发动1张。①：把对方手卡随机1张确认。那之后，从以下效果选1个适用。●和确认的卡相同种类（怪兽·魔法·陷阱）的自己手卡1张卡和确认的对方的卡丢弃。那之后，场上的这张卡加入对方手卡，自己从卡组抽1张。●自己失去1000基本分。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_DRAW)
+	e1:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES_SELF+CATEGORY_HANDES_OPPO)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetCountLimit(1,54239282+EFFECT_COUNT_CODE_OATH)

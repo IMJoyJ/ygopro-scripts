@@ -22,7 +22,7 @@ function c1218214.initial_effect(c)
 	c:RegisterEffect(e2)
 	-- ①：自己主要阶段才能发动。从手卡把1张「方界」卡送去墓地，自己从卡组抽1张。
 	local e3=Effect.CreateEffect(c)
-	e3:SetCategory(CATEGORY_HANDES+CATEGORY_DRAW)
+	e3:SetCategory(CATEGORY_TOGRAVE+CATEGORY_DRAW)
 	e3:SetType(EFFECT_TYPE_IGNITION)
 	e3:SetRange(LOCATION_SZONE)
 	e3:SetCountLimit(1,1218214)
@@ -63,9 +63,9 @@ function c1218214.drawtg(e,tp,eg,ep,ev,re,r,rp,chk)
 end
 -- 执行①效果的处理
 function c1218214.drawop(e,tp,eg,ep,ev,re,r,rp)
-	-- 执行丢弃手牌的操作
-	if Duel.DiscardHand(tp,c1218214.cfilter,1,1,REASON_EFFECT)>0 then
-		-- 执行抽卡操作
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)
+	local g=Duel.SelectMatchingCard(tp,c1218214.cfilter,tp,LOCATION_HAND,0,1,1,nil)
+	if g:GetCount()>0 and Duel.SendtoGrave(g,REASON_EFFECT)>0 then
 		Duel.Draw(tp,1,REASON_EFFECT)
 	end
 end

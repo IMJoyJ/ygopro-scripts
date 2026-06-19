@@ -9,8 +9,8 @@ function c64603182.initial_effect(c)
 	aux.EnableChangeCode(c,83104731,LOCATION_MZONE+LOCATION_GRAVE)
 	-- ②：这张卡召唤·特殊召唤的场合才能发动。除「古代的机械暗黑巨人」外的「古代的机械」卡或「齿车街」合计最多2张从卡组加入手卡。那之后，选自己1张手卡丢弃。这个效果的发动后，直到回合结束时自己不能把卡盖放。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(64603182,0))  --"检索"
-	e1:SetCategory(CATEGORY_SEARCH+CATEGORY_TOHAND+CATEGORY_HANDES)
+	e1:SetDescription(aux.Stringid(64603182,0))
+	e1:SetCategory(CATEGORY_SEARCH+CATEGORY_TOHAND+CATEGORY_HANDES_SELF)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e1:SetCode(EVENT_SUMMON_SUCCESS)
 	e1:SetProperty(EFFECT_FLAG_DELAY)

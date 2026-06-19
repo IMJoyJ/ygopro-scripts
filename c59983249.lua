@@ -17,8 +17,8 @@ function s.initial_effect(c)
 	c:RegisterEffect(e1)
 	-- ①：对方把怪兽特殊召唤的场合1次，若自己场上有上级召唤的怪兽存在，可以从自己墓地把1张「帝王」魔法·陷阱卡除外，从以下选择1个发动（这个卡名的以下效果1回合各能选择1次）。
 	local e2=Effect.CreateEffect(c)
-	e2:SetDescription(aux.Stringid(id,0))  --"发动"
-	e2:SetCategory(CATEGORY_DESTROY|CATEGORY_REMOVE|CATEGORY_TODECK|CATEGORY_HANDES)
+	e2:SetDescription(aux.Stringid(id,0))
+	e2:SetCategory(CATEGORY_DESTROY|CATEGORY_REMOVE|CATEGORY_TODECK|CATEGORY_HANDES_OPPO)
 	e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
 	e2:SetRange(LOCATION_SZONE)
 	e2:SetCode(EVENT_CUSTOM+id)
@@ -97,9 +97,8 @@ function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
 		-- 设置连锁操作信息：准备破坏场上的魔法·陷阱卡
 		Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,1,0,0)
 	elseif op==3 then
-		e:SetCategory(CATEGORY_HANDES)
-		-- 设置连锁操作信息：准备让对方丢弃1张手卡
-		Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,1-tp,1)
+		e:SetCategory(CATEGORY_HANDES_OPPO)
+		Duel.SetOperationInfo(0,CATEGORY_HANDES_OPPO,nil,0,1-tp,1)
 	elseif op==4 then
 		e:SetCategory(CATEGORY_DESTROY)
 		-- 获取场上所有的里侧表示卡，用于设置破坏效果的操作信息

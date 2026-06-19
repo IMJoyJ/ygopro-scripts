@@ -5,7 +5,7 @@ function c4440873.initial_effect(c)
 	-- ①：对方从卡组把卡加入手卡时才能发动。对方把加入手卡的那1张卡丢弃。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
-	e1:SetCategory(CATEGORY_TOGRAVE+CATEGORY_HANDES)
+	e1:SetCategory(CATEGORY_TOGRAVE+CATEGORY_HANDES_OPPO)
 	e1:SetCode(EVENT_TO_HAND)
 	e1:SetCondition(c4440873.condition)
 	e1:SetTarget(c4440873.target)
@@ -25,8 +25,7 @@ function c4440873.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
 	-- 将当前连锁的目标设置为eg，即对方加入手牌的卡
 	Duel.SetTargetCard(eg)
-	-- 设置操作信息为对方丢弃手牌，数量为1
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,1-tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_OPPO,nil,0,1-tp,1)
 end
 -- 筛选满足条件的卡，检查其是否与当前效果相关且控制者为指定玩家且之前位置为卡组
 function c4440873.filter(c,e,tp)

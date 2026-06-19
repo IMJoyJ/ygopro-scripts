@@ -21,7 +21,7 @@ function c45215225.initial_effect(c)
 	c:RegisterEffect(e1)
 	-- ①：把这张卡解放，以自己墓地1只「魔玩具」融合怪兽为对象才能发动。选1张手卡丢弃，作为对象的怪兽特殊召唤。
 	local e2=Effect.CreateEffect(c)
-	e2:SetCategory(CATEGORY_SPECIAL_SUMMON)
+	e2:SetCategory(CATEGORY_HANDES_SELF+CATEGORY_SPECIAL_SUMMON)
 	e2:SetType(EFFECT_TYPE_IGNITION)
 	e2:SetRange(LOCATION_MZONE)
 	e2:SetProperty(EFFECT_FLAG_CARD_TARGET)
@@ -95,9 +95,7 @@ function c45215225.sptg2(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
 	-- 选择满足条件的墓地融合怪兽作为对象
 	local g=Duel.SelectTarget(tp,c45215225.filter2,tp,LOCATION_GRAVE,0,1,1,nil,e,tp)
-	-- 设置连锁操作信息，确定丢弃手卡的数量
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
-	-- 设置连锁操作信息，确定特殊召唤的卡
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,1,0,0)
 end
 -- 处理怪兽效果的发动，丢弃1张手卡并特殊召唤目标融合怪兽

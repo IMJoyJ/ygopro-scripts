@@ -41,8 +41,8 @@ function c47693640.initial_effect(c)
 	c:RegisterEffect(e4)
 	-- 装备怪兽每次战斗破坏对方怪兽时，对方随机丢弃1张手卡
 	local e5=Effect.CreateEffect(c)
-	e5:SetDescription(aux.Stringid(47693640,2))  --"手牌丢弃"
-	e5:SetCategory(CATEGORY_HANDES)
+	e5:SetDescription(aux.Stringid(47693640,2))
+	e5:SetCategory(CATEGORY_HANDES_OPPO)
 	e5:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_F)
 	e5:SetRange(LOCATION_SZONE)
 	e5:SetCode(EVENT_BATTLE_DESTROYING)
@@ -137,8 +137,7 @@ end
 -- 设置手牌丢弃效果的目标和操作信息
 function c47693640.hdtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置连锁操作信息为对方随机丢弃1张手卡
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,0,0,1-tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_OPPO,nil,0,1-tp,1)
 end
 -- 执行手牌丢弃效果的操作流程
 function c47693640.hdop(e,tp,eg,ep,ev,re,r,rp)

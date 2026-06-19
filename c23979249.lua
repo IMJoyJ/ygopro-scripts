@@ -26,8 +26,8 @@ function c23979249.initial_effect(c)
 	c:RegisterEffect(e2)
 	-- 「武神-荒樔田」在自己场上只能有1只表侧表示存在。
 	local e3=Effect.CreateEffect(c)
-	e3:SetDescription(aux.Stringid(23979249,1))  --"抽卡"
-	e3:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES)
+	e3:SetDescription(aux.Stringid(23979249,1))
+	e3:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES_SELF)
 	e3:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
 	e3:SetCode(EVENT_PHASE+PHASE_END)
 	e3:SetRange(LOCATION_MZONE)
@@ -88,8 +88,7 @@ function c23979249.drtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	Duel.SetTargetParam(1)
 	-- 规则层面：设置抽卡的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,1)
-	-- 规则层面：设置丢弃手卡的操作信息
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 end
 -- 规则层面：执行抽卡和丢弃手卡操作
 function c23979249.drop(e,tp,eg,ep,ev,re,r,rp)

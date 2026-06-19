@@ -7,7 +7,7 @@ function c57630503.initial_effect(c)
 	-- ①：这张卡在手卡存在的场合才能发动。从手卡选包含「魔轰神」怪兽在内的最多2只「魔轰神 马可西亚」以外的怪兽丢弃，这张卡特殊召唤。这个效果特殊召唤的这张卡的攻击力上升这个效果丢弃的怪兽数量×200。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(57630503,0))
-	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_HANDES)
+	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_HANDES_SELF)
 	e1:SetType(EFFECT_TYPE_IGNITION)
 	e1:SetRange(LOCATION_HAND)
 	e1:SetCountLimit(1,57630503)
@@ -46,8 +46,7 @@ function c57630503.tg(e,tp,eg,ep,ev,re,r,rp,chk)
 		and Duel.GetLocationCount(tp,LOCATION_MZONE)>0 and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
 	-- 设置特殊召唤的操作信息，预估将自身特殊召唤
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
-	-- 设置丢弃手卡的操作信息，预估丢弃至少1张手卡
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 end
 -- ①号效果的处理：丢弃手卡怪兽，特殊召唤自身并上升攻击力
 function c57630503.op(e,tp,eg,ep,ev,re,r,rp)

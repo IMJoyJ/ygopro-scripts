@@ -22,7 +22,7 @@ function s.initial_effect(c)
 	c:RegisterEffect(e1)
 	-- ②：把手卡1只「灵兽」怪兽给对方观看才能发动。和那只怪兽种族不同的1只「灵兽」怪兽从卡组加入手卡。那之后，选自己1张手卡丢弃。
 	local e2=Effect.CreateEffect(c)
-	e2:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH+CATEGORY_HANDES)
+	e2:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH+CATEGORY_HANDES_SELF)
 	e2:SetType(EFFECT_TYPE_IGNITION)
 	e2:SetRange(LOCATION_SZONE)
 	e2:SetCountLimit(1,id)
@@ -88,8 +88,7 @@ function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.IsExistingMatchingCard(s.thfilter,tp,LOCATION_DECK,0,1,nil,race) end
 	-- 设置将卡从卡组加入手牌的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
-	-- 设置丢弃手牌的操作信息
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 end
 -- 执行检索和丢弃手牌效果
 function s.thop(e,tp,eg,ep,ev,re,r,rp)

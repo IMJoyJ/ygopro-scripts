@@ -30,8 +30,8 @@ function s.initial_effect(c)
 	c:RegisterEffect(e2)
 	-- ③：自己·对方回合1次，以自己场上1张表侧表示卡为对象才能发动。选自己1张手卡丢弃。这个回合，对方不能把作为对象的表侧表示卡作为效果的对象。
 	local e3=Effect.CreateEffect(c)
-	e3:SetDescription(aux.Stringid(id,1))  --"选自己1张手卡丢弃"
-	e3:SetCategory(CATEGORY_HANDES)
+	e3:SetDescription(aux.Stringid(id,1))
+	e3:SetCategory(CATEGORY_HANDES_SELF)
 	e3:SetType(EFFECT_TYPE_QUICK_O)
 	e3:SetProperty(EFFECT_FLAG_CARD_TARGET)
 	e3:SetCode(EVENT_FREE_CHAIN)
@@ -87,8 +87,7 @@ function s.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
 	-- 选择一张己方场上的表侧表示卡作为效果目标
 	Duel.SelectTarget(tp,Card.IsFaceup,tp,LOCATION_ONFIELD,0,1,1,nil)
-	-- 设置连锁操作信息为丢弃手牌效果
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 end
 -- 执行效果操作，丢弃1张手牌并使目标卡不能成为效果对象
 function s.operation(e,tp,eg,ep,ev,re,r,rp)

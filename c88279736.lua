@@ -9,8 +9,8 @@ function c88279736.initial_effect(c)
 	c:RegisterEffect(e1)
 	-- 自己场上的怪兽每次造成对方玩家的战斗伤害时，对方随机丢弃1张手卡。
 	local e2=Effect.CreateEffect(c)
-	e2:SetDescription(aux.Stringid(88279736,0))  --"对方随机丢弃1张手牌"
-	e2:SetCategory(CATEGORY_HANDES)
+	e2:SetDescription(aux.Stringid(88279736,0))
+	e2:SetCategory(CATEGORY_HANDES_OPPO)
 	e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_F)
 	e2:SetRange(LOCATION_SZONE)
 	e2:SetCode(EVENT_BATTLE_DAMAGE)
@@ -26,8 +26,7 @@ end
 -- 效果发动的目标确认，必发效果直接返回true，并设置丢弃手牌的操作信息。
 function c88279736.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置操作信息：对方玩家丢弃1张手牌。
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,0,0,1-tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_OPPO,nil,0,1-tp,1)
 end
 -- 效果处理：获取对方手牌并随机选择1张，以丢弃和效果原因送去墓地。
 function c88279736.operation(e,tp,eg,ep,ev,re,r,rp)

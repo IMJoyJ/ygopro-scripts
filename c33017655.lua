@@ -23,7 +23,7 @@ function c33017655.initial_effect(c)
 	c:RegisterEffect(e3)
 	-- ②：1回合1次，从自己墓地把1只恶魔族怪兽除外才能发动。从手卡选1只恶魔族怪兽丢弃。那之后，自己从卡组抽1张。
 	local e4=Effect.CreateEffect(c)
-	e4:SetCategory(CATEGORY_HANDES+CATEGORY_DRAW)
+	e4:SetCategory(CATEGORY_HANDES_SELF+CATEGORY_DRAW)
 	e4:SetDescription(aux.Stringid(33017655,1))
 	e4:SetType(EFFECT_TYPE_IGNITION)
 	e4:SetRange(LOCATION_FZONE)
@@ -54,9 +54,7 @@ function c33017655.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.IsExistingMatchingCard(Card.IsRace,tp,LOCATION_HAND,0,1,nil,RACE_FIEND)
 		-- 检测玩家是否可以抽卡
 		and Duel.IsPlayerCanDraw(tp,1) end
-	-- 设置效果处理信息：丢弃1张手牌
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
-	-- 设置效果处理信息：自己抽1张卡
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,1)
 end
 -- 处理效果发动后的操作：选择并丢弃1只恶魔族手牌，然后抽1张卡

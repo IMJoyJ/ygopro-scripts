@@ -5,8 +5,8 @@ function c21496848.initial_effect(c)
 	c:EnableReviveLimit()
 	-- 名字带有「遗式」的仪式魔法卡降临。1回合1次，宣言卡的种类（怪兽·魔法·陷阱）才能发动。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(21496848,0))  --"宣言卡种送去墓地"
-	e1:SetCategory(CATEGORY_TOGRAVE)
+	e1:SetDescription(aux.Stringid(21496848,0))
+	e1:SetCategory(CATEGORY_TOGRAVE+CATEGORY_HANDES_OPPO)
 	e1:SetType(EFFECT_TYPE_IGNITION)
 	e1:SetRange(LOCATION_MZONE)
 	e1:SetCountLimit(1)

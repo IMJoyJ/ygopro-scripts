@@ -6,8 +6,8 @@
 function c14882493.initial_effect(c)
 	-- 「极夜之骑士 盖亚」的以下效果1回合各能使用1次。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(14882493,0))  --"卡组检索"
-	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH+CATEGORY_HANDES)
+	e1:SetDescription(aux.Stringid(14882493,0))
+	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
 	e1:SetType(EFFECT_TYPE_IGNITION)
 	e1:SetRange(LOCATION_MZONE)
 	e1:SetCountLimit(1,14882493)
@@ -47,8 +47,6 @@ function c14882493.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.IsExistingMatchingCard(c14882493.filter,tp,LOCATION_DECK,0,1,nil) end
 	-- 设置将卡牌加入手牌的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
-	-- 设置丢弃手牌的操作信息
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,1,tp,1)
 end
 -- 效果处理时执行的操作
 function c14882493.thop(e,tp,eg,ep,ev,re,r,rp)
@@ -61,12 +59,12 @@ function c14882493.thop(e,tp,eg,ep,ev,re,r,rp)
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
 		-- 向对方确认加入手牌的卡
 		Duel.ConfirmCards(1-tp,g)
-		-- 洗切自己的手牌
+		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)
+		local tg=Duel.SelectMatchingCard(tp,nil,tp,LOCATION_HAND,0,1,1,nil)
 		Duel.ShuffleHand(tp)
 		-- 中断当前效果处理
 		Duel.BreakEffect()
-		-- 丢弃1张手牌
-		Duel.DiscardHand(tp,nil,1,1,REASON_EFFECT)
+		Duel.SendtoGrave(tg,REASON_EFFECT)
 	end
 end
 -- 定义除外卡牌的过滤条件

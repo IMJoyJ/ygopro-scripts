@@ -40,7 +40,7 @@ function c18386170.initial_effect(c)
 	c:RegisterEffect(e3)
 	-- 场上的这张卡被对方的效果送去墓地的场合或者被战斗破坏送去墓地的场合才能发动。对方手卡随机选1张送去墓地。
 	local e4=Effect.CreateEffect(c)
-	e4:SetCategory(CATEGORY_HANDES)
+	e4:SetCategory(CATEGORY_TOGRAVE)
 	e4:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e4:SetCode(EVENT_TO_GRAVE)
 	e4:SetProperty(EFFECT_FLAG_DAMAGE_STEP+EFFECT_FLAG_DELAY)
@@ -91,8 +91,7 @@ end
 function c18386170.hdtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 检查对方手牌是否存在
 	if chk==0 then return Duel.GetFieldGroupCount(tp,0,LOCATION_HAND)>0 end
-	-- 设置效果操作信息为弃牌效果
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,1-tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,nil,0,1-tp,1)
 end
 -- 处理对方手牌随机弃牌的效果
 function c18386170.hdop(e,tp,eg,ep,ev,re,r,rp)

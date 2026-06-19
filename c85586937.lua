@@ -9,8 +9,8 @@ local s,id,o=GetID()
 function s.initial_effect(c)
 	-- ①：这张卡在手卡存在的场合才能发动。从自己手卡选1只其他的反转怪兽丢弃，这张卡表侧攻击表示或里侧守备表示特殊召唤。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(id,0))  --"特殊召唤"
-	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_MSET)
+	e1:SetDescription(aux.Stringid(id,0))
+	e1:SetCategory(CATEGORY_HANDES_SELF+CATEGORY_SPECIAL_SUMMON+CATEGORY_MSET)
 	e1:SetType(EFFECT_TYPE_IGNITION)
 	e1:SetRange(LOCATION_HAND)
 	e1:SetCountLimit(1,id)

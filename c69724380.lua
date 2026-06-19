@@ -4,7 +4,7 @@
 function c69724380.initial_effect(c)
 	-- 对方的魔法卡发动时支付1000基本分才能发动。对方随机丢弃1张手卡。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_HANDES)
+	e1:SetCategory(CATEGORY_HANDES_OPPO)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_CHAINING)
 	e1:SetCondition(c69724380.condition)
@@ -28,8 +28,7 @@ end
 function c69724380.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 在发动准备阶段，检查对方手卡数量是否大于0
 	if chk==0 then return Duel.GetFieldGroupCount(tp,0,LOCATION_HAND)>0 end
-	-- 设置连锁的操作信息：对方丢弃1张手卡
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,1-tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_OPPO,nil,0,1-tp,1)
 end
 -- 效果处理：对方随机丢弃1张手卡
 function c69724380.activate(e,tp,eg,ep,ev,re,r,rp)

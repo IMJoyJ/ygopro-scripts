@@ -54,11 +54,9 @@ function c53503015.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	Duel.SendtoGrave(g,REASON_COST)
 	if opt==0 then
 		e:SetLabel(1)
-		e:SetCategory(CATEGORY_DRAW)
-		-- 设置效果处理时抽卡的连锁信息，准备从卡组抽2张卡
+		e:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES_SELF)
 		Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,2)
-		-- 设置效果处理时丢弃手牌的连锁信息，准备丢弃1张手卡
-		Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
+		Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 	else
 		e:SetLabel(2)
 		e:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
@@ -72,7 +70,7 @@ function c53503015.operation(e,tp,eg,ep,ev,re,r,rp)
 	if opt==1 then
 		-- 创建结束阶段触发的效果，用于在回合结束时抽2张卡并丢弃1张手卡
 		local e1=Effect.CreateEffect(e:GetHandler())
-		e1:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES)
+		e1:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES_SELF)
 		e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 		e1:SetCode(EVENT_PHASE+PHASE_END)
 		e1:SetCountLimit(1)

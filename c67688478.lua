@@ -21,9 +21,8 @@ function c67688478.condition(e,tp,eg,ep,ev,re,r,rp)
 	if ep==tp or (not re:IsHasType(EFFECT_TYPE_ACTIVATE) and not re:IsActiveType(TYPE_MONSTER))
 		-- 检查该连锁的发动是否可以被无效
 		or (not Duel.IsChainNegatable(ev)) then return false end
-	-- 获取该连锁中关于丢弃手牌的操作信息
-	local ex,tg,tc,p=Duel.GetOperationInfo(ev,CATEGORY_HANDES)
-	return re:IsHasCategory(CATEGORY_HANDES) and (not ex or p~=1-tp)
+	local ex,tg,tc,p=Duel.GetOperationInfo(ev,CATEGORY_HANDES_OPPO)
+	return re:IsHasCategory(CATEGORY_HANDES_OPPO) or ex
 end
 -- 检查并执行将此卡从手卡送去墓地的发动代价
 function c67688478.cost(e,tp,eg,ep,ev,re,r,rp,chk)

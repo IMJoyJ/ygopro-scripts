@@ -14,7 +14,8 @@ function c75745607.initial_effect(c)
 	c:RegisterEffect(e1)
 	-- 此外，这张卡给与对方玩家战斗伤害时发动。下个回合的抽卡阶段的抽卡前对方把全部手卡丢弃。
 	local e4=Effect.CreateEffect(c)
-	e4:SetDescription(aux.Stringid(75745607,1))  --"手牌丢弃"
+	e4:SetDescription(aux.Stringid(75745607,1))
+	e4:SetCategory(CATEGORY_HANDES_OPPO)
 	e4:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_F)
 	e4:SetCode(EVENT_BATTLE_DAMAGE)
 	e4:SetCondition(c75745607.hdcon)

@@ -4,7 +4,7 @@
 function c74117290.initial_effect(c)
 	-- ①：双方各自从卡组抽1张。那之后，抽卡的玩家选自身1张手卡丢弃。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_HANDES+CATEGORY_DRAW)
+	e1:SetCategory(CATEGORY_HANDES_SELF+CATEGORY_HANDES_OPPO+CATEGORY_DRAW)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetTarget(c74117290.target)
@@ -15,9 +15,8 @@ end
 function c74117290.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 检查双方玩家是否都可以从卡组抽1张卡
 	if chk==0 then return Duel.IsPlayerCanDraw(tp,1) and Duel.IsPlayerCanDraw(1-tp,1) end
-	-- 设置操作信息，表示此效果包含双方玩家丢弃1张手牌的处理
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,PLAYER_ALL,1)
-	-- 设置操作信息，表示此效果包含双方玩家抽1张卡的处理
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_OPPO,nil,0,1-tp,1)
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,PLAYER_ALL,1)
 end
 -- 效果处理（双方玩家各抽1张卡，之后各自洗牌并选择1张手牌丢弃）

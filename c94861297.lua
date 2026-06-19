@@ -4,7 +4,7 @@
 function c94861297.initial_effect(c)
 	-- ①：对方怪兽的攻击宣言时才能发动。对方手卡全部确认，那之中有怪兽卡的场合，那次攻击无效。那之后，自己从对方手卡选1只怪兽丢弃。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_HANDES)
+	e1:SetCategory(CATEGORY_HANDES_OPPO)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_ATTACK_ANNOUNCE)
 	e1:SetCondition(c94861297.condition)

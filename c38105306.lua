@@ -24,7 +24,7 @@ function c38105306.initial_effect(c)
 	c:RegisterEffect(e2)
 	-- ③：这张卡有指示物放置中的场合，自己·对方的主要阶段以及战斗阶段才能发动。这张卡送去墓地。那之后，对方尽可能选最多有这张卡放置的指示物数量的手卡丢弃。
 	local e3=Effect.CreateEffect(c)
-	e3:SetCategory(CATEGORY_TOGRAVE+CATEGORY_HANDES)
+	e3:SetCategory(CATEGORY_TOGRAVE+CATEGORY_HANDES_OPPO)
 	e3:SetType(EFFECT_TYPE_QUICK_O)
 	e3:SetCode(EVENT_FREE_CHAIN)
 	e3:SetRange(LOCATION_SZONE)

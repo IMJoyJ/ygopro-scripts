@@ -6,7 +6,7 @@ function c83039608.initial_effect(c)
 	-- 这个卡名的效果1回合只能使用1次。①：这张卡在墓地存在的场合才能发动。从手卡选1只「魔轰神」怪兽丢弃，这张卡特殊召唤。这个效果特殊召唤的这张卡从场上离开的场合除外。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(83039608,0))
-	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_HANDES)
+	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_HANDES_SELF)
 	e1:SetType(EFFECT_TYPE_IGNITION)
 	e1:SetRange(LOCATION_GRAVE)
 	e1:SetCountLimit(1,83039608)

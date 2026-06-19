@@ -92,15 +92,12 @@ function c56350972.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	local sel=opval[op]
 	e:SetLabel(sel)
 	if sel==1 then
-		e:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES)
-		-- 选择“自己从卡组抽2张，那之后选1张手卡丢弃”时：设置当前效果处理的操作信息为让玩家自身抽2张卡
-		Duel.SetOperationInfo(0,CATEGORY_DRAW,0,0,tp,2)
-		-- 选择“自己从卡组抽2张，那之后选1张手卡丢弃”时：设置当前效果处理的操作信息为让玩家自身丢弃1张手牌
-		Duel.SetOperationInfo(0,CATEGORY_HANDES,0,0,tp,1)
+		e:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES_SELF)
+		Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,2)
+		Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 	elseif sel==2 then
-		e:SetCategory(CATEGORY_HANDES)
-		-- 选择“对方手卡随机选1张丢弃去墓地”时：设置当前效果处理的操作信息为让对方丢弃1张手牌
-		Duel.SetOperationInfo(0,CATEGORY_HANDES,0,0,1-tp,1)
+		e:SetCategory(CATEGORY_HANDES_OPPO)
+		Duel.SetOperationInfo(0,CATEGORY_HANDES_OPPO,nil,0,1-tp,1)
 	else
 		e:SetCategory(CATEGORY_TOHAND)
 		-- 选择“选自己墓地1只光属性怪兽加入手卡”时：设置当前效果处理的操作信息为将自己墓地中的1张卡加入手牌

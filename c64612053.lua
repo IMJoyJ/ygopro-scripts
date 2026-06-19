@@ -25,7 +25,7 @@ function s.initial_effect(c)
 	-- ②：抽卡以外的方法让对方手卡有卡加入的场合才能发动。自己抽2张。那之后，选自己1张手卡丢弃。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(id,1))
-	e3:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES)
+	e3:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES_SELF)
 	e3:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
 	e3:SetProperty(EFFECT_FLAG_DELAY+EFFECT_FLAG_PLAYER_TARGET)
 	e3:SetRange(LOCATION_MZONE)
@@ -80,8 +80,7 @@ function s.drtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	Duel.SetTargetParam(2)
 	-- 设置操作信息：自己抽2张卡。
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,2)
-	-- 设置操作信息：自己丢弃1张手卡。
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 end
 -- ②效果的处理：自己抽2张卡，洗牌，然后选自己1张手卡丢弃。
 function s.drop(e,tp,eg,ep,ev,re,r,rp)

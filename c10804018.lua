@@ -9,8 +9,8 @@ function c10804018.initial_effect(c)
 	c:EnableReviveLimit()
 	-- ①：这张卡仪式召唤的场合，若自己的场上或墓地有「肃声的祈祷者 理」存在则能发动。自己抽2张。那之后，选自己1张手卡丢弃。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(10804018,0))  --"抽卡并丢弃手卡"
-	e1:SetCategory(CATEGORY_DRAW)
+	e1:SetDescription(aux.Stringid(10804018,0))
+	e1:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES_SELF)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e1:SetCode(EVENT_SPSUMMON_SUCCESS)
 	e1:SetProperty(EFFECT_FLAG_DELAY)
@@ -21,8 +21,8 @@ function c10804018.initial_effect(c)
 	c:RegisterEffect(e1)
 	-- ②：战士族·龙族而光属性的仪式怪兽进行战斗的攻击宣言时才能发动。对方手卡随机1张丢弃。
 	local e2=Effect.CreateEffect(c)
-	e2:SetDescription(aux.Stringid(10804018,1))  --"丢弃对方手卡"
-	e2:SetCategory(CATEGORY_HANDES)
+	e2:SetDescription(aux.Stringid(10804018,1))
+	e2:SetCategory(CATEGORY_HANDES_OPPO)
 	e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
 	e2:SetCode(EVENT_ATTACK_ANNOUNCE)
 	e2:SetRange(LOCATION_MZONE)
@@ -62,8 +62,7 @@ function c10804018.drtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	Duel.SetTargetParam(2)
 	-- 设置效果①的处理信息为抽2张卡
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,2)
-	-- 设置效果①的处理信息为丢弃1张手卡
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 end
 -- 效果①的发动后处理：执行抽卡和丢弃手卡操作
 function c10804018.drop(e,tp,eg,ep,ev,re,r,rp)
@@ -95,8 +94,7 @@ end
 function c10804018.hstg(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 效果②的发动条件检查：确认对方手牌数量大于0
 	if chk==0 then return Duel.GetFieldGroupCount(tp,0,LOCATION_HAND)>0 end
-	-- 设置效果②的处理信息为丢弃对方1张手卡
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,1-tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_OPPO,nil,0,1-tp,1)
 end
 -- 效果②的发动后处理：执行丢弃对方手卡操作
 function c10804018.hsop(e,tp,eg,ep,ev,re,r,rp)

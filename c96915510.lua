@@ -9,7 +9,7 @@ function c96915510.initial_effect(c)
 	c:EnableReviveLimit()
 	-- ①：自己·对方的主要阶段，把手卡的这张卡给对方观看才能发动。选1张手卡丢弃，那之后，等级合计直到10星为止选自己墓地的「魔神仪」怪兽特殊召唤。这个效果特殊召唤的怪兽在结束阶段回到持有者卡组。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_HANDES+CATEGORY_SPECIAL_SUMMON)
+	e1:SetCategory(CATEGORY_HANDES_SELF+CATEGORY_SPECIAL_SUMMON)
 	e1:SetType(EFFECT_TYPE_QUICK_O)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetRange(LOCATION_HAND)

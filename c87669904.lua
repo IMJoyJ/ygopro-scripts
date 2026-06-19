@@ -6,7 +6,7 @@
 function c87669904.initial_effect(c)
 	-- ①：丢弃1张手卡，在自己场上把「双天魂衍生物」（战士族·光·2星·攻/守0）尽可能特殊召唤。这个回合，自己不是融合怪兽不能从额外卡组特殊召唤，自己场上的衍生物不能解放并在结束阶段破坏。那之后，以下效果可以适用最多2次。●从自己的手卡·场上把「双天」融合怪兽卡决定的融合素材怪兽送去墓地，把那1只融合怪兽从额外卡组融合召唤。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_TOKEN+CATEGORY_HANDES+CATEGORY_FUSION_SUMMON)
+	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_TOKEN+CATEGORY_HANDES_SELF+CATEGORY_FUSION_SUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetCountLimit(1,87669904+EFFECT_COUNT_CODE_OATH)
@@ -35,9 +35,7 @@ function c87669904.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,ft,0,0)
 	-- 设置产生衍生物的操作信息。
 	Duel.SetOperationInfo(0,CATEGORY_TOKEN,nil,ft,0,0)
-	-- 设置丢弃手卡的操作信息。
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
-	-- 设置从额外卡组特殊召唤的操作信息（用于后续的融合召唤）。
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_EXTRA)
 end
 -- 效果处理：丢弃手卡，尽可能特招衍生物，并施加限制与后续融合召唤效果。

@@ -11,8 +11,8 @@ function c82308875.initial_effect(c)
 	c:EnableReviveLimit()
 	-- ①：把这张卡1个超量素材取除才能发动。掷2次骰子。这张卡的攻击力直到对方回合结束时变成较大方的出现数目×700。出现的数目合计是7的场合，再从以下效果选1个适用。●这张卡以外的场上的卡全部送去墓地。●从手卡或者自己·对方的墓地选1只怪兽在自己场上特殊召唤。●自己从卡组抽3张，那之后选2张手卡丢弃。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(82308875,0))  --"投掷骰子"
-	e1:SetCategory(CATEGORY_DICE|CATEGORY_ATKCHANGE|CATEGORY_DRAW|CATEGORY_SPECIAL_SUMMON|CATEGORY_TOGRAVE)
+	e1:SetDescription(aux.Stringid(82308875,0))
+	e1:SetCategory(CATEGORY_DICE|CATEGORY_ATKCHANGE|CATEGORY_DRAW|CATEGORY_SPECIAL_SUMMON|CATEGORY_TOGRAVE|CATEGORY_HANDES_SELF)
 	e1:SetType(EFFECT_TYPE_IGNITION)
 	e1:SetRange(LOCATION_MZONE)
 	e1:SetCost(c82308875.cost)

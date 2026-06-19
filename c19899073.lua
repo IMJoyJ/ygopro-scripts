@@ -24,8 +24,8 @@ function s.initial_effect(c)
 	c:RegisterEffect(e1)
 	-- ②：对方把效果发动时才能发动。对方可以选1张手卡丢弃。没丢弃的场合，那个效果无效化。
 	local e2=Effect.CreateEffect(c)
-	e2:SetDescription(aux.Stringid(id,1))  --"无效"
-	e2:SetCategory(CATEGORY_HANDES+CATEGORY_DISABLE)
+	e2:SetDescription(aux.Stringid(id,1))
+	e2:SetCategory(CATEGORY_HANDES_OPPO+CATEGORY_DISABLE)
 	e2:SetType(EFFECT_TYPE_QUICK_O)
 	e2:SetCode(EVENT_CHAINING)
 	e2:SetRange(LOCATION_MZONE)

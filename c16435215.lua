@@ -4,7 +4,7 @@
 function c16435215.initial_effect(c)
 	-- ①：双方各自把对方手卡确认，从那之中选1张卡丢弃。那之后，双方各自从卡组抽1张。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_TOGRAVE+CATEGORY_HANDES+CATEGORY_DRAW)
+	e1:SetCategory(CATEGORY_TOGRAVE+CATEGORY_HANDES_SELF+CATEGORY_HANDES_OPPO+CATEGORY_DRAW)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetCondition(c16435215.condition)
@@ -26,8 +26,8 @@ end
 function c16435215.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 判断双方是否可以抽卡
 	if chk==0 then return Duel.IsPlayerCanDraw(tp,1) and Duel.IsPlayerCanDraw(1-tp,1) end
-	-- 设置丢弃手牌的操作信息
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,PLAYER_ALL,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_OPPO,nil,0,1-tp,1)
 end
 -- 执行卡片效果的主要逻辑
 function c16435215.activate(e,tp,eg,ep,ev,re,r,rp)

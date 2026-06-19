@@ -4,7 +4,7 @@
 function c33611061.initial_effect(c)
 	-- 效果定义：将此卡注册为发动时点为自由连锁的魔法卡，且只能发动一次，条件为己方场上没有此卡以外的卡，目标为己方墓地的兽战士族武神怪兽，操作为将这些怪兽送回卡组并丢弃手牌，之后从卡组检索最多3只不同名的武神兽战士族怪兽加入手牌
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_TODECK+CATEGORY_HANDES+CATEGORY_SEARCH)
+	e1:SetCategory(CATEGORY_TODECK+CATEGORY_TOGRAVE+CATEGORY_SEARCH)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetCountLimit(1,33611061+EFFECT_COUNT_CODE_OATH)

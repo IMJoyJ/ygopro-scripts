@@ -15,8 +15,8 @@ function s.initial_effect(c)
 	c:RegisterEffect(e1)
 	-- ①：自己·对方回合可以发动。从卡组把有「光与暗的仪式」的卡名记述的1只怪兽加入手卡。那之后，选自己1张手卡丢弃。
 	local e2=Effect.CreateEffect(c)
-	e2:SetDescription(aux.Stringid(id,0))  --"检索效果"
-	e2:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
+	e2:SetDescription(aux.Stringid(id,0))
+	e2:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH+CATEGORY_HANDES_SELF)
 	e2:SetType(EFFECT_TYPE_QUICK_O)
 	e2:SetCode(EVENT_FREE_CHAIN)
 	e2:SetHintTiming(TIMING_DRAW_PHASE,TIMING_DRAW_PHASE+TIMINGS_CHECK_MONSTER+TIMING_END_PHASE)
@@ -53,8 +53,7 @@ function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	Duel.RegisterFlagEffect(tp,id,RESET_CHAIN,0,1)
 	-- 设置操作信息：从卡组将1张卡加入手卡
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
-	-- 设置操作信息：丢弃1张手卡
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 end
 -- 效果①的操作处理：从卡组将记述有「光与暗的仪式」的1只怪兽加入手卡，然后从手卡选择1张卡丢弃
 function s.thop(e,tp,eg,ep,ev,re,r,rp)

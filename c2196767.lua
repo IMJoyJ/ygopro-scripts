@@ -9,8 +9,8 @@
 function c2196767.initial_effect(c)
 	-- 创建效果，设置效果描述为“投掷硬币”，设置效果类别为破坏、弃牌和硬币效果，设置效果类型为起动效果，设置效果适用范围为主怪兽区，设置每回合只能发动1次，设置效果目标函数为c2196767.destg，设置效果处理函数为c2196767.desop
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(2196767,0))  --"投掷硬币"
-	e1:SetCategory(CATEGORY_DESTROY+CATEGORY_HANDES+CATEGORY_COIN)
+	e1:SetDescription(aux.Stringid(2196767,0))
+	e1:SetCategory(CATEGORY_DESTROY+CATEGORY_HANDES_SELF+CATEGORY_HANDES_OPPO+CATEGORY_COIN)
 	e1:SetType(EFFECT_TYPE_IGNITION)
 	e1:SetRange(LOCATION_MZONE)
 	e1:SetCountLimit(1)

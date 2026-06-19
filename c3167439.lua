@@ -8,7 +8,7 @@ local s,id,o=GetID()
 function s.initial_effect(c)
 	-- ①：自己或者对方把怪兽召唤·特殊召唤之际才能发动。那个无效，那些怪兽破坏。那之后，从手卡选1只恶魔族怪兽丢弃。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_DISABLE_SUMMON+CATEGORY_DESTROY+CATEGORY_HANDES)
+	e1:SetCategory(CATEGORY_DISABLE_SUMMON+CATEGORY_DESTROY+CATEGORY_HANDES_SELF)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_SUMMON)
 	e1:SetCountLimit(1,id)
@@ -43,8 +43,7 @@ function s.destg(e,tp,eg,ep,ev,re,r,rp,chk)
 	Duel.SetOperationInfo(0,CATEGORY_DISABLE_SUMMON,eg,eg:GetCount(),0,0)
 	-- 设置连锁操作信息，将破坏的效果分类加入操作信息
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,eg,eg:GetCount(),0,0)
-	-- 设置连锁操作信息，将丢弃手牌的效果分类加入操作信息
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,1,tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,1,tp,1)
 end
 -- 执行效果操作，使召唤无效并破坏怪兽，然后选择并丢弃手牌
 function s.desop(e,tp,eg,ep,ev,re,r,rp)

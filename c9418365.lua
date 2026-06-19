@@ -19,7 +19,7 @@ function c9418365.initial_effect(c)
 	-- 此外，这个方法特殊召唤的这张卡被对方破坏送去墓地的场合才能发动。自己丢弃1张手卡。那之后，对方选1张手卡丢弃。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(9418365,1))
-	e2:SetCategory(CATEGORY_HANDES)
+	e2:SetCategory(CATEGORY_HANDES_SELF+CATEGORY_HANDES_OPPO)
 	e2:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e2:SetProperty(EFFECT_FLAG_DELAY+EFFECT_FLAG_DAMAGE_STEP)
 	e2:SetCode(EVENT_TO_GRAVE)
@@ -71,8 +71,8 @@ function c9418365.hdtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.GetFieldGroupCount(tp,LOCATION_HAND,0)>0
 		-- 检查对方手卡数量是否大于0
 		and Duel.GetFieldGroupCount(tp,0,LOCATION_HAND)>0 end
-	-- 设置效果处理信息，表示此效果包含双方丢弃手卡的操作
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,PLAYER_ALL,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_OPPO,nil,0,1-tp,1)
 end
 -- 效果处理：自己丢弃1张手卡，之后对方丢弃1张手卡
 function c9418365.hdop(e,tp,eg,ep,ev,re,r,rp)

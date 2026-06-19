@@ -19,8 +19,8 @@ function s.initial_effect(c)
 	c:RegisterEffect(e1)
 	-- ②：把墓地的这张卡除外才能发动。对方抽1张。那之后，对方选自身1张手卡丢弃。
 	local e2=Effect.CreateEffect(c)
-	e2:SetDescription(aux.Stringid(id,1))  --"抽卡"
-	e2:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES)
+	e2:SetDescription(aux.Stringid(id,1))
+	e2:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES_OPPO)
 	e2:SetType(EFFECT_TYPE_IGNITION)
 	e2:SetRange(LOCATION_GRAVE)
 	e2:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
@@ -105,9 +105,7 @@ end
 function s.drtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 检查对方是否可以抽卡
 	if chk==0 then return Duel.IsPlayerCanDraw(1-tp,1) end
-	-- 设置效果②的发动信息：准备让对方丢弃一张手牌
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,1-tp,1)
-	-- 设置效果②的发动信息：准备让对方抽一张卡
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_OPPO,nil,0,1-tp,1)
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,1-tp,1)
 end
 -- 处理效果②的发动效果：对方抽一张卡，然后对方选择丢弃一张手牌

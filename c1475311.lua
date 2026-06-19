@@ -4,7 +4,7 @@
 function c1475311.initial_effect(c)
 	-- ①：自己抽2张。那之后，手卡有暗属性怪兽存在的场合，选那之内的1只除外。不存在的场合，自己手卡全部送去墓地。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_DRAW+CATEGORY_REMOVE+CATEGORY_HANDES)
+	e1:SetCategory(CATEGORY_DRAW+CATEGORY_REMOVE+CATEGORY_TOGRAVE)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
 	e1:SetCode(EVENT_FREE_CHAIN)

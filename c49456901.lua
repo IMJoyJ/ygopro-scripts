@@ -20,8 +20,8 @@ function c49456901.initial_effect(c)
 	c:RegisterEffect(e1)
 	-- ②：这张卡有「No.104 假面魔蹈士 闪光」在作为超量素材的场合，得到以下效果。●1回合1次，对方场上的怪兽的效果发动时，把这张卡1个超量素材取除才能发动。那个发动无效。那之后，可以把对方手卡随机选1张送去墓地，对方基本分变成一半。
 	local e2=Effect.CreateEffect(c)
-	e2:SetDescription(aux.Stringid(49456901,1))  --"效果无效"
-	e2:SetCategory(CATEGORY_NEGATE+CATEGORY_HANDES)
+	e2:SetDescription(aux.Stringid(49456901,1))
+	e2:SetCategory(CATEGORY_NEGATE+CATEGORY_TOGRAVE)
 	e2:SetProperty(EFFECT_FLAG_DAMAGE_STEP+EFFECT_FLAG_DAMAGE_CAL)
 	e2:SetType(EFFECT_TYPE_QUICK_O)
 	e2:SetRange(LOCATION_MZONE)

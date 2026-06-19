@@ -91,8 +91,7 @@ function c31006879.drtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	Duel.SetTargetParam(2)
 	-- 设置效果处理为抽2张卡
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,2)
-	-- 设置效果处理为丢弃1张手牌
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,nil,0,tp,LOCATION_HAND)
 end
 -- 效果发动的处理函数，抽2张卡并丢弃1张手牌
 function c31006879.drop(e,tp,eg,ep,ev,re,r,rp)

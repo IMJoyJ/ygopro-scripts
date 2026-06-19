@@ -15,7 +15,7 @@ function c39568067.initial_effect(c)
 	-- ①：自己主要阶段才能发动。从卡组把有「勇者衍生物」的衍生物名记述的1只怪兽加入手卡。那之后，选自己1张手卡送去墓地。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(39568067,0))
-	e1:SetCategory(CATEGORY_SEARCH+CATEGORY_TOHAND+CATEGORY_HANDES)
+	e1:SetCategory(CATEGORY_SEARCH+CATEGORY_TOHAND+CATEGORY_TOGRAVE)
 	e1:SetType(EFFECT_TYPE_IGNITION)
 	e1:SetRange(LOCATION_SZONE)
 	e1:SetCountLimit(1,39568067)

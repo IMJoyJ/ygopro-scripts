@@ -21,8 +21,8 @@ function c13959634.initial_effect(c)
 	c:RegisterEffect(e2)
 	-- ①：这张卡特殊召唤的场合发动。对方手卡随机2张丢弃。
 	local e3=Effect.CreateEffect(c)
-	e3:SetDescription(aux.Stringid(13959634,0))  --"手牌丢弃"
-	e3:SetCategory(CATEGORY_HANDES)
+	e3:SetDescription(aux.Stringid(13959634,0))
+	e3:SetCategory(CATEGORY_HANDES_OPPO)
 	e3:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_F)
 	e3:SetCode(EVENT_SPSUMMON_SUCCESS)
 	e3:SetCountLimit(1,13959634)
@@ -48,8 +48,7 @@ end
 -- 设置丢弃手牌效果的目标和参数。
 function c13959634.hdtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置连锁操作信息，指定对方将随机丢弃2张手牌。
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,1-tp,2)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_OPPO,nil,0,1-tp,2)
 end
 -- 执行丢弃手牌效果的操作。
 function c13959634.hdop(e,tp,eg,ep,ev,re,r,rp)

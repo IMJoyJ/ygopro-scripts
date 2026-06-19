@@ -20,7 +20,7 @@ function c95245544.initial_effect(c)
 	c:RegisterEffect(e1)
 	-- ②：把墓地的这张卡除外才能发动。自己从卡组抽1张，那之后从手卡选1张「魔女术」卡送去墓地。手卡没有「魔女术」卡的场合，手卡全部除外。
 	local e2=Effect.CreateEffect(c)
-	e2:SetCategory(CATEGORY_DRAW+CATEGORY_REMOVE+CATEGORY_HANDES)
+	e2:SetCategory(CATEGORY_DRAW+CATEGORY_REMOVE+CATEGORY_TOGRAVE)
 	e2:SetType(EFFECT_TYPE_IGNITION)
 	e2:SetRange(LOCATION_GRAVE)
 	e2:SetCountLimit(1,95245545)

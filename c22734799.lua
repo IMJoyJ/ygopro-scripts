@@ -9,8 +9,8 @@ local s,id,o=GetID()
 function s.initial_effect(c)
 	-- ①：把手卡的这张卡给对方观看才能发动。选自己1张手卡丢弃，从手卡把1只8星以外的「三幻魔」怪兽守备表示特殊召唤。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(id,0))  --"特殊召唤"
-	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_HANDES)
+	e1:SetDescription(aux.Stringid(id,0))
+	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_HANDES_SELF)
 	e1:SetType(EFFECT_TYPE_IGNITION)
 	e1:SetRange(LOCATION_HAND)
 	e1:SetCountLimit(1,id)
@@ -75,8 +75,7 @@ function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 		and Duel.IsExistingMatchingCard(s.hfilter,tp,LOCATION_HAND,0,1,nil,e,tp) end
 	-- 设置效果处理的操作信息，表明本效果包含在玩家场上从手牌特殊召唤1只怪兽的操作。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_HAND)
-	-- 设置效果处理的操作信息，表明本效果包含丢弃玩家手牌的操作。
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 end
 -- 效果的执行处理函数，让玩家先选择并丢弃1张手牌，若成功丢弃，则从手牌中选择1只符合条件的「三幻魔」怪兽进行守备表示特殊召唤。
 function s.spop(e,tp,eg,ep,ev,re,r,rp)

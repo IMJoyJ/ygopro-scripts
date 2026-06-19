@@ -20,7 +20,7 @@ function c76052811.initial_effect(c)
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(76052811,0))  --"丢弃手牌"
 	e3:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_F)
-	e3:SetCategory(CATEGORY_HANDES)
+	e3:SetCategory(CATEGORY_HANDES_OPPO)
 	e3:SetCode(EVENT_PHASE+PHASE_BATTLE)
 	e3:SetRange(LOCATION_GRAVE)
 	e3:SetCountLimit(1)
@@ -44,8 +44,7 @@ end
 -- 效果发动的目标：设置丢弃对方手牌的操作信息
 function c76052811.hdtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置操作信息为对方丢弃1张手牌
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,0,0,1-tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_OPPO,nil,0,1-tp,1)
 end
 -- 效果处理：若此卡仍在墓地，则随机选择对方1张手牌丢弃
 function c76052811.hdop(e,tp,eg,ep,ev,re,r,rp)

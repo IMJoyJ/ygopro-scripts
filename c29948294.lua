@@ -10,7 +10,7 @@ function c29948294.initial_effect(c)
 	-- ①：把手卡1只怪兽给对方观看，和那只怪兽相同种族而攻击力或守备力是2500的1只8星融合怪兽从额外卡组送去墓地。那之后，以下效果可以适用。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(29948294,0))
-	e1:SetCategory(CATEGORY_TOGRAVE+CATEGORY_HANDES+CATEGORY_SEARCH)
+	e1:SetCategory(CATEGORY_TOGRAVE+CATEGORY_HANDES_SELF+CATEGORY_SEARCH)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetCountLimit(1,29948294)

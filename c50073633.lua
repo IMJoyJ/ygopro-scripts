@@ -12,8 +12,8 @@ function s.initial_effect(c)
 	aux.AddCodeList(c,33599853)
 	-- ①：这张卡召唤·特殊召唤的场合才能发动。自己手卡全部给对方观看。那之中有着有「光与暗的仪式」的卡名记述的卡的场合，自己可以抽3张。抽卡的场合，再选自己2张手卡丢弃。这个效果的发动后，直到回合结束时自己只能有1次从额外卡组把怪兽特殊召唤。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(id,0))  --"抽卡效果"
-	e1:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES)
+	e1:SetDescription(aux.Stringid(id,0))
+	e1:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES_SELF)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e1:SetCode(EVENT_SUMMON_SUCCESS)
 	e1:SetProperty(EFFECT_FLAG_DELAY)

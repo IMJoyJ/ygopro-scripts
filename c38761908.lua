@@ -5,7 +5,7 @@
 function c38761908.initial_effect(c)
 	-- ①：以场上1张表侧表示卡为对象才能发动。选自己1张手卡丢弃，作为对象的卡除外。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_REMOVE)
+	e1:SetCategory(CATEGORY_HANDES_SELF+CATEGORY_REMOVE)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET)
 	e1:SetCode(EVENT_FREE_CHAIN)

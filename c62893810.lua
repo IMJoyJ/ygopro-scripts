@@ -7,7 +7,7 @@
 function c62893810.initial_effect(c)
 	-- ①：1回合1次，自己主要阶段才能发动。掷1次骰子，出现的数目的效果适用。●1：把对方手卡确认，从那之中选1张卡丢弃。●2～5：选自己1张手卡丢弃。●6：自己手卡全部丢弃。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_HANDES+CATEGORY_DICE)
+	e1:SetCategory(CATEGORY_HANDES_SELF+CATEGORY_HANDES_OPPO+CATEGORY_DICE)
 	e1:SetType(EFFECT_TYPE_IGNITION)
 	e1:SetRange(LOCATION_MZONE)
 	e1:SetCountLimit(1)
@@ -22,8 +22,6 @@ function c62893810.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return g1:GetCount()~=0 end
 	-- 设置操作信息：投掷1次骰子
 	Duel.SetOperationInfo(0,CATEGORY_DICE,nil,0,tp,1)
-	-- 设置操作信息：丢弃手牌
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,g1,1,0,0)
 end
 -- 效果处理函数，根据骰子结果适用对应效果
 function c62893810.operation(e,tp,eg,ep,ev,re,r,rp)

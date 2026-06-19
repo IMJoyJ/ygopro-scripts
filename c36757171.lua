@@ -8,8 +8,8 @@ function c36757171.initial_effect(c)
 	c:EnableReviveLimit()
 	-- 1回合1次，把这张卡1个超量素材取除，选择对方场上表侧表示存在的1只怪兽才能发动。从手卡丢弃1只名字带有「入魔」的怪兽，得到选择的对方怪兽的控制权。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_CONTROL+CATEGORY_HANDES)
-	e1:SetDescription(aux.Stringid(36757171,0))  --"获取控制权"
+	e1:SetCategory(CATEGORY_CONTROL+CATEGORY_HANDES_SELF)
+	e1:SetDescription(aux.Stringid(36757171,0))
 	e1:SetType(EFFECT_TYPE_IGNITION)
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET)
 	e1:SetCountLimit(1)
@@ -41,8 +41,7 @@ function c36757171.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	local g=Duel.SelectTarget(tp,c36757171.filter,tp,0,LOCATION_MZONE,1,1,nil)
 	-- 设置效果处理信息，表示将改变目标怪兽的控制权
 	Duel.SetOperationInfo(0,CATEGORY_CONTROL,g,1,0,0)
-	-- 设置效果处理信息，表示将丢弃1张手牌
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 end
 -- 过滤函数，用于判断手牌是否为名字带有「入魔」的怪兽且可以丢弃
 function c36757171.dfilter(c)

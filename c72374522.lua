@@ -10,8 +10,8 @@ function s.initial_effect(c)
 	aux.AddCodeList(c,41209827)
 	-- ①：以自己场上1只「凶饿毒融合龙」为对象才能发动。持有比那只怪兽低的攻击力的对方场上的怪兽全部破坏。那之后，以下效果可以适用。这个回合，作为对象的怪兽不能攻击。●自己手卡全部丢弃，给与对方这个效果破坏的怪兽的原本攻击力合计数值的伤害。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(id,0))  --"发动"
-	e1:SetCategory(CATEGORY_DESTROY+CATEGORY_DAMAGE+CATEGORY_HANDES)
+	e1:SetDescription(aux.Stringid(id,0))
+	e1:SetCategory(CATEGORY_DESTROY+CATEGORY_DAMAGE+CATEGORY_HANDES_SELF)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET)

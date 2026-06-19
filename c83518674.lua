@@ -6,7 +6,7 @@
 function c83518674.initial_effect(c)
 	-- ①：把手卡的这张卡给对方观看才能发动。从自己的全部手卡之中由对方随机选1张，自己把那张卡丢弃。那是「未界域的奥古布古」以外的场合，再从手卡把1只「未界域的奥古布古」特殊召唤，自己从卡组抽1张。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_HANDES+CATEGORY_DRAW)
+	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_HANDES_SELF+CATEGORY_DRAW)
 	e1:SetType(EFFECT_TYPE_IGNITION)
 	e1:SetRange(LOCATION_HAND)
 	e1:SetCost(c83518674.spcost)
@@ -36,8 +36,7 @@ end
 function c83518674.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 检查手卡中是否存在可以因效果丢弃的卡
 	if chk==0 then return Duel.IsExistingMatchingCard(Card.IsDiscardable,tp,LOCATION_HAND,0,1,nil,REASON_EFFECT) end
-	-- 设置将1张手卡丢弃的操作信息
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 end
 -- ①效果的效果处理：由对方随机选1张手卡丢弃，若丢弃的不是「未界域的奥古布古」，则可以从手卡特殊召唤1只「未界域的奥古布古」并抽1张卡
 function c83518674.spop(e,tp,eg,ep,ev,re,r,rp)

@@ -6,8 +6,8 @@
 function c40371092.initial_effect(c)
 	-- 「白夜之骑士 盖亚」的以下效果1回合各能使用1次。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(40371092,0))  --"卡组检索"
-	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH+CATEGORY_HANDES)
+	e1:SetDescription(aux.Stringid(40371092,0))
+	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH+CATEGORY_TOGRAVE)
 	e1:SetType(EFFECT_TYPE_IGNITION)
 	e1:SetRange(LOCATION_MZONE)
 	e1:SetCountLimit(1,40371092)
@@ -47,8 +47,7 @@ function c40371092.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.IsExistingMatchingCard(c40371092.filter,tp,LOCATION_DECK,0,1,nil) end
 	-- 设置效果处理时需要确认的卡组检索操作信息
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
-	-- 设置效果处理时需要确认的手牌丢弃操作信息
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,1,tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,nil,1,tp,LOCATION_HAND)
 end
 -- 处理效果的执行逻辑：检索满足条件的卡并丢弃手牌
 function c40371092.thop(e,tp,eg,ep,ev,re,r,rp)

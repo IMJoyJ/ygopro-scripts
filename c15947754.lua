@@ -20,7 +20,7 @@ function s.initial_effect(c)
 	-- ②：自己·对方的结束阶段发动。对方对这张卡的①的效果装备中的卡的原本种类（怪兽·魔法·陷阱）作猜测。猜中的场合，这张卡送去墓地。猜错的场合，对方手卡随机选1张丢弃，这张卡回到持有者手卡。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(id,1))
-	e3:SetCategory(CATEGORY_HANDES)
+	e3:SetCategory(CATEGORY_HANDES_OPPO)
 	e3:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_F)
 	e3:SetCode(EVENT_PHASE+PHASE_END)
 	e3:SetRange(LOCATION_MZONE)
@@ -77,8 +77,6 @@ end
 -- 效果②的发动时点处理函数，用于设置连锁操作信息
 function s.guesstg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置连锁操作信息，提示对方需要丢弃手牌
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,0,0,1-tp,1)
 end
 -- 筛选装备卡的过滤函数，用于筛选出被此卡装备且为里侧表示的卡
 function s.eqfilter(c)

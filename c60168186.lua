@@ -51,8 +51,8 @@ function c60168186.initial_effect(c)
 	c:RegisterEffect(e4)
 	-- ①：自己场上有以下种类的「DDD」怪兽从额外卡组特殊召唤时，各自效果1回合各能发动1次。●灵摆：自己从卡组抽1张，那之后选1张手卡丢弃。
 	local e5=Effect.CreateEffect(c)
-	e5:SetDescription(aux.Stringid(60168186,3))  --"灵摆：自己从卡组抽1张，那之后选1张手卡丢弃。"
-	e5:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES)
+	e5:SetDescription(aux.Stringid(60168186,3))
+	e5:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES_SELF)
 	e5:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
 	e5:SetCode(EVENT_SPSUMMON_SUCCESS)
 	e5:SetRange(LOCATION_SZONE)
@@ -145,9 +145,7 @@ end
 function c60168186.drtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 若为检查阶段，则判断自己是否可以抽1张卡
 	if chk==0 then return Duel.IsPlayerCanDraw(tp,1) end
-	-- 设置当前连锁的操作信息为：自己丢弃1张手卡
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
-	-- 设置当前连锁的操作信息为：自己抽1张卡
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,1)
 end
 -- 抽卡并丢弃效果的处理函数

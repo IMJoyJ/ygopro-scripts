@@ -20,7 +20,7 @@ function c6128460.initial_effect(c)
 	c:RegisterEffect(e2)
 	-- ③：这张卡被送去墓地的场合才能发动。从卡组把以下怪兽合计2只加入手卡（同名卡最多1张）。那之后，选1张手卡丢弃。●「白骨」●「白骨烤王」以外的有「白骨」的卡名记述的怪兽
 	local e3=Effect.CreateEffect(c)
-	e3:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH+CATEGORY_HANDES)
+	e3:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH+CATEGORY_HANDES_SELF)
 	e3:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e3:SetCode(EVENT_TO_GRAVE)
 	e3:SetProperty(EFFECT_FLAG_DELAY)

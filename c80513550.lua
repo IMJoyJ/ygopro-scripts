@@ -13,8 +13,8 @@ function c80513550.initial_effect(c)
 	c:RegisterEffect(e1)
 	-- 这张卡的攻击给与对方基本分战斗伤害时，对方选择1张手卡送去墓地，自己从卡组抽1张卡。
 	local e2=Effect.CreateEffect(c)
-	e2:SetDescription(aux.Stringid(80513550,0))  --"抽卡"
-	e2:SetCategory(CATEGORY_HANDES+CATEGORY_DRAW)
+	e2:SetDescription(aux.Stringid(80513550,0))
+	e2:SetCategory(CATEGORY_TOGRAVE+CATEGORY_DRAW)
 	e2:SetCode(EVENT_BATTLE_DAMAGE)
 	e2:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_F)
 	e2:SetCondition(c80513550.hdcon)
@@ -55,9 +55,7 @@ end
 -- 战斗伤害效果的发动准备与效果分类声明
 function c80513550.hdtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置操作信息：对方丢弃1张手卡
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,1-tp,1)
-	-- 设置操作信息：自己抽1张卡
+	Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,nil,1,1-tp,LOCATION_HAND)
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,1)
 end
 -- 战斗伤害效果的实际处理

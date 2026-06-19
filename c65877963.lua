@@ -9,7 +9,7 @@ function c65877963.initial_effect(c)
 	c:EnableReviveLimit()
 	-- ①：把手卡的这张卡给对方观看才能发动。选1张手卡丢弃，从卡组把1只「魔神仪」怪兽特殊召唤。发动后，这个回合中自己对仪式怪兽的特殊召唤没有成功的场合，结束阶段让自己失去2500基本分。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_HANDES+CATEGORY_SPECIAL_SUMMON)
+	e1:SetCategory(CATEGORY_HANDES_SELF+CATEGORY_SPECIAL_SUMMON)
 	e1:SetType(EFFECT_TYPE_IGNITION)
 	e1:SetRange(LOCATION_HAND)
 	e1:SetCountLimit(1,65877963)

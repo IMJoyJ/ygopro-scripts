@@ -6,7 +6,7 @@ function c80794697.initial_effect(c)
 	-- 这个卡名的效果1回合只能使用1次。①：表侧表示的这张卡从场上离开的场合才能发动。从手卡丢弃1只电子界族怪兽，自己从卡组抽2张。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(80794697,0))
-	e1:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES)
+	e1:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES_SELF)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e1:SetCode(EVENT_LEAVE_FIELD)
 	e1:SetProperty(EFFECT_FLAG_DAMAGE_STEP+EFFECT_FLAG_DELAY)
@@ -30,9 +30,7 @@ function c80794697.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.IsExistingMatchingCard(c80794697.tgfilter,tp,LOCATION_HAND,0,1,nil)
 		-- 检查玩家是否可以抽2张卡
 		and Duel.IsPlayerCanDraw(tp,2) end
-	-- 设置操作信息，表示此效果包含丢弃1张手牌的操作
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
-	-- 设置操作信息，表示此效果包含抽2张卡的操作
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,2)
 end
 -- 效果处理：从手牌丢弃1只电子界族怪兽，并从卡组抽2张卡

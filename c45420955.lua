@@ -13,8 +13,8 @@ function c45420955.initial_effect(c)
 	aux.AddSynchroProcedure(c,nil,aux.NonTuner(Card.IsRace,RACE_FIEND),1)
 	-- ①：对方主要阶段，以场上1只效果怪兽为对象才能发动。从手卡选1只怪兽丢弃，作为对象的怪兽的效果直到回合结束时无效。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(45420955,0))  --"效果无效"
-	e1:SetCategory(CATEGORY_DISABLE)
+	e1:SetDescription(aux.Stringid(45420955,0))
+	e1:SetCategory(CATEGORY_HANDES_SELF+CATEGORY_DISABLE)
 	e1:SetType(EFFECT_TYPE_QUICK_O)
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET)
 	e1:SetCode(EVENT_FREE_CHAIN)

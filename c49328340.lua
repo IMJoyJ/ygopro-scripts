@@ -20,8 +20,8 @@ function c49328340.initial_effect(c)
 	c:RegisterEffect(e2)
 	-- ②：这张卡的①的效果适用让「龙骑士 盖亚」给与对方战斗伤害的场合发动。自己从卡组抽2张，那之后选1张手卡丢弃。
 	local e3=Effect.CreateEffect(c)
-	e3:SetDescription(aux.Stringid(49328340,0))  --"抽卡"
-	e3:SetCategory(CATEGORY_DRAW)
+	e3:SetDescription(aux.Stringid(49328340,0))
+	e3:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES_SELF)
 	e3:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_F)
 	e3:SetCode(EVENT_BATTLE_DAMAGE)
 	e3:SetRange(LOCATION_SZONE)
@@ -45,8 +45,7 @@ function c49328340.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
 	-- 设置将要进行2张卡的抽卡操作
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,2)
-	-- 设置将要进行1张手牌的丢弃操作
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 end
 -- 执行效果发动后的抽卡与丢弃手牌操作
 function c49328340.operation(e,tp,eg,ep,ev,re,r,rp)

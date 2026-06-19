@@ -6,7 +6,7 @@
 function c90020780.initial_effect(c)
 	-- ①：这张卡已在怪兽区域存在的状态，从自己墓地有这张卡以外的不死族怪兽特殊召唤的场合才能发动。自己从卡组抽1张。那之后，选1张手卡丢弃。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES)
+	e1:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES_SELF)
 	e1:SetProperty(EFFECT_FLAG_DELAY)
 	e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
 	e1:SetCode(EVENT_SPSUMMON_SUCCESS)
@@ -47,8 +47,7 @@ function c90020780.drtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	Duel.SetTargetParam(1)
 	-- 设置操作信息：由自己抽1张卡
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,1)
-	-- 设置操作信息：由自己丢弃1张手卡
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 end
 -- 效果①的效果处理（抽1张卡，然后选1张手卡丢弃）
 function c90020780.drop(e,tp,eg,ep,ev,re,r,rp)

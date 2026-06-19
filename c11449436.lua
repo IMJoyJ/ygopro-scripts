@@ -6,7 +6,7 @@ function c11449436.initial_effect(c)
 	-- ①：自己的通常怪兽和对方怪兽进行战斗的伤害步骤开始时，把手卡的这张卡给对方观看才能发动。选自己1张手卡丢弃，那只自己怪兽不会被那次战斗破坏。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(11449436,0))
-	e1:SetCategory(CATEGORY_HANDES)
+	e1:SetCategory(CATEGORY_HANDES_SELF)
 	e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
 	e1:SetCode(EVENT_BATTLE_START)
 	e1:SetRange(LOCATION_HAND)
@@ -18,7 +18,7 @@ function c11449436.initial_effect(c)
 	-- ②：这张卡和对方怪兽进行战斗的伤害步骤开始时，把手卡1只通常怪兽给对方观看才能发动。选自己1张手卡丢弃，那只对方怪兽破坏。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(11449436,1))
-	e2:SetCategory(CATEGORY_HANDES+CATEGORY_DESTROY)
+	e2:SetCategory(CATEGORY_HANDES_SELF+CATEGORY_DESTROY)
 	e2:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e2:SetCode(EVENT_BATTLE_START)
 	e2:SetCost(c11449436.descost)
@@ -41,8 +41,7 @@ end
 function c11449436.indestg(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 检查是否满足发动条件，即自己手卡是否存在至少一张卡。
 	if chk==0 then return Duel.IsExistingMatchingCard(nil,tp,LOCATION_HAND,0,1,nil) end
-	-- 设置操作信息，表示将要处理的丢弃手卡效果。
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 end
 -- 定义效果①的处理流程，包括丢弃手卡和为怪兽添加不被战斗破坏的效果。
 function c11449436.indesop(e,tp,eg,ep,ev,re,r,rp)
@@ -83,9 +82,7 @@ function c11449436.destg(e,tp,eg,ep,ev,re,r,rp,chk)
 	e:SetLabelObject(tc)
 	-- 检查是否满足发动条件，即对方怪兽存在且自己手卡存在至少一张卡。
 	if chk==0 then return tc and tc:IsControler(1-tp) and Duel.GetFieldGroupCount(tp,LOCATION_HAND,0)>0 end
-	-- 设置操作信息，表示将要处理的丢弃手卡效果。
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
-	-- 设置操作信息，表示将要处理的破坏效果。
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,tc,1,0,0)
 end
 -- 定义效果②的处理流程，包括丢弃手卡和破坏对方怪兽。

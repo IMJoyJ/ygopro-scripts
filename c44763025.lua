@@ -4,7 +4,7 @@
 function c44763025.initial_effect(c)
 	-- 创建效果，设置为发动时支付1000基本分，对方随机丢弃1张手卡，再选择1张手卡丢弃
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_HANDES)
+	e1:SetCategory(CATEGORY_HANDES_OPPO)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
 	e1:SetCode(EVENT_FREE_CHAIN)
@@ -26,8 +26,7 @@ function c44763025.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.GetFieldGroupCount(tp,0,LOCATION_HAND)>0 end
 	-- 设置当前连锁的目标玩家为发动者
 	Duel.SetTargetPlayer(tp)
-	-- 设置操作信息为对方丢弃2张手牌
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,1-tp,2)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_OPPO,nil,0,1-tp,2)
 end
 -- 处理效果发动，执行丢弃手牌操作
 function c44763025.activate(e,tp,eg,ep,ev,re,r,rp)

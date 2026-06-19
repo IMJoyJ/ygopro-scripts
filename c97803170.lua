@@ -13,7 +13,7 @@ function c97803170.initial_effect(c)
 	-- ①：以自己墓地1只5星以上的恶魔族怪兽为对象才能发动。从手卡丢弃1只恶魔族怪兽，作为对象的怪兽特殊召唤。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(97803170,0))
-	e2:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_TOGRAVE)
+	e2:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_HANDES_SELF)
 	e2:SetType(EFFECT_TYPE_QUICK_O)
 	e2:SetProperty(EFFECT_FLAG_CARD_TARGET)
 	e2:SetCode(EVENT_FREE_CHAIN)
@@ -39,7 +39,7 @@ function c97803170.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 		and c97803170.sptg(e,tp,eg,ep,ev,re,r,rp,0)
 	-- 如果满足效果发动条件，询问玩家在卡片发动时是否同时发动该效果
 	if b1 and Duel.SelectYesNo(tp,94) then
-		e:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_TOGRAVE)
+		e:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_HANDES_SELF)
 		e:SetProperty(EFFECT_FLAG_CARD_TARGET)
 		e:SetOperation(c97803170.spop)
 		c97803170.cost(e,tp,eg,ep,ev,re,r,rp,1)
@@ -73,8 +73,7 @@ function c97803170.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	local g=Duel.SelectTarget(tp,c97803170.spfilter,tp,LOCATION_GRAVE,0,1,1,nil,e,tp)
 	-- 设置特殊召唤的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,1,0,0)
-	-- 设置送去墓地的操作信息
-	Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,nil,1,tp,LOCATION_HAND)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 end
 -- 效果处理函数，执行丢弃手卡和特殊召唤
 function c97803170.spop(e,tp,eg,ep,ev,re,r,rp)

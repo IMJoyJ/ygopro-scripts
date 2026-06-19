@@ -4,7 +4,7 @@
 function c19828680.initial_effect(c)
 	-- 效果定义：发动条件、目标设置与效果处理流程
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_HANDES+CATEGORY_SPECIAL_SUMMON+CATEGORY_GRAVE_SPSUMMON)
+	e1:SetCategory(CATEGORY_HANDES_SELF+CATEGORY_SPECIAL_SUMMON+CATEGORY_GRAVE_SPSUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetCondition(c19828680.condition)
@@ -24,8 +24,7 @@ function c19828680.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 规则层面：获取自己手牌组
 	local sg=Duel.GetMatchingGroup(nil,tp,LOCATION_HAND,0,exc)
 	if chk==0 then return sg:GetCount()>0 end
-	-- 规则层面：设置操作信息为丢弃手牌
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,sg,sg:GetCount(),0,0)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,sg,sg:GetCount(),0,0)
 end
 -- 从自己墓地选1只「永火」怪兽或者龙族·暗属性·8星的同调怪兽特殊召唤
 function c19828680.spfilter(c,e,tp)

@@ -9,7 +9,7 @@ function c92067220.initial_effect(c)
 	-- ①：选自己1张手卡丢弃，从卡组把1只「王后骑士」特殊召唤，从卡组把「国王骑士」「卫兵骑士」之内1只加入手卡。那之后，可以把1只怪兽召唤。这个回合，自己不是战士族·光属性怪兽不能从额外卡组特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(92067220,0))
-	e1:SetCategory(CATEGORY_HANDES+CATEGORY_SPECIAL_SUMMON+CATEGORY_SEARCH+CATEGORY_TOHAND+CATEGORY_SUMMON)
+	e1:SetCategory(CATEGORY_HANDES_SELF+CATEGORY_SPECIAL_SUMMON+CATEGORY_SEARCH+CATEGORY_TOHAND+CATEGORY_SUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetCountLimit(1,92067220)

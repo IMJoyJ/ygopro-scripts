@@ -20,8 +20,8 @@ function s.initial_effect(c)
 	c:RegisterEffect(e1)
 	-- ②：这张卡被解放的场合才能发动。选自己1张手卡丢弃，这张卡加入手卡。这个卡名的②的效果1回合只能使用1次。
 	local e2=Effect.CreateEffect(c)
-	e2:SetDescription(aux.Stringid(id,1))  --"回到手卡"
-	e2:SetCategory(CATEGORY_TOHAND+CATEGORY_HANDES)
+	e2:SetDescription(aux.Stringid(id,1))
+	e2:SetCategory(CATEGORY_TOHAND+CATEGORY_HANDES_SELF)
 	e2:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e2:SetCode(EVENT_RELEASE)
 	e2:SetProperty(EFFECT_FLAG_DAMAGE_STEP+EFFECT_FLAG_DELAY)
@@ -113,8 +113,7 @@ function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
 		and c:IsAbleToHand() end
 	-- 设置将此卡加入手卡的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,c,1,0,0)
-	-- 设置丢弃手卡的操作信息
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 end
 -- 效果②的处理函数，丢弃手卡并将此卡加入手卡
 function s.thop(e,tp,eg,ep,ev,re,r,rp)

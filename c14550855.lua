@@ -4,7 +4,7 @@
 function c14550855.initial_effect(c)
 	-- 自己最多2张手卡丢弃。那之后，这个效果丢弃的数量的名字带有「永火」的卡从卡组送去墓地。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_HANDES+CATEGORY_TOGRAVE)
+	e1:SetCategory(CATEGORY_HANDES_SELF+CATEGORY_TOGRAVE)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetTarget(c14550855.target)
@@ -21,9 +21,7 @@ function c14550855.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.GetFieldGroupCount(tp,LOCATION_HAND,0)>0
 		-- 检查自己卡组中是否存在至少1张名字带有「永火」且可以送去墓地的卡。
 		and Duel.IsExistingMatchingCard(c14550855.filter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置连锁操作信息：准备处理丢弃手牌的效果。
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
-	-- 设置连锁操作信息：准备处理将卡从卡组送去墓地的效果。
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 	Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,nil,1,tp,LOCATION_DECK)
 end
 -- 效果的发动处理函数，用于执行效果的处理流程。

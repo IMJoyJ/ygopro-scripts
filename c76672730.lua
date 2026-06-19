@@ -14,7 +14,7 @@ function s.initial_effect(c)
 	-- ①：自己主要阶段才能发动。从手卡选1只「暗黑界」怪兽丢弃，自己场上的全部「暗黑界」怪兽的攻击力直到回合结束时上升这个效果丢弃的怪兽的等级×100。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(id,0))
-	e1:SetCategory(CATEGORY_HANDES+CATEGORY_ATKCHANGE)
+	e1:SetCategory(CATEGORY_HANDES_SELF+CATEGORY_ATKCHANGE)
 	e1:SetType(EFFECT_TYPE_IGNITION)
 	e1:SetRange(LOCATION_SZONE)
 	e1:SetCountLimit(1,id)
@@ -24,7 +24,7 @@ function s.initial_effect(c)
 	-- ②：原本种族是恶魔族的怪兽被「暗黑界」卡的效果或者对方的效果从自己手卡丢弃的场合才能发动（伤害步骤也能发动）。选自己1张手卡丢弃。那之后，自己从卡组抽2张。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(id,1))
-	e2:SetCategory(CATEGORY_HANDES+CATEGORY_DRAW)
+	e2:SetCategory(CATEGORY_HANDES_SELF+CATEGORY_DRAW)
 	e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
 	e2:SetCode(EVENT_DISCARD)
 	e2:SetRange(LOCATION_SZONE)
@@ -50,8 +50,7 @@ function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.IsExistingMatchingCard(s.disfilter,tp,LOCATION_HAND,0,1,nil)
 		-- 检查自己场上是否存在至少1只表侧表示的「暗黑界」怪兽。
 		and Duel.IsExistingMatchingCard(s.atkfilter,tp,LOCATION_MZONE,0,1,nil) end
-	-- 设置操作信息：将1张手牌送去墓地（丢弃）。
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 end
 -- 效果①的效果处理：让玩家选择手牌中的1只「暗黑界」怪兽丢弃，若成功丢弃，则使场上所有「暗黑界」怪兽的攻击力直到回合结束时上升该怪兽等级×100的数值。
 function s.operation(e,tp,eg,ep,ev,re,r,rp)
@@ -99,9 +98,7 @@ function s.drtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.IsPlayerCanDraw(tp,2)
 		-- 检查自己手牌中是否存在至少1张可以被效果丢弃的卡。
 		and Duel.IsExistingMatchingCard(Card.IsDiscardable,tp,LOCATION_HAND,0,1,nil,REASON_EFFECT) end
-	-- 设置操作信息：将1张手牌送去墓地（丢弃）。
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
-	-- 设置操作信息：从卡组抽2张卡。
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,2)
 end
 -- 效果②的效果处理：让玩家选择自己1张手卡丢弃，那之后，自己从卡组抽2张。

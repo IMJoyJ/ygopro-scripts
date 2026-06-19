@@ -11,8 +11,8 @@ function s.initial_effect(c)
 	aux.AddCodeList(c,5318639)
 	-- ①：可以从以下效果选择1个发动（这个卡名的以下效果1回合各能选择1次）。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(id,0))  --"发动"
-	e1:SetCategory(CATEGORY_SEARCH+CATEGORY_TOHAND+CATEGORY_DRAW+CATEGORY_HANDES)
+	e1:SetDescription(aux.Stringid(id,0))
+	e1:SetCategory(CATEGORY_SEARCH+CATEGORY_TOHAND+CATEGORY_DRAW+CATEGORY_HANDES_SELF)
 	e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
@@ -57,7 +57,7 @@ function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	e:SetLabel(op)
 	if op==1 then
 		if e:IsCostChecked() then
-			e:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES)
+			e:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES_SELF)
 			e:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
 			-- 注册抽卡效果已使用的标识
 			Duel.RegisterFlagEffect(tp,id,RESET_PHASE+PHASE_END,0,1)

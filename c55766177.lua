@@ -5,7 +5,7 @@
 function c55766177.initial_effect(c)
 	-- 这个卡名的卡在1回合只能发动1张。①：以自己墓地1只「魔轰神」怪兽和场上1张表侧表示卡为对象才能发动。选自己1张手卡丢弃，作为对象的墓地的怪兽特殊召唤，作为对象的场上的卡破坏。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_DESTROY+CATEGORY_SPECIAL_SUMMON+CATEGORY_HANDES)
+	e1:SetCategory(CATEGORY_DESTROY+CATEGORY_SPECIAL_SUMMON+CATEGORY_HANDES_SELF)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET)
@@ -41,8 +41,7 @@ function c55766177.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g1,1,0,0)
 	-- 设置破坏的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g2,1,0,0)
-	-- 设置丢弃手卡的操作信息
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 end
 -- 效果处理的执行逻辑
 function c55766177.activate(e,tp,eg,ep,ev,re,r,rp)

@@ -11,7 +11,7 @@ function c22593417.initial_effect(c)
 	-- ①：这张卡已在怪兽区域存在的状态，这张卡以外的怪兽在连接怪兽所连接区特殊召唤的场合发动。自己把手卡任意数量随机丢弃（最多2张）。那之后，对方选丢弃数量的手卡丢弃。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(22593417,0))
-	e1:SetCategory(CATEGORY_HANDES)
+	e1:SetCategory(CATEGORY_HANDES_SELF+CATEGORY_HANDES_OPPO)
 	e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_F)
 	e1:SetCode(EVENT_SPSUMMON_SUCCESS)
 	e1:SetRange(LOCATION_MZONE)
@@ -23,7 +23,7 @@ function c22593417.initial_effect(c)
 	-- ②：这张卡是额外连接状态的场合才能发动。对方尽可能选最多2张手卡丢弃。这个效果让对方手卡变成0张的场合，再给与对方3000伤害。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(22593417,1))
-	e2:SetCategory(CATEGORY_HANDES+CATEGORY_DAMAGE)
+	e2:SetCategory(CATEGORY_HANDES_OPPO+CATEGORY_DAMAGE)
 	e2:SetType(EFFECT_TYPE_IGNITION)
 	e2:SetRange(LOCATION_MZONE)
 	e2:SetCountLimit(1,22593417)
@@ -47,10 +47,8 @@ end
 -- 设置效果①的发动时点信息，指定自己和对方各丢弃1张手牌
 function c22593417.hdtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置效果①的发动时点信息，指定自己丢弃1张手牌
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
-	-- 设置效果①的发动时点信息，指定对方丢弃1张手牌
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,1-tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_OPPO,nil,0,1-tp,1)
 end
 -- 效果①的处理函数，随机丢弃自己手牌并让对方丢弃相同数量的手牌
 function c22593417.hdop(e,tp,eg,ep,ev,re,r,rp)
@@ -78,8 +76,7 @@ end
 function c22593417.hdtg2(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 判断对方手牌数量是否大于0，以确认效果②是否可以发动
 	if chk==0 then return Duel.GetFieldGroupCount(1-tp,LOCATION_HAND,0)>0 end
-	-- 设置效果②的发动时点信息，指定对方丢弃2张手牌
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,1-tp,2)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_OPPO,nil,0,1-tp,2)
 end
 -- 效果②的处理函数，对方丢弃2张手牌，若对方手牌归零则给予对方3000伤害
 function c22593417.hdop2(e,tp,eg,ep,ev,re,r,rp)

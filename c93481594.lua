@@ -66,13 +66,10 @@ function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	e:SetLabel(op)
 	if op==1 then
 		if e:IsCostChecked() then
-			e:SetCategory(CATEGORY_HANDES|CATEGORY_SEARCH|CATEGORY_TOHAND|CATEGORY_SPECIAL_SUMMON)
-			-- 给玩家注册本回合已选择第1个效果的标识。
+			e:SetCategory(CATEGORY_HANDES_SELF|CATEGORY_SEARCH|CATEGORY_TOHAND|CATEGORY_SPECIAL_SUMMON)
 			Duel.RegisterFlagEffect(tp,id,RESET_PHASE+PHASE_END,0,1)
 		end
-		-- 设置丢弃1张手卡的操作信息。
-		Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
-		-- 设置从卡组将2张卡加入手卡的操作信息。
+		Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 		Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,2,tp,LOCATION_DECK)
 	elseif op==2 then
 		if e:IsCostChecked() then

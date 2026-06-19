@@ -20,8 +20,8 @@ function c62188962.initial_effect(c)
 	c:RegisterEffect(e2)
 	-- 1回合1次，从对方卡组有卡被送去墓地时，从自己的手卡·卡组把1只名字带有「吸血鬼」的暗属性怪兽送去墓地，选择场上1张卡破坏。
 	local e3=Effect.CreateEffect(c)
-	e3:SetDescription(aux.Stringid(62188962,0))  --"破坏"
-	e3:SetCategory(CATEGORY_DESTROY+CATEGORY_TOGRAVE+CATEGORY_HANDES+CATEGORY_DECKDES)
+	e3:SetDescription(aux.Stringid(62188962,0))
+	e3:SetCategory(CATEGORY_DESTROY+CATEGORY_TOGRAVE+CATEGORY_DECKDES)
 	e3:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_F)
 	e3:SetProperty(EFFECT_FLAG_CARD_TARGET)
 	e3:SetCode(EVENT_TO_GRAVE)

@@ -8,7 +8,7 @@ function c78202553.initial_effect(c)
 	-- 这个卡名的③的效果1回合只能使用1次。③：这张卡反转的场合才能发动。从手卡丢弃1只「地中族」怪兽，自己从卡组抽2张。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(78202553,0))
-	e1:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES)
+	e1:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES_SELF)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_FLIP+EFFECT_TYPE_TRIGGER_O)
 	e1:SetProperty(EFFECT_FLAG_DELAY)
 	e1:SetCountLimit(1,78202553)
@@ -46,9 +46,7 @@ function c78202553.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.IsExistingMatchingCard(c78202553.tgfilter,tp,LOCATION_HAND,0,1,nil)
 		-- 并且检查玩家是否可以抽2张卡
 		and Duel.IsPlayerCanDraw(tp,2) end
-	-- 设置操作信息：丢弃手卡
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
-	-- 设置操作信息：抽卡
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,2)
 end
 -- 效果③（反转效果）的效果处理

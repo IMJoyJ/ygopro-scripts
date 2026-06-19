@@ -19,8 +19,8 @@ function s.initial_effect(c)
 	c:RegisterEffect(e1)
 	-- ②：这张卡召唤·特殊召唤的场合才能发动。从卡组把「备份员@火灵天星」以外的1只电子界族·暗属性怪兽加入手卡。那之后，选自己1张手卡丢弃。
 	local e2=Effect.CreateEffect(c)
-	e2:SetDescription(aux.Stringid(id,1))  --"检索效果"
-	e2:SetCategory(CATEGORY_SEARCH+CATEGORY_TOHAND+CATEGORY_HANDES)
+	e2:SetDescription(aux.Stringid(id,1))
+	e2:SetCategory(CATEGORY_SEARCH+CATEGORY_TOHAND+CATEGORY_HANDES_SELF)
 	e2:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e2:SetCode(EVENT_SUMMON_SUCCESS)
 	e2:SetCountLimit(1,id+o)
@@ -68,8 +68,7 @@ function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.IsExistingMatchingCard(s.thfilter,tp,LOCATION_DECK,0,1,nil) end
 	-- 设置操作信息，表示将要从卡组将怪兽加入手牌
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
-	-- 设置操作信息，表示将要丢弃1张手牌
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 end
 -- ②效果的发动处理，从卡组检索符合条件的怪兽并丢弃1张手牌
 function s.thop(e,tp,eg,ep,ev,re,r,rp)

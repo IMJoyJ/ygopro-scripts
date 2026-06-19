@@ -6,8 +6,8 @@
 function c1804528.initial_effect(c)
 	-- 创建一个诱发必发效果，用于处理盖放的这张卡被破坏送去墓地时的连锁反应
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(1804528,0))  --"选择一个效果"
-	e1:SetCategory(CATEGORY_DESTROY+CATEGORY_HANDES)
+	e1:SetDescription(aux.Stringid(1804528,0))
+	e1:SetCategory(CATEGORY_DESTROY+CATEGORY_HANDES_OPPO)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_F)
 	e1:SetCode(EVENT_TO_GRAVE)
 	e1:SetCondition(c1804528.descon)

@@ -6,7 +6,7 @@ function c7925734.initial_effect(c)
 	-- 这个卡名的效果1回合只能使用1次。①：把手卡的这张卡给对方观看才能发动。自己的额外卡组的里侧表示的卡随机选1张除外。除外的卡是连接怪兽的场合，这张卡特殊召唤。不是的场合，这张卡从手卡丢弃，自己从卡组抽1张。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(7925734,0))
-	e1:SetCategory(CATEGORY_REMOVE+CATEGORY_SPECIAL_SUMMON+CATEGORY_DRAW)
+	e1:SetCategory(CATEGORY_REMOVE+CATEGORY_SPECIAL_SUMMON+CATEGORY_HANDES_SELF+CATEGORY_DRAW)
 	e1:SetType(EFFECT_TYPE_IGNITION)
 	e1:SetRange(LOCATION_HAND)
 	e1:SetCountLimit(1,7925734)

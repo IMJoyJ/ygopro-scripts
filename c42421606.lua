@@ -20,8 +20,8 @@ function c42421606.initial_effect(c)
 	c:RegisterEffect(e1)
 	-- ②：1回合1次，把这张卡1个超量素材取除才能发动。掷1次骰子，出现的数目的以下效果适用。
 	local e2=Effect.CreateEffect(c)
-	e2:SetDescription(aux.Stringid(42421606,0))  --"投掷骰子"
-	e2:SetCategory(CATEGORY_DICE+CATEGORY_DRAW)
+	e2:SetDescription(aux.Stringid(42421606,0))
+	e2:SetCategory(CATEGORY_DICE+CATEGORY_DRAW+CATEGORY_HANDES_OPPO)
 	e2:SetType(EFFECT_TYPE_IGNITION)
 	e2:SetRange(LOCATION_MZONE)
 	e2:SetCountLimit(1)

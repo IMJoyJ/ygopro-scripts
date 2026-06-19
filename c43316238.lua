@@ -7,7 +7,7 @@ function c43316238.initial_effect(c)
 	-- ①：把手卡的这张卡给对方观看才能发动。从自己的全部手卡之中由对方随机选1张，自己把那张卡丢弃。那是「未界域的大脚怪」以外的场合，再从手卡把1只「未界域的大脚怪」特殊召唤，自己抽1张。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(43316238,0))
-	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_HANDES+CATEGORY_DRAW)
+	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_HANDES_SELF+CATEGORY_DRAW)
 	e1:SetType(EFFECT_TYPE_IGNITION)
 	e1:SetRange(LOCATION_HAND)
 	e1:SetCost(c43316238.spcost)
@@ -38,8 +38,7 @@ end
 function c43316238.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 效果发动时，确认自己手卡是否有可丢弃的卡
 	if chk==0 then return Duel.IsExistingMatchingCard(Card.IsDiscardable,tp,LOCATION_HAND,0,1,nil,REASON_EFFECT) end
-	-- 设置效果处理时将要丢弃1张手卡
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 end
 -- 效果处理：随机选择对方手卡1张丢弃，若非「未界域的大脚怪」则特殊召唤1只「未界域的大脚怪」并抽1张
 function c43316238.spop(e,tp,eg,ep,ev,re,r,rp)

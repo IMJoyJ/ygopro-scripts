@@ -4,8 +4,8 @@
 function c66094973.initial_effect(c)
 	-- 1回合1次，选择对方场上表侧守备表示存在的1只怪兽才能发动。丢弃1张手卡，把选择的对方怪兽当作装备卡使用只有1只给这张卡装备。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(66094973,0))  --"装备"
-	e1:SetCategory(CATEGORY_HANDES)
+	e1:SetDescription(aux.Stringid(66094973,0))
+	e1:SetCategory(CATEGORY_HANDES_SELF)
 	e1:SetType(EFFECT_TYPE_IGNITION)
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET)
 	e1:SetRange(LOCATION_MZONE)
@@ -56,8 +56,7 @@ function c66094973.eqtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_EQUIP)  --"请选择要装备的卡"
 	-- 选择对方场上1只表侧守备表示怪兽作为效果对象
 	local g=Duel.SelectTarget(tp,c66094973.filter,tp,0,LOCATION_MZONE,1,1,nil)
-	-- 设置效果处理信息为丢弃手牌
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 end
 -- 限制装备卡只能装备给这张卡
 function c66094973.eqlimit(e,c)

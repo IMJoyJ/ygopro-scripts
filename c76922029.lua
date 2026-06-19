@@ -6,8 +6,8 @@
 function c76922029.initial_effect(c)
 	-- 这张卡给与对方玩家战斗伤害时，可以选择下面1个效果发动：●对方随机丢弃1张手卡。●对方的卡组最上面的2张卡送去墓地。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(76922029,0))  --"选择一个效果发动"
-	e1:SetCategory(CATEGORY_HANDES+CATEGORY_DECKDES)
+	e1:SetDescription(aux.Stringid(76922029,0))
+	e1:SetCategory(CATEGORY_HANDES_OPPO+CATEGORY_DECKDES)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e1:SetCode(EVENT_BATTLE_DAMAGE)
 	e1:SetCondition(c76922029.condition)
@@ -41,10 +41,13 @@ function c76922029.target(e,tp,eg,ep,ev,re,r,rp,chk)
 		op=1
 	end
 	e:SetLabel(op)
-	-- 如果选择丢弃手牌效果，则设置操作信息为对方丢弃1张手牌
-	if op==0 then Duel.SetOperationInfo(0,CATEGORY_HANDES,0,0,1-tp,1)
-	-- 如果选择卡组送墓效果，则设置操作信息为对方卡组送去墓地2张卡
-	else Duel.SetOperationInfo(0,CATEGORY_DECKDES,0,0,1-tp,2) end
+	if op==0 then
+		e:SetCategory(CATEGORY_HANDES_OPPO)
+		Duel.SetOperationInfo(0,CATEGORY_HANDES_OPPO,nil,0,1-tp,1)
+	else
+		e:SetCategory(CATEGORY_DECKDES)
+		Duel.SetOperationInfo(0,CATEGORY_DECKDES,nil,0,1-tp,2)
+	end
 end
 -- 效果处理函数，根据玩家的选择执行丢弃手牌或卡组送墓的操作
 function c76922029.operation(e,tp,eg,ep,ev,re,r,rp)

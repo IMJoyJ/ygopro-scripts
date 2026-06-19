@@ -14,7 +14,7 @@ function s.initial_effect(c)
 	c:RegisterEffect(e1)
 	-- 这个卡名的①的效果1回合只能使用1次。①：可以从以下效果选择1个发动。
 	local e2=Effect.CreateEffect(c)
-	e2:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_HANDES)
+	e2:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_HANDES_SELF)
 	e2:SetType(EFFECT_TYPE_QUICK_O)
 	e2:SetCode(EVENT_FREE_CHAIN)
 	e2:SetRange(LOCATION_SZONE)
@@ -57,15 +57,12 @@ function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 		{b2,aux.Stringid(id,1),2})  --"以魔法与陷阱区域的卡为对象"
 	e:SetLabel(op)
 	if op==1 then
-		e:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_HANDES)
-		-- 提示玩家选择要特殊召唤的卡
-		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-		-- 选择墓地或除外状态的1只「迪亚贝尔」怪兽作为对象
+		e:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_HANDES_SELF)
+		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
 		local g=Duel.SelectTarget(tp,s.spfilter1,tp,LOCATION_GRAVE+LOCATION_REMOVED,0,1,1,nil,e,tp)
 		-- 设置特殊召唤的操作信息
 		Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,1,0,0)
-		-- 设置丢弃手牌的操作信息
-		Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
+		Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 	elseif op==2 then
 		e:SetCategory(CATEGORY_SPECIAL_SUMMON)
 		-- 提示玩家选择要特殊召唤的卡

@@ -8,8 +8,8 @@ local s,id,o=GetID()
 function s.initial_effect(c)
 	-- ①：把手卡1只「狱火机」怪兽或1张「炼狱」魔法·陷阱卡给对方观看才能发动。自己手卡全部丢弃。那之后，自己抽出丢弃的数量。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(id,0))  --"丢弃&抽卡"
-	e1:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES)
+	e1:SetDescription(aux.Stringid(id,0))
+	e1:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES_SELF)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetCost(s.cost)
@@ -56,9 +56,7 @@ function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
 		-- 检查玩家手卡数量是否大于0，且玩家是否可以抽取等同于手卡数量的卡。
 		return h>0 and Duel.IsPlayerCanDraw(tp,h)
 	end
-	-- 设置连锁信息：此效果包含丢弃手卡的操作。
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
-	-- 设置连锁信息：此效果包含抽卡的操作。
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,1)
 end
 -- ①号效果的处理：将自己手卡全部丢弃，那之后抽出丢弃数量的卡。

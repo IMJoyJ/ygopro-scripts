@@ -26,8 +26,8 @@ function c79703905.initial_effect(c)
 	c:RegisterEffect(e3)
 	-- 可以把场上存在的雾指示物取除3个，对方手卡随机丢弃1张。
 	local e4=Effect.CreateEffect(c)
-	e4:SetDescription(aux.Stringid(79703905,1))  --"丢弃手牌"
-	e4:SetCategory(CATEGORY_HANDES)
+	e4:SetDescription(aux.Stringid(79703905,1))
+	e4:SetCategory(CATEGORY_HANDES_OPPO)
 	e4:SetType(EFFECT_TYPE_IGNITION)
 	e4:SetRange(LOCATION_MZONE)
 	e4:SetCost(c79703905.hdcost)
@@ -62,8 +62,7 @@ end
 function c79703905.hdtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 在发动准备阶段，检查对方手牌是否至少有1张
 	if chk==0 then return Duel.GetFieldGroupCount(tp,0,LOCATION_HAND)~=0 end
-	-- 设置连锁操作信息，表示该效果会使对方丢弃1张手牌
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_OPPO,nil,0,1-tp,1)
 end
 -- 丢弃手牌效果的具体处理函数
 function c79703905.hdop(e,tp,eg,ep,ev,re,r,rp)

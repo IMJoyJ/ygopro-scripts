@@ -15,8 +15,8 @@ function c7623640.initial_effect(c)
 	c:RegisterEffect(e1)
 	-- ②：这张卡用「暗黑界」卡的效果特殊召唤成功的场合发动。对方选自身1张手卡丢弃。
 	local e2=Effect.CreateEffect(c)
-	e2:SetDescription(aux.Stringid(7623640,1))  --"对方选择1张手卡丢弃"
-	e2:SetCategory(CATEGORY_HANDES)
+	e2:SetDescription(aux.Stringid(7623640,1))
+	e2:SetCategory(CATEGORY_HANDES_OPPO)
 	e2:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_F)
 	e2:SetCode(EVENT_SPSUMMON_SUCCESS)
 	e2:SetCondition(c7623640.hdcon)
@@ -48,8 +48,7 @@ end
 -- 丢弃手卡效果的发动准备与操作信息设置
 function c7623640.hdtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置丢弃手卡的操作信息，预计让对方丢弃1张手卡
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,1-tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_OPPO,nil,0,1-tp,1)
 end
 -- 丢弃手卡效果的处理，让对方选择自身1张手卡丢弃
 function c7623640.hdop(e,tp,eg,ep,ev,re,r,rp)

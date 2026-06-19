@@ -4,8 +4,8 @@
 function c26704411.initial_effect(c)
 	-- 这张卡战斗破坏对方怪兽送去墓地时，可以从手卡丢弃1只名字带有「魔轰神」的怪兽，从自己卡组抽1张卡。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(26704411,0))  --"抽卡"
-	e1:SetCategory(CATEGORY_DRAW)
+	e1:SetDescription(aux.Stringid(26704411,0))
+	e1:SetCategory(CATEGORY_HANDES_SELF+CATEGORY_DRAW)
 	e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e1:SetCode(EVENT_BATTLE_DESTROYING)

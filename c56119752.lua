@@ -5,7 +5,7 @@
 function c56119752.initial_effect(c)
 	-- 「礼物卡」在1回合只能发动1张。①：对方把手卡全部丢弃。那之后，对方从卡组抽5张。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_HANDES+CATEGORY_DRAW)
+	e1:SetCategory(CATEGORY_HANDES_OPPO+CATEGORY_DRAW)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetCountLimit(1,56119752+EFFECT_COUNT_CODE_OATH)
@@ -19,9 +19,7 @@ function c56119752.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	local ct=Duel.GetFieldGroupCount(tp,0,LOCATION_HAND)
 	-- 在发动检测时，确认对方手牌数量大于0且对方可以进行抽5张卡的操作
 	if chk==0 then return ct>0 and Duel.IsPlayerCanDraw(1-tp,5) end
-	-- 设置操作信息，表示该效果包含对方丢弃手牌的操作
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,1-tp,ct)
-	-- 设置操作信息，表示该效果包含对方抽5张卡的操作
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_OPPO,nil,0,1-tp,ct)
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,1-tp,5)
 end
 -- 效果处理的执行函数

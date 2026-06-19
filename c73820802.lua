@@ -11,7 +11,7 @@ function c73820802.initial_effect(c)
 	-- ①：自己准备阶段把这个效果发动。对方宣言卡的种类（怪兽·魔法·陷阱）。自己卡组最上面的卡翻开，翻开的卡是宣言的种类的卡的场合，对方从卡组抽1张。不是的场合，对方手卡随机选1张丢弃。翻开的卡回到卡组最下面。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(73820802,0))
-	e2:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES)
+	e2:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES_OPPO)
 	e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_F)
 	e2:SetRange(LOCATION_SZONE)
 	e2:SetCode(EVENT_PHASE+PHASE_STANDBY)

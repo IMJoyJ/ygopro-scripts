@@ -4,8 +4,8 @@
 function c47217354.initial_effect(c)
 	-- ①：1回合1次，自己主要阶段才能发动。选自己手卡任意数量丢弃，直到回合结束时，这张卡的等级上升丢弃数量的数值，攻击力上升丢弃数量×400。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(47217354,0))  --"等级、攻击上升"
-	e1:SetCategory(CATEGORY_HANDES+CATEGORY_ATKCHANGE)
+	e1:SetDescription(aux.Stringid(47217354,0))
+	e1:SetCategory(CATEGORY_HANDES_SELF+CATEGORY_ATKCHANGE)
 	e1:SetType(EFFECT_TYPE_IGNITION)
 	e1:SetCountLimit(1)
 	e1:SetRange(LOCATION_MZONE)
@@ -17,8 +17,7 @@ end
 function c47217354.tg(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 判断是否可以发动此效果，条件为己方手牌数量大于0
 	if chk==0 then return Duel.GetFieldGroupCount(tp,LOCATION_HAND,0)>0 end
-	-- 设置连锁操作信息，表示将要处理丢弃手牌的效果
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 end
 -- 执行效果的处理流程，包括丢弃手牌并根据丢弃数量提升攻击力和等级
 function c47217354.op(e,tp,eg,ep,ev,re,r,rp)

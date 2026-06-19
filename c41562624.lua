@@ -17,7 +17,7 @@ function c41562624.initial_effect(c)
 	-- ②：这张卡被除外的场合才能发动。自己从卡组抽1张。那之后，选1张手卡丢弃。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(41562624,1))
-	e2:SetCategory(CATEGORY_HANDES+CATEGORY_DRAW)
+	e2:SetCategory(CATEGORY_HANDES_SELF+CATEGORY_DRAW)
 	e2:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e2:SetCode(EVENT_REMOVE)
 	e2:SetProperty(EFFECT_FLAG_DELAY)
@@ -72,9 +72,7 @@ end
 function c41562624.drtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 判断玩家是否可以抽卡
 	if chk==0 then return Duel.IsPlayerCanDraw(tp,1) end
-	-- 设置效果处理时要丢弃的手卡数量
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
-	-- 设置效果处理时要抽卡的数量
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,1)
 end
 -- ②效果的处理函数，用于抽卡并丢弃手牌

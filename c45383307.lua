@@ -22,7 +22,7 @@ function c45383307.initial_effect(c)
 	-- ②：场上有「三形金字塔」怪兽召唤的场合才能发动。自己从卡组抽1张，那之后选1张手卡丢弃。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(45383307,1))
-	e3:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES)
+	e3:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES_SELF)
 	e3:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
 	e3:SetCode(EVENT_SUMMON_SUCCESS)
 	e3:SetProperty(EFFECT_FLAG_DELAY)
@@ -67,9 +67,7 @@ function c45383307.drtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return eg:IsExists(c45383307.drfilter,1,nil)
 		-- 判断玩家是否可以抽卡
 		and Duel.IsPlayerCanDraw(tp,1) end
-	-- 设置操作信息：丢弃手牌
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
-	-- 设置操作信息：抽卡
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,1)
 end
 -- 处理抽卡并丢弃手牌的效果

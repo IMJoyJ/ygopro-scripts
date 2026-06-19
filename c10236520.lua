@@ -4,8 +4,8 @@
 function c10236520.initial_effect(c)
 	-- 这张卡给与对方基本分战斗伤害时，若对方手卡有5张以上则发动。对方手卡随机丢弃2张。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(10236520,0))  --"手牌丢弃"
-	e1:SetCategory(CATEGORY_HANDES)
+	e1:SetDescription(aux.Stringid(10236520,0))
+	e1:SetCategory(CATEGORY_HANDES_OPPO)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_F)
 	e1:SetCode(EVENT_BATTLE_DAMAGE)
 	e1:SetCondition(c10236520.condition)
@@ -21,8 +21,7 @@ end
 -- 丢弃手卡效果的对象确认与效果准备逻辑。
 function c10236520.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置丢弃对方2张手卡的操作信息。
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,1-tp,2)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_OPPO,nil,0,1-tp,2)
 end
 -- 执行对方随机丢弃2张手卡的操作。
 function c10236520.operation(e,tp,eg,ep,ev,re,r,rp)

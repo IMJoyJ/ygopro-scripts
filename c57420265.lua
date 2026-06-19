@@ -8,8 +8,8 @@ local s,id,o=GetID()
 function s.initial_effect(c)
 	-- ①：把手卡的这张卡和手卡1只水属性怪兽给对方观看才能发动。那2只之内的1只特殊召唤，另1只丢弃。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(id,0))  --"特殊召唤"
-	e1:SetCategory(CATEGORY_HANDES+CATEGORY_SPECIAL_SUMMON)
+	e1:SetDescription(aux.Stringid(id,0))
+	e1:SetCategory(CATEGORY_HANDES_SELF+CATEGORY_SPECIAL_SUMMON)
 	e1:SetType(EFFECT_TYPE_IGNITION)
 	e1:SetRange(LOCATION_HAND)
 	e1:SetCountLimit(1,id)
@@ -59,9 +59,7 @@ end
 function s.tgtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 检查自身场上是否有可用的怪兽区域。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0 end
-	-- 设置丢弃1张手卡的操作信息。
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,1,tp,LOCATION_HAND)
-	-- 设置特殊召唤1只手卡怪兽的操作信息。
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,1,tp,LOCATION_HAND)
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_HAND)
 end
 -- ①效果的效果处理：在展示的两张卡中选择1只特殊召唤，另1只作为丢弃送去墓地。

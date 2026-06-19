@@ -11,7 +11,7 @@ function c47163170.initial_effect(c)
 	-- ①：丢弃2张手卡，以自己的除外状态的1只4星以下的兽族·兽战士族·鸟兽族怪兽为对象才能发动。那只怪兽特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(47163170,0))
-	e1:SetCategory(CATEGORY_HANDES+CATEGORY_SPECIAL_SUMMON)
+	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e1:SetType(EFFECT_TYPE_IGNITION)
 	e1:SetRange(LOCATION_MZONE)
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET)

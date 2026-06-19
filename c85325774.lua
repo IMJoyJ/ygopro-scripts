@@ -5,7 +5,7 @@
 function c85325774.initial_effect(c)
 	-- 这个卡名的卡在1回合只能发动1张。①：以自己墓地1只4星以下的恶魔族怪兽为对象才能发动。那只怪兽特殊召唤。那之后，从手卡选1只恶魔族怪兽丢弃。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_HANDES)
+	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_HANDES_SELF)
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
@@ -33,8 +33,7 @@ function c85325774.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	local g=Duel.SelectTarget(tp,c85325774.filter,tp,LOCATION_GRAVE,0,1,1,nil,e,tp)
 	-- 设置操作信息：特殊召唤选中的怪兽
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,1,0,0)
-	-- 设置操作信息：从手卡丢弃1张卡
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,1,tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,1,tp,1)
 end
 -- 效果处理：特殊召唤目标怪兽，那之后从手卡丢弃1只恶魔族怪兽
 function c85325774.activate(e,tp,eg,ep,ev,re,r,rp)

@@ -10,7 +10,7 @@ local s,id,o=GetID()
 function s.initial_effect(c)
 	-- 效果①：作为这张卡的发动时的效果处理，以下效果适用。从卡组把2只「救祓少女」怪兽加入手卡。那之后，选自己1张手卡丢弃。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH+CATEGORY_HANDES)
+	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH+CATEGORY_HANDES_SELF)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetCountLimit(1,id)

@@ -36,10 +36,9 @@ function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
 		-- 设置操作信息为破坏卡片
 		Duel.SetOperationInfo(0,CATEGORY_DESTROY,e:GetHandler(),1,0,0)
 	elseif op==2 then
-		cat=cat+CATEGORY_HANDES
+		cat=cat+CATEGORY_HANDES_SELF
 		e:SetOperation(s.discard)
-		-- 设置操作信息为丢弃手牌
-		Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
+		Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 	else e:SetOperation(s.epdelay) end
 	e:SetCategory(cat)
 	-- 设置操作信息为抽卡

@@ -13,7 +13,7 @@ function c50277355.initial_effect(c)
 	aux.AddLinkProcedure(c,nil,2,2,c50277355.lcheck)
 	-- ①：这张卡所连接区有怪兽特殊召唤的场合才能发动。这张卡所连接区的怪兽种类的以下效果各适用。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES+CATEGORY_SPECIAL_SUMMON+CATEGORY_ATKCHANGE)
+	e1:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES_SELF+CATEGORY_SPECIAL_SUMMON+CATEGORY_ATKCHANGE)
 	e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
 	e1:SetCode(EVENT_SPSUMMON_SUCCESS)
 	e1:SetProperty(EFFECT_FLAG_DELAY)
@@ -61,9 +61,7 @@ function c50277355.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return b1 or b2 or b3 or b4 end
 	-- 设置抽卡效果的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,2)
-	-- 设置丢弃手卡效果的操作信息
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,2)
-	-- 设置从墓地特殊召唤怪兽的效果操作信息
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,2)
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_GRAVE)
 end
 -- 效果处理函数，根据连接区怪兽类型执行对应效果

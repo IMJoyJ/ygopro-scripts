@@ -9,8 +9,8 @@ local s,id,o=GetID()
 function s.initial_effect(c)
 	-- 这个卡名的卡在1回合只能发动1张。①：自己墓地有怪兽存在的场合，支付200基本分才能发动。自己抽1张，给双方确认。那是怪兽的场合，再让那个属性的以下效果适用。●不在自己墓地存在的属性：自己抽1张。●自己墓地存在的属性：选自己1张手卡丢弃。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(id,0))  --"发动"
-	e1:SetCategory(CATEGORY_HANDES+CATEGORY_DRAW)
+	e1:SetDescription(aux.Stringid(id,0))
+	e1:SetCategory(CATEGORY_HANDES_SELF+CATEGORY_DRAW)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET)

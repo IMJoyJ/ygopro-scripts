@@ -35,8 +35,8 @@ function c9888196.initial_effect(c)
 	c:RegisterEffect(e2)
 	-- ●把自己手卡全部送去墓地，把对方手卡确认并从那之中把光属性怪兽全部送去墓地。那之后给与对方基本分送去墓地的对方怪兽的攻击力合计数值的伤害。
 	local e3=Effect.CreateEffect(c)
-	e3:SetDescription(aux.Stringid(9888196,2))  --"把对方手卡光属性怪兽全部送去墓地"
-	e3:SetCategory(CATEGORY_HANDES+CATEGORY_TOGRAVE+CATEGORY_DAMAGE)
+	e3:SetDescription(aux.Stringid(9888196,2))
+	e3:SetCategory(CATEGORY_TOGRAVE+CATEGORY_DAMAGE)
 	e3:SetType(EFFECT_TYPE_IGNITION)
 	e3:SetCountLimit(1,EFFECT_COUNT_CODE_SINGLE)
 	e3:SetRange(LOCATION_MZONE)
@@ -130,9 +130,6 @@ end
 function c9888196.hdtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 在发动准备阶段，检查对方手卡是否至少有1张
 	if chk==0 then return Duel.GetFieldGroupCount(tp,0,LOCATION_HAND)>0 end
-	-- 设置效果处理信息：涉及对方手卡的操作
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,1-tp,0)
-	-- 设置效果处理信息：将对方手卡送去墓地
 	Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,nil,0,1-tp,LOCATION_HAND)
 end
 -- 效果3（丢手卡确认并送墓）的效果处理：确认对方手卡，将其中的光属性怪兽全部送去墓地，并给予对方相应的伤害

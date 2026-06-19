@@ -5,7 +5,7 @@ function c3055837.initial_effect(c)
 	-- 效果发动时才能发动
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
-	e1:SetCategory(CATEGORY_HANDES)
+	e1:SetCategory(CATEGORY_HANDES_OPPO)
 	e1:SetCode(EVENT_CHAINING)
 	e1:SetCondition(c3055837.condition)
 	e1:SetTarget(c3055837.target)
@@ -33,8 +33,7 @@ end
 function c3055837.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 判断对方手牌数量是否大于0
 	if chk==0 then return Duel.GetFieldGroupCount(tp,0,LOCATION_HAND)>0 end
-	-- 设置连锁操作信息为对方丢弃1张手牌
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,1-tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_OPPO,nil,0,1-tp,1)
 end
 -- 使对方丢弃1张手牌，并注册一个改变伤害值的效果
 function c3055837.operation(e,tp,eg,ep,ev,re,r,rp)

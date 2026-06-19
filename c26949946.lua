@@ -10,8 +10,8 @@ function c26949946.initial_effect(c)
 	c:EnableReviveLimit()
 	-- ①：这张卡同调召唤成功时，把自己场上的「幻兽机衍生物」任意数量解放才能发动。对方手卡随机选解放的数量丢弃。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(26949946,0))  --"手卡破坏"
-	e1:SetCategory(CATEGORY_HANDES)
+	e1:SetDescription(aux.Stringid(26949946,0))
+	e1:SetCategory(CATEGORY_HANDES_OPPO)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e1:SetCode(EVENT_SPSUMMON_SUCCESS)
 	e1:SetCondition(c26949946.hdcon)
@@ -64,8 +64,7 @@ end
 -- 设置效果处理信息：对方手牌丢弃
 function c26949946.hdtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置效果处理信息：对方手牌丢弃
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,0,0,1-tp,e:GetLabel())
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_OPPO,0,0,1-tp,e:GetLabel())
 end
 -- 效果处理：对方随机丢弃与解放数量相等的手牌
 function c26949946.hdop(e,tp,eg,ep,ev,re,r,rp)

@@ -17,8 +17,8 @@ function s.initial_effect(c)
 	c:RegisterEffect(e0)
 	-- ①：把手卡的这张卡给对方观看才能发动。从卡组把1张「三幻魔」陷阱卡加入手卡。那之后，选自己1张手卡丢弃。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(id,0))  --"检索效果"
-	e1:SetCategory(CATEGORY_SEARCH+CATEGORY_TOHAND+CATEGORY_HANDES)
+	e1:SetDescription(aux.Stringid(id,0))
+	e1:SetCategory(CATEGORY_SEARCH+CATEGORY_TOHAND+CATEGORY_HANDES_SELF)
 	e1:SetType(EFFECT_TYPE_IGNITION)
 	e1:SetRange(LOCATION_HAND)
 	e1:SetCountLimit(1,id)
@@ -69,8 +69,7 @@ function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.IsExistingMatchingCard(s.thfilter,tp,LOCATION_DECK,0,1,nil) end
 	-- 设置效果处理信息：从卡组将1张卡加入手牌
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
-	-- 设置效果处理信息：将1张手牌送去墓地
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 end
 -- ①效果的效果处理：从卡组检索1张「三幻魔」陷阱卡加入手牌并向对方确认，之后玩家必须选择1张手卡丢弃
 function s.thop(e,tp,eg,ep,ev,re,r,rp)

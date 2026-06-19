@@ -32,8 +32,8 @@ function c41181774.initial_effect(c)
 	c:RegisterEffect(e6)
 	-- ②：这张卡召唤成功的场合，以最多有对方手卡数量的这张卡以外的自己场上的卡为对象发动（最多3张）。那些卡回到持有者卡组。那之后，对方手卡随机选回去的数量丢弃，这张卡的攻击力上升丢弃数量×1000。
 	local e7=Effect.CreateEffect(c)
-	e7:SetDescription(aux.Stringid(41181774,0))  --"返回卡组"
-	e7:SetCategory(CATEGORY_TODECK+CATEGORY_HANDES)
+	e7:SetDescription(aux.Stringid(41181774,0))
+	e7:SetCategory(CATEGORY_TODECK+CATEGORY_HANDES_OPPO)
 	e7:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_F)
 	e7:SetProperty(EFFECT_FLAG_CARD_TARGET)
 	e7:SetCode(EVENT_SUMMON_SUCCESS)

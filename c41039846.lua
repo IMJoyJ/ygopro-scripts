@@ -11,10 +11,10 @@ function c41039846.initial_effect(c)
 	e1:SetTarget(c41039846.target)
 	e1:SetOperation(c41039846.operation)
 	c:RegisterEffect(e1)
-	-- 这张卡反转召唤成功时，对方手卡随机丢弃1张。
+	--handes
 	local e2=Effect.CreateEffect(c)
-	e2:SetDescription(aux.Stringid(41039846,1))  --"手牌丢弃"
-	e2:SetCategory(CATEGORY_HANDES)
+	e2:SetDescription(aux.Stringid(41039846,1))
+	e2:SetCategory(CATEGORY_HANDES_OPPO)
 	e2:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_F)
 	e2:SetCode(EVENT_FLIP_SUMMON_SUCCESS)
 	e2:SetTarget(c41039846.hdtg)
@@ -47,8 +47,7 @@ end
 -- 设置连锁操作信息为对方丢弃手牌效果
 function c41039846.hdtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置连锁操作信息为对方丢弃手牌效果
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,1-tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_OPPO,nil,0,1-tp,1)
 end
 -- 随机选择对方手牌并将其送去墓地
 function c41039846.hdop(e,tp,eg,ep,ev,re,r,rp)

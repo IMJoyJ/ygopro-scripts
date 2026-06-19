@@ -44,8 +44,8 @@ function c50907446.initial_effect(c)
 	c:RegisterEffect(e4)
 	-- ③：这张卡被送去墓地的场合才能发动。从自己的卡组·墓地把1张「影依」卡加入手卡。那之后，选自己1张手卡丢弃。
 	local e5=Effect.CreateEffect(c)
-	e5:SetDescription(aux.Stringid(50907446,1))  --"加入手卡"
-	e5:SetCategory(CATEGORY_SEARCH+CATEGORY_TOHAND+CATEGORY_HANDES)
+	e5:SetDescription(aux.Stringid(50907446,1))
+	e5:SetCategory(CATEGORY_SEARCH+CATEGORY_TOHAND+CATEGORY_HANDES_SELF)
 	e5:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e5:SetCode(EVENT_TO_GRAVE)
 	e5:SetProperty(EFFECT_FLAG_DELAY)
@@ -113,8 +113,7 @@ function c50907446.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.IsExistingMatchingCard(c50907446.thfilter,tp,LOCATION_DECK+LOCATION_GRAVE,0,1,nil) end
 	-- 设置将卡片送入手牌的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK+LOCATION_GRAVE)
-	-- 设置丢弃手卡的操作信息
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 end
 -- 执行检索「影依」卡并加入手牌，然后丢弃一张手卡的效果处理
 function c50907446.thop(e,tp,eg,ep,ev,re,r,rp)

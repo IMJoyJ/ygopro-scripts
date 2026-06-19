@@ -4,7 +4,7 @@
 function c69402394.initial_effect(c)
 	-- 双方玩家选择2张手卡丢弃，从卡组抽2张卡。对方可以丢弃1张手卡让这张卡的效果无效。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_DRAW)
+	e1:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES_SELF+CATEGORY_HANDES_OPPO)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
 	e1:SetCode(EVENT_FREE_CHAIN)

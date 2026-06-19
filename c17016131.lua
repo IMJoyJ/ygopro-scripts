@@ -28,7 +28,7 @@ function c17016131.initial_effect(c)
 	e2:SetDescription(aux.Stringid(17016131,1))  --"手卡送去墓地"
 	e2:SetType(EFFECT_TYPE_QUICK_O)
 	e2:SetCode(EVENT_FREE_CHAIN)
-	e2:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES)
+	e2:SetCategory(CATEGORY_DRAW+CATEGORY_TOGRAVE)
 	e2:SetRange(LOCATION_SZONE)
 	e2:SetCountLimit(1,17016132)
 	e2:SetCondition(c17016131.tgcond)
@@ -102,8 +102,7 @@ function c17016131.tgtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	Duel.SetTargetParam(1)
 	-- 设置②效果（手卡送去墓地）的操作信息为抽卡效果
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,1-tp,1)
-	-- 设置②效果（手卡送去墓地）的操作信息为弃手卡效果
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,1-tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,nil,0,1-tp,1)
 end
 -- 过滤函数：判断是否为怪兽且可以送去墓地
 function c17016131.tgfilter1(c)

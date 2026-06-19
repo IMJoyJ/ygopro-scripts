@@ -10,8 +10,8 @@ function c74923978.initial_effect(c)
 	c:RegisterEffect(e1)
 	-- 那之后每次自己的手卡丢弃，对方选择相同数量的手卡丢弃。
 	local e2=Effect.CreateEffect(c)
-	e2:SetDescription(aux.Stringid(74923978,0))  --"手牌丢弃"
-	e2:SetCategory(CATEGORY_HANDES)
+	e2:SetDescription(aux.Stringid(74923978,0))
+	e2:SetCategory(CATEGORY_HANDES_OPPO)
 	e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_F)
 	e2:SetRange(LOCATION_SZONE)
 	e2:SetCode(EVENT_DISCARD)
@@ -33,8 +33,7 @@ function c74923978.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
 	local ct=eg:FilterCount(c74923978.cfilter,nil,tp)
 	e:SetLabel(ct)
-	-- 设置操作信息：对方丢弃对应数量的手卡
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,1-tp,ct)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_OPPO,nil,0,1-tp,ct)
 end
 -- 效果的运行处理：获取保存的丢弃数量，让对方丢弃相同数量的手卡
 function c74923978.operation(e,tp,eg,ep,ev,re,r,rp)

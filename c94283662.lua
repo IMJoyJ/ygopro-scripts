@@ -5,8 +5,8 @@
 function c94283662.initial_effect(c)
 	-- ①：1回合1次，自己主要阶段才能发动。从手卡丢弃1只恶魔族怪兽，这张卡的攻击力直到回合结束时上升500。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(94283662,0))  --"攻击上升"
-	e1:SetCategory(CATEGORY_HANDES+CATEGORY_ATKCHANGE)
+	e1:SetDescription(aux.Stringid(94283662,0))
+	e1:SetCategory(CATEGORY_HANDES_SELF+CATEGORY_ATKCHANGE)
 	e1:SetType(EFFECT_TYPE_IGNITION)
 	e1:SetCountLimit(1)
 	e1:SetRange(LOCATION_MZONE)
@@ -33,8 +33,7 @@ end
 function c94283662.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 检查自己手卡中是否存在至少1只可以丢弃的恶魔族怪兽
 	if chk==0 then return Duel.IsExistingMatchingCard(c94283662.dfilter,tp,LOCATION_HAND,0,1,nil) end
-	-- 设置操作信息，表示该效果包含丢弃1张手卡的处理
-	Duel.SetOperationInfo(0,CATEGORY_HANDES,nil,0,tp,1)
+	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 end
 -- ①号效果的执行（丢弃1只恶魔族怪兽，并使这张卡的攻击力直到回合结束时上升500）
 function c94283662.operation(e,tp,eg,ep,ev,re,r,rp)
