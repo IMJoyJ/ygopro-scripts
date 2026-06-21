@@ -102,9 +102,7 @@ function c91073013.imcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	local g=Duel.SelectMatchingCard(tp,c91073013.imcfilter,tp,LOCATION_HAND,0,1,1,nil)
 	-- 将选中的怪兽给对方玩家确认
 	Duel.ConfirmCards(1-tp,g)
-	-- 触发展示手卡怪兽的自定义事件（用于与其他VS卡片效果联动）
-	Duel.RaiseEvent(g,EVENT_CUSTOM+9091064,e,REASON_COST,tp,tp,0)
-	-- 洗切自己的手卡
+	if e:GetHandler():IsSetCard(0x195) then Duel.RaiseEvent(g,EVENT_CUSTOM+9091064,e,REASON_COST,tp,tp,0) end
 	Duel.ShuffleHand(tp)
 end
 -- ②号效果（地属性分支）的发动准备与目标确认函数
@@ -148,9 +146,7 @@ function c91073013.descost(e,tp,eg,ep,ev,re,r,rp,chk)
 	local sg=g:SelectSubGroup(tp,aux.dabcheck,false,3,3)
 	-- 将选中的3只怪兽给对方玩家确认
 	Duel.ConfirmCards(1-tp,sg)
-	-- 触发展示手卡怪兽的自定义事件（用于与其他VS卡片效果联动）
-	Duel.RaiseEvent(sg,EVENT_CUSTOM+9091064,e,REASON_COST,tp,tp,0)
-	-- 洗切自己的手卡
+	if e:GetHandler():IsSetCard(0x195) then Duel.RaiseEvent(sg,EVENT_CUSTOM+9091064,e,REASON_COST,tp,tp,0) end
 	Duel.ShuffleHand(tp)
 end
 -- ②号效果（地·炎·暗属性分支）的发动准备与目标确认函数

@@ -34,7 +34,7 @@ function c31059809.initial_effect(c)
 end
 -- 计数器的过滤函数，仅统计水属性怪兽
 function c31059809.counterfilter(c)
-	return c:IsAttribute(ATTRIBUTE_WATER)
+	return c:IsAttribute(ATTRIBUTE_WATER) and c:IsFaceup()
 end
 -- 用于判断场上是否存在水属性的表侧表示怪兽
 function c31059809.cfilter(c)

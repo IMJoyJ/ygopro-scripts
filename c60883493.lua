@@ -36,9 +36,7 @@ function s.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	local sg=g:SelectSubGroup(tp,aux.dabcheck,false,1,3)
 	-- 给对方确认选中的怪兽
 	Duel.ConfirmCards(1-tp,sg)
-	-- 触发展示手卡怪兽的自定义事件
-	Duel.RaiseEvent(sg,EVENT_CUSTOM+9091064,e,REASON_COST,tp,tp,0)
-	-- 洗切手卡
+	if e:GetHandler():IsSetCard(0x195) then Duel.RaiseEvent(sg,EVENT_CUSTOM+9091064,e,REASON_COST,tp,tp,0) end
 	Duel.ShuffleHand(tp)
 	e:SetLabel(#sg)
 end

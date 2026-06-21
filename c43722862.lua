@@ -35,7 +35,7 @@ function c43722862.initial_effect(c)
 end
 -- 计数器过滤函数，判断是否为从额外卡组特殊召唤且等级不低于5星且为风属性的怪兽，否则不能被计入特殊召唤次数。
 function c43722862.counterfilter(c)
-	return not c:IsSummonLocation(LOCATION_EXTRA) or (c:IsLevelAbove(5) and c:IsAttribute(ATTRIBUTE_WIND))
+	return not c:IsSummonLocation(LOCATION_EXTRA) or (c:IsLevelAbove(5) and c:IsAttribute(ATTRIBUTE_WIND) and c:IsFaceup())
 end
 -- 效果①的发动条件：自己场上没有怪兽存在。
 function c43722862.spcon(e,tp,eg,ep,ev,re,r,rp)

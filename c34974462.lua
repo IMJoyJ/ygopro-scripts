@@ -36,7 +36,7 @@ function c34974462.initial_effect(c)
 end
 -- 计数器过滤函数，判断卡片是否为「幻奏」卡组
 function c34974462.counterfilter(c)
-	return c:IsSetCard(0x9b)
+	return c:IsSetCard(0x9b) and c:IsFaceup()
 end
 -- 效果发动条件：确认此卡是以连接召唤方式特殊召唤成功
 function c34974462.spcon(e,tp,eg,ep,ev,re,r,rp)

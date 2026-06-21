@@ -34,7 +34,7 @@ function c84546257.initial_effect(c)
 end
 -- 计数器过滤函数：如果是水属性怪兽，则不计入非水属性特殊召唤的计数。
 function c84546257.counterfilter(c)
-	return c:IsAttribute(ATTRIBUTE_WATER)
+	return c:IsAttribute(ATTRIBUTE_WATER) and c:IsFaceup()
 end
 -- 效果发动开销与誓约限制处理：检查本回合是否未特殊召唤过非水属性怪兽，并注册本回合不能特殊召唤非水属性怪兽的誓约效果。
 function c84546257.cost(e,tp,eg,ep,ev,re,r,rp,chk)

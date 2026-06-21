@@ -29,7 +29,7 @@ function c59281922.initial_effect(c)
 end
 -- 计数器过滤函数，用于判定特殊召唤的怪兽是否为机械族。
 function c59281922.counterfilter(c)
-	return c:IsRace(RACE_MACHINE)
+	return c:IsRace(RACE_MACHINE) and c:IsFaceup()
 end
 -- 等级变化效果的Cost函数，用于检查并适用本回合不能特殊召唤非机械族怪兽的限制。
 function c59281922.lvcost(e,tp,eg,ep,ev,re,r,rp,chk)

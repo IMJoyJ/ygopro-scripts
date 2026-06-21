@@ -38,7 +38,7 @@ function s.initial_effect(c)
 end
 -- 计数器过滤函数，若召唤地点不在额外卡组或为融合怪兽则不计入限制
 function s.counterfilter(c)
-	return not c:IsSummonLocation(LOCATION_EXTRA) or c:IsType(TYPE_FUSION)
+	return not c:IsSummonLocation(LOCATION_EXTRA) or c:IsType(TYPE_FUSION) and c:IsFaceup()
 end
 -- 费用函数，检查是否已使用过效果，若未使用则设置不能特殊召唤非融合怪兽的限制
 function s.cost(e,tp,eg,ep,ev,re,r,rp,chk)

@@ -38,7 +38,7 @@ function s.initial_effect(c)
 end
 -- 计数器过滤函数：非额外卡组特殊召唤的怪兽，或者是水属性怪兽（即不计入非水属性额外特召的限制）。
 function s.counterfilter(c)
-	return not c:IsSummonLocation(LOCATION_EXTRA) or c:IsAttribute(ATTRIBUTE_WATER)
+	return not c:IsSummonLocation(LOCATION_EXTRA) or c:IsAttribute(ATTRIBUTE_WATER) and c:IsFaceup()
 end
 -- ①效果的发动条件：这张卡作为怪兽效果发动的代价（COST）被送去墓地。
 function s.thcon(e,tp,eg,ep,ev,re,r,rp)

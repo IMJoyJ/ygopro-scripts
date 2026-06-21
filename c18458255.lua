@@ -34,7 +34,7 @@ function c18458255.initial_effect(c)
 end
 -- 计数器过滤函数，用于判断是否满足限制条件（非额外召唤或灵摆怪兽不计入计数）。
 function c18458255.counterfilter(c)
-	return not c:IsSummonLocation(LOCATION_EXTRA) or c:IsType(TYPE_PENDULUM)
+	return not c:IsSummonLocation(LOCATION_EXTRA) or c:IsType(TYPE_PENDULUM) and c:IsFaceup()
 end
 -- 检索函数，用于筛选额外卡组中可以作为除外代价的里侧表示卡。
 function c18458255.rmfilter(c)

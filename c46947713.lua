@@ -40,7 +40,7 @@ function c46947713.initial_effect(c)
 end
 -- 计数器过滤函数，仅当特殊召唤的卡片为电子界族时计数器增加1
 function c46947713.counterfilter(c)
-	return c:IsRace(RACE_CYBERSE)
+	return c:IsRace(RACE_CYBERSE) and c:IsFaceup()
 end
 -- 发动效果时检查是否为该回合第一次使用②的效果，并设置不能特殊召唤非电子界族怪兽的效果
 function c46947713.spcost(e,tp,eg,ep,ev,re,r,rp,chk)

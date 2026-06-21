@@ -31,7 +31,7 @@ function c703897.initial_effect(c)
 end
 -- 计数器过滤函数：检查特殊召唤的怪兽是否为机械族·暗属性
 function c703897.counterfilter(c)
-	return c:IsRace(RACE_MACHINE) and c:IsAttribute(ATTRIBUTE_DARK)
+	return c:IsRace(RACE_MACHINE) and c:IsAttribute(ATTRIBUTE_DARK) and c:IsFaceup()
 end
 -- 过滤条件：自己场上表侧表示的「自奏圣乐」连接怪兽
 function c703897.cfilter(c)

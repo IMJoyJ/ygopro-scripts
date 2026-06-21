@@ -31,7 +31,7 @@ function c20455229.initial_effect(c)
 end
 -- 计数器的过滤函数，判断卡片是否为电子界族
 function c20455229.counterfilter(c)
-	return c:IsRace(RACE_CYBERSE)
+	return c:IsRace(RACE_CYBERSE) and c:IsFaceup()
 end
 -- 效果发动的条件：这张卡作为电子界族连接怪兽的连接素材被送去墓地
 function c20455229.spcon(e,tp,eg,ep,ev,re,r,rp)

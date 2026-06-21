@@ -35,7 +35,7 @@ function c37343995.initial_effect(c)
 end
 -- 计数器过滤函数，判断卡片是否为「救祓少女」系列
 function c37343995.counterfilter(c)
-	return c:IsSetCard(0x172)
+	return c:IsSetCard(0x172) and c:IsFaceup()
 end
 -- 过滤函数，判断场上是否有表侧表示的超量怪兽
 function c37343995.cfilter(c)

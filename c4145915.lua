@@ -36,7 +36,7 @@ function s.initial_effect(c)
 end
 -- 计数器过滤函数，判断是否为额外卡组召唤且非机关傀儡怪兽
 function s.counterfilter(c)
-	return not c:IsSummonLocation(LOCATION_EXTRA) or c:IsSetCard(0x1083)
+	return not c:IsSummonLocation(LOCATION_EXTRA) or c:IsSetCard(0x1083) and c:IsFaceup()
 end
 -- 费用函数，检查是否为本回合第一次特殊召唤
 function s.cost(e,tp,eg,ep,ev,re,r,rp,chk)

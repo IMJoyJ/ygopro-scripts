@@ -34,7 +34,7 @@ function c43464884.initial_effect(c)
 end
 -- 计数器的过滤函数，仅统计兽战士族怪兽
 function c43464884.counterfilter(c)
-	return c:IsRace(RACE_BEASTWARRIOR)
+	return c:IsRace(RACE_BEASTWARRIOR) and c:IsFaceup()
 end
 -- 支付费用：检查该回合是否已使用过效果，若未使用则设置不能特殊召唤非兽战士族怪兽的效果
 function c43464884.cost(e,tp,eg,ep,ev,re,r,rp,chk)

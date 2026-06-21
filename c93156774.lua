@@ -69,9 +69,7 @@ function s.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	local g=Duel.SelectMatchingCard(tp,s.spcostfilter,tp,LOCATION_HAND,0,1,1,c)
 	-- 给对方玩家确认所选择的怪兽卡
 	Duel.ConfirmCards(1-tp,g)
-	-- 触发展示手卡怪兽的自定义事件时点
-	Duel.RaiseEvent(g,EVENT_CUSTOM+9091064,e,REASON_COST,tp,tp,0)
-	-- 洗切发动玩家的手卡
+	if c:IsSetCard(0x195) then Duel.RaiseEvent(g,EVENT_CUSTOM+9091064,e,REASON_COST,tp,tp,0) end
 	Duel.ShuffleHand(tp)
 end
 -- 定义①效果的发动目标（Target）函数
@@ -110,9 +108,7 @@ function s.ctcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	local sg=g:SelectSubGroup(tp,aux.gfcheck,false,2,2,Card.IsAttribute,ATTRIBUTE_EARTH,ATTRIBUTE_DARK)
 	-- 给对方玩家确认所选择的2张怪兽卡
 	Duel.ConfirmCards(1-tp,sg)
-	-- 触发展示手卡怪兽的自定义事件时点
-	Duel.RaiseEvent(g,EVENT_CUSTOM+9091064,e,REASON_COST,tp,tp,0)
-	-- 洗切发动玩家的手卡
+	if e:GetHandler():IsSetCard(0x195) then Duel.RaiseEvent(sg,EVENT_CUSTOM+9091064,e,REASON_COST,tp,tp,0) end
 	Duel.ShuffleHand(tp)
 end
 -- 过滤场上表侧表示的怪兽
@@ -170,9 +166,7 @@ function s.descost(e,tp,eg,ep,ev,re,r,rp,chk)
 	local sg=g:SelectSubGroup(tp,aux.gfcheck,false,2,2,Card.IsAttribute,ATTRIBUTE_FIRE,ATTRIBUTE_DARK)
 	-- 给对方玩家确认所选择的2张怪兽卡
 	Duel.ConfirmCards(1-tp,sg)
-	-- 触发展示手卡怪兽的自定义事件时点
-	Duel.RaiseEvent(sg,EVENT_CUSTOM+9091064,e,REASON_COST,tp,tp,0)
-	-- 洗切发动玩家的手卡
+	if e:GetHandler():IsSetCard(0x195) then Duel.RaiseEvent(sg,EVENT_CUSTOM+9091064,e,REASON_COST,tp,tp,0) end
 	Duel.ShuffleHand(tp)
 end
 -- 过滤卡组中可以特殊召唤的念动力族以外的「征服斗魂」怪兽

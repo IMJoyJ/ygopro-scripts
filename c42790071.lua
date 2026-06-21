@@ -34,7 +34,7 @@ function c42790071.initial_effect(c)
 end
 -- 计数器过滤函数，判断卡片是否为幻变骚灵卡组
 function c42790071.counterfilter(c)
-	return c:IsSetCard(0x103)
+	return c:IsSetCard(0x103) and c:IsFaceup()
 end
 -- 效果条件函数，判断是否为己方发动的陷阱卡
 function c42790071.spcon1(e,tp,eg,ep,ev,re,r,rp)

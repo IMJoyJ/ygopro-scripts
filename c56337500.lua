@@ -38,7 +38,7 @@ function c56337500.initial_effect(c)
 end
 -- 计数器的过滤条件：如果特殊召唤的怪兽不是来自额外卡组，或者是电子界族怪兽，则不计入限制
 function c56337500.counterfilter(c)
-	return not c:IsSummonLocation(LOCATION_EXTRA) or c:IsRace(RACE_CYBERSE)
+	return not c:IsSummonLocation(LOCATION_EXTRA) or c:IsRace(RACE_CYBERSE) and c:IsFaceup()
 end
 -- 效果发动的Cost处理函数，用于检查并适用“这张卡的效果发动的回合，自己不是电子界族怪兽不能从额外卡组特殊召唤”的限制
 function c56337500.cost(e,tp,eg,ep,ev,re,r,rp,chk)

@@ -33,7 +33,7 @@ function c23361526.initial_effect(c)
 end
 -- 计数器的过滤函数，只有风属性的怪兽才能计入计数
 function c23361526.counterfilter(c)
-	return c:IsAttribute(ATTRIBUTE_WIND)
+	return c:IsAttribute(ATTRIBUTE_WIND) and c:IsFaceup()
 end
 -- 判断该卡是否为同调召唤成功
 function c23361526.condition(e,tp,eg,ep,ev,re,r,rp)

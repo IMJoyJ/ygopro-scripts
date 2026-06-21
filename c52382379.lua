@@ -33,7 +33,7 @@ function s.initial_effect(c)
 end
 -- 计数器过滤函数，排除从额外卡组召唤且非灵摆怪兽的怪兽
 function s.counterfilter(c)
-	return not c:IsSummonLocation(LOCATION_EXTRA) or c:IsType(TYPE_PENDULUM)
+	return not c:IsSummonLocation(LOCATION_EXTRA) or c:IsType(TYPE_PENDULUM) and c:IsFaceup()
 end
 -- 除外卡过滤函数，排除梦见之妮穆蕾莉娅，且可作为cost除外
 function s.rmfilter(c)

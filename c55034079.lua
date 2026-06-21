@@ -52,7 +52,7 @@ function c55034079.activate(e,tp,eg,ep,ev,re,r,rp)
 end
 -- 过滤函数，判定卡片是否不是从额外卡组特殊召唤，或者是暗属性连接怪兽。
 function c55034079.counterfilter(c)
-	return not c:IsSummonLocation(LOCATION_EXTRA) or (c:IsType(TYPE_LINK) and c:IsAttribute(ATTRIBUTE_DARK))
+	return not c:IsSummonLocation(LOCATION_EXTRA) or (c:IsType(TYPE_LINK) and c:IsAttribute(ATTRIBUTE_DARK) and c:IsFaceup())
 end
 -- 检查受到伤害的玩家是否为自己，且伤害原因为战斗伤害。
 function c55034079.ctcon(e,tp,eg,ep,ev,re,r,rp)

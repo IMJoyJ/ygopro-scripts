@@ -53,7 +53,7 @@ function s.initial_effect(c)
 end
 -- 计数器过滤函数，用于判定特殊召唤的怪兽是否为水属性。
 function s.counterfilter(c)
-	return c:IsAttribute(ATTRIBUTE_WATER)
+	return c:IsAttribute(ATTRIBUTE_WATER) and c:IsFaceup()
 end
 -- 效果发动代价与誓约限制处理函数，检查并适用“这个效果发动的回合，自己不是水属性怪兽不能特殊召唤”的限制。
 function s.thcost(e,tp,eg,ep,ev,re,r,rp,chk)

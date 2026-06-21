@@ -37,7 +37,7 @@ function c58004362.initial_effect(c)
 end
 -- 计数器过滤函数，用于判定特殊召唤的怪兽是否为「英雄」怪兽
 function c58004362.counterfilter(c)
-	return c:IsSetCard(0x8)
+	return c:IsSetCard(0x8) and c:IsFaceup()
 end
 -- 效果发动的Cost，检查本回合是否未特殊召唤过非「英雄」怪兽，并添加本回合不能特殊召唤非「英雄」怪兽的限制
 function c58004362.cost(e,tp,eg,ep,ev,re,r,rp,chk)

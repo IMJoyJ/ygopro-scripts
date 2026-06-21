@@ -104,9 +104,7 @@ function c92895501.drcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	local g=Duel.SelectMatchingCard(tp,c92895501.drcfilter,tp,LOCATION_HAND,0,1,1,nil)
 	-- 将选中的怪兽给对方观看确认
 	Duel.ConfirmCards(1-tp,g)
-	-- 触发展示手卡怪兽的自定义事件（用于与其他征服斗魂卡片联动）
-	Duel.RaiseEvent(g,EVENT_CUSTOM+9091064,e,REASON_COST,tp,tp,0)
-	-- 洗切手卡
+	if e:GetHandler():IsSetCard(0x195) then Duel.RaiseEvent(g,EVENT_CUSTOM+9091064,e,REASON_COST,tp,tp,0) end
 	Duel.ShuffleHand(tp)
 end
 -- ②号效果（暗属性）的发动准备（Target）
@@ -147,9 +145,7 @@ function c92895501.dmgcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	local sg=g:SelectSubGroup(tp,aux.gfcheck,false,2,2,Card.IsAttribute,ATTRIBUTE_EARTH,ATTRIBUTE_FIRE)
 	-- 将选中的2只怪兽给对方观看确认
 	Duel.ConfirmCards(1-tp,sg)
-	-- 触发展示手卡怪兽的自定义事件（用于与其他征服斗魂卡片联动）
-	Duel.RaiseEvent(sg,EVENT_CUSTOM+9091064,e,REASON_COST,tp,tp,0)
-	-- 洗切手卡
+	if e:GetHandler():IsSetCard(0x195) then Duel.RaiseEvent(sg,EVENT_CUSTOM+9091064,e,REASON_COST,tp,tp,0) end
 	Duel.ShuffleHand(tp)
 end
 -- ②号效果（地·炎属性）的发动准备（Target）

@@ -34,7 +34,7 @@ function s.initial_effect(c)
 end
 -- 计数器过滤函数，用于检测是否特殊召唤了非「机关傀儡」的额外卡组怪兽
 function s.counterfilter(c)
-	return not c:IsSummonLocation(LOCATION_EXTRA) or c:IsSetCard(0x1083)
+	return not c:IsSummonLocation(LOCATION_EXTRA) or c:IsSetCard(0x1083) and c:IsFaceup()
 end
 -- 效果①的Cost函数，包含检查特殊召唤限制、展示额外卡组怪兽并注册誓约效果
 function s.spcost(e,tp,eg,ep,ev,re,r,rp,chk)

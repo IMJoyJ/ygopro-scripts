@@ -43,7 +43,7 @@ function c83315222.initial_effect(c)
 end
 -- 定义计数器的过滤条件，用于判定特殊召唤的怪兽是否为「燃烧拳击手」怪兽。
 function c83315222.counterfilter(c)
-	return c:IsSetCard(0x1084)
+	return c:IsSetCard(0x1084) and c:IsFaceup()
 end
 -- 定义效果发动的Cost处理函数，用于检查并适用本回合不能特殊召唤「燃烧拳击手」以外怪兽的限制。
 function c83315222.cost(e,tp,eg,ep,ev,re,r,rp,chk)

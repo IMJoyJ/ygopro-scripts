@@ -35,7 +35,7 @@ function c59048135.initial_effect(c)
 end
 -- 计数器过滤函数，判断卡片是否为念动力族超量怪兽或名字带有「纹章兽」的怪兽。
 function c59048135.counterfilter(c)
-	return c:IsRace(RACE_PSYCHO) and c:IsType(TYPE_XYZ) or c:IsSetCard(0x76)
+	return (c:IsRace(RACE_PSYCHO) and c:IsType(TYPE_XYZ) or c:IsSetCard(0x76)) and c:IsFaceup()
 end
 -- 对象抗性效果的目标过滤函数，筛选场上的念动力族超量怪兽。
 function c59048135.etarget(e,c)

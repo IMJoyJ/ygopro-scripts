@@ -34,7 +34,7 @@ end
 -- 计数器的过滤函数，若怪兽不是从额外卡组召唤，或为龙族·暗属性同调怪兽，则不计入计数。
 function c34761841.counterfilter(c)
 	return not c:IsSummonLocation(LOCATION_EXTRA)
-		or (c:IsRace(RACE_DRAGON) and c:IsAttribute(ATTRIBUTE_DARK) and c:IsType(TYPE_SYNCHRO))
+		or (c:IsRace(RACE_DRAGON) and c:IsAttribute(ATTRIBUTE_DARK) and c:IsType(TYPE_SYNCHRO) and c:IsFaceup())
 end
 -- 效果①的发动条件：自己场上没有怪兽存在。
 function c34761841.spcon1(e,tp,eg,ep,ev,re,r,rp)

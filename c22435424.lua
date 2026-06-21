@@ -42,7 +42,7 @@ function s.initial_effect(c)
 end
 -- 计数器过滤函数，若卡片为机械族或非仪式召唤，则计入计数器
 function s.counterfilter(c)
-	return c:IsRace(RACE_MACHINE) or not c:IsSummonType(SUMMON_TYPE_RITUAL)
+	return c:IsRace(RACE_MACHINE) and c:IsFaceup() or not c:IsSummonType(SUMMON_TYPE_RITUAL)
 end
 -- 限制特殊召唤条件，仅允许具有EFFECT_TYPE_ACTIONS类型的特殊召唤
 function s.splimit(e,se,sp,st)

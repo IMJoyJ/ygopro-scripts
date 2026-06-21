@@ -36,7 +36,7 @@ function s.initial_effect(c)
 end
 -- 计数器过滤函数：非额外卡组特殊召唤的怪兽，或者属于「HERO」字段的怪兽不计入限制。
 function s.counterfilter(c)
-	return not c:IsSummonLocation(LOCATION_EXTRA) or c:IsSetCard(0x8)
+	return not c:IsSummonLocation(LOCATION_EXTRA) or c:IsSetCard(0x8) and c:IsFaceup()
 end
 -- 检索效果的发动代价：确认手卡的这张卡，且本回合不能有不符合限制的特殊召唤。
 function s.thcost(e,tp,eg,ep,ev,re,r,rp,chk)

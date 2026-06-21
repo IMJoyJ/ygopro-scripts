@@ -28,7 +28,7 @@ function c82697428.initial_effect(c)
 end
 -- 过滤函数：判断卡片是否属于「英雄」系列
 function c82697428.counterfilter(c)
-	return c:IsSetCard(0x8)
+	return c:IsSetCard(0x8) and c:IsFaceup()
 end
 -- 效果①的发动代价函数：检查并注册本回合不能特殊召唤非「英雄」怪兽的限制
 function c82697428.descost(e,tp,eg,ep,ev,re,r,rp,chk)

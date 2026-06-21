@@ -19,7 +19,7 @@ function c71821687.initial_effect(c)
 end
 -- 计数器过滤函数：如果特殊召唤的怪兽来自额外卡组且不是同调怪兽，则使计数器增加
 function c71821687.counterfilter(c)
-	return not c:IsSummonLocation(LOCATION_EXTRA) or c:IsType(TYPE_SYNCHRO)
+	return not c:IsSummonLocation(LOCATION_EXTRA) or c:IsType(TYPE_SYNCHRO) and c:IsFaceup()
 end
 -- 效果发动代价（Cost）与发动条件检测函数
 function c71821687.cost(e,tp,eg,ep,ev,re,r,rp,chk)

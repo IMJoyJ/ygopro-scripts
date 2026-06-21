@@ -19,7 +19,7 @@ function c95833645.initial_effect(c)
 end
 -- 计数器的过滤函数，用于判定特殊召唤的怪兽是否为幻龙族。
 function c95833645.counterfilter(c)
-	return c:IsRace(RACE_WYRM)
+	return c:IsRace(RACE_WYRM) and c:IsFaceup()
 end
 -- 效果发动的Cost函数，检查本回合是否特殊召唤过非幻龙族怪兽，并适用本回合不能特殊召唤非幻龙族怪兽的限制。
 function c95833645.cost(e,tp,eg,ep,ev,re,r,rp,chk)

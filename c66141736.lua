@@ -38,7 +38,7 @@ function c66141736.initial_effect(c)
 end
 -- 计数器过滤函数：过滤出从额外卡组特殊召唤的非龙族·暗属性同调怪兽
 function c66141736.counterfilter(c)
-	return not c:IsSummonLocation(LOCATION_EXTRA) or (c:IsType(TYPE_SYNCHRO) and c:IsAttribute(ATTRIBUTE_DARK) and c:IsRace(RACE_DRAGON))
+	return not c:IsSummonLocation(LOCATION_EXTRA) or (c:IsType(TYPE_SYNCHRO) and c:IsAttribute(ATTRIBUTE_DARK) and c:IsRace(RACE_DRAGON) and c:IsFaceup())
 end
 -- 效果①的发动条件：这张卡同调召唤成功
 function c66141736.spcon(e,tp,eg,ep,ev,re,r,rp)

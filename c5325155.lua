@@ -22,7 +22,7 @@ function c5325155.initial_effect(c)
 end
 -- 过滤函数：若卡片不是从额外卡组召唤或属于魔妖卡组，则不计入计数器。
 function c5325155.counterfilter(c)
-	return not c:IsSummonLocation(LOCATION_EXTRA) or c:IsSetCard(0x121)
+	return not c:IsSummonLocation(LOCATION_EXTRA) or c:IsSetCard(0x121) and c:IsFaceup()
 end
 -- 条件过滤函数：判断被破坏的怪兽是否为魔妖族、非束胫、在怪兽区被破坏、且由战斗或对方效果造成破坏。
 function c5325155.cfilter(c,tp,rp)

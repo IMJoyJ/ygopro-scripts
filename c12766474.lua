@@ -35,7 +35,7 @@ function c12766474.initial_effect(c)
 end
 -- 计数器过滤函数，判断卡片是否为暗属性。
 function c12766474.counterfilter(c)
-	return c:IsAttribute(ATTRIBUTE_DARK)
+	return c:IsAttribute(ATTRIBUTE_DARK) and c:IsFaceup()
 end
 -- 释放卡片过滤函数，用于判断卡片是否在释放组中。
 function c12766474.relfilter(c,g)

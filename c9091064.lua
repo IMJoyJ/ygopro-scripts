@@ -84,9 +84,7 @@ function s.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	local g=Duel.SelectMatchingCard(tp,s.cfilter,tp,LOCATION_HAND,0,ct,ct,nil)
 	-- 将选中的怪兽给对方玩家确认（展示）。
 	Duel.ConfirmCards(1-tp,g)
-	-- 触发自定义的展示手牌事件，用于触发此卡或其他「征服斗魂」卡的手牌特殊召唤效果。
-	Duel.RaiseEvent(g,EVENT_CUSTOM+id,e,REASON_COST,tp,tp,0)
-	-- 重新洗切手牌以重置手牌的公开状态。
+	if e:GetHandler():IsSetCard(0x195) then Duel.RaiseEvent(g,EVENT_CUSTOM+id,e,REASON_COST,tp,tp,0) end
 	Duel.ShuffleHand(tp)
 end
 -- 改变表示形式效果的发动准备与可行性检测函数，包含场上是否存在可改变表示形式的怪兽，以及同一连锁限制的检测。

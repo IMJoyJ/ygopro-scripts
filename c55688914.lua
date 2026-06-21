@@ -105,9 +105,7 @@ function c55688914.defcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	local g=Duel.SelectMatchingCard(tp,c55688914.defcfilter,tp,LOCATION_HAND,0,1,1,nil)
 	-- 将选中的怪兽给对方玩家确认
 	Duel.ConfirmCards(1-tp,g)
-	-- 触发展示手牌怪兽的自定义事件（用于与其他「征服斗魂」卡片联动）
-	Duel.RaiseEvent(g,EVENT_CUSTOM+9091064,e,REASON_COST,tp,tp,0)
-	-- 重新洗切手牌
+	if e:GetHandler():IsSetCard(0x195) then Duel.RaiseEvent(g,EVENT_CUSTOM+9091064,e,REASON_COST,tp,tp,0) end
 	Duel.ShuffleHand(tp)
 end
 -- 效果2（炎属性效果）的发动准备与合法性检测函数
@@ -145,9 +143,7 @@ function c55688914.atkcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	local sg=g:SelectSubGroup(tp,aux.gfcheck,false,2,2,Card.IsAttribute,ATTRIBUTE_EARTH,ATTRIBUTE_DARK)
 	-- 将选中的怪兽给对方玩家确认
 	Duel.ConfirmCards(1-tp,sg)
-	-- 触发展示手牌怪兽的自定义事件（用于与其他「征服斗魂」卡片联动）
-	Duel.RaiseEvent(sg,EVENT_CUSTOM+9091064,e,REASON_COST,tp,tp,0)
-	-- 重新洗切手牌
+	if e:GetHandler():IsSetCard(0x195) then Duel.RaiseEvent(sg,EVENT_CUSTOM+9091064,e,REASON_COST,tp,tp,0) end
 	Duel.ShuffleHand(tp)
 end
 -- 效果2（暗·地属性效果）的发动准备与合法性检测函数

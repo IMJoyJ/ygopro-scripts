@@ -39,7 +39,7 @@ function s.initial_effect(c)
 end
 -- 计数器过滤函数，判断卡片是否为昆虫族·植物族·爬虫类族
 function s.counterfilter(c)
-	return c:IsRace(RACE_INSECT+RACE_PLANT+RACE_REPTILE)
+	return c:IsRace(RACE_INSECT+RACE_PLANT+RACE_REPTILE) and c:IsFaceup()
 end
 -- 连接召唤检查函数，判断连接怪兽组中是否存在包含昆虫族·植物族·爬虫类族的怪兽
 function s.lcheck(g)

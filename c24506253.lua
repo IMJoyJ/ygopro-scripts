@@ -29,7 +29,7 @@ function c24506253.initial_effect(c)
 end
 -- 计数器的过滤函数，判断卡片是否为「先史遗产」卡。
 function c24506253.counterfilter(c)
-	return c:IsSetCard(0x70)
+	return c:IsSetCard(0x70) and c:IsFaceup()
 end
 -- 判断目标怪兽是否为「先史遗产」怪兽，并且被战斗或对方效果破坏。
 function c24506253.filter(c,tp)

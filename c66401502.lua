@@ -88,9 +88,7 @@ function c66401502.indescost(e,tp,eg,ep,ev,re,r,rp,chk)
 	local g=Duel.SelectMatchingCard(tp,c66401502.indescfilter,tp,LOCATION_HAND,0,1,1,nil)
 	-- 将选中的怪兽给对方玩家确认（展示）。
 	Duel.ConfirmCards(1-tp,g)
-	-- 触发展示手卡怪兽的自定义事件（用于与其他“征服斗魂”卡片的效果联动）。
-	Duel.RaiseEvent(g,EVENT_CUSTOM+9091064,e,REASON_COST,tp,tp,0)
-	-- 重新洗切玩家的手卡。
+	if e:GetHandler():IsSetCard(0x195) then Duel.RaiseEvent(g,EVENT_CUSTOM+9091064,e,REASON_COST,tp,tp,0) end
 	Duel.ShuffleHand(tp)
 end
 -- 效果2（地属性选项）的发动准备与同一连锁发动限制检测。
@@ -129,9 +127,7 @@ function c66401502.descost(e,tp,eg,ep,ev,re,r,rp,chk)
 	local sg=g:SelectSubGroup(tp,aux.gfcheck,false,2,2,Card.IsAttribute,ATTRIBUTE_EARTH,ATTRIBUTE_FIRE)
 	-- 将选中的2张怪兽给对方玩家确认（展示）。
 	Duel.ConfirmCards(1-tp,sg)
-	-- 触发展示手卡怪兽的自定义事件。
-	Duel.RaiseEvent(sg,EVENT_CUSTOM+9091064,e,REASON_COST,tp,tp,0)
-	-- 重新洗切玩家的手卡。
+	if e:GetHandler():IsSetCard(0x195) then Duel.RaiseEvent(sg,EVENT_CUSTOM+9091064,e,REASON_COST,tp,tp,0) end
 	Duel.ShuffleHand(tp)
 end
 -- 效果2（地·炎属性选项）的发动准备：检测相同纵列是否存在魔法·陷阱卡，并设置破坏操作信息。

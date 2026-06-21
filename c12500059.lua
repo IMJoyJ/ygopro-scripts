@@ -33,7 +33,7 @@ function s.initial_effect(c)
 end
 -- 计数器过滤函数，仅统计天使族怪兽
 function s.counterfilter(c)
-	return c:IsRace(RACE_FAIRY)
+	return c:IsRace(RACE_FAIRY) and c:IsFaceup()
 end
 -- 过滤函数，用于判断场上是否存在非天使族或里侧表示的怪兽
 function s.cfilter(c)

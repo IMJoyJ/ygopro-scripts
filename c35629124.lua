@@ -20,7 +20,7 @@ function c35629124.initial_effect(c)
 end
 -- 计数器过滤函数，判断卡片是否为龙族
 function c35629124.counterfilter(c)
-	return c:IsRace(RACE_DRAGON)
+	return c:IsRace(RACE_DRAGON) and c:IsFaceup()
 end
 -- 效果发动时的费用支付处理，检查是否在该回合中未进行过战斗阶段且未进行过特殊召唤
 function c35629124.spcost(e,tp,eg,ep,ev,re,r,rp,chk)

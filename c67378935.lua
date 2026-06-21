@@ -38,7 +38,7 @@ function c67378935.initial_effect(c)
 end
 -- 计数器的过滤函数，当特殊召唤的怪兽不是从额外卡组特殊召唤，或者是超量怪兽时返回true（不计入非超量额外特召的次数）
 function c67378935.counterfilter(c)
-	return not c:IsSummonLocation(LOCATION_EXTRA) or c:IsType(TYPE_XYZ)
+	return not c:IsSummonLocation(LOCATION_EXTRA) or c:IsType(TYPE_XYZ) and c:IsFaceup()
 end
 -- 效果①选择第一个效果发动时的Cost函数，用于检测并添加“本回合自己不是超量怪兽不能从额外卡组特殊召唤”的限制
 function c67378935.spcost(e,tp,eg,ep,ev,re,r,rp,chk)

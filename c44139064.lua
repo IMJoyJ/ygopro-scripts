@@ -39,7 +39,7 @@ function c44139064.initial_effect(c)
 end
 -- 计数器的过滤函数，判断卡片是否为融合怪兽或不是从额外卡组召唤
 function c44139064.counterfilter(c)
-	return not c:IsSummonLocation(LOCATION_EXTRA) or c:IsType(TYPE_FUSION)
+	return not c:IsSummonLocation(LOCATION_EXTRA) or c:IsType(TYPE_FUSION) and c:IsFaceup()
 end
 -- 特殊召唤限制函数，禁止非融合怪兽从额外卡组特殊召唤
 function c44139064.splimit(e,c,sump,sumtype,sumpos,targetp,se)

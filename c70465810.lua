@@ -31,7 +31,7 @@ function c70465810.initial_effect(c)
 end
 -- 计数器过滤函数：非额外卡组特殊召唤的怪兽，或者是同调怪兽
 function c70465810.counterfilter(c)
-	return not c:IsSummonLocation(LOCATION_EXTRA) or c:IsType(TYPE_SYNCHRO)
+	return not c:IsSummonLocation(LOCATION_EXTRA) or c:IsType(TYPE_SYNCHRO) and c:IsFaceup()
 end
 -- 检索过滤函数：卡组中记述了「黑翼龙」卡名且不是「黑羽-幻耀之苏德里」的可加入手牌的卡
 function c70465810.thfilter(c)

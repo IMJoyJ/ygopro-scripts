@@ -19,7 +19,7 @@ function c6142488.initial_effect(c)
 end
 -- 过滤函数：允许特殊召唤「魔玩具」怪兽，或者从额外卡组以外的地方特殊召唤
 function c6142488.counterfilter(c)
-	return c:IsSetCard(0xad) or not c:IsSummonLocation(LOCATION_EXTRA)
+	return c:IsSetCard(0xad) and c:IsFaceup() or not c:IsSummonLocation(LOCATION_EXTRA)
 end
 -- 效果发动Cost：检查本回合是否进行过不符合条件的特殊召唤，并注册不能从额外卡组特殊召唤「魔玩具」以外怪兽的限制
 function c6142488.spcost(e,tp,eg,ep,ev,re,r,rp,chk)

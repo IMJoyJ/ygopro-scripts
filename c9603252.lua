@@ -129,7 +129,7 @@ function c9603252.thop(e,tp,eg,ep,ev,re,r,rp)
 	-- 让玩家从自己墓地选择1张满足条件的「魔女术」魔法·陷阱卡
 	local g=Duel.SelectMatchingCard(tp,c9603252.thfilter,tp,LOCATION_GRAVE,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的卡片加入持有者手卡
+		Duel.HintSelection(g)
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
 	end
 end

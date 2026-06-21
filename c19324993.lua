@@ -38,7 +38,7 @@ function c19324993.initial_effect(c)
 end
 -- 计数器的过滤函数，判断卡片是否为「英雄」卡。
 function c19324993.counterfilter(c)
-	return c:IsSetCard(0x8)
+	return c:IsSetCard(0x8) and c:IsFaceup()
 end
 -- 效果发动的条件，判断该卡是否为连接召唤成功。
 function c19324993.thcon(e,tp,eg,ep,ev,re,r,rp)

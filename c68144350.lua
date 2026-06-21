@@ -19,7 +19,7 @@ function c68144350.initial_effect(c)
 end
 -- 过滤函数，用于判定特殊召唤的怪兽是否为「燃烧拳击手」怪兽
 function c68144350.counterfilter(c)
-	return c:IsSetCard(0x1084)
+	return c:IsSetCard(0x1084) and c:IsFaceup()
 end
 -- 效果发动的Cost函数，用于检查并限制本回合只能特殊召唤「燃烧拳击手」怪兽
 function c68144350.spcost(e,tp,eg,ep,ev,re,r,rp,chk)

@@ -92,9 +92,7 @@ function c29280200.adcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	local g=Duel.SelectMatchingCard(tp,c29280200.adcfilter,tp,LOCATION_HAND,0,1,1,nil)
 	-- 向对方确认所选的卡。
 	Duel.ConfirmCards(1-tp,g)
-	-- 触发自定义事件，用于记录费用支付。
-	Duel.RaiseEvent(g,EVENT_CUSTOM+9091064,e,REASON_COST,tp,tp,0)
-	-- 洗切自己的手牌。
+	if e:GetHandler():IsSetCard(0x195) then Duel.RaiseEvent(g,EVENT_CUSTOM+9091064,e,REASON_COST,tp,tp,0) end
 	Duel.ShuffleHand(tp)
 end
 -- 判断是否满足发动条件。
@@ -141,9 +139,7 @@ function c29280200.rthcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	local sg=g:SelectSubGroup(tp,aux.gfcheck,false,2,2,Card.IsAttribute,ATTRIBUTE_EARTH,ATTRIBUTE_DARK)
 	-- 向对方确认所选的卡。
 	Duel.ConfirmCards(1-tp,sg)
-	-- 触发自定义事件，用于记录费用支付。
-	Duel.RaiseEvent(sg,EVENT_CUSTOM+9091064,e,REASON_COST,tp,tp,0)
-	-- 洗切自己的手牌。
+	if e:GetHandler():IsSetCard(0x195) then Duel.RaiseEvent(sg,EVENT_CUSTOM+9091064,e,REASON_COST,tp,tp,0) end
 	Duel.ShuffleHand(tp)
 end
 -- 筛选场上表侧表示且非链接怪兽的怪兽。

@@ -31,7 +31,7 @@ function c5929801.initial_effect(c)
 end
 -- 计数器过滤函数，用于判定特殊召唤的怪兽是否为「急袭猛禽」怪兽。
 function c5929801.counterfilter(c)
-	return c:IsSetCard(0xba)
+	return c:IsSetCard(0xba) and c:IsFaceup()
 end
 -- 效果发动的Cost函数，检查本回合是否未特殊召唤过非「急袭猛禽」怪兽，并注册本回合不能特殊召唤非「急袭猛禽」怪兽的誓约效果。
 function c5929801.cost(e,tp,eg,ep,ev,re,r,rp,chk)

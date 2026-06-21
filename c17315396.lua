@@ -19,7 +19,7 @@ function c17315396.initial_effect(c)
 end
 -- 计数器过滤函数，若卡片不是从额外卡组召唤或为同调怪兽，则不计入计数器
 function c17315396.counterfilter(c)
-	return not c:IsSummonLocation(LOCATION_EXTRA) or c:IsType(TYPE_SYNCHRO)
+	return not c:IsSummonLocation(LOCATION_EXTRA) or c:IsType(TYPE_SYNCHRO) and c:IsFaceup()
 end
 -- 效果发动时的费用处理，检查是否满足丢弃手卡并确保该效果未在本回合发动过
 function c17315396.cost(e,tp,eg,ep,ev,re,r,rp,chk)

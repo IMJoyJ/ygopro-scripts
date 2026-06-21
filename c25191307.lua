@@ -34,7 +34,7 @@ function s.initial_effect(c)
 end
 -- 计数器过滤函数，仅对暗属性怪兽计数
 function s.counterfilter(c)
-	return c:IsAttribute(ATTRIBUTE_DARK)
+	return c:IsAttribute(ATTRIBUTE_DARK) and c:IsFaceup()
 end
 -- 过滤函数，用于检测场上是否存在非鸟兽族的表侧表示怪兽
 function s.cfilter(c)

@@ -22,7 +22,7 @@ function s.initial_effect(c)
 end
 -- 计数器过滤函数，用于判断是否满足限制条件
 function s.counterfilter(c)
-	return not c:IsSummonLocation(LOCATION_EXTRA) or (c:IsRace(RACE_DRAGON) and c:IsType(TYPE_XYZ))
+	return not c:IsSummonLocation(LOCATION_EXTRA) or (c:IsRace(RACE_DRAGON) and c:IsType(TYPE_XYZ) and c:IsFaceup())
 end
 -- 条件过滤函数，用于判断对方场上是否存在攻击力2000以上的怪兽
 function s.cfilter(c)

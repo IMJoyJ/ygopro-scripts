@@ -39,7 +39,7 @@ function c77075360.tfilter(c)
 end
 -- 过滤非额外卡组特殊召唤的怪兽，或者额外卡组特殊召唤的同调怪兽，用于计数器排除这些合法的特殊召唤。
 function c77075360.counterfilter(c)
-	return not c:IsSummonLocation(LOCATION_EXTRA) or c:IsType(TYPE_SYNCHRO)
+	return not c:IsSummonLocation(LOCATION_EXTRA) or c:IsType(TYPE_SYNCHRO) and c:IsFaceup()
 end
 -- ①号效果的发动代价函数，检查并施加“这个效果发动的回合，自己不是同调怪兽不能从额外卡组特殊召唤”的限制。
 function c77075360.spcost(e,tp,eg,ep,ev,re,r,rp,chk)

@@ -48,7 +48,7 @@ function c3580032.initial_effect(c)
 end
 -- 计数器的过滤函数，只统计「圣骑士」卡
 function c3580032.counterfilter(c)
-	return c:IsSetCard(0x107a)
+	return c:IsSetCard(0x107a) and c:IsFaceup()
 end
 -- 效果①的费用函数，检查是否可以解放此卡且本回合未发动过效果①
 function c3580032.spcost(e,tp,eg,ep,ev,re,r,rp,chk)

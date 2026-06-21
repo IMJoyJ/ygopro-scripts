@@ -20,7 +20,7 @@ function c23379054.initial_effect(c)
 end
 -- 计数器过滤函数，仅对龙族怪兽进行计数。
 function c23379054.counterfilter(c)
-	return c:IsRace(RACE_DRAGON)
+	return c:IsRace(RACE_DRAGON) and c:IsFaceup()
 end
 -- 效果发动条件：对方场上有怪兽存在，自己场上只有这张卡。
 function c23379054.condition(e,tp,eg,ep,ev,re,r,rp)

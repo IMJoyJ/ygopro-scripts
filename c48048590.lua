@@ -35,7 +35,7 @@ function c48048590.initial_effect(c)
 end
 -- 计数器过滤函数，排除从额外卡组特殊召唤且为融合怪兽的卡片
 function c48048590.counterfilter(c)
-	return not c:IsSummonLocation(LOCATION_EXTRA) or c:IsType(TYPE_FUSION)
+	return not c:IsSummonLocation(LOCATION_EXTRA) or c:IsType(TYPE_FUSION) and c:IsFaceup()
 end
 -- 创建并注册一个场地方效果，使玩家在本回合不能特殊召唤非融合怪兽到额外卡组
 function c48048590.cost(e,tp,eg,ep,ev,re,r,rp,chk)

@@ -39,7 +39,7 @@ function s.initial_effect(c)
 end
 -- 计数器过滤函数，仅对光属性怪兽进行计数
 function s.counterfilter(c)
-	return c:IsAttribute(ATTRIBUTE_LIGHT)
+	return c:IsAttribute(ATTRIBUTE_LIGHT) and c:IsFaceup()
 end
 -- 特殊召唤条件过滤函数，用于判断是否满足特殊召唤的条件
 function s.spfilter(c,tp,se)

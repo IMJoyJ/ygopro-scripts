@@ -21,7 +21,7 @@ function c42542842.initial_effect(c)
 end
 -- 计数器过滤函数，若怪兽不是从额外卡组召唤或为「魔妖」卡，则不计入计数
 function c42542842.counterfilter(c)
-	return not c:IsSummonLocation(LOCATION_EXTRA) or c:IsSetCard(0x121)
+	return not c:IsSummonLocation(LOCATION_EXTRA) or c:IsSetCard(0x121) and c:IsFaceup()
 end
 -- 条件过滤函数，用于判断是否有「魔妖」怪兽从额外卡组召唤成功
 function c42542842.cfilter(c,tp)

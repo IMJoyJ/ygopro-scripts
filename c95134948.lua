@@ -48,7 +48,7 @@ end
 aux.xyz_number[95134948]=99
 -- 过滤函数：不是从额外卡组特殊召唤，或者是超量怪兽
 function c95134948.counterfilter(c)
-	return not c:IsSummonLocation(LOCATION_EXTRA) or c:IsType(TYPE_XYZ)
+	return not c:IsSummonLocation(LOCATION_EXTRA) or c:IsType(TYPE_XYZ) and c:IsFaceup()
 end
 -- 攻击宣言时的全局检查函数，用于记录进行直接攻击的怪兽及玩家
 function c95134948.dacheck(e,tp,eg,ep,ev,re,r,rp)
