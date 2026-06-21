@@ -47,124 +47,128 @@ function c92895501.initial_effect(c)
 	e3:SetOperation(c92895501.dmgop)
 	c:RegisterEffect(e3)
 end
--- ①号效果的发动条件判定函数
+-- 特殊召唤效果的发动条件函数
 function c92895501.spcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断当前是否为自己或对方的主要阶段1或主要阶段2
+	-- 判断当前阶段是否为主要阶段1或主要阶段2
 	return Duel.GetCurrentPhase()==PHASE_MAIN1 or Duel.GetCurrentPhase()==PHASE_MAIN2
 end
--- ①号效果的对象怪兽过滤条件：自己场上表侧表示的、机械族以外的「征服斗魂」怪兽，且能回到手卡，并且有可用的怪兽区域
+-- 用于返回手卡并特殊召唤的对象的过滤条件：自己场上表侧表示、可以回手卡、非机械族的「征服斗魂」怪兽，且将其离场后能腾出可特殊召唤的怪兽区域
 function c92895501.spfilter(c,tp)
 	return c:IsSetCard(0x195) and c:IsFaceup() and c:IsAbleToHand() and not c:IsRace(RACE_MACHINE)
-		-- 判断该怪兽离开场后，自己场上是否有可用于特殊召唤的怪兽区域
+		-- 判断目标怪兽离场后是否有可用的怪兽区域以进行特殊召唤
 		and Duel.GetMZoneCount(tp,c)>0
 end
--- ①号效果的发动准备（Target）
+-- 特殊召唤效果的发动准备与合法性检测（含连锁内限发判定）
 function c92895501.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(tp) and chkc:IsLocation(LOCATION_MZONE) and c92895501.spfilter(chkc,tp) end
 	local c=e:GetHandler()
 	if chk==0 then return c:IsCanBeSpecialSummoned(e,0,tp,false,false)
-		-- 检查自己场上是否存在满足条件的、可作为对象的怪兽
+		-- 判断自己场上是否存在符合过滤条件的怪兽以作为效果对象
 		and Duel.IsExistingTarget(c92895501.spfilter,tp,LOCATION_MZONE,0,1,nil,tp)
-		-- 检查当前连锁中是否尚未发动过该卡的效果（用于实现同一连锁上不能发动的限制）
+		-- 判断当前连锁中同一玩家是否未发动过此卡的效果
 		and Duel.GetFlagEffect(tp,92895501)==0 end
-	-- 在当前连锁中注册标识，防止同一连锁重复发动
+	-- 在当前连锁中为玩家注册已发动该卡效果的标识，防止在同一连锁重复发动
 	Duel.RegisterFlagEffect(tp,92895501,RESET_CHAIN,0,1)
-	-- 提示玩家选择要返回手卡的卡片
+	-- 向玩家提示选择要返回手卡的卡片
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_RTOHAND)  --"请选择要返回手牌的卡"
-	-- 选择自己场上1只满足条件的怪兽作为效果对象
+	-- 选择自己场上1只符合条件的怪兽作为效果的对象
 	local g=Duel.SelectTarget(tp,c92895501.spfilter,tp,LOCATION_MZONE,0,1,1,nil,tp)
-	-- 设置效果处理信息：将选中的怪兽送回手卡
+	-- 设置效果处理的信息为：将选择的对象怪兽送回手卡
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,1,0,0)
-	-- 设置效果处理信息：将这张卡特殊召唤
+	-- 设置效果处理的信息为：将这张卡特殊召唤
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,c,1,0,0)
 end
--- ①号效果的效果处理（Operation）
+-- 特殊召唤效果的处理函数
 function c92895501.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取作为效果对象的怪兽
+	-- 获取作为连锁对象的目标怪兽
 	local tc=Duel.GetFirstTarget()
-	-- 若对象怪兽仍与连锁相关，则将其送回持有者手卡
+	-- 判断对象怪兽是否仍与连锁关联，并将其送回手卡
 	if tc:IsRelateToChain() and Duel.SendtoHand(tc,nil,REASON_EFFECT)>0
 		and tc:IsLocation(LOCATION_HAND) and c:IsRelateToChain() then
-		-- 将手卡的这张卡表侧表示特殊召唤
+		-- 将这张卡从手卡以表侧表示特殊召唤到自己场上
 		Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
--- ②号效果（暗属性）的展示怪兽过滤条件：手卡中未公开的暗属性怪兽
+-- 抽卡效果所需展示的手卡怪兽的过滤条件：手卡中未公开的暗属性怪兽
 function c92895501.drcfilter(c)
 	return c:IsAttribute(ATTRIBUTE_DARK) and not c:IsPublic()
 end
--- ②号效果（暗属性）的发动代价（Cost）
+-- 抽卡效果的发动代价处理函数
 function c92895501.drcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查手卡中是否存在至少1只未公开的暗属性怪兽
+	-- 代价检测：判断手卡中是否存在符合过滤条件的怪兽
 	if chk==0 then return Duel.IsExistingMatchingCard(c92895501.drcfilter,tp,LOCATION_HAND,0,1,nil) end
-	-- 提示玩家选择要给对方确认的卡片
+	-- 向玩家提示选择给对方确认的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_CONFIRM)  --"请选择给对方确认的卡"
-	-- 选择手卡中1只未公开的暗属性怪兽
+	-- 选择自己手卡中1只符合过滤条件的暗属性怪兽
 	local g=Duel.SelectMatchingCard(tp,c92895501.drcfilter,tp,LOCATION_HAND,0,1,1,nil)
-	-- 将选中的怪兽给对方观看确认
+	-- 给对方确认（展示）所选择的卡片
 	Duel.ConfirmCards(1-tp,g)
+	-- 若是「征服斗魂」卡片发动的代价，则触发展示手卡怪兽的自定义事件
 	if e:GetHandler():IsSetCard(0x195) then Duel.RaiseEvent(g,EVENT_CUSTOM+9091064,e,REASON_COST,tp,tp,0) end
+	-- 洗切展示后的自己手卡
 	Duel.ShuffleHand(tp)
 end
--- ②号效果（暗属性）的发动准备（Target）
+-- 抽卡效果的发动准备与合法性检测（含连锁内限发判定）
 function c92895501.drtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查自己是否可以从卡组抽卡
+	-- 判断自己是否能够抽1张卡
 	if chk==0 then return Duel.IsPlayerCanDraw(tp,1)
-		-- 检查当前连锁中是否尚未发动过该卡的效果（用于实现同一连锁上不能发动的限制）
+		-- 判断当前连锁中同一玩家是否未发动过此卡的效果
 		and Duel.GetFlagEffect(tp,92895501)==0 end
-	-- 在当前连锁中注册标识，防止同一连锁重复发动
+	-- 在当前连锁中为玩家注册已发动该卡效果的标识，防止在同一连锁重复发动
 	Duel.RegisterFlagEffect(tp,92895501,RESET_CHAIN,0,1)
-	-- 设置效果处理的目标玩家为自己
+	-- 设置当前效果的触发/影响玩家为自己
 	Duel.SetTargetPlayer(tp)
-	-- 设置效果处理的目标参数为1（抽1张卡）
+	-- 设置当前效果的参数为抽1张卡
 	Duel.SetTargetParam(1)
-	-- 设置效果处理信息：自己从卡组抽1张卡
+	-- 设置效果处理的信息为：自己从卡组抽1张卡
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,1)
 end
--- ②号效果（暗属性）的效果处理（Operation）
+-- 抽卡效果的处理函数
 function c92895501.drop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取效果处理的目标玩家和抽卡数量
+	-- 获取抽卡的目标玩家和抽卡数量参数
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 让目标玩家因效果抽指定数量的卡
+	-- 让目标玩家因效果抽卡
 	Duel.Draw(p,d,REASON_EFFECT)
 end
--- ②号效果（地·炎属性）的展示怪兽过滤条件：手卡中未公开的地属性或炎属性怪兽
+-- 伤害效果所需展示的手卡怪兽的过滤条件：手卡中未公开的地属性或炎属性怪兽
 function c92895501.dmgcfilter(c)
 	return c:IsAttribute(ATTRIBUTE_EARTH+ATTRIBUTE_FIRE) and not c:IsPublic()
 end
--- ②号效果（地·炎属性）的发动代价（Cost）
+-- 伤害效果的发动代价处理函数
 function c92895501.dmgcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 获取手卡中所有未公开的地属性和炎属性怪兽
+	-- 获取自己手卡中符合过滤条件的怪兽卡片组
 	local g=Duel.GetMatchingGroup(c92895501.dmgcfilter,tp,LOCATION_HAND,0,nil)
-	-- 检查手卡中是否存在地属性和炎属性怪兽各1只
+	-- 代价检测：判断手卡中是否包含地属性与炎属性怪兽各1只
 	if chk==0 then return g:CheckSubGroup(aux.gfcheck,2,2,Card.IsAttribute,ATTRIBUTE_EARTH,ATTRIBUTE_FIRE) end
-	-- 提示玩家选择要给对方确认的卡片
+	-- 向玩家提示选择给对方确认的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_CONFIRM)  --"请选择给对方确认的卡"
-	-- 选择手卡中地属性和炎属性的怪兽各1只
+	-- 选择自己手卡中的地属性和炎属性怪兽各1只
 	local sg=g:SelectSubGroup(tp,aux.gfcheck,false,2,2,Card.IsAttribute,ATTRIBUTE_EARTH,ATTRIBUTE_FIRE)
-	-- 将选中的2只怪兽给对方观看确认
+	-- 给对方确认（展示）所选择的卡片组
 	Duel.ConfirmCards(1-tp,sg)
+	-- 若是「征服斗魂」卡片发动的代价，则触发展示手卡怪兽的自定义事件
 	if e:GetHandler():IsSetCard(0x195) then Duel.RaiseEvent(sg,EVENT_CUSTOM+9091064,e,REASON_COST,tp,tp,0) end
+	-- 洗切展示后的自己手卡
 	Duel.ShuffleHand(tp)
 end
--- ②号效果（地·炎属性）的发动准备（Target）
+-- 伤害效果的发动准备与合法性检测（含连锁内限发判定）
 function c92895501.dmgtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查当前连锁中是否尚未发动过该卡的效果（用于实现同一连锁上不能发动的限制）
+	-- 判断当前连锁中同一玩家是否未发动过此卡的效果
 	if chk==0 then return Duel.GetFlagEffect(tp,92895501)==0 end
-	-- 在当前连锁中注册标识，防止同一连锁重复发动
+	-- 在当前连锁中为玩家注册已发动该卡效果的标识，防止在同一连锁重复发动
 	Duel.RegisterFlagEffect(tp,92895501,RESET_CHAIN,0,1)
-	-- 设置效果处理的目标玩家为对方
+	-- 设置当前效果的触发/影响玩家为对方
 	Duel.SetTargetPlayer(1-tp)
-	-- 设置效果处理的目标参数为1500（伤害值）
+	-- 设置当前效果的伤害数值参数为1500点
 	Duel.SetTargetParam(1500)
-	-- 设置效果处理信息：给与对方1500伤害
+	-- 设置效果处理的信息为：给与对方1500点伤害
 	Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,1-tp,1500)
 end
--- ②号效果（地·炎属性）的效果处理（Operation）
+-- 伤害效果的处理函数
 function c92895501.dmgop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取效果处理的目标玩家和伤害数值
+	-- 获取伤害的目标玩家和伤害值参数
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 给与目标玩家因效果造成的伤害
+	-- 对目标玩家造成效果伤害
 	Duel.Damage(p,d,REASON_EFFECT)
 end

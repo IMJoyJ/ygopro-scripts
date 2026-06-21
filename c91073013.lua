@@ -45,74 +45,76 @@ function c91073013.initial_effect(c)
 	e3:SetOperation(c91073013.desop)
 	c:RegisterEffect(e3)
 end
--- ①号效果的发动条件函数
+-- 特殊召唤效果的条件判断
 function c91073013.spcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判定当前是否为主要阶段1或主要阶段2
+	-- 当前阶段是主要阶段1或主要阶段2
 	return Duel.GetCurrentPhase()==PHASE_MAIN1 or Duel.GetCurrentPhase()==PHASE_MAIN2
 end
--- 过滤满足作为①号效果对象的「征服斗魂」怪兽的条件：场上表侧表示、能回到手卡、非龙族，且其离开后能腾出怪兽区域
+-- 作为对象的自己场上的「征服斗魂」怪兽过滤条件：龙族以外、表侧表示、能回到手卡且满足出场位置
 function c91073013.spfilter(c,tp)
 	return c:IsSetCard(0x195) and c:IsFaceup() and c:IsAbleToHand() and not c:IsRace(RACE_DRAGON)
-		-- 判定该怪兽回到手卡后，自己场上是否有可用于特殊召唤的空余怪兽区域
+		-- 该怪兽回到手卡后，自己场上有可用于特殊召唤的怪兽区域
 		and Duel.GetMZoneCount(tp,c)>0
 end
--- ①号效果的发动准备与目标选择函数
+-- 特殊召唤效果的目标判定（包括取对象检测）
 function c91073013.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(tp) and chkc:IsLocation(LOCATION_MZONE) and c91073013.spfilter(chkc,tp) end
 	local c=e:GetHandler()
 	if chk==0 then return c:IsCanBeSpecialSummoned(e,0,tp,false,false)
-		-- 检查自己场上是否存在满足条件的「征服斗魂」怪兽作为对象
+		-- 自己场上存在可以作为此效果对象的龙族以外的「征服斗魂」怪兽
 		and Duel.IsExistingTarget(c91073013.spfilter,tp,LOCATION_MZONE,0,1,nil,tp)
-		-- 检查当前连锁中是否尚未发动过该卡的效果（用于限制同一连锁不能发动）
+		-- 同一连锁上还没有发动过此卡的效果
 		and Duel.GetFlagEffect(tp,91073013)==0 end
-	-- 在当前连锁中为玩家注册已发动效果的标记，用于同一连锁不能发动的限制
+	-- 给玩家注册在该连锁中已发动过该卡效果的标记（同一连锁不能重复发动）
 	Duel.RegisterFlagEffect(tp,91073013,RESET_CHAIN,0,1)
-	-- 设置选择卡片时的提示信息为“请选择要返回手牌的卡”
+	-- 提示玩家选择要回到手卡的怪兽
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_RTOHAND)  --"请选择要返回手牌的卡"
-	-- 选择自己场上1只满足条件的「征服斗魂」怪兽作为效果对象
+	-- 选择自己场上一只龙族以外的「征服斗魂」怪兽作为对象
 	local g=Duel.SelectTarget(tp,c91073013.spfilter,tp,LOCATION_MZONE,0,1,1,nil,tp)
-	-- 设置连锁信息：操作分类为返回手卡，操作对象为选中的怪兽
+	-- 设置操作信息：对象怪兽回到手卡
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,1,0,0)
-	-- 设置连锁信息：操作分类为特殊召唤，操作对象为手卡中的这张卡
+	-- 设置操作信息：这张卡特殊召唤
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,c,1,0,0)
 end
--- ①号效果的执行函数
+-- 特殊召唤效果的操作处理
 function c91073013.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取当前连锁中被选为对象的怪兽
+	-- 获取作为效果对象的那只怪兽
 	local tc=Duel.GetFirstTarget()
-	-- 若对象怪兽仍与连锁相关，则将其因效果送回持有者手卡，并确认成功回手
+	-- 若对象怪兽仍和连锁相关则送回持有者手卡
 	if tc:IsRelateToChain() and Duel.SendtoHand(tc,nil,REASON_EFFECT)>0
 		and tc:IsLocation(LOCATION_HAND) and c:IsRelateToChain() then
-		-- 将这张卡从手卡以表侧表示特殊召唤到自己场上
+		-- 将这张卡从手卡表侧表示特殊召唤
 		Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
--- 过滤手卡中未公开的地属性怪兽
+-- 过滤手卡中未展示的地属性怪兽
 function c91073013.imcfilter(c)
 	return c:IsAttribute(ATTRIBUTE_EARTH) and not c:IsPublic()
 end
--- ②号效果（地属性分支）的发动代价函数
+-- 抗性效果的发动代价：展示手卡中1只地属性怪兽
 function c91073013.imcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 在发动准备阶段，检查手卡中是否存在至少1只未公开的地属性怪兽
+	-- 判断手卡中是否存在未展示的地属性怪兽
 	if chk==0 then return Duel.IsExistingMatchingCard(c91073013.imcfilter,tp,LOCATION_HAND,0,1,nil) end
-	-- 设置选择卡片时的提示信息为“请选择给对方确认的卡”
+	-- 提示玩家选择要展示的地属性怪兽
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_CONFIRM)  --"请选择给对方确认的卡"
-	-- 从手卡中选择1只未公开的地属性怪兽
+	-- 选择自己手卡中1只未展示的地属性怪兽
 	local g=Duel.SelectMatchingCard(tp,c91073013.imcfilter,tp,LOCATION_HAND,0,1,1,nil)
-	-- 将选中的怪兽给对方玩家确认
+	-- 向对方玩家展示选中的怪兽
 	Duel.ConfirmCards(1-tp,g)
+	-- 若此卡是「征服斗魂」怪兽，触发展示卡片的自定义事件
 	if e:GetHandler():IsSetCard(0x195) then Duel.RaiseEvent(g,EVENT_CUSTOM+9091064,e,REASON_COST,tp,tp,0) end
+	-- 将自己手卡洗牌
 	Duel.ShuffleHand(tp)
 end
--- ②号效果（地属性分支）的发动准备与目标确认函数
+-- 抗性效果的目标判定与连锁判定
 function c91073013.imtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 在发动准备阶段，检查当前连锁中是否尚未发动过该卡的效果
+	-- 判断同一连锁上是否还未发动过此卡的效果
 	if chk==0 then return Duel.GetFlagEffect(tp,91073013)==0 end
-	-- 在当前连锁中为玩家注册已发动效果的标记，用于同一连锁不能发动的限制
+	-- 给玩家注册在该连锁中已发动过该卡效果的标记（同一连锁不能重复发动）
 	Duel.RegisterFlagEffect(tp,91073013,RESET_CHAIN,0,1)
 end
--- ②号效果（地属性分支）的执行函数
+-- 抗性效果的操作处理
 function c91073013.imop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if not c:IsRelateToChain() then return end
@@ -126,53 +128,55 @@ function c91073013.imop(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetValue(c91073013.efilter)
 	c:RegisterEffect(e1)
 end
--- 过滤不受影响的效果：对方玩家拥有的且已发动的效果
+-- 抗性过滤条件：不受对方发动的效果影响
 function c91073013.efilter(e,re)
 	return e:GetHandlerPlayer()~=re:GetOwnerPlayer() and re:IsActivated()
 end
--- 过滤手卡中未公开的地、炎、暗属性怪兽
+-- 过滤手卡中未展示的地、暗、炎属性怪兽
 function c91073013.descfilter(c)
 	return c:IsAttribute(ATTRIBUTE_EARTH+ATTRIBUTE_DARK+ATTRIBUTE_FIRE) and not c:IsPublic()
 end
--- ②号效果（地·炎·暗属性分支）的发动代价函数
+-- 破坏效果的发动代价：展示手卡中地、炎、暗属性的怪兽各1只
 function c91073013.descost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 获取手卡中所有未公开的地、炎、暗属性怪兽
+	-- 获取手卡中未展示的地、暗、炎属性怪兽
 	local g=Duel.GetMatchingGroup(c91073013.descfilter,tp,LOCATION_HAND,0,nil)
-	-- 在发动准备阶段，检查手卡中是否存在地、炎、暗属性各1只（共3只不同属性）的怪兽
+	-- 判断是否存在地、炎、暗属性怪兽各1只的组合
 	if chk==0 then return g:CheckSubGroup(aux.dabcheck,3,3) end
-	-- 设置选择卡片时的提示信息为“请选择给对方确认的卡”
+	-- 提示玩家选择要展示的3只怪兽
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_CONFIRM)  --"请选择给对方确认的卡"
-	-- 从手卡中选择地、炎、暗属性各1只（共3只不同属性）的怪兽
+	-- 选择属性各不相同的3只手卡怪兽（地、炎、暗各1只）
 	local sg=g:SelectSubGroup(tp,aux.dabcheck,false,3,3)
-	-- 将选中的3只怪兽给对方玩家确认
+	-- 向对方玩家展示这3只怪兽
 	Duel.ConfirmCards(1-tp,sg)
+	-- 若此卡是「征服斗魂」怪兽，触发展示卡片的自定义事件
 	if e:GetHandler():IsSetCard(0x195) then Duel.RaiseEvent(sg,EVENT_CUSTOM+9091064,e,REASON_COST,tp,tp,0) end
+	-- 将自己手卡洗牌
 	Duel.ShuffleHand(tp)
 end
--- ②号效果（地·炎·暗属性分支）的发动准备与目标确认函数
+-- 破坏效果的目标判定与连锁判定
 function c91073013.destg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	-- 获取场上除这张卡以外的所有卡片
 	local g=Duel.GetMatchingGroup(aux.TRUE,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,c)
-	-- 在发动准备阶段，检查场上是否存在其他卡片，且当前连锁中尚未发动过该卡的效果
+	-- 判断场上是否存在其他卡片可以被破坏，并且同一连锁上没有发动过此卡的效果
 	if chk==0 then return #g>0 and Duel.GetFlagEffect(tp,91073013)==0 end
-	-- 在当前连锁中为玩家注册已发动效果的标记，用于同一连锁不能发动的限制
+	-- 给玩家注册在该连锁中已发动过该卡效果的标记（同一连锁不能重复发动）
 	Duel.RegisterFlagEffect(tp,91073013,RESET_CHAIN,0,1)
-	-- 设置连锁信息：操作分类为破坏，操作数量为1
+	-- 设置操作信息：破坏场上1张卡
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,1,0,0)
 end
--- ②号效果（地·炎·暗属性分支）的执行函数
+-- 破坏效果的操作处理
 function c91073013.desop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if not e:GetHandler():IsRelateToChain() then c=nil end
-	-- 设置选择卡片时的提示信息为“请选择要破坏的卡”
+	-- 提示玩家选择要破坏的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 选择场上除这张卡以外的1张卡片
+	-- 选择场上1张其他卡
 	local g=Duel.SelectMatchingCard(tp,aux.TRUE,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,1,c)
 	if #g>0 then
-		-- 给选中的卡片显示被选为对象的动画效果
+		-- 给被选为对象的卡显示选择状态动画
 		Duel.HintSelection(g)
-		-- 将选中的卡片因效果破坏
+		-- 将选中的卡破坏
 		Duel.Destroy(g,REASON_EFFECT)
 	end
 end
