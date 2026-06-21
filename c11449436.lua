@@ -26,31 +26,32 @@ function c11449436.initial_effect(c)
 	e2:SetOperation(c11449436.desop)
 	c:RegisterEffect(e2)
 end
--- 判断是否满足效果①的发动条件，即是否处于战斗状态且自己的怪兽为通常怪兽。
+-- 判断是否为自己的表侧表示通常怪兽与对方怪兽战斗，并保存自己怪兽的指针
 function c11449436.indescon(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前正在战斗中的自己怪兽和对方怪兽。
+	-- 获取正在进行战斗的自己怪兽和对方怪兽
 	local a,d=Duel.GetBattleMonster(tp)
 	e:SetLabelObject(a)
 	return a and d and a:IsFaceup() and a:IsType(TYPE_NORMAL)
 end
--- 判断是否满足效果①的发动成本，即确认手卡的这张卡是否已经公开。
+-- 检查手牌中的这张卡是否处于非公开状态
 function c11449436.indescost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return not e:GetHandler():IsPublic() end
 end
--- 设置效果①的发动目标，检查是否满足发动条件并设置操作信息。
+-- 检查自己手牌中是否存在可丢弃的卡，并设置丢弃自己手牌的操作信息
 function c11449436.indestg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否满足发动条件，即自己手卡是否存在至少一张卡。
+	-- 检查自己手牌中是否存在至少1张卡
 	if chk==0 then return Duel.IsExistingMatchingCard(nil,tp,LOCATION_HAND,0,1,nil) end
+	-- 设置丢弃1张自己手牌的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 end
--- 定义效果①的处理流程，包括丢弃手卡和为怪兽添加不被战斗破坏的效果。
+-- 丢弃1张自己手牌，并让参与战斗的己方怪兽在本次战斗中不会被战斗破坏
 function c11449436.indesop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local a=e:GetLabelObject()
-	-- 执行丢弃手卡操作并判断是否满足后续处理条件。
+	-- 若成功从自己手牌中丢弃1张卡，且存在战斗中的自己怪兽
 	if Duel.DiscardHand(tp,nil,1,1,REASON_EFFECT+REASON_DISCARD)>0 and a
 		and a:IsRelateToBattle() and a:IsControler(tp) then
-		-- 那只自己怪兽不会被那次战斗破坏。
+		-- 那只自己怪兽不会被那次战斗破坏
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_INDESTRUCTABLE_BATTLE)
@@ -59,39 +60,41 @@ function c11449436.indesop(e,tp,eg,ep,ev,re,r,rp)
 		a:RegisterEffect(e1)
 	end
 end
--- 定义过滤函数，用于筛选手卡中未公开的通常怪兽。
+-- 筛选手牌中非公开的通常怪兽
 function c11449436.cfilter(c)
 	return c:IsType(TYPE_NORMAL) and not c:IsPublic()
 end
--- 判断是否满足效果②的发动成本，即是否手卡存在未公开的通常怪兽。
+-- 检查并选择手牌中1只通常怪兽给对方确认，然后洗牌
 function c11449436.descost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否满足发动条件，即自己手卡是否存在至少一张未公开的通常怪兽。
+	-- 检查自己手牌中是否存在可供公开的通常怪兽
 	if chk==0 then return Duel.IsExistingMatchingCard(c11449436.cfilter,tp,LOCATION_HAND,0,1,nil) end
-	-- 向玩家发送提示信息，提示选择要确认的卡。
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_CONFIRM)
-	-- 选择一张未公开的通常怪兽进行确认。
+	-- 提示玩家选择给对方确认的卡
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_CONFIRM)  --"请选择给对方确认的卡"
+	-- 从手卡中选择1张未公开的通常怪兽
 	local g=Duel.SelectMatchingCard(tp,c11449436.cfilter,tp,LOCATION_HAND,0,1,1,nil)
-	-- 向对方玩家确认所选的卡。
+	-- 将所选择的卡展示给对手确认
 	Duel.ConfirmCards(1-tp,g)
-	-- 将自己的手卡进行洗牌处理。
+	-- 洗切自己手牌以重新打乱手牌顺序
 	Duel.ShuffleHand(tp)
 end
--- 设置效果②的发动目标，检查是否满足发动条件并设置操作信息。
+-- 确认战斗的对方怪兽及手牌数量，并设置丢弃自己手牌与破坏对方怪兽的操作信息
 function c11449436.destg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local tc=e:GetHandler():GetBattleTarget()
 	e:SetLabelObject(tc)
-	-- 检查是否满足发动条件，即对方怪兽存在且自己手卡存在至少一张卡。
+	-- 确认存在战斗的对方怪兽且自己手牌中至少有1张卡
 	if chk==0 then return tc and tc:IsControler(1-tp) and Duel.GetFieldGroupCount(tp,LOCATION_HAND,0)>0 end
+	-- 设置丢弃1张自己手牌的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
+	-- 设置破坏战斗中的对方怪兽的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,tc,1,0,0)
 end
--- 定义效果②的处理流程，包括丢弃手卡和破坏对方怪兽。
+-- 丢弃1张自己手牌，若战斗中的对方怪兽仍存在，则将其破坏
 function c11449436.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 执行丢弃手卡操作并判断是否满足后续处理条件。
+	-- 若成功从自己手牌中丢弃1张卡
 	if Duel.DiscardHand(tp,nil,1,1,REASON_EFFECT+REASON_DISCARD)>0 then
 		local tc=e:GetLabelObject()
 		if tc and tc:IsRelateToBattle() and tc:IsControler(1-tp) then
-			-- 破坏对方怪兽。
+			-- 破坏该对方怪兽
 			Duel.Destroy(tc,REASON_EFFECT)
 		end
 	end

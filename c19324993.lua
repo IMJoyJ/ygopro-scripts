@@ -5,10 +5,10 @@
 -- ①：这张卡连接召唤的场合才能发动（这个效果发动的回合，自己不是「英雄」怪兽不能特殊召唤）。额外卡组1只「英雄」融合怪兽给对方观看，那只怪兽有卡名记述的最多2只融合素材怪兽从卡组加入手卡（同名卡最多1张）。
 -- ②：这张卡所连接区的恶魔族怪兽的攻击力·守备力上升自身的等级×100。
 function c19324993.initial_effect(c)
-	-- 为卡片添加连接召唤手续，要求使用至少2张且至多2张满足过滤条件的怪兽作为连接素材，过滤条件为是否为「英雄」卡。
+	-- 设置连接召唤手续：需要「英雄」怪兽2只
 	aux.AddLinkProcedure(c,aux.FilterBoolFunction(Card.IsLinkSetCard,0x8),2,2)
 	c:EnableReviveLimit()
-	-- ①：这张卡连接召唤的场合才能发动（这个效果发动的回合，自己不是「英雄」怪兽不能特殊召唤）。
+	-- ①：这张卡连接召唤的场合才能发动（这个效果发动的回合，自己不是「英雄」怪兽不能特殊召唤）。额外卡组1只「英雄」融合怪兽给对方观看，那只怪兽有卡名记述的最多2只融合素材怪兽从卡组加入手卡（同名卡最多1张）。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(19324993,0))
 	e1:SetCategory(CATEGORY_SEARCH+CATEGORY_TOHAND)
@@ -33,22 +33,22 @@ function c19324993.initial_effect(c)
 	local e3=e2:Clone()
 	e3:SetCode(EFFECT_UPDATE_DEFENSE)
 	c:RegisterEffect(e3)
-	-- 设置一个计数器，用于记录玩家在该回合中特殊召唤的「英雄」怪兽数量，防止超过1次。
+	-- 设置特殊召唤活动计数器，用于检测本回合是否特殊召唤过非「英雄」怪兽
 	Duel.AddCustomActivityCounter(19324993,ACTIVITY_SPSUMMON,c19324993.counterfilter)
 end
--- 计数器的过滤函数，判断卡片是否为「英雄」卡。
+-- 特殊召唤活动计数器的过滤函数：判断特殊召唤的是否为表侧表示的「英雄」怪兽
 function c19324993.counterfilter(c)
 	return c:IsSetCard(0x8) and c:IsFaceup()
 end
--- 效果发动的条件，判断该卡是否为连接召唤成功。
+-- 效果发动条件：这张卡连接召唤成功
 function c19324993.thcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsSummonType(SUMMON_TYPE_LINK)
 end
--- 效果发动的费用，检查该回合是否已使用过此效果，若未使用则设置一个回合结束时重置的不能特殊召唤效果。
+-- 代价：检查本回合玩家是否特殊召唤过非「英雄」怪兽，并添加本回合只能特殊召唤「英雄」怪兽的誓约限制效果
 function c19324993.thcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查该回合是否已使用过此效果，若未使用则返回true。
+	-- 限制条件检查：判断本回合自己是否特殊召唤过非「英雄」怪兽
 	if chk==0 then return Duel.GetCustomActivityCount(19324993,tp,ACTIVITY_SPSUMMON)==0 end
-	-- 创建一个影响对方玩家的永续效果，禁止其特殊召唤非「英雄」怪兽。
+	-- （这个效果发动的回合，自己不是「英雄」怪兽不能特殊召唤）。额外卡组1只「英雄」融合怪兽给对方观看，那只怪兽有卡名记述的最多2只融合素材怪兽从卡组加入手卡（同名卡最多1张）。②：这张卡所连接区的恶魔族怪兽的攻击力·守备力上升自身的等级×100。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET+EFFECT_FLAG_OATH)
@@ -56,57 +56,57 @@ function c19324993.thcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	e1:SetReset(RESET_PHASE+PHASE_END)
 	e1:SetTargetRange(1,0)
 	e1:SetTarget(c19324993.splimit)
-	-- 将该效果注册给指定玩家。
+	-- 对玩家注册该特殊召唤限制效果
 	Duel.RegisterEffect(e1,tp)
 end
--- 限制特殊召唤的过滤函数，禁止召唤非「英雄」卡。
+-- 特殊召唤限制：不能特殊召唤非「英雄」怪兽
 function c19324993.splimit(e,c)
 	return not c:IsSetCard(0x8)
 end
--- 融合怪兽的过滤函数，筛选出额外卡组中满足类型为融合、种族为「英雄」且卡组中存在其融合素材的怪兽。
+-- 过滤额外卡组的卡：是「英雄」融合怪兽，且卡组中存在有其卡名记述的融合素材怪兽
 function c19324993.ffilter(c,tp)
 	return c:IsType(TYPE_FUSION) and c:IsSetCard(0x8)
-		-- 检查卡组中是否存在该融合怪兽的融合素材。
+		-- 检查卡组是否存在有该融合怪兽卡名记述的融合素材怪兽
 		and Duel.IsExistingMatchingCard(c19324993.thfilter,tp,LOCATION_DECK,0,1,nil,c)
 end
--- 检索卡的过滤函数，判断是否为融合素材且可加入手牌。
+-- 过滤检索的素材怪兽：是该融合怪兽有卡名记述的怪兽，且是怪兽卡并能加入手卡
 function c19324993.thfilter(c,fc)
-	-- 判断该卡是否为融合素材且可加入手牌。
+	-- 判断怪兽是否为融合怪兽有卡名记述的怪兽，且能加入手卡并是怪兽卡
 	return aux.IsMaterialListCode(fc,c:GetCode()) and c:IsAbleToHand() and c:IsType(TYPE_MONSTER)
 end
--- 效果的发动目标，检查额外卡组中是否存在满足条件的融合怪兽。
+-- 效果目标：检查额外卡组中是否存在符合条件的「英雄」融合怪兽
 function c19324993.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查额外卡组中是否存在满足条件的融合怪兽。
+	-- 检查额外卡组中是否存在可给对方观看且有卡名记述的素材存在于卡组的「英雄」融合怪兽
 	if chk==0 then return Duel.IsExistingMatchingCard(c19324993.ffilter,tp,LOCATION_EXTRA,0,1,nil,tp) end
 end
--- 效果的发动处理，选择融合怪兽并展示给对方，再选择最多2张其融合素材加入手牌。
+-- 效果运行：给对方确认额外卡组1只「英雄」融合怪兽，并将该怪兽有卡名记述的最多2只卡名不同的融合素材怪兽从卡组加入手卡
 function c19324993.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择一张融合怪兽给对方确认。
+	-- 提示玩家选择给对方确认的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_CONFIRM)  --"请选择给对方确认的卡"
-	-- 从额外卡组中选择一张满足条件的融合怪兽。
+	-- 从额外卡组中选择1只符合条件的「英雄」融合怪兽
 	local tc=Duel.SelectMatchingCard(tp,c19324993.ffilter,tp,LOCATION_EXTRA,0,1,1,nil,tp):GetFirst()
 	if tc then
-		-- 将该融合怪兽展示给对方玩家。
+		-- 将选中的融合怪兽给对方确认
 		Duel.ConfirmCards(1-tp,tc)
-		-- 提示玩家选择要加入手牌的融合素材。
+		-- 提示玩家选择要加入手牌的卡
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-		-- 获取满足条件的融合素材组。
+		-- 获取卡组中符合条件的该融合怪兽的融合素材怪兽
 		local g=Duel.GetMatchingGroup(c19324993.thfilter,tp,LOCATION_DECK,0,nil,tc)
-		-- 从融合素材组中选择最多2张卡名不同的卡。
+		-- 选择最多2只卡名互不相同的融合素材怪兽
 		local sg=g:SelectSubGroup(tp,aux.dncheck,false,1,2)
 		if sg and sg:GetCount()>0 then
-			-- 将选中的融合素材加入手牌。
+			-- 将选中的怪兽加入手卡
 			Duel.SendtoHand(sg,nil,REASON_EFFECT)
-			-- 将选中的融合素材展示给对方玩家。
+			-- 向对方玩家确认加入手卡的怪兽
 			Duel.ConfirmCards(1-tp,sg)
 		end
 	end
 end
--- 判断目标怪兽是否为连接区的恶魔族怪兽。
+-- 增值怪兽过滤：必须是此卡所连接区的恶魔族怪兽
 function c19324993.atktg(e,c)
 	return e:GetHandler():GetLinkedGroup():IsContains(c) and c:IsRace(RACE_FIEND)
 end
--- 计算连接区恶魔族怪兽的攻击力提升值，为自身等级乘以100。
+-- 攻击力·守备力上升的值：自身的等级×100
 function c19324993.atkval(e,c)
 	return c:GetLevel()*100
 end

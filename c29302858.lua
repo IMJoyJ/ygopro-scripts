@@ -45,63 +45,65 @@ function c29302858.initial_effect(c)
 	e4:SetOperation(c29302858.desop)
 	c:RegisterEffect(e4)
 end
--- 检索满足条件的卡片组，即战士族以外的「征服斗魂」怪兽
+-- 过滤条件：卡组中战士族以外的「征服斗魂」怪兽
 function c29302858.thfilter(c)
 	return c:IsSetCard(0x195) and c:IsType(TYPE_MONSTER) and not c:IsRace(RACE_WARRIOR) and c:IsAbleToHand()
 end
--- 判断是否满足发动条件，即卡组存在满足条件的怪兽且该玩家未发动过此效果
+-- 效果①的发动靶子（Target）函数：检查卡组是否存在符合条件的卡，以及当前连锁中玩家未曾发动过此卡的效果
 function c29302858.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断卡组是否存在满足条件的怪兽
+	-- 检查卡组中是否存在至少1张满足过滤条件的卡
 	if chk==0 then return Duel.IsExistingMatchingCard(c29302858.thfilter,tp,LOCATION_DECK,0,1,nil)
-		-- 判断该玩家是否已发动过此效果
+		-- 检查当前连锁中玩家是否未曾发动过此卡的效果（用于同一连锁上不能发动的限制）
 		and Duel.GetFlagEffect(tp,29302858)==0 end
-	-- 注册标识效果，防止同一连锁发动
+	-- 在当前连锁中注册效果标记，用于限制同一连锁上不能重复发动此卡效果
 	Duel.RegisterFlagEffect(tp,29302858,RESET_CHAIN,0,1)
-	-- 设置操作信息，用于连锁检测
+	-- 设置连锁处理的操作信息：从卡组将1张卡加入手卡
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 处理效果发动，选择并加入手牌
+-- 效果①的执行（Operation）函数：从卡组选择1只战士族以外的「征服斗魂」怪兽加入手卡并展示给对方确认
 function c29302858.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要加入手牌的卡
+	-- 提示玩家选择要检索的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择满足条件的卡
+	-- 从卡组选择1张满足过滤条件的卡
 	local g=Duel.SelectMatchingCard(tp,c29302858.thfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if #g>0 then
-		-- 将选中的卡送入手牌
+		-- 将选择的卡因效果加入手牌
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 向对方确认所选卡
+		-- 向对方展示确认加入手牌的卡片
 		Duel.ConfirmCards(1-tp,g)
 	end
 end
--- 筛选手牌中炎属性且未公开的怪兽
+-- 过滤条件：手卡中非公开的炎属性怪兽
 function c29302858.indescfilter(c)
 	return c:IsAttribute(ATTRIBUTE_FIRE) and not c:IsPublic()
 end
--- 处理效果发动，确认手牌中炎属性怪兽并洗切手牌
+-- 效果②「炎」分支的发动代价（Cost）函数：展示手卡中的1只炎属性怪兽
 function c29302858.indescost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断是否存在满足条件的手牌
+	-- 检查手卡中是否存在至少1张未展示过的炎属性怪兽
 	if chk==0 then return Duel.IsExistingMatchingCard(c29302858.indescfilter,tp,LOCATION_HAND,0,1,nil) end
-	-- 提示玩家选择给对方确认的卡
+	-- 提示玩家选择展示给对方确认的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_CONFIRM)  --"请选择给对方确认的卡"
-	-- 选择满足条件的手牌
+	-- 从手卡选择1张满足过滤条件的炎属性怪兽
 	local g=Duel.SelectMatchingCard(tp,c29302858.indescfilter,tp,LOCATION_HAND,0,1,1,nil)
-	-- 向对方确认所选卡
+	-- 向对方展示确认选择的炎属性怪兽
 	Duel.ConfirmCards(1-tp,g)
+	-- 若自身是「征服斗魂」卡片，则触发对应的手卡展示事件以支持本系列其他卡片的效果触发
 	if e:GetHandler():IsSetCard(0x195) then Duel.RaiseEvent(g,EVENT_CUSTOM+9091064,e,REASON_COST,tp,tp,0) end
+	-- 洗切玩家的手卡
 	Duel.ShuffleHand(tp)
 end
--- 处理效果发动，判断是否可发动
+-- 效果②「炎」分支的发动靶子（Target）函数：检查同一连锁上是否没有发动过此卡的效果，并注册限制标记
 function c29302858.indestg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断该玩家是否已发动过此效果
+	-- 检查玩家在当前连锁中是否没有注册过该卡的效果发动标记
 	if chk==0 then return Duel.GetFlagEffect(tp,29302858)==0 end
-	-- 注册标识效果，防止同一连锁发动
+	-- 在当前连锁中注册效果标记，用于限制同一连锁上不能重复发动此卡效果
 	Duel.RegisterFlagEffect(tp,29302858,RESET_CHAIN,0,1)
 end
--- 处理效果发动，使此卡在本回合不会被效果破坏
+-- 效果②「炎」分支的执行（Operation）函数：给此卡添加在这个回合内不会被效果破坏的永续效果
 function c29302858.indesop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if not c:IsRelateToChain() then return end
-	-- 使此卡在本回合不会被效果破坏
+	-- 这个回合，这张卡不会被效果破坏。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_INDESTRUCTABLE_EFFECT)
@@ -110,41 +112,43 @@ function c29302858.indesop(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END,1)
 	c:RegisterEffect(e1)
 end
--- 筛选手牌中炎·暗属性且未公开的怪兽
+-- 过滤条件：手卡中未展示的炎属性或暗属性怪兽
 function c29302858.descfilter(c)
 	return c:IsAttribute(ATTRIBUTE_FIRE+ATTRIBUTE_DARK) and not c:IsPublic()
 end
--- 处理效果发动，确认手牌中炎·暗属性怪兽并洗切手牌
+-- 效果②「炎·暗」分支的发动代价（Cost）函数：展示手卡中炎属性和暗属性怪兽各1只
 function c29302858.descost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 获取满足条件的手牌组
+	-- 获取手卡中所有未展示的炎属性和暗属性怪兽
 	local g=Duel.GetMatchingGroup(c29302858.descfilter,tp,LOCATION_HAND,0,nil)
-	-- 判断是否存在满足条件的两张手牌组合
+	-- 检查手卡中是否能选出炎属性与暗属性各1只的怪兽组合
 	if chk==0 then return g:CheckSubGroup(aux.gfcheck,2,2,Card.IsAttribute,ATTRIBUTE_FIRE,ATTRIBUTE_DARK) end
-	-- 提示玩家选择给对方确认的卡
+	-- 提示玩家选择展示给对方确认的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_CONFIRM)  --"请选择给对方确认的卡"
-	-- 选择满足条件的两张手牌
+	-- 从符合条件的卡中选择炎属性和暗属性各1只的怪兽组合
 	local sg=g:SelectSubGroup(tp,aux.gfcheck,false,2,2,Card.IsAttribute,ATTRIBUTE_FIRE,ATTRIBUTE_DARK)
-	-- 向对方确认所选卡
+	-- 向对方展示所选的炎属性和暗属性怪兽进行确认
 	Duel.ConfirmCards(1-tp,sg)
+	-- 若自身是「征服斗魂」卡片，则触发对应的手卡展示事件以支持本系列其他卡片的效果触发
 	if e:GetHandler():IsSetCard(0x195) then Duel.RaiseEvent(sg,EVENT_CUSTOM+9091064,e,REASON_COST,tp,tp,0) end
+	-- 洗切玩家的手卡
 	Duel.ShuffleHand(tp)
 end
--- 处理效果发动，判断是否可发动
+-- 效果②「炎·暗」分支的发动靶子（Target）函数：检查相同纵列是否存在怪兽，并确认同一连锁未曾发动过此卡效果，设置破坏的操作信息
 function c29302858.destg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	local g=c:GetColumnGroup():Filter(Card.IsLocation,nil,LOCATION_MZONE)
-	-- 判断是否存在满足条件的怪兽且该玩家未发动过此效果
+	-- 检查与这张卡相同纵列的其他怪兽区是否存在怪兽，以及当前连锁中玩家未曾发动过此卡的效果
 	if chk==0 then return #g>0 and Duel.GetFlagEffect(tp,29302858)==0 end
-	-- 注册标识效果，防止同一连锁发动
+	-- 在当前连锁中注册效果发动标记，限制同一连锁内不能发动此卡效果
 	Duel.RegisterFlagEffect(tp,29302858,RESET_CHAIN,0,1)
-	-- 设置操作信息，用于连锁检测
+	-- 设置连锁处理的操作信息：破坏相同纵列的怪兽
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,#g,0,0)
 end
--- 处理效果发动，破坏相同纵列的怪兽
+-- 效果②「炎·暗」分支的执行（Operation）函数：将与这张卡相同纵列的其他怪兽全部破坏
 function c29302858.desop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if not c:IsRelateToChain() then return end
 	local g=c:GetColumnGroup():Filter(Card.IsLocation,nil,LOCATION_MZONE)
-	-- 破坏满足条件的怪兽
+	-- 因效果破坏相同纵列的怪兽
 	Duel.Destroy(g,REASON_EFFECT)
 end
