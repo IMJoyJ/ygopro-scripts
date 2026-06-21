@@ -22,18 +22,18 @@ function c59281922.initial_effect(c)
 	e2:SetTarget(c59281922.target)
 	e2:SetOperation(c59281922.operation)
 	c:RegisterEffect(e2)
-	-- 注册卡名变更效果，使这张卡在场上·墓地存在时卡名当作「电子龙」使用。
+	-- 在场上·墓地将卡名当作「电子龙」使用
 	aux.EnableChangeCode(c,70095154,LOCATION_MZONE+LOCATION_GRAVE)
-	-- 添加自定义活动计数器，用于记录玩家特殊召唤非机械族怪兽的次数。
+	-- 添加用于检测本回合是否特殊召唤了非机械族怪兽的计数器
 	Duel.AddCustomActivityCounter(59281922,ACTIVITY_SPSUMMON,c59281922.counterfilter)
 end
--- 计数器过滤函数，用于判定特殊召唤的怪兽是否为机械族。
+-- 检查特殊召唤的是否为表侧表示的机械族怪兽
 function c59281922.counterfilter(c)
 	return c:IsRace(RACE_MACHINE) and c:IsFaceup()
 end
--- 等级变化效果的Cost函数，用于检查并适用本回合不能特殊召唤非机械族怪兽的限制。
+-- 效果②的Cost与誓约限制：检查本回合至今特殊召唤非机械族怪兽的次数，并施加本回合不能特殊召唤非机械族怪兽的誓约
 function c59281922.lvcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查本回合玩家是否未曾特殊召唤过非机械族怪兽。
+	-- 检查本回合自己是否没有特殊召唤过非机械族怪兽
 	if chk==0 then return Duel.GetCustomActivityCount(59281922,tp,ACTIVITY_SPSUMMON)==0 end
 	-- 自己场上的全部「电子龙」的等级变成5星。这个效果发动的回合，自己不是机械族怪兽不能特殊召唤。
 	local e1=Effect.CreateEffect(e:GetHandler())
@@ -43,29 +43,29 @@ function c59281922.lvcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	e1:SetReset(RESET_PHASE+PHASE_END)
 	e1:SetTargetRange(1,0)
 	e1:SetTarget(c59281922.splimit)
-	-- 注册不能特殊召唤非机械族怪兽的玩家效果（誓约限制）。
+	-- 注册不能特殊召唤非机械族怪兽的限制效果
 	Duel.RegisterEffect(e1,tp)
 end
--- 限制特殊召唤的过滤函数，判定非机械族怪兽不能特殊召唤。
+-- 特殊召唤限制判定：不能特殊召唤非机械族怪兽
 function c59281922.splimit(e,c,sump,sumtype,sumpos,targetp,se)
 	return c:GetRace()~=RACE_MACHINE
 end
--- 过滤函数，用于筛选自己场上表侧表示的「电子龙」。
+-- 过滤条件：自己场上表侧表示的「电子龙」
 function c59281922.filter(c)
 	return c:IsFaceup() and c:IsCode(70095154)
 end
--- 等级变化效果的Target函数，检查场上是否存在可以改变等级的「电子龙」。
+-- 效果②的发动检测：确认自己场上是否存在表侧表示的「电子龙」
 function c59281922.lvtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查自己场上是否存在至少1只表侧表示的「电子龙」。
+	-- 检查自己场上是否存在表侧表示的「电子龙」
 	if chk==0 then return Duel.IsExistingMatchingCard(c59281922.filter,tp,LOCATION_MZONE,0,1,nil) end
 end
--- 等级变化效果的Operation函数，将自己场上全部「电子龙」的等级变成5星。
+-- 效果②的效果处理：将自己场上所有表侧表示的「电子龙」的等级变成5星
 function c59281922.lvop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取自己场上所有表侧表示的「电子龙」卡片组。
+	-- 获取自己场上表侧表示的所有「电子龙」怪兽
 	local g=Duel.GetMatchingGroup(c59281922.filter,tp,LOCATION_MZONE,0,nil)
 	local tc=g:GetFirst()
 	while tc do
-		-- 自己场上的全部「电子龙」的等级变成5星。
+		-- 自己场上的全部「电子龙」的等级变成5星
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_CHANGE_LEVEL)
@@ -76,22 +76,22 @@ function c59281922.lvop(e,tp,eg,ep,ev,re,r,rp)
 		tc=g:GetNext()
 	end
 end
--- 被除外时赋予破坏耐性效果的Target函数，选择自己场上1只「电子龙」作为效果对象。
+-- 效果③的目标判定与选择：以自己场上1只「电子龙」为对象才能发动
 function c59281922.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(tp) and chkc:IsLocation(LOCATION_MZONE) and c59281922.filter(chkc) end
-	-- 检查自己场上是否存在可以作为效果对象的表侧表示的「电子龙」。
+	-- 检查自己场上是否存在可以作为效果对象的表侧表示的「电子龙」
 	if chk==0 then return Duel.IsExistingTarget(c59281922.filter,tp,LOCATION_MZONE,0,1,nil) end
-	-- 给玩家发送提示信息，提示选择表侧表示的卡片。
+	-- 提示玩家选择表侧表示的怪兽
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
-	-- 玩家选择自己场上1只表侧表示的「电子龙」作为效果对象。
+	-- 选择自己场上1只表侧表示的「电子龙」作为效果对象
 	Duel.SelectTarget(tp,c59281922.filter,tp,LOCATION_MZONE,0,1,1,nil)
 end
--- 被除外时赋予破坏耐性效果的Operation函数，使作为对象的怪兽在这个回合不会被战斗·效果破坏。
+-- 效果③的效果处理：使作为对象的怪兽在这个回合不会被战斗·效果破坏
 function c59281922.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁中被选择的效果对象怪兽。
+	-- 获取作为效果对象的「电子龙」怪兽
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 这个回合，那只怪兽不会被战斗·效果破坏。
+		-- 这个回合，那只怪兽不会被战斗破坏
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_INDESTRUCTABLE_BATTLE)

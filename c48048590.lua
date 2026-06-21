@@ -30,18 +30,18 @@ function c48048590.initial_effect(c)
 	e3:SetTarget(c48048590.sptg)
 	e3:SetOperation(c48048590.spop)
 	c:RegisterEffect(e3)
-	-- 设置一个计数器，用于限制该卡在回合内特殊召唤次数
+	-- 注册自定义活动计数器，用于检测玩家在回合内从额外卡组特殊召唤融合怪兽以外的怪兽的行为
 	Duel.AddCustomActivityCounter(48048590,ACTIVITY_SPSUMMON,c48048590.counterfilter)
 end
--- 计数器过滤函数，排除从额外卡组特殊召唤且为融合怪兽的卡片
+-- 过滤函数：仅允许不是从额外卡组召唤的怪兽或者表侧表示的融合怪兽通过
 function c48048590.counterfilter(c)
 	return not c:IsSummonLocation(LOCATION_EXTRA) or c:IsType(TYPE_FUSION) and c:IsFaceup()
 end
--- 创建并注册一个场地方效果，使玩家在本回合不能特殊召唤非融合怪兽到额外卡组
+-- 效果发动的誓约限制：检查本回合是否进行过非融合额外卡组怪兽的特殊召唤，并注册本回合不能特殊召唤非融合额外卡组怪兽的限制
 function c48048590.cost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查该玩家是否已使用过此效果（通过计数器判断）
+	-- 检查本回合内自己是否未进行过非融合怪兽的额外卡组特殊召唤
 	if chk==0 then return Duel.GetCustomActivityCount(48048590,tp,ACTIVITY_SPSUMMON)==0 end
-	-- 注册一个场地方效果，使玩家在本回合不能特殊召唤非融合怪兽到额外卡组
+	-- 这张卡的效果发动的回合，自己不是融合怪兽不能从额外卡组特殊召唤。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET+EFFECT_FLAG_OATH)
@@ -49,90 +49,90 @@ function c48048590.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	e1:SetTargetRange(1,0)
 	e1:SetTarget(c48048590.splimit)
 	e1:SetReset(RESET_PHASE+PHASE_END)
-	-- 将创建的效果注册给指定玩家
+	-- 注册限制自己从额外卡组特殊召唤非融合怪兽的效果
 	Duel.RegisterEffect(e1,tp)
 end
--- 限制效果的目标为非融合怪兽且位于额外卡组的卡片
+-- 特殊召唤限制过滤：不能从额外卡组特殊召唤融合怪兽以外的怪兽
 function c48048590.splimit(e,c,sump,sumtype,sumpos,targetp,se)
 	return not c:IsType(TYPE_FUSION) and c:IsLocation(LOCATION_EXTRA)
 end
--- 检查是否满足丢弃手牌的条件
+-- 效果①的发动代价（cost）：检查手卡中是否存在可以丢弃的卡，并检查是否满足本回合特殊召唤限制的誓约条件
 function c48048590.thcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否有可丢弃的手牌
+	-- 在发动条件检查时，确认自己手卡中是否存在可以丢弃的卡
 	if chk==0 then return Duel.IsExistingMatchingCard(Card.IsDiscardable,tp,LOCATION_HAND,0,1,nil)
 		and c48048590.cost(e,tp,eg,ep,ev,re,r,rp,0) end
-	-- 执行丢弃手牌的操作
+	-- 丢弃1张手卡作为发动代价
 	Duel.DiscardHand(tp,Card.IsDiscardable,1,1,REASON_COST+REASON_DISCARD)
 	c48048590.cost(e,tp,eg,ep,ev,re,r,rp,1)
 end
--- 检索满足条件的魔法卡过滤函数
+-- 过滤卡组中属于「融合」字段的通常魔法卡
 function c48048590.thfilter(c)
 	return c:GetType()==TYPE_SPELL and c:IsSetCard(0x46) and c:IsAbleToHand()
 end
--- 设置效果处理信息，表示将从卡组检索一张魔法卡加入手牌
+-- 效果①的发动目标：确认卡组中是否存在可以加入手牌的「融合」通常魔法卡，并设置将卡组的1张卡加入手卡的操作信息
 function c48048590.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否有满足条件的魔法卡存在于卡组中
+	-- 确认卡组中是否存在可以加入手牌的「融合」通常魔法卡
 	if chk==0 then return Duel.IsExistingMatchingCard(c48048590.thfilter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置效果处理信息，表示将从卡组检索一张魔法卡加入手牌
+	-- 设置将卡组的1张卡加入手卡的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 执行检索并加入手牌的操作
+-- 效果①的处理：从卡组选择1张「融合」通常魔法卡加入手牌并给对方确认
 function c48048590.thop(e,tp,eg,ep,ev,re,r,rp)
 	-- 提示玩家选择要加入手牌的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择满足条件的魔法卡
+	-- 从卡组中选择1张符合检索条件的卡
 	local g=Duel.SelectMatchingCard(tp,c48048590.thfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的卡加入手牌
+		-- 将选中的卡加入玩家手卡
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 向对方确认所选的卡
+		-- 向对方玩家确认加入手牌的卡
 		Duel.ConfirmCards(1-tp,g)
 	end
 end
--- 筛选额外卡组中融合怪兽的过滤函数
+-- 过滤额外卡组中的融合怪兽，要求其记述的素材中有1只存在于自己墓地且可以特殊召唤
 function c48048590.filter1(c,e,tp)
-	-- 检查是否存在满足条件的融合怪兽
+	-- 判断是否为融合怪兽，且其有记述卡名的融合素材怪兽在自己墓地满足特殊召唤条件
 	return c:IsType(TYPE_FUSION) and Duel.IsExistingMatchingCard(c48048590.filter2,tp,LOCATION_GRAVE,0,1,nil,e,tp,c)
 end
--- 筛选墓地中可特殊召唤的融合素材怪兽的过滤函数
+-- 墓地融合素材特殊召唤的过滤条件：可里侧守备表示特殊召唤，且为展示的融合怪兽记述了卡名的素材怪兽
 function c48048590.filter2(c,e,tp,fc)
-	-- 检查是否满足特殊召唤条件并为融合素材
+	-- 判断怪兽是否可以里侧守备表示特殊召唤，且其卡名记述在作为参数传入的融合怪兽的素材列表中
 	return c:IsCanBeSpecialSummoned(e,0,tp,false,false,POS_FACEDOWN_DEFENSE) and aux.IsMaterialListCode(fc,c:GetCode())
 end
--- 检查是否满足特殊召唤的费用条件
+-- 效果②的发动代价与条件检查：满足本回合特殊召唤誓约，并且额外卡组有符合条件的融合怪兽可以展示
 function c48048590.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return c48048590.cost(e,tp,eg,ep,ev,re,r,rp,0)
-		-- 检查是否存在满足条件的额外卡组融合怪兽
+		-- 确认额外卡组中是否存在可以给对方展示的融合怪兽
 		and Duel.IsExistingMatchingCard(c48048590.filter1,tp,LOCATION_EXTRA,0,1,nil,e,tp) end
-	-- 提示玩家选择要给对方确认的融合怪兽
+	-- 提示玩家选择要向对方确认的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_CONFIRM)  --"请选择给对方确认的卡"
-	-- 选择满足条件的额外卡组融合怪兽
+	-- 从额外卡组选择1只符合条件的融合怪兽
 	local g=Duel.SelectMatchingCard(tp,c48048590.filter1,tp,LOCATION_EXTRA,0,1,1,nil,e,tp)
-	-- 向对方确认所选的融合怪兽
+	-- 向对方展示所选的融合怪兽
 	Duel.ConfirmCards(1-tp,g)
 	e:SetLabelObject(g:GetFirst())
 	c48048590.cost(e,tp,eg,ep,ev,re,r,rp,1)
 end
--- 设置效果处理信息，表示将从墓地特殊召唤一只怪兽
+-- 效果②的发动目标：确认自己场上有可用的怪兽区域，并设置将墓地的卡特殊召唤的操作信息
 function c48048590.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否有足够的场地空位进行特殊召唤
+	-- 检查自己场上是否有空置的怪兽区域用于特殊召唤
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0 end
-	-- 设置效果处理信息，表示将从墓地特殊召唤一只怪兽
+	-- 设置将墓地怪兽特殊召唤的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_GRAVE)
 end
--- 执行特殊召唤的操作
+-- 效果②的处理：在自己场上存在可用怪兽区域的前提下，选择墓地中记述于展示融合怪兽素材中的怪兽，以里侧守备表示特殊召唤
 function c48048590.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查是否有足够的场地空位进行特殊召唤
+	-- 如果场上已无可用怪兽区域，则结束效果处理
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<1 then return end
 	local fc=e:GetLabelObject()
-	-- 提示玩家选择要特殊召唤的卡
+	-- 提示玩家选择要特殊召唤的怪兽
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 选择满足条件的墓地怪兽
+	-- 从墓地选择1只不受王家长眠之谷影响的、卡名记述在展示融合怪兽上的素材怪兽
 	local g=Duel.SelectMatchingCard(tp,aux.NecroValleyFilter(c48048590.filter2),tp,LOCATION_GRAVE,0,1,1,nil,e,tp,fc)
 	if g:GetCount()>0 then
-		-- 将选中的卡以里侧守备表示特殊召唤到场上
+		-- 将选中的怪兽在自己场上里侧守备表示特殊召唤
 		Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEDOWN_DEFENSE)
-		-- 向对方确认所选的卡
+		-- 向对方玩家确认特殊召唤的里侧表示怪兽
 		Duel.ConfirmCards(1-tp,g)
 	end
 end
