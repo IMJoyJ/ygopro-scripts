@@ -97,9 +97,7 @@ function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 end
 -- 效果①的执行函数，将符合条件的目标送回手牌
 function s.thop(e,tp,eg,ep,ev,re,r,rp)
-	local c=e:GetHandler()
-	-- 获取与连锁相关的选中目标，并过滤受王家长眠之谷影响的卡
-	local g=Duel.GetTargetsRelateToChain():Filter(aux.NecroValleyFilter(),nil)
+	local g=Duel.GetTargetsRelateToChain()
 	if g:GetCount()>0 then
 		-- 将目标卡送回手牌（REASON_EFFECT）
 		Duel.SendtoHand(g,nil,REASON_EFFECT)

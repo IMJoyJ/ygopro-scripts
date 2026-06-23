@@ -7,7 +7,8 @@
 local s,id,o=GetID()
 -- 注册卡片初始效果，并设置用于限制「欢聚友伴」怪兽效果发动次数的自定义活动计数器。
 function s.initial_effect(c)
-	-- ①：自己·对方回合，自己场上没有卡存在的场合，把这张卡从手卡丢弃才能发动。这个回合中，以下效果适用。
+	aux.EnableMulcharmyGlobalCheck()
+	--draw
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(id,0))  --"抽卡"
 	e1:SetCategory(CATEGORY_DRAW)
@@ -19,44 +20,16 @@ function s.initial_effect(c)
 	e1:SetCost(s.drcost)
 	e1:SetOperation(s.drop)
 	c:RegisterEffect(e1)
-	-- 注册一个自定义活动计数器，用于统计本回合玩家发动「欢聚友伴」怪兽效果的次数。
-	Duel.AddCustomActivityCounter(id,ACTIVITY_CHAIN,s.chainfilter)
 end
 -- 检查发动条件：自己场上没有卡存在，且本回合自己发动「欢聚友伴」怪兽效果的次数小于2次。
 function s.drcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断自己场上的卡数量是否为0，且本回合自己发动「欢聚友伴」怪兽效果的次数是否小于2次。
-	return Duel.GetFieldGroupCount(tp,LOCATION_ONFIELD,0)==0 and Duel.GetCustomActivityCount(id,tp,ACTIVITY_CHAIN)<2
+	return Duel.GetFieldGroupCount(tp,LOCATION_ONFIELD,0)==0 and Duel.GetFlagEffect(tp,84192580)<=1
 end
 -- 丢弃自身作为发动代价，并注册一个限制本回合只能再发动1次其他「欢聚友伴」怪兽效果的誓约效果。
 function s.drcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsDiscardable() end
 	-- 将这张卡从手卡丢弃送去墓地。
 	Duel.SendtoGrave(e:GetHandler(),REASON_COST+REASON_DISCARD)
-	-- 这张卡的效果发动的回合，自己只能有1次把这张卡以外的「欢聚友伴」怪兽的效果发动。
-	local e3=Effect.CreateEffect(e:GetHandler())
-	e3:SetType(EFFECT_TYPE_FIELD)
-	e3:SetProperty(EFFECT_FLAG_PLAYER_TARGET+EFFECT_FLAG_OATH)
-	e3:SetCode(EFFECT_CANNOT_ACTIVATE)
-	e3:SetTargetRange(1,0)
-	e3:SetCondition(s.actcon)
-	e3:SetValue(s.aclimit)
-	e3:SetReset(RESET_PHASE+PHASE_END)
-	-- 给玩家注册限制发动「欢聚友伴」怪兽效果次数的誓约效果。
-	Duel.RegisterEffect(e3,tp)
-end
--- 过滤函数：如果发动的是「欢聚友伴」怪兽的效果，则返回false（使计数器增加）。
-function s.chainfilter(re,tp,cid)
-	return not (re:IsActiveType(TYPE_MONSTER) and re:GetHandler():IsSetCard(0x1b2))
-end
--- 限制效果的生效条件：当本回合自己发动「欢聚友伴」怪兽效果的次数大于1次时。
-function s.actcon(e)
-	local tp=e:GetHandlerPlayer()
-	-- 判断本回合自己发动「欢聚友伴」怪兽效果的次数是否大于1次。
-	return Duel.GetCustomActivityCount(id,tp,ACTIVITY_CHAIN)>1
-end
--- 限制发动效果的类型：不能发动「欢聚友伴」怪兽的效果。
-function s.aclimit(e,re,tp)
-	return re:IsActiveType(TYPE_MONSTER) and re:GetHandler():IsSetCard(0x1b2)
 end
 -- 效果处理：注册在对方从手卡召唤·特殊召唤怪兽时让自己抽卡的多个延迟/即时触发效果，以及在结束阶段将多余手卡随机回到卡组的效果。
 function s.drop(e,tp,eg,ep,ev,re,r,rp)

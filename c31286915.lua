@@ -65,8 +65,7 @@ function s.tdtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 end
 -- 效果处理：将目标卡送回卡组
 function s.tdop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁中选定的目标卡，并过滤掉受王家长眠之谷影响的卡
-	local g=Duel.GetChainInfo(0,CHAININFO_TARGET_CARDS):Filter(aux.NecroValleyFilter(Card.IsRelateToChain),nil)
+	local g=Duel.GetTargetsRelateToChain()
 	if g:GetCount()>0 then
 		-- 将符合条件的卡送回卡组并洗牌
 		Duel.SendtoDeck(g,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)

@@ -36,32 +36,30 @@ function c21744288.spcon(e,tp,eg,ep,ev,re,r,rp)
 	-- 效果发动时点为自己的主要阶段1或主要阶段2时
 	return Duel.GetCurrentPhase()==PHASE_MAIN1 or Duel.GetCurrentPhase()==PHASE_MAIN2
 end
--- 用于判断满足条件的费用卡片（手牌中的魔法卡或场上的魔法卡）
-function c21744288.costfilter(c,tp)
+function c21744288.costfilter(c,tp,res)
 	if c:IsLocation(LOCATION_HAND) then return c:IsType(TYPE_SPELL) and c:IsDiscardable() end
 	return c:IsFaceup() and c:IsAbleToGraveAsCost() and c:IsHasEffect(83289866,tp)
+		or not c:IsCode(32353566) and c:IsSetCard(0x128)
+		and c:IsType(TYPE_SPELL+TYPE_TRAP) and c:IsAbleToGraveAsCost()
+		and c:IsLocation(LOCATION_DECK) and res
 end
 -- 判断是否满足发动条件：解放此卡并从手牌或魔法区选择1张魔法卡作为费用
 function c21744288.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
+	local res=Duel.IsPlayerAffectedByEffect(tp,32353566) and e:GetHandler():IsSetCard(0x128)
 	if chk==0 then return e:GetHandler():IsReleasable()
-		-- 判断是否满足发动条件：解放此卡并从手牌或魔法区选择1张魔法卡作为费用
-		and Duel.IsExistingMatchingCard(c21744288.costfilter,tp,LOCATION_HAND+LOCATION_SZONE,0,1,nil,tp) end
-	-- 获取满足费用条件的卡片组
-	local g=Duel.GetMatchingGroup(c21744288.costfilter,tp,LOCATION_HAND+LOCATION_SZONE,0,nil,tp)
-	-- 提示玩家选择要丢弃的手牌
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DISCARD)  --"请选择要丢弃的手牌"
+		and Duel.IsExistingMatchingCard(c21744288.costfilter,tp,LOCATION_HAND+LOCATION_SZONE+LOCATION_DECK,0,1,nil,tp,res) end
+	local g=Duel.GetMatchingGroup(c21744288.costfilter,tp,LOCATION_HAND+LOCATION_SZONE+LOCATION_DECK,0,nil,tp,res)
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DISCARD)
 	local tc=g:Select(tp,1,1,nil):GetFirst()
-	local te=tc:IsHasEffect(83289866,tp)
-	if te then
-		te:UseCountLimit(tp)
-		-- 将此卡解放作为费用
-		Duel.Release(e:GetHandler(),REASON_COST)
-		-- 将所选卡片送去墓地作为费用
+	Duel.Release(e:GetHandler(),REASON_COST)
+	if not tc:IsLocation(LOCATION_HAND) then
+		local te=tc:IsHasEffect(83289866,tp)
+		if te then
+			te:UseCountLimit(tp)
+			Duel.RegisterFlagEffect(tp,tc:GetCode(),RESET_PHASE+PHASE_END,0,1)
+		end
 		Duel.SendtoGrave(tc,REASON_COST)
 	else
-		-- 将此卡解放作为费用
-		Duel.Release(e:GetHandler(),REASON_COST)
-		-- 将所选卡片送去墓地作为费用
 		Duel.SendtoGrave(tc,REASON_COST+REASON_DISCARD)
 	end
 end

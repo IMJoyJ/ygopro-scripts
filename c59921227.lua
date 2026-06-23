@@ -49,6 +49,7 @@ function s.initial_effect(c)
 	e5:SetType(EFFECT_TYPE_QUICK_O)
 	e5:SetCode(EVENT_FREE_CHAIN)
 	e5:SetRange(LOCATION_GRAVE)
+	e5:SetHintTiming(0,TIMING_END_PHASE)
 	e5:SetCountLimit(1,id+o)
 	-- 设置效果③的发动Cost：将墓地的这张卡除外
 	e5:SetCost(aux.bfgcost)

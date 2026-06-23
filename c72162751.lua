@@ -58,9 +58,7 @@ function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 end
 -- 效果①的效果处理
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取仍存在于场上且与该连锁相关的对象卡片
-	local g=Duel.GetChainInfo(0,CHAININFO_TARGET_CARDS):Filter(aux.AND(Card.IsRelateToChain,Card.IsOnField),nil)
-	-- 尝试破坏目标卡片，若成功破坏了至少1张卡则继续处理
+	local g=Duel.GetTargetsRelateToChain()
 	if Duel.Destroy(g,REASON_EFFECT)~=0 then
 		-- 获取本次操作中实际被破坏的卡片数量
 		local ct=Duel.GetOperatedGroup():GetCount()

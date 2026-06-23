@@ -100,8 +100,7 @@ function s.destg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 end
 -- 效果③的发动效果处理函数，破坏选中的卡
 function s.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁中被选中的卡，并过滤出与连锁相关的场上卡
-	local g=Duel.GetChainInfo(0,CHAININFO_TARGET_CARDS):Filter(aux.AND(Card.IsRelateToChain,Card.IsOnField),nil)
+	local g=Duel.GetTargetsRelateToChain()
 	if g:GetCount()>0 then
 		-- 将符合条件的卡破坏
 		Duel.Destroy(g,REASON_EFFECT)

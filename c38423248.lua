@@ -61,10 +61,8 @@ function s.rmtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 end
 -- 除外效果的处理函数，将符合条件的卡除外
 function s.rmop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁中被选择的目标卡组
-	local g=Duel.GetChainInfo(0,CHAININFO_TARGET_CARDS)
-	-- 筛选出与连锁相关的融合·同调·超量·连接怪兽
-	local tg=g:Filter(aux.NecroValleyFilter(aux.AND(Card.IsRelateToChain,Card.IsType)),nil,TYPE_MONSTER)
+	local g=Duel.GetTargetsRelateToChain()
+	local tg=g:Filter(Card.IsType,nil,TYPE_MONSTER)
 	if tg:GetCount()>0 then
 		-- 将符合条件的卡除外
 		Duel.Remove(tg,POS_FACEUP,REASON_EFFECT)

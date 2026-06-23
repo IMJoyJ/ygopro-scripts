@@ -68,8 +68,7 @@ end
 -- ①效果的效果处理：将作为对象的3张卡放入卡组底端，并将这张卡从手卡或墓地特殊召唤到场上
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取连锁中不受墓地限制卡影响且仍然关联的目标卡片组
-	local tg=Duel.GetChainInfo(0,CHAININFO_TARGET_CARDS):Filter(aux.NecroValleyFilter(Card.IsRelateToChain),nil)
+	local tg=Duel.GetTargetsRelateToChain()
 	if #tg>0 then
 		-- 将目标卡片置于持有者卡组的最下方（顺序由玩家选择）
 		local ct=aux.PlaceCardsOnDeckBottom(tp,tg)

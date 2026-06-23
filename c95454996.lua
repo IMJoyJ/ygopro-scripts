@@ -63,10 +63,7 @@ function s.rmtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 end
 -- 效果①的效果处理：除外选中的对象
 function s.rmop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁中被选为对象的卡片
-	local g=Duel.GetChainInfo(0,CHAININFO_TARGET_CARDS)
-	-- 过滤出仍与效果相关且不受王家长眠之谷影响的卡
-	local tg=g:Filter(aux.NecroValleyFilter(Card.IsRelateToEffect),nil,e)
+	local tg=Duel.GetTargetsRelateToChain()
 	if tg:GetCount()>0 then
 		-- 将目标卡片表侧表示除外
 		Duel.Remove(tg,POS_FACEUP,REASON_EFFECT)

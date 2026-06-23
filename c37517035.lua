@@ -157,8 +157,7 @@ function s.tdtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 end
 -- 效果②的处理流程：将目标卡返回卡组
 function s.tdop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取与当前连锁相关的卡组并过滤受王家长眠之谷影响的卡
-	local g=Duel.GetTargetsRelateToChain():Filter(aux.NecroValleyFilter(),nil)
+	local g=Duel.GetTargetsRelateToChain()
 	if g:GetCount()>0 then
 		-- 将卡返回卡组并洗牌
 		Duel.SendtoDeck(g,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)

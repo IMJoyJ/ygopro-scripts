@@ -90,8 +90,7 @@ function s.tdtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 end
 -- 效果2的效果处理：将作为对象的卡用喜欢的顺序回到卡组最上面，之后可以破坏对方场上1只表侧攻击表示怪兽
 function s.tdop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取仍与连锁有关联且不受王家之谷影响的对象卡片组
-	local tg=Duel.GetTargetsRelateToChain():Filter(aux.NecroValleyFilter(),nil)
+	local tg=Duel.GetTargetsRelateToChain()
 	if tg:GetCount()==0 then return end
 	-- 将对象卡片送回卡组最上方，若没有卡成功回到卡组则处理结束
 	if Duel.SendtoDeck(tg,nil,SEQ_DECKTOP,REASON_EFFECT)==0 then return end

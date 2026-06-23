@@ -33,46 +33,35 @@ function s.initial_effect(c)
 	e2:SetOperation(s.drop)
 	c:RegisterEffect(e2)
 end
--- 过滤函数，用于判断场上是否有满足条件的怪兽可以解放
-function s.cfilter(c,tp)
-	-- 判断怪兽是否为海皇或水精鳞卡组且场上存在可用怪兽区
-	return c:IsSetCard(0x77,0x74) and Duel.GetMZoneCount(tp,c)>0
+function s.cfilter(c,e,tp)
+	return c:IsSetCard(0x77,0x74)
+		and Duel.IsExistingMatchingCard(s.thfilter,tp,LOCATION_DECK,0,1,nil,e,tp,c)
 end
 -- 效果发动时的费用处理，需要解放手卡的自己和场上的海皇或水精鳞怪兽
 function s.thcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
-	e:SetLabel(100)
-	-- 检查是否满足解放条件
-	if chk==0 then return c:IsReleasable() and Duel.CheckReleaseGroupEx(tp,s.cfilter,1,REASON_COST,true,c,tp) end
-	-- 选择满足条件的怪兽进行解放
-	local g=Duel.SelectReleaseGroupEx(tp,s.cfilter,1,1,REASON_COST,true,c,tp)
+	if chk==0 then return c:IsReleasable() and Duel.CheckReleaseGroupEx(tp,s.cfilter,1,REASON_COST,true,c,e,tp) end
+	local g=Duel.SelectReleaseGroupEx(tp,s.cfilter,1,1,REASON_COST,true,c,e,tp)
 	g:AddCard(c)
 	-- 执行怪兽解放操作
 	Duel.Release(g,REASON_COST)
 end
--- 过滤函数，用于检索满足条件的7星鱼族·海龙族·水族怪兽
-function s.thfilter(c,e,tp,el)
+function s.thfilter(c,e,tp,rc)
 	if not (c:IsLevel(7) and c:IsRace(RACE_AQUA+RACE_FISH+RACE_SEASERPENT)) then return false end
-	-- 获取玩家场上可用怪兽区数量
-	local ft=Duel.GetLocationCount(tp,LOCATION_MZONE)
-	return c:IsAbleToHand() or ((ft>0 or el==100) and c:IsCanBeSpecialSummoned(e,0,tp,false,false))
+	return c:IsAbleToHand() or (Duel.GetMZoneCount(tp,rc)>0 and c:IsCanBeSpecialSummoned(e,0,tp,false,false))
 end
 -- 效果发动时的取对象处理，检查卡组是否存在满足条件的怪兽
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查卡组是否存在满足条件的怪兽
-	if chk==0 then return Duel.IsExistingMatchingCard(s.thfilter,tp,LOCATION_DECK,0,1,nil,e,tp,e:GetLabel()) end
+	if chk==0 then return e:IsCostChecked()
+		or Duel.IsExistingMatchingCard(s.thfilter,tp,LOCATION_DECK,0,1,nil,e,tp,nil) end
 end
 -- 效果发动时的处理，选择从卡组检索的怪兽并决定加入手卡或特殊召唤
 function s.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要操作的卡
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_OPERATECARD)  --"请选择要操作的卡"
-	-- 从卡组选择满足条件的怪兽
-	local g=Duel.SelectMatchingCard(tp,s.thfilter,tp,LOCATION_DECK,0,1,1,nil,e,tp,0)
-	-- 获取玩家场上可用怪兽区数量
-	local ft=Duel.GetLocationCount(tp,LOCATION_MZONE)
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_OPERATECARD)
+	local g=Duel.SelectMatchingCard(tp,s.thfilter,tp,LOCATION_DECK,0,1,1,nil,e,tp,nil)
 	local tc=g:GetFirst()
 	if tc then
-		-- 判断是否选择加入手卡或特殊召唤
+		local ft=Duel.GetLocationCount(tp,LOCATION_MZONE)
 		if tc:IsAbleToHand() and (not tc:IsCanBeSpecialSummoned(e,0,tp,false,false) or ft<=0 or Duel.SelectOption(tp,1190,1152)==0) then
 			-- 将怪兽加入手卡
 			Duel.SendtoHand(tc,nil,REASON_EFFECT)

@@ -35,32 +35,30 @@ function c95245544.spcon(e,tp,eg,ep,ev,re,r,rp)
 	-- 判断当前阶段是否为自己或对方的主要阶段1或主要阶段2
 	return Duel.GetCurrentPhase()==PHASE_MAIN1 or Duel.GetCurrentPhase()==PHASE_MAIN2
 end
--- 过滤手卡中的魔法卡（或适用魔女术代破效果的场上魔法卡）作为发动成本
-function c95245544.costfilter(c,tp)
+function c95245544.costfilter(c,tp,res)
 	if c:IsLocation(LOCATION_HAND) then return c:IsType(TYPE_SPELL) and c:IsDiscardable() end
 	return c:IsFaceup() and c:IsAbleToGraveAsCost() and c:IsHasEffect(83289866,tp)
+		or not c:IsCode(32353566) and c:IsSetCard(0x128)
+		and c:IsType(TYPE_SPELL+TYPE_TRAP) and c:IsAbleToGraveAsCost()
+		and c:IsLocation(LOCATION_DECK) and res
 end
 -- 效果①的发动成本处理函数
 function c95245544.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
+	local res=Duel.IsPlayerAffectedByEffect(tp,32353566) and e:GetHandler():IsSetCard(0x128)
 	if chk==0 then return e:GetHandler():IsReleasable()
-		-- 检查手卡或魔法与陷阱区是否存在可作为成本送去墓地的魔法卡
-		and Duel.IsExistingMatchingCard(c95245544.costfilter,tp,LOCATION_HAND+LOCATION_SZONE,0,1,nil,tp) end
-	-- 获取手卡及魔法与陷阱区中满足成本过滤条件的卡片组
-	local g=Duel.GetMatchingGroup(c95245544.costfilter,tp,LOCATION_HAND+LOCATION_SZONE,0,nil,tp)
-	-- 提示玩家选择要丢弃的手卡
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DISCARD)  --"请选择要丢弃的手牌"
+		and Duel.IsExistingMatchingCard(c95245544.costfilter,tp,LOCATION_HAND+LOCATION_SZONE+LOCATION_DECK,0,1,nil,tp,res) end
+	local g=Duel.GetMatchingGroup(c95245544.costfilter,tp,LOCATION_HAND+LOCATION_SZONE+LOCATION_DECK,0,nil,tp,res)
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DISCARD)
 	local tc=g:Select(tp,1,1,nil):GetFirst()
-	local te=tc:IsHasEffect(83289866,tp)
-	if te then
-		te:UseCountLimit(tp)
-		-- 解放自身作为发动成本（代破效果适用时）
-		Duel.Release(e:GetHandler(),REASON_COST)
-		-- 将选中的卡作为发动成本送去墓地（代破效果适用时）
+	Duel.Release(e:GetHandler(),REASON_COST)
+	if not tc:IsLocation(LOCATION_HAND) then
+		local te=tc:IsHasEffect(83289866,tp)
+		if te then
+			te:UseCountLimit(tp)
+			Duel.RegisterFlagEffect(tp,tc:GetCode(),RESET_PHASE+PHASE_END,0,1)
+		end
 		Duel.SendtoGrave(tc,REASON_COST)
 	else
-		-- 解放自身作为发动成本
-		Duel.Release(e:GetHandler(),REASON_COST)
-		-- 将选中的手卡魔法卡丢弃送去墓地作为发动成本
 		Duel.SendtoGrave(tc,REASON_COST+REASON_DISCARD)
 	end
 end

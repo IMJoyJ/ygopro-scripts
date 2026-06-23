@@ -7,7 +7,8 @@
 local s,id,o=GetID()
 -- 注册卡片初始效果，包括手牌发动的效果和用于限制「欢聚友伴」怪兽效果发动次数的自定义计数器。
 function s.initial_effect(c)
-	-- ①：自己·对方回合，自己场上没有卡存在的场合，把这张卡从手卡丢弃才能发动。这个回合中，以下效果适用。
+	aux.EnableMulcharmyGlobalCheck()
+	--draw
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(id,0))  --"抽卡&手卡回卡组"
 	e1:SetCategory(CATEGORY_DRAW)
@@ -19,44 +20,16 @@ function s.initial_effect(c)
 	e1:SetCost(s.drcost)
 	e1:SetOperation(s.drop)
 	c:RegisterEffect(e1)
-	-- 注册自定义活动计数器，用于记录本回合玩家发动「欢聚友伴」怪兽效果的次数。
-	Duel.AddCustomActivityCounter(id,ACTIVITY_CHAIN,s.chainfilter)
 end
 -- 手牌效果发动的条件判定函数（自己场上没有卡存在，且本回合发动「欢聚友伴」怪兽效果的次数在限制范围内）。
 function s.drcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判定自己场上没有卡存在，且本回合自己发动「欢聚友伴」怪兽效果的次数小于2次（即除这张卡外最多只能再发动1次）。
-	return Duel.GetFieldGroupCount(tp,LOCATION_ONFIELD,0)==0 and Duel.GetCustomActivityCount(id,tp,ACTIVITY_CHAIN)<2
+	return Duel.GetFieldGroupCount(tp,LOCATION_ONFIELD,0)==0 and Duel.GetFlagEffect(tp,84192580)<=1
 end
 -- 手牌效果发动的代价与誓约限制处理函数（丢弃自身，并注册本回合「欢聚友伴」怪兽效果发动次数的限制效果）。
 function s.drcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsDiscardable() end
 	-- 将手牌中的这张卡丢弃送去墓地作为发动代价。
 	Duel.SendtoGrave(e:GetHandler(),REASON_COST+REASON_DISCARD)
-	-- 这张卡的效果发动的回合，自己只能有1次把这张卡以外的「欢聚友伴」怪兽的效果发动。
-	local e3=Effect.CreateEffect(e:GetHandler())
-	e3:SetType(EFFECT_TYPE_FIELD)
-	e3:SetProperty(EFFECT_FLAG_PLAYER_TARGET+EFFECT_FLAG_OATH)
-	e3:SetCode(EFFECT_CANNOT_ACTIVATE)
-	e3:SetTargetRange(1,0)
-	e3:SetCondition(s.actcon)
-	e3:SetValue(s.aclimit)
-	e3:SetReset(RESET_PHASE+PHASE_END)
-	-- 注册全局效果，限制玩家本回合发动「欢聚友伴」怪兽效果的次数。
-	Duel.RegisterEffect(e3,tp)
-end
--- 计数器过滤函数，用于筛选出非「欢聚友伴」怪兽效果的发动（即对「欢聚友伴」怪兽效果的发动进行计数）。
-function s.chainfilter(re,tp,cid)
-	return not (re:IsActiveType(TYPE_MONSTER) and re:GetHandler():IsSetCard(0x1b2))
-end
--- 限制发动效果的条件判定函数（当本回合发动「欢聚友伴」怪兽效果的次数超过1次时适用）。
-function s.actcon(e)
-	local tp=e:GetHandlerPlayer()
-	-- 判定本回合自己发动「欢聚友伴」怪兽效果的次数是否已经超过1次。
-	return Duel.GetCustomActivityCount(id,tp,ACTIVITY_CHAIN)>1
-end
--- 限制发动的效果类型判定函数（限制「欢聚友伴」怪兽效果的发动）。
-function s.aclimit(e,re,tp)
-	return re:IsActiveType(TYPE_MONSTER) and re:GetHandler():IsSetCard(0x1b2)
 end
 -- 手牌效果处理函数，注册本回合适用的抽卡效果（非连锁中和连锁解决时）以及结束阶段手卡回卡组的效果。
 function s.drop(e,tp,eg,ep,ev,re,r,rp)

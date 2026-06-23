@@ -28,15 +28,14 @@ function s.tdfilter(c)
 	return c:IsSetCard(0x1c9) and not c:IsCode(id) and c:IsAbleToDeck()
 		and c:IsFaceupEx()
 end
--- 效果发动时的对象选择与目标确认处理
+function s.rmfilter(c,e)
+	return c:IsAbleToRemove() and c:IsCanBeEffectTarget(e)
+end
 function s.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return false end
-	-- 在发动时检查对方墓地是否存在可作为效果对象并除外的卡
-	if chk==0 then return Duel.GetMatchingGroupCount(aux.AND(Card.IsAbleToRemove,Card.IsCanBeEffectTarget),tp,0,LOCATION_GRAVE,nil,e)>0 end
-	-- 获取对方墓地中所有可作为效果对象并除外的卡
-	local g=Duel.GetMatchingGroup(aux.AND(Card.IsAbleToRemove,Card.IsCanBeEffectTarget),tp,0,LOCATION_GRAVE,nil,e)
-	-- 提示玩家选择要除外的卡片
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
+	if chk==0 then return Duel.GetMatchingGroupCount(s.rmfilter,tp,0,LOCATION_GRAVE,nil,e)>0 end
+	local g=Duel.GetMatchingGroup(s.rmfilter,tp,0,LOCATION_GRAVE,nil,e)
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)
 	local sg=g:SelectSubGroup(tp,s.fselect,false,1,2)
 	-- 将选中的卡片注册为效果的对象
 	Duel.SetTargetCard(sg)
@@ -45,8 +44,7 @@ function s.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 end
 -- 效果处理的激活函数
 function s.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取仍与连锁相关且不受王家长眠之谷影响的对象卡片
-	local rg=Duel.GetTargetsRelateToChain():Filter(aux.NecroValleyFilter(),nil)
+	local rg=Duel.GetTargetsRelateToChain()
 	if #rg==0 then return end
 	-- 将对象卡片表侧表示除外，若成功除外则继续处理
 	if Duel.Remove(rg,POS_FACEUP,REASON_EFFECT)>0 then

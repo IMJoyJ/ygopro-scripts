@@ -128,8 +128,7 @@ function s.spop(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取当前自己场上可用的怪兽区域空格数
 	local ft=Duel.GetLocationCount(tp,LOCATION_MZONE)
 	if ft<=0 then return end
-	-- 获取当前连锁中仍与效果相关联，且不受「王家长眠之谷」影响的对象怪兽
-	local g=Duel.GetChainInfo(0,CHAININFO_TARGET_CARDS):Filter(aux.NecroValleyFilter(Card.IsRelateToEffect),nil,e)
+	local g=Duel.GetTargetsRelateToChain()
 	if #g==0 then return end
 	-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中。禁止双方同时特殊召唤2只以上怪兽
 	if #g>1 and Duel.IsPlayerAffectedByEffect(tp,59822133) then return end

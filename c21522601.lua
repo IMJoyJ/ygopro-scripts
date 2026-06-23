@@ -77,26 +77,26 @@ function c21522601.atkop(e,tp,eg,ep,ev,re,r,rp)
 	e2:SetCode(EFFECT_UPDATE_DEFENSE)
 	tc:RegisterEffect(e2)
 end
--- 过滤丢弃或送入墓地的魔法卡
-function c21522601.costfilter(c,tp)
+function c21522601.costfilter(c,tp,res)
 	if c:IsLocation(LOCATION_HAND) then return c:IsType(TYPE_SPELL) and c:IsDiscardable() end
 	return c:IsFaceup() and c:IsAbleToGraveAsCost() and c:IsHasEffect(83289866,tp)
+		or not c:IsCode(32353566) and c:IsSetCard(0x128)
+		and c:IsType(TYPE_SPELL+TYPE_TRAP) and c:IsAbleToGraveAsCost()
+		and c:IsLocation(LOCATION_DECK) and res
 end
 -- ②效果的发动时点判定：确认手牌或场上存在可丢弃的魔法卡
 function c21522601.discost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否满足②效果发动条件
-	if chk==0 then return Duel.IsExistingMatchingCard(c21522601.costfilter,tp,LOCATION_HAND+LOCATION_SZONE,0,1,nil,tp) end
-	-- 获取手牌或场上所有符合条件的魔法卡
-	local g=Duel.GetMatchingGroup(c21522601.costfilter,tp,LOCATION_HAND+LOCATION_SZONE,0,nil,tp)
-	-- 提示玩家选择要丢弃的魔法卡
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DISCARD)  --"请选择要丢弃的手牌"
+	local res=Duel.IsPlayerAffectedByEffect(tp,32353566) and e:GetHandler():IsSetCard(0x128)
+	if chk==0 then return Duel.IsExistingMatchingCard(c21522601.costfilter,tp,LOCATION_HAND+LOCATION_SZONE+LOCATION_DECK,0,1,nil,tp,res) end
+	local g=Duel.GetMatchingGroup(c21522601.costfilter,tp,LOCATION_HAND+LOCATION_SZONE+LOCATION_DECK,0,nil,tp,res)
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DISCARD)
 	local tc=g:Select(tp,1,1,nil):GetFirst()
-	local te=tc:IsHasEffect(83289866,tp)
-	if te then
-		te:UseCountLimit(tp)
-		-- 为玩家注册一个标识效果，防止重复使用
-		Duel.RegisterFlagEffect(tp,tc:GetCode(),RESET_PHASE+PHASE_END,0,1)
-		-- 将选中的魔法卡送入墓地作为②效果的代价
+	if not tc:IsLocation(LOCATION_HAND) then
+		local te=tc:IsHasEffect(83289866,tp)
+		if te then
+			te:UseCountLimit(tp)
+			Duel.RegisterFlagEffect(tp,tc:GetCode(),RESET_PHASE+PHASE_END,0,1)
+		end
 		Duel.SendtoGrave(tc,REASON_COST)
 	else
 		-- 将选中的魔法卡送入墓地作为②效果的代价

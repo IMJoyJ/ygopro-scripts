@@ -122,11 +122,7 @@ function s.settg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 end
 -- 效果①的效果处理：将仍是对象且不受王家长眠之谷影响的卡片在自己场上盖放。
 function s.setop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁中作为对象的卡片组。
-	local g=Duel.GetChainInfo(0,CHAININFO_TARGET_CARDS)
-	-- 过滤出仍与当前连锁有关联且不受「王家长眠之谷」影响的对象卡片。
-	local tg=g:Filter(aux.NecroValleyFilter(Card.IsRelateToChain),nil,e)
-	-- 获取当前自己场上可用的魔法与陷阱区域数量。
+	local tg=Duel.GetTargetsRelateToChain()
 	local ft=Duel.GetLocationCount(tp,LOCATION_SZONE)
 	if #tg==0 or ft<=0 then return end
 	if #tg>ft then

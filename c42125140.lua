@@ -191,10 +191,8 @@ function s.tdtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 end
 -- 执行①效果的操作，将目标卡返回卡组
 function s.tdop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的目标卡组并过滤
-	local g=Duel.GetChainInfo(0,CHAININFO_TARGET_CARDS):Filter(aux.NecroValleyFilter(Card.IsRelateToChain),nil)
-	if g:GetCount()~=3 then return end
-	-- 将卡返回卡组并洗牌
+	local g=Duel.GetTargetsRelateToChain()
+	if g:FilterCount(Card.IsAbleToDeck,nil)~=3 then return end
 	Duel.SendtoDeck(g,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
 end
 -- 设置②效果的发动条件，当有2只以上怪兽同时被送去墓地时发动

@@ -8,29 +8,22 @@ function c96782886.initial_effect(c)
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e1:SetType(EFFECT_TYPE_IGNITION)
 	e1:SetRange(LOCATION_MZONE)
+	e1:SetCountLimit(1,96782886)
 	e1:SetCost(c96782886.cost)
 	e1:SetTarget(c96782886.target)
 	e1:SetOperation(c96782886.operation)
 	c:RegisterEffect(e1)
 end
--- 过滤作为解放代价的卡：自己场上「精神脑魔」以外的念动力族怪兽，且解放后能空出怪兽区域（或本身就在主怪兽区）
-function c96782886.costfilter(c,ft,tp)
-	return c:IsRace(RACE_PSYCHO) and not c:IsCode(96782886)
-		and (ft>0 or (c:IsControler(tp) and c:GetSequence()<5)) and (c:IsControler(tp) or c:IsFaceup())
+function c96782886.costfilter(c,tp)
+	return c:IsRace(RACE_PSYCHO) and Duel.GetMZoneCount(tp,c)>0
+		and (c:IsControler(tp) or c:IsFaceup())
 end
 -- 代价处理：检查是否能支付800基本分并解放1只满足条件的怪兽
 function c96782886.cost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 获取玩家场上可用的怪兽区域数量
-	local ft=Duel.GetLocationCount(tp,LOCATION_MZONE)
-	-- 检查玩家是否能支付800基本分
 	if chk==0 then return Duel.CheckLPCost(tp,800)
-		-- 检查场上是否存在至少1只满足过滤条件的可解放怪兽（且解放后有可用怪兽区域）
-		and ft>-1 and Duel.CheckReleaseGroup(tp,c96782886.costfilter,1,nil,ft,tp) end
-	-- 支付800基本分
+		and Duel.CheckReleaseGroup(tp,c96782886.costfilter,1,nil,tp) end
 	Duel.PayLPCost(tp,800)
-	-- 选择1只满足过滤条件的可解放怪兽
-	local sg=Duel.SelectReleaseGroup(tp,c96782886.costfilter,1,1,nil,ft,tp)
-	-- 将选择的怪兽解放
+	local sg=Duel.SelectReleaseGroup(tp,c96782886.costfilter,1,1,nil,tp)
 	Duel.Release(sg,REASON_COST)
 end
 -- 过滤卡组中满足条件的怪兽：等级4以下的念动力族怪兽，且能以表侧攻击表示特殊召唤

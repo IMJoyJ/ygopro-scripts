@@ -60,8 +60,7 @@ function s.tdtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 end
 -- 效果1（回到卡组）的效果处理函数
 function s.tdop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁中仍合法的对象卡片，并过滤掉受“王家之谷”影响的卡
-	local tg=Duel.GetTargetsRelateToChain():Filter(aux.NecroValleyFilter(),nil)
+	local tg=Duel.GetTargetsRelateToChain()
 	if tg:GetCount()>0 then
 		-- 遍历所有合法的对象卡片
 		for tc in aux.Next(tg) do

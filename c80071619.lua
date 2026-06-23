@@ -124,8 +124,7 @@ function s.fselect2(g,e,tp,sg)
 end
 -- 回卡组并特召效果的执行逻辑（Operation函数）
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取仍与当前连锁有关且不受王家长眠之谷影响的对象卡片组
-	local tg=Duel.GetChainInfo(0,CHAININFO_TARGET_CARDS):Filter(aux.NecroValleyFilter(Card.IsRelateToChain),nil)
+	local tg=Duel.GetTargetsRelateToChain()
 	if tg:GetCount()<2 then
 		return
 	elseif tg:GetCount()==2 and tg:IsExists(Card.IsAbleToDeck,2,nil) then

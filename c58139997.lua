@@ -30,24 +30,26 @@ function c58139997.initial_effect(c)
 	e2:SetOperation(c58139997.activate)
 	c:RegisterEffect(e2)
 end
--- 过滤作为手卡丢弃或场上送墓代价的魔法卡（支持魔女术代破/代支效果）
-function c58139997.costfilter(c,tp)
+function c58139997.costfilter(c,tp,res)
 	if c:IsLocation(LOCATION_HAND) then return c:IsType(TYPE_SPELL) and c:IsDiscardable() end
 	return c:IsFaceup() and c:IsAbleToGraveAsCost() and c:IsHasEffect(83289866,tp)
+		or not c:IsCode(32353566) and c:IsSetCard(0x128)
+		and c:IsType(TYPE_SPELL+TYPE_TRAP) and c:IsAbleToGraveAsCost()
+		and c:IsLocation(LOCATION_DECK) and res
 end
 -- 效果①的发动代价：从手卡丢弃1张魔法卡（或利用魔女术相关卡片效果从场上送去墓地）
 function c58139997.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查手卡或魔陷区是否存在可作为代价送去墓地的魔法卡
-	if chk==0 then return Duel.IsExistingMatchingCard(c58139997.costfilter,tp,LOCATION_HAND+LOCATION_SZONE,0,1,nil,tp) end
-	-- 获取手卡及魔陷区中所有满足代价条件的魔法卡组
-	local g=Duel.GetMatchingGroup(c58139997.costfilter,tp,LOCATION_HAND+LOCATION_SZONE,0,nil,tp)
-	-- 提示玩家选择要丢弃的手牌
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DISCARD)  --"请选择要丢弃的手牌"
+	local res=Duel.IsPlayerAffectedByEffect(tp,32353566) and e:GetHandler():IsSetCard(0x128)
+	if chk==0 then return Duel.IsExistingMatchingCard(c58139997.costfilter,tp,LOCATION_HAND+LOCATION_SZONE+LOCATION_DECK,0,1,nil,tp,res) end
+	local g=Duel.GetMatchingGroup(c58139997.costfilter,tp,LOCATION_HAND+LOCATION_SZONE+LOCATION_DECK,0,nil,tp,res)
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DISCARD)
 	local tc=g:Select(tp,1,1,nil):GetFirst()
-	local te=tc:IsHasEffect(83289866,tp)
-	if te then
-		te:UseCountLimit(tp)
-		-- 将选中的卡作为代价送去墓地（不视为丢弃，适用于场上送墓的时代替效果）
+	if not tc:IsLocation(LOCATION_HAND) then
+		local te=tc:IsHasEffect(83289866,tp)
+		if te then
+			te:UseCountLimit(tp)
+			Duel.RegisterFlagEffect(tp,tc:GetCode(),RESET_PHASE+PHASE_END,0,1)
+		end
 		Duel.SendtoGrave(tc,REASON_COST)
 	else
 		-- 将选中的手牌作为代价丢弃并送去墓地

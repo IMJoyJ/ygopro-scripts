@@ -12,7 +12,7 @@ function s.initial_effect(c)
 	local e1=aux.AddRitualProcEqual2(c,aux.TRUE,LOCATION_GRAVE,aux.TRUE,aux.FALSE,false,s.extraop)
 	e1:SetDescription(aux.Stringid(id,0))  --"发动"
 	e1:SetCountLimit(1,id)
-	e1:SetHintTiming(TIMINGS_CHECK_MONSTER+TIMING_END_PHASE)
+	e1:SetHintTiming(0,TIMINGS_CHECK_MONSTER+TIMING_END_PHASE)
 	c:RegisterEffect(e1)
 	-- ②：把墓地的这张卡除外才能发动。这个回合，自己仪式召唤的场合只有1次，自己墓地的仪式怪兽也能作为解放的代替而除外。
 	local e2=Effect.CreateEffect(c)

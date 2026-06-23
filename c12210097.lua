@@ -61,11 +61,8 @@ function s.tdtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 end
 -- 处理效果的发动，先将卡送回卡组，再判断是否需要对方解放怪兽
 function s.tdop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁中指定的目标卡组，并过滤掉受王家长眠之谷影响的卡
-	local g=Duel.GetChainInfo(0,CHAININFO_TARGET_CARDS):Filter(aux.NecroValleyFilter(Card.IsRelateToChain),nil)
-	-- 将符合条件的卡送回卡组并洗牌
-	if g:GetCount()>0 and Duel.SendtoDeck(g,nil,SEQ_DECKSHUFFLE,REASON_EFFECT) then
-		-- 获取实际被操作的卡组
+	local g=Duel.GetTargetsRelateToChain()
+	if g:GetCount()>0 and Duel.SendtoDeck(g,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)>0 then
 		local og=Duel.GetOperatedGroup()
 		if og:IsExists(Card.IsLocation,1,nil,LOCATION_DECK+LOCATION_EXTRA)
 			-- 检查对方是否能解放1只怪兽

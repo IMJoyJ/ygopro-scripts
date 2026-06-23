@@ -132,27 +132,11 @@ function s.tdtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	-- 设置连锁处理信息：将选中的2张卡以及墓地的自身（共3张卡）送回卡组
 	Duel.SetOperationInfo(0,CATEGORY_TODECK,g1,3,0,0)
 end
--- 过滤不能回到卡组的卡的辅助函数
-function s.ntdfilter(c)
-	return not c:IsAbleToDeck()
-end
--- 效果②的执行函数：将作为对象的2张卡和墓地的此卡回到卡组
 function s.tdop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取当前连锁中仍与效果关联的对象卡片组
-	local g=Duel.GetChainInfo(0,CHAININFO_TARGET_CARDS):Filter(Card.IsRelateToChain,nil,e)
-	local sg=g:Filter(Card.IsLocation,nil,LOCATION_GRAVE)
 	if not c:IsRelateToChain() then return end
+	local g=Duel.GetTargetsRelateToChain()
 	g:AddCard(c)
-	local res=true
-	-- 遍历对象中处于墓地的卡片
-	for tc in aux.Next(sg) do
-		-- 检查墓地的卡片是否受到「王家长眠之谷」的影响
-		if not aux.NecroValleyFilter()(tc) then res=false end
-	end
-	if g:IsExists(s.ntdfilter,1,nil) then return end
-	if res and g:GetCount()==3 then
-		-- 将所有目标卡片送回持有者卡组并洗牌
-		Duel.SendtoDeck(g,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
-	end
+	if g:FilterCount(Card.IsAbleToDeck,nil)~=3 then return end
+	Duel.SendtoDeck(g,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
 end

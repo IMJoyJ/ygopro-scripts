@@ -7,7 +7,8 @@
 local s,id,o=GetID()
 -- 注册主效果，设置为诱发即时效果，可在自由时点发动，发动条件为手牌且场上无卡，消耗为丢弃自身，效果为抽卡与手卡回卡组
 function s.initial_effect(c)
-	-- ①：自己·对方回合，自己场上没有卡存在的场合，把这张卡从手卡丢弃才能发动。这个回合中，以下效果适用。
+	aux.EnableMulcharmyGlobalCheck()
+	--draw
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(id,0))  --"抽卡&手卡回卡组"
 	e1:SetCategory(CATEGORY_DRAW)
@@ -19,44 +20,16 @@ function s.initial_effect(c)
 	e1:SetCost(s.drcost)
 	e1:SetOperation(s.drop)
 	c:RegisterEffect(e1)
-	-- 设置自定义计数器，用于限制同名卡1回合只能发动1次的效果
-	Duel.AddCustomActivityCounter(id,ACTIVITY_CHAIN,s.chainfilter)
 end
 -- 判断发动条件：自己场上没有卡存在且本回合发动次数小于2
 function s.drcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 自己场上没有卡存在且本回合发动次数小于2
-	return Duel.GetFieldGroupCount(tp,LOCATION_ONFIELD,0)==0 and Duel.GetCustomActivityCount(id,tp,ACTIVITY_CHAIN)<2
+	return Duel.GetFieldGroupCount(tp,LOCATION_ONFIELD,0)==0 and Duel.GetFlagEffect(tp,84192580)<=1
 end
 -- 设置发动代价：丢弃自身到墓地，并注册一个限制对方发动「欢聚友伴」怪兽效果的永久效果
 function s.drcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsDiscardable() end
 	-- 将自身丢入墓地作为发动代价
 	Duel.SendtoGrave(e:GetHandler(),REASON_COST+REASON_DISCARD)
-	-- ●每次对方从卡组·额外卡组把怪兽特殊召唤，自己抽1张。●结束阶段，自己手卡比对方场上的卡数量＋6张要多的场合，那个相差数量的自己手卡随机回到卡组。
-	local e3=Effect.CreateEffect(e:GetHandler())
-	e3:SetType(EFFECT_TYPE_FIELD)
-	e3:SetProperty(EFFECT_FLAG_PLAYER_TARGET+EFFECT_FLAG_OATH)
-	e3:SetCode(EFFECT_CANNOT_ACTIVATE)
-	e3:SetTargetRange(1,0)
-	e3:SetCondition(s.actcon)
-	e3:SetValue(s.aclimit)
-	e3:SetReset(RESET_PHASE+PHASE_END)
-	-- 注册限制对方发动「欢聚友伴」怪兽效果的永久效果
-	Duel.RegisterEffect(e3,tp)
-end
--- 过滤函数，用于判断是否为「欢聚友伴」怪兽的效果
-function s.chainfilter(re,tp,cid)
-	return not (re:IsActiveType(TYPE_MONSTER) and re:GetHandler():IsSetCard(0x1b2))
-end
--- 判断是否超过1次发动次数，用于限制效果发动
-function s.actcon(e)
-	local tp=e:GetHandlerPlayer()
-	-- 超过1次发动次数时，限制对方发动「欢聚友伴」怪兽效果
-	return Duel.GetCustomActivityCount(id,tp,ACTIVITY_CHAIN)>1
-end
--- 限制对方发动「欢聚友伴」怪兽效果的函数
-function s.aclimit(e,re,tp)
-	return re:IsActiveType(TYPE_MONSTER) and re:GetHandler():IsSetCard(0x1b2)
 end
 -- 注册多个持续效果，分别处理对方怪兽特殊召唤抽卡、记录次数、在连锁解决时抽卡、结束阶段手卡回卡组
 function s.drop(e,tp,eg,ep,ev,re,r,rp)

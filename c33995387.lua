@@ -49,11 +49,7 @@ function s.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 end
 -- 处理效果：将选择的卡除外
 function s.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁中选择的目标卡组
-	local g=Duel.GetChainInfo(0,CHAININFO_TARGET_CARDS)
-	-- 筛选出与连锁相关的、未受王家长眠之谷影响的卡
-	local sg=g:Filter(aux.NecroValleyFilter(Card.IsRelateToChain),nil)
-	-- 将筛选出的卡除外
+	local sg=Duel.GetTargetsRelateToChain()
 	Duel.Remove(sg,POS_FACEUP,REASON_EFFECT)
 end
 -- 特殊召唤的过滤条件：除外状态的元素英雄怪兽

@@ -118,10 +118,7 @@ function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 end
 -- 效果②的操作处理：对于选中的2张卡片，让玩家选择其中1张加入手卡，另1张回到卡组最下面
 function s.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取本次连锁中被选为对象的目标卡片组
-	local g=Duel.GetChainInfo(0,CHAININFO_TARGET_CARDS)
-	-- 过滤出当前仍存在于墓地、受连锁影响且未受王家之谷影响的对象卡片
-	local tg=g:Filter(aux.NecroValleyFilter(Card.IsRelateToChain),nil)
+	local tg=Duel.GetTargetsRelateToChain()
 	if tg:GetCount()>0 then
 		if tg:GetCount()==1 then
 			if tg:IsExists(Card.IsAbleToHand,1,nil) then

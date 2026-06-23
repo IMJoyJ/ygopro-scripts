@@ -74,8 +74,7 @@ function s.drtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 end
 -- 效果②（回收并抽卡）的效果处理函数。
 function s.drop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁中仍与效果相关的对象卡片，并过滤掉受「王家长眠之谷」影响的卡。
-	local tg=Duel.GetChainInfo(0,CHAININFO_TARGET_CARDS):Filter(aux.NecroValleyFilter(Card.IsRelateToEffect),nil,e)
+	local tg=Duel.GetTargetsRelateToChain()
 	if #tg>0 then
 		-- 让玩家将选中的卡片以任意顺序放回卡组最下方，并返回成功放回的卡片数量。
 		local ct=aux.PlaceCardsOnDeckBottom(tp,tg)
