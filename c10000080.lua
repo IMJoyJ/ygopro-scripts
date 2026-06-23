@@ -4,11 +4,12 @@
 -- ①：这张卡不能攻击，不会成为对方的攻击·效果的对象。
 -- ②：把这张卡解放才能发动。从手卡·卡组把1只「太阳神之翼神龙」无视召唤条件并攻击力·守备力变成4000特殊召唤。
 function c10000080.initial_effect(c)
-	-- 在卡片信息中记录提及了「太阳神之翼神龙」的代码
+	-- 将卡片10000010的代码添加到当前卡片的代码列表中。
 	aux.AddCodeList(c,10000010)
-	-- 开启全局洗脑检查标记（用于控制权回归原本持有者）
+	-- 启用洗脑解除标记，用于处理一些特殊情况下的效果。
 	Duel.EnableGlobalFlag(GLOBALFLAG_BRAINWASHING_CHECK)
-	-- 这张卡通常召唤的场合，必须把自己场上3只怪兽解放在自己场上召唤
+	-- ①：这张卡不能攻击，不会成为对方的攻击·效果的对象。
+-- 注册一个限制通常召唤的效果，并设置描述信息、属性和条件。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(10000080,0))  --"在自己场上召唤"
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
@@ -18,7 +19,8 @@ function c10000080.initial_effect(c)
 	e1:SetOperation(c10000080.ttop1)
 	e1:SetValue(SUMMON_TYPE_ADVANCE)
 	c:RegisterEffect(e1)
-	-- 或者把对方场上3只怪兽解放在对方场上召唤
+	-- ②：把这张卡解放才能发动。从手卡·卡组把1只「太阳神之翼神龙」无视召唤条件并攻击力·守备力变成4000特殊召唤。
+-- 注册一个限制通常召唤的效果，并设置描述信息、属性和目标范围。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(10000080,1))  --"在对方场上召唤"
 	e2:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE+EFFECT_FLAG_SPSUM_PARAM)
@@ -29,45 +31,45 @@ function c10000080.initial_effect(c)
 	e2:SetOperation(c10000080.ttop2)
 	e2:SetValue(SUMMON_TYPE_ADVANCE)
 	c:RegisterEffect(e2)
-	-- 这张卡通常召唤的场合，必须把自己场上3只怪兽解放在自己场上召唤或者把对方场上3只怪兽解放在对方场上召唤，
+	-- 注册一个效果，限制这张卡的放置（通常召唤）规则。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_SINGLE)
 	e3:SetCode(EFFECT_LIMIT_SET_PROC)
 	e3:SetCondition(c10000080.setcon)
 	c:RegisterEffect(e3)
-	-- 这张卡不能特殊召唤。
+	-- 注册一个效果，设定特殊召唤条件。
 	local e4=Effect.CreateEffect(c)
 	e4:SetType(EFFECT_TYPE_SINGLE)
 	e4:SetCode(EFFECT_SPSUMMON_CONDITION)
 	e4:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
 	c:RegisterEffect(e4)
-	-- 召唤的这张卡的控制权在下个回合的结束阶段回归原本持有者。
+	-- 注册一个持续效果，在通常召唤成功时触发，用于处理控制权转移的逻辑。
 	local e5=Effect.CreateEffect(c)
 	e5:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_CONTINUOUS)
 	e5:SetCode(EVENT_SUMMON_SUCCESS)
 	e5:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
 	e5:SetOperation(c10000080.retreg)
 	c:RegisterEffect(e5)
-	-- ①：这张卡不能攻击
+	-- 注册一个单次效果，禁止这张卡攻击。
 	local e6=Effect.CreateEffect(c)
 	e6:SetType(EFFECT_TYPE_SINGLE)
 	e6:SetCode(EFFECT_CANNOT_ATTACK)
 	c:RegisterEffect(e6)
-	-- 不会成为对方的攻击·效果的对象。
+	-- 注册一个单次效果，使这张卡不会成为对方怪兽战斗的目标。
 	local e7=Effect.CreateEffect(c)
 	e7:SetType(EFFECT_TYPE_SINGLE)
 	e7:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
 	e7:SetCode(EFFECT_CANNOT_BE_BATTLE_TARGET)
 	e7:SetRange(LOCATION_MZONE)
-	-- 设定不会成为攻击对象的过滤条件
+	-- 设置过滤函数aux.imval1，用于判断是否可以作为攻击目标。
 	e7:SetValue(aux.imval1)
 	c:RegisterEffect(e7)
 	local e8=e7:Clone()
 	e8:SetCode(EFFECT_CANNOT_BE_EFFECT_TARGET)
-	-- 设定不会成为效果对象的过滤条件
+	-- 设置过滤函数aux.tgoval，用于判断是否可以作为效果对象。
 	e8:SetValue(aux.tgoval)
 	c:RegisterEffect(e8)
-	-- ②：把这张卡解放才能发动。从手卡·卡组把1只「太阳神之翼神龙」无视召唤条件并攻击力·守备力变成4000特殊召唤。
+	-- 注册一个点火效果，允许解放这张卡来特殊召唤另一张「太阳神之翼神龙」。
 	local e9=Effect.CreateEffect(c)
 	e9:SetDescription(aux.Stringid(10000080,2))
 	e9:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -78,71 +80,71 @@ function c10000080.initial_effect(c)
 	e9:SetOperation(c10000080.spop)
 	c:RegisterEffect(e9)
 end
--- 检查是否满足在自己场上召唤的解放条件判断函数
+-- 定义条件函数c10000080.ttcon1，检查是否满足通常召唤的祭品数量要求。
 function c10000080.ttcon1(e,c,minc)
 	if c==nil then return true end
-	-- 检查自己场上是否有至少3只怪兽作为解放祭品
+	-- 判断祭品数量是否小于等于3并且存在可用于祭品的怪兽。
 	return minc<=3 and Duel.CheckTribute(c,3)
 end
--- 执行在自己场上召唤时解放3只怪兽的操作函数
+-- 定义操作函数c10000080.ttop1，选择祭品并释放它们。
 function c10000080.ttop1(e,tp,eg,ep,ev,re,r,rp,c)
-	-- 让玩家选择自己场上3只怪兽作为解放祭品
+	-- 从场上选择3只怪兽作为祭品。
 	local g=Duel.SelectTribute(tp,c,3,3)
 	c:SetMaterial(g)
-	-- 将自己场上选中的3只祭品怪兽解放
+	-- 释放选定的祭品。
 	Duel.Release(g,REASON_SUMMON+REASON_MATERIAL)
 end
--- 检查是否满足在对方场上召唤的解放条件判断函数
+-- 定义条件函数c10000080.ttcon2，检查是否满足在对方场上召唤的祭品数量要求。
 function c10000080.ttcon2(e,c,minc)
 	if c==nil then return true end
 	local tp=c:GetControler()
-	-- 获取对方场上怪兽卡片组
+	-- 获取玩家的怪兽区域。
 	local mg=Duel.GetFieldGroup(tp,0,LOCATION_MZONE)
-	-- 检查对方场上是否存在至少3只怪兽作为解放祭品
+	-- 判断祭品数量是否小于等于3并且存在可用于祭品的怪兽。
 	return minc<=3 and Duel.CheckTribute(c,3,3,mg,1-tp)
 end
--- 执行在对方场上召唤时解放对方3只怪兽操作函数
+-- 定义操作函数c10000080.ttop2，选择对方场上的祭品并释放它们。
 function c10000080.ttop2(e,tp,eg,ep,ev,re,r,rp,c)
-	-- 获取对方场上怪兽卡片组
+	-- 获取玩家的怪兽区域。
 	local mg=Duel.GetFieldGroup(tp,0,LOCATION_MZONE)
-	-- 让玩家选择对方场上3只怪兽作为解放祭品
+	-- 从对方场上选择3只怪兽作为祭品。
 	local g=Duel.SelectTribute(tp,c,3,3,mg,1-tp)
 	c:SetMaterial(g)
-	-- 将对方场上选中的3只祭品怪兽解放
+	-- 释放选定的祭品。
 	Duel.Release(g,REASON_SUMMON+REASON_MATERIAL)
 end
--- 限制这只怪兽不能进行通常召唤的放置（盖卡）
+-- 定义条件函数c10000080.setcon，用于限制这张卡的放置（通常召唤）。
 function c10000080.setcon(e,c,minc)
 	if not c then return true end
 	return false
 end
--- 通常召唤成功时，注册控制权回归原持有者的延迟触发效果
+-- 定义操作函数c10000080.retreg，注册一个持续效果来处理控制权转移。
 function c10000080.retreg(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	c:RegisterFlagEffect(10000080,RESET_EVENT+RESETS_STANDARD-RESET_TURN_SET+RESET_PHASE+PHASE_END,0,2)
-	-- 召唤的这张卡的控制权在下个回合的结束阶段回归原本持有者。
+	-- 在通常召唤成功时触发，注册一个标记效果和一个字段效果，用于追踪和移除洗脑状态。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e1:SetCode(EVENT_PHASE+PHASE_END)
 	e1:SetProperty(EFFECT_FLAG_IGNORE_IMMUNE)
-	-- 将效果的目标回合设定为下个回合的结束阶段
+	-- 设置标签值为当前回合数+1。
 	e1:SetLabel(Duel.GetTurnCount()+1)
 	e1:SetCountLimit(1)
 	e1:SetCondition(c10000080.retcon)
 	e1:SetOperation(c10000080.retop)
 	e1:SetReset(RESET_PHASE+PHASE_END,2)
-	-- 向全局注册控制权回归的结算效果
+	-- 注册字段效果。
 	Duel.RegisterEffect(e1,tp)
 end
--- 判断是否到达了指定回归回合的结束阶段
+-- 定义条件函数c10000080.retcon，检查是否满足触发控制权转移的效果。
 function c10000080.retcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查当前回合是否为效果注册时设定的回归回合，并确认球体形带有标记标记
+	-- 判断当前回合数是否等于标签值并且拥有者仍然具有标记。
 	return Duel.GetTurnCount()==e:GetLabel() and e:GetOwner():GetFlagEffect(10000080)~=0
 end
--- 执行控制权回归效果的操作函数，通过移除洗脑（心变）效果让其返回原本持有者
+-- 定义操作函数c10000080.retop，移除洗脑状态并注册一个调整事件处理程序。
 function c10000080.retop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetOwner()
-	-- 召唤的这张卡的控制权在下个回合的结束阶段回归原本持有者。
+	-- 创建字段效果，用于移除洗脑状态。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_REMOVE_BRAINWASHING)
@@ -150,57 +152,57 @@ function c10000080.retop(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetTargetRange(LOCATION_MZONE,LOCATION_MZONE)
 	e1:SetLabelObject(c)
 	e1:SetTarget(c10000080.rettg)
-	-- 向全局注册移除洗脑效果
+	-- 注册字段效果。
 	Duel.RegisterEffect(e1,tp)
-	-- 召唤的这张卡的控制权在下个回合的结束阶段回归原本持有者。
+	-- 定义过滤函数c10000080.rettg，判断是否可以作为目标。
 	local e2=Effect.CreateEffect(e:GetHandler())
 	e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e2:SetCode(EVENT_ADJUST)
 	e2:SetLabelObject(e1)
 	e2:SetOperation(c10000080.reset)
-	-- 注册并执行清理临时洗脑解除效果的调整事件
+	-- 定义操作函数c10000080.reset，重置相关效果。
 	Duel.RegisterEffect(e2,tp)
 end
--- 判断是否为当前洗脑解除效果所指定的回归目标怪兽
+-- 定义特殊召唤的费用函数c10000080.spcost，检查并释放当前卡片。
 function c10000080.rettg(e,c)
 	return c==e:GetLabelObject() and c:GetFlagEffect(10000080)~=0
 end
--- 在卡片控制权回归后，重置并清理洗脑解除及调整重置效果
+-- 定义过滤函数c10000080.filter，用于筛选可以特殊召唤的「太阳神之翼神龙」。
 function c10000080.reset(e,tp,eg,ep,ev,re,r,rp)
 	e:GetLabelObject():Reset()
 	e:Reset()
 end
--- 特殊召唤太阳神之翼神龙的发动代价计算函数，检查自身是否可以解放
+-- 定义目标选择函数c10000080.sptg，检查是否满足特殊召唤条件并设置操作信息。
 function c10000080.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsReleasable() end
-	-- 将自身解放以作为发动效果的代价
+	-- 检查场上是否有空位以及是否存在符合条件的卡片。
 	Duel.Release(e:GetHandler(),REASON_COST)
 end
--- 过滤手卡或卡组中可以特殊召唤的「太阳神之翼神龙」
+-- 定义操作函数c10000080.spop，执行特殊召唤逻辑。
 function c10000080.filter(c,e,tp)
 	return c:IsCode(10000010) and c:IsCanBeSpecialSummoned(e,0,tp,true,false)
 end
--- 特殊召唤「太阳神之翼神龙」效果的发动准备与操作信息设置
+-- 检查场上是否还有可用的怪兽区域。
 function c10000080.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查自己场上的怪兽区域是否有空位（由于解放了自身，需至少有-1个空位，即原位置空出后有空位）
+	-- 提示玩家选择要特殊召唤的卡片。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>-1
-		-- 检查手卡或卡组中是否存在可以特殊召唤的「太阳神之翼神龙」
+		-- 从手牌或卡组中选择符合条件的卡片。
 		and Duel.IsExistingMatchingCard(c10000080.filter,tp,LOCATION_HAND+LOCATION_DECK,0,1,nil,e,tp) end
-	-- 设置特殊召唤的操作信息，目标为手牌或卡组
+	-- 执行特殊召唤步骤，并设置攻击力和防御力。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_HAND+LOCATION_DECK)
 end
--- 执行特殊召唤「太阳神之翼神龙」效果的函数，无视召唤条件特殊召唤并改变攻守值
+-- 完成特殊召唤。
 function c10000080.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查特召时自己场上是否有空怪兽区域
+	-- 检查场上是否还有可用的怪兽区域。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-	-- 提示玩家选择要特殊召唤的怪兽
+	-- 提示玩家选择要特殊召唤的卡片。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 让玩家从手牌或卡组选择1只「太阳神之翼神龙」
+	-- 从手牌或卡组中选择符合条件的卡片。
 	local g=Duel.SelectMatchingCard(tp,c10000080.filter,tp,LOCATION_HAND+LOCATION_DECK,0,1,1,nil,e,tp)
 	local tc=g:GetFirst()
-	-- 执行特殊召唤的单步操作，无视召唤条件且为表侧表示
+	-- 执行特殊召唤步骤，并设置攻击力和防御力。
 	if tc and Duel.SpecialSummonStep(tc,0,tp,tp,true,false,POS_FACEUP) then
-		-- 攻击力·守备力变成4000
+		-- 创建单次效果，设置攻击力。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_SET_ATTACK)
@@ -211,6 +213,6 @@ function c10000080.spop(e,tp,eg,ep,ev,re,r,rp)
 		e2:SetCode(EFFECT_SET_DEFENSE)
 		tc:RegisterEffect(e2)
 	end
-	-- 完成特殊召唤结算
+	-- 完成特殊召唤。
 	Duel.SpecialSummonComplete()
 end

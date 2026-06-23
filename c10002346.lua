@@ -4,10 +4,10 @@
 -- ①：只要这张卡在怪兽区域存在，自己场上的怪兽的攻击力·守备力上升这张卡的超量素材数量×200。
 -- ②：这张卡被破坏的场合，可以作为代替把这张卡1个超量素材取除。
 function c10002346.initial_effect(c)
-	-- 添加Xyz召唤手续，需要2星怪兽2只
+	-- 为当前卡片添加超量召唤流程，指定素材等级和数量均为2。
 	aux.AddXyzProcedure(c,nil,2,2)
 	c:EnableReviveLimit()
-	-- ①：只要这张卡在怪兽区域存在，自己场上的怪兽的攻击力上升这张卡的超量素材数量×200
+	-- ①：只要这张卡在怪兽区域存在，自己场上的怪兽的攻击力·守备力上升这张卡的超量素材数量×200。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetRange(LOCATION_MZONE)
@@ -18,7 +18,7 @@ function c10002346.initial_effect(c)
 	local e2=e1:Clone()
 	e2:SetCode(EFFECT_UPDATE_DEFENSE)
 	c:RegisterEffect(e2)
-	-- ②：这张卡被破坏的场合，可以作为代替把这张卡1个超量素材取除
+	-- ②：这张卡被破坏的场合，可以作为代替把这张卡1个超量素材取除。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_CONTINUOUS+EFFECT_TYPE_SINGLE)
 	e3:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
@@ -28,18 +28,18 @@ function c10002346.initial_effect(c)
 	e3:SetOperation(c10002346.repop)
 	c:RegisterEffect(e3)
 end
--- 超量素材数量×200的攻击力/守备力上升值
+-- 计算当前卡片的超量素材数量并乘以200，返回增益值。
 function c10002346.val(e,c)
 	return e:GetHandler():GetOverlayCount()*200
 end
--- 代替破坏的目标过滤，检查自身是否可以通过去除1个超量素材来代替破坏
+-- 检查是否能够移除当前卡片的一个超量素材，并且该卡片没有被替代破坏。
 function c10002346.reptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():CheckRemoveOverlayCard(tp,1,REASON_EFFECT)
 		and not e:GetHandler():IsReason(REASON_REPLACE) end
-	-- 询问玩家是否发动代替破坏效果
+	-- 询问玩家是否发动效果，提示文字ID为96。
 	return Duel.SelectEffectYesNo(tp,e:GetHandler(),96)
 end
--- 代替破坏的执行操作，去除这张卡的1个超量素材
+-- 以效果原因移除当前卡片的一个超量素材。
 function c10002346.repop(e,tp,eg,ep,ev,re,r,rp)
 	e:GetHandler():RemoveOverlayCard(tp,1,1,REASON_EFFECT)
 end

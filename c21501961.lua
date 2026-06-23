@@ -4,7 +4,7 @@
 -- ①：对方可以从自身的手卡·卡组把1张「恐依的情侣款凶熊！！」给人观看。给人观看的场合，双方回复2000基本分。没给人观看的场合，自己把对方场上1只怪兽破坏。
 -- ②：这张卡从场上送去墓地的场合发动。这张卡加入对方手卡。
 local s,id,o=GetID()
--- 创建两个效果，分别对应①和②效果
+-- 定义卡片效果处理函数，创建效果e1和e2。
 function s.initial_effect(c)
 	-- ①：对方可以从自身的手卡·卡组把1张「恐依的情侣款凶熊！！」给人观看。给人观看的场合，双方回复2000基本分。没给人观看的场合，自己把对方场上1只怪兽破坏。
 	local e1=Effect.CreateEffect(c)
@@ -29,77 +29,77 @@ function s.initial_effect(c)
 	e2:SetOperation(s.thop)
 	c:RegisterEffect(e2)
 end
--- 设置①效果的发动条件和处理函数
+-- 定义目标选择函数s.target，用于处理①的效果，检查对方场上是否有怪兽，并设置破坏效果的操作信息。
 function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 获取对方场上的怪兽
+	-- 获取对方场上的怪兽组。
 	local g=Duel.GetMatchingGroup(nil,tp,0,LOCATION_MZONE,nil)
 	if chk==0 then return #g>0 end
-	-- 判断对方手卡和卡组中是否有此卡
+	-- 如果对方手牌和卡组都为空，则设置破坏效果的操作信息。
 	if Duel.GetFieldGroupCount(tp,0,LOCATION_HAND+LOCATION_DECK)==0 then
-		-- 设置破坏效果的操作信息
+		-- 设置破坏效果的操作信息，指定目标为对方场上怪兽组g，数量为1。
 		Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,1,0,0)
 	end
 end
--- 定义过滤函数，用于筛选未公开的此卡
+-- 定义过滤函数s.pfilter，用于筛选卡片代码为id且未公开的卡片。
 function s.pfilter(c)
 	return c:IsCode(id) and not c:IsPublic()
 end
--- 处理①效果的发动，判断是否给对方观看并执行相应处理
+-- 定义激活函数s.activate，处理①的效果流程：询问对方是否观看卡牌，如果同意则回复双方LP并洗切手牌/卡组；否则选择破坏对方场上怪兽。
 function s.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查对方手卡和卡组中是否存在未公开的此卡
+	-- 检查对方的手牌和卡组中是否存在符合条件的“恐依的情侣款凶熊！！”。
 	if Duel.IsExistingMatchingCard(s.pfilter,tp,0,LOCATION_HAND+LOCATION_DECK,1,nil)
-		-- 询问对方是否给对方观看此卡
+		-- 询问对方是否观看卡片，如果同意则执行回复LP的操作。
 		and Duel.SelectYesNo(1-tp,aux.Stringid(id,2)) then  --"是否给人观看？"
-		-- 提示对方选择要确认的卡
+		-- 提示对方选择要确认的卡片。
 		Duel.Hint(HINT_SELECTMSG,1-tp,HINTMSG_CONFIRM)  --"请选择给对方确认的卡"
-		-- 选择对方手卡或卡组中的一张未公开的此卡
+		-- 让对方选择一张符合s.pfilter条件的卡片。
 		local g=Duel.SelectMatchingCard(1-tp,s.pfilter,1-tp,LOCATION_HAND+LOCATION_DECK,0,1,1,nil)
-		-- 向对方确认所选的卡
+		-- 确认选中的卡片。
 		Duel.ConfirmCards(tp,g)
 		if g:IsExists(Card.IsLocation,1,nil,LOCATION_HAND) then
-			-- 若所选卡在手卡中则洗切对方手卡
+			-- 洗切对方的手牌。
 			Duel.ShuffleHand(1-tp)
 		else
-			-- 若所选卡在卡组中则洗切对方卡组
+			-- 洗切对方的卡组。
 			Duel.ShuffleDeck(1-tp)
 		end
-		-- 自己回复2000基本分
+		-- 回复自己的LP 2000点。
 		Duel.Recover(tp,2000,REASON_EFFECT,true)
-		-- 对方回复2000基本分
+		-- 回复对方的LP 2000点。
 		Duel.Recover(1-tp,2000,REASON_EFFECT,true)
-		-- 完成回复LP的处理
+		-- 完成LP回复的时点处理。
 		Duel.RDComplete()
 		return
 	end
-	-- 提示选择要破坏的怪兽
+	-- 提示玩家选择要破坏的卡片。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 选择对方场上的1只怪兽
+	-- 让玩家从场上选择一张怪兽进行破坏。
 	local g=Duel.SelectMatchingCard(tp,nil,tp,0,LOCATION_MZONE,1,1,nil)
 	if g:GetCount()>0 then
-		-- 显示所选怪兽被破坏的动画
+		-- 显示选中的怪兽动画效果。
 		Duel.HintSelection(g)
-		-- 破坏所选怪兽
+		-- 以REASON_EFFECT原因破坏选中的怪兽。
 		Duel.Destroy(g,REASON_EFFECT)
 	end
 end
--- 设置②效果的发动条件
+-- 定义触发条件函数s.thcon，判断触发条件是否满足：卡片之前的位置在场上。
 function s.thcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsPreviousLocation(LOCATION_ONFIELD)
 end
--- 设置②效果的处理函数
+-- 定义目标选择函数s.thtg，用于处理②的效果，设置将卡片加入对方手牌的操作信息。
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置加入对方手卡的操作信息
+	-- 设置将卡片加入对方手牌的操作信息。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,e:GetHandler(),1,0,0)
 end
--- 处理②效果的发动，将此卡加入对方手卡
+-- 定义操作函数s.thop，处理②的效果：如果卡片与连锁有关且不受王家长眠之谷影响，则将其送入对方手牌并确认。
 function s.thop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 判断此卡是否与连锁相关且未受王家长眠之谷影响
+	-- 判断当前卡是否参与了连锁，并且不受王家长眠之谷的影响。
 	if c:IsRelateToChain() and aux.NecroValleyFilter()(c) then
-		-- 将此卡加入对方手卡
+		-- 将卡片送入对方的手牌。
 		Duel.SendtoHand(c,1-tp,REASON_EFFECT)
-		-- 向对方确认此卡被加入手卡
+		-- 确认加入手牌的卡片。
 		Duel.ConfirmCards(tp,c)
 	end
 end
