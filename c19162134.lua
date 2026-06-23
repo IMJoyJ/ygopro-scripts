@@ -1,11 +1,18 @@
 --エンタメデュエル
+-- 效果：
+-- ①：只要这张卡在场地区域存在，双方玩家每次在1回合中各把以下条件满足，每1个条件在1回合各有1次从卡组抽2张。
+-- ●把等级不同的怪兽5只同时特殊召唤。
+-- ●自身1只怪兽进行5次战斗。
+-- ●连锁5以上把卡的效果发动。
+-- ●掷骰子的次数以及投掷硬币的次数变成合计5次。
+-- ●受到让自身基本分变成500以下的伤害。
 function c19162134.initial_effect(c)
-	--activate
+	-- 永续魔陷/场地卡通用的“允许发动”空效果，无此效果则无法发动
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	--draw
+	-- ●把等级不同的怪兽5只同时特殊召唤。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e2:SetCode(EVENT_SPSUMMON_SUCCESS)
@@ -19,7 +26,6 @@ function c19162134.initial_effect(c)
 	e3:SetCondition(c19162134.spcon2)
 	e3:SetOperation(c19162134.drop2)
 	c:RegisterEffect(e3)
-	--
 	local e4=e2:Clone()
 	e4:SetCode(EVENT_BATTLED)
 	e4:SetCondition(c19162134.btcon1)
@@ -28,12 +34,13 @@ function c19162134.initial_effect(c)
 	e5:SetCode(EVENT_BATTLED)
 	e5:SetCondition(c19162134.btcon2)
 	c:RegisterEffect(e5)
-	--
+	-- ●连锁5以上把卡的效果发动。
 	local e0=Effect.CreateEffect(c)
 	e0:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e0:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
 	e0:SetCode(EVENT_CHAINING)
 	e0:SetRange(LOCATION_FZONE)
+	-- 记录连锁发生时这张卡在场上存在
 	e0:SetOperation(aux.chainreg)
 	c:RegisterEffect(e0)
 	local e6=e2:Clone()
@@ -44,7 +51,7 @@ function c19162134.initial_effect(c)
 	e7:SetCode(EVENT_CHAIN_SOLVING)
 	e7:SetCondition(c19162134.chcon2)
 	c:RegisterEffect(e7)
-	--
+	-- ●掷骰子的次数以及投掷硬币的次数变成合计5次。
 	local e8=Effect.CreateEffect(c)
 	e8:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e8:SetCode(EVENT_TOSS_COIN)
@@ -56,7 +63,6 @@ function c19162134.initial_effect(c)
 	e9:SetCode(EVENT_TOSS_DICE)
 	e9:SetOperation(c19162134.diceop)
 	c:RegisterEffect(e9)
-	--
 	local ea=e2:Clone()
 	ea:SetCode(EVENT_DAMAGE)
 	ea:SetCondition(c19162134.damcon1)
@@ -66,25 +72,37 @@ function c19162134.initial_effect(c)
 	eb:SetCondition(c19162134.damcon2)
 	c:RegisterEffect(eb)
 end
+-- 判断特殊召唤的怪兽数量是否为5只且等级各不相同
 function c19162134.spfilter(c,tp)
 	return c:IsSummonPlayer(tp)
 end
+-- 判断特殊召唤的怪兽是否包含自己控制的怪兽且等级各不相同
 function c19162134.spcon1(e,tp,eg,ep,ev,re,r,rp)
 	return eg:GetCount()==5 and eg:IsExists(c19162134.spfilter,1,nil,tp) and eg:GetClassCount(Card.GetLevel)==5
 end
+-- 判断特殊召唤的怪兽是否包含对方控制的怪兽且等级各不相同
 function c19162134.spcon2(e,tp,eg,ep,ev,re,r,rp)
 	return eg:GetCount()==5 and eg:IsExists(c19162134.spfilter,1,nil,1-tp) and eg:GetClassCount(Card.GetLevel)==5
 end
+-- 自己从卡组抽2张卡
 function c19162134.drop1(e,tp,eg,ep,ev,re,r,rp)
+	-- 显示娱乐决斗发动的动画提示
 	Duel.Hint(HINT_CARD,0,19162134)
+	-- 让玩家tp从卡组抽2张卡
 	Duel.Draw(tp,2,REASON_EFFECT)
 end
+-- 对方从卡组抽2张卡
 function c19162134.drop2(e,tp,eg,ep,ev,re,r,rp)
+	-- 显示娱乐决斗发动的动画提示
 	Duel.Hint(HINT_CARD,0,19162134)
+	-- 让对方玩家从卡组抽2张卡
 	Duel.Draw(1-tp,2,REASON_EFFECT)
 end
+-- ●自身1只怪兽进行5次战斗。
 function c19162134.btcon1(e,tp,eg,ep,ev,re,r,rp)
+	-- 获取当前攻击怪兽
 	local a=Duel.GetAttacker()
+	-- 获取当前攻击目标怪兽
 	local d=Duel.GetAttackTarget()
 	if a:IsControler(1-tp) then a,d=d,a end
 	if a then
@@ -92,8 +110,11 @@ function c19162134.btcon1(e,tp,eg,ep,ev,re,r,rp)
 		return a:GetFlagEffect(19162134)==5
 	else return false end
 end
+-- ●自身1只怪兽进行5次战斗。
 function c19162134.btcon2(e,tp,eg,ep,ev,re,r,rp)
+	-- 获取当前攻击怪兽
 	local a=Duel.GetAttacker()
+	-- 获取当前攻击目标怪兽
 	local d=Duel.GetAttackTarget()
 	if a:IsControler(tp) then a,d=d,a end
 	if a then
@@ -101,12 +122,17 @@ function c19162134.btcon2(e,tp,eg,ep,ev,re,r,rp)
 		return a:GetFlagEffect(19162134)==5
 	else return false end
 end
+-- ●连锁5以上把卡的效果发动。
 function c19162134.chcon1(e,tp,eg,ep,ev,re,r,rp)
+	-- 判断发动效果的玩家是否为当前玩家且当前连锁数大于等于5
 	return rp==tp and Duel.GetCurrentChain()>=5 and e:GetHandler():GetFlagEffect(FLAG_ID_CHAINING)>0
 end
+-- ●连锁5以上把卡的效果发动。
 function c19162134.chcon2(e,tp,eg,ep,ev,re,r,rp)
+	-- 判断发动效果的玩家是否为对方玩家且当前连锁数大于等于5
 	return rp==1-tp and Duel.GetCurrentChain()>=5 and e:GetHandler():GetFlagEffect(FLAG_ID_CHAINING)>0
 end
+-- 处理抛硬币结果，记录次数并满足条件时触发抽卡效果
 function c19162134.tossop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if ep==tp then
@@ -127,6 +153,7 @@ function c19162134.tossop(e,tp,eg,ep,ev,re,r,rp)
 		c:RegisterFlagEffect(19162138,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END,0,1)
 	end
 end
+-- 处理掷骰子结果，记录次数并满足条件时触发抽卡效果
 function c19162134.diceop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local ct1=bit.band(ev,0xffff)
@@ -155,9 +182,13 @@ function c19162134.diceop(e,tp,eg,ep,ev,re,r,rp)
 		c:RegisterFlagEffect(19162138,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END,0,1)
 	end
 end
+-- ●受到让自身基本分变成500以下的伤害。
 function c19162134.damcon1(e,tp,eg,ep,ev,re,r,rp)
+	-- 判断受到伤害的玩家是否为当前玩家且基本分小于等于500
 	return ep==tp and Duel.GetLP(tp)<=500 and Duel.GetLP(tp)>0
 end
+-- ●受到让自身基本分变成500以下的伤害。
 function c19162134.damcon2(e,tp,eg,ep,ev,re,r,rp)
+	-- 判断受到伤害的玩家是否为对方玩家且基本分小于等于500
 	return ep==1-tp and Duel.GetLP(1-tp)<=500 and Duel.GetLP(1-tp)>0
 end

@@ -1,8 +1,14 @@
 --ラーの翼神竜
+-- 效果：
+-- 这张卡不能特殊召唤。这张卡通常召唤的场合，必须把3只解放作召唤。
+-- ①：这张卡的召唤不会被无效化。
+-- ②：在这张卡的召唤成功时双方不能把其他卡的效果发动。
+-- ③：这张卡召唤时，把基本分支付到变成100基本分才能发动。这张卡的攻击力·守备力上升支付的数值。
+-- ④：支付1000基本分，以场上1只怪兽为对象才能发动。那只怪兽破坏。
 function c10000010.initial_effect(c)
-	--summon with 3 tribute
+	-- 这张卡通常召唤的场合，必须把3只解放作召唤。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(10000010,2))
+	e1:SetDescription(aux.Stringid(10000010,2))  --"把3只解放作召唤"
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_LIMIT_SUMMON_PROC)
@@ -10,42 +16,43 @@ function c10000010.initial_effect(c)
 	e1:SetOperation(c10000010.ttop)
 	e1:SetValue(SUMMON_TYPE_ADVANCE)
 	c:RegisterEffect(e1)
+	-- 这张卡通常召唤的场合，必须把3只解放作召唤。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_SINGLE)
 	e2:SetCode(EFFECT_LIMIT_SET_PROC)
 	e2:SetCondition(c10000010.setcon)
 	c:RegisterEffect(e2)
-	--summon
+	-- ①：这张卡的召唤不会被无效化。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_SINGLE)
 	e3:SetCode(EFFECT_CANNOT_DISABLE_SUMMON)
 	e3:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
 	c:RegisterEffect(e3)
-	--summon success
+	-- ②：在这张卡的召唤成功时双方不能把其他卡的效果发动。
 	local e4=Effect.CreateEffect(c)
 	e4:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_CONTINUOUS)
 	e4:SetCode(EVENT_SUMMON_SUCCESS)
 	e4:SetOperation(c10000010.sumsuc)
 	c:RegisterEffect(e4)
-	--cannot special summon
+	-- 这张卡不能特殊召唤。
 	local e5=Effect.CreateEffect(c)
 	e5:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
 	e5:SetType(EFFECT_TYPE_SINGLE)
 	e5:SetCode(EFFECT_SPSUMMON_CONDITION)
 	e5:SetValue(c10000010.splimit)
 	c:RegisterEffect(e5)
-	--One Turn Kill
+	-- ③：这张卡召唤时，把基本分支付到变成100基本分才能发动。这张卡的攻击力·守备力上升支付的数值。
 	local e6=Effect.CreateEffect(c)
-	e6:SetDescription(aux.Stringid(10000010,0))
+	e6:SetDescription(aux.Stringid(10000010,0))  --"攻守上升"
 	e6:SetCategory(CATEGORY_ATKCHANGE)
 	e6:SetType(EFFECT_TYPE_TRIGGER_O+EFFECT_TYPE_SINGLE)
 	e6:SetCode(EVENT_SUMMON_SUCCESS)
 	e6:SetCost(c10000010.atkcost)
 	e6:SetOperation(c10000010.atkop)
 	c:RegisterEffect(e6)
-	--destroy
+	-- ④：支付1000基本分，以场上1只怪兽为对象才能发动。那只怪兽破坏。
 	local e7=Effect.CreateEffect(c)
-	e7:SetDescription(aux.Stringid(10000010,1))
+	e7:SetDescription(aux.Stringid(10000010,1))  --"破坏"
 	e7:SetCategory(CATEGORY_DESTROY)
 	e7:SetType(EFFECT_TYPE_IGNITION)
 	e7:SetProperty(EFFECT_FLAG_CARD_TARGET)
@@ -55,41 +62,58 @@ function c10000010.initial_effect(c)
 	e7:SetOperation(c10000010.desop)
 	c:RegisterEffect(e7)
 end
+-- 检查是否满足需要3只祭品进行上级召唤的条件
 function c10000010.ttcon(e,c,minc)
 	if c==nil then return true end
+	-- 检查玩家场上是否有3个可用祭品
 	return minc<=3 and Duel.CheckTribute(c,3)
 end
+-- 执行上级召唤的祭品选择和解放操作
 function c10000010.ttop(e,tp,eg,ep,ev,re,r,rp,c)
+	-- 选择用于召唤该卡的3只解放祭品
 	local g=Duel.SelectTribute(tp,c,3,3)
 	c:SetMaterial(g)
+	-- 解放选定的祭品
 	Duel.Release(g,REASON_SUMMON+REASON_MATERIAL)
 end
+-- 检查是否能里侧放置的条件函数，此处强制返回false表示不能进行通常放置
 function c10000010.setcon(e,c,minc)
 	if not c then return true end
 	return false
 end
+-- 特殊召唤条件限制函数
 function c10000010.splimit(e,se,sp,st)
+	-- 检查玩家是否受到特定卡片效果影响而允许特殊召唤
 	return Duel.IsPlayerAffectedByEffect(sp,41044418)
 		and (st&SUMMON_VALUE_MONSTER_REBORN>0 or se:GetHandler():IsCode(83764718))
 		and e:GetHandler():IsControler(sp) and e:GetHandler():IsLocation(LOCATION_GRAVE)
 end
+-- 生成锁定连锁的过滤函数，仅允许该卡效果本身进行响应
 function c10000010.genchainlm(c)
 	return	function (e,rp,tp)
 				return e:GetHandler()==c
 			end
 end
+-- 召唤成功时锁定连锁的辅助处理函数
 function c10000010.sumsuc(e,tp,eg,ep,ev,re,r,rp)
+	-- 在召唤成功时设置连锁限制，防止双方在连锁结束前发动其他卡的效果
 	Duel.SetChainLimitTillChainEnd(c10000010.genchainlm(e:GetHandler()))
 end
+-- 支付基本分使攻击力·守备力上升效果的代价处理函数
 function c10000010.atkcost(e,tp,eg,ep,ev,re,r,rp,chk)
+	-- 获取发动玩家当前的生命值
 	local lp=Duel.GetLP(tp)
+	-- 检查发动玩家是否可以支付当前生命值减去100的基本分
 	if chk==0 then return Duel.CheckLPCost(tp,lp-100,true) end
 	e:SetLabel(lp-100)
+	-- 扣除玩家当前的生命值直到剩下100
 	Duel.PayLPCost(tp,lp-100,true)
 end
+-- 攻击力·守备力上升效果的处理函数
 function c10000010.atkop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsFaceup() and c:IsRelateToEffect(e) then
+		-- 这张卡的攻击力·守备力上升支付的数值。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
@@ -103,20 +127,31 @@ function c10000010.atkop(e,tp,eg,ep,ev,re,r,rp)
 		c:RegisterEffect(e2)
 	end
 end
+-- 支付1000基本分破坏怪兽效果的代价处理函数
 function c10000010.descost(e,tp,eg,ep,ev,re,r,rp,chk)
+	-- 检查发动玩家是否能够支付1000点生命值
 	if chk==0 then return Duel.CheckLPCost(tp,1000) end
+	-- 让玩家支付1000点生命值
 	Duel.PayLPCost(tp,1000)
 end
+-- 支付1000基本分破坏怪兽效果的目标选择与确认函数
 function c10000010.destg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) end
+	-- 检查场上是否存在可以作为效果对象的怪兽
 	if chk==0 then return Duel.IsExistingTarget(aux.TRUE,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil) end
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)
+	-- 提示玩家选择要破坏的卡片
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
+	-- 让玩家选择场上的一只怪兽作为效果的对象
 	local g=Duel.SelectTarget(tp,aux.TRUE,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,nil)
+	-- 设置操作信息：破坏选中的那只怪兽
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,g:GetCount(),0,0)
 end
+-- 破坏怪兽效果的效果处理函数
 function c10000010.desop(e,tp,eg,ep,ev,re,r,rp)
+	-- 获取当前效果取为对象的怪兽
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
+		-- 破坏被选为效果对象的怪兽
 		Duel.Destroy(tc,REASON_EFFECT)
 	end
 end

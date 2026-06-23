@@ -1,26 +1,36 @@
 --シールドスピア
+-- 效果：
+-- ①：以场上1只表侧表示怪兽为对象才能发动。那只怪兽的攻击力·守备力直到回合结束时上升400。
 function c3244563.initial_effect(c)
-	--Activate
+	-- ①：以场上1只表侧表示怪兽为对象才能发动。那只怪兽的攻击力·守备力直到回合结束时上升400。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_ATKCHANGE)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET+EFFECT_FLAG_DAMAGE_STEP)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetHintTiming(TIMING_DAMAGE_STEP)
+	-- 限制效果只能在伤害计算前的时机发动或适用
 	e1:SetCondition(aux.dscon)
 	e1:SetTarget(c3244563.target)
 	e1:SetOperation(c3244563.activate)
 	c:RegisterEffect(e1)
 end
+-- 选择1只表侧表示的怪兽作为效果对象
 function c3244563.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsFaceup() end
+	-- 检查场上是否存在1只表侧表示的怪兽
 	if chk==0 then return Duel.IsExistingTarget(Card.IsFaceup,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil) end
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)
+	-- 提示玩家选择表侧表示的怪兽
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
+	-- 选择1只表侧表示的怪兽作为效果对象
 	Duel.SelectTarget(tp,Card.IsFaceup,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,nil)
 end
+-- 将选择的怪兽攻击力和守备力各上升400
 function c3244563.activate(e,tp,eg,ep,ev,re,r,rp)
+	-- 获取当前连锁效果的目标怪兽
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) and tc:IsFaceup() then
+		-- 给目标怪兽增加400攻击力
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)

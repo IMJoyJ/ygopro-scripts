@@ -1,6 +1,8 @@
 --古代の機械戦車
+-- 效果：
+-- 名字带有「古代的机械」的怪兽才能装备。装备怪兽的攻击力上升600。这张卡被破坏送去墓地时，给与对方基本分600分伤害。
 function c37457534.initial_effect(c)
-	--Activate
+	-- 名字带有「古代的机械」的怪兽才能装备。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_EQUIP)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -9,22 +11,22 @@ function c37457534.initial_effect(c)
 	e1:SetTarget(c37457534.target)
 	e1:SetOperation(c37457534.operation)
 	c:RegisterEffect(e1)
-	--Atk
+	-- 装备怪兽的攻击力上升600。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_EQUIP)
 	e2:SetCode(EFFECT_UPDATE_ATTACK)
 	e2:SetValue(600)
 	c:RegisterEffect(e2)
-	--Equip limit
+	-- 名字带有「古代的机械」的怪兽才能装备。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_SINGLE)
 	e3:SetCode(EFFECT_EQUIP_LIMIT)
 	e3:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
 	e3:SetValue(c37457534.eqlimit)
 	c:RegisterEffect(e3)
-	--damage
+	-- 这张卡被破坏送去墓地时，给与对方基本分600分伤害。
 	local e4=Effect.CreateEffect(c)
-	e4:SetDescription(aux.Stringid(37457534,0))
+	e4:SetDescription(aux.Stringid(37457534,0))  --"伤害"
 	e4:SetCategory(CATEGORY_DAMAGE)
 	e4:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
 	e4:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_F)
@@ -34,35 +36,53 @@ function c37457534.initial_effect(c)
 	e4:SetOperation(c37457534.damop)
 	c:RegisterEffect(e4)
 end
+-- 限制装备对象为名字带有「古代的机械」的怪兽。
 function c37457534.eqlimit(e,c)
 	return c:IsSetCard(0x7)
 end
+-- 判断目标怪兽是否为名字带有「古代的机械」的怪兽且表侧表示。
 function c37457534.filter(c)
 	return c:IsFaceup() and c:IsSetCard(0x7)
 end
+-- 设置装备效果的处理目标为名字带有「古代的机械」的怪兽。
 function c37457534.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and c37457534.filter(chkc) end
+	-- 判断是否存在名字带有「古代的机械」的怪兽作为装备目标。
 	if chk==0 then return Duel.IsExistingTarget(c37457534.filter,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil) end
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_EQUIP)
+	-- 向玩家提示选择要装备的卡。
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_EQUIP)  --"请选择要装备的卡"
+	-- 选择名字带有「古代的机械」的怪兽作为装备目标。
 	Duel.SelectTarget(tp,c37457534.filter,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,nil)
+	-- 设置装备效果的操作信息。
 	Duel.SetOperationInfo(0,CATEGORY_EQUIP,e:GetHandler(),1,0,0)
 end
+-- 执行装备操作，将装备卡装备给目标怪兽。
 function c37457534.operation(e,tp,eg,ep,ev,re,r,rp)
+	-- 获取当前连锁的装备目标怪兽。
 	local tc=Duel.GetFirstTarget()
 	if e:GetHandler():IsRelateToEffect(e) and tc:IsRelateToEffect(e) and tc:IsFaceup() then
+		-- 将装备卡装备给目标怪兽。
 		Duel.Equip(tp,e:GetHandler(),tc)
 	end
 end
+-- 判断此卡是否因破坏而送去墓地。
 function c37457534.damcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsReason(REASON_DESTROY)
 end
+-- 设置伤害效果的目标玩家和伤害值。
 function c37457534.damtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
+	-- 设置伤害效果的目标玩家为对方。
 	Duel.SetTargetPlayer(1-tp)
+	-- 设置伤害效果的伤害值为600。
 	Duel.SetTargetParam(600)
+	-- 设置伤害效果的操作信息。
 	Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,1-tp,600)
 end
+-- 执行伤害效果，对对方造成600点伤害。
 function c37457534.damop(e,tp,eg,ep,ev,re,r,rp)
+	-- 获取连锁中设定的目标玩家和伤害值。
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
+	-- 对指定玩家造成指定伤害。
 	Duel.Damage(p,d,REASON_EFFECT)
 end

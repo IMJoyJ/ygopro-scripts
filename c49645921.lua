@@ -1,6 +1,8 @@
 --セイバー・ビートル
+-- 效果：
+-- 这张卡攻击守备表示的怪兽时，若攻击力超过那个守备力，给与对方基本分那个数值的战斗伤害。
 function c49645921.initial_effect(c)
-	--pierce
+	-- 这张卡攻击守备表示的怪兽时，若攻击力超过那个守备力，给与对方基本分那个数值的战斗伤害。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_PIERCE)

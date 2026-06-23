@@ -1,9 +1,15 @@
 --異星戦隊 ビッグ・バン
+-- 效果：
+-- 这个卡名的①②③的效果1回合各能使用1次。
+-- ①：从额外卡组特殊召唤的怪兽在场上存在的场合才能发动。这张卡从手卡特殊召唤。
+-- ②：自己主要阶段才能发动。这张卡以外的场上的全部怪兽的等级下降1星。这张卡的等级上升所降的怪兽数量的数值。
+-- ③：自己战斗阶段以及对方主要阶段，这张卡的等级是8星以上的场合才能发动。场上1张其他卡破坏，这张卡的等级变成5星。
 local s,id,o=GetID()
+-- 初始化卡片效果，创建三个效果分别为①②③的效果
 function s.initial_effect(c)
-	--spsummon
+	-- ①：从额外卡组特殊召唤的怪兽在场上存在的场合才能发动。这张卡从手卡特殊召唤。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(id,0))
+	e1:SetDescription(aux.Stringid(id,0))  --"这张卡特殊召唤"
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e1:SetType(EFFECT_TYPE_IGNITION)
 	e1:SetRange(LOCATION_HAND)
@@ -12,18 +18,18 @@ function s.initial_effect(c)
 	e1:SetTarget(s.sptg)
 	e1:SetOperation(s.spop)
 	c:RegisterEffect(e1)
-	--lvdown
+	-- ②：自己主要阶段才能发动。这张卡以外的场上的全部怪兽的等级下降1星。这张卡的等级上升所降的怪兽数量的数值。
 	local e2=Effect.CreateEffect(c)
-	e2:SetDescription(aux.Stringid(id,1))
+	e2:SetDescription(aux.Stringid(id,1))  --"等级上升"
 	e2:SetType(EFFECT_TYPE_IGNITION)
 	e2:SetRange(LOCATION_MZONE)
 	e2:SetCountLimit(1,id+o)
 	e2:SetTarget(s.lvtg)
 	e2:SetOperation(s.lvop)
 	c:RegisterEffect(e2)
-	--destroy
+	-- ③：自己战斗阶段以及对方主要阶段，这张卡的等级是8星以上的场合才能发动。场上1张其他卡破坏，这张卡的等级变成5星。
 	local e3=Effect.CreateEffect(c)
-	e3:SetDescription(aux.Stringid(id,2))
+	e3:SetDescription(aux.Stringid(id,2))  --"卡片破坏"
 	e3:SetCategory(CATEGORY_DESTROY)
 	e3:SetType(EFFECT_TYPE_QUICK_O)
 	e3:SetRange(LOCATION_MZONE)
@@ -35,36 +41,50 @@ function s.initial_effect(c)
 	e3:SetOperation(s.desop)
 	c:RegisterEffect(e3)
 end
+-- 过滤函数，用于判断场上是否存在从额外卡组召唤的怪兽
 function s.cfilter(c)
 	return c:IsSummonLocation(LOCATION_EXTRA)
 end
+-- 效果①的发动条件，检查场上是否存在从额外卡组特殊召唤的怪兽
 function s.spcon(e,tp,eg,ep,ev,re,r,rp)
+	-- 检查场上是否存在从额外卡组特殊召唤的怪兽
 	return Duel.IsExistingMatchingCard(s.cfilter,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil)
 end
+-- 效果①的发动时点处理，判断是否满足特殊召唤条件
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
+	-- 判断手牌是否有足够的场地进行特殊召唤
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
+	-- 设置操作信息，提示将要特殊召唤此卡
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
+-- 效果①的发动处理，执行特殊召唤操作
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) then
+		-- 执行特殊召唤操作
 		Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
+-- 过滤函数，用于筛选场上正面表示且等级大于等于1的怪兽
 function s.filter(c)
 	return c:IsFaceup() and c:IsLevelAbove(1)
 end
+-- 效果②的发动时点处理，判断是否满足发动条件
 function s.lvtg(e,tp,eg,ep,ev,re,r,rp,chk)
+	-- 检查场上是否存在正面表示且等级大于等于1的怪兽
 	if chk==0 then return Duel.IsExistingMatchingCard(s.filter,tp,LOCATION_MZONE,LOCATION_MZONE,1,e:GetHandler()) and e:GetHandler():IsLevelAbove(1) end
 end
+-- 效果②的发动处理，执行等级下降和上升操作
 function s.lvop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
+	-- 获取场上所有正面表示的怪兽组成组
 	local g=Duel.GetMatchingGroup(s.filter,tp,LOCATION_MZONE,LOCATION_MZONE,c)
 	local tc=g:GetFirst()
 	local count=0
 	while tc do
 		local lvbf=tc:GetLevel()
+		-- 为每个怪兽添加等级-1的效果
 		local e1=Effect.CreateEffect(c)
 		e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
 		e1:SetType(EFFECT_TYPE_SINGLE)
@@ -79,6 +99,7 @@ function s.lvop(e,tp,eg,ep,ev,re,r,rp)
 		tc=g:GetNext()
 	end
 	if count>0 then
+		-- 为自身添加等级+count的效果
 		local e1=Effect.CreateEffect(c)
 		e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
 		e1:SetType(EFFECT_TYPE_SINGLE)
@@ -88,28 +109,42 @@ function s.lvop(e,tp,eg,ep,ev,re,r,rp)
 		c:RegisterEffect(e1)
 	end
 end
+-- 效果③的发动条件判断，检查当前是否满足等级≥8且处于正确的阶段
 function s.descon(e,tp,eg,ep,ev,re,r,rp)
 	if not e:GetHandler():IsLevelAbove(8) then return false end
+	-- 获取当前游戏阶段
 	local ph=Duel.GetCurrentPhase()
+	-- 判断当前回合玩家是否为自己方
 	if Duel.GetTurnPlayer()==1-tp then
 		return ph==PHASE_MAIN1 or ph==PHASE_MAIN2
 	else
 		return (ph>=PHASE_BATTLE_START and ph<=PHASE_BATTLE)
 	end
 end
+-- 效果③的发动时点处理，设置破坏目标并提示
 function s.destg(e,tp,eg,ep,ev,re,r,rp,chk)
+	-- 检查场上是否存在至少一张其他卡
 	if chk==0 then return Duel.IsExistingMatchingCard(aux.TRUE,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,e:GetHandler()) end
+	-- 向对方提示选择发动了效果③
 	Duel.Hint(HINT_OPSELECTED,1-tp,e:GetDescription())
+	-- 获取场上的所有其他卡组成组
 	local g=Duel.GetMatchingGroup(aux.TRUE,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,e:GetHandler())
+	-- 设置操作信息，提示将要破坏卡
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,1,0,0)
 end
+-- 效果③的发动处理，执行破坏并改变等级
 function s.desop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)
+	-- 提示玩家选择要破坏的卡
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
+	-- 选择场上一张其他卡作为破坏对象
 	local g=Duel.SelectMatchingCard(tp,aux.TRUE,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,1,e:GetHandler())
 	if g:GetCount()>0 then
+		-- 显示被选为破坏对象的动画效果
 		Duel.HintSelection(g)
+		-- 判断破坏是否成功且自身等级不是5星
 		if Duel.Destroy(g,REASON_EFFECT)>0 and not c:IsLevel(5) and c:IsFaceup() then
+			-- 将自身等级变为5星
 			local e1=Effect.CreateEffect(c)
 			e1:SetType(EFFECT_TYPE_SINGLE)
 			e1:SetCode(EFFECT_CHANGE_LEVEL)

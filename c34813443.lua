@@ -1,15 +1,21 @@
 --果てなき灰滅
+-- 效果：
+-- 这个卡名的①②的效果1回合各能使用1次。
+-- ①：自己·对方的主要阶段才能发动。包含「灭亡龙 威多释」的自己·对方场上的怪兽作为融合素材，把1只炎族融合怪兽融合召唤。这个效果特殊召唤的怪兽的攻击力上升那些作为融合素材的怪兽数量×500。
+-- ②：从自己墓地把1只炎族·暗属性怪兽和这张卡除外才能发动。对方场上的全部怪兽直到回合结束时变成炎族。
 local s,id,o=GetID()
+-- 初始化卡片效果，注册场地魔法卡的发动效果和两个诱发效果
 function s.initial_effect(c)
+	-- 记录卡片效果中包含的「灭亡龙 威多释」卡号
 	aux.AddCodeList(c,78783557)
-	--
+	-- 永续魔陷/场地卡通用的“允许发动”空效果，无此效果则无法发动
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	--
+	-- ①：自己·对方的主要阶段才能发动。包含「灭亡龙 威多释」的自己·对方场上的怪兽作为融合素材，把1只炎族融合怪兽融合召唤。这个效果特殊召唤的怪兽的攻击力上升那些作为融合素材的怪兽数量×500。
 	local e2=Effect.CreateEffect(c)
-	e2:SetDescription(aux.Stringid(id,1))
+	e2:SetDescription(aux.Stringid(id,1))  --"融合召唤"
 	e2:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_FUSION_SUMMON)
 	e2:SetType(EFFECT_TYPE_QUICK_O)
 	e2:SetCode(EVENT_FREE_CHAIN)
@@ -20,9 +26,9 @@ function s.initial_effect(c)
 	e2:SetTarget(s.fstg)
 	e2:SetOperation(s.fsop)
 	c:RegisterEffect(e2)
-	--
+	-- ②：从自己墓地把1只炎族·暗属性怪兽和这张卡除外才能发动。对方场上的全部怪兽直到回合结束时变成炎族。
 	local e3=Effect.CreateEffect(c)
-	e3:SetDescription(aux.Stringid(id,2))
+	e3:SetDescription(aux.Stringid(id,2))  --"改变种族"
 	e3:SetType(EFFECT_TYPE_QUICK_O)
 	e3:SetCode(EVENT_FREE_CHAIN)
 	e3:SetRange(LOCATION_GRAVE)
@@ -33,82 +39,116 @@ function s.initial_effect(c)
 	c:RegisterEffect(e3)
 end
 s.fusion_effect=true
+-- 判断当前是否为自己的主要阶段1或主要阶段2
 function s.fscon(e,tp,eg,ep,ev,re,r,rp)
+	-- 当前阶段为主要阶段1或主要阶段2时效果才能发动
 	return Duel.GetCurrentPhase()==PHASE_MAIN1 or Duel.GetCurrentPhase()==PHASE_MAIN2
 end
+-- 过滤场上正面表示的可以作为融合素材的怪兽
 function s.filter0(c)
 	return c:IsFaceup() and c:IsCanBeFusionMaterial()
 end
+-- 过滤场上正面表示的可以作为融合素材且未被效果免疫的怪兽
 function s.filter1(c,e)
 	return c:IsFaceup() and c:IsCanBeFusionMaterial() and not c:IsImmuneToEffect(e)
 end
+-- 过滤可以特殊召唤的炎族融合怪兽
 function s.filter2(c,e,tp,m,f,chkf)
 	return c:IsType(TYPE_FUSION) and c:IsRace(RACE_PYRO) and (not f or f(c))
 		and c:IsCanBeSpecialSummoned(e,SUMMON_TYPE_FUSION,tp,false,false) and c:CheckFusionMaterial(m,nil,chkf)
 end
+-- 过滤在场上的怪兽且未被效果免疫
 function s.filter3(c,e)
 	return c:IsOnField() and not c:IsImmuneToEffect(e)
 end
+-- 检查融合素材中是否包含「灭亡龙 威多释」
 function s.fcheck(tp,sg,fc)
 	return sg:IsExists(Card.IsFusionCode,1,nil,78783557)
 end
+-- ①效果的发动条件判断和处理流程
 function s.fstg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then
 		local chkf=tp
+		-- 获取玩家的融合素材组并筛选在场上的怪兽
 		local mg1=Duel.GetFusionMaterial(tp):Filter(Card.IsOnField,nil)
+		-- 获取玩家场上正面表示的怪兽
 		local mg2=Duel.GetMatchingGroup(s.filter0,tp,0,LOCATION_MZONE,nil)
 		mg1:Merge(mg2)
+		-- 设置融合检查附加条件为包含「灭亡龙 威多释」
 		aux.FCheckAdditional=s.fcheck
+		-- 检查是否存在满足条件的炎族融合怪兽
 		local res=Duel.IsExistingMatchingCard(s.filter2,tp,LOCATION_EXTRA,0,1,nil,e,tp,mg1,nil,chkf)
 		if not res then
+			-- 获取当前连锁的融合素材效果
 			local ce=Duel.GetChainMaterial(tp)
 			if ce~=nil then
 				local fgroup=ce:GetTarget()
 				local mg3=fgroup(ce,e,tp)
 				local mf=ce:GetValue()
+				-- 检查是否存在满足连锁融合素材条件的炎族融合怪兽
 				res=Duel.IsExistingMatchingCard(s.filter2,tp,LOCATION_EXTRA,0,1,nil,e,tp,mg3,mf,chkf)
 			end
 		end
+		-- 清除融合检查附加条件
 		aux.FCheckAdditional=nil
+		-- 判断是否已使用过此效果且存在满足条件的融合怪兽
 		return Duel.GetFlagEffect(tp,id+o)==0 and res
 	end
+	-- 提示对方玩家已选择发动此效果
 	Duel.Hint(HINT_OPSELECTED,1-tp,e:GetDescription())
+	-- 注册此效果已使用过的标识
 	Duel.RegisterFlagEffect(tp,id+o,RESET_PHASE+PHASE_END,0,1)
+	-- 设置操作信息为特殊召唤一张融合怪兽
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_EXTRA)
 end
+-- ①效果的处理流程
 function s.fsop(e,tp,eg,ep,ev,re,r,rp)
 	local chkf=tp
+	-- 获取玩家的融合素材组并筛选未被效果免疫的怪兽
 	local mg1=Duel.GetFusionMaterial(tp):Filter(s.filter3,nil,e)
+	-- 获取玩家场上正面表示且未被效果免疫的怪兽
 	local mg2=Duel.GetMatchingGroup(s.filter1,tp,0,LOCATION_MZONE,nil,e)
 	mg1:Merge(mg2)
+	-- 设置融合检查附加条件为包含「灭亡龙 威多释」
 	aux.FCheckAdditional=s.fcheck
+	-- 获取满足条件的炎族融合怪兽组
 	local sg1=Duel.GetMatchingGroup(s.filter2,tp,LOCATION_EXTRA,0,nil,e,tp,mg1,nil,chkf)
 	local mg3=nil
 	local sg2=nil
+	-- 获取当前连锁的融合素材效果
 	local ce=Duel.GetChainMaterial(tp)
 	if ce~=nil then
 		local fgroup=ce:GetTarget()
 		mg3=fgroup(ce,e,tp)
 		local mf=ce:GetValue()
+		-- 获取满足连锁融合素材条件的炎族融合怪兽组
 		sg2=Duel.GetMatchingGroup(s.filter2,tp,LOCATION_EXTRA,0,nil,e,tp,mg3,mf,chkf)
 	end
 	if sg1:GetCount()>0 or (sg2~=nil and sg2:GetCount()>0) then
 		local sg=sg1:Clone()
 		if sg2 then sg:Merge(sg2) end
-		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
+		-- 提示玩家选择要特殊召唤的融合怪兽
+		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
 		local tg=sg:Select(tp,1,1,nil)
 		local tc=tg:GetFirst()
+		-- 判断是否使用普通融合方式召唤
 		if sg1:IsContains(tc) and (sg2==nil or not sg2:IsContains(tc) or not Duel.SelectYesNo(tp,ce:GetDescription())) then
+			-- 选择融合素材
 			local mat1=Duel.SelectFusionMaterial(tp,tc,mg1,nil,chkf)
 			tc:SetMaterial(mat1)
+			-- 将融合素材送入墓地
 			Duel.SendtoGrave(mat1,REASON_EFFECT+REASON_MATERIAL+REASON_FUSION)
+			-- 中断当前效果处理
 			Duel.BreakEffect()
+			-- 特殊召唤融合怪兽
 			Duel.SpecialSummon(tc,SUMMON_TYPE_FUSION,tp,tp,false,false,POS_FACEUP)
 		else
+			-- 选择连锁融合素材
 			local mat2=Duel.SelectFusionMaterial(tp,tc,mg3,nil,chkf)
 			local fop=ce:GetOperation()
 			fop(ce,e,tp,tc,mat2)
 		end
+		-- 特殊召唤的怪兽攻击力上升那些作为融合素材的怪兽数量×500
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)
@@ -117,29 +157,43 @@ function s.fsop(e,tp,eg,ep,ev,re,r,rp)
 		tc:RegisterEffect(e1)
 		tc:CompleteProcedure()
 	end
+	-- 清除融合检查附加条件
 	aux.FCheckAdditional=nil
 end
+-- 过滤墓地中符合条件的炎族暗属性怪兽
 function s.costfilter(c)
 	return c:IsRace(RACE_PYRO) and c:IsAttribute(ATTRIBUTE_DARK) and c:IsAbleToRemoveAsCost()
 end
+-- 过滤对方场上正面表示且非炎族的怪兽
 function s.crfilter(c)
 	return c:IsFaceup() and not c:IsRace(RACE_PYRO)
 end
+-- ②效果的发动费用处理流程
 function s.attcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
+	-- 判断是否满足发动费用条件
 	if chk==0 then return Duel.IsExistingMatchingCard(s.costfilter,tp,LOCATION_GRAVE,0,1,c) and c:IsAbleToRemoveAsCost() end
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)
+	-- 提示玩家选择要除外的怪兽
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
+	-- 选择要除外的怪兽
 	local g=Duel.SelectMatchingCard(tp,s.costfilter,tp,LOCATION_GRAVE,0,1,1,c)
 	g:AddCard(c)
+	-- 将选中的怪兽除外作为费用
 	Duel.Remove(g,POS_FACEUP,REASON_COST)
 end
+-- ②效果的发动条件判断
 function s.atttg(e,tp,eg,ep,ev,re,r,rp,chk)
+	-- 判断对方场上是否存在正面表示的非炎族怪兽
 	if chk==0 then return Duel.IsExistingMatchingCard(s.crfilter,tp,0,LOCATION_MZONE,1,nil) end
 end
+-- ②效果的处理流程
 function s.attop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
+	-- 获取对方场上正面表示的怪兽组
 	local g=Duel.GetMatchingGroup(Card.IsFaceup,tp,0,LOCATION_MZONE,nil)
+	-- 遍历所有对方场上的正面表示怪兽
 	for tc in aux.Next(g) do
+		-- 对方场上的全部怪兽直到回合结束时变成炎族
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_CHANGE_RACE)

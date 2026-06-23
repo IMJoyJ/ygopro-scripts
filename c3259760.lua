@@ -1,7 +1,10 @@
 --呪縛衆
+-- 效果：
+-- ①：对方场上的全部表侧表示怪兽直到回合结束时不能解放，也不能作为融合·同调·超量·连接召唤的素材。
 local s,id,o=GetID()
+-- 创建并注册一张永续连锁效果，用于在自由时点发动
 function s.initial_effect(c)
-	--Activate
+	-- ①：对方场上的全部表侧表示怪兽直到回合结束时不能解放，也不能作为融合·同调·超量·连接召唤的素材。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(id,0))
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -11,14 +14,20 @@ function s.initial_effect(c)
 	e1:SetOperation(s.operation)
 	c:RegisterEffect(e1)
 end
+-- 判断是否满足发动条件，即对方场上是否存在至少1只表侧表示怪兽
 function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
+	-- 对方场上存在至少1只表侧表示怪兽
 	if chk==0 then return Duel.IsExistingMatchingCard(Card.IsFaceup,tp,0,LOCATION_MZONE,1,nil) end
 end
+-- 遍历对方场上所有表侧表示怪兽，为每只怪兽设置不能解放和不能作为召唤素材的效果
 function s.operation(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
+	-- 检索对方场上所有表侧表示怪兽
 	local g=Duel.GetMatchingGroup(Card.IsFaceup,tp,0,LOCATION_MZONE,nil)
+	-- 对检索到的怪兽组进行遍历操作
 	for tc in aux.Next(g) do
 		if tc:IsType(TYPE_MONSTER) then
+			-- 设置怪兽不能被解放（作为上级召唤的祭品）的效果
 			local e1=Effect.CreateEffect(c)
 			e1:SetType(EFFECT_TYPE_SINGLE)
 			e1:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
@@ -46,6 +55,7 @@ function s.operation(e,tp,eg,ep,ev,re,r,rp)
 		end
 	end
 end
+-- 融合素材限制函数，用于限制怪兽不能作为融合召唤的素材
 function s.fuslimit(e,c,st)
 	return st==SUMMON_TYPE_FUSION
 end

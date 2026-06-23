@@ -1,6 +1,8 @@
 --アルティメット・インセクト LV3
+-- 效果：
+-- 「究极昆虫 LV1」的效果特殊召唤的场合，只要这张卡在场上存在，对方全部怪兽的攻击力下降300。自己回合的准备阶段时，可以把表侧表示的这张卡送去墓地，从卡组·手卡特殊召唤1只「究极昆虫 LV5」。（召唤·特殊召唤·反转的回合不能使用此效果）
 function c34088136.initial_effect(c)
-	--atk down
+	-- 「究极昆虫 LV1」的效果特殊召唤的场合，只要这张卡在场上存在，对方全部怪兽的攻击力下降300。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_UPDATE_ATTACK)
@@ -9,9 +11,9 @@ function c34088136.initial_effect(c)
 	e1:SetCondition(c34088136.con)
 	e1:SetValue(-300)
 	c:RegisterEffect(e1)
-	--special summon
+	-- 自己回合的准备阶段时，可以把表侧表示的这张卡送去墓地，从卡组·手卡特殊召唤1只「究极昆虫 LV5」。（召唤·特殊召唤·反转的回合不能使用此效果）
 	local e2=Effect.CreateEffect(c)
-	e2:SetDescription(aux.Stringid(34088136,0))
+	e2:SetDescription(aux.Stringid(34088136,0))  --"特殊召唤"
 	e2:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
 	e2:SetRange(LOCATION_MZONE)
@@ -21,7 +23,7 @@ function c34088136.initial_effect(c)
 	e2:SetTarget(c34088136.sptg)
 	e2:SetOperation(c34088136.spop)
 	c:RegisterEffect(e2)
-	--reg
+	-- 「究极昆虫 LV1」的效果特殊召唤的场合，只要这张卡在场上存在，对方全部怪兽的攻击力下降300。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_CONTINUOUS)
 	e3:SetCode(EVENT_SUMMON_SUCCESS)
@@ -36,33 +38,49 @@ function c34088136.initial_effect(c)
 end
 c34088136.lvup={49441499,34830502}
 c34088136.lvdn={49441499}
+-- 判断此卡是否为「究极昆虫 LV1」的效果特殊召唤
 function c34088136.con(e)
 	return e:GetHandler():GetSummonType()==SUMMON_TYPE_SPECIAL+SUMMON_VALUE_LV
 end
+-- 为该卡注册一个标记，用于记录其是否在本回合被特殊召唤
 function c34088136.regop(e,tp,eg,ep,ev,re,r,rp)
 	e:GetHandler():RegisterFlagEffect(34088137,RESET_EVENT+0x1ec0000+RESET_PHASE+PHASE_END,0,1)
 end
+-- 判断是否为当前玩家回合且该卡未在本回合被特殊召唤
 function c34088136.spcon(e,tp,eg,ep,ev,re,r,rp)
+	-- 判断是否为当前玩家回合且该卡未在本回合被特殊召唤
 	return tp==Duel.GetTurnPlayer() and e:GetHandler():GetFlagEffect(34088137)==0
 end
+-- 支付将此卡送入墓地作为代价
 function c34088136.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsAbleToGraveAsCost() end
+	-- 将此卡送入墓地作为代价
 	Duel.SendtoGrave(e:GetHandler(),REASON_COST)
 end
+-- 筛选可以特殊召唤的「究极昆虫 LV5」
 function c34088136.spfilter(c,e,tp)
 	return c:IsCode(34830502) and c:IsCanBeSpecialSummoned(e,0,tp,true,true)
 end
+-- 设置特殊召唤的条件，检查手牌或卡组中是否存在「究极昆虫 LV5」
 function c34088136.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
+	-- 检查场上是否有足够的召唤位置
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>-1
+		-- 检查手牌或卡组中是否存在「究极昆虫 LV5」
 		and Duel.IsExistingMatchingCard(c34088136.spfilter,tp,LOCATION_HAND+LOCATION_DECK,0,1,nil,e,tp) end
+	-- 设置连锁操作信息，表示将要特殊召唤1只「究极昆虫 LV5」
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_HAND+LOCATION_DECK)
 end
+-- 执行特殊召唤操作，从手牌或卡组选择并特殊召唤「究极昆虫 LV5」
 function c34088136.spop(e,tp,eg,ep,ev,re,r,rp)
+	-- 检查场上是否有足够的召唤位置
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
+	-- 提示玩家选择要特殊召唤的卡
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
+	-- 选择满足条件的「究极昆虫 LV5」
 	local g=Duel.SelectMatchingCard(tp,c34088136.spfilter,tp,LOCATION_HAND+LOCATION_DECK,0,1,1,nil,e,tp)
 	local tc=g:GetFirst()
 	if tc then
+		-- 将选中的卡以LV召唤方式特殊召唤到场上
 		Duel.SpecialSummon(tc,SUMMON_VALUE_LV,tp,tp,true,true,POS_FACEUP)
 		tc:CompleteProcedure()
 	end
