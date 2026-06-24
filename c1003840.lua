@@ -9,7 +9,7 @@ function c1003840.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- 创建效果，用于激活卡片。
+	-- ①：把自己场上1只调整解放才能把这个效果发动。和解放的怪兽等级不同的1只「同调士」怪兽从卡组特殊召唤。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(1003840,0))  --"特殊召唤"
 	e2:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -20,8 +20,7 @@ function c1003840.initial_effect(c)
 	e2:SetTarget(c1003840.sptg)
 	e2:SetOperation(c1003840.spop)
 	c:RegisterEffect(e2)
-	-- 创建效果，用于特殊召唤怪兽。
--- ①：把自己场上1只调整解放才能把这个效果发动。和解放的怪兽等级不同的1只「同调士」怪兽从卡组特殊召唤。
+	-- ②：对方回合自己从额外卡组把同调怪兽特殊召唤的场合，以场上1张卡为对象发动。那张卡回到持有者卡组。
 	local e3=Effect.CreateEffect(c)
 	e3:SetCategory(CATEGORY_TODECK)
 	e3:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_F)
@@ -34,75 +33,74 @@ function c1003840.initial_effect(c)
 	e3:SetOperation(c1003840.thop)
 	c:RegisterEffect(e3)
 end
--- 创建效果，用于将卡片送回卡组。
--- ②：对方回合自己从额外卡组把同调怪兽特殊召唤的场合，以场上1张卡为对象发动。那张卡回到持有者卡组。
+-- 过滤场上可解放作为代价的调整怪兽的过滤函数
 function c1003840.cfilter(c,e,tp,ft)
 	local lv=c:GetLevel()
 	return lv>0 and c:IsType(TYPE_TUNER)
 		and (ft>0 or (c:IsControler(tp) and c:GetSequence()<5)) and (c:IsControler(tp) or c:IsFaceup())
-		-- 过滤函数，检查是否是调整怪兽且等级与待选怪兽不同
+		-- 检查卡组中是否存在满足特殊召唤条件的「同调士」怪兽
 		and Duel.IsExistingMatchingCard(c1003840.spfilter,tp,LOCATION_DECK,0,1,nil,e,tp,lv)
 end
--- 过滤函数，用于筛选可以特殊召唤的同调士怪兽。
+-- 过滤卡组中卡名包含「同调士」且等级与解放怪兽不同并可以特殊召唤的怪兽的过滤函数
 function c1003840.spfilter(c,e,tp,lv)
 	return c:IsSetCard(0x1017) and not c:IsLevel(lv) and c:IsLevelAbove(1) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 定义特殊召唤效果的费用支付阶段。首先获取场上怪兽区数量，然后检查是否有满足条件的卡片可解放。
+-- 特殊召唤效果的代价支付函数，解放自己场上1只调整怪兽
 function c1003840.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 获取玩家场上的怪兽区域的数量
+	-- 获取自己场上怪兽区域的可使用空位数
 	local ft=Duel.GetLocationCount(tp,LOCATION_MZONE)
-	-- 检查是否可以释放调整怪兽
+	-- 检查怪兽区域和场上可解放调整怪兽是否符合支付代价的要求
 	if chk==0 then return ft>-1 and Duel.CheckReleaseGroup(tp,c1003840.cfilter,1,nil,e,tp,ft) end
-	-- 选择要解放的调整怪兽。
+	-- 让玩家选择解放1只自己场上的调整怪兽
 	local g=Duel.SelectReleaseGroup(tp,c1003840.cfilter,1,1,nil,e,tp,ft)
 	e:SetLabel(g:GetFirst():GetLevel())
-	-- 解放选定的调整怪兽。
+	-- 解放选择的怪兽以支付发动代价
 	Duel.Release(g,REASON_COST)
 end
--- 定义特殊召唤效果的目标选择阶段。设置操作信息为特殊召唤。
+-- 特殊召唤效果的目标选择与发动检查函数
 function c1003840.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置当前处理的连锁的操作信息，指示这是一个特殊召唤的效果。
+	-- 设置效果处理的信息，操作类型为特殊召唤，目标为卡组中的怪兽
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_DECK)
 end
--- 定义特殊召唤效果的处理阶段。检查卡片是否仍然有效以及场上是否有足够的怪兽区。获取解放怪兽的等级，提示玩家选择要特殊召唤的卡片，并进行特殊召唤。
+-- 特殊召唤效果的执行操作函数
 function c1003840.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查当前处理的效果是否与这张卡相关联，或者场上是否存在可用的怪兽区域
+	-- 检查这张场地魔法卡是否仍存在于场上，以及自己的怪兽区域是否存在空位，若不满足则不处理
 	if not e:GetHandler():IsRelateToEffect(e) or Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
 	local lv=e:GetLabel()
-	-- 向玩家发送提示信息，要求其选择要特殊召唤的卡片。
+	-- 给玩家发送选择特殊召唤怪兽的提示信息
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 从卡组中选择满足条件的同调士怪兽进行特殊召唤。
+	-- 让玩家选择卡组中1只满足特殊召唤条件的「同调士」怪兽
 	local g=Duel.SelectMatchingCard(tp,c1003840.spfilter,tp,LOCATION_DECK,0,1,1,nil,e,tp,lv)
 	if g:GetCount()>0 then
-		-- 将选定的同调士怪兽特殊召唤到场上。
+		-- 将选择的怪兽以表侧表示特殊召唤到自己场上
 		Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
--- 定义触发效果的条件。检查是否为对方回合，以及被特殊召唤的怪兽是否在额外卡组且属于同步怪兽。
+-- 判定是否满足对方回合从额外卡组特殊召唤同调怪兽的发动条件函数
 function c1003840.thcon(e,tp,eg,ep,ev,re,r,rp)
 	local ec=eg:GetFirst()
-	-- 检查当前回合玩家是否不是发动者
+	-- 检查当前回合玩家是否为对方玩家
 	return Duel.GetTurnPlayer()~=tp
 		and ec:IsPreviousLocation(LOCATION_EXTRA) and ec:IsPreviousControler(tp) and ec:IsType(TYPE_SYNCHRO)
 end
--- 定义将卡片送回卡组的目标选择阶段。提示玩家选择要送回卡组的卡片，并设置操作信息。
+-- 弹卡回卡组效果的目标选择与发动检查函数
 function c1003840.thtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsOnField() and chkc:IsAbleToDeck() end
 	if chk==0 then return true end
-	-- 向玩家发送提示信息，要求其选择要返回卡组的卡片。
+	-- 给玩家发送选择返回卡组卡片的提示信息
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TODECK)  --"请选择要返回卡组的卡"
-	-- 让玩家从场上选择一张可以送回卡组的卡片。
+	-- 让玩家选择场上1张卡作为效果对象
 	local g=Duel.SelectTarget(tp,Card.IsAbleToDeck,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,1,nil)
-	-- 设置当前处理的连锁的操作信息，指示这是一个将卡片送回卡组的效果。
+	-- 设置效果处理的信息，操作类型为返回卡组，目标为选择的卡片
 	Duel.SetOperationInfo(0,CATEGORY_TODECK,g,g:GetCount(),0,0)
 end
--- 定义将卡片送回卡组的处理阶段。获取选定的目标卡片，并将其送回持有者的卡组。
+-- 弹卡回卡组效果的处理操作函数
 function c1003840.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的目标卡片
+	-- 获取被选择为效果对象的卡片
 	local tc=Duel.GetFirstTarget()
 	if tc and tc:IsRelateToEffect(e) then
-		-- 将目标卡片送回卡组。
+		-- 将目标卡片送回持有者卡组并洗牌
 		Duel.SendtoDeck(tc,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
 	end
 end

@@ -13,29 +13,29 @@ function c10028593.initial_effect(c)
 	e1:SetOperation(c10028593.spop)
 	c:RegisterEffect(e1)
 end
--- 检查效果触发时，该卡的表示形式是否为正面表示。
+-- 判定是否满足表侧表示从场上离开的发动条件函数
 function c10028593.spcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	return c:IsPreviousPosition(POS_FACEUP)
 end
--- 设置目标信息，用于确定要特殊召唤的卡片数量和位置。
+-- 特殊召唤效果的目标选择与发动检查函数
 function c10028593.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置当前处理的连锁的操作信息，指示这是一个特殊召唤操作，从卡组检索1张卡片。
+	-- 设置效果处理的信息，操作类型为从卡组特殊召唤1只怪兽
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_DECK)
 end
--- 定义过滤函数，用于筛选卡组中符合条件的「轮回天狗」卡片，并检查是否可以特殊召唤。
+-- 过滤卡组中卡名为「轮回天狗」且可以特殊召唤的怪兽的过滤函数
 function c10028593.spfilter(c,e,tp)
 	return c:IsCode(10028593) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 执行效果操作，从卡组特殊召唤符合条件的「轮回天狗」。
+-- 特殊召唤效果的执行操作函数
 function c10028593.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查玩家的主要怪兽区域是否有空位，如果没有则直接结束效果。
+	-- 检查自己场上的怪兽区域是否已满，若满则无法执行特殊召唤
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-	-- 从卡组检索第一张满足 `c10028593.spfilter` 过滤条件的卡片。
+	-- 获取卡组中第一张满足特殊召唤条件的「轮回天狗」
 	local tc=Duel.GetFirstMatchingCard(c10028593.spfilter,tp,LOCATION_DECK,0,nil,e,tp)
 	if tc then
-		-- 将检索到的「轮回天狗」特殊召唤到玩家场上的正面表示怪兽区域。
+		-- 将目标怪兽以表侧表示特殊召唤到自己场上
 		Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP)
 	end
 end

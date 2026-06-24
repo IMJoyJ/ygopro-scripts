@@ -17,11 +17,11 @@ function c10012614.initial_effect(c)
 	e2:SetValue(200)
 	c:RegisterEffect(e2)
 end
--- 定义条件函数，判断是否满足效果触发条件：当前回合玩家是效果处理者的控制者，且当前阶段为战斗阶段开始或战斗阶段。
+-- 生效条件：检查当前是否为我方的回合且处于战斗阶段
 function c10012614.con(e)
-	-- 获取当前的阶段
+	-- 获取当前游戏所处的阶段
 	local ph=Duel.GetCurrentPhase()
-	-- 获取当前的回合玩家
+	-- 获取当前回合的玩家玩家ID
 	local tp=Duel.GetTurnPlayer()
 	return tp==e:GetHandlerPlayer() and ph>=PHASE_BATTLE_START and ph<=PHASE_BATTLE
 end
