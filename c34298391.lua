@@ -7,7 +7,7 @@ function s.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- 创建并注册一个激活效果，允许这张永续魔陷/场地卡通发动的效果。
+	--check hand cards
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD)
 	e2:SetCode(EFFECT_PUBLIC)
@@ -15,39 +15,25 @@ function s.initial_effect(c)
 	e2:SetCondition(s.picon)
 	e2:SetTargetRange(0,LOCATION_HAND)
 	c:RegisterEffect(e2)
-	-- 创建并注册一个场上效果，当满足条件时公开手牌。
-	local e3=Effect.CreateEffect(c)
-	e3:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
-	e3:SetRange(LOCATION_SZONE)
-	e3:SetCode(EVENT_MOVE)
-	e3:SetCondition(s.picon)
-	e3:SetOperation(s.piopfun(LOCATION_MZONE))
+	--check set cards
+	local e3=e2:Clone()
+	e3:SetCode(EFFECT_REVEAL_ONFIELD)
+	e3:SetTarget(aux.TargetBoolFunction(Card.IsFacedown))
+	e3:SetTargetRange(0,LOCATION_ONFIELD)
 	c:RegisterEffect(e3)
-	local e4=e3:Clone()
-	e4:SetCode(EVENT_SSET)
-	e4:SetOperation(s.piopfun(LOCATION_SZONE))
+	--disable
+	local e4=Effect.CreateEffect(c)
+	e4:SetDescription(aux.Stringid(id,1))
+	e4:SetCategory(CATEGORY_DISABLE)
+	e4:SetType(EFFECT_TYPE_QUICK_O)
+	e4:SetCode(EVENT_FREE_CHAIN)
+	e4:SetRange(LOCATION_SZONE)
+	e4:SetHintTiming(0,TIMING_DRAW+TIMINGS_CHECK_MONSTER)
+	e4:SetCountLimit(1,id)
+	e4:SetCondition(s.accon)
+	e4:SetTarget(s.actg)
+	e4:SetOperation(s.acop)
 	c:RegisterEffect(e4)
-	-- 创建并注册一个持续场上效果，在卡片移动时触发。
-	local e5=Effect.CreateEffect(c)
-	e5:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
-	e5:SetRange(LOCATION_SZONE)
-	e5:SetCode(EVENT_ADJUST)
-	e5:SetCondition(s.adjustcon)
-	e5:SetOperation(s.adjustop)
-	c:RegisterEffect(e5)
-	-- 创建并注册一个持续场上效果，在调整阶段触发。
-	local e6=Effect.CreateEffect(c)
-	e6:SetDescription(aux.Stringid(id,1))
-	e6:SetCategory(CATEGORY_DISABLE)
-	e6:SetType(EFFECT_TYPE_QUICK_O)
-	e6:SetCode(EVENT_FREE_CHAIN)
-	e6:SetRange(LOCATION_SZONE)
-	e6:SetHintTiming(0,TIMING_DRAW+TIMINGS_CHECK_MONSTER+TIMING_END_PHASE)
-	e6:SetCountLimit(1,id)
-	e6:SetCondition(s.accon)
-	e6:SetTarget(s.actg)
-	e6:SetOperation(s.acop)
-	c:RegisterEffect(e6)
 end
 -- 定义cfilter函数，用于过滤正面显示且属于特定卡组的卡片。
 function s.cfilter(c)
@@ -156,34 +142,4 @@ end
 function s.disop(e,tp,eg,ep,ev,re,r,rp)
 	-- 使连锁ev的效果无效。
 	Duel.NegateEffect(ev)
-end
--- 定义adjustcon函数，用于检查是否满足调整阶段效果的条件。
-function s.adjustcon(e)
-	-- 返回是否存在满足s.cfilter条件（正面显示且属于指定卡组）的卡片。
-	return Duel.IsExistingMatchingCard(s.cfilter,e:GetHandlerPlayer(),LOCATION_ONFIELD+LOCATION_GRAVE,0,1,nil)
-		and e:GetHandler():GetFlagEffect(id+o)==0
-end
--- 定义setfilter函数，用于过滤反面朝上的卡片。
-function s.setfilter(c)
-	return c:IsFacedown()
-end
--- 定义adjustop函数，用于确认目标卡片并注册Flag效果。
-function s.adjustop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取满足s.setfilter条件的卡片组。
-	local g=Duel.GetMatchingGroup(s.setfilter,tp,0,LOCATION_ONFIELD,nil)
-	-- 向玩家确认选定的卡片。
-	Duel.ConfirmCards(tp,g)
-	e:GetHandler():RegisterFlagEffect(id+o,RESET_EVENT+RESETS_STANDARD,0,1)
-end
--- 定义cffilter函数，用于过滤反面朝上、在场上且由指定玩家控制的卡片。
-function s.cffilter(c,tp,loc)
-	return c:IsFacedown() and c:IsOnField() and c:IsControler(tp) and c:IsLocation(loc)
-end
--- 定义piopfun函数，返回一个匿名函数，用于过滤并确认卡片。
-function s.piopfun(loc)
-	return function(e,tp,eg,ep,ev,re,r,rp)
-		local sg=eg:Filter(s.cffilter,nil,1-e:GetHandlerPlayer(),loc)
-		-- 向玩家确认选定的卡片。
-		Duel.ConfirmCards(tp,sg)
-	end
 end
