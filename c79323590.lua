@@ -1,13 +1,11 @@
 --魔力の枷
--- 效果：
--- 双方玩家若不支付500基本分，则不能从手卡把卡召唤·特殊召唤·发动·盖放。
 function c79323590.initial_effect(c)
-	-- 永续魔陷/场地卡通用的“允许发动”空效果，无此效果则无法发动
+	--Activate
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- 双方玩家若不支付500基本分，则不能从手卡把卡……发动……
+	--activate cost
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD)
 	e2:SetCode(EFFECT_ACTIVATE_COST)
@@ -18,7 +16,7 @@ function c79323590.initial_effect(c)
 	e2:SetCost(c79323590.costchk)
 	e2:SetOperation(c79323590.costop)
 	c:RegisterEffect(e2)
-	-- 双方玩家若不支付500基本分，则不能从手卡把卡召唤……
+	--summon cost
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_FIELD)
 	e3:SetCode(EFFECT_SUMMON_COST)
@@ -30,13 +28,14 @@ function c79323590.initial_effect(c)
 	local e4=e3:Clone()
 	e4:SetCode(EFFECT_SPSUMMON_COST)
 	c:RegisterEffect(e4)
+	--set cost
 	local e5=e3:Clone()
 	e5:SetCode(EFFECT_MSET_COST)
 	c:RegisterEffect(e5)
 	local e6=e3:Clone()
 	e6:SetCode(EFFECT_SSET_COST)
 	c:RegisterEffect(e6)
-	-- 双方玩家若不支付500基本分，则不能从手卡把卡召唤·特殊召唤·发动·盖放。
+	--accumulate
 	local e7=Effect.CreateEffect(c)
 	e7:SetType(EFFECT_TYPE_FIELD)
 	e7:SetCode(EFFECT_FLAG_EFFECT+79323590)
@@ -45,21 +44,14 @@ function c79323590.initial_effect(c)
 	e7:SetTargetRange(1,1)
 	c:RegisterEffect(e7)
 end
--- 检查准备发动的卡片是否在手卡
 function c79323590.actarget(e,te,tp)
 	return te:GetHandler():IsLocation(LOCATION_HAND)
 end
--- 检查玩家是否能支付因场上所有“魔力之枷”叠加后的基本分代价
 function c79323590.costchk(e,te_or_c,tp)
-	-- 获取玩家当前受影响的“魔力之枷”效果数量
 	local ct=Duel.GetFlagEffect(tp,79323590)
-	-- 检查玩家是否能支付对应的基本分（数量 * 500）
 	return Duel.CheckLPCost(tp,ct*500)
 end
--- 执行支付500基本分的操作，并展示卡片提示
 function c79323590.costop(e,tp,eg,ep,ev,re,r,rp)
-	-- 向玩家展示“魔力之枷”的卡片提示
 	Duel.Hint(HINT_CARD,0,79323590)
-	-- 让玩家支付500点基本分
 	Duel.PayLPCost(tp,500)
 end

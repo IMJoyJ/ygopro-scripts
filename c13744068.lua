@@ -1,14 +1,9 @@
 --バーサーク・デーモン
--- 效果：
--- 这个卡名的①的效果1回合只能使用1次。
--- ①：以包含恶魔族怪兽的自己场上最多2只表侧表示怪兽为对象才能发动。这张卡从手卡特殊召唤，作为对象的怪兽破坏。
--- ②：这张卡的①的效果破坏怪兽时，以那个数量的对方场上的表侧表示怪兽为对象才能发动。这张卡的攻击力直到下次的自己回合的结束时上升作为对象的怪兽的原本攻击力的合计数值。
 local s,id,o=GetID()
--- 创建效果1和效果2，分别对应卡片效果①和②
 function s.initial_effect(c)
-	-- ①：以包含恶魔族怪兽的自己场上最多2只表侧表示怪兽为对象才能发动。这张卡从手卡特殊召唤，作为对象的怪兽破坏。
+	--special summon
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(id,0))  --"这张卡特殊召唤"
+	e1:SetDescription(aux.Stringid(id,0))
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DESTROY)
 	e1:SetType(EFFECT_TYPE_IGNITION)
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET)
@@ -17,9 +12,9 @@ function s.initial_effect(c)
 	e1:SetTarget(s.sptg)
 	e1:SetOperation(s.spop)
 	c:RegisterEffect(e1)
-	-- ②：这张卡的①的效果破坏怪兽时，以那个数量的对方场上的表侧表示怪兽为对象才能发动。这张卡的攻击力直到下次的自己回合的结束时上升作为对象的怪兽的原本攻击力的合计数值。
+	--
 	local e2=Effect.CreateEffect(c)
-	e2:SetDescription(aux.Stringid(id,1))  --"攻击力上升"
+	e2:SetDescription(aux.Stringid(id,1))
 	e2:SetCategory(CATEGORY_ATKCHANGE+CATEGORY_DAMAGE)
 	e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
 	e2:SetCode(EVENT_CUSTOM+id)
@@ -30,71 +25,49 @@ function s.initial_effect(c)
 	e2:SetOperation(s.atkop)
 	c:RegisterEffect(e2)
 end
--- 过滤函数，用于判断目标怪兽是否为表侧表示且可以成为效果对象
 function s.cfilter(c,e)
 	return c:IsFaceup() and c:IsCanBeEffectTarget(e)
 end
--- 判断选择的怪兽组中是否包含恶魔族怪兽
 function s.fselect(g)
 	return g:IsExists(Card.IsRace,1,nil,RACE_FIEND)
 end
--- 效果①的发动条件判断函数，检查是否有满足条件的怪兽组
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return false end
-	-- 获取场上满足条件的怪兽组
 	local rg=Duel.GetMatchingGroup(s.cfilter,tp,LOCATION_MZONE,0,nil,e)
-	-- 检查场上是否有足够的召唤区域
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) and rg:CheckSubGroup(s.fselect,1,2) end
-	-- 提示玩家选择效果的对象
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)  --"请选择效果的对象"
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)
 	local sg=rg:SelectSubGroup(tp,s.fselect,false,1,2)
-	-- 设置当前连锁的效果对象
 	Duel.SetTargetCard(sg)
-	-- 设置操作信息，表示将特殊召唤此卡
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 效果①的处理函数，将此卡特殊召唤并破坏对象怪兽
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取与当前连锁相关的对象怪兽
 	local tg=Duel.GetTargetsRelateToChain()
-	-- 检查此卡是否能特殊召唤并执行特殊召唤
 	if c:IsRelateToEffect(e) and Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)>0 then
-		-- 破坏对象怪兽
 		local dt=Duel.Destroy(tg,REASON_EFFECT)
 		if dt>0 then
-			-- 触发自定义事件，用于效果②的发动
 			Duel.RaiseEvent(c,EVENT_CUSTOM+id,re,r,tp,ep,dt)
 		end
 	end
 end
--- 效果②的发动条件判断函数，检查是否为效果①破坏怪兽时触发
 function s.atkcon(e,tp,eg,ep,ev,re,r,rp)
 	return tp==rp and eg and eg:IsContains(e:GetHandler())
 end
--- 过滤函数，用于判断目标怪兽是否为表侧表示且攻击力大于0
 function s.atkfilter(c)
 	return c:IsFaceup() and c:GetBaseAttack()>0
 end
--- 效果②的发动条件判断函数，选择对方场上的表侧表示怪兽作为对象
 function s.atktg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(1-tp) and s.atkfilter(chkc) end
-	-- 检查对方场上是否有满足条件的怪兽
 	if chk==0 then return Duel.IsExistingTarget(s.atkfilter,tp,0,LOCATION_MZONE,ev,nil) end
-	-- 提示玩家选择效果的对象
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)  --"请选择效果的对象"
-	-- 选择对方场上的表侧表示怪兽作为对象
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)
 	Duel.SelectTarget(tp,s.atkfilter,tp,0,LOCATION_MZONE,ev,ev,nil)
 end
--- 效果②的处理函数，提升此卡攻击力
 function s.atkop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取与当前连锁相关的对象怪兽
 	local tg=Duel.GetTargetsRelateToChain()
 	local atk=tg:GetSum(Card.GetBaseAttack)
 	if c:IsRelateToEffect(e) and c:IsFaceup() then
-		-- 设置此卡攻击力提升的效果
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)

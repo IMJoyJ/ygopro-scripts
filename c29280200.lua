@@ -1,14 +1,8 @@
 --VS Dr.マッドラヴ
--- 效果：
--- 这个卡名的①②的效果1回合各能使用1次，同一连锁上不能发动。
--- ①：这张卡召唤·特殊召唤成功的场合才能发动。从卡组把1张「征服斗魂」魔法·陷阱卡加入手卡。
--- ②：自己·对方回合，可以从以下选择1个，把那属性的手卡的怪兽各1只给对方观看发动。
--- ●暗：选对方场上1只表侧表示怪兽，那个攻击力·守备力下降500。
--- ●暗·地：场上1只守备力最低的怪兽回到持有者手卡。
 function c29280200.initial_effect(c)
-	-- ①：这张卡召唤·特殊召唤成功的场合才能发动。从卡组把1张「征服斗魂」魔法·陷阱卡加入手卡。
+	--search
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(29280200,0))  --"卡组检索"
+	e1:SetDescription(aux.Stringid(29280200,0))
 	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
 	e1:SetType(EFFECT_TYPE_TRIGGER_O+EFFECT_TYPE_SINGLE)
 	e1:SetProperty(EFFECT_FLAG_DELAY)
@@ -20,9 +14,9 @@ function c29280200.initial_effect(c)
 	local e2=e1:Clone()
 	e2:SetCode(EVENT_SPSUMMON_SUCCESS)
 	c:RegisterEffect(e2)
-	-- ②：自己·对方回合，可以从以下选择1个，把那属性的手卡的怪兽各1只给对方观看发动。●暗：选对方场上1只表侧表示怪兽，那个攻击力·守备力下降500。
+	--show dark for atk/def down
 	local e3=Effect.CreateEffect(c)
-	e3:SetDescription(aux.Stringid(29280200,1))  --"展示暗属性的怪兽"
+	e3:SetDescription(aux.Stringid(29280200,1))
 	e3:SetCategory(CATEGORY_ATKCHANGE+CATEGORY_DEFCHANGE)
 	e3:SetType(EFFECT_TYPE_QUICK_O)
 	e3:SetProperty(EFFECT_FLAG_DAMAGE_STEP)
@@ -30,15 +24,14 @@ function c29280200.initial_effect(c)
 	e3:SetRange(LOCATION_MZONE)
 	e3:SetCountLimit(1,29280201)
 	e3:SetHintTiming(TIMING_DAMAGE_STEP,TIMING_DAMAGE_STEP+TIMINGS_CHECK_MONSTER+TIMING_END_PHASE)
-	-- 限制该效果在伤害步骤中只能在伤害计算前发动
 	e3:SetCondition(aux.dscon)
 	e3:SetCost(c29280200.adcost)
 	e3:SetTarget(c29280200.adtg)
 	e3:SetOperation(c29280200.adop)
 	c:RegisterEffect(e3)
-	-- ②：自己·对方回合，可以从以下选择1个，把那属性的手卡的怪兽各1只给对方观看发动。●暗·地：场上1只守备力最低的怪兽回到持有者手卡。
+	--show earth and dark for rtohand
 	local e4=Effect.CreateEffect(c)
-	e4:SetDescription(aux.Stringid(29280200,2))  --"展示暗·地属性的怪兽"
+	e4:SetDescription(aux.Stringid(29280200,2))
 	e4:SetCategory(CATEGORY_TOHAND)
 	e4:SetType(EFFECT_TYPE_QUICK_O)
 	e4:SetCode(EVENT_FREE_CHAIN)
@@ -50,70 +43,43 @@ function c29280200.initial_effect(c)
 	e4:SetOperation(c29280200.rthop)
 	c:RegisterEffect(e4)
 end
--- 过滤卡组中可以加入手牌的「征服斗魂」魔法·陷阱卡
 function c29280200.thfilter(c)
 	return c:IsSetCard(0x195) and c:IsType(TYPE_SPELL+TYPE_TRAP) and c:IsAbleToHand()
 end
--- 效果①的目标选择与发动检测函数，检测卡组中是否存在可检索的卡且当前连锁中未发动过本卡的效果
 function c29280200.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断卡组中是否存在至少1张可以加入手牌的「征服斗魂」魔法·陷阱卡
 	if chk==0 then return Duel.IsExistingMatchingCard(c29280200.thfilter,tp,LOCATION_DECK,0,1,nil)
-		-- 并且检测当前连锁中未发动过本卡的效果
 		and Duel.GetFlagEffect(tp,29280200)==0 end
-	-- 为玩家注册同一连锁上不能发动的限制标识
 	Duel.RegisterFlagEffect(tp,29280200,RESET_CHAIN,0,1)
-	-- 设置连锁处理信息：将卡组中的1张卡加入手牌
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 效果①的效果处理函数，从卡组检索1张「征服斗魂」魔法·陷阱卡加入手卡
 function c29280200.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要加入手牌的卡
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 从卡组中选择1张满足过滤条件的「征服斗魂」魔法·陷阱卡
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)
 	local g=Duel.SelectMatchingCard(tp,c29280200.thfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if #g>0 then
-		-- 将选中的卡片加入持有者的手牌
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 将加入手牌的卡片给对方确认
 		Duel.ConfirmCards(1-tp,g)
 	end
 end
--- 过滤手牌中未公开的暗属性怪兽
 function c29280200.adcfilter(c)
 	return c:IsAttribute(ATTRIBUTE_DARK) and not c:IsPublic()
 end
--- 效果②的暗属性分支的发动代价（Cost）处理函数，展示手牌中1只暗属性怪兽
 function c29280200.adcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断手牌中是否存在至少1只可以展示的暗属性怪兽
 	if chk==0 then return Duel.IsExistingMatchingCard(c29280200.adcfilter,tp,LOCATION_HAND,0,1,nil) end
-	-- 提示玩家选择给对方确认的手牌
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_CONFIRM)  --"请选择给对方确认的卡"
-	-- 从手牌中选择1只暗属性怪兽
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_CONFIRM)
 	local g=Duel.SelectMatchingCard(tp,c29280200.adcfilter,tp,LOCATION_HAND,0,1,1,nil)
-	-- 将选中的怪兽展示给对方观看
 	Duel.ConfirmCards(1-tp,g)
-	-- 若自身为「征服斗魂」卡片，则触发手牌被展示的自定义事件
 	if e:GetHandler():IsSetCard(0x195) then Duel.RaiseEvent(g,EVENT_CUSTOM+9091064,e,REASON_COST,tp,tp,0) end
-	-- 洗切玩家的手牌
 	Duel.ShuffleHand(tp)
 end
--- 效果②的暗属性分支的目标选择与发动检测函数，检查对方场上是否存在表侧表示怪兽且当前连锁没有发动过同名效果
 function c29280200.adtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断对方场上是否存在至少1只表侧表示的怪兽
 	if chk==0 then return Duel.IsExistingMatchingCard(Card.IsFaceup,tp,0,LOCATION_MZONE,1,nil)
-		-- 并且检测当前连锁中未发动过本卡的效果
 		and Duel.GetFlagEffect(tp,29280200)==0 end
-	-- 为玩家注册同一连锁上不能发动的限制标识
 	Duel.RegisterFlagEffect(tp,29280200,RESET_CHAIN,0,1)
 end
--- 效果②的暗属性分支的效果处理函数，降低选中的怪兽的攻击力与守备力
 function c29280200.adop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择表侧表示的怪兽
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
-	-- 从对方场上选择1只表侧表示的怪兽
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)
 	local tc=Duel.SelectMatchingCard(tp,Card.IsFaceup,tp,0,LOCATION_MZONE,1,1,nil):GetFirst()
 	if not tc then return end
-	-- 那个攻击力·守备力下降500。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_UPDATE_ATTACK)
@@ -125,58 +91,38 @@ function c29280200.adop(e,tp,eg,ep,ev,re,r,rp)
 	e2:SetCode(EFFECT_UPDATE_DEFENSE)
 	tc:RegisterEffect(e2)
 end
--- 过滤手牌中未公开的地属性或暗属性怪兽
 function c29280200.rthcfilter(c)
 	return c:IsAttribute(ATTRIBUTE_EARTH+ATTRIBUTE_DARK) and not c:IsPublic()
 end
--- 效果②的暗·地属性分支的发动代价（Cost）处理函数，展示手牌中的暗属性和地属性怪兽各1只
 function c29280200.rthcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 获取手牌中可以被展示的地属性与暗属性怪兽的集合
 	local g=Duel.GetMatchingGroup(c29280200.rthcfilter,tp,LOCATION_HAND,0,nil)
-	-- 检测手牌中是否存在可以同时满足地属性与暗属性各1只的怪兽组合
 	if chk==0 then return g:CheckSubGroup(aux.gfcheck,2,2,Card.IsAttribute,ATTRIBUTE_EARTH,ATTRIBUTE_DARK) end
-	-- 提示玩家选择给对方确认的手牌
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_CONFIRM)  --"请选择给对方确认的卡"
-	-- 从手牌中选择地属性与暗属性的怪兽各1只
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_CONFIRM)
 	local sg=g:SelectSubGroup(tp,aux.gfcheck,false,2,2,Card.IsAttribute,ATTRIBUTE_EARTH,ATTRIBUTE_DARK)
-	-- 将选中的怪兽展示给对方观看
 	Duel.ConfirmCards(1-tp,sg)
-	-- 若自身为「征服斗魂」卡片，则触发手牌被展示的自定义事件
 	if e:GetHandler():IsSetCard(0x195) then Duel.RaiseEvent(sg,EVENT_CUSTOM+9091064,e,REASON_COST,tp,tp,0) end
-	-- 洗切玩家的手牌
 	Duel.ShuffleHand(tp)
 end
--- 过滤场上表侧表示且不是连接怪兽的怪兽
 function c29280200.rthtgfilter(c)
 	return c:IsFaceup() and not c:IsType(TYPE_LINK)
 end
--- 效果②的暗·地属性分支的目标选择与发动检测函数，检查场上守备力最低的怪兽中是否存在能返回手牌的怪兽且当前连锁没有发动过同名效果
 function c29280200.rthtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 获取场上所有符合过滤条件的表侧表示怪兽
 	local g=Duel.GetMatchingGroup(c29280200.rthtgfilter,tp,LOCATION_MZONE,LOCATION_MZONE,nil)
 	local tg=g:GetMinGroup(Card.GetDefense)
 	if chk==0 then return tg:IsExists(Card.IsAbleToHand,1,nil)
-		-- 并且检测当前连锁中未发动过本卡的效果
 		and Duel.GetFlagEffect(tp,29280200)==0 end
-	-- 为玩家注册同一连锁上不能发动的限制标识
 	Duel.RegisterFlagEffect(tp,29280200,RESET_CHAIN,0,1)
-	-- 设置连锁处理信息：将场上的怪兽返回手牌
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,tg,1,PLAYER_ALL,LOCATION_MZONE)
 end
--- 效果②的暗·地属性分支的效果处理函数，使场上守备力最低的1只怪兽回到持有者手卡
 function c29280200.rthop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取场上所有符合过滤条件的表侧表示怪兽
 	local g=Duel.GetMatchingGroup(c29280200.rthtgfilter,tp,LOCATION_MZONE,LOCATION_MZONE,nil)
 	if #g>0 then
 		local tg=g:GetMinGroup(Card.GetDefense)
 		if #tg>1 then
-			-- 当有多个最低守备力数值时，提示玩家选择要返回手牌的卡
-			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_RTOHAND)  --"请选择要返回手牌的卡"
+			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_RTOHAND)
 			tg=tg:FilterSelect(tp,Card.IsAbleToHand,1,1,nil)
-			-- 给选中的怪兽显示被选为对象的动画效果
 			Duel.HintSelection(tg)
 		end
-		-- 使选中的怪兽回到持有者手牌
 		Duel.SendtoHand(tg,nil,REASON_EFFECT)
 	end
 end

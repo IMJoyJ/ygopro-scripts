@@ -1,10 +1,8 @@
 --白い泥棒
--- 效果：
--- 这张卡造成对方玩家基本分伤害的时候，对方随机丢弃1张卡。
 function c15150365.initial_effect(c)
-	-- 这张卡造成对方玩家基本分伤害的时候，对方随机丢弃1张卡。
+	--handes
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(15150365,0))  --"丢弃手牌"
+	e1:SetDescription(aux.Stringid(15150365,0))
 	e1:SetCategory(CATEGORY_HANDES_OPPO)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_F)
 	e1:SetCode(EVENT_BATTLE_DAMAGE)
@@ -13,21 +11,15 @@ function c15150365.initial_effect(c)
 	e1:SetOperation(c15150365.operation)
 	c:RegisterEffect(e1)
 end
--- 确认受到战斗伤害的是对方玩家
 function c15150365.condition(e,tp,eg,ep,ev,re,r,rp)
 	return ep~=tp
 end
--- 效果发动的目标检测，并设置对方丢弃手牌的操作信息
 function c15150365.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置对方玩家丢弃1张手牌的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_HANDES_OPPO,0,0,1-tp,1)
 end
--- 获取对方玩家的手牌并随机选择1张以丢弃和效果原因送去墓地
 function c15150365.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取受到伤害的玩家（对方玩家）的所有手牌
 	local g=Duel.GetFieldGroup(ep,LOCATION_HAND,0)
 	local sg=g:RandomSelect(ep,1)
-	-- 将选中的卡片作为效果丢弃送去墓地
 	Duel.SendtoGrave(sg,REASON_DISCARD+REASON_EFFECT)
 end

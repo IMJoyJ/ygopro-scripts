@@ -1,15 +1,9 @@
 --粛声なる竜神サフィラ
--- 效果：
--- 「肃声之祝福」降临
--- 这个卡名的①②③的效果1回合各能使用1次。
--- ①：这张卡仪式召唤的场合，若自己的场上或墓地有「肃声的祈祷者 理」存在则能发动。自己抽2张。那之后，选自己1张手卡丢弃。
--- ②：战士族·龙族而光属性的仪式怪兽进行战斗的攻击宣言时才能发动。对方手卡随机1张丢弃。
--- ③：对方结束阶段才能发动。从自己墓地把1只光属性怪兽加入手卡。
 function c10804018.initial_effect(c)
 	c:EnableReviveLimit()
-	-- ①：这张卡仪式召唤的场合，若自己的场上或墓地有「肃声的祈祷者 理」存在则能发动。自己抽2张。那之后，选自己1张手卡丢弃。
+	--
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(10804018,0))  --"抽卡并丢弃手卡"
+	e1:SetDescription(aux.Stringid(10804018,0))
 	e1:SetCategory(CATEGORY_DRAW+CATEGORY_HANDES_SELF)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e1:SetCode(EVENT_SPSUMMON_SUCCESS)
@@ -19,9 +13,9 @@ function c10804018.initial_effect(c)
 	e1:SetTarget(c10804018.drtg)
 	e1:SetOperation(c10804018.drop)
 	c:RegisterEffect(e1)
-	-- ②：战士族·龙族而光属性的仪式怪兽进行战斗的攻击宣言时才能发动。对方手卡随机1张丢弃。
+	--
 	local e2=Effect.CreateEffect(c)
-	e2:SetDescription(aux.Stringid(10804018,1))  --"丢弃对方手卡"
+	e2:SetDescription(aux.Stringid(10804018,1))
 	e2:SetCategory(CATEGORY_HANDES_OPPO)
 	e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
 	e2:SetCode(EVENT_ATTACK_ANNOUNCE)
@@ -31,9 +25,9 @@ function c10804018.initial_effect(c)
 	e2:SetTarget(c10804018.hstg)
 	e2:SetOperation(c10804018.hsop)
 	c:RegisterEffect(e2)
-	-- ③：对方结束阶段才能发动。从自己墓地把1只光属性怪兽加入手卡。
+	--
 	local e3=Effect.CreateEffect(c)
-	e3:SetDescription(aux.Stringid(10804018,2))  --"回收光属性怪兽"
+	e3:SetDescription(aux.Stringid(10804018,2))
 	e3:SetCategory(CATEGORY_TOHAND)
 	e3:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
 	e3:SetRange(LOCATION_MZONE)
@@ -44,95 +38,60 @@ function c10804018.initial_effect(c)
 	e3:SetOperation(c10804018.thop)
 	c:RegisterEffect(e3)
 end
--- 过滤自己场上表侧表示或墓地存在的「肃声的祈祷者 理」
 function c10804018.cfilter(c)
 	return c:IsFaceupEx() and c:IsCode(25801745)
 end
--- 确认此卡是否为仪式召唤
 function c10804018.drcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsSummonType(SUMMON_TYPE_RITUAL)
 end
--- 效果①（抽卡并丢弃）的发动检查与操作信息设置
 function c10804018.drtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查自己场上或墓地是否有「肃声的祈祷者 理」且自己能否抽2张卡
 	if chk==0 then return Duel.IsExistingMatchingCard(c10804018.cfilter,tp,LOCATION_ONFIELD+LOCATION_GRAVE,0,1,nil) and Duel.IsPlayerCanDraw(tp,2) end
-	-- 将自己设置为效果处理的目标玩家
 	Duel.SetTargetPlayer(tp)
-	-- 设置当前连锁的目标参数为2
 	Duel.SetTargetParam(2)
-	-- 设置操作信息：自己抽2张卡
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,2)
-	-- 设置操作信息：自己丢弃1张手卡
 	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 end
--- 效果①（抽卡并丢弃）的效果处理
 function c10804018.drop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的目标玩家
 	local p=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER)
-	-- 让目标玩家抽2张卡，并检查是否成功抽了2张卡
 	if Duel.Draw(p,2,REASON_EFFECT)==2 then
-		-- 洗切目标玩家的手卡
 		Duel.ShuffleHand(p)
-		-- 中断当前效果，使后续动作不视为与抽卡同时处理
 		Duel.BreakEffect()
-		-- 让目标玩家选择1张手卡丢弃
 		Duel.DiscardHand(p,nil,1,1,REASON_EFFECT+REASON_DISCARD)
 	end
 end
--- 过滤表侧表示的战士族或龙族的光属性仪式怪兽
 function c10804018.filter(c)
 	return c:IsFaceup() and c:IsType(TYPE_RITUAL) and (c:IsRace(RACE_DRAGON) or c:IsRace(RACE_WARRIOR)) and c:IsAttribute(ATTRIBUTE_LIGHT)
 end
--- 效果②的条件检查：是否有光属性的战士族或龙族仪式怪兽进行战斗
 function c10804018.hscon(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取攻击怪兽
 	local a=Duel.GetAttacker()
-	-- 获取被攻击怪兽
 	local d=Duel.GetAttackTarget()
 	return c10804018.filter(a) or (d and c10804018.filter(d))
 end
--- 效果②（丢弃对方手卡）的发动检查与操作信息设置
 function c10804018.hstg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查对方手卡数量是否大于0
 	if chk==0 then return Duel.GetFieldGroupCount(tp,0,LOCATION_HAND)>0 end
-	-- 设置操作信息：对方丢弃1张手卡
 	Duel.SetOperationInfo(0,CATEGORY_HANDES_OPPO,nil,0,1-tp,1)
 end
--- 效果②（丢弃对方手卡）的效果处理
 function c10804018.hsop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取对方的手卡
 	local g=Duel.GetFieldGroup(tp,0,LOCATION_HAND)
 	if g:GetCount()==0 then return end
 	local sg=g:RandomSelect(tp,1)
-	-- 将选中的手卡丢弃送去墓地
 	Duel.SendtoGrave(sg,REASON_DISCARD+REASON_EFFECT)
 end
--- 效果③的发动条件检查：是否为对方的回合
 function c10804018.thcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查当前回合玩家是否为对方
 	return Duel.GetTurnPlayer()~=tp
 end
--- 过滤自己墓地可以加入手牌的光属性怪兽
 function c10804018.thfilter(c)
 	return c:IsAttribute(ATTRIBUTE_LIGHT) and c:IsAbleToHand()
 end
--- 效果③（回收光属性怪兽）的发动检查与操作信息设置
 function c10804018.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查自己墓地中是否存在可以加入手牌的光属性怪兽
 	if chk==0 then return Duel.IsExistingMatchingCard(c10804018.thfilter,tp,LOCATION_GRAVE,0,1,nil) end
-	-- 设置操作信息：自己墓地的1张卡加入手牌
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_GRAVE)
 end
--- 效果③（回收光属性怪兽）的效果处理
 function c10804018.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择加入手牌的卡片
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择自己墓地中1张符合条件的光属性怪兽
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)
 	local g=Duel.SelectMatchingCard(tp,c10804018.thfilter,tp,LOCATION_GRAVE,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的卡加入持有者的手牌
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 向对方玩家展示加入手牌的卡片
 		Duel.ConfirmCards(1-tp,g)
 	end
 end

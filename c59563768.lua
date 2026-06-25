@@ -1,8 +1,6 @@
 --転身テンシーン
--- 效果：
--- 这张卡的攻击力上升自己场上表侧表示存在的2星怪兽数量×400的数值。
 function c59563768.initial_effect(c)
-	-- 这张卡的攻击力上升自己场上表侧表示存在的2星怪兽数量×400的数值。
+	--atk
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_SINGLE)
 	e2:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
@@ -11,12 +9,9 @@ function c59563768.initial_effect(c)
 	e2:SetValue(c59563768.atkval)
 	c:RegisterEffect(e2)
 end
--- 过滤自己场上表侧表示且等级为2的怪兽
 function c59563768.filter(c)
 	return c:IsFaceup() and c:IsLevel(2)
 end
--- 计算攻击力上升数值的函数，返回符合条件的怪兽数量乘以400
 function c59563768.atkval(e,c)
-	-- 获取自己场上符合条件的怪兽数量并乘以400
 	return Duel.GetMatchingGroupCount(c59563768.filter,e:GetHandlerPlayer(),LOCATION_MZONE,0,nil)*400
 end

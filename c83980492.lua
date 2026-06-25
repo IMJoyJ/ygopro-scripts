@@ -1,9 +1,5 @@
 --銅鑼ドラゴン
--- 效果：
--- ←7 【灵摆】 7→
--- 【怪兽描述】
--- 驱使最新锐的技术，变得能飞行的战斗用铜锣。不得不对以0.7马赫飞翔于天空的其存在而感到惊愕。
 function c83980492.initial_effect(c)
-	-- 为卡片注册灵摆怪兽属性（包括作为灵摆卡的发动以及灵摆召唤）
+	--pendulum summon
 	aux.EnablePendulumAttribute(c)
 end

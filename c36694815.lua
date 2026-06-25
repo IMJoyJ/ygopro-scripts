@@ -1,9 +1,6 @@
 --ビットルーパー
--- 效果：
--- 这个卡名的效果1回合只能使用1次。
--- ①：从手卡把1只2星以下的怪兽送去墓地才能发动。这张卡从手卡特殊召唤。
 function c36694815.initial_effect(c)
-	-- 这个卡名的效果1回合只能使用1次。
+	--special summon
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e1:SetType(EFFECT_TYPE_IGNITION)
@@ -14,36 +11,25 @@ function c36694815.initial_effect(c)
 	e1:SetOperation(c36694815.spop)
 	c:RegisterEffect(e1)
 end
--- 检查手卡中是否存在等级2以下且可以作为cost送去墓地的怪兽
 function c36694815.cfilter(c)
 	return c:IsLevelBelow(2) and c:IsAbleToGraveAsCost()
 end
--- 发动时选择1只手卡中满足条件的怪兽送去墓地作为cost
 function c36694815.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
-	-- 判断是否满足发动条件，即手卡中存在1只2星以下的怪兽
 	if chk==0 then return Duel.IsExistingMatchingCard(c36694815.cfilter,tp,LOCATION_HAND,0,1,c) end
-	-- 向玩家提示选择要送去墓地的卡
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
-	-- 选择1只手卡中满足条件的怪兽
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)
 	local g=Duel.SelectMatchingCard(tp,c36694815.cfilter,tp,LOCATION_HAND,0,1,1,c)
-	-- 将选中的怪兽送去墓地作为cost
 	Duel.SendtoGrave(g,REASON_COST)
 end
--- 设定特殊召唤的发动条件
 function c36694815.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
-	-- 判断场上是否有足够的位置进行特殊召唤
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and c:IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置连锁操作信息，表明将要特殊召唤此卡
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,c,1,0,0)
 end
--- 处理特殊召唤效果
 function c36694815.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) then
-		-- 将此卡从手卡特殊召唤到场上
 		Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 	end
 end

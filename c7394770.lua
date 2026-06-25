@@ -1,10 +1,6 @@
 --ブリリアント・フュージョン
--- 效果：
--- 这个卡名的卡在1回合只能发动1张。
--- ①：作为这张卡的发动时的效果处理，自己卡组的怪兽作为融合素材，把1只「宝石骑士」融合怪兽攻击力·守备力变成0融合召唤。这张卡从场上离开时那只怪兽破坏。
--- ②：1回合1次，从手卡丢弃1张魔法卡才能发动。这张卡的①的效果特殊召唤的怪兽的攻击力·守备力直到对方回合结束时上升原本数值。
 function c7394770.initial_effect(c)
-	-- ①：作为这张卡的发动时的效果处理，自己卡组的怪兽作为融合素材，把1只「宝石骑士」融合怪兽攻击力·守备力变成0融合召唤。这个卡名的卡在1回合只能发动1张。
+	--activate
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_FUSION_SUMMON+CATEGORY_DECKDES)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -13,14 +9,14 @@ function c7394770.initial_effect(c)
 	e1:SetTarget(c7394770.target)
 	e1:SetOperation(c7394770.activate)
 	c:RegisterEffect(e1)
-	-- 这张卡从场上离开时那只怪兽破坏。
+	--Destroy
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_CONTINUOUS+EFFECT_TYPE_SINGLE)
 	e2:SetCode(EVENT_LEAVE_FIELD)
 	e2:SetProperty(EFFECT_FLAG_IGNORE_IMMUNE)
 	e2:SetOperation(c7394770.desop)
 	c:RegisterEffect(e2)
-	-- ②：1回合1次，从手卡丢弃1张魔法卡才能发动。这张卡的①的效果特殊召唤的怪兽的攻击力·守备力直到对方回合结束时上升原本数值。
+	--atk
 	local e3=Effect.CreateEffect(c)
 	e3:SetCategory(CATEGORY_ATKCHANGE+CATEGORY_DEFCHANGE)
 	e3:SetType(EFFECT_TYPE_IGNITION)
@@ -32,69 +28,53 @@ function c7394770.initial_effect(c)
 	e3:SetOperation(c7394770.atkop)
 	c:RegisterEffect(e3)
 end
--- 过滤卡组中可作为融合素材且能送去墓地的怪兽
 function c7394770.filter0(c)
 	return c:IsType(TYPE_MONSTER) and c:IsCanBeFusionMaterial() and c:IsAbleToGrave()
 end
--- 过滤卡组中可作为融合素材、能送去墓地且不受当前效果影响的怪兽
 function c7394770.filter1(c,e)
 	return c:IsType(TYPE_MONSTER) and c:IsCanBeFusionMaterial() and c:IsAbleToGrave() and not c:IsImmuneToEffect(e)
 end
--- 过滤额外卡组中可以使用指定素材进行融合召唤的「宝石骑士」融合怪兽
 function c7394770.filter2(c,e,tp,m,f,chkf)
 	return c:IsType(TYPE_FUSION) and c:IsSetCard(0x1047) and (not f or f(c))
 		and c:IsCanBeSpecialSummoned(e,SUMMON_TYPE_FUSION,tp,false,false) and c:CheckFusionMaterial(m,nil,chkf)
 end
--- 发动效果时的目标确认与操作信息设置
 function c7394770.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then
 		local chkf=tp
-		-- 获取自己卡组中所有满足融合素材条件的怪兽组
 		local mg1=Duel.GetMatchingGroup(c7394770.filter0,tp,LOCATION_DECK,0,nil)
-		-- 检查额外卡组是否存在可以使用卡组素材进行融合召唤的「宝石骑士」怪兽
 		local res=Duel.IsExistingMatchingCard(c7394770.filter2,tp,LOCATION_EXTRA,0,1,nil,e,tp,mg1,nil,chkf)
 		if not res then
-			-- 获取玩家受到的连锁素材效果
 			local ce=Duel.GetChainMaterial(tp)
 			if ce~=nil then
 				local fgroup=ce:GetTarget()
 				local mg2=fgroup(ce,e,tp)
 				local mf=ce:GetValue()
-				-- 检查在连锁素材效果下是否存在可融合召唤的「宝石骑士」怪兽
 				res=Duel.IsExistingMatchingCard(c7394770.filter2,tp,LOCATION_EXTRA,0,1,nil,e,tp,mg2,mf,chkf)
 			end
 		end
 		return res
 	end
-	-- 设置特殊召唤的操作信息，表示将从额外卡组特殊召唤1只怪兽
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_EXTRA)
 end
--- 发动时的效果处理（融合召唤「宝石骑士」怪兽并将其攻防变为0，建立装备/对象关系）
 function c7394770.activate(e,tp,eg,ep,ev,re,r,rp)
 	local chkf=tp
-	-- 获取自己卡组中不受此效果免疫且可作为融合素材送去墓地的怪兽组
 	local mg1=Duel.GetMatchingGroup(c7394770.filter1,tp,LOCATION_DECK,0,nil,e)
-	-- 获取额外卡组中可以使用卡组素材进行融合召唤的「宝石骑士」怪兽组
 	local sg1=Duel.GetMatchingGroup(c7394770.filter2,tp,LOCATION_EXTRA,0,nil,e,tp,mg1,nil,chkf)
 	local mg2=nil
 	local sg2=nil
-	-- 获取玩家受到的连锁素材效果
 	local ce=Duel.GetChainMaterial(tp)
 	if ce~=nil then
 		local fgroup=ce:GetTarget()
 		mg2=fgroup(ce,e,tp)
 		local mf=ce:GetValue()
-		-- 获取在连锁素材效果下可以融合召唤的「宝石骑士」怪兽组
 		sg2=Duel.GetMatchingGroup(c7394770.filter2,tp,LOCATION_EXTRA,0,nil,e,tp,mg2,mf,chkf)
 	end
 	if sg1:GetCount()>0 or (sg2~=nil and sg2:GetCount()>0) then
 		local sg=sg1:Clone()
 		if sg2 then sg:Merge(sg2) end
-		-- 提示玩家选择要特殊召唤的怪兽
-		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
+		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
 		local tg=sg:Select(tp,1,1,nil)
 		local tc=tg:GetFirst()
-		-- 攻击力·守备力变成0
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_SET_ATTACK_FINAL)
@@ -104,19 +84,13 @@ function c7394770.activate(e,tp,eg,ep,ev,re,r,rp)
 		local e2=e1:Clone()
 		e2:SetCode(EFFECT_SET_DEFENSE_FINAL)
 		tc:RegisterEffect(e2)
-		-- 判断是否使用本卡效果进行融合召唤（若不使用连锁素材效果，则使用本卡效果从卡组选素材）
 		if sg1:IsContains(tc) and (sg2==nil or not sg2:IsContains(tc) or not Duel.SelectYesNo(tp,ce:GetDescription())) then
-			-- 让玩家从卡组中选择融合素材
 			local mat1=Duel.SelectFusionMaterial(tp,tc,mg1,nil,chkf)
 			tc:SetMaterial(mat1)
-			-- 将选择的融合素材作为融合素材送去墓地
 			Duel.SendtoGrave(mat1,REASON_EFFECT+REASON_MATERIAL+REASON_FUSION)
-			-- 中断当前效果，使后续的特殊召唤不与送墓同时处理
 			Duel.BreakEffect()
-			-- 将融合怪兽以融合召唤的方式表侧表示特殊召唤
 			Duel.SpecialSummon(tc,SUMMON_TYPE_FUSION,tp,tp,false,false,POS_FACEUP)
 		else
-			-- 在连锁素材效果下让玩家选择融合素材
 			local mat2=Duel.SelectFusionMaterial(tp,tc,mg2,nil,chkf)
 			local fop=ce:GetOperation()
 			fop(ce,e,tp,tc,mat2)
@@ -125,38 +99,28 @@ function c7394770.activate(e,tp,eg,ep,ev,re,r,rp)
 		e:GetHandler():SetCardTarget(tc)
 	end
 end
--- 离场时破坏特殊召唤的怪兽的效果处理
 function c7394770.desop(e,tp,eg,ep,ev,re,r,rp)
 	local tc=e:GetHandler():GetFirstCardTarget()
 	if tc and tc:IsLocation(LOCATION_MZONE) then
-		-- 因效果破坏该怪兽
 		Duel.Destroy(tc,REASON_EFFECT)
 	end
 end
--- 检查此卡是否仍有特殊召唤的怪兽作为对象，作为效果发动的条件
 function c7394770.atkcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():GetFirstCardTarget()
 end
--- 过滤手卡中可以丢弃的魔法卡
 function c7394770.cfilter(c)
 	return c:IsType(TYPE_SPELL) and c:IsDiscardable()
 end
--- 丢弃1张魔法卡作为发动成本
 function c7394770.atkcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 在发动阶段检查手卡中是否存在可丢弃的魔法卡
 	if chk==0 then return Duel.IsExistingMatchingCard(c7394770.cfilter,tp,LOCATION_HAND,0,1,nil) end
-	-- 让玩家选择并丢弃1张手卡中的魔法卡
 	Duel.DiscardHand(tp,c7394770.cfilter,1,1,REASON_COST+REASON_DISCARD,nil)
 end
--- 确认此卡特殊召唤的怪兽是否存在，作为效果发动的目标
 function c7394770.atktg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():GetFirstCardTarget() end
 end
--- 使特殊召唤的怪兽的攻击力·守备力直到对方回合结束时上升原本数值的效果处理
 function c7394770.atkop(e,tp,eg,ep,ev,re,r,rp)
 	local tc=e:GetHandler():GetFirstCardTarget()
 	if not tc then return end
-	-- 攻击力·守备力直到对方回合结束时上升原本数值
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_UPDATE_ATTACK)

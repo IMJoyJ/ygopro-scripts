@@ -1,8 +1,6 @@
 --暗黒界の狂王 ブロン
--- 效果：
--- ①：这张卡给与对方战斗伤害时才能发动。选自己1张手卡丢弃。
 function c6214884.initial_effect(c)
-	-- ①：这张卡给与对方战斗伤害时才能发动。选自己1张手卡丢弃。
+	--discard
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(6214884,0))
 	e1:SetCategory(CATEGORY_HANDES_SELF)
@@ -13,18 +11,13 @@ function c6214884.initial_effect(c)
 	e1:SetOperation(c6214884.operation)
 	c:RegisterEffect(e1)
 end
--- 判断造成战斗伤害的玩家是否为对方玩家。
 function c6214884.condition(e,tp,eg,ep,ev,re,r,rp)
 	return ep~=tp
 end
--- 效果发动的目标检查与操作信息设置。
 function c6214884.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 在发动阶段检查自己手牌数量是否大于0。
 	if chk==0 then return Duel.GetFieldGroupCount(tp,LOCATION_HAND,0)>0 end
 	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
 end
--- 效果处理：执行丢弃手牌的操作。
 function c6214884.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 让玩家选择自己1张手牌，因效果丢弃去墓地。
 	Duel.DiscardHand(tp,aux.TRUE,1,1,REASON_EFFECT+REASON_DISCARD)
 end

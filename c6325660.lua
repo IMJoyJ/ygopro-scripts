@@ -1,13 +1,9 @@
 --霆王の閃光
--- 效果：
--- 这个卡名的卡在1回合只能发动1张。对方把手卡·墓地的怪兽的效果发动的回合，这张卡的发动从手卡也能用。
--- ①：以对方场上1只怪兽为对象才能发动。那只怪兽除外。自己墓地没有陷阱卡存在的场合，再让对方可以从自身手卡把1只怪兽特殊召唤。这张卡从手卡发动的场合，发动后，这次决斗中自己不能把地·水·炎·风属性怪兽的效果发动。
 local s,id,o=GetID()
--- 注册该卡的发动效果、手卡发动效果，并添加自定义活动计数器
 function s.initial_effect(c)
-	-- 以对方场上1只怪兽为对象才能发动。那只怪兽除外。自己墓地没有陷阱卡存在的场合，再让对方可以从自身手卡把1只怪兽特殊召唤。
+	--Activate
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(id,0))  --"除外"
+	e1:SetDescription(aux.Stringid(id,0))
 	e1:SetCategory(CATEGORY_REMOVE+CATEGORY_SPECIAL_SUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
@@ -17,88 +13,63 @@ function s.initial_effect(c)
 	e1:SetTarget(s.target)
 	e1:SetOperation(s.activate)
 	c:RegisterEffect(e1)
-	-- 对方把手卡·墓地的怪兽的效果发动的回合，这张卡的发动从手卡也能用。
+	--Act in hand
 	local e2=Effect.CreateEffect(c)
-	e2:SetDescription(aux.Stringid(id,1))  --"适用「霆王的闪光」的效果从手卡发动"
+	e2:SetDescription(aux.Stringid(id,1))
 	e2:SetType(EFFECT_TYPE_SINGLE)
 	e2:SetCode(EFFECT_TRAP_ACT_IN_HAND)
 	e2:SetCondition(s.handcon)
 	c:RegisterEffect(e2)
-	-- 设置自定义活动计数器，用于监控玩家在手牌或墓地发动怪兽效果的行为
 	Duel.AddCustomActivityCounter(id,ACTIVITY_CHAIN,s.chainfilter)
 end
--- 计数器的过滤函数：检查是否是在手牌或墓地发动的怪兽效果
 function s.chainfilter(re,tp,cid)
-	-- 获取正在处理连锁的发生位置
 	local loc=Duel.GetChainInfo(cid,CHAININFO_TRIGGERING_LOCATION)
 	return not (re:IsActiveType(TYPE_MONSTER) and loc&(LOCATION_HAND|LOCATION_GRAVE)>0)
 end
--- 手卡发动的条件函数：检查本回合对方是否在手牌或墓地发动过怪兽效果
 function s.handcon(e)
 	local tp=e:GetHandlerPlayer()
-	-- 获取本回合对方在手牌或墓地发动过怪兽效果的次数
 	return Duel.GetCustomActivityCount(id,1-tp,ACTIVITY_CHAIN)>0
 end
--- 选择对方场上1只怪兽作为效果的对象，并设置除外操作信息，记录此卡是否是从手卡发动的
 function s.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(1-tp) and chkc:IsLocation(LOCATION_MZONE) and chkc:IsAbleToRemove() end
 	e:SetLabel(0)
-	-- 检查对方场上是否存在可以除外的怪兽
 	if chk==0 then return Duel.IsExistingTarget(Card.IsAbleToRemove,tp,0,LOCATION_MZONE,1,nil) end
-	-- 提示玩家选择要除外的卡片
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
-	-- 选择对方场上1只可以除外的怪兽作为效果的对象
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)
 	local g=Duel.SelectTarget(tp,Card.IsAbleToRemove,tp,0,LOCATION_MZONE,1,1,nil)
-	-- 设置当前连锁的操作信息为：除外1只怪兽
 	Duel.SetOperationInfo(0,CATEGORY_REMOVE,g,1,0,0)
 	if e:GetHandler():IsStatus(STATUS_ACT_FROM_HAND) then
 		e:SetLabel(100)
 	end
 end
--- 过滤条件：可以特殊召唤的怪兽
 function s.spfilter(c,e,tp)
 	return c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 效果处理：将目标怪兽除外；若自己墓地没有陷阱卡，对方可以选择是否从手牌特殊召唤1只怪兽；若此卡是从手卡发动的，在决斗中对自己施加不能发动地·水·炎·风属性怪兽效果的限制
 function s.activate(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取当前连锁中被选择的效果对象怪兽
 	local tc=Duel.GetFirstTarget()
-	-- 检查目标怪兽是否仍然与效果关联，若是则将其除外，并检查是否成功除外
 	if tc:IsRelateToChain() and Duel.Remove(tc,POS_FACEUP,REASON_EFFECT)~=0
-		-- 检查自己墓地中是否不存在陷阱卡
 		and not Duel.IsExistingMatchingCard(Card.IsType,tp,LOCATION_GRAVE,0,1,nil,TYPE_TRAP)
-		-- 检查对方场上的怪兽区域是否还有空余的格子
 		and Duel.GetLocationCount(1-tp,LOCATION_MZONE)>0
-		-- 检查对方手牌中是否存在可以特殊召唤的怪兽
 		and Duel.IsExistingMatchingCard(s.spfilter,1-tp,LOCATION_HAND,0,1,nil,e,1-tp)
-		-- 询问对方玩家是否要从手牌中特殊召唤1只怪兽
-		and Duel.SelectYesNo(1-tp,aux.Stringid(id,2)) then  --"是否特殊召唤？"
-		-- 中断当前效果的处理，使之后的特殊召唤与之前的除外不视为同时进行
+		and Duel.SelectYesNo(1-tp,aux.Stringid(id,2)) then
 		Duel.BreakEffect()
-		-- 提示对方玩家选择要特殊召唤的卡片
-		Duel.Hint(HINT_SELECTMSG,1-tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-		-- 让对方玩家从手牌选择1只可以特殊召唤的怪兽
+		Duel.Hint(HINT_SELECTMSG,1-tp,HINTMSG_SPSUMMON)
 		local g=Duel.SelectMatchingCard(1-tp,s.spfilter,1-tp,LOCATION_HAND,0,1,1,nil,e,1-tp)
 		if #g>0 then
-			-- 将选择的怪兽表侧表示特殊召唤到对方的场上
 			Duel.SpecialSummon(g,0,1-tp,1-tp,false,false,POS_FACEUP)
 		end
 	end
 	if e:GetLabel()==100 then
-		-- 这张卡从手卡发动的场合，发动后，这次决斗中自己不能把地·水·炎·风属性怪兽的效果发动。
 		local e1=Effect.CreateEffect(c)
-		e1:SetDescription(aux.Stringid(id,3))  --"「霆王的闪光」效果适用中"
+		e1:SetDescription(aux.Stringid(id,3))
 		e1:SetType(EFFECT_TYPE_FIELD)
 		e1:SetCode(EFFECT_CANNOT_ACTIVATE)
 		e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET+EFFECT_FLAG_CLIENT_HINT)
 		e1:SetTargetRange(1,0)
 		e1:SetValue(s.aclimit)
-		-- 向自己玩家注册该效果限制，使其在这次决斗中无法发动特定属性怪兽的效果
 		Duel.RegisterEffect(e1,tp)
 	end
 end
--- 效果限制判断函数：限制自己玩家不能发动地、水、炎、风属性怪兽的效果
 function s.aclimit(e,re,tp)
 	local c=re:GetHandler()
 	return c:IsAttribute(ATTRIBUTE_EARTH+ATTRIBUTE_WATER+ATTRIBUTE_FIRE+ATTRIBUTE_WIND) and re:IsActiveType(TYPE_MONSTER)

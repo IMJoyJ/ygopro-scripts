@@ -1,8 +1,6 @@
 --転生の予言
--- 效果：
--- ①：以双方墓地的卡合计2张为对象才能发动。那些卡回到持有者卡组。
 function c46652477.initial_effect(c)
-	-- ①：以双方墓地的卡合计2张为对象才能发动。那些卡回到持有者卡组。
+	--Activate
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_TODECK)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -12,23 +10,15 @@ function c46652477.initial_effect(c)
 	e1:SetOperation(c46652477.activate)
 	c:RegisterEffect(e1)
 end
--- 检测是否满足发动条件并选择目标卡片
 function c46652477.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return false end
-	-- 判断场上是否存在至少2张可送入卡组的卡片
 	if chk==0 then return Duel.IsExistingTarget(Card.IsAbleToDeck,tp,LOCATION_GRAVE,LOCATION_GRAVE,2,nil) end
-	-- 向玩家提示选择要送入卡组的卡片
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TODECK)  --"请选择要返回卡组的卡"
-	-- 选择2张符合条件的卡片作为效果对象
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TODECK)
 	local g=Duel.SelectTarget(tp,Card.IsAbleToDeck,tp,LOCATION_GRAVE,LOCATION_GRAVE,2,2,nil)
-	-- 设置连锁操作信息，指定将要处理的卡片数量和类型
 	Duel.SetOperationInfo(0,CATEGORY_TODECK,g,2,0,0)
 end
--- ①：以双方墓地的卡合计2张为对象才能发动。那些卡回到持有者卡组。
 function c46652477.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁中已选定的目标卡片组
 	local g=Duel.GetChainInfo(0,CHAININFO_TARGET_CARDS)
 	local sg=g:Filter(Card.IsRelateToEffect,nil,e)
-	-- 将符合条件的卡片送回卡组并洗牌
 	Duel.SendtoDeck(sg,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
 end

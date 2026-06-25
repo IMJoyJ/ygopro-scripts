@@ -1,13 +1,11 @@
 --ダーク・シティ
--- 效果：
--- ①：「命运英雄」怪兽向持有比那个攻击力高的攻击力的怪兽攻击的场合，攻击怪兽的攻击力只在伤害计算时上升1000。
 function c53527835.initial_effect(c)
-	-- 永续魔陷/场地卡通用的“允许发动”空效果，无此效果则无法发动
+	--Activate
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- ①：「命运英雄」怪兽向持有比那个攻击力高的攻击力的怪兽攻击的场合，攻击怪兽的攻击力只在伤害计算时上升1000。
+	--atk up
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD)
 	e2:SetCode(EFFECT_UPDATE_ATTACK)
@@ -18,19 +16,13 @@ function c53527835.initial_effect(c)
 	e2:SetValue(c53527835.atkval)
 	c:RegisterEffect(e2)
 end
--- 判断是否处于伤害计算阶段且存在攻击对象
 function c53527835.atkcon(e)
-	-- 当前阶段为伤害计算阶段且存在攻击目标
 	return Duel.GetCurrentPhase()==PHASE_DAMAGE_CAL and Duel.GetAttackTarget()
 end
--- 筛选攻击怪兽并确认其为「命运英雄」卡组
 function c53527835.atktg(e,c)
-	-- 目标怪兽等于当前攻击怪兽且为「命运英雄」卡组
 	return c==Duel.GetAttacker() and c:IsSetCard(0xc008)
 end
--- 根据攻击力比较决定是否增加1000攻击力
 function c53527835.atkval(e,c)
-	-- 获取攻击对象怪兽
 	local d=Duel.GetAttackTarget()
 	if c:GetAttack()<d:GetAttack() then
 		return 1000

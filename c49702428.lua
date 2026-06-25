@@ -1,8 +1,6 @@
 --黒・魔・導・爆・裂・破
--- 效果：
--- ①：自己场上有「黑魔术少女」怪兽存在的场合才能发动。对方场上的表侧表示怪兽全部破坏。
 function c49702428.initial_effect(c)
-	-- ①：自己场上有「黑魔术少女」怪兽存在的场合才能发动。对方场上的表侧表示怪兽全部破坏。
+	--Activate
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_DESTROY)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -12,32 +10,21 @@ function c49702428.initial_effect(c)
 	e1:SetOperation(c49702428.activate)
 	c:RegisterEffect(e1)
 end
--- 检查场上是否存在表侧表示的「黑魔术少女」怪兽
 function c49702428.cfilter(c)
 	return c:IsFaceup() and c:IsSetCard(0x30a2)
 end
--- 判断是否满足发动条件，即己方场上存在「黑魔术少女」怪兽
 function c49702428.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 检测己方场上是否存在至少1张满足cfilter条件的卡
 	return Duel.IsExistingMatchingCard(c49702428.cfilter,tp,LOCATION_MZONE,0,1,nil)
 end
--- 过滤出场上的表侧表示怪兽
 function c49702428.filter(c)
 	return c:IsFaceup()
 end
--- 设置连锁处理目标为对方场上的所有表侧表示怪兽，并设定破坏类别
 function c49702428.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断是否满足发动条件，即对方场上存在至少1张表侧表示的怪兽
 	if chk==0 then return Duel.IsExistingMatchingCard(c49702428.filter,tp,0,LOCATION_MZONE,1,nil) end
-	-- 获取对方场上所有表侧表示怪兽组成的组
 	local g=Duel.GetMatchingGroup(c49702428.filter,tp,0,LOCATION_MZONE,nil)
-	-- 设置当前连锁的操作信息为破坏效果，并指定目标怪兽组和数量
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,g:GetCount(),0,0)
 end
--- 执行破坏效果，将对方场上的所有表侧表示怪兽破坏
 function c49702428.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取对方场上所有表侧表示怪兽组成的组
 	local g=Duel.GetMatchingGroup(c49702428.filter,tp,0,LOCATION_MZONE,nil)
-	-- 以效果原因将目标怪兽组全部破坏
 	Duel.Destroy(g,REASON_EFFECT)
 end

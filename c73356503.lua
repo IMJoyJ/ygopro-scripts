@@ -1,8 +1,6 @@
 --烈風の結界像
--- 效果：
--- ①：只要这张卡在怪兽区域存在，双方不是风属性怪兽不能特殊召唤。
 function c73356503.initial_effect(c)
-	-- ①：只要这张卡在怪兽区域存在，双方不是风属性怪兽不能特殊召唤。
+	--disable spsummon
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetRange(LOCATION_MZONE)
@@ -12,7 +10,6 @@ function c73356503.initial_effect(c)
 	e1:SetTarget(c73356503.sumlimit)
 	c:RegisterEffect(e1)
 end
--- 判定特殊召唤的目标怪兽属性是否不为风属性，若不为风属性则限制其特殊召唤
 function c73356503.sumlimit(e,c,sump,sumtype,sumpos,targetp)
 	return c:GetAttribute()~=ATTRIBUTE_WIND
 end

@@ -1,13 +1,13 @@
 --心を見通す眼
 local s,id,o=GetID()
--- 初始化卡片效果，注册场地魔法卡通用的发动效果、公开手牌效果、场地区域内卡片翻面效果和诱发即时效果
+-- 注册此卡发动时的效果处理、手牌公开及确认里侧表示卡、以及无效宣言卡名效果的3个效果
 function s.initial_effect(c)
 	-- 永续魔陷/场地卡通用的“允许发动”空效果，无此效果则无法发动
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- 创建一个影响对方手牌区域的公开手牌效果
+	-- ①：只要自己场上或墓地有「卡通」卡存在，对方手牌全部持续公开
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD)
 	e2:SetCode(EFFECT_PUBLIC)
@@ -17,11 +17,11 @@ function s.initial_effect(c)
 	c:RegisterEffect(e2)
 	local e3=e2:Clone()
 	e3:SetCode(EFFECT_REVEAL_ONFIELD)
-	-- 设置该效果的目标为场上所有背面朝上的卡片
+	-- 设置确认卡片效果的对象为里侧表示的卡
 	e3:SetTarget(aux.TargetBoolFunction(Card.IsFacedown))
 	e3:SetTargetRange(0,LOCATION_ONFIELD)
 	c:RegisterEffect(e3)
-	-- 创建一个诱发即时效果，用于在特定条件下使对方效果无效
+	-- ②：自己场上·墓地有卡通怪兽以及「卡通」魔法卡存在的场合，可以宣言1个在同一连锁上没有把效果发动的卡名并发动
 	local e4=Effect.CreateEffect(c)
 	e4:SetDescription(aux.Stringid(id,1))
 	e4:SetCategory(CATEGORY_DISABLE)
@@ -35,47 +35,47 @@ function s.initial_effect(c)
 	e4:SetOperation(s.acop)
 	c:RegisterEffect(e4)
 end
--- 过滤函数，判断场上是否有名字带有“心”字的怪兽
+-- 过滤条件：自己场上或墓地表侧表示存在的「卡通」卡
 function s.cfilter(c)
 	return c:IsFaceupEx() and c:IsSetCard(0x62)
 end
--- 条件函数，判断是否满足发动条件（存在名字带有“心”字的怪兽）
+-- 效果①的发动条件（Condition）：检查自己场上或墓地是否存在「卡通」卡
 function s.picon(e)
-	-- 检查是否存在名字带有“心”字的怪兽
+	-- 检查自己场上或墓地是否存在至少1张满足过滤条件的「卡通」卡
 	return Duel.IsExistingMatchingCard(s.cfilter,e:GetHandlerPlayer(),LOCATION_ONFIELD+LOCATION_GRAVE,0,1,nil)
 end
--- 过滤函数，判断场上是否有卡通怪兽
+-- 过滤条件：自己场上或墓地表侧表示存在的卡通怪兽
 function s.cfilter2(c)
 	return c:IsFaceupEx() and c:IsType(TYPE_TOON)
 end
--- 过滤函数，判断场上是否有名字带有“心”字的魔法卡
+-- 过滤条件：自己场上或墓地表侧表示存在的「卡通」魔法卡
 function s.cfilter3(c)
 	return c:IsFaceupEx() and c:IsSetCard(0x62) and c:IsType(TYPE_SPELL)
 end
--- 条件函数，判断是否满足发动条件（存在卡通怪兽和名字带有“心”字的魔法卡）
+-- 效果②的Condition条件函数：检查自己场上或墓地是否有卡通怪兽以及「卡通」魔法卡存在
 function s.accon(e)
-	-- 检查是否存在卡通怪兽
+	-- 检查自己场上或墓地是否存在至少1只卡通怪兽
 	return Duel.IsExistingMatchingCard(s.cfilter2,e:GetHandlerPlayer(),LOCATION_MZONE+LOCATION_GRAVE,0,1,nil)
-		-- 检查是否存在名字带有“心”字的魔法卡
+		-- 检查自己场上或墓地是否存在至少1张「卡通」魔法卡
 		and Duel.IsExistingMatchingCard(s.cfilter3,e:GetHandlerPlayer(),LOCATION_ONFIELD+LOCATION_GRAVE,0,1,nil)
 end
--- 设置效果目标处理逻辑，根据连锁数量决定是否需要宣言卡名并设置操作信息
+-- 效果②的Target函数：获取并在同一连锁中排除已发动效果的卡名，让玩家宣言1个剩余的卡名并作为效果对象参数
 function s.actg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 获取当前正在处理的连锁序号
+	-- 获取当前的连锁数
 	local ch=Duel.GetCurrentChain()
 	if ch>1 then
-		-- 向玩家发送提示信息，提示其选择一个卡名
+		-- 给玩家发送请宣言卡名的提示信息
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_CODE)  --"请宣言一个卡名"
 		local g=Group.CreateGroup()
 		for i=1,ch-1 do
-			-- 获取指定连锁中触发的效果
+			-- 获取当前连锁中第i个连锁触发的效果
 			local te=Duel.GetChainInfo(i,CHAININFO_TRIGGERING_EFFECT)
 			g:AddCard(te:GetHandler())
 		end
 		local codes={}
 		local ag=Group.CreateGroup()
-		-- 遍历卡片组中的每张卡片
+		-- 遍历连锁中已触发效果的卡片组
 		for c in aux.Next(g) do
 			local code=c:GetCode()
 			if not ag:IsExists(Card.IsCode,1,nil,code) then
@@ -94,30 +94,30 @@ function s.actg(e,tp,eg,ep,ev,re,r,rp,chk)
 		end
 		table.insert(afilter,OPCODE_NOT)
 		ag:Clear()
-		-- 让玩家宣言一个符合过滤条件的卡名
+		-- 让玩家从符合过滤条件的卡名中宣言1个卡名
 		local ac=Duel.AnnounceCard(tp,table.unpack(afilter))
-		-- 将宣言的卡号设置为当前连锁的目标参数
+		-- 将宣言的卡号存入效果对象参数中
 		Duel.SetTargetParam(ac)
-		-- 设置操作信息，表示需要进行卡名宣言的操作
+		-- 设置当前连锁的操作信息为包含宣言分类
 		Duel.SetOperationInfo(0,CATEGORY_ANNOUNCE,nil,0,tp,0)
 	else
-		-- 让玩家宣言任意一张卡名
+		-- 让玩家宣言任意1个卡名
 		local ac=Duel.AnnounceCard(tp)
-		-- 将宣言的卡号设置为当前连锁的目标参数
+		-- 将宣言的卡号存入效果对象参数中
 		Duel.SetTargetParam(ac)
-		-- 设置操作信息，表示需要进行卡名宣言的操作
+		-- 设置当前连锁的操作信息为包含宣言分类
 		Duel.SetOperationInfo(0,CATEGORY_ANNOUNCE,nil,0,tp,0)
 	end
 end
--- 设置效果处理逻辑，注册一个持续效果用于在连锁解决时使对方效果无效
+-- 效果②的Operation函数：注册直到回合结束时使宣言的卡名发动的效果无效的持续型场上效果
 function s.acop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToChain() and c:IsFaceup() then
-		-- 获取当前连锁的目标参数
+		-- 获取效果发动时玩家所宣言的卡名
 		local ac=Duel.GetChainInfo(0,CHAININFO_TARGET_PARAM)
 		local fid=c:GetFieldID()
 		c:RegisterFlagEffect(id,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END,0,1,fid)
-		-- 创建一个持续效果，用于在连锁解决时判断是否需要使效果无效
+		-- 直到回合结束时，宣言的卡名与元卡名相同的卡所发动的效果无效化
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 		e1:SetCode(EVENT_CHAIN_SOLVING)
@@ -126,11 +126,11 @@ function s.acop(e,tp,eg,ep,ev,re,r,rp)
 		e1:SetLabel(ac,fid)
 		e1:SetLabelObject(c)
 		e1:SetReset(RESET_PHASE+PHASE_END)
-		-- 将该持续效果注册到游戏环境
+		-- 在系统全局注册该无效效果
 		Duel.RegisterEffect(e1,tp)
 	end
 end
--- 条件函数，判断是否满足使效果无效的条件（目标怪兽处于正面状态且为同一张卡、触发效果的原始卡号匹配）
+-- 无效效果的Condition条件函数：检查本卡是否在场上表侧表示存在，且正在处理的效果的发动者的原始卡名与宣言的卡名相同
 function s.discon(e,tp,eg,ep,ev,re,r,rp)
 	local ac,fid=e:GetLabel()
 	local ec=e:GetLabelObject()
@@ -138,8 +138,8 @@ function s.discon(e,tp,eg,ep,ev,re,r,rp)
 		and ec:GetFlagEffectLabel(id)==fid
 		and re:GetHandler():IsOriginalCodeRule(ac)
 end
--- 操作函数，使指定连锁的效果无效
+-- 无效效果的Operation函数：使当前处理的效果无效
 function s.disop(e,tp,eg,ep,ev,re,r,rp)
-	-- 使当前处理的连锁效果无效
+	-- 使当前连锁上的效果无效
 	Duel.NegateEffect(ev)
 end

@@ -1,10 +1,8 @@
 --サンライト・ユニコーン
--- 效果：
--- 1回合1次，自己的主要阶段时才能发动。把自己卡组最上面的卡翻开，那是装备魔法卡的场合加入手卡。不是的场合，回到自己卡组最下面。
 function c10321588.initial_effect(c)
-	-- 1回合1次，自己的主要阶段时才能发动。把自己卡组最上面的卡翻开，那是装备魔法卡的场合加入手卡。不是的场合，回到自己卡组最下面。
+	--
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(10321588,0))  --"检索"
+	e1:SetDescription(aux.Stringid(10321588,0))
 	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
 	e1:SetType(EFFECT_TYPE_IGNITION)
 	e1:SetCountLimit(1)
@@ -13,29 +11,19 @@ function c10321588.initial_effect(c)
 	e1:SetOperation(c10321588.operation)
 	c:RegisterEffect(e1)
 end
--- 效果发动的目标
 function c10321588.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查自己卡组的卡片数量是否大于0
 	if chk==0 then return Duel.GetFieldGroupCount(tp,LOCATION_DECK,0)>0 end
 end
--- 效果发动的具体操作
 function c10321588.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 如果自己卡组已没有卡，则效果处理结束
 	if Duel.GetFieldGroupCount(tp,LOCATION_DECK,0)==0 then return end
-	-- 确认自己卡组最上方的1张卡
 	Duel.ConfirmDecktop(tp,1)
-	-- 获取自己卡组最上方1张卡
 	local g=Duel.GetDecktopGroup(tp,1)
 	local tc=g:GetFirst()
 	if tc:IsType(TYPE_EQUIP) and tc:IsAbleToHand() then
-		-- 使接下来的操作不进行洗切卡组或手卡的检测
 		Duel.DisableShuffleCheck()
-		-- 将翻开的卡加入手卡
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 洗切手卡
 		Duel.ShuffleHand(tp)
 	else
-		-- 将翻开的卡回到卡组最下面
 		Duel.MoveSequence(tc,SEQ_DECKBOTTOM)
 	end
 end

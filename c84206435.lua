@@ -1,8 +1,6 @@
 --氷結界の紋章
--- 效果：
--- ①：从卡组把1只「冰结界」怪兽加入手卡。
 function c84206435.initial_effect(c)
-	-- ①：从卡组把1只「冰结界」怪兽加入手卡。
+	--Activate
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -11,27 +9,18 @@ function c84206435.initial_effect(c)
 	e1:SetOperation(c84206435.activate)
 	c:RegisterEffect(e1)
 end
--- 过滤卡组中属于「冰结界」字段、是怪兽卡且可以加入手卡的卡片
 function c84206435.filter(c)
 	return c:IsSetCard(0x2f) and c:IsType(TYPE_MONSTER) and c:IsAbleToHand()
 end
--- 效果发动的检测与目标设置函数，检查卡组中是否存在符合条件的卡并设置操作信息
 function c84206435.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 在发动阶段，检查卡组中是否存在至少1张满足过滤条件的卡片
 	if chk==0 then return Duel.IsExistingMatchingCard(c84206435.filter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置操作信息，声明此效果的处理为从卡组将1张卡加入手卡
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 效果处理的执行函数，从卡组选择1只「冰结界」怪兽加入手卡并给对方确认
 function c84206435.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要加入手牌的卡片
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 让玩家从卡组中选择1张满足过滤条件的卡片
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)
 	local g=Duel.SelectMatchingCard(tp,c84206435.filter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选择的卡片因效果加入玩家手卡
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 向对方玩家展示并确认加入手卡的卡片
 		Duel.ConfirmCards(1-tp,g)
 	end
 end

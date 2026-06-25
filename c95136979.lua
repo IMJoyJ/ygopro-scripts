@@ -1,10 +1,10 @@
 --破械式鬼シャラ
 local s,id,o=GetID()
--- 注册卡片效果，包括墓地状态检查和两个效果：手牌时的特殊召唤+破坏效果，以及墓地时的特殊召唤/回手/从墓地特殊召唤效果
+-- 注册卡片效果的初始化函数（在自己·对方主要阶段从手牌丢弃以从手牌特殊召唤1只恶魔族怪兽并破坏自己场上1张卡的效果，以及在墓地存在时当场上的卡被战斗或自己以外效果破坏时可特召或回手牌的效果）
 function s.initial_effect(c)
-	-- 为该卡注册墓地状态检测标记，防止同一连锁中重复判定
+	-- 注册检测该卡是否已被送去墓地的标记检测效果，防止在同一连锁中重复判定
 	local e0=aux.AddThisCardInGraveAlreadyCheck(c)
-	-- 手牌时发动的效果：在主要阶段可以特殊召唤1只恶魔族怪兽，并且可以选择场上1张卡破坏
+	-- 自己·对方的主要阶段，把这张卡从手卡丢弃才能发动。从手卡把1只恶魔族怪兽特殊召唤.那之后，自己场上1张卡破坏
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(id,0))
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DESTROY)
@@ -18,7 +18,7 @@ function s.initial_effect(c)
 	e1:SetTarget(s.sptg)
 	e1:SetOperation(s.spop)
 	c:RegisterEffect(e1)
-	-- 墓地时发动的效果：当有自己场上的卡因战斗或效果被破坏时，可以选择将此卡回手或特殊召唤到场上
+	-- 这张卡在墓地存在的状态，场上的卡被战斗或者「破械式鬼 奢罗」以外的卡的效果破坏的场合才能发动。这张卡加入手卡或特殊召唤。这个效果特殊召唤的这张卡从场上离开的场合回到卡组最下面
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(id,1))
 	e2:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_TOHAND+CATEGORY_GRAVE_SPSUMMON)
@@ -33,88 +33,88 @@ function s.initial_effect(c)
 	e2:SetOperation(s.thop)
 	c:RegisterEffect(e2)
 end
--- 效果发动条件：必须在主要阶段
+-- 效果①从手牌特召并破坏卡片的发动条件函数
 function s.spcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 效果发动条件：必须在主要阶段
+	-- 检查当前是否为主要阶段
 	return Duel.IsMainPhase()
 end
--- 效果费用：将此卡送去墓地作为费用
+-- 效果①的发动代价函数
 function s.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsDiscardable() end
-	-- 将此卡送去墓地作为费用
+	-- 将这张卡从手牌丢弃送去墓地
 	Duel.SendtoGrave(e:GetHandler(),REASON_COST+REASON_DISCARD)
 end
--- 特殊召唤的过滤函数，筛选恶魔族且可特殊召唤的怪兽
+-- 过滤手牌中可以特殊召唤的恶魔族怪兽的过滤函数
 function s.spfilter(c,e,tp)
 	return c:IsRace(RACE_FIEND) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 效果目标设定：检查是否有满足条件的怪兽可以特殊召唤，并设置破坏目标
+-- 效果①的发动准备与检查函数
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查场上是否有足够的空间进行特殊召唤
+	-- 在chk==0时，检查当前玩家场上是否有空余的怪兽区域
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查手牌中是否存在满足条件的怪兽
+		-- 并且检查手牌中（除自身外）是否存在可以特殊召唤的恶魔族怪兽
 		and Duel.IsExistingMatchingCard(s.spfilter,tp,LOCATION_HAND,0,1,e:GetHandler(),e,tp) end
-	-- 设置操作信息，表示将要特殊召唤1张手牌中的卡
+	-- 设置效果处理的分类为特殊召唤，数量为1，目标位置为手牌
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_HAND)
-	-- 获取对方场上的所有卡作为可能的破坏目标
+	-- 获取当前玩家场上的所有卡（用于后续设定破坏的操作信息）
 	local g=Duel.GetFieldGroup(tp,LOCATION_ONFIELD,0)
 	if g:GetCount()>0 then
-		-- 设置操作信息，表示将要破坏场上1张卡
+		-- 设置效果处理的分类为破坏，数量为1，目标位置为自己场上
 		Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,1,0,0)
 	end
 end
--- 效果处理函数：执行特殊召唤和破坏操作
+-- 效果①特殊召唤与破坏自己场上卡片的效果处理函数
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查场上是否有足够的空间进行特殊召唤
+	-- 若没有可用的怪兽区域，则结束效果处理
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-	-- 提示玩家选择要特殊召唤的卡
+	-- 提示玩家选择要特殊召唤的怪兽
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 从手牌中选择满足条件的怪兽进行特殊召唤
+	-- 让玩家从手牌中选择1只符合条件的恶魔族怪兽
 	local g=Duel.SelectMatchingCard(tp,s.spfilter,tp,LOCATION_HAND,0,1,1,nil,e,tp)
-	-- 如果成功特殊召唤，则继续执行破坏操作
+	-- 如果选择了恶魔族怪兽，并且成功将其以表侧表示特殊召唤
 	if g:GetCount()>0 and Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)~=0 then
-		-- 中断当前效果处理，使后续效果视为错时点
+		-- 中断效果处理，使后续的破坏操作与特殊召唤不视为同时处理
 		Duel.BreakEffect()
-		-- 提示玩家选择要破坏的卡
+		-- 提示玩家选择要破坏的卡片
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-		-- 从对方场上选择1张卡作为破坏目标
+		-- 让玩家在自己场上选择1张卡
 		local sg=Duel.SelectMatchingCard(tp,aux.TRUE,tp,LOCATION_ONFIELD,0,1,1,nil)
 		if sg:GetCount()>0 then
-			-- 显示被选为对象的卡的动画效果
+			-- 在场上显式标出被选为破坏对象的卡
 			Duel.HintSelection(sg)
-			-- 将选定的卡破坏
+			-- 破坏选择的自己场上的卡
 			Duel.Destroy(sg,REASON_EFFECT)
 		end
 	end
 end
--- 破坏条件过滤函数：判断是否为场上的卡因战斗或效果被破坏且不是由自身效果造成
+-- 过滤在场上被战斗或自身效果以外破坏的卡的过滤函数
 function s.cfilter(c,tp,se,re)
 	return c:IsPreviousLocation(LOCATION_ONFIELD)
 		and (c:IsReason(REASON_BATTLE) or (c:IsReason(REASON_EFFECT) and not re:GetHandler():IsCode(id)))
 		and (se==nil or c:GetReasonEffect()~=se)
 end
--- 触发条件：当有自己场上的卡因战斗或效果被破坏时生效
+-- 效果②特召或加入手牌的发动条件函数
 function s.thcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local se=e:GetLabelObject():GetLabelObject()
 	return eg:IsExists(s.cfilter,1,c,tp,se,re)
 end
--- 效果目标设定：检查此卡是否可以回手或特殊召唤到场上
+-- 效果②特召或加入手牌的发动准备与检查函数
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsAbleToHand()
-		-- 检查场上是否有足够的空间进行特殊召唤
+		-- 或者检查自己场上是否有空余的怪兽区域且该卡是否能特殊召唤
 		or (Duel.GetLocationCount(tp,LOCATION_MZONE)>0 and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false)) end
 end
--- 效果处理函数：根据选择将此卡回手或特殊召唤到场上，并设置其离开场后回到牌组底部
+-- 效果②特召或加入手牌的效果处理函数
 function s.thop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if not c:IsRelateToChain() then return end
-	-- 检查此卡是否受到王家长眠之谷的影响，若受影响则无效该效果
+	-- 进行王家长眠之谷的否定检查，若受到影响则无效效果
 	if aux.NecroValleyNegateCheck(c) then return end
-	-- 检查此卡是否不受王家长眠之谷影响，若受则无效该效果
+	-- 检查该卡是否不受王家长眠之谷效果的影响
 	if not aux.NecroValleyFilter()(c) then return end
 	local b1=c:IsAbleToHand()
-	-- 判断是否可以特殊召唤到场上
+	-- 检查自己场上是否有可用的怪兽区域并且该卡是否可以特殊召唤
 	local b2=Duel.GetLocationCount(tp,LOCATION_MZONE)>0 and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 	local op=0
 	if b1 and not b2 then
@@ -122,16 +122,16 @@ function s.thop(e,tp,eg,ep,ev,re,r,rp)
 	elseif not b1 and b2 then
 		op=2
 	else
-		-- 根据可选选项选择操作方式
+		-- 让玩家在“加入手牌”或“特殊召唤”中选择一个选项
 		op=aux.SelectFromOptions(tp,{b1,1190},{b2,1152})
 	end
 	if op==1 then
-		-- 将此卡送入手牌
+		-- 将这张卡加入手牌
 		Duel.SendtoHand(c,nil,REASON_EFFECT)
 	end
-	-- 如果选择特殊召唤，则执行特殊召唤并设置其离开场后回到牌组底部
+	-- 如果选择了特殊召唤选项，并且成功将这张卡特殊召唤
 	if op==2 and Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)~=0 then
-		-- 设置效果：当此卡离开场时，自动回到牌组底部
+		-- 这个效果特殊召唤的这张卡从场上离开的场合回到卡组最下面
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_LEAVE_FIELD_REDIRECT)

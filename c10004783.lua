@@ -1,10 +1,6 @@
 --宝玉の解放
--- 效果：
--- 「宝玉兽」怪兽才能装备。
--- ①：装备怪兽的攻击力上升800。
--- ②：这张卡从场上送去墓地时才能发动。从卡组选1只「宝玉兽」怪兽当作永续魔法卡使用在自己的魔法与陷阱区域表侧表示放置。
 function c10004783.initial_effect(c)
-	-- 「宝玉兽」怪兽才能装备。
+	--Activate
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_EQUIP)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -13,22 +9,22 @@ function c10004783.initial_effect(c)
 	e1:SetTarget(c10004783.target)
 	e1:SetOperation(c10004783.operation)
 	c:RegisterEffect(e1)
-	-- ①：装备怪兽的攻击力上升800。
+	--Atk up
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_EQUIP)
 	e2:SetCode(EFFECT_UPDATE_ATTACK)
 	e2:SetValue(800)
 	c:RegisterEffect(e2)
-	-- 「宝玉兽」怪兽才能装备。
+	--Equip limit
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_SINGLE)
 	e3:SetCode(EFFECT_EQUIP_LIMIT)
 	e3:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
 	e3:SetValue(c10004783.eqlimit)
 	c:RegisterEffect(e3)
-	-- ②：这张卡从场上送去墓地时才能发动。从卡组选1只「宝玉兽」怪兽当作永续魔法卡使用在自己的魔法与陷阱区域表侧表示放置。
+	--to field
 	local e4=Effect.CreateEffect(c)
-	e4:SetDescription(aux.Stringid(10004783,0))  --"放置「宝玉兽」在魔法陷阱区"
+	e4:SetDescription(aux.Stringid(10004783,0))
 	e4:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e4:SetProperty(EFFECT_FLAG_DAMAGE_STEP)
 	e4:SetCode(EVENT_TO_GRAVE)
@@ -37,63 +33,42 @@ function c10004783.initial_effect(c)
 	e4:SetOperation(c10004783.tfop)
 	c:RegisterEffect(e4)
 end
--- 装备限制条件：检查装备对象是否为「宝玉兽」怪兽
 function c10004783.eqlimit(e,c)
 	return c:IsSetCard(0x1034)
 end
--- 过滤函数：过滤出场上表侧表示的「宝玉兽」怪兽
 function c10004783.filter(c)
 	return c:IsFaceup() and c:IsSetCard(0x1034)
 end
--- 效果目标：检查场上是否存在可以作为装备对象的怪兽，并在发动时选择该怪兽作为对象，设置装备此卡的连锁操作信息
 function c10004783.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and c10004783.filter(chkc) end
-	-- 检查场上是否存在可以作为对象的表侧表示「宝玉兽」怪兽
 	if chk==0 then return Duel.IsExistingTarget(c10004783.filter,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil) end
-	-- 向玩家发送提示信息以选择要装备的怪兽
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_EQUIP)  --"请选择要装备的卡"
-	-- 让玩家选择场上1只表侧表示的「宝玉兽」怪兽作为装备对象
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_EQUIP)
 	Duel.SelectTarget(tp,c10004783.filter,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,nil)
-	-- 设置当前处理的连锁操作信息为装备此卡
 	Duel.SetOperationInfo(0,CATEGORY_EQUIP,e:GetHandler(),1,0,0)
 end
--- 效果处理：若此卡与装备对象卡均与当前效果相关联，则将此卡装备给该怪兽
 function c10004783.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前效果的目标怪兽
 	local tc=Duel.GetFirstTarget()
 	if e:GetHandler():IsRelateToEffect(e) and tc:IsRelateToEffect(e) and tc:IsFaceup() then
-		-- 将此卡作为装备卡装备给目标怪兽
 		Duel.Equip(tp,e:GetHandler(),tc)
 	end
 end
--- 发动条件：检查此卡送去墓地前的上一个位置是否在场上
 function c10004783.tfcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsPreviousLocation(LOCATION_ONFIELD)
 end
--- 过滤函数：过滤出属于「宝玉兽」系列的怪兽且该卡未被禁止使用
 function c10004783.tffilter(c)
 	return c:IsSetCard(0x1034) and c:IsType(TYPE_MONSTER) and not c:IsForbidden()
 end
--- 效果目标：检查自己场上魔法与陷阱区域是否存在空余位置，且卡组中是否存在符合放置条件的卡片
 function c10004783.tftg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查我方魔法与陷阱区域是否存在空余位置
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_SZONE)>0
-		-- 检查卡组中是否存在可以放置的「宝玉兽」怪兽
 		and Duel.IsExistingMatchingCard(c10004783.tffilter,tp,LOCATION_DECK,0,1,nil) end
 end
--- 效果处理：从卡组选择1只「宝玉兽」怪兽放置在自己的魔法与陷阱区域表侧表示，并将其卡片类型当作永续魔法卡使用
 function c10004783.tfop(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查我方魔法与陷阱区域是否有空余位置，若没有则结束处理
 	if Duel.GetLocationCount(tp,LOCATION_SZONE)<=0 then return end
-	-- 向玩家发送提示信息以选择要放置到场上的卡片
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOFIELD)  --"请选择要放置到场上的卡"
-	-- 让玩家从卡组选择1张符合条件的「宝玉兽」怪兽
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOFIELD)
 	local g=Duel.SelectMatchingCard(tp,c10004783.tffilter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
 		local tc=g:GetFirst()
-		-- 将选择的卡片表侧表示放置到魔法与陷阱区域
 		Duel.MoveToField(tc,tp,tp,LOCATION_SZONE,POS_FACEUP,true)
-		-- 当作永续魔法卡使用在自己的魔法与陷阱区域表侧表示放置。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetCode(EFFECT_CHANGE_TYPE)
 		e1:SetType(EFFECT_TYPE_SINGLE)

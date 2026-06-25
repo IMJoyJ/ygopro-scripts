@@ -1,8 +1,6 @@
 --ペンデュラム・ターン
--- 效果：
--- ①：以自己或者对方的灵摆区域1张卡为对象，宣言1～10的灵摆刻度才能发动。这个回合，那张卡变成宣言的灵摆刻度。
 function c69982329.initial_effect(c)
-	-- ①：以自己或者对方的灵摆区域1张卡为对象，宣言1～10的灵摆刻度才能发动。这个回合，那张卡变成宣言的灵摆刻度。
+	--Activate
 	local e1=Effect.CreateEffect(c)
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -11,14 +9,10 @@ function c69982329.initial_effect(c)
 	e1:SetOperation(c69982329.activate)
 	c:RegisterEffect(e1)
 end
--- 效果发动时的对象选择与刻度宣言处理
 function c69982329.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_PZONE) end
-	-- 检查双方的灵摆区域是否存在可以作为效果对象的卡
 	if chk==0 then return Duel.IsExistingTarget(nil,tp,LOCATION_PZONE,LOCATION_PZONE,1,nil) end
-	-- 提示玩家选择作为效果对象的卡
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)  --"请选择效果的对象"
-	-- 选择双方灵摆区域的1张卡作为效果对象
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)
 	local g=Duel.SelectTarget(tp,nil,tp,LOCATION_PZONE,LOCATION_PZONE,1,1,nil)
 	local tc=g:GetFirst()
 	local t={}
@@ -29,16 +23,12 @@ function c69982329.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 			p=p+1
 		end
 	end
-	-- 让发动效果的玩家宣言一个合法的灵摆刻度数值
 	local ac=Duel.AnnounceNumber(tp,table.unpack(t))
 	e:SetLabel(ac)
 end
--- 效果处理，使作为对象的卡在回合结束前变成宣言的灵摆刻度
 function c69982329.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取发动时选择的效果对象
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 这个回合，那张卡变成宣言的灵摆刻度。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_CHANGE_LSCALE)

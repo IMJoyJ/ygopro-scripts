@@ -1,11 +1,7 @@
 --クイーン・バタフライ ダナウス
--- 效果：
--- 这个卡名的效果1回合只能使用1次。
--- ①：这张卡是已通常召唤的场合，以自己墓地最多3只4星以下的昆虫族怪兽为对象才能发动。这张卡的攻击力变成0，作为对象的怪兽特殊召唤。这个效果特殊召唤的怪兽的效果无效化。这个效果在对方回合也能发动。
 local s,id,o=GetID()
--- 创建效果1，设置为诱发即时效果，可在自由时点发动，只能在主要怪兽区使用，限制1回合1次，具有取对象和伤害步骤属性
 function s.initial_effect(c)
-	-- ①：这张卡是已通常召唤的场合，以自己墓地最多3只4星以下的昆虫族怪兽为对象才能发动。
+	--special summon
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(1,id))
 	e1:SetCategory(CATEGORY_ATKCHANGE+CATEGORY_SPECIAL_SUMMON)
@@ -20,63 +16,43 @@ function s.initial_effect(c)
 	e1:SetOperation(s.operation)
 	c:RegisterEffect(e1)
 end
--- 判断效果发动条件：当前卡是否为通常召唤，且不在伤害计算后阶段
 function s.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 当前卡是否为通常召唤，且不在伤害计算后阶段
 	return e:GetHandler():IsSummonType(SUMMON_TYPE_NORMAL) and aux.dscon(e,tp,eg,ep,ev,re,r,rp)
 end
--- 过滤函数：筛选等级4以下、昆虫族、可特殊召唤的墓地怪兽
 function s.filter(c,e,tp)
 	return c:IsLevelBelow(4) and c:IsRace(RACE_INSECT) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 设置效果目标：选择满足条件的墓地怪兽作为对象
 function s.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and s.filter(chkc,e,tp) end
 	local c=e:GetHandler()
-	-- 检查是否满足发动条件：当前卡攻击力不为0，且场上存在空位
 	if chk==0 then return aux.nzatk(c) and Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查是否满足发动条件：墓地存在满足条件的怪兽
 		and Duel.IsExistingTarget(s.filter,tp,LOCATION_GRAVE,0,1,nil,e,tp) end
-	-- 计算最多可特殊召唤的怪兽数量，最多为3只
 	local ft=math.min(3,(Duel.GetLocationCount(tp,LOCATION_MZONE)))
-	-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中。禁止双方同时特殊召唤2只以上怪兽
 	if Duel.IsPlayerAffectedByEffect(tp,59822133) then ft=1 end
-	-- 提示玩家选择要特殊召唤的卡
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 选择满足条件的墓地怪兽作为特殊召唤对象
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
 	local g=Duel.SelectTarget(tp,s.filter,tp,LOCATION_GRAVE,0,1,ft,nil,e,tp)
-	-- 设置连锁操作信息，记录将要特殊召唤的怪兽
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,#g,0,0)
 end
--- 效果处理函数：将当前卡攻击力设为0，并特殊召唤选择的怪兽，且使其效果无效化
 function s.operation(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsFacedown() or not c:IsRelateToEffect(e) or c:IsImmuneToEffect(e) or c:IsAttack(0) then return end
-	-- 将当前卡的攻击力设为0
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_SET_ATTACK_FINAL)
 	e1:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_DISABLE)
 	e1:SetValue(0)
 	c:RegisterEffect(e1)
-	-- 获取玩家场上空位数量
 	local ft=Duel.GetLocationCount(tp,LOCATION_MZONE)
 	if ft<1 then return end
-	-- 获取连锁中指定的目标怪兽组，并筛选出与当前效果相关的怪兽
 	local g=Duel.GetChainInfo(0,CHAININFO_TARGET_CARDS):Filter(Card.IsRelateToEffect,nil,e)
 	if #g==0 then return end
-	-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中。禁止双方同时特殊召唤2只以上怪兽
 	if ft>1 and Duel.IsPlayerAffectedByEffect(tp,59822133) then ft=1 end
 	if #g>ft then
-		-- 提示玩家选择要特殊召唤的卡
-		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
+		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
 		g=g:Select(tp,ft,ft,nil)
 	end
-	-- 遍历目标怪兽组，依次进行特殊召唤处理
 	for tc in aux.Next(g) do
-		-- 特殊召唤一张怪兽到场上
 		Duel.SpecialSummonStep(tc,0,tp,tp,false,false,POS_FACEUP)
-		-- 使特殊召唤的怪兽效果无效
 		local e2=Effect.CreateEffect(c)
 		e2:SetType(EFFECT_TYPE_SINGLE)
 		e2:SetCode(EFFECT_DISABLE)
@@ -87,6 +63,5 @@ function s.operation(e,tp,eg,ep,ev,re,r,rp)
 		e3:SetValue(RESET_TURN_SET)
 		tc:RegisterEffect(e3)
 	end
-	-- 完成所有特殊召唤步骤
 	Duel.SpecialSummonComplete()
 end
