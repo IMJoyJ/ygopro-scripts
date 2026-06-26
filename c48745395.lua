@@ -45,14 +45,14 @@ function c48745395.initial_effect(c)
 	e4:SetValue(c48745395.atklimit)
 	c:RegisterEffect(e4)
 end
--- 判断是否为陷阱卡的效果发动
+-- 特殊召唤效果的发动条件判定（有陷阱卡发动）
 function c48745395.spcon(e,tp,eg,ep,ev,re,r,rp)
 	return re:IsHasType(EFFECT_TYPE_ACTIVATE) and re:IsActiveType(TYPE_TRAP)
 end
--- 特殊召唤效果的发动检测与操作设置
+-- 特殊召唤效果的发动检测
 function c48745395.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
-	-- 检查自己场上的怪兽区域是否有空位
+	-- 检查自己场上的怪兽区域是否有空位并确认此卡是否可特殊召唤
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and c:IsCanBeSpecialSummoned(e,0,tp,false,false) end
 	-- 设置操作信息为特殊召唤这张卡
@@ -62,11 +62,11 @@ end
 function c48745395.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) then
-		-- 特殊召唤此卡
+		-- 特殊召唤这张卡
 		Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
--- 过滤卡组中在攻击宣言时才能发动且可在场上盖放的通常陷阱卡
+-- 过滤卡组中在攻击宣言时才能发动的且可在场上盖放的通常陷阱卡
 function c48745395.stfilter(c)
 	local te=c:GetActivateEffect()
 	return c:GetType()==TYPE_TRAP and te and te:GetCode()==EVENT_ATTACK_ANNOUNCE and c:IsSSetable()
@@ -87,7 +87,7 @@ function c48745395.stop(e,tp,eg,ep,ev,re,r,rp)
 		Duel.SSet(tp,g:GetFirst())
 	end
 end
--- 过滤通常陷阱卡
+-- 过滤墓地中的通常陷阱卡
 function c48745395.atkfilter(c)
 	return c:GetType()==TYPE_TRAP
 end
