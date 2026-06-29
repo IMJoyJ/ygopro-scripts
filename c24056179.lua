@@ -1,13 +1,13 @@
 --カプセル・モンスター・チェス
 local s,id,o=GetID()
--- 初始化卡片效果
+-- 注册放置永续魔法效果、以及结束阶段盖放自身并从卡组特殊召唤怪兽的效果
 function s.initial_effect(c)
 	-- 永续魔陷/场地卡通用的“允许发动”空效果，无此效果则无法发动
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- ①：自己·对方的主要阶段才能发动。以自己墓地1只怪兽为对象才能发动。那只怪兽在持有者的魔法与陷阱区域表侧表示当作永续魔法卡使用放置。
+	-- ①：以自己墓地1只怪兽为对象才能发动。那只怪兽在自己的魔法与陷阱区域当作表侧表示的永续魔法卡放置。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(id,1))
 	e2:SetType(EFFECT_TYPE_IGNITION)
@@ -17,7 +17,7 @@ function s.initial_effect(c)
 	e2:SetTarget(s.mvtg)
 	e2:SetOperation(s.mvop)
 	c:RegisterEffect(e2)
-	-- ②：自己结束阶段，把我方场上1张原本是怪兽卡的卡送去墓地才能发动。从卡组把和那张卡原本的属性·种族相同、且原本等级高1到3级的1只怪兽特殊召唤。
+	-- ②：自己结束阶段，把这张卡盖放，以自己场上1张当作永续魔法卡的怪兽卡为对象才能发动。持有和那只怪兽相同种族·属性且原本等级高1〜3的1只怪兽从卡组特殊召唤。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(id,2))
 	e3:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -32,34 +32,36 @@ function s.initial_effect(c)
 	e3:SetOperation(s.spop)
 	c:RegisterEffect(e3)
 end
--- 过滤可以放置到魔陷区域的怪兽
+-- 可移动至魔陷区域的墓地怪兽过滤条件
 function s.filter(c,tp)
 	local r=LOCATION_REASON_TOFIELD
 	if not c:IsControler(c:GetOwner()) then r=LOCATION_REASON_CONTROL end
 	return c:IsType(TYPE_MONSTER) and not c:IsForbidden() and c:CheckUniqueOnField(c:GetOwner())
-		-- 检查怪兽是否在墓地且其拥有者有空的魔陷区域
+		-- 检查自己魔陷区域是否有空位用于放置该卡
 		and c:IsFaceupEx() and Duel.GetLocationCount(c:GetOwner(),LOCATION_SZONE,tp,r)>0
 end
--- 放置效果的条件检查与锁定
+-- 放置永续魔法效果的发动准备与对象选择
 function s.mvtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and s.filter(chkc,tp) end
-	-- 确认墓地是否存在符合条件的怪兽
+	-- 检查墓地是否存在满足过滤条件的怪兽
 	if chk==0 then return Duel.IsExistingTarget(s.filter,tp,LOCATION_GRAVE,0,1,nil,tp) end
-	-- 提示选择效果的对象
+	-- 向玩家发送提示，请选择效果的对象
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)  --"请选择效果的对象"
-	-- 锁定墓地的1只怪兽作为效果对象
+	-- 选择墓地中1只表侧表示的怪兽为效果对象
 	local g=Duel.SelectTarget(tp,s.filter,tp,LOCATION_GRAVE,0,1,1,nil,tp)
-	-- 声明怪兽离开墓地的操作信息
+	-- 设置操作信息为让选中的怪兽离开墓地
 	Duel.SetOperationInfo(0,CATEGORY_LEAVE_GRAVE,g,1,0,0)
 end
--- 放置效果的实际操作：将怪兽移动至魔陷区并变更为永续魔法
+-- 放置永续魔法效果的执行
 function s.mvop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取选中的墓地怪兽
+	-- 获取被选择的墓地怪兽对象
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToChain() and not tc:IsImmuneToEffect(e)
+		-- 检查目标卡片是否未受墓地无效效果影响且与效果关联
 		and aux.NecroValleyFilter()(tc)
+		-- 将作为对象的墓地怪兽表侧表示放置在自己魔陷区域
 		and Duel.MoveToField(tc,tp,tc:GetOwner(),LOCATION_SZONE,POS_FACEUP,true) then
-		-- 设置该卡片的类型为永续魔法
+		-- 那张卡在自己的魔法与陷阱区域当作表侧表示的永续魔法卡放置。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetCode(EFFECT_CHANGE_TYPE)
 		e1:SetType(EFFECT_TYPE_SINGLE)
@@ -69,20 +71,20 @@ function s.mvop(e,tp,eg,ep,ev,re,r,rp)
 		tc:RegisterEffect(e1)
 	end
 end
--- 特殊召唤的触发条件：必须在自己的结束阶段
+-- 结束阶段特召效果的触发条件
 function s.spcon(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 确认当前是否为自己的回合
+	-- 确认当前正处于自己的结束阶段
 	return Duel.GetTurnPlayer()==tp
 end
--- 过滤作为Cost送墓的场上原本是怪兽的卡
+-- 可作为特召代价送去墓地的魔陷区怪兽卡的过滤条件
 function s.cfilter(c,e,tp)
 	return c:IsFaceupEx() and bit.band(c:GetOriginalType(),TYPE_MONSTER)~=0 and c:IsAbleToGraveAsCost()
-		-- 检查卡片原始等级是否大于0，且卡组中存在可以特殊召唤的符合条件怪兽
+		-- 检查卡组中是否存在相同种族和属性且原本等级高出1-3的怪兽
 		and c:GetOriginalLevel()>0 and Duel.IsExistingMatchingCard(s.spfilter,tp,LOCATION_DECK,0,1,nil,c,e,tp)
-		-- 检查将卡片送墓后是否能腾出怪兽区域位置
+		-- 在所选代价怪兽离场后，检查自己场上是否有空怪兽区域
 		and Duel.GetMZoneCount(tp,c)>0
 end
--- 特召怪兽过滤：卡组中比Cost卡原始等级高1到3级，且属性和种族均相同的怪兽
+-- 可从卡组特殊召唤的怪兽过滤条件
 function s.spfilter(c,tc,e,tp)
 	local lv=c:GetOriginalLevel()-tc:GetOriginalLevel()
 	return lv>0 and lv<4
@@ -90,32 +92,32 @@ function s.spfilter(c,tc,e,tp)
 		and c:GetOriginalAttribute()==tc:GetOriginalAttribute()
 		and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 特殊召唤的Cost：将我方场上1张原本是怪兽的卡送去墓地
+-- 盖放自身并送墓场上怪兽作为特召的发动代价
 function s.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查场上是否存在可以支付特召Cost的卡片
+	-- 检查场上是否存在满足条件的可用作代价的怪兽卡
 	if chk==0 then return Duel.IsExistingMatchingCard(s.cfilter,tp,LOCATION_ONFIELD,0,1,nil,e,tp) end
-	-- 提示选择送去墓地的卡片
+	-- 向玩家发送提示，请选择要送去墓地的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
-	-- 选择我方场上1张符合条件的卡片作为代价
+	-- 选择场上1张符合条件的怪兽卡送去墓地
 	local g=Duel.SelectMatchingCard(tp,s.cfilter,tp,LOCATION_ONFIELD,0,1,1,nil,e,tp)
-	-- 将选中的卡片送去墓地
+	-- 将选中的怪兽卡送去墓地作为代价，并保存其信息供后续效果处理使用
 	Duel.SendtoGrave(g,REASON_COST)
 	e:SetLabelObject(g:GetFirst())
 end
--- 特殊召唤效果的条件确认
+-- 结束阶段卡组特殊召唤效果的发动准备
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:IsCostChecked() end
-	-- 声明从卡组特殊召唤怪兽的操作信息
+	-- 设置操作信息为从卡组特殊召唤1只怪兽
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_DECK)
 end
--- 特殊召唤效果的实际操作
+-- 结束阶段卡组特殊召唤效果的执行
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查怪兽区域是否还有空位
+	-- 若自己场上已无空怪兽区域，则效果不处理
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
 	local tc=e:GetLabelObject()
-	-- 提示选择特殊召唤的怪兽
+	-- 向玩家发送提示，请选择要特殊召唤的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 从组中选择1只符合条件的怪兽
+	-- 选择卡组中符合相同种族属性且高出1-3等级的1只怪兽
 	local g=Duel.SelectMatchingCard(tp,s.spfilter,tp,LOCATION_DECK,0,1,1,nil,tc,e,tp)
 	if g:GetCount()>0 then
 		-- 将选中的怪兽特殊召唤到自己场上
