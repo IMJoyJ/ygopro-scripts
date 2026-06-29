@@ -57,7 +57,7 @@ function s.mvop(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取选中的墓地怪兽
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToChain() and not tc:IsImmuneToEffect(e)
-		-- 将怪兽表侧表示放置到魔法与陷阱区域并确认是否成功
+		and aux.NecroValleyFilter()(tc)
 		and Duel.MoveToField(tc,tp,tc:GetOwner(),LOCATION_SZONE,POS_FACEUP,true) then
 		-- 设置该卡片的类型为永续魔法
 		local e1=Effect.CreateEffect(e:GetHandler())

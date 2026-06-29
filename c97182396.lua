@@ -134,9 +134,7 @@ end
 -- 效果②（自己控制时）的效果处理（operation）：使攻击无效，并转移装备怪兽的控制权
 function c97182396.naop(e,tp,eg,ep,ev,re,r,rp)
 	local ec=e:GetHandler():GetEquipTarget()
-	-- 尝试无效攻击，若成功且装备怪兽存在则继续处理
-	if Duel.NegateAttack()~=0 and ec then
-		-- 直到战斗阶段结束时，装备怪兽的控制权变更
+	if Duel.NegateAttack() and ec then
 		Duel.GetControl(ec,1-ec:GetControler(),PHASE_BATTLE,1)
 	end
 end

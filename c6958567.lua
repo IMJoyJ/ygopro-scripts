@@ -180,8 +180,7 @@ end
 -- 定义墓地回收效果的实际执行逻辑函数（Operation）
 function s.thop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	if c:IsRelateToChain() then
-		-- 将此卡加入手牌
+	if c:IsRelateToChain() and aux.NecroValleyFilter()(c) then
 		Duel.SendtoHand(c,nil,REASON_EFFECT)
 	end
 end

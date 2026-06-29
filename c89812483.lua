@@ -79,9 +79,7 @@ function s.activate(e,tp,eg,ep,ev,re,r,rp)
 			-- 中断当前效果处理，使后续的装备处理不与特殊召唤视为同时处理。
 			Duel.BreakEffect()
 			c:CancelToGrave(true)
-			-- 尝试将此卡作为装备卡装备给特殊召唤的怪兽。
-			if Duel.Equip(tp,c,tc)~=0 then
-				-- 可以把这张卡当作持有以下效果的装备卡使用给那只怪兽装备。
+			if Duel.Equip(tp,c,tc) then
 				local e1=Effect.CreateEffect(tc)
 				e1:SetType(EFFECT_TYPE_SINGLE)
 				e1:SetCode(EFFECT_EQUIP_LIMIT)

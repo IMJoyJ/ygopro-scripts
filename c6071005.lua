@@ -81,9 +81,7 @@ end
 -- 效果②的Operation函数：将自身特殊召唤，若特殊召唤成功则注册离场时除外的限制，并选择对方场上1只怪兽解放
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 检查本卡是否与连锁相关，且是否成功将本卡特殊召唤
-	if c:IsRelateToChain() and Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)~=0 then
-		-- 这张卡特殊召唤，解放对方场上1只怪兽
+	if c:IsRelateToChain() and aux.NecroValleyFilter()(c) and Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)~=0 then
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_LEAVE_FIELD_REDIRECT)

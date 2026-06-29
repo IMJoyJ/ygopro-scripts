@@ -69,7 +69,7 @@ function c90365482.posop(e,tp,eg,ep,ev,re,r,rp)
 end
 -- 回手效果的触发条件判定函数，若对象怪兽已离场或标记失效则重置该效果
 function c90365482.retcon(e,tp,eg,ep,ev,re,r,rp)
-	if not (e:GetLabelObject():GetFlagEffectLabel(90365482)==e:GetLabel()) then
+	if e:GetLabelObject():GetFlagEffectLabel(90365482)~=e:GetLabel() then
 		e:Reset()
 		return false
 	else return true end

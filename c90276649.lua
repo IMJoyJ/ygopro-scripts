@@ -96,7 +96,7 @@ function c90276649.thop(e,tp,eg,ep,ev,re,r,rp)
 end
 -- 怪兽效果①的发动条件：非规则原因（如抽卡阶段的通常抽卡）加入手牌。
 function c90276649.spcon(e,tp,eg,ep,ev,re,r,rp)
-	return not (r==REASON_RULE)
+	return r~=REASON_RULE
 end
 -- 怪兽效果①的代价：将手牌中的这张卡给对方观看。
 function c90276649.spcost(e,tp,eg,ep,ev,re,r,rp,chk)

@@ -62,9 +62,7 @@ function s.tdtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 end
 -- 效果②的Operation函数：将选中的对象卡片送回卡组并洗卡，随后玩家可选择破坏自己场上最多相当于送回数量的其他卡
 function s.tdop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取与当前连锁相关的对象卡片
-	local g=Duel.GetTargetsRelateToChain()
-	-- 若存在可处理的对象且成功将它们送回卡组并洗卡
+	local g=Duel.GetTargetsRelateToChain():Filter(aux.NecroValleyFilter(),nil)
 	if g:GetCount()>0 and Duel.SendtoDeck(g,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)~=0 then
 		-- 计算实际成功送回卡组或额外卡组的卡片数量
 		local ct=Duel.GetOperatedGroup():FilterCount(Card.IsLocation,nil,LOCATION_DECK+LOCATION_EXTRA)

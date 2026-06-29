@@ -45,7 +45,7 @@ function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
 end
 -- 过滤条件：对方场上表侧表示且等级在3以上的怪兽。
 function s.lvfilter(c)
-	return c:IsFaceup() and c:IsLevelAbove(3)
+	return c:IsFaceup() and c:IsLevelAbove(2)
 end
 -- 过滤条件：自己场上表侧表示且等级在1以上的怪兽。
 function s.lvfilter2(c)

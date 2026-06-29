@@ -50,8 +50,7 @@ function s.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	-- 获取当前效果指向的墓地目标卡片
 	local tc=Duel.GetFirstTarget()
-	if tc and tc:IsRelateToChain()
-		-- 将目标卡片加入手牌，并确认该卡已成功到达手牌
+	if tc and tc:IsRelateToChain() and aux.NecroValleyFilter()(tc)
 		and Duel.SendtoHand(tc,nil,REASON_EFFECT)>0 and tc:IsLocation(LOCATION_HAND)
 		and c:IsRelateToChain() then
 		-- 将此卡从手牌表侧表示特殊召唤到我方场上

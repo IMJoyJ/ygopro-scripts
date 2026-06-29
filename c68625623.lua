@@ -58,9 +58,7 @@ function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 end
 -- 定义特殊召唤效果的执行处理逻辑函数（Operation）
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取在连锁处理时仍然与当前效果相关联的目标卡片组
-	local g=Duel.GetTargetsRelateToChain()
-	-- 尝试将目标卡片破坏，并判断是否成功破坏了至少1张卡
+	local g=Duel.GetTargetsRelateToChain():Filter(aux.NecroValleyFilter(),nil)
 	if Duel.Destroy(g,REASON_EFFECT)~=0 then
 		-- 获取上一次破坏操作中实际被成功破坏并送入相应位置的卡片组
 		local og=Duel.GetOperatedGroup()

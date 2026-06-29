@@ -115,8 +115,7 @@ end
 function s.tdop(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取作为效果对象的墓地卡
 	local tc=Duel.GetFirstTarget()
-	if tc:IsRelateToChain() then
-		-- 将目标卡返回到持有者卡组的最下方
+	if tc:IsRelateToChain() and aux.NecroValleyFilter()(tc) then
 		Duel.SendtoDeck(tc,nil,SEQ_DECKBOTTOM,REASON_EFFECT)
 	end
 end

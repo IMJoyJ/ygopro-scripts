@@ -94,8 +94,7 @@ end
 function s.thop(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取作为效果对象的墓地怪兽
 	local tc=Duel.GetFirstTarget()
-	if tc:IsRelateToChain() then
-		-- 将该怪兽回收至手牌
+	if tc:IsRelateToChain() and aux.NecroValleyFilter()(tc) then
 		Duel.SendtoHand(tc,nil,REASON_EFFECT)
 		-- 让对方确认回收的卡片
 		Duel.ConfirmCards(1-tp,tc)

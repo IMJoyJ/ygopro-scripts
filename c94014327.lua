@@ -67,8 +67,7 @@ end
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取自己场上怪兽区域的可使用空格数
 	local ft=Duel.GetLocationCount(tp,LOCATION_MZONE)
-	-- 获取仍与该连锁相关联的选定目标怪兽
-	local g=Duel.GetTargetsRelateToChain()
+	local g=Duel.GetTargetsRelateToChain():Filter(aux.NecroValleyFilter(),nil)
 	if ft>0 and g:GetCount()>0 and
 		-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中。禁止双方同时特殊召唤2只以上怪兽
 		not (g:GetCount()>1 and Duel.IsPlayerAffectedByEffect(tp,59822133)) then

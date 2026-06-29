@@ -79,8 +79,7 @@ function s.activate(e,tp,eg,ep,ev,re,r,rp)
 			tc:SetMaterial(nil)
 			-- 中断当前效果处理，使后续的特殊召唤处理与送去墓地不视为同时进行（会造成错时点）。
 			Duel.BreakEffect()
-			-- 将给人观看的怪兽当作融合召唤在自己场上表侧表示特殊召唤。
-			if Duel.SpecialSummon(tc,SUMMON_TYPE_FUSION,tp,tp,false,false,POS_FACEUP) then
+			if Duel.SpecialSummon(tc,SUMMON_TYPE_FUSION,tp,tp,false,false,POS_FACEUP)>0 then
 				tc:CompleteProcedure()
 			end
 		end

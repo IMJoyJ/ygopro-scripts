@@ -63,7 +63,7 @@ function s.rmtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 end
 -- 效果①的效果处理：除外选中的对象
 function s.rmop(e,tp,eg,ep,ev,re,r,rp)
-	local tg=Duel.GetTargetsRelateToChain()
+	local tg=Duel.GetTargetsRelateToChain():Filter(aux.NecroValleyFilter(),nil)
 	if tg:GetCount()>0 then
 		-- 将目标卡片表侧表示除外
 		Duel.Remove(tg,POS_FACEUP,REASON_EFFECT)
