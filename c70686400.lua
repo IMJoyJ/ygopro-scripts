@@ -1,8 +1,8 @@
 --ウィッチクラフト・テラコッタン
 local s,id,o=GetID()
--- 注册卡片效果的入口函数，定义并注册此卡的效果。
+-- 卡片效果的初始化函数
 function s.initial_effect(c)
-	-- ①：此卡在手牌存在的场合，以「魔女术的陶土魔女」以外的我方墓地的1张「魔女术」卡为对象可以发动。那张卡加入手牌，此卡特殊召唤。这个回合，我方不是「魔女术」怪兽不能从额外卡组特殊召唤。
+	-- ①：这张卡在手卡存在的场合，以自己墓地1张「魔女术」卡（「魔女术·泰拉科特」以外）为对象才能发动。那张卡加入手卡，这张卡特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(id,0))
 	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SPECIAL_SUMMON)
@@ -13,7 +13,7 @@ function s.initial_effect(c)
 	e1:SetTarget(s.sptg)
 	e1:SetOperation(s.spop)
 	c:RegisterEffect(e1)
-	-- ②：我方主要阶段可以发动。将我方手牌・场上的怪兽作为融合素材，将1只「魔女术」融合怪兽融合召唤。
+	-- ②：自己主要阶段才能发动。从自己的手卡·场上把融合素材怪兽送去墓地，把1只「魔女术」融合怪兽从额外卡组融合召唤。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(id,1))
 	e2:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_FUSION_SUMMON)
@@ -24,39 +24,41 @@ function s.initial_effect(c)
 	e2:SetOperation(s.fspop)
 	c:RegisterEffect(e2)
 end
--- 定义过滤函数，筛选我方墓地中「魔女术的陶土魔女」以外的「魔女术」卡片
+-- 过滤自己墓地中除了「魔女术·泰拉科特」之外且可以加入手卡的「魔女术」卡
 function s.thfilter(c)
 	return not c:IsCode(id) and c:IsSetCard(0x128) and c:IsAbleToHand()
 end
--- 定义手牌特殊召唤效果（效果①）的发动准备与检查函数（Target）
+-- 效果①的发动准备，检查是否能将目标卡加入手卡、是否有空余怪兽区域且自身能否特殊召唤，并选择目标卡
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and s.thfilter(chkc) end
-	-- 检查我方墓地中是否存在符合条件的「魔女术」卡作为回收目标
+	-- 判断墓地中是否存在满足条件的「魔女术」卡
 	if chk==0 then return Duel.IsExistingTarget(s.thfilter,tp,LOCATION_GRAVE,0,1,nil)
-		-- 检查我方场上是否有可用的怪兽区以准备特殊召唤
+		-- 判断己方场上是否有空余的怪兽区域
 		and Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 给玩家提示：选择要加入手牌的卡
+	-- 提示玩家选择要加入手牌的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择墓地中1张符合条件的「魔女术」卡作为效果的目标对象（取对象）
+	-- 选择自己墓地中1张满足条件的「魔女术」卡作为效果的对象
 	local g=Duel.SelectTarget(tp,s.thfilter,tp,LOCATION_GRAVE,0,1,1,nil)
-	-- 设置将该目标卡片回收至手牌的操作信息
+	-- 设置操作信息：将选中的对象卡加入手卡
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,#g,0,0)
-	-- 设置将此卡从手牌特殊召唤的操作信息
+	-- 设置操作信息：将手卡的这张卡特殊召唤
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 定义手牌特殊召唤效果（效果①）的实际执行逻辑函数（Operation）
+-- 效果①的生效处理，执行回收与特殊召唤操作，并应用额外卡组特殊召唤限制
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取当前效果指向的墓地目标卡片
+	-- 获取效果的对象卡
 	local tc=Duel.GetFirstTarget()
+	-- 检查对象卡是否与当前效果相关，且不受王家长眠之谷的影响
 	if tc and tc:IsRelateToChain() and aux.NecroValleyFilter()(tc)
+		-- 将对象卡加入手手卡，并检查是否操作成功以及该卡是否已加入手手卡
 		and Duel.SendtoHand(tc,nil,REASON_EFFECT)>0 and tc:IsLocation(LOCATION_HAND)
 		and c:IsRelateToChain() then
-		-- 将此卡从手牌表侧表示特殊召唤到我方场上
+		-- 将这张卡在己方场上特殊召唤
 		Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 	end
-	-- 这个回合，我方不是「魔女术」怪兽不能从额外卡组特殊召唤。
+	-- 这个效果的发动后，直到回合结束时自己从额外卡组只能特殊召唤「魔女术」怪兽。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_CANNOT_SPECIAL_SUMMON)
@@ -64,86 +66,86 @@ function s.spop(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetTargetRange(1,0)
 	e1:SetTarget(s.splimit)
 	e1:SetReset(RESET_PHASE+PHASE_END)
-	-- 为玩家注册额外卡组特殊召唤限制的全局效果
+	-- 注册在玩家身上的全局效果，限制其之后从额外卡组只能特殊召唤「魔女术」怪兽
 	Duel.RegisterEffect(e1,tp)
 end
--- 定义额外卡组特殊召唤限制的过滤函数，限制非「魔女术」怪兽的额外卡组召唤
+-- 限制只从额外卡组特殊召唤「魔女术」怪兽的过滤函数
 function s.splimit(e,c,sump,sumtype,sumpos,targetp,se)
 	return not c:IsSetCard(0x128) and c:IsLocation(LOCATION_EXTRA)
 end
--- 定义过滤函数，用于筛选不受该融合效果影响的场上素材
+-- 过滤不受效果影响的怪兽
 function s.filter1(c,e)
 	return not c:IsImmuneToEffect(e)
 end
--- 定义过滤函数，筛选我方额外卡组可进行融合召唤的「魔女术」融合怪兽
+-- 过滤额外卡组中可以使用指定融合素材进行融合召唤的「魔女术」融合怪兽
 function s.filter2(c,e,tp,m,f,chkf)
 	return c:IsType(TYPE_FUSION) and c:IsSetCard(0x128) and (not f or f(c))
 		and c:IsCanBeSpecialSummoned(e,SUMMON_TYPE_FUSION,tp,false,false) and c:CheckFusionMaterial(m,nil,chkf)
 end
--- 定义融合召唤效果（效果②）的发动准备与检查函数（Target）
+-- 效果②的发动准备与操作信息设置
 function s.fsptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then
 		local chkf=tp
-		-- 获取我方手牌及场上所有可用作融合素材的怪兽组
+		-- 获取己方场上和手卡中不受效果影响的融合素材怪兽
 		local mg1=Duel.GetFusionMaterial(tp):Filter(s.filter1,nil,e)
-		-- 检查是否能使用我方的素材进行「魔女术」融合怪兽的融合召唤
+		-- 判断额外卡组中是否存在可以使用这些素材融合召唤的「魔女术」融合怪兽
 		local res=Duel.IsExistingMatchingCard(s.filter2,tp,LOCATION_EXTRA,0,1,nil,e,tp,mg1,nil,chkf)
 		if not res then
-			-- 获取我方所受的第三方融合素材效果
+			-- 获取玩家受到的连锁素材效果
 			local ce=Duel.GetChainMaterial(tp)
 			if ce~=nil then
 				local fgroup=ce:GetTarget()
 				local mg2=fgroup(ce,e,tp)
 				local mf=ce:GetValue()
-				-- 使用第三方融合素材重新检查是否能进行融合召唤
+				-- 在使用连锁素材效果时，判断额外卡组中是否存在可以融合召唤的「魔女术」融合怪兽
 				res=Duel.IsExistingMatchingCard(s.filter2,tp,LOCATION_EXTRA,0,1,nil,e,tp,mg2,mf,chkf)
 			end
 		end
 		return res
 	end
-	-- 向对方玩家提示此效果已被激活
+	-- 向对方玩家提示本卡发动了融合召唤效果
 	Duel.Hint(HINT_OPSELECTED,1-tp,e:GetDescription())
-	-- 设置将融合怪兽融合召唤的操作信息
+	-- 设置操作信息：从额外卡组特殊召唤1只怪兽
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_EXTRA)
 end
--- 定义融合召唤效果（效果②）的实际执行逻辑函数（Operation）
+-- 效果②的生效处理，从手卡或场上送墓素材进行融合召唤
 function s.fspop(e,tp,eg,ep,ev,re,r,rp)
 	local chkf=tp
-	-- 获取手牌及场上可用作融合素材的怪兽卡组
+	-- 获取己方场上和手卡中不受效果影响的融合素材怪兽
 	local mg1=Duel.GetFusionMaterial(tp):Filter(s.filter1,nil,e)
-	-- 获取可用这批素材融合召唤的融合怪兽组
+	-- 获取额外卡组中可以使用这批素材融合召唤的「魔女术」融合怪兽
 	local sg1=Duel.GetMatchingGroup(s.filter2,tp,LOCATION_EXTRA,0,nil,e,tp,mg1,nil,chkf)
 	local mg2=nil
 	local sg2=nil
-	-- 获取第三方融合素材效果（若存在）
+	-- 获取玩家受到的连锁素材效果
 	local ce=Duel.GetChainMaterial(tp)
 	if ce~=nil then
 		local fgroup=ce:GetTarget()
 		mg2=fgroup(ce,e,tp)
 		local mf=ce:GetValue()
-		-- 获取使用第三方融合素材可融合召唤的融合怪兽组
+		-- 在使用连锁素材效果时，获取额外卡组中可以进行融合召唤的「魔女术」融合怪兽
 		sg2=Duel.GetMatchingGroup(s.filter2,tp,LOCATION_EXTRA,0,nil,e,tp,mg2,mf,chkf)
 	end
 	if sg1:GetCount()>0 or (sg2~=nil and sg2:GetCount()>0) then
 		local sg=sg1:Clone()
 		if sg2 then sg:Merge(sg2) end
-		-- 给玩家提示：选择要特殊召唤的怪兽
+		-- 提示玩家选择要特殊召唤的怪兽
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
 		local tg=sg:Select(tp,1,1,nil)
 		local tc=tg:GetFirst()
-		-- 判断所选怪兽是否只使用我方场上/手牌材料进行召唤，或者玩家不选择适用第三方融合效果
+		-- 检查是否使用自身的融合素材进行融合召唤
 		if sg1:IsContains(tc) and (sg2==nil or not sg2:IsContains(tc) or ce and not Duel.SelectYesNo(tp,ce:GetDescription())) then
-			-- 让玩家选择手牌及场上的融合素材怪兽
+			-- 让玩家从手卡及场上选择融合素材
 			local mat1=Duel.SelectFusionMaterial(tp,tc,mg1,nil,chkf)
 			tc:SetMaterial(mat1)
-			-- 将选定的融合素材怪兽送去墓地
+			-- 将选定的融合素材送去墓地
 			Duel.SendtoGrave(mat1,REASON_EFFECT+REASON_MATERIAL+REASON_FUSION)
-			-- 中断效果处理，使后续特殊召唤与送去墓地视为不同时处理
+			-- 中断效果，使之后的特殊召唤视为不同时处理
 			Duel.BreakEffect()
-			-- 将该融合怪兽表侧表示融合召唤到我方场上
+			-- 以融合召唤方式特殊召唤融合怪兽
 			Duel.SpecialSummon(tc,SUMMON_TYPE_FUSION,tp,tp,false,false,POS_FACEUP)
 		elseif ce then
-			-- 使用第三方融合效果的素材选择函数来选择融合素材
+			-- 让玩家选择连锁素材效果指定的融合素材
 			local mat2=Duel.SelectFusionMaterial(tp,tc,mg2,nil,chkf)
 			local fop=ce:GetOperation()
 			fop(ce,e,tp,tc,mat2)

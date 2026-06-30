@@ -1,8 +1,8 @@
 --ウィッチクラフト・セレブレーション
 local s,id,o=GetID()
--- 注册卡片效果的入口函数，定义并注册此卡的效果。
+-- 卡片效果的初始化函数
 function s.initial_effect(c)
-	-- ①：可以从以下效果选择1个发动。●选我方场上1只「魔女术」怪兽和对方场上1张卡破坏。●将我方墓地・除外状态的魔法师族怪兽作为融合素材回到持有者卡组，将额外卡组的1只「魔女术」融合怪兽融合召唤。
+	-- ①：可以从以下效果选择1个发动。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(id,0))
 	e1:SetCategory(CATEGORY_DESTROY+CATEGORY_SPECIAL_SUMMON+CATEGORY_FUSION_SUMMON+CATEGORY_TODECK+CATEGORY_GRAVE_ACTION)
@@ -14,7 +14,7 @@ function s.initial_effect(c)
 	e1:SetTarget(s.target)
 	e1:SetOperation(s.activate)
 	c:RegisterEffect(e1)
-	-- ②：我方的结束阶段，此卡在墓地存在，我方场上有「魔女术」怪兽存在的场合可以发动。此卡加入手牌。
+	-- ②：自己结束阶段，这张卡在墓地存在，自己场上有「魔女术」怪兽存在的场合才能发动。这张卡加入手卡。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(id,1))
 	e2:SetCategory(CATEGORY_TOHAND)
@@ -27,44 +27,44 @@ function s.initial_effect(c)
 	e2:SetOperation(s.thop)
 	c:RegisterEffect(e2)
 end
--- 定义过滤函数，用于筛选我方场上表侧表示的「魔女术」怪兽
+-- 检查场上是否存在表侧表示的「魔女术」怪兽
 function s.cfilter(c)
 	return c:IsFaceup() and c:IsSetCard(0x128)
 end
--- 定义过滤函数，用于筛选我方墓地或除外状态的可作为融合素材返回卡组的魔法师族怪兽
+-- 过滤自己墓地或除外状态中满足条件且可以回到卡组的魔法师族怪兽
 function s.filter1(c,e)
 	return c:IsFaceupEx() and c:IsRace(RACE_SPELLCASTER) and not c:IsImmuneToEffect(e) and c:IsAbleToDeck()
 end
--- 定义过滤函数，用于筛选额外卡组可进行融合召唤的「魔女术」融合怪兽
+-- 过滤额外卡组中可以使用指定融合素材进行融合召唤的「魔女术」融合怪兽
 function s.filter2(c,e,tp,m,f,chkf)
 	return c:IsType(TYPE_FUSION) and c:IsSetCard(0x128) and (not f or f(c))
 		and c:IsCanBeSpecialSummoned(e,SUMMON_TYPE_FUSION,tp,false,false) and c:CheckFusionMaterial(m,nil,chkf)
 end
--- 定义效果①发动的准备与选择分支的函数（Target）
+-- 效果①的发动准备，选择要发动的分支并设置对应的操作信息
 function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断我方场上是否存在表侧表示的「魔女术」怪兽以适用破坏效果分支
+	-- 判断自己场上是否存在「魔女术」怪兽
 	local b1=Duel.IsExistingMatchingCard(s.cfilter,tp,LOCATION_MZONE,0,1,nil)
-		-- 判断对方场上是否存在卡片以适用破坏效果分支
+		-- 判断对方场上是否存在卡片
 		and Duel.IsExistingMatchingCard(aux.TRUE,tp,0,LOCATION_ONFIELD,1,nil)
 	local chkf=tp
-	-- 获取我方墓地及被除外的可用作融合素材的魔法师族怪兽卡组
+	-- 获取自己墓地及除外状态中满足条件的魔法师族怪兽
 	local mg1=Duel.GetMatchingGroup(s.filter1,tp,LOCATION_GRAVE+LOCATION_REMOVED,0,nil,e)
-	-- 检查是否能使用这批素材从额外卡组融合召唤「魔女术」融合怪兽
+	-- 判断额外卡组中是否存在可以使用这些素材融合召唤的「魔女术」融合怪兽
 	local res=Duel.IsExistingMatchingCard(s.filter2,tp,LOCATION_EXTRA,0,1,nil,e,tp,mg1,nil,chkf)
 	if not res then
-		-- 检查是否有适用于我方的第三方融合素材效果（如链之素材等）
+		-- 获取玩家受到的连锁素材效果
 		local ce=Duel.GetChainMaterial(tp)
 		if ce~=nil then
 			local fgroup=ce:GetTarget()
 			local mg2=fgroup(ce,e,tp)
 			local mf=ce:GetValue()
-			-- 使用第三方融合素材效果重新检查是否能进行融合召唤
+			-- 在使用连锁素材效果时，判断额外卡组中是否存在可以融合召唤的「魔女术」融合怪兽
 			res=Duel.IsExistingMatchingCard(s.filter2,tp,LOCATION_EXTRA,0,1,nil,e,tp,mg2,mf,chkf)
 		end
 	end
 	local b2=res
 	if chk==0 then return b1 or b2 end
-	-- 让玩家选择要发动分支1（破坏）还是分支2（融合召唤）
+	-- 让玩家选择要发动的效果分支
 	local op=aux.SelectFromOptions(tp,
 			{b1,aux.Stringid(id,2),1},
 			{b2,aux.Stringid(id,3),2})
@@ -73,85 +73,85 @@ function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
 		if e:IsCostChecked() then
 			e:SetCategory(CATEGORY_DESTROY)
 		end
-		-- 获取我方场上所有满足条件的「魔女术」怪兽组
+		-- 获取自己场上的所有「魔女术」怪兽
 		local g1=Duel.GetMatchingGroup(s.cfilter,tp,LOCATION_MZONE,0,nil)
-		-- 获取对方场上的所有卡片组
+		-- 获取对方场上的所有卡片
 		local g2=Duel.GetMatchingGroup(aux.TRUE,tp,0,LOCATION_ONFIELD,nil)
 		g1:Merge(g2)
-		-- 设置将双方各1张卡破坏的操作信息
+		-- 设置操作信息：破坏自己场上的一只「魔女术」怪兽和对方场上的一张卡
 		Duel.SetOperationInfo(0,CATEGORY_DESTROY,g1,2,0,0)
 	elseif op==2 then
 		if e:IsCostChecked() then
 			e:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_FUSION_SUMMON+CATEGORY_TODECK+CATEGORY_GRAVE_ACTION)
 		end
-		-- 设置将额外卡组的1只融合怪兽特殊召唤的操作信息
+		-- 设置操作信息：从额外卡组特殊召唤1只怪兽
 		Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_EXTRA)
-		-- 设置将融合素材回到卡组的操作信息
+		-- 设置操作信息：将墓地及除外状态的融合素材回到卡组
 		Duel.SetOperationInfo(0,CATEGORY_TODECK,nil,1,tp,LOCATION_GRAVE+LOCATION_REMOVED)
 	end
 end
--- 定义子组过滤函数，确保所选的2张卡片中包含我方和对方控制的卡各1张
+-- 检查选中的两张卡是否分别属于双方玩家各一张
 function s.gcheck(g,tp)
 	return g:IsExists(Card.IsControler,1,nil,tp) and g:IsExists(Card.IsControler,1,nil,1-tp)
 end
--- 定义效果①的实际执行逻辑函数（Operation）
+-- 效果①的生效处理，根据选择的分支执行破坏或融合召唤的操作
 function s.activate(e,tp,eg,ep,ev,re,r,rp)
 	if e:GetLabel()==1 then
-		-- 获取我方场上的「魔女术」怪兽卡组
+		-- 获取自己场上的所有「魔女术」怪兽
 		local g1=Duel.GetMatchingGroup(s.cfilter,tp,LOCATION_MZONE,0,nil)
-		-- 获取对方场上的卡片卡组
+		-- 获取对方场上的所有卡片
 		local g2=Duel.GetMatchingGroup(aux.TRUE,tp,0,LOCATION_ONFIELD,nil)
 		if g1:GetCount()>0 and g2:GetCount()>0 then
 			g1:Merge(g2)
-			-- 给玩家提示：选择要破坏的卡
+			-- 提示玩家选择要破坏的卡片
 			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
 			local sg=g1:SelectSubGroup(tp,s.gcheck,false,2,2,tp)
 			if sg:GetCount()>0 then
-				-- 为选择的破坏目标卡片显示指示对象的动画
+				-- 手动显示选定要破坏的卡片的动画效果
 				Duel.HintSelection(sg)
-				-- 将选定的双方各1张卡破坏
+				-- 以效果原因破坏选中的卡片
 				Duel.Destroy(sg,REASON_EFFECT)
 			end
 		end
 	elseif e:GetLabel()==2 then
 		local chkf=tp
-		-- 获取我方墓地或被除外的魔法师族融合素材（受王家长眠之谷影响）
+		-- 获取自己墓地及除外状态中满足条件且不受王家长眠之谷影响的魔法师族怪兽
 		local mg1=Duel.GetMatchingGroup(aux.NecroValleyFilter(s.filter1),tp,LOCATION_GRAVE+LOCATION_REMOVED,0,nil,e)
-		-- 获取使用此材料可召唤的「魔女术」融合怪兽组
+		-- 获取额外卡组中可以使用这批素材融合召唤的「魔女术」融合怪兽
 		local sg1=Duel.GetMatchingGroup(s.filter2,tp,LOCATION_EXTRA,0,nil,e,tp,mg1,nil,chkf)
 		local mg2=nil
 		local sg2=nil
-		-- 获取我方所受的第三方融合素材效果
+		-- 获取玩家受到的连锁素材效果
 		local ce=Duel.GetChainMaterial(tp)
 		if ce~=nil then
 			local fgroup=ce:GetTarget()
 			mg2=fgroup(ce,e,tp)
 			local mf=ce:GetValue()
-			-- 获取使用第三方融合材料可融合召唤的融合怪兽组
+			-- 在使用连锁素材效果时，获取额外卡组中可以进行融合召唤的「魔女术」融合怪兽
 			sg2=Duel.GetMatchingGroup(s.filter2,tp,LOCATION_EXTRA,0,nil,e,tp,mg2,mf,chkf)
 		end
 		if sg1:GetCount()>0 or (sg2~=nil and sg2:GetCount()>0) then
 			local sg=sg1:Clone()
 			if sg2 then sg:Merge(sg2) end
-			-- 给玩家提示：选择要特殊召唤的怪兽
+			-- 提示玩家选择要特殊召唤的怪兽
 			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
 			local tg=sg:Select(tp,1,1,nil)
 			local tc=tg:GetFirst()
-			-- 判断所选融合怪兽是否只能使用正常墓地/除外材料进行召唤，或者玩家不选择使用第三方材料效果
+			-- 检查是否使用自身的融合素材进行融合召唤
 			if sg1:IsContains(tc) and (sg2==nil or not sg2:IsContains(tc) or ce and not Duel.SelectYesNo(tp,ce:GetDescription())) then
-				-- 让玩家选择融合所需的墓地/除外状态下的素材怪兽
+				-- 让玩家从己方墓地或除外素材中选择融合素材
 				local mat1=Duel.SelectFusionMaterial(tp,tc,mg1,nil,chkf)
 				tc:SetMaterial(mat1)
-				-- 为选择的融合素材显示指示对象的动画
+				-- 手动显示所选融合素材的动画效果
 				Duel.HintSelection(mat1)
-				-- 将选定的融合素材怪兽返回卡组并洗牌
+				-- 将融合素材送回卡组并洗卡
 				Duel.SendtoDeck(mat1,nil,SEQ_DECKSHUFFLE,REASON_EFFECT+REASON_MATERIAL+REASON_FUSION)
-				-- 中断效果处理，使后续特殊召唤与之前的返回卡组视为不同时处理
+				-- 中断效果，使之后的特殊召唤视为不同时处理
 				Duel.BreakEffect()
-				-- 将该融合怪兽表侧表示融合召唤到我方场上
+				-- 以融合召唤方式特殊召唤融合怪兽
 				Duel.SpecialSummon(tc,SUMMON_TYPE_FUSION,tp,tp,false,false,POS_FACEUP)
 			elseif ce then
-				-- 使用第三方融合素材效果选择融合素材
+				-- 让玩家选择连锁素材效果指定的融合素材
 				local mat2=Duel.SelectFusionMaterial(tp,tc,mg2,nil,chkf)
 				local fop=ce:GetOperation()
 				fop(ce,e,tp,tc,mat2)
@@ -160,27 +160,29 @@ function s.activate(e,tp,eg,ep,ev,re,r,rp)
 		end
 	end
 end
--- 定义过滤函数，筛选我方场上表侧表示的「魔女术」怪兽
+-- 过滤自己场上表侧表示的「魔女术」怪兽
 function s.rccfilter(c)
 	return c:IsFaceup() and c:IsSetCard(0x128)
 end
--- 定义墓地回收效果（效果②）的发动条件函数
+-- 判断是否为自己回合的结束阶段，且自己场上存在表侧表示的「魔女术」怪兽
 function s.thcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断当前回合玩家是否为自己
+	-- 检查当前回合玩家是否为自己
 	return Duel.GetTurnPlayer()==tp
-		-- 判断我方场上是否存在表侧表示的「魔女术」怪兽
+		-- 判断自己场上是否存在表侧表示的「魔女术」怪兽
 		and Duel.IsExistingMatchingCard(s.rccfilter,tp,LOCATION_MZONE,0,1,nil)
 end
--- 定义墓地回收效果的发动准备与检查函数（Target）
+-- 效果②的发动准备，检查自身是否可以加入手卡并设置操作信息
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsAbleToHand() end
-	-- 设置将此卡从墓地回收至手牌的操作信息
+	-- 设置操作信息：将这张卡加入手卡
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,e:GetHandler(),1,0,0)
 end
--- 定义墓地回收效果的实际执行逻辑函数（Operation）
+-- 效果②的生效处理，将这张卡从墓地加入手卡
 function s.thop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
+	-- 检查这张卡是否仍与连锁相关且不受王家长眠之谷影响
 	if c:IsRelateToChain() and aux.NecroValleyFilter()(c) then
+		-- 将这张卡加入手卡
 		Duel.SendtoHand(c,nil,REASON_EFFECT)
 	end
 end
