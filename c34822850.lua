@@ -9,7 +9,7 @@ function c34822850.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- ①：自己准备阶段才能发动。在自己场上把1只「狱火机衍生物」（恶魔族·炎·1星·攻/守0）特殊召唤
+	-- ①：自己准备阶段才能发动。在自己场上把1只「狱火机衍生物」（恶魔族·炎·1星·攻/守0）特殊召唤。
 	local e2=Effect.CreateEffect(c)
 	e2:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_TOKEN)
 	e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
@@ -20,7 +20,7 @@ function c34822850.initial_effect(c)
 	e2:SetTarget(c34822850.sptg)
 	e2:SetOperation(c34822850.spop)
 	c:RegisterEffect(e2)
-	-- ②：「狱火机」怪兽用自身的方法特殊召唤的场合，从自己场上也能把「狱火机」怪兽除外
+	-- ②：「狱火机」怪兽用自身的方法特殊召唤的场合，从自己场上也能把「狱火机」怪兽除外。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_FIELD)
 	e3:SetRange(LOCATION_FZONE)
@@ -28,7 +28,7 @@ function c34822850.initial_effect(c)
 	e3:SetTarget(c34822850.efftg)
 	e3:SetCode(34822850)
 	c:RegisterEffect(e3)
-	-- 对方怪兽不能选择在自己场上的「狱火机」怪兽之内除等级最高的怪兽以外的「狱火机」怪兽作为攻击对象
+	-- ③：对方怪兽不能选择在自己场上的「狱火机」怪兽之内除等级最高的怪兽以外的「狱火机」怪兽作为攻击对象
 	local e4=Effect.CreateEffect(c)
 	e4:SetType(EFFECT_TYPE_FIELD)
 	e4:SetCode(EFFECT_CANNOT_SELECT_BATTLE_TARGET)
@@ -36,7 +36,7 @@ function c34822850.initial_effect(c)
 	e4:SetTargetRange(0,LOCATION_MZONE)
 	e4:SetValue(c34822850.atlimit)
 	c:RegisterEffect(e4)
-	-- 对方不能以此类作为效果的对象
+	-- 对方不能以此类作为效果的对象。
 	local e5=Effect.CreateEffect(c)
 	e5:SetType(EFFECT_TYPE_FIELD)
 	e5:SetCode(EFFECT_CANNOT_BE_EFFECT_TARGET)
@@ -44,55 +44,55 @@ function c34822850.initial_effect(c)
 	e5:SetRange(LOCATION_FZONE)
 	e5:SetTargetRange(LOCATION_MZONE,0)
 	e5:SetTarget(c34822850.tglimit)
-	-- 设置不能成为对方的效果的对象
+	-- 设置效果对象的限制条件，使受影响的怪兽不能成为对方的效果对象
 	e5:SetValue(aux.tgoval)
 	c:RegisterEffect(e5)
 end
--- 效果①的发动条件：自己回合的准备阶段
+-- 特殊召唤效果的发动条件函数
 function c34822850.spcon(e,tp,eg,ep,ev,re,r,rp)
 	-- 检查当前是否为自己的回合
 	return Duel.GetTurnPlayer()==tp
 end
--- 效果①的特殊召唤目标检测
+-- 特殊召唤效果的发动检查函数，判断自己场上是否有空位以及能否特殊召唤衍生物
 function c34822850.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查自己场上是否有空闲的怪兽区域
+	-- 在发动检查阶段，检查自己场上的主要怪兽区域是否有可用的空位
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查自己是否可以在自己场上特殊召唤「狱火机衍生物」
+		-- 并且检查玩家是否被允许在场上特殊召唤特定属性、种族和数值的衍生物怪兽
 		and Duel.IsPlayerCanSpecialSummonMonster(tp,34822851,0xbb,TYPES_TOKEN_MONSTER,0,0,1,RACE_FIEND,ATTRIBUTE_FIRE) end
-	-- 设置操作信息为生成衍生物
+	-- 设置操作信息，宣告本效果包含特殊召唤衍生物的操作
 	Duel.SetOperationInfo(0,CATEGORY_TOKEN,nil,1,0,0)
-	-- 设置操作信息为特殊召唤
+	-- 设置操作信息，宣告本效果包含特殊召唤怪兽的操作
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,0,0)
 end
--- 效果①的操作处理
+-- 特殊召唤效果的执行函数，并在开始时重新校验卡片关系、怪兽区域空位以及特殊召唤的可行性
 function c34822850.spop(e,tp,eg,ep,ev,re,r,rp)
 	if not e:GetHandler():IsRelateToEffect(e)
-		-- 检查自己场上是否有空闲的怪兽区域
+		-- 或者自己场上的主要怪兽区域此时已经没有空位
 		or Duel.GetLocationCount(tp,LOCATION_MZONE)<=0
-		-- 检查是否可以特殊召唤衍生物，不可则退出效果处理
+		-- 或者当前状态下无法特殊召唤对应的衍生物怪兽，则不执行任何操作并退出
 		or not Duel.IsPlayerCanSpecialSummonMonster(tp,34822851,0xbb,TYPES_TOKEN_MONSTER,0,0,1,RACE_FIEND,ATTRIBUTE_FIRE) then return end
-	-- 创建「狱火机衍生物」
+	-- 根据卡片密码在内存中为指定玩家生成「狱火机衍生物」的卡片对象
 	local token=Duel.CreateToken(tp,34822851)
-	-- 将生成的衍生物特殊召唤到自己场上
+	-- 将该衍生物以表侧表示特殊召唤到发动效果的玩家场上
 	Duel.SpecialSummon(token,0,tp,tp,false,false,POS_FACEUP)
 end
--- 过滤条件：适用于「狱火机」卡片
+-- 除外替代效果的适用对象过滤函数，限定为「狱火机」卡片
 function c34822850.efftg(e,c)
 	return c:IsSetCard(0xbb)
 end
--- 过滤条件：场上表侧表示、是「狱火机」卡且等级大于指定等级的怪兽
+-- 辅助过滤函数，用于查找场上表侧表示、属于「狱火机」系列且等级高于参数lv的怪兽
 function c34822850.filter(c,lv)
 	return c:IsFaceup() and c:IsSetCard(0xbb) and c:GetLevel()>lv
 end
--- 攻击目标限制判定
+-- 不能被选择为攻击对象的过滤函数，限制自己场上除等级最高的「狱火机」怪兽以外的「狱火机」怪兽
 function c34822850.atlimit(e,c)
 	return c:IsFaceup() and c:IsSetCard(0xbb)
-		-- 检查是否存在等级更高的「狱火机」怪兽
+		-- 该怪兽不具有等级，或者场上存在其他等级比其更高的「狱火机」怪兽
 		and (not c:IsHasLevel() or Duel.IsExistingMatchingCard(c34822850.filter,c:GetControler(),LOCATION_MZONE,0,1,nil,c:GetLevel()))
 end
--- 效果对象限制判定
+-- 不能被选择为效果对象的过滤函数，限制自己场上除等级最高的「狱火机」怪兽以外的「狱火机」怪兽
 function c34822850.tglimit(e,c)
 	return c:IsSetCard(0xbb)
-		-- 检查是否存在等级更高的「狱火机」怪兽
+		-- 并且检查场上是否存在至少1只等级高于该怪兽等级的「狱火机」怪兽
 		and Duel.IsExistingMatchingCard(c34822850.filter,c:GetControler(),LOCATION_MZONE,0,1,nil,c:GetLevel())
 end
