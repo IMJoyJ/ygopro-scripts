@@ -49,55 +49,55 @@ end
 function c48745395.spcon(e,tp,eg,ep,ev,re,r,rp)
 	return re:IsHasType(EFFECT_TYPE_ACTIVATE) and re:IsActiveType(TYPE_TRAP)
 end
--- 检查自己场上是否有空闲的怪兽区域以及这张卡是否能从手卡特殊召唤
+-- 效果①特殊召唤效果的发动检查，判断场上是否有可用区域以及自身是否能够特殊召唤
 function c48745395.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
-	-- 检查玩家的主怪兽区域是否有可用的空位
+	-- 判断自己场上的主要怪兽区域是否还有可用的空格
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and c:IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置在效果处理时将此卡特殊召唤的操作信息
+	-- 设置特殊召唤自身的效果操作信息
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,c,1,0,0)
 end
--- 若此卡在效果处理时仍存在于手卡中，则将其在自己场上表侧表示特殊召唤
+-- 效果①特殊召唤效果的执行处理
 function c48745395.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) then
-		-- 将该怪兽以表侧表示特殊召唤到自己场上
+		-- 将此卡以表侧表示特殊召唤
 		Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
--- 过滤卡组中可以在攻击宣言时发动且可以盖放的通常陷阱卡
+-- 过滤卡组中可在攻击宣言时发动且可以盖放的通常陷阱卡
 function c48745395.stfilter(c)
 	local te=c:GetActivateEffect()
 	return c:GetType()==TYPE_TRAP and te and te:GetCode()==EVENT_ATTACK_ANNOUNCE and c:IsSSetable()
 end
--- 检查卡组中是否存在满足条件的、可以在攻击宣言时发动的通常陷阱卡
+-- 效果②盖放通常陷阱效果的目标检查，判断卡组中是否存在符合条件的卡
 function c48745395.sttg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查卡组中是否有至少一张可以盖放的符合条件的陷阱卡
+	-- 检查卡组中是否存在符合盖放条件的通常陷阱卡
 	if chk==0 then return Duel.IsExistingMatchingCard(c48745395.stfilter,tp,LOCATION_DECK,0,1,nil) end
 end
--- 在卡组中选择一张符合条件的通常陷阱卡在自己场上盖放
+-- 效果②盖放通常陷阱效果的执行处理
 function c48745395.stop(e,tp,eg,ep,ev,re,r,rp)
-	-- 向操作玩家显示提示信息：请选择要盖放的卡
+	-- 提示玩家选择要盖放的卡片
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SET)  --"请选择要盖放的卡"
-	-- 让玩家从卡组选择一张符合条件的通常陷阱卡
+	-- 从自己卡组选择1张满足条件的通常陷阱卡
 	local g=Duel.SelectMatchingCard(tp,c48745395.stfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选出的卡片在自己场上盖放
+		-- 将选择的通常陷阱卡在自己场上盖放
 		Duel.SSet(tp,g:GetFirst())
 	end
 end
--- 判断卡片是否为陷阱卡
+-- 过滤墓地中通常陷阱卡的过滤函数
 function c48745395.atkfilter(c)
 	return c:GetType()==TYPE_TRAP
 end
--- 计算自己墓地的通常陷阱卡种类数量，并返回攻击力上升值（种类数×400）
+-- 计算自己墓地中的通常陷阱卡种类数量乘以400后的数值
 function c48745395.atkval(e,c)
-	-- 获取自己墓地中的所有陷阱卡
+	-- 获取自己墓地中所有的通常陷阱卡
 	local g=Duel.GetMatchingGroup(c48745395.atkfilter,e:GetHandlerPlayer(),LOCATION_GRAVE,0,nil)
 	return g:GetClassCount(Card.GetCode)*400
 end
--- 判断目标是否为「白银之城的魔神像」以外的表侧表示恶魔族怪兽
+-- 限制对方攻击对象的过滤，判断怪兽是否为表侧表示、自身以外的恶魔族怪兽
 function c48745395.atklimit(e,c)
 	return c:IsFaceup() and not c:IsCode(48745395) and c:IsRace(RACE_FIEND)
 end

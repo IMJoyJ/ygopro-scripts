@@ -11,10 +11,10 @@
 function c40785230.initial_effect(c)
 	c:SetSPSummonOnce(40785230)
 	c:EnableCounterPermit(0x69,LOCATION_PZONE)
-	-- 为卡片注册灵摆怪兽属性（注册灵摆卡的发动以及灵摆召唤等规则）
+	-- 为这张卡添加灵摆怪兽属性
 	aux.EnablePendulumAttribute(c)
 	c:EnableReviveLimit()
-	-- 这张卡不能通常召唤，用这张卡的灵摆效果才能特殊召唤。自己对「吠陀-优婆尼沙昙」1回合只能有1次特殊召唤。
+	-- 这张卡不能通常召唤，用这张卡的灵摆效果才能特殊召唤。
 	local e0=Effect.CreateEffect(c)
 	e0:SetType(EFFECT_TYPE_SINGLE)
 	e0:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
@@ -77,125 +77,125 @@ function c40785230.initial_effect(c)
 	e6:SetOperation(c40785230.thop)
 	c:RegisterEffect(e6)
 end
--- 判断被破坏的卡片中是否存在怪兽卡
+-- 检查被破坏的卡中是否存在怪兽卡
 function c40785230.stcon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(Card.IsType,1,nil,TYPE_MONSTER)
 end
--- 放置指示物效果的目标函数，检查自身能否放置3个指示物并设置放置指示物的操作信息
+-- 检查此卡是否可以放置3个指示物，并设置放置3个0x69指示物的操作信息
 function c40785230.sttg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsCanAddCounter(0x69,3) end
-	-- 设置在连锁处理中放置3个0x69指示物的操作信息
+	-- 设置在效果处理时会给该卡放置3个0x69指示物的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_COUNTER,nil,3,0,0x69)
 end
--- 给自身放置3个0x69指示物
+-- 若此卡在场，则给此卡放置3个0x69指示物
 function c40785230.stop(e,tp,eg,ep,ev,re,r,rp)
 	if e:GetHandler():IsRelateToEffect(e) then
 		e:GetHandler():AddCounter(0x69,3)
 	end
 end
--- 返回自身放置的0x69指示物数量，用于灵摆刻度的数值计算
+-- 返回此卡上的0x69指示物数量，作为灵摆刻度上升的数值
 function c40785230.scval(e,c)
 	return c:GetCounter(0x69)
 end
--- 特殊召唤效果的费用函数，取除自身的12个0x69指示物作为发动成本
+-- 移去此卡的12个0x69指示物作为发动的代价
 function c40785230.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsCanRemoveCounter(tp,0x69,12,REASON_COST) end
 	e:GetHandler():RemoveCounter(tp,0x69,12,REASON_COST)
 end
--- 特殊召唤效果的目标函数，检查己方怪兽区是否有空位以及自身是否能无视召唤条件和苏生限制特殊召唤
+-- 检查自己怪兽区域是否有空位，以及此卡是否能无视召唤条件和苏生限制特殊召唤
 function c40785230.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查己方怪兽区是否有可用的空位
+	-- 检查自己场上的怪兽区域是否有可用的空位
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,true,true) end
-	-- 设置将自身特殊召唤的操作信息
+	-- 设置特殊召唤此卡的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 特殊召唤效果的执行函数，若此卡仍关联该效果，以表侧表示无视召唤条件和苏生限制特殊召唤此卡，并完成正规召唤程序
+-- 将此卡无视召唤条件和苏生限制特殊召唤，并完成正规召唤程序
 function c40785230.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 判断此卡是否仍与效果关联且成功被无视召唤条件和苏生限制特殊召唤
+	-- 若此卡仍存在于灵摆区，则将其无视召唤条件和苏生限制特殊召唤到场上，并完成正规召唤程序
 	if c:IsRelateToEffect(e) and Duel.SpecialSummon(c,0,tp,tp,true,true,POS_FACEUP)>0 then
 		c:CompleteProcedure()
 	end
 end
--- 过滤函数，判断怪兽是否从对方的额外卡组特殊召唤
+-- 过滤出由对方从额外卡组特殊召唤的怪兽
 function c40785230.cfilter(c,tp)
 	return c:IsSummonLocation(LOCATION_EXTRA) and c:IsSummonPlayer(1-tp)
 end
--- 触发条件函数，检查是否对方从额外卡组特殊召唤了怪兽，且当前非结束阶段
+-- 检查是否有怪兽由对方从额外卡组特殊召唤，并且当前不为结束阶段
 function c40785230.etcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断是否存在对方从额外卡组特殊召唤的怪兽，并且当前阶段不是结束阶段
+	-- 检查特殊召唤的怪兽中是否存在由对方从额外卡组特殊召唤的怪兽，并且当前不为结束阶段
 	return eg:IsExists(c40785230.cfilter,1,nil,tp) and Duel.GetCurrentPhase()~=PHASE_END
 end
--- 特殊召唤的触发费用函数，从自己的手卡·场上·墓地将12张卡里侧除外
+-- 从自己手卡、场上、墓地选择12张卡里侧除外作为发动的代价
 function c40785230.etcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查己方的半公开/非公开位置（手卡、场上、墓地）是否存在12张可以里侧除外的卡
+	-- 检查自己的手卡、场上、墓地是否存在共计至少12张可以里侧除外的卡
 	if chk==0 then return Duel.IsExistingMatchingCard(Card.IsAbleToRemoveAsCost,tp,LOCATION_HAND+LOCATION_ONFIELD+LOCATION_GRAVE,0,12,nil,POS_FACEDOWN) end
-	-- 向玩家发送选择里侧除外卡片的操作提示
+	-- 提示玩家选择要除外的卡片
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
-	-- 从己方的手卡、场上、墓地选择12张可以里侧除外的卡
+	-- 让玩家选择手卡、场上、墓地的12张卡
 	local g=Duel.SelectMatchingCard(tp,Card.IsAbleToRemoveAsCost,tp,LOCATION_HAND+LOCATION_ONFIELD+LOCATION_GRAVE,0,12,12,nil,POS_FACEDOWN)
-	-- 以发动成本为原因，将选择的12张卡里侧表示除外
+	-- 将选中的12张卡里侧除外
 	Duel.Remove(g,POS_FACEDOWN,REASON_COST)
 end
--- 变成结束阶段效果的执行函数，跳过当前回合玩家除结束阶段以外的所有阶段，并限制不能进入战斗阶段，从而变成这个回合的结束阶段
+-- 跳过当前回合的各个阶段以变成结束阶段，并限制当前回合玩家本回合不能进入战斗阶段
 function c40785230.etop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前的回合玩家
+	-- 获取当前回合玩家
 	local turnp=Duel.GetTurnPlayer()
-	-- 跳过当前回合玩家的抽卡阶段
+	-- 跳过当前回合的抽卡阶段
 	Duel.SkipPhase(turnp,PHASE_DRAW,RESET_PHASE+PHASE_END,1)
-	-- 跳过当前回合玩家的准备阶段
+	-- 跳过当前回合的准备阶段
 	Duel.SkipPhase(turnp,PHASE_STANDBY,RESET_PHASE+PHASE_END,1)
-	-- 跳过当前回合玩家的主要阶段1
+	-- 跳过当前回合的主要阶段1
 	Duel.SkipPhase(turnp,PHASE_MAIN1,RESET_PHASE+PHASE_END,1)
-	-- 跳过当前回合玩家的战斗阶段并将其结束
+	-- 跳过当前回合的战斗阶段并防止在结束步骤停留
 	Duel.SkipPhase(turnp,PHASE_BATTLE,RESET_PHASE+PHASE_END,1,1)
-	-- 跳过当前回合玩家的主要阶段2
+	-- 跳过当前回合的主要阶段2
 	Duel.SkipPhase(turnp,PHASE_MAIN2,RESET_PHASE+PHASE_END,1)
-	-- 变成这个回合的结束阶段。②：自己准备阶段发动。这张卡回到手卡。那之后，可以把自己的手卡·卡组·墓地·除外状态的1只「吠陀」怪兽特殊召唤。
+	-- ②：自己准备阶段发动。这张卡回到手卡。那之后，可以把自己的手卡·卡组·墓地·除外状态的1只「吠陀」怪兽特殊召唤。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_CANNOT_BP)
 	e1:SetTargetRange(1,0)
 	e1:SetReset(RESET_PHASE+PHASE_END)
-	-- 为当前回合玩家注册不能进行战斗阶段的规则限制效果
+	-- 给当前回合玩家注册本回合内不能进行战斗阶段的限制效果
 	Duel.RegisterEffect(e1,turnp)
 end
--- 触发条件函数，检查当前是否为己方的准备阶段
+-- 检查当前是否为自己的回合
 function c40785230.thcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查当前回合玩家是否为自己
+	-- 检查当前的回合玩家是否为自己
 	return Duel.GetTurnPlayer()==tp
 end
--- 回到手卡效果的目标函数，确认此效果在准备阶段时发动，并设置回到手卡的操作信息
+-- 设置此卡回到手卡的操作信息
 function c40785230.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置将此卡送回手卡的操作信息
+	-- 设置将此卡送回持有者手卡的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,e:GetHandler(),1,0,0)
 end
--- 过滤函数，检查是否为「吠陀」怪兽且能够特殊召唤
+-- 过滤出符合条件的「吠陀」怪兽
 function c40785230.spfilter(c,e,tp)
 	return c:IsSetCard(0x19a) and c:IsFaceupEx() and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 回到手卡效果的执行函数，将此卡送回手卡，若成功则洗牌，并可从手卡·卡组·墓地·除外状态将1只「吠陀」怪兽特殊召唤
+-- 使此卡回到手卡，并且当自己场上有空位时，可以选择将手卡、卡组、墓地、除外状态的一只「吠陀」怪兽特殊召唤
 function c40785230.thop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 判断此卡是否仍与效果关联、是否成功送回手卡，并确认当前已在手卡中
+	-- 若此卡在效果处理时仍存在于场上并成功回到手卡，则继续处理后续效果
 	if c:IsRelateToEffect(e) and Duel.SendtoHand(c,nil,REASON_EFFECT)>0 and c:IsLocation(LOCATION_HAND) then
-		-- 洗切己方的手卡
+		-- 洗切玩家的手卡
 		Duel.ShuffleHand(tp)
-		-- 获取己方怪兽区的可用空位数量
+		-- 获取自己场上怪兽区域的可使用空位数
 		local ft=Duel.GetLocationCount(tp,LOCATION_MZONE)
-		-- 检索并筛选己方手卡·卡组·墓地·除外状态中满足「吠陀」字段且不受墓地无效效果限制的可特殊召唤的怪兽
+		-- 获取自己手卡、卡组、墓地、除外状态符合条件且不受「王家长眠之谷」影响的「吠陀」怪兽
 		local g=Duel.GetMatchingGroup(aux.NecroValleyFilter(c40785230.spfilter),tp,LOCATION_HAND+LOCATION_DECK+LOCATION_GRAVE+LOCATION_REMOVED,0,nil,e,tp)
-		-- 判断是否有怪兽区空位和可选的「吠陀」怪兽，并询问玩家是否进行特殊召唤
+		-- 如果怪兽区域有空位，有符合条件的怪兽，且玩家选择进行特殊召唤，则处理后续效果
 		if ft>0 and g:GetCount()>0 and Duel.SelectYesNo(tp,aux.Stringid(40785230,3)) then  --"是否特殊召唤？"
-			-- 中断效果处理，使之后的效果处理（特殊召唤）视为不同时处理的操作
+			-- 中断当前效果处理，使后续特殊召唤与回手效果视为不同时处理（造成错时点）
 			Duel.BreakEffect()
-			-- 向玩家发送选择特殊召唤怪兽的操作提示
+			-- 提示玩家选择要特殊召唤的卡片
 			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
 			local sg=g:Select(tp,1,1,nil)
-			-- 将选定的「吠陀」怪兽以表侧表示特殊召唤到己方场上
+			-- 将选中的「吠陀」怪兽特殊召唤到自己场上
 			Duel.SpecialSummon(sg,0,tp,tp,false,false,POS_FACEUP)
 		end
 	end
