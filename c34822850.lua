@@ -44,55 +44,55 @@ function c34822850.initial_effect(c)
 	e5:SetRange(LOCATION_FZONE)
 	e5:SetTargetRange(LOCATION_MZONE,0)
 	e5:SetTarget(c34822850.tglimit)
-	-- 不会成为对方的效果对象
+	-- 保护效果：不会成为对方卡片效果的对象
 	e5:SetValue(aux.tgoval)
 	c:RegisterEffect(e5)
 end
--- 特殊召唤效果的发动条件函数：检查是否为自己回合
+-- 判断是否是自己的准备阶段
 function c34822850.spcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 返回当前回合玩家是否为自己
+	-- 确认当前回合玩家是自己
 	return Duel.GetTurnPlayer()==tp
 end
--- 特殊召唤效果的靶点函数：检查是否可以特招衍生物并设置操作信息
+-- 特殊召唤狱火机衍生物的目标选择与操作信息设置
 function c34822850.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 若为检测发动阶段，则检查自己场上主要怪兽区域是否有可用的空位
+	-- 检查自己怪兽区是否有空位
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 且检查自己是否能在场上特殊召唤指定的狱火机衍生物
+		-- 检查自己是否能特殊召唤狱火机衍生物
 		and Duel.IsPlayerCanSpecialSummonMonster(tp,34822851,0xbb,TYPES_TOKEN_MONSTER,0,0,1,RACE_FIEND,ATTRIBUTE_FIRE) end
-	-- 设置操作信息：包含生成衍生物的效果分类
+	-- 设置操作信息：生成Token，数量为1
 	Duel.SetOperationInfo(0,CATEGORY_TOKEN,nil,1,0,0)
-	-- 设置操作信息：包含特殊召唤的效果分类
+	-- 设置操作信息：特殊召唤，数量为1
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,0,0)
 end
--- 特殊召唤效果的操作函数：若卡片离场、无空怪兽格或无法特招则不处理
+-- 效果①的执行：特殊召唤「狱火机衍生物」
 function c34822850.spop(e,tp,eg,ep,ev,re,r,rp)
 	if not e:GetHandler():IsRelateToEffect(e)
-		-- 或者检查自己场上主要怪兽区域是否没有空位
+		-- 检查自己怪兽区是否有空位
 		or Duel.GetLocationCount(tp,LOCATION_MZONE)<=0
-		-- 或者检查自己是否不能在场上特殊召唤狱火机衍生物，是则结束处理
+		-- 确认是否能够将狱火机衍生物特殊召唤
 		or not Duel.IsPlayerCanSpecialSummonMonster(tp,34822851,0xbb,TYPES_TOKEN_MONSTER,0,0,1,RACE_FIEND,ATTRIBUTE_FIRE) then return end
-	-- 在内存中创建「狱火机衍生物」的卡片数据
+	-- 创建「狱火机衍生物」的卡片数据
 	local token=Duel.CreateToken(tp,34822851)
-	-- 以表侧表示将该衍生物特殊召唤到自己场上
+	-- 将「狱火机衍生物」特殊召唤到自己场上
 	Duel.SpecialSummon(token,0,tp,tp,false,false,POS_FACEUP)
 end
--- 目标过滤：选择“狱火机”卡片
+-- 过滤条件：是否属于「狱火机」系列
 function c34822850.efftg(e,c)
 	return c:IsSetCard(0xbb)
 end
--- 过滤场上表侧表示、等级高于指定等级的“狱火机”怪兽
+-- 过滤条件：场上表侧表示、等级更高的「狱火机」怪兽
 function c34822850.filter(c,lv)
 	return c:IsFaceup() and c:IsSetCard(0xbb) and c:GetLevel()>lv
 end
--- 攻击限制的目标过滤：选择自己场上“狱火机”怪兽中除等级最高的怪兽以外的怪兽
+-- 对方攻击目标限制：等级最高的怪兽以外的「狱火机」怪兽不能被选择为攻击对象
 function c34822850.atlimit(e,c)
 	return c:IsFaceup() and c:IsSetCard(0xbb)
-		-- 过滤条件：该怪兽没有等级，或者场上存在其他等级更高的“狱火机”怪兽
+		-- 确认是否存在比自身等级更高的「狱火机」怪兽
 		and (not c:IsHasLevel() or Duel.IsExistingMatchingCard(c34822850.filter,c:GetControler(),LOCATION_MZONE,0,1,nil,c:GetLevel()))
 end
--- 效果对象限制的目标过滤：选择在自己场上的等级不是最高的“狱火机”怪兽
+-- 对方效果对象限制：等级最高的怪兽以外的「狱火机」怪兽不能被选择为效果对象
 function c34822850.tglimit(e,c)
 	return c:IsSetCard(0xbb)
-		-- 过滤条件：场上存在其他等级更高的“狱火机”怪兽
+		-- 确认场上是否存在等级比自身更高的「狱火机」怪兽
 		and Duel.IsExistingMatchingCard(c34822850.filter,c:GetControler(),LOCATION_MZONE,0,1,nil,c:GetLevel())
 end
