@@ -107,9 +107,7 @@ end
 function s.thop(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取作为效果对象的卡。
 	local tc=Duel.GetFirstTarget()
-	-- 检查对象卡是否仍与连锁相关，并应用「王家之谷」的无效化过滤。
-	if tc:IsRelateToChain() and aux.NecroValleyFilter(tc) then
-		-- 将对象卡加入手卡。
+	if tc:IsRelateToChain() and aux.NecroValleyFilter()(tc) then
 		Duel.SendtoHand(tc,nil,REASON_EFFECT)
 	end
 end
