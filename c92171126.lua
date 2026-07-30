@@ -66,7 +66,9 @@ function s.initial_effect(c)
 	-- 注册自定义特殊召唤活动计数器，用于检测本回合是否特殊召唤过非里侧守备表示的怪兽。
 	Duel.AddCustomActivityCounter(id,ACTIVITY_SPSUMMON,s.counterfilter)
 end
--- 计数器过滤函数：只允许里侧表示的怪兽特殊召唤。
+s.mentioned_counter={
+	[0x71]=true,
+}
 function s.counterfilter(c)
 	return c:IsFacedown()
 end

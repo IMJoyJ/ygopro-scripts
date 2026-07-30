@@ -53,7 +53,9 @@ function c94807487.initial_effect(c)
 	e6:SetOperation(c94807487.rop)
 	c:RegisterEffect(e6)
 end
--- 装备限制：只能装备给「希望皇 霍普」怪兽
+c94807487.mentioned_counter={
+	[0x31]=true,
+}
 function c94807487.eqlimit(e,c)
 	return c:IsSetCard(0x107f)
 end

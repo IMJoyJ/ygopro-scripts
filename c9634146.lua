@@ -71,7 +71,9 @@ function c9634146.initial_effect(c)
 	e6:SetOperation(c9634146.desop)
 	c:RegisterEffect(e6)
 end
--- 放置信号指示物效果的处理函数
+c9634146.mentioned_counter={
+	[0x104d]=true,
+}
 function c9634146.ctop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	-- 获取双方场地区域的所有卡片

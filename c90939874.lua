@@ -33,7 +33,9 @@ function s.initial_effect(c)
 	e3:SetCode(EVENT_REMOVE)
 	c:RegisterEffect(e3)
 end
--- 过滤条件：场上表侧表示的「六武众」同调怪兽。
+s.mentioned_counter={
+	[0x3]=true,
+}
 function s.cfilter(c)
 	return c:IsSetCard(0x103d) and c:IsType(TYPE_SYNCHRO) and c:IsFaceup()
 end

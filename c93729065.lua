@@ -63,7 +63,9 @@ function c93729065.initial_effect(c)
 	e5:SetOperation(c93729065.penop)
 	c:RegisterEffect(e5)
 end
--- 过滤送去墓地前存在于场上的卡片
+c93729065.mentioned_counter={
+	[0x104f]=true,
+}
 function c93729065.cfilter(c)
 	return c:IsPreviousLocation(LOCATION_ONFIELD)
 end

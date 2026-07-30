@@ -15,7 +15,9 @@ function c9284723.initial_effect(c)
 	e1:SetOperation(c9284723.operation)
 	c:RegisterEffect(e1)
 end
--- 检查自身本回合是否未进行攻击宣言，并为自身施加本回合不能攻击宣言的限制
+c9284723.mentioned_counter={
+	[0x1009]=true,
+}
 function c9284723.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():GetAttackAnnouncedCount()==0 end
 	-- 这个效果使用的回合这只怪兽不能攻击宣言。

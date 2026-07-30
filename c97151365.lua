@@ -28,7 +28,9 @@ function c97151365.initial_effect(c)
 	e3:SetOperation(c97151365.spop)
 	c:RegisterEffect(e3)
 end
--- 伤害步骤结束时，若满足条件则给这张卡放置1个门指示物
+c97151365.mentioned_counter={
+	[0x1e]=true,
+}
 function c97151365.ctop(e,tp,eg,ep,ev,re,r,rp)
 	-- 判断是否为对方回合（非自己回合），或者对方怪兽攻击了自己怪兽（有攻击对象），以此来判定是否为“对方怪兽进行战斗的场合”
 	if Duel.GetTurnPlayer()~=tp or Duel.GetAttackTarget()~=nil then

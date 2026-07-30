@@ -35,7 +35,9 @@ function s.initial_effect(c)
 	e4:SetCondition(s.ccon2)
 	c:RegisterEffect(e4)
 end
--- 卡片发动时的效果处理：检查能否放置5个指示物，并放置5个祝台指示物
+s.mentioned_counter={
+	[0x6d]=true,
+}
 function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	-- 检查是否能在该卡上放置5个祝台指示物

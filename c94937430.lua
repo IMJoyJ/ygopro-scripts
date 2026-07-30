@@ -30,7 +30,9 @@ function c94937430.initial_effect(c)
 	e3:SetOperation(c94937430.drop)
 	c:RegisterEffect(e3)
 end
--- 过滤条件：检查卡片是否加入到自己的额外卡组
+c94937430.mentioned_counter={
+	[0x1]=true,
+}
 function c94937430.cfilter(c,tp)
 	return c:IsLocation(LOCATION_EXTRA) and c:IsControler(tp)
 end

@@ -77,7 +77,9 @@ function c92559258.initial_effect(c)
 	e7:SetLabelObject(e6)
 	c:RegisterEffect(e7)
 end
--- 魔法卡发动连锁处理完毕后，若该卡在场，则给该卡放置1个魔力指示物。
+c92559258.mentioned_counter={
+	[0x1]=true,
+}
 function c92559258.counterop(e,tp,eg,ep,ev,re,r,rp)
 	if re:IsHasType(EFFECT_TYPE_ACTIVATE) and re:IsActiveType(TYPE_SPELL) and e:GetHandler():GetFlagEffect(FLAG_ID_CHAINING)>0 then
 		e:GetHandler():AddCounter(0x1,1)

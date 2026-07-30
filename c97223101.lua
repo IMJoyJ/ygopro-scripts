@@ -45,7 +45,9 @@ function s.initial_effect(c)
 	e4:SetOperation(s.setop)
 	c:RegisterEffect(e4)
 end
--- 检查发动效果的卡片是否不是本卡，作为放置指示物效果的发动条件。
+s.mentioned_counter={
+	[0x6c]=true,
+}
 function s.ctcon(e,tp,eg,ep,ev,re,r,rp)
 	return not re:GetHandler():IsCode(id)
 end

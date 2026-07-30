@@ -47,7 +47,9 @@ function s.initial_effect(c)
 	e4:SetOperation(s.setop)
 	c:RegisterEffect(e4)
 end
--- 效果①发动的检测处理：确认对方的主要怪兽区域是否存在没有使用的空格。
+s.mentioned_counter={
+	[0x6e]=true,
+}
 function s.cttg(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 发动检测：确认对方的主要怪兽区域是否存在至少1个可用的空格。
 	if chk==0 then return Duel.GetLocationCount(1-tp,LOCATION_MZONE)>0 end

@@ -84,7 +84,9 @@ function s.initial_effect(c)
 	e7:SetOperation(s.op5)
 	c:RegisterEffect(e7)
 end
--- 过滤函数：检查卡片是否属于「于贝尔」系列，或者其效果文本中是否记述了「于贝尔」卡名。
+s.mentioned_counter={
+	[0x25]=true,
+}
 function s.cfilter(c)
 	-- 判断卡片是否属于「于贝尔」系列，或者其效果文本中是否记述了「于贝尔」卡名。
 	return c:IsSetCard(0x1a5) or aux.IsCodeListed(c,78371393)

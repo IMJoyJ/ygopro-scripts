@@ -31,7 +31,9 @@ function c96367119.initial_effect(c)
 	e2:SetOperation(c96367119.setop)
 	c:RegisterEffect(e2)
 end
--- 效果①的发动条件判定
+c96367119.mentioned_counter={
+	[0x10]=true,
+}
 function c96367119.discon(e,tp,eg,ep,ev,re,r,rp)
 	-- 检查连锁中发动的是否是魔法·陷阱卡，且该发动是否可以被无效
 	return re:IsHasType(EFFECT_TYPE_ACTIVATE) and Duel.IsChainNegatable(ev)

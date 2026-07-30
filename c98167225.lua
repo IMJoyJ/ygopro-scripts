@@ -52,7 +52,9 @@ function s.initial_effect(c)
 	e4:SetOperation(s.couop)
 	c:RegisterEffect(e4)
 end
--- 过滤场上放置有响鸣指示物的卡片。
+s.mentioned_counter={
+	[0x6a]=true,
+}
 function s.cfilter(c)
 	return c:GetCounter(0x6a)>0
 end

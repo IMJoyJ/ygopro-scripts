@@ -41,7 +41,9 @@ function c9012916.initial_effect(c)
 	e3:SetOperation(c9012916.operation)
 	c:RegisterEffect(e3)
 end
--- 判断伤害原因是否为效果伤害，若是则作为代替在这张卡上放置1个黑羽指示物并使伤害为0
+c9012916.mentioned_counter={
+	[0x10]=true,
+}
 function c9012916.damval(e,re,val,r,rp,rc)
 	if bit.band(r,REASON_EFFECT)~=0 then
 		e:GetHandler():AddCounter(0x10,1)

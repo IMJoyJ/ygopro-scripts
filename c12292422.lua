@@ -66,9 +66,7 @@ function c12292422.operation(e,tp,eg,ep,ev,re,r,rp)
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_RACE)  --"请选择要宣言的种族"
 		-- 由玩家宣言1个怪兽种族
 		local race=Duel.AnnounceRace(tp,1,RACE_ALL)
-		-- 向玩家发送提示，请选择要宣言的等级
-		Duel.Hint(HINT_SELECTMSG,tp,HINGMSG_LVRANK)
-		-- 由玩家宣言1个怪兽等级
+		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_LVRANK)
 		local lv=Duel.AnnounceLevel(tp)
 		-- 获取对方的全部手卡和卡组的卡片组
 		local cg=Duel.GetFieldGroup(tp,0,LOCATION_HAND+LOCATION_DECK)

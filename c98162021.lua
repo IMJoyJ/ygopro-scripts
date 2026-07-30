@@ -34,7 +34,9 @@ function c98162021.initial_effect(c)
 	c:RegisterEffect(e3)
 end
 c98162021.counter_add_list={0x3}
--- 召唤成功时放置指示物效果的发动准备与操作信息设置
+c98162021.mentioned_counter={
+	[0x3]=true,
+}
 function c98162021.addct(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
 	-- 设置操作信息，表示该效果的处理为在场上放置1个武士道指示物

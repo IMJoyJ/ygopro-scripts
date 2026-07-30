@@ -43,7 +43,9 @@ function c94256039.initial_effect(c)
 	e5:SetOperation(c94256039.desop)
 	c:RegisterEffect(e5)
 end
--- 连锁处理完毕时，若有魔法卡发动且此卡在场，则给此卡放置1个魔力指示物；若指示物达到4个，则触发自定义事件。
+c94256039.mentioned_counter={
+	[0x1]=true,
+}
 function c94256039.acop(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取发动该魔法卡的玩家。
 	local p=Duel.GetChainInfo(ev,CHAININFO_TRIGGERING_PLAYER)

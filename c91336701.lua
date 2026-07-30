@@ -54,7 +54,9 @@ function c91336701.initial_effect(c)
 	e4:SetOperation(c91336701.desop)
 	c:RegisterEffect(e4)
 end
--- 效果①的发动条件判定：此卡是否是通过连接召唤特殊召唤的。
+c91336701.mentioned_counter={
+	[0x1]=true,
+}
 function c91336701.ctcon1(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsSummonType(SUMMON_TYPE_LINK)
 end

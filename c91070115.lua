@@ -28,7 +28,9 @@ function c91070115.initial_effect(c)
 	e3:SetCode(EFFECT_UPDATE_DEFENSE)
 	c:RegisterEffect(e3)
 end
--- 效果发动的代价处理（移除对方场上怪兽的A指示物）
+c91070115.mentioned_counter={
+	[0x100e]=true,
+}
 function c91070115.descost(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 检查是否能从对方场上怪兽身上移除1个A指示物作为代价
 	if chk==0 then return Duel.IsCanRemoveCounter(tp,0,1,0x100e,1,REASON_COST) end

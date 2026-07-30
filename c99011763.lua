@@ -36,7 +36,9 @@ function c99011763.initial_effect(c)
 	e3:SetOperation(c99011763.ctop)
 	c:RegisterEffect(e3)
 end
--- 检查这张卡是否是通过连接召唤特殊召唤，且素材满足卡名不同暗属性怪兽2只的条件。
+c99011763.mentioned_counter={
+	[0x1049]=true,
+}
 function c99011763.regcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsSummonType(SUMMON_TYPE_LINK) and e:GetLabel()==1
 end

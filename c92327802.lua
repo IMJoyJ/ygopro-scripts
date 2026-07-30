@@ -31,7 +31,9 @@ function c92327802.initial_effect(c)
 	e2:SetOperation(c92327802.op)
 	c:RegisterEffect(e2)
 end
--- 伤害代替的价值函数：判定是否为对方效果造成的伤害，若是则作为代替给这张卡放置1个缺陷指示物，并使伤害变为0
+c92327802.mentioned_counter={
+	[0x43]=true,
+}
 function c92327802.damval(e,re,val,r,rp,rc)
 	local c=e:GetHandler()
 	if bit.band(r,REASON_EFFECT)~=0 and rp==1-e:GetOwnerPlayer()

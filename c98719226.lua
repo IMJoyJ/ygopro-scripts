@@ -26,7 +26,9 @@ function c98719226.initial_effect(c)
 	c:RegisterEffect(e3)
 end
 c98719226.counter_add_list={0x100e}
--- 判断此卡是否被战斗破坏并送去墓地
+c98719226.mentioned_counter={
+	[0x100e]=true,
+}
 function c98719226.ctcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsLocation(LOCATION_GRAVE) and e:GetHandler():IsReason(REASON_BATTLE)
 end

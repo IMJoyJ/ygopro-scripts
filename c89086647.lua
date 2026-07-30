@@ -61,7 +61,9 @@ function s.initial_effect(c)
 	e5:SetOperation(s.tgop)
 	c:RegisterEffect(e5)
 end
--- 判断是否为对方发动卡的效果
+s.mentioned_counter={
+	[0x70]=true,
+}
 function s.coucon(e,tp,eg,ep,ev,re,r,rp)
 	return rp==1-tp
 end

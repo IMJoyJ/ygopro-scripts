@@ -19,7 +19,9 @@ function c90135989.initial_effect(c)
 	e2:SetOperation(c90135989.operation)
 	c:RegisterEffect(e2)
 end
--- 定义效果的发动条件函数
+c90135989.mentioned_counter={
+	[0x1019]=true,
+}
 function c90135989.condition(e,tp,eg,ep,ev,re,r,rp)
 	-- 判断当前回合玩家是否为自己（即自己的准备阶段）
 	return Duel.GetTurnPlayer()==tp

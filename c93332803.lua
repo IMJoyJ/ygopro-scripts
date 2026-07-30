@@ -38,7 +38,9 @@ function c93332803.initial_effect(c)
 	e3:SetOperation(c93332803.desop)
 	c:RegisterEffect(e3)
 end
--- 过滤对方场上可作为特殊召唤规则解放的怪兽
+c93332803.mentioned_counter={
+	[0x37]=true,
+}
 function c93332803.spfilter(c,tp)
 	-- 检查怪兽是否可以因特殊召唤而解放，且解放该怪兽后对方场上有可用的怪兽区域
 	return c:IsReleasable(REASON_SPSUMMON) and Duel.GetMZoneCount(1-tp,c,tp)>0

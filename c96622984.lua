@@ -24,7 +24,9 @@ function c96622984.initial_effect(c)
 	e2:SetOperation(c96622984.desop)
 	c:RegisterEffect(e2)
 end
--- 效果①的对象选择与发动检测函数：选择对方场上1只可以放置捕食指示物的表侧表示怪兽。
+c96622984.mentioned_counter={
+	[0x1041]=true,
+}
 function c96622984.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(1-tp) and chkc:IsCanAddCounter(0x1041,1) end
 	-- 在发动时，检测对方场上是否存在可以放置捕食指示物的表侧表示怪兽。

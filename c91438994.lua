@@ -47,7 +47,9 @@ function c91438994.initial_effect(c)
 	e5:SetLabelObject(e4)
 	c:RegisterEffect(e5)
 end
--- 过滤条件：判断卡片是否由自己控制且原本存在于怪兽区域
+c91438994.mentioned_counter={
+	[0xa]=true,
+}
 function c91438994.filter1(c,tp)
 	return c:IsPreviousControler(tp) and c:IsPreviousLocation(LOCATION_MZONE)
 end

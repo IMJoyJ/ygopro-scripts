@@ -50,7 +50,9 @@ function c91182675.initial_effect(c)
 	e4:SetOperation(c91182675.spop)
 	c:RegisterEffect(e4)
 end
--- 灵摆效果发动的条件函数：另一边的灵摆区域没有卡存在。
+c91182675.mentioned_counter={
+	[0x1]=true,
+}
 function c91182675.ctcon(e,tp,eg,ep,ev,re,r,rp)
 	-- 检查除自身外，自己的灵摆区域是否没有其他卡存在。
 	return not Duel.IsExistingMatchingCard(nil,tp,LOCATION_PZONE,0,1,e:GetHandler())
