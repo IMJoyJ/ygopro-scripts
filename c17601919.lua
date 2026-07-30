@@ -1,7 +1,9 @@
 --ゴースト姫－パンプリンセス－
+-- 效果：
+-- 这张卡在怪兽卡区域上被破坏的场合，可以不送去墓地当作永续魔法卡使用在自己的魔法与陷阱卡区域表侧表示放置。这个效果当作永续魔法卡使用的场合，每次双方的准备阶段给这张卡放置1个南瓜指示物。对方场上的全部怪兽的攻击力·守备力下降当作永续魔法卡使用的这张卡放置的南瓜指示物数量×100的数值。
 function c17601919.initial_effect(c)
 	c:EnableCounterPermit(0x2f,LOCATION_SZONE)
-	--send replace
+	-- 这张卡在怪兽卡区域上被破坏的场合，可以不送去墓地当作永续魔法卡使用在自己的魔法与陷阱卡区域表侧表示放置。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_TO_GRAVE_REDIRECT_CB)
@@ -13,12 +15,15 @@ end
 c17601919.mentioned_counter={
 	[0x2f]=true,
 }
+-- 满足条件：卡面朝上、位于怪兽区域、因破坏而离场
 function c17601919.repcon(e)
 	local c=e:GetHandler()
 	return c:IsFaceup() and c:IsLocation(LOCATION_MZONE) and c:IsReason(REASON_DESTROY)
 end
+-- 将此卡变为永续魔法卡并设置其在准备阶段触发的效果，以及攻击力守备力下降效果
 function c17601919.repop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
+	-- 将此卡的种类改变为永续魔法卡
 	local e1=Effect.CreateEffect(c)
 	e1:SetCode(EFFECT_CHANGE_TYPE)
 	e1:SetType(EFFECT_TYPE_SINGLE)
@@ -26,9 +31,9 @@ function c17601919.repop(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetReset(RESET_EVENT+RESETS_STANDARD-RESET_TURN_SET)
 	e1:SetValue(TYPE_SPELL+TYPE_CONTINUOUS)
 	c:RegisterEffect(e1)
-	--counter
+	-- 每次双方的准备阶段给这张卡放置1个南瓜指示物。
 	local e2=Effect.CreateEffect(c)
-	e2:SetDescription(aux.Stringid(17601919,1))
+	e2:SetDescription(aux.Stringid(17601919,1))  --"放置指示物"
 	e2:SetCategory(CATEGORY_COUNTER)
 	e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_F)
 	e2:SetRange(LOCATION_SZONE)
@@ -38,7 +43,7 @@ function c17601919.repop(e,tp,eg,ep,ev,re,r,rp)
 	e2:SetOperation(c17601919.addc)
 	e2:SetReset(RESET_EVENT+RESETS_STANDARD)
 	c:RegisterEffect(e2)
-	--addown
+	-- 对方场上的全部怪兽的攻击力·守备力下降当作永续魔法卡使用的这张卡放置的南瓜指示物数量×100的数值。
 	local e3=Effect.CreateEffect(c)
 	e3:SetCode(EFFECT_UPDATE_ATTACK)
 	e3:SetType(EFFECT_TYPE_FIELD)
@@ -51,15 +56,19 @@ function c17601919.repop(e,tp,eg,ep,ev,re,r,rp)
 	e4:SetCode(EFFECT_UPDATE_DEFENSE)
 	c:RegisterEffect(e4)
 end
+-- 设置连锁操作信息，表示将要放置指示物
 function c17601919.addct(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
+	-- 设置操作信息，表示要放置1个编号为0x2f的指示物
 	Duel.SetOperationInfo(0,CATEGORY_COUNTER,nil,1,0,0x2f)
 end
+-- 在准备阶段时给此卡放置1个南瓜指示物
 function c17601919.addc(e,tp,eg,ep,ev,re,r,rp)
 	if e:GetHandler():IsRelateToEffect(e) then
 		e:GetHandler():AddCounter(0x2f,1)
 	end
 end
+-- 计算攻击力守备力下降值，为当前南瓜指示物数量乘以-100
 function c17601919.adval(e,c)
 	return e:GetHandler():GetCounter(0x2f)*-100
 end
