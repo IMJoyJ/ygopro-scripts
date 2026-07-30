@@ -1,6 +1,10 @@
 --六武式風雷斬
+-- 效果：
+-- 把自己场上的1个武士道指示物取除，从以下效果选择1个发动。
+-- ●选择对方场上存在的1只怪兽破坏。
+-- ●选择对方场上存在的1张卡回到手卡。
 function c23212990.initial_effect(c)
-	--Activate
+	-- 把自己场上的1个武士道指示物取除，从以下效果选择1个发动。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_DESTROY+CATEGORY_TOHAND)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -15,38 +19,60 @@ end
 c23212990.mentioned_counter={
 	[0x3]=true,
 }
+-- 支付1个武士道指示物作为费用
 function c23212990.cost(e,tp,eg,ep,ev,re,r,rp,chk)
+	-- 检查是否能移除1个武士道指示物
 	if chk==0 then return Duel.IsCanRemoveCounter(tp,1,0,0x3,1,REASON_COST) end
+	-- 移除1个武士道指示物
 	Duel.RemoveCounter(tp,1,0,0x3,1,REASON_COST)
 end
+-- 判断是否能选择目标怪兽或卡片
 function c23212990.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsOnField() end
+	-- 判断对方场上是否存在可破坏的怪兽
 	if chk==0 then return Duel.IsExistingTarget(aux.TRUE,tp,0,LOCATION_MZONE,1,nil)
+		-- 判断对方场上是否存在可返回手牌的卡
 		or Duel.IsExistingTarget(Card.IsAbleToHand,tp,0,LOCATION_ONFIELD,1,nil) end
+	-- 检查对方场上是否存在可破坏的怪兽
 	local b1=Duel.IsExistingTarget(aux.TRUE,tp,0,LOCATION_MZONE,1,nil)
+	-- 检查对方场上是否存在可返回手牌的卡
 	local b2=Duel.IsExistingTarget(Card.IsAbleToHand,tp,0,LOCATION_ONFIELD,1,nil)
 	local op=0
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_EFFECT)
-	if b1 and b2 then op=Duel.SelectOption(tp,aux.Stringid(23212990,0),aux.Stringid(23212990,1))
-	elseif b1 then op=Duel.SelectOption(tp,aux.Stringid(23212990,0))
-	else op=Duel.SelectOption(tp,aux.Stringid(23212990,1))+1 end
+	-- 提示玩家选择发动的效果
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_EFFECT)  --"请选择要发动的效果"
+	-- 当两种效果都可用时，让玩家选择其中一种
+	if b1 and b2 then op=Duel.SelectOption(tp,aux.Stringid(23212990,0),aux.Stringid(23212990,1))  --"对方场上存在的1只怪兽破坏。/对方场上存在的1张卡回到手牌。"
+	-- 当只有破坏效果可用时，直接选择该效果
+	elseif b1 then op=Duel.SelectOption(tp,aux.Stringid(23212990,0))  --"对方场上存在的1只怪兽破坏。"
+	-- 当只有返回手牌效果可用时，选择该效果
+	else op=Duel.SelectOption(tp,aux.Stringid(23212990,1))+1 end  --"对方场上存在的1张卡回到手牌。"
 	e:SetLabel(op)
 	if op==0 then
-		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)
+		-- 提示玩家选择要破坏的卡
+		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
+		-- 选择对方场上1只怪兽作为目标
 		local g=Duel.SelectTarget(tp,aux.TRUE,tp,0,LOCATION_MZONE,1,1,nil)
+		-- 设置操作信息为破坏效果
 		Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,1,0,0)
 	else
-		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_RTOHAND)
+		-- 提示玩家选择要返回手牌的卡
+		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_RTOHAND)  --"请选择要返回手牌的卡"
+		-- 选择对方场上1张卡作为目标
 		local g=Duel.SelectTarget(tp,Card.IsAbleToHand,tp,0,LOCATION_ONFIELD,1,1,nil)
+		-- 设置操作信息为返回手牌效果
 		Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,1,0,0)
 	end
 end
+-- 处理发动的效果
 function c23212990.activate(e,tp,eg,ep,ev,re,r,rp)
+	-- 获取当前连锁的目标卡
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
 		if e:GetLabel()==0 then
+			-- 破坏目标怪兽
 			Duel.Destroy(tc,REASON_EFFECT)
 		else
+			-- 将目标卡送回手牌
 			Duel.SendtoHand(tc,nil,REASON_EFFECT)
 		end
 	end
