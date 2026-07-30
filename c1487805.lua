@@ -1,9 +1,15 @@
 --宇宙鋏ゼロオル
+-- 效果：
+-- 爬虫类族怪兽2只以上
+-- 这个卡名的①②的效果1回合各能使用1次。
+-- ①：这张卡连接召唤成功的场合才能发动。把持有把A指示物放置效果的1张卡从卡组加入手卡。
+-- ②：把自己·对方场上2个A指示物取除才能发动。把1只爬虫类族怪兽召唤。
+-- ③：只要这张卡在怪兽区域存在，有A指示物放置的对方怪兽变成守备表示，不能把效果发动。
 function c1487805.initial_effect(c)
-	--link summon
+	-- 添加连接召唤手续，要求使用至少2只爬虫类族怪兽作为连接素材
 	aux.AddLinkProcedure(c,aux.FilterBoolFunction(Card.IsLinkRace,RACE_REPTILE),2)
 	c:EnableReviveLimit()
-	--to hand
+	-- ①：这张卡连接召唤成功的场合才能发动。把持有把A指示物放置效果的1张卡从卡组加入手卡。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(1487805,0))
 	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
@@ -15,7 +21,7 @@ function c1487805.initial_effect(c)
 	e1:SetTarget(c1487805.thtg)
 	e1:SetOperation(c1487805.thop)
 	c:RegisterEffect(e1)
-	--summon
+	-- ②：把自己·对方场上2个A指示物取除才能发动。把1只爬虫类族怪兽召唤。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(1487805,1))
 	e2:SetCategory(CATEGORY_SUMMON)
@@ -26,7 +32,7 @@ function c1487805.initial_effect(c)
 	e2:SetTarget(c1487805.sumtg)
 	e2:SetOperation(c1487805.sumop)
 	c:RegisterEffect(e2)
-	--act limit & def position
+	-- ③：只要这张卡在怪兽区域存在，有A指示物放置的对方怪兽变成守备表示，不能把效果发动。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_FIELD)
 	e3:SetCode(EFFECT_SET_POSITION)
@@ -43,43 +49,66 @@ end
 c1487805.mentioned_counter={
 	[0x100e]=true,
 }
+-- 效果条件：确认此卡是以连接召唤方式特殊召唤成功
 function c1487805.thcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsSummonType(SUMMON_TYPE_LINK)
 end
+-- 检索过滤器：筛选能放置A指示物且可加入手牌的卡
 function c1487805.thfilter(c)
+	-- 筛选能放置A指示物且可加入手牌的卡
 	return aux.IsCounterAdded(c,0x100e) and c:IsAbleToHand()
 end
+-- 设置连锁操作信息：准备从卡组检索1张卡加入手牌
 function c1487805.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
+	-- 检查是否满足检索条件：场上有至少1张能放置A指示物且可加入手牌的卡
 	if chk==0 then return Duel.IsExistingMatchingCard(c1487805.thfilter,tp,LOCATION_DECK,0,1,nil) end
+	-- 设置连锁操作信息：准备从卡组检索1张卡加入手牌
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
+-- 效果处理：选择并把符合条件的卡加入手牌，并向对方确认
 function c1487805.thop(e,tp,eg,ep,ev,re,r,rp)
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)
+	-- 提示玩家选择要加入手牌的卡
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
+	-- 选择满足条件的卡
 	local g=Duel.SelectMatchingCard(tp,c1487805.thfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
+		-- 将选中的卡送入手牌
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
+		-- 向对方确认所选卡
 		Duel.ConfirmCards(1-tp,g)
 	end
 end
+-- 效果Cost：检查是否能移除场上2个A指示物作为代价
 function c1487805.sumcost(e,tp,eg,ep,ev,re,r,rp,chk)
+	-- 检查是否能移除场上2个A指示物作为代价
 	if chk==0 then return Duel.IsCanRemoveCounter(tp,1,1,0x100e,2,REASON_COST) end
+	-- 移除场上2个A指示物作为代价
 	Duel.RemoveCounter(tp,1,1,0x100e,2,REASON_COST)
 end
+-- 召唤过滤器：筛选爬虫类族且可通常召唤的怪兽
 function c1487805.sumfilter(c)
 	return c:IsRace(RACE_REPTILE) and c:IsSummonable(true,nil)
 end
+-- 设置连锁操作信息：准备召唤1只怪兽
 function c1487805.sumtg(e,tp,eg,ep,ev,re,r,rp,chk)
+	-- 检查是否满足召唤条件：手牌或场上有至少1只爬虫类族可通常召唤的怪兽
 	if chk==0 then return Duel.IsExistingMatchingCard(c1487805.sumfilter,tp,LOCATION_HAND+LOCATION_MZONE,0,1,nil) end
+	-- 设置连锁操作信息：准备召唤1只怪兽
 	Duel.SetOperationInfo(0,CATEGORY_SUMMON,nil,1,0,0)
 end
+-- 效果处理：选择并进行通常召唤
 function c1487805.sumop(e,tp,eg,ep,ev,re,r,rp)
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SUMMON)
+	-- 提示玩家选择要召唤的卡
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SUMMON)  --"请选择要召唤的卡"
+	-- 选择满足条件的卡
 	local g=Duel.SelectMatchingCard(tp,c1487805.sumfilter,tp,LOCATION_HAND+LOCATION_MZONE,0,1,1,nil)
 	local tc=g:GetFirst()
 	if tc then
+		-- 进行通常召唤
 		Duel.Summon(tp,tc,true,nil)
 	end
 end
+-- 效果Target：筛选场上正面表示且有A指示物的怪兽
 function c1487805.actg(e,c)
 	return c:IsFaceup() and c:GetCounter(0x100e)>0
 end
