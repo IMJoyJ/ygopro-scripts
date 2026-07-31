@@ -30,22 +30,22 @@ end
 c52792430.mentioned_counter={
 	[0x1041]=true,
 }
--- 选择对方场上1只表侧表示的怪兽作为对象，该怪兽可以放置1个捕食指示物
+-- 选择对方场上1只表侧表示的怪兽作为对象，该怪兽可以放置1个捕食指示物。
 function c52792430.cttg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(1-tp) and chkc:IsLocation(LOCATION_MZONE) and chkc:IsCanAddCounter(0x1041,1) end
-	-- 检查是否存在满足条件的目标怪兽（可放置捕食指示物）
+	-- 检查对方场上是否存在可放置捕食指示物的表侧表示怪兽。
 	if chk==0 then return Duel.IsExistingTarget(Card.IsCanAddCounter,tp,0,LOCATION_MZONE,1,nil,0x1041,1) end
-	-- 提示玩家选择一张表侧表示的卡
+	-- 提示玩家选择一张表侧表示的怪兽。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
-	-- 选择目标怪兽并设置为效果对象
+	-- 选择对方场上1只表侧表示的怪兽作为对象，放置1个捕食指示物。
 	Duel.SelectTarget(tp,Card.IsCanAddCounter,tp,0,LOCATION_MZONE,1,1,nil,0x1041,1)
 end
--- 将选中的目标怪兽放置1个捕食指示物，若其等级高于1，则将其等级变为1
+-- 将目标怪兽的等级变为1星（当该怪兽拥有捕食指示物且等级高于1星时生效）。
 function c52792430.ctop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的效果对象卡
+	-- 获取当前连锁效果的目标怪兽。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) and tc:AddCounter(0x1041,1) and tc:GetLevel()>1 then
-		-- 创建一个改变目标怪兽等级的效果，使其等级变为1
+		-- 创建一个使目标怪兽等级变为1的效果，并设置其触发条件为该怪兽拥有捕食指示物。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_CHANGE_LEVEL)
@@ -55,39 +55,39 @@ function c52792430.ctop(e,tp,eg,ep,ev,re,r,rp)
 		tc:RegisterEffect(e1)
 	end
 end
--- 该效果的发动条件为：目标怪兽拥有捕食指示物
+-- 判断目标怪兽是否拥有捕食指示物（用于决定是否发动等级变更效果）。
 function c52792430.lvcon(e)
 	return e:GetHandler():GetCounter(0x1041)>0
 end
--- 判断战斗中对方怪兽的等级是否小于等于自身等级且处于战斗状态
+-- 判断本次战斗中，对方怪兽的等级是否小于等于自身等级且处于战斗状态。
 function c52792430.spcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local bc=c:GetBattleTarget()
 	return bc and bc:IsLevelBelow(c:GetLevel()) and bc:IsStatus(STATUS_OPPO_BATTLE) and bc:IsRelateToBattle()
 end
--- 过滤函数：筛选卡组中非此卡且属于「捕食植物」族、可以特殊召唤的怪兽
+-- 过滤出卡组中满足「捕食植物」系列、非本卡、可特殊召唤的怪兽。
 function c52792430.spfilter(c,e,tp)
 	return c:IsSetCard(0x10f3) and not c:IsCode(52792430) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 设置特殊召唤目标怪兽的条件，检查是否有满足条件的怪兽可特殊召唤
+-- 设置特殊召唤效果的目标为卡组中符合条件的「捕食植物」怪兽。
 function c52792430.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查玩家场上是否有足够的空间进行特殊召唤
+	-- 检查玩家场上是否有空位用于特殊召唤。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查卡组中是否存在满足条件的「捕食植物」怪兽
+		-- 检查卡组中是否存在满足条件的「捕食植物」怪兽。
 		and Duel.IsExistingMatchingCard(c52792430.spfilter,tp,LOCATION_DECK,0,1,nil,e,tp) end
-	-- 设置操作信息：准备从卡组特殊召唤1只「捕食植物」怪兽
+	-- 设置本次连锁操作信息为特殊召唤1只怪兽。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_DECK)
 end
--- 执行特殊召唤操作，从卡组选择符合条件的怪兽进行特殊召唤
+-- 从卡组中选择1只符合条件的「捕食植物」怪兽进行特殊召唤。
 function c52792430.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查玩家场上是否有足够的空间进行特殊召唤
+	-- 检查玩家场上是否有空位用于特殊召唤。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-	-- 提示玩家选择要特殊召唤的卡
+	-- 提示玩家选择要特殊召唤的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 从卡组中选择满足条件的「捕食植物」怪兽
+	-- 从卡组中选择1只符合条件的「捕食植物」怪兽作为目标。
 	local g=Duel.SelectMatchingCard(tp,c52792430.spfilter,tp,LOCATION_DECK,0,1,1,nil,e,tp)
 	if g:GetCount()>0 then
-		-- 将选中的怪兽特殊召唤到场上
+		-- 将选中的怪兽以正面表示形式特殊召唤到场上。
 		Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
