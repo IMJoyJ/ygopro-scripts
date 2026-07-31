@@ -1,7 +1,10 @@
 --エターナル・ドレッド
+-- 效果：
+-- 「幽狱之时计塔」放置2个时计指示物。
 function c35787450.initial_effect(c)
+	-- 记录此卡与「幽狱之时计塔」的关联
 	aux.AddCodeList(c,75041269)
-	--Activate
+	-- 「幽狱之时计塔」放置2个时计指示物。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_COUNTER)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -13,13 +16,18 @@ end
 c35787450.mentioned_counter={
 	[0x1b]=true,
 }
+-- 过滤函数，用于判断场上的表侧表示的「幽狱之时计塔」是否可以放置2个时计指示物
 function c35787450.filter(c)
 	return c:IsFaceup() and c:IsCode(75041269) and c:IsCanAddCounter(0x1b,2)
 end
+-- 效果的发动时点处理函数，检查场上是否存在满足条件的怪兽
 function c35787450.addtg(e,tp,eg,ep,ev,re,r,rp,chk)
+	-- 若未进行过确认，则检查场上是否存在满足条件的怪兽
 	if chk==0 then return Duel.IsExistingMatchingCard(c35787450.filter,tp,LOCATION_FZONE,LOCATION_FZONE,1,nil) end
 end
+-- 效果的发动处理函数，检索满足条件的怪兽并放置2个时计指示物
 function c35787450.addc(e,tp,eg,ep,ev,re,r,rp)
+	-- 检索满足条件的怪兽组
 	local g=Duel.GetMatchingGroup(c35787450.filter,tp,LOCATION_FZONE,LOCATION_FZONE,nil)
 	local tc=g:GetFirst()
 	while tc do
