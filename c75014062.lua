@@ -1,9 +1,6 @@
 --魔力掌握
--- 效果：
--- 这个卡名的卡在1回合只能发动1张。
--- ①：以场上1张可以放置魔力指示物的卡为对象才能发动。给那张卡放置1个魔力指示物。那之后，可以从卡组把1张「魔力掌握」加入手卡。
 function c75014062.initial_effect(c)
-	-- ①：以场上1张可以放置魔力指示物的卡为对象才能发动。给那张卡放置1个魔力指示物。那之后，可以从卡组把1张「魔力掌握」加入手卡。
+	--Activate
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_COUNTER+CATEGORY_SEARCH)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -17,40 +14,26 @@ end
 c75014062.mentioned_counter={
 	[0x1]=true,
 }
--- 过滤条件：场上表侧表示且可以放置魔力指示物的卡
 function c75014062.filter(c)
 	return c:IsFaceup() and c:IsCanAddCounter(0x1,1)
 end
--- 发动准备：选择场上1张可以放置魔力指示物的卡作为对象，并设置放置指示物操作信息
 function c75014062.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsOnField() and c75014062.filter(chkc) end
-	-- 检查双方场上是否存在可放置魔力指示物的表侧表示卡片
 	if chk==0 then return Duel.IsExistingTarget(c75014062.filter,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,nil) end
-	-- 提示玩家选择要放置魔力指示物的对象卡片
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_COUNTER)  --"请选择要放置指示物的卡"
-	-- 选择场上1张满足条件的卡片作为效果对象
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_COUNTER)
 	Duel.SelectTarget(tp,c75014062.filter,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,1,nil)
-	-- 设置连锁操作信息：放置1个魔力指示物(0x1)
 	Duel.SetOperationInfo(0,CATEGORY_COUNTER,nil,1,0,0x1)
 end
--- 过滤条件：卡组中名为「魔力掌握」且可加入手牌的卡
 function c75014062.tfilter(c)
 	return c:IsCode(75014062) and c:IsAbleToHand()
 end
--- 发动处理：给目标卡片放置1个魔力指示物，成功后可选从卡组把1张「魔力掌握」加入手牌
 function c75014062.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取发动的对象卡片
 	local tc=Duel.GetFirstTarget()
 	if tc and tc:IsFaceup() and tc:IsRelateToEffect(e) and tc:AddCounter(0x1,1) then
-		-- 获取卡组中第一张同名卡「魔力掌握」
 		local th=Duel.GetFirstMatchingCard(c75014062.tfilter,tp,LOCATION_DECK,0,nil)
-		-- 询问玩家是否要将卡组中的「魔力掌握」加入手牌
-		if th and Duel.SelectYesNo(tp,aux.Stringid(75014062,0)) then  --"是否要把1张「魔力掌握」加入手牌？"
-			-- 连接前后效果处理（放置指示物与检索卡片）
+		if th and Duel.SelectYesNo(tp,aux.Stringid(75014062,0)) then
 			Duel.BreakEffect()
-			-- 将卡组中的「魔力掌握」加入手牌
 			Duel.SendtoHand(th,nil,REASON_EFFECT)
-			-- 向对方确认加入手牌的卡片
 			Duel.ConfirmCards(1-tp,th)
 		end
 	end

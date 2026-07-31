@@ -8,23 +8,23 @@
 function c88232397.initial_effect(c)
 	c:EnableCounterPermit(0x1)
 	c:SetCounterLimit(0x1,3)
-	-- ①：只要这张卡在怪兽区域存在，每次自己或者对方把魔法卡发动，给这张卡放置1个魔力指示物（最多3个）。
+	-- 只要这张卡在怪兽区域存在，每次自己或者对方把魔法卡发动，给这张卡放置1个魔力指示物（最多3个）。
 	local e0=Effect.CreateEffect(c)
 	e0:SetType(EFFECT_TYPE_CONTINUOUS+EFFECT_TYPE_FIELD)
 	e0:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
 	e0:SetCode(EVENT_CHAINING)
 	e0:SetRange(LOCATION_MZONE)
-	-- 设置效果处理为：在连锁发生时记录这张卡在场上存在
+	-- 注册连锁发生标记：记录连锁发动时此卡在场上存在
 	e0:SetOperation(aux.chainreg)
 	c:RegisterEffect(e0)
-	-- ①：只要这张卡在怪兽区域存在，每次自己或者对方把魔法卡发动，给这张卡放置1个魔力指示物（最多3个）。
+	-- 每次自己或者对方把魔法卡发动，给这张卡放置1个魔力指示物（最多3个）。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_CONTINUOUS+EFFECT_TYPE_FIELD)
 	e1:SetCode(EVENT_CHAIN_SOLVED)
 	e1:SetRange(LOCATION_MZONE)
 	e1:SetOperation(c88232397.acop)
 	c:RegisterEffect(e1)
-	-- ②：可以把这张卡1个魔力指示物取除，从以下效果选择1个发动。●这张卡的等级上升1星，攻击力上升1500。
+	-- 可以把这张卡1个魔力指示物取除，从以下效果选择1个发动。●这张卡的等级上升1星，攻击力上升1500。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(88232397,0))  --"等级和攻击力上升"
 	e2:SetCategory(CATEGORY_ATKCHANGE)
@@ -34,7 +34,7 @@ function c88232397.initial_effect(c)
 	e2:SetCost(c88232397.cost)
 	e2:SetOperation(c88232397.atkop)
 	c:RegisterEffect(e2)
-	-- ②：可以把这张卡1个魔力指示物取除，从以下效果选择1个发动。●从自己的卡组·墓地选1只「栗子球」怪兽或者1张「增殖」加入手卡。
+	-- 可以把这张卡1个魔力指示物取除，从以下效果选择1个发动。●从自己的卡组·墓地选1只「栗子球」怪兽或者1张「增殖」加入手卡。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(88232397,1))  --"「栗子球」怪兽或者「增殖」加入手卡"
 	e3:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH+CATEGORY_GRAVE_ACTION)
@@ -49,30 +49,31 @@ end
 c88232397.mentioned_counter={
 	[0x1]=true,
 }
+-- 放置魔力指示物处理：在魔法卡发动连锁处理结束时为此卡放置1个魔力指示物
 function c88232397.acop(e,tp,eg,ep,ev,re,r,rp)
 	if re:IsHasType(EFFECT_TYPE_ACTIVATE) and re:IsActiveType(TYPE_SPELL) and e:GetHandler():GetFlagEffect(FLAG_ID_CHAINING)>0 then
 		e:GetHandler():AddCounter(0x1,1)
 	end
 end
--- 效果发动的代价：取除这张卡的1个魔力指示物，并向对方玩家提示选择发动的效果
+-- ②效果发动Cost：取除自身1个魔力指示物，并向对方提示选择的效果
 function c88232397.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsCanRemoveCounter(tp,0x1,1,REASON_COST) end
 	e:GetHandler():RemoveCounter(tp,0x1,1,REASON_COST)
-	-- 向对方玩家提示当前选择发动的效果
+	-- 向对方玩家提示所选择发动的效果分支
 	Duel.Hint(HINT_OPSELECTED,1-tp,e:GetDescription())
 end
--- 提升等级与攻击力效果的处理：使这张卡的等级上升1星，攻击力上升1500
+-- 上升等级与攻击力效果处理：使自身的攻击力上升1500，等级上升1星
 function c88232397.atkop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsFaceup() and c:IsRelateToEffect(e) then
-		-- 攻击力上升1500
+		-- 攻击力上升1500。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)
 		e1:SetValue(1500)
 		e1:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_DISABLE)
 		c:RegisterEffect(e1)
-		-- 这张卡的等级上升1星
+		-- 这张卡的等级上升1星。
 		local e2=Effect.CreateEffect(c)
 		e2:SetType(EFFECT_TYPE_SINGLE)
 		e2:SetCode(EFFECT_UPDATE_LEVEL)
@@ -81,27 +82,27 @@ function c88232397.atkop(e,tp,eg,ep,ev,re,r,rp)
 		c:RegisterEffect(e2)
 	end
 end
--- 过滤条件：卡组或墓地中可加入手卡的「栗子球」怪兽或者「增殖」
+-- 检索/回收目标卡片过滤：卡组或墓地中可加入手牌的「栗子球」怪兽或「增殖」
 function c88232397.thfilter(c)
 	return (c:IsSetCard(0xa4) and c:IsType(TYPE_MONSTER) or c:IsCode(40703222)) and c:IsAbleToHand()
 end
--- 检索/回收效果的靶向检测与操作信息设置
+-- 检索/回收效果发动准备：检查卡组与墓地是否存在符合条件的卡片并设置操作信息
 function c88232397.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查自己的卡组或墓地是否存在至少1张满足条件的卡
+	-- 检查己方卡组或墓地是否存在可以加入手牌的「栗子球」怪兽或「增殖」
 	if chk==0 then return Duel.IsExistingMatchingCard(c88232397.thfilter,tp,LOCATION_DECK+LOCATION_GRAVE,0,1,nil) end
-	-- 设置效果处理信息为：从卡组或墓地将1张卡加入手卡
+	-- 设置连锁操作信息：从卡组或墓地检索/回收1张卡加入手牌
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK+LOCATION_GRAVE)
 end
--- 检索/回收效果的处理：从卡组或墓地选择1张满足条件的卡加入手卡，并给对方确认
+-- 检索/回收效果处理：从卡组或墓地选1只「栗子球」怪兽或1张「增殖」加入手牌
 function c88232397.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要加入手牌的卡
+	-- 向玩家发送选择加入手牌卡片的提示信息
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 让玩家从卡组或墓地选择1张满足条件且不受「王家长眠之谷」影响的卡
+	-- 从卡组或墓地选择1只满足条件的「栗子球」怪兽或1张「增殖」
 	local g=Duel.SelectMatchingCard(tp,aux.NecroValleyFilter(c88232397.thfilter),tp,LOCATION_DECK+LOCATION_GRAVE,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选择的卡加入玩家手卡
+		-- 将选中的卡片加入手牌
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 给对方玩家确认加入手卡的卡
+		-- 向对方玩家确认加入手牌的卡片
 		Duel.ConfirmCards(1-tp,g)
 	end
 end

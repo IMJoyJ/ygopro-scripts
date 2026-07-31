@@ -1,19 +1,12 @@
 --炎傑の梁山閣
--- 效果：
--- 这个卡名在规则上也当作「炎舞」卡使用。
--- ①：每次「炎星」怪兽召唤·特殊召唤给这张卡放置1个炎星指示物。
--- ②：1回合1次，可以把自己场上的炎星指示物的以下数量取除，那个效果发动。
--- ●2：这个回合，自己的兽战士族怪兽攻击的场合，对方直到伤害步骤结束时卡的效果不能发动。
--- ●6：从卡组把1只兽战士族怪兽加入手卡。
--- ●10：从卡组·额外卡组把1只兽战士族怪兽无视召唤条件特殊召唤。
 function c66750703.initial_effect(c)
 	c:EnableCounterPermit(0x56)
-	-- 永续魔陷/场地卡通用的“允许发动”空效果，无此效果则无法发动
+	--Activate
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- ①：每次「炎星」怪兽召唤·特殊召唤给这张卡放置1个炎星指示物。
+	--add counter
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e2:SetCode(EVENT_SUMMON_SUCCESS)
@@ -23,18 +16,18 @@ function c66750703.initial_effect(c)
 	local e3=e2:Clone()
 	e3:SetCode(EVENT_SPSUMMON_SUCCESS)
 	c:RegisterEffect(e3)
-	-- ●2：这个回合，自己的兽战士族怪兽攻击的场合，对方直到伤害步骤结束时卡的效果不能发动。
+	--actlimit
 	local e4=Effect.CreateEffect(c)
-	e4:SetDescription(aux.Stringid(66750703,0))  --"2个：效果限制"
+	e4:SetDescription(aux.Stringid(66750703,0))
 	e4:SetType(EFFECT_TYPE_IGNITION)
 	e4:SetRange(LOCATION_FZONE)
 	e4:SetCountLimit(1,EFFECT_COUNT_CODE_SINGLE)
 	e4:SetCost(c66750703.actcost)
 	e4:SetOperation(c66750703.actop)
 	c:RegisterEffect(e4)
-	-- ●6：从卡组把1只兽战士族怪兽加入手卡。
+	--tohand
 	local e5=Effect.CreateEffect(c)
-	e5:SetDescription(aux.Stringid(66750703,1))  --"6个：卡组检索"
+	e5:SetDescription(aux.Stringid(66750703,1))
 	e5:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
 	e5:SetType(EFFECT_TYPE_IGNITION)
 	e5:SetRange(LOCATION_FZONE)
@@ -43,9 +36,9 @@ function c66750703.initial_effect(c)
 	e5:SetTarget(c66750703.thtg)
 	e5:SetOperation(c66750703.thop)
 	c:RegisterEffect(e5)
-	-- ●10：从卡组·额外卡组把1只兽战士族怪兽忽视召唤条件特殊召唤。
+	--special summon
 	local e6=Effect.CreateEffect(c)
-	e6:SetDescription(aux.Stringid(66750703,2))  --"10个：特殊召唤"
+	e6:SetDescription(aux.Stringid(66750703,2))
 	e6:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e6:SetType(EFFECT_TYPE_IGNITION)
 	e6:SetRange(LOCATION_FZONE)
@@ -58,28 +51,20 @@ end
 c66750703.mentioned_counter={
 	[0x56]=true,
 }
--- 召唤/特召检测过滤条件：表侧表示的「炎星」怪兽
 function c66750703.ctfilter(c)
 	return c:IsFaceup() and c:IsSetCard(0x79)
 end
--- 放置指示物处理：若有「炎星」怪兽召唤·特殊召唤，给此卡放置1个炎星指示物
 function c66750703.ctop(e,tp,eg,ep,ev,re,r,rp)
 	if eg:IsExists(c66750703.ctfilter,1,nil) then
 		e:GetHandler():AddCounter(0x56,1)
 	end
 end
--- 去除2个指示物效果Cost：去除自己场上的2个炎星指示物
 function c66750703.actcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- Cost检查：自己场上是否有至少2个炎星指示物可去除
 	if chk==0 then return Duel.IsCanRemoveCounter(tp,1,0,0x56,2,REASON_COST) end
-	-- 向对方玩家显示选择发动的效果分支提示
 	Duel.Hint(HINT_OPSELECTED,1-tp,e:GetDescription())
-	-- 去除自己场上的2个炎星指示物
 	Duel.RemoveCounter(tp,1,0,0x56,2,REASON_COST)
 end
--- 去除2个指示物效果处理：注册本回合兽战士族怪兽攻击时对方不能发动卡的效果的防封阵
 function c66750703.actop(e,tp,eg,ep,ev,re,r,rp)
-	-- 对方直到伤害步骤结束时卡的效果不能发动。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
@@ -88,81 +73,51 @@ function c66750703.actop(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetCondition(c66750703.actcon)
 	e1:SetValue(1)
 	e1:SetReset(RESET_PHASE+PHASE_END)
-	-- 为玩家注册全局效果响应封锁限制
 	Duel.RegisterEffect(e1,tp)
 end
--- 攻击防封锁生效条件：攻击怪兽由自己控制且为兽战士族
 function c66750703.actcon(e)
-	-- 获取当前进行攻击的怪兽
 	local tc=Duel.GetAttacker()
 	local tp=e:GetHandlerPlayer()
 	return tc and tc:IsControler(tp) and tc:IsRace(RACE_BEASTWARRIOR)
 end
--- 去除6个指示物效果Cost：去除自己场上的6个炎星指示物
 function c66750703.thcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- Cost检查：自己场上是否有至少6个炎星指示物可去除
 	if chk==0 then return Duel.IsCanRemoveCounter(tp,1,0,0x56,6,REASON_COST) end
-	-- 向对方玩家显示选择发动的效果分支提示
 	Duel.Hint(HINT_OPSELECTED,1-tp,e:GetDescription())
-	-- 去除自己场上的6个炎星指示物
 	Duel.RemoveCounter(tp,1,0,0x56,6,REASON_COST)
 end
--- 卡组检索过滤条件：兽战士族怪兽且可加入手牌
 function c66750703.thfilter(c)
 	return c:IsRace(RACE_BEASTWARRIOR) and c:IsType(TYPE_MONSTER) and c:IsAbleToHand()
 end
--- 去除6个指示物效果准备：设置从卡组检索怪兽的操作信息
 function c66750703.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 发动条件检查：卡组是否存在兽战士族怪兽
 	if chk==0 then return Duel.IsExistingMatchingCard(c66750703.thfilter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置连锁操作信息：从卡组检索1张卡加入手牌
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 去除6个指示物效果处理：从卡组把1只兽战士族怪兽加入手卡
 function c66750703.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要加入手牌的卡
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 从卡组选择1只兽战士族怪兽
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)
 	local g=Duel.SelectMatchingCard(tp,c66750703.thfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的怪兽加入手牌
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 向对方确认加入手牌的卡
 		Duel.ConfirmCards(1-tp,g)
 	end
 end
--- 去除10个指示物效果Cost：去除自己场上的10个炎星指示物
 function c66750703.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- Cost检查：自己场上是否有至少10个炎星指示物可去除
 	if chk==0 then return Duel.IsCanRemoveCounter(tp,1,0,0x56,10,REASON_COST) end
-	-- 向对方玩家显示选择发动的效果分支提示
 	Duel.Hint(HINT_OPSELECTED,1-tp,e:GetDescription())
-	-- 去除自己场上的10个炎星指示物
 	Duel.RemoveCounter(tp,1,0,0x56,10,REASON_COST)
 end
--- 卡组/额外卡组特召过滤条件：兽战士族怪兽且可忽视召唤条件特殊召唤
 function c66750703.spfilter(c,e,tp)
 	return c:IsRace(RACE_BEASTWARRIOR) and c:IsType(TYPE_MONSTER) and c:IsCanBeSpecialSummoned(e,0,tp,true,false)
-		-- 检查卡组位置的怪兽是否在主要怪兽区域有空位
 		and (c:IsLocation(LOCATION_DECK) and Duel.GetMZoneCount(tp)>0
-			-- 检查额外卡组位置的怪兽是否在额外怪兽区域有空位
 			or c:IsLocation(LOCATION_EXTRA) and Duel.GetLocationCountFromEx(tp,tp,nil,c)>0)
 end
--- 去除10个指示物效果准备：设置特殊召唤怪兽的操作信息
 function c66750703.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 发动条件检查：卡组或额外卡组是否存在符合条件的兽战士族怪兽
 	if chk==0 then return Duel.IsExistingMatchingCard(c66750703.spfilter,tp,LOCATION_DECK+LOCATION_EXTRA,0,1,nil,e,tp) end
-	-- 设置连锁操作信息：从卡组/额外卡组特殊召唤1只怪兽
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_DECK+LOCATION_EXTRA)
 end
--- 去除10个指示物效果处理：从卡组/额外卡组把1只兽战士族怪兽忽视召唤条件特殊召唤
 function c66750703.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要特殊召唤的卡
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 从卡组或额外卡组选择1只符合条件的兽战士族怪兽
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
 	local g=Duel.SelectMatchingCard(tp,c66750703.spfilter,tp,LOCATION_DECK+LOCATION_EXTRA,0,1,1,nil,e,tp)
 	if g:GetCount()>0 then
-		-- 将选中的怪兽忽视召唤条件表侧表示特殊召唤
 		Duel.SpecialSummon(g,0,tp,tp,true,false,POS_FACEUP)
 	end
 end

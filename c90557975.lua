@@ -16,14 +16,15 @@ end
 c90557975.mentioned_counter={
 	[0x1019]=true,
 }
+-- 带有雾指示物的怪兽过滤条件
 function c90557975.filter(c)
 	return c:GetCounter(0x1019)>0
 end
--- 发动代价：取除场上所有的雾指示物，并计算取除的总数量乘以300作为伤害值保存
+-- 伤害效果Cost：取除场上全部雾指示物并计算伤害数值
 function c90557975.damcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 在发动阶段（chk==0）检查场上是否存在至少1个放置有雾指示物的怪兽
+	-- 发动条件检查：场上存在带有雾指示物的怪兽
 	if chk==0 then return Duel.IsExistingMatchingCard(c90557975.filter,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil) end
-	-- 获取双方场上所有放置有雾指示物的怪兽组
+	-- 获取场上所有带有雾指示物的怪兽
 	local g=Duel.GetMatchingGroup(c90557975.filter,tp,LOCATION_MZONE,LOCATION_MZONE,nil)
 	local tc=g:GetFirst()
 	local s=0
@@ -35,20 +36,20 @@ function c90557975.damcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	end
 	e:SetLabel(s*300)
 end
--- 效果的目标处理：设定对方玩家为伤害对象，并将保存的伤害数值设为目标参数，注册伤害操作信息
+-- 伤害效果发动准备与目标确定
 function c90557975.damtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置对方玩家为当前连锁的对象玩家
+	-- 设置伤害的接受目标玩家为对方
 	Duel.SetTargetPlayer(1-tp)
-	-- 将保存在Label中的伤害数值设置为当前连锁的对象参数
+	-- 设置伤害数值参数（取除的指示物数量×300）
 	Duel.SetTargetParam(e:GetLabel())
-	-- 设置当前连锁的操作信息为给与对方玩家对应数值的伤害
+	-- 设置连锁操作信息：给予对方指定数值的效果伤害
 	Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,1-tp,e:GetLabel())
 end
--- 效果处理：获取目标玩家和伤害数值，给与对方玩家相应的伤害
+-- 伤害效果处理：给予对方效果伤害
 function c90557975.damop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁设定的目标玩家和伤害数值参数
+	-- 获取目标玩家和伤害数值参数
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 以效果原因给与目标玩家对应的伤害
+	-- 执行效果伤害处理
 	Duel.Damage(p,d,REASON_EFFECT)
 end

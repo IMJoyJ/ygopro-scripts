@@ -22,13 +22,14 @@ end
 c90135989.mentioned_counter={
 	[0x1019]=true,
 }
+-- 放置指示物效果发动条件检查：判断是否为自己的回合
 function c90135989.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断当前回合玩家是否为自己（即自己的准备阶段）
+	-- 判断当前回合玩家是否为自己
 	return Duel.GetTurnPlayer()==tp
 end
--- 定义效果的处理操作：遍历并给符合条件的怪兽放置雾指示物
+-- 放置指示物效果处理：给场上所有可放置指示物的怪兽各放置1个雾指示物
 function c90135989.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取双方场上所有可以放置雾指示物（0x1019）的怪兽
+	-- 获取场上所有可以放置雾指示物的怪兽
 	local g=Duel.GetMatchingGroup(Card.IsCanAddCounter,tp,LOCATION_MZONE,LOCATION_MZONE,nil,0x1019,1)
 	local tc=g:GetFirst()
 	while tc do

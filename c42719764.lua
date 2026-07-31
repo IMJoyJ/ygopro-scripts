@@ -1,18 +1,14 @@
 --サモンショック
--- 效果：
--- ①：每次怪兽召唤·特殊召唤，给这张卡放置1个召唤指示物（最多4个）。
--- ②：这张卡有召唤指示物被放置，那些召唤指示物数量变成4个的场合发动。这张卡的召唤指示物全部取除，场上的怪兽全部送去墓地。
 local s,id,o=GetID()
--- 初始化效果函数，设置召唤指示物的放置权限与上限，并注册永续发动效果和召唤/特殊召唤时的触发效果
 function s.initial_effect(c)
 	c:EnableCounterPermit(0x4c)
 	c:SetCounterLimit(0x4c,4)
-	-- 永续魔陷/场地卡通用的“允许发动”空效果，无此效果则无法发动
+	--Activate
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- 每次怪兽召唤·特殊召唤，给这张卡放置1个召唤指示物（最多4个）
+	--counter
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e2:SetCode(EVENT_SUMMON_SUCCESS)
@@ -23,9 +19,9 @@ function s.initial_effect(c)
 	local e3=e2:Clone()
 	e3:SetCode(EVENT_SPSUMMON_SUCCESS)
 	c:RegisterEffect(e3)
-	-- 这张卡有召唤指示物被放置，那些召唤指示物数量变成4个的场合发动。这张卡的召唤指示物全部取除，场上的怪兽全部送去墓地。
+	--tograve
 	local e4=Effect.CreateEffect(c)
-	e4:SetDescription(aux.Stringid(id,0))  --"送去墓地"
+	e4:SetDescription(aux.Stringid(id,0))
 	e4:SetCategory(CATEGORY_TOGRAVE)
 	e4:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_F)
 	e4:SetCode(EVENT_CUSTOM+id)
@@ -38,37 +34,28 @@ end
 s.mentioned_counter={
 	[0x4c]=true,
 }
--- 判断是否可以为该卡添加1个召唤指示物
 function s.cttg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsCanAddCounter(0x4c,1) end
 end
--- 为该卡添加1个召唤指示物，并在指示物达到4个时触发自定义事件
 function s.ctop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	c:AddCounter(0x4c,1)
 	if c:GetCounter(0x4c)==4 then
-		-- 触发一个自定义事件，用于发动效果②
 		Duel.RaiseEvent(c,EVENT_CUSTOM+id,e,0,tp,tp,0)
 	end
 end
--- 设置效果②的发动条件和目标，当该卡拥有4个召唤指示物时，检索场上所有可以送去墓地的怪兽
 function s.tgtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():GetCounter(0x4c)==4 end
-	-- 获取场上所有可以送去墓地的怪兽作为目标
 	local g=Duel.GetMatchingGroup(Card.IsAbleToGrave,tp,LOCATION_MZONE,LOCATION_MZONE,nil)
-	-- 设置连锁操作信息，指定将要处理的卡为场上的所有怪兽
 	Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,g,g:GetCount(),0,0)
 end
--- 执行效果②的操作，移除所有召唤指示物并把场上的所有怪兽送去墓地
 function s.tgop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToChain() then
 		local ct=c:GetCounter(0x4c)
 		if ct>0 then
 			c:RemoveCounter(tp,0x4c,ct,REASON_EFFECT)
-			-- 获取场上所有可以送去墓地的怪兽作为目标
 			local g=Duel.GetMatchingGroup(Card.IsAbleToGrave,tp,LOCATION_MZONE,LOCATION_MZONE,nil)
-			-- 将指定的怪兽组全部送去墓地
 			Duel.SendtoGrave(g,REASON_EFFECT)
 		end
 	end
