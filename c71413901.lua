@@ -38,23 +38,23 @@ end
 c71413901.mentioned_counter={
 	[0x1]=true,
 }
--- ①效果发动准备：设置放置魔力指示物的操作信息
+-- ①效果发动准备与操作信息设置
 function c71413901.addct(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
 	-- 设置连锁操作信息：放置1个魔力指示物
 	Duel.SetOperationInfo(0,CATEGORY_COUNTER,nil,1,0,0x1)
 end
--- ①效果处理：为此卡放置1个魔力指示物
+-- ①效果处理：给此卡放置1个魔力指示物
 function c71413901.addc(e,tp,eg,ep,ev,re,r,rp)
 	if e:GetHandler():IsRelateToEffect(e) then
 		e:GetHandler():AddCounter(0x1,1)
 	end
 end
--- ②效果攻击力上升数值计算：指示物数量×300
+-- 攻击力上升数值计算：此卡的魔力指示物数量×300
 function c71413901.attackup(e,c)
 	return c:GetCounter(0x1)*300
 end
--- ③效果Cost：去除此卡1个魔力指示物
+-- ③效果发动Cost：去除此卡1个魔力指示物
 function c71413901.descost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsCanRemoveCounter(tp,0x1,1,REASON_COST) end
 	e:GetHandler():RemoveCounter(tp,0x1,1,REASON_COST)
@@ -72,7 +72,7 @@ function c71413901.destg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
 	-- 选择场上1张魔法·陷阱卡作为对象
 	local g=Duel.SelectTarget(tp,c71413901.filter,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,1,nil)
-	-- 设置连锁操作信息：破坏1张对象卡
+	-- 设置连锁操作信息：破坏选中的卡
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,1,0,0)
 end
 -- ③效果处理：破坏对象卡片
