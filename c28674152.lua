@@ -5,7 +5,7 @@
 -- ③：「坏兽」怪兽在自己场上只能有1只表侧表示存在。
 -- ④：1回合1次，把自己·对方场上2个坏兽指示物取除才能发动。在自己场上把1只「拉迪安衍生物」（恶魔族·暗·7星·攻2800/守0）特殊召唤。这衍生物不能作为同调素材。
 function c28674152.initial_effect(c)
-	-- 设置此卡在场上的唯一性，确保同一时间场上只能存在1只属于「坏兽」的怪兽
+	-- 设置该卡在场上只能存在一张，并且过滤条件是同属性的卡。
 	c:SetUniqueOnField(1,0,aux.FilterBoolFunction(Card.IsSetCard,0xd3),LOCATION_MZONE)
 	-- ①：这张卡可以把对方场上1只怪兽解放，从手卡往对方场上攻击表示特殊召唤。
 	local e1=Effect.CreateEffect(c)
@@ -42,23 +42,23 @@ end
 c28674152.mentioned_counter={
 	[0x37]=true,
 }
--- 定义用于判断是否可以解放的过滤函数，检查目标怪兽是否可被解放并满足特殊召唤条件
+-- 定义一个过滤函数，用于判断怪兽是否可以被解放以及对方怪兽区是否有空位。
 function c28674152.spfilter(c,tp)
-	-- 返回目标怪兽是否可被解放且对方场上存在可用区域
+	-- 该行代码是spfilter函数的实现，返回怪兽是否可释放且对方怪兽区有空位。
 	return c:IsReleasable(REASON_SPSUMMON) and Duel.GetMZoneCount(1-tp,c,tp)>0
 end
--- 定义特殊召唤条件函数，检查是否存在满足条件的怪兽可用于解放
+-- 定义特殊召唤的条件，如果存在满足spfilter过滤条件的卡片则返回true
 function c28674152.spcon(e,c)
 	if c==nil then return true end
 	local tp=c:GetControler()
-	-- 返回是否存在满足条件的怪兽可用于解放
+	-- 该行代码是spcon函数的实现，判断是否存在满足spfilter函数条件的怪兽。
 	return Duel.IsExistingMatchingCard(c28674152.spfilter,tp,0,LOCATION_MZONE,1,nil,tp)
 end
--- 定义特殊召唤目标选择函数，用于选择要解放的怪兽
+-- 设置特殊召唤的目标和操作，并选择要解放的怪兽。
 function c28674152.sptg(e,tp,eg,ep,ev,re,r,rp,chk,c)
-	-- 获取所有满足条件的怪兽组合作为可选对象
+	-- 获取满足spfilter过滤条件的卡片组。
 	local g=Duel.GetMatchingGroup(c28674152.spfilter,tp,0,LOCATION_MZONE,nil,tp)
-	-- 提示玩家选择要解放的卡
+	-- 提示玩家选择要解放的卡片。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_RELEASE)  --"请选择要解放的卡"
 	local tc=g:SelectUnselect(nil,tp,false,true,1,1)
 	if tc then
@@ -66,54 +66,54 @@ function c28674152.sptg(e,tp,eg,ep,ev,re,r,rp,chk,c)
 		return true
 	else return false end
 end
--- 定义特殊召唤操作函数，执行实际的解放动作
+-- 定义特殊召唤的操作，释放选定的怪兽。
 function c28674152.spop(e,tp,eg,ep,ev,re,r,rp,c)
 	local g=e:GetLabelObject()
-	-- 将指定目标怪兽以特殊召唤原因为由进行解放
+	-- 释放目标怪兽。
 	Duel.Release(g,REASON_SPSUMMON)
 end
--- 定义用于判断对方场上是否存在「坏兽」怪兽的过滤函数
+-- 定义一个过滤函数，用于判断怪兽是否为表侧表示且属于特定卡组。
 function c28674152.cfilter(c)
 	return c:IsFaceup() and c:IsSetCard(0xd3)
 end
--- 定义第二条特殊召唤条件函数，检查己方是否有空怪兽区且对方场上有「坏兽」怪兽
+-- 定义第二个特殊召唤的条件，如果对方场上有表侧表示的「坏兽」怪兽则返回true
 function c28674152.spcon2(e,c)
 	if c==nil then return true end
 	local tp=c:GetControler()
-	-- 返回己方场上是否存在可用怪兽区
+	-- 检查玩家的怪兽区是否有空位。
 	return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 返回对方场上是否存在「坏兽」怪兽
+		-- 检查对方场上是否存在满足cfilter过滤条件的卡片。
 		and Duel.IsExistingMatchingCard(c28674152.cfilter,tp,0,LOCATION_MZONE,1,nil)
 end
--- 定义衍生物效果的费用支付函数，移除自己和对方场上的2个坏兽指示物
+-- 定义衍生物特殊召唤的费用，移除2个坏兽指示物。
 function c28674152.tkcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否可以移除指定数量的坏兽指示物作为费用
+	-- 检查是否可以移除坏兽指示物。
 	if chk==0 then return Duel.IsCanRemoveCounter(tp,1,1,0x37,2,REASON_COST) end
-	-- 实际移除指定数量的坏兽指示物
+	-- 移除坏兽指示物。
 	Duel.RemoveCounter(tp,1,1,0x37,2,REASON_COST)
 end
--- 定义衍生物效果的目标选择函数，检查是否满足特殊召唤条件
+-- 定义衍生物特殊召唤的目标和条件。
 function c28674152.tktg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 返回己方场上是否存在可用怪兽区
+	-- 检查玩家的怪兽区是否有空位。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 返回玩家是否可以特殊召唤指定编号的衍生物
+		-- 检查玩家是否可以特殊召唤指定卡号的token。
 		and Duel.IsPlayerCanSpecialSummonMonster(tp,28674153,0,TYPES_TOKEN_MONSTER,2800,0,7,RACE_FIEND,ATTRIBUTE_DARK) end
-	-- 设置操作信息：将要特殊召唤1个衍生物
+	-- 设置操作信息为token效果。
 	Duel.SetOperationInfo(0,CATEGORY_TOKEN,nil,1,0,0)
-	-- 设置操作信息：将要特殊召唤1个衍生物
+	-- 设置操作信息为特殊召唤效果。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,0,0)
 end
--- 定义衍生物效果的操作函数，检查是否满足召唤条件并执行召唤
+-- 定义衍生物特殊召唤的操作，如果怪兽区已满或无法特殊召唤则返回。
 function c28674152.tkop(e,tp,eg,ep,ev,re,r,rp)
-	-- 返回己方场上是否存在可用怪兽区
+	-- 检查玩家的怪兽区是否为空。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0
-		-- 返回玩家是否可以特殊召唤指定编号的衍生物
+		-- 检查玩家是否可以特殊召唤指定卡号的token。
 		or not Duel.IsPlayerCanSpecialSummonMonster(tp,28674153,0,TYPES_TOKEN_MONSTER,2800,0,7,RACE_FIEND,ATTRIBUTE_DARK) then return end
-	-- 创建编号为28674153的拉迪安衍生物
+	-- 创建衍生物Token。
 	local token=Duel.CreateToken(tp,28674153)
-	-- 将创建好的衍生物以攻击表示形式特殊召唤到己方场上
+	-- 特殊召唤衍生物Token。
 	Duel.SpecialSummon(token,0,tp,tp,false,false,POS_FACEUP)
-	-- 给衍生物添加效果，使其不能作为同调素材
+	-- 设置衍生物不能作为同调素材的效果。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_CANNOT_BE_SYNCHRO_MATERIAL)

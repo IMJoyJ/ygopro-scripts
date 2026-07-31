@@ -1,14 +1,15 @@
 --死相の冥鑑ヒュブロ
 local s,id,o=GetID()
+-- 初始化效果函数，注册三个触发效果和一个召唤条件
 function s.initial_effect(c)
-	--summon with no tribute
+	-- 此卡不能通常召唤，只能通过特殊召唤方式出场
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(id,0))
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_SUMMON_PROC)
 	e1:SetCondition(s.ntcon)
 	c:RegisterEffect(e1)
-	--to grave
+	-- 通常召唤成功时发动，从卡组检索满足条件的卡片送去墓地，然后可以选择将墓地中的符合条件的卡片加入手牌
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(id,1))
 	e2:SetCategory(CATEGORY_TOGRAVE+CATEGORY_GRAVE_ACTION+CATEGORY_TOHAND)
@@ -22,7 +23,7 @@ function s.initial_effect(c)
 	local e3=e2:Clone()
 	e3:SetCode(EVENT_SPSUMMON_SUCCESS)
 	c:RegisterEffect(e3)
-	--xyz summon
+	-- 场上的怪兽特殊召唤成功时发动，可以从额外卡组特殊召唤一只符合条件的XYZ怪兽
 	local e4=Effect.CreateEffect(c)
 	e4:SetDescription(aux.Stringid(id,2))
 	e4:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -36,54 +37,83 @@ function s.initial_effect(c)
 	e4:SetOperation(s.spop)
 	c:RegisterEffect(e4)
 end
+-- 召唤条件函数，判断是否可以进行特殊召唤
 function s.ntcon(e,c,minc)
 	if c==nil then return true end
+	-- 满足等级5以上且场上存在空位的条件
 	return minc==0 and c:IsLevelAbove(5) and Duel.GetLocationCount(c:GetControler(),LOCATION_MZONE)>0
 end
+-- 检索过滤器，筛选等级6以上且为不死族的可送去墓地的卡片
 function s.tgfilter(c)
 	return not c:IsCode(id) and c:IsLevelAbove(6) and c:IsRace(RACE_ZOMBIE) and c:IsAbleToGrave()
 end
+-- 效果处理函数，检查是否有满足条件的卡片并设置操作信息
 function s.tgtg(e,tp,eg,ep,ev,re,r,rp,chk)
+	-- 检查卡组中是否存在满足条件的卡片
 	if chk==0 then return Duel.IsExistingMatchingCard(s.tgfilter,tp,LOCATION_DECK,0,1,nil) end
+	-- 设置将要送去墓地的卡片数量和位置信息
 	Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,nil,1,tp,LOCATION_DECK)
+	-- 向对手提示该效果被发动
 	Duel.Hint(HINT_OPSELECTED,1-tp,e:GetDescription())
 end
+-- 手牌过滤器，筛选等级6以上且为不死族的可加入手牌的卡片
 function s.thfilter(c)
 	return c:IsLevelAbove(6) and c:IsRace(RACE_ZOMBIE) and c:IsAbleToHand()
 end
+-- 效果处理函数，选择一张卡送去墓地并可能将其加入手牌
 function s.tgop(e,tp,eg,ep,ev,re,r,rp)
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)
+	-- 提示玩家选择要送去墓地的卡
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
+	-- 从卡组中选择一张满足条件的卡
 	local g=Duel.SelectMatchingCard(tp,s.tgfilter,tp,LOCATION_DECK,0,1,1,nil)
+	-- 判断是否成功将卡送去墓地且在墓地中
 	if g:GetCount()>0 and Duel.SendtoGrave(g,REASON_EFFECT)~=0 and g:GetFirst():IsLocation(LOCATION_GRAVE) then
+		-- 获取不受王家长眠之谷影响的符合条件的卡片组
 		local gg=Duel.GetMatchingGroup(aux.NecroValleyFilter(s.thfilter),tp,LOCATION_GRAVE,0,nil)
+		-- 询问玩家是否发动效果，选择是否将卡加入手牌
 		if gg:GetCount()>0 and Duel.SelectYesNo(tp,aux.Stringid(id,3)) then
+			-- 中断当前连锁处理，使后续效果视为不同时处理
 			Duel.BreakEffect()
-			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)
+			-- 提示玩家选择要加入手牌的卡
+			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
 			local sg=gg:Select(tp,1,1,nil)
+			-- 显示选中卡片的动画效果
 			Duel.HintSelection(sg)
+			-- 将选中的卡片加入手牌
 			Duel.SendtoHand(sg,nil,REASON_EFFECT)
 		end
 	end
 end
+-- 特殊召唤过滤器，筛选在墓地召唤的怪兽
 function s.spfilter(c)
 	return c:IsSummonLocation(LOCATION_GRAVE)
 end
+-- 触发条件函数，判断是否有怪兽从墓地特殊召唤成功且不包含自身
 function s.spcon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(s.spfilter,1,nil) and not eg:IsContains(e:GetHandler())
 end
+-- XYZ召唤过滤器，筛选为不死族且可进行XYZ召唤的卡片
 function s.xyzfilter(c)
 	return c:IsRace(RACE_ZOMBIE) and c:IsXyzSummonable(nil)
 end
+-- 特殊召唤效果处理函数，检查是否有满足条件的卡片并设置操作信息
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
+	-- 检查额外卡组中是否存在满足条件的卡片
 	if chk==0 then return Duel.IsExistingMatchingCard(s.xyzfilter,tp,LOCATION_EXTRA,0,1,nil) end
+	-- 设置将要特殊召唤的卡片数量和位置信息
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_EXTRA)
+	-- 向对手提示该效果被发动
 	Duel.Hint(HINT_OPSELECTED,1-tp,e:GetDescription())
 end
+-- 特殊召唤效果处理函数，选择一张卡进行XYZ召唤
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
+	-- 获取额外卡组中满足条件的卡片组
 	local g=Duel.GetMatchingGroup(s.xyzfilter,tp,LOCATION_EXTRA,0,nil)
 	if g:GetCount()>0 then
-		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
+		-- 提示玩家选择要特殊召唤的卡
+		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
 		local tg=g:Select(tp,1,1,nil)
+		-- 执行XYZ召唤手续
 		Duel.XyzSummon(tp,tg:GetFirst(),nil)
 	end
 end
