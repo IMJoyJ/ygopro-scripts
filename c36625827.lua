@@ -33,7 +33,7 @@ function c36625827.ctfilter(c)
 end
 -- 将满足条件的「幽狱之时计塔」放置1个时计指示物
 function c36625827.addc(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取场上所有满足条件的「幽狱之时计塔」卡片组
+	-- 获取场上所有符合条件的「幽狱之时计塔」卡片组
 	local g=Duel.GetMatchingGroup(c36625827.ctfilter,tp,LOCATION_FZONE,LOCATION_FZONE,nil)
 	local tc=g:GetFirst()
 	while tc do
@@ -49,19 +49,19 @@ end
 function c36625827.filter(c)
 	return c:IsType(TYPE_SPELL+TYPE_TRAP)
 end
--- 设置选择目标阶段，选择场上自己一方的1张魔法·陷阱卡作为破坏对象
+-- 设置选择目标阶段，选择场上1张自己的魔法·陷阱卡作为破坏对象
 function c36625827.destg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsOnField() and chkc:IsControler(tp) and c36625827.filter(chkc) end
-	-- 检查是否有满足条件的目标卡片存在
+	-- 检查是否有满足条件的魔法·陷阱卡可被选择
 	if chk==0 then return Duel.IsExistingTarget(c36625827.filter,tp,LOCATION_ONFIELD,0,1,nil) end
 	-- 向玩家提示“请选择要破坏的卡”
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 选择场上自己一方的1张魔法·陷阱卡作为破坏对象
+	-- 选择场上1张自己的魔法·陷阱卡作为破坏对象
 	local g=Duel.SelectTarget(tp,c36625827.filter,tp,LOCATION_ONFIELD,0,1,1,nil)
-	-- 设置操作信息，记录将要破坏的卡片数量和类型为破坏效果
+	-- 设置操作信息，确定将要破坏的卡
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,g:GetCount(),0,0)
 end
--- 执行破坏操作，将选定的目标卡片破坏
+-- 执行破坏操作，将选中的魔法·陷阱卡破坏
 function c36625827.desop(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取当前连锁中被选择的目标卡片
 	local tc=Duel.GetFirstTarget()
