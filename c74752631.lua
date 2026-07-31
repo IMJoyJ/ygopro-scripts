@@ -7,7 +7,7 @@
 -- ③：这张卡的攻击力上升自己场上的武士道指示物数量×100。
 function c74752631.initial_effect(c)
 	c:EnableCounterPermit(0x3)
-	-- 注册连接召唤手续：战士族怪兽2只（包含「六武众」怪兽）
+	-- 设置连接召唤手续：包含「六武众」怪兽的战士族怪兽2只
 	aux.AddLinkProcedure(c,aux.FilterBoolFunction(Card.IsLinkRace,RACE_WARRIOR),2,2,c74752631.lcheck)
 	c:EnableReviveLimit()
 	-- ①：这张卡连接召唤成功的场合，丢弃1张手卡才能发动。把持有把武士道指示物放置效果的1张卡从卡组加入手卡。
@@ -51,34 +51,34 @@ c74752631.mentioned_counter={
 function c74752631.lcheck(g,lc)
 	return g:IsExists(Card.IsLinkSetCard,1,nil,0x103d)
 end
--- ①效果发动条件：此卡进行连接召唤成功
+-- ①效果发动条件：必须是连接召唤成功
 function c74752631.thcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsSummonType(SUMMON_TYPE_LINK)
 end
--- ①效果发动Cost：丢弃1张手卡
+-- ①效果发动Cost：丢弃1张手牌
 function c74752631.thcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- Cost检查：手牌是否存在可丢弃的手卡
+	-- 检查手牌是否存在可丢弃的卡
 	if chk==0 then return Duel.IsExistingMatchingCard(Card.IsDiscardable,tp,LOCATION_HAND,0,1,nil) end
-	-- 从手牌丢弃1张手卡
+	-- 从手牌丢弃1张卡作为Cost
 	Duel.DiscardHand(tp,Card.IsDiscardable,1,1,REASON_COST+REASON_DISCARD)
 end
--- 卡组检索过滤条件：具有放置武士道指示物效果的卡且可加入手牌
+-- 过滤条件：持有放置武士道指示物效果且可加入手牌的卡
 function c74752631.thfilter(c)
-	-- 检查卡片是否记述可放置0x3（武士道）指示物且可加入手牌
+	-- 判断卡片是否能放置武士道指示物(0x3)且可加入手牌
 	return aux.IsCounterAdded(c,0x3) and c:IsAbleToHand()
 end
--- ①效果发动准备：设置从卡组检索卡片的操作信息
+-- ①效果发动准备：检查卡组目标卡并设置检索操作信息
 function c74752631.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 发动条件检查：卡组是否存在可放置武士道指示物的卡
+	-- 检查卡组是否存在持有放置武士道指示物效果的卡
 	if chk==0 then return Duel.IsExistingMatchingCard(c74752631.thfilter,tp,LOCATION_DECK,0,1,nil) end
 	-- 设置连锁操作信息：从卡组检索1张卡加入手牌
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- ①效果处理：从卡组把1张有放置武士道指示物效果的卡加入手牌
+-- ①效果处理：从卡组把1张持有放置武士道指示物效果的卡加入手牌并确认
 function c74752631.thop(e,tp,eg,ep,ev,re,r,rp)
 	-- 提示玩家选择要加入手牌的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 从卡组选择1张有放置武士道指示物效果的卡
+	-- 从卡组选择1张满足条件的卡
 	local g=Duel.SelectMatchingCard(tp,c74752631.thfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
 		-- 将选中的卡加入手牌
@@ -87,7 +87,7 @@ function c74752631.thop(e,tp,eg,ep,ev,re,r,rp)
 		Duel.ConfirmCards(1-tp,g)
 	end
 end
--- 召唤/特召过滤条件：确认所连接区是否有表侧表示的「六武众」怪兽召唤·特殊召唤
+-- 过滤条件：检查在连接区召唤·特殊召唤的表侧表示「六武众」怪兽（包括离场前的历史状态）
 function c74752631.cfilter(c,ec)
 	if c:IsLocation(LOCATION_MZONE) then
 		return c:IsSetCard(0x103d) and c:IsFaceup() and ec:GetLinkedGroup():IsContains(c)
@@ -96,16 +96,16 @@ function c74752631.cfilter(c,ec)
 			and bit.extract(ec:GetLinkedZone(c:GetPreviousControler()),c:GetPreviousSequence())~=0
 	end
 end
--- ②效果发动条件：此卡所连接区有「六武众」怪兽召唤·特殊召唤
+-- ②效果发动条件：召·特召的怪兽中存在位于本卡连接区的「六武众」怪兽
 function c74752631.ctcon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c74752631.cfilter,1,nil,e:GetHandler())
 end
--- ②效果处理：给此卡放置1个武士道指示物
+-- ②效果处理：给这张卡放置1个武士道指示物
 function c74752631.ctop(e,tp,eg,ep,ev,re,r,rp)
 	e:GetHandler():AddCounter(0x3,1)
 end
--- ③效果数值计算：获取自己场上的武士道指示物数量并乘以100
+-- 计算攻击力上升值：自己场上武士道指示物总数×100
 function c74752631.atkval(e,c)
-	-- 计算攻击力上升值：自己场上的武士道指示物数量×100
+	-- 获取自己场上所有的武士道指示物数量并乘以100
 	return Duel.GetCounter(c:GetControler(),1,0,0x3)*100
 end

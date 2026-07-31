@@ -7,18 +7,18 @@
 -- ●5只以上：每次对方把怪兽召唤·特殊召唤，对方失去800基本分。
 -- 1回合1次，自己用「GMX」卡的效果翻卡的场合：可以把场上的其他怪兽全部破坏。
 local s,id,o=GetID()
--- 初始化卡片效果：注册融合召唤手续、素材检测、融合召唤成功时根据恐龙族素材数量赋予持续/诱发效果、以及用「GMX」卡的效果翻卡时全场怪兽破坏效果
+-- 初始化卡片效果：注册融合召唤手续、素材检查、融合召唤成功时依素材数赋予效果及翻卡诱发全场破坏效果
 function s.initial_effect(c)
 	c:EnableReviveLimit()
-	-- 注册融合召唤手续：「GMX」怪兽1只+恐龙族怪兽2只以上
+	-- 注册融合召唤手续：「GMX」怪兽＋恐龙族怪兽2只以上
 	aux.AddFusionProcFunFunRep(c,aux.FilterBoolFunction(Card.IsFusionSetCard,0x1dd),aux.FilterBoolFunction(Card.IsRace,RACE_DINOSAUR),2,127,true)
-	-- 根据作为这张卡融合素材的恐龙族怪兽数量得到以下效果。
+	-- 注册融合素材检查效果：统计作为融合素材的恐龙族怪兽数量
 	local e0=Effect.CreateEffect(c)
 	e0:SetType(EFFECT_TYPE_SINGLE)
 	e0:SetCode(EFFECT_MATERIAL_CHECK)
 	e0:SetValue(s.valcheck)
 	c:RegisterEffect(e0)
-	-- 融合召唤成功的场合，检查融合素材中恐龙族怪兽的数量并赋予对应效果
+	-- 融合召唤成功时：根据作为融合素材的恐龙族怪兽数量分别赋予抗性、追加攻击及扣除基本分的效果
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_CONTINUOUS)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
@@ -27,7 +27,7 @@ function s.initial_effect(c)
 	e1:SetOperation(s.regop)
 	e1:SetLabelObject(e0)
 	c:RegisterEffect(e1)
-	-- 1回合1次，自己用「GMX」卡的效果翻卡的场合：可以把场上的其他怪兽全部破坏。
+	-- 1回合1次，自己用「GMX」卡的效果翻卡的场合才能发动。把场上的其他怪兽全部破坏。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(id,1))  --"破坏"
 	e2:SetCategory(CATEGORY_DESTROY)
@@ -41,28 +41,28 @@ function s.initial_effect(c)
 	e2:SetOperation(s.desop)
 	c:RegisterEffect(e2)
 end
--- 素材检查处理：统计融合素材中恐龙族怪兽的数量并记录
+-- 素材检查处理：计算素材中恐龙族怪兽的数量并存入标记
 function s.valcheck(e,c)
 	local mg=c:GetMaterial()
 	local mg1=mg:Filter(Card.IsRace,nil,RACE_DINOSAUR)
 	e:SetLabel(#mg1)
 end
--- 效果赋予条件：此卡融合召唤成功
+-- 效果赋予条件检查：检查自身是否成功进行融合召唤
 function s.regcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsSummonType(SUMMON_TYPE_FUSION)
 end
--- 效果赋予处理：根据素材中恐龙族怪兽数量（≥3/≥4/≥5）注册对应的持续/诱发效果
+-- 效果赋予处理：根据素材中恐龙族怪兽的数量（>=3、>=4、>=5）分别注册对应的效果
 function s.regop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local ct=e:GetLabelObject():GetLabel()
 	if ct==0 then return end
 	if ct>=3 then
-		-- ●3只以上：对方不能把这张卡作为效果的对象。
+		-- ●3只以上：获得效果抗性，对方不能把这张卡作为效果的对象。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_CANNOT_BE_EFFECT_TARGET)
 		e1:SetProperty(EFFECT_FLAG_IGNORE_IMMUNE)
-		-- 设置对象抗性：仅对方不能选择此卡为效果对象
+		-- 设置对象抗性过滤器：仅对对方的效果生效
 		e1:SetValue(aux.tgoval)
 		e1:SetReset(RESET_EVENT+RESETS_STANDARD)
 		c:RegisterEffect(e1)
@@ -96,40 +96,40 @@ function s.regop(e,tp,eg,ep,ev,re,r,rp)
 		c:RegisterFlagEffect(0,RESET_EVENT+RESETS_STANDARD,EFFECT_FLAG_CLIENT_HINT,1,0,aux.Stringid(id,4))  --"5只以上恐龙族怪兽作为融合素材"
 	end
 end
--- 召唤/特召过滤条件：确认是否为对方召唤·特殊召唤怪兽
+-- 召唤玩家过滤条件：检查怪兽是否由指定玩家召唤/特殊召唤
 function s.cfilter(c,tp)
 	return c:IsSummonPlayer(tp)
 end
--- 基本分扣减条件：存在对方召唤·特殊召唤的怪兽
+-- 扣除基本分发动条件：检查触发组中是否存在对方召唤/特殊召唤的怪兽
 function s.reccon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(s.cfilter,1,nil,1-tp)
 end
--- 基本分扣减处理：展示卡片提示并使对方失去800基本分
+-- 扣除基本分效果处理：显示卡片提示并使对方失去800基本分
 function s.recop(e,tp,eg,ep,ev,re,r,rp)
-	-- 发动卡片提示
+	-- 显示卡片发动提示框
 	Duel.Hint(HINT_CARD,0,id)
-	-- 扣减对方800基本分
+	-- 使对方玩家失去800基本分
 	Duel.SetLP(1-tp,Duel.GetLP(1-tp)-800)
 end
--- 破坏效果发动条件：由自己玩家的效果触发翻卡
+-- 破坏效果发动条件检查：引发翻卡事件的效果控制者是否为自己
 function s.descon(e,tp,eg,ep,ev,re,r,rp)
 	return rp==tp
 end
--- 破坏效果发动准备：设置破坏场上其他所有怪兽的操作信息
+-- 破坏效果准备：收集场上除自身外的所有怪兽并设置破坏操作信息
 function s.destg(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 发动条件检查：场上是否存在除自身外的其他怪兽
 	if chk==0 then return Duel.IsExistingMatchingCard(aux.TRUE,tp,LOCATION_MZONE,LOCATION_MZONE,1,e:GetHandler()) end
 	-- 获取场上除自身外的所有怪兽
 	local g=Duel.GetMatchingGroup(aux.TRUE,tp,LOCATION_MZONE,LOCATION_MZONE,e:GetHandler())
-	-- 设置连锁操作信息：破坏所有选中的怪兽
+	-- 设置连锁操作信息：破坏选中的所有怪兽
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,g:GetCount(),0,0)
 end
--- 破坏效果处理：将场上除自身外的其他怪兽全部破坏
+-- 破坏效果处理：把场上除自身外的其他怪兽全部破坏
 function s.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取场上除当前卡以外的所有怪兽
+	-- 获取处理时场上除自身外的所有怪兽
 	local g=Duel.GetMatchingGroup(aux.TRUE,tp,LOCATION_MZONE,LOCATION_MZONE,aux.ExceptThisCard(e))
 	if g:GetCount()>0 then
-		-- 破坏选中的所有怪兽
+		-- 因卡的效果破坏选中的所有怪兽
 		Duel.Destroy(g,REASON_EFFECT)
 	end
 end
