@@ -1,9 +1,13 @@
 --捕食植物ドラゴスタペリア
+-- 效果：
+-- 融合怪兽＋暗属性怪兽
+-- ①：1回合1次，以对方场上1只表侧表示怪兽为对象才能发动。给那只怪兽放置1个捕食指示物。有捕食指示物放置的2星以上的怪兽的等级变成1星。这个效果在对方回合也能发动。
+-- ②：只要这张卡在怪兽区域存在，对方发动的有捕食指示物放置的怪兽的效果无效化。
 function c69946549.initial_effect(c)
-	--fusion material
 	c:EnableReviveLimit()
+	-- 融合召唤手续：融合怪兽＋暗属性怪兽
 	aux.AddFusionProcFun2(c,aux.FilterBoolFunction(Card.IsFusionType,TYPE_FUSION),aux.FilterBoolFunction(Card.IsFusionAttribute,ATTRIBUTE_DARK),true)
-	--add counter
+	-- ①：1回合1次，以对方场上1只表侧表示怪兽为对象才能发动。给那只怪兽放置1个捕食指示物。有捕食指示物放置的2星以上的怪兽的等级变成1星。这个效果在对方回合也能发动。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(69946549,0))
 	e1:SetCategory(CATEGORY_COUNTER)
@@ -16,7 +20,7 @@ function c69946549.initial_effect(c)
 	e1:SetTarget(c69946549.cttg)
 	e1:SetOperation(c69946549.ctop)
 	c:RegisterEffect(e1)
-	--disable
+	-- ②：只要这张卡在怪兽区域存在，对方发动的有捕食指示物放置的怪兽的效果无效化。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e2:SetCode(EVENT_CHAIN_SOLVING)
@@ -28,15 +32,22 @@ end
 c69946549.mentioned_counter={
 	[0x1041]=true,
 }
+-- ①效果发动准备：选择对方场上1只表侧怪兽为对象
 function c69946549.cttg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(1-tp) and chkc:IsLocation(LOCATION_MZONE) and chkc:IsCanAddCounter(0x1041,1) end
+	-- 检查对方场上是否存在可放置捕食指示物（0x1041）的表侧表示怪兽
 	if chk==0 then return Duel.IsExistingTarget(Card.IsCanAddCounter,tp,0,LOCATION_MZONE,1,nil,0x1041,1) end
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)
+	-- 提示玩家选择表侧表示的卡
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
+	-- 选择对方场上1只可放置捕食指示物的怪兽作为对象
 	Duel.SelectTarget(tp,Card.IsCanAddCounter,tp,0,LOCATION_MZONE,1,1,nil,0x1041,1)
 end
+-- ①效果处理：给目标怪兽放置1个捕食指示物，若其为2星以上则等级变成1星
 function c69946549.ctop(e,tp,eg,ep,ev,re,r,rp)
+	-- 获取连锁选中的目标怪兽
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) and tc:AddCounter(0x1041,1) and tc:IsLevelAbove(2) then
+		-- 有捕食指示物放置的2星以上的怪兽的等级变成1星。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_CHANGE_LEVEL)
@@ -46,13 +57,17 @@ function c69946549.ctop(e,tp,eg,ep,ev,re,r,rp)
 		tc:RegisterEffect(e1)
 	end
 end
+-- 等级变更效果持续条件：目标怪兽身上仍有捕食指示物
 function c69946549.lvcon(e)
 	return e:GetHandler():GetCounter(0x1041)>0
 end
+-- ②效果无效条件：由对方发动的怪兽效果且发动效果的怪兽带放有捕食指示物
 function c69946549.discon(e,tp,eg,ep,ev,re,r,rp)
 	if e:GetHandler():IsStatus(STATUS_BATTLE_DESTROYED) then return false end
 	return rp==1-tp and re:IsActiveType(TYPE_MONSTER) and re:GetHandler():GetCounter(0x1041)>0
 end
+-- ②效果无效处理：使该效果的发动无效
 function c69946549.disop(e,tp,eg,ep,ev,re,r,rp)
+	-- 使连锁中的怪兽效果无效
 	Duel.NegateEffect(ev)
 end
