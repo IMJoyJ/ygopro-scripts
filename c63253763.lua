@@ -1,7 +1,9 @@
 --エーリアン・リベンジャー
+-- 效果：
+-- 这张卡可以把场上存在的2个A指示物取除，从手卡特殊召唤。1回合1次，可以给对方场上表侧表示存在的全部怪兽放置1个A指示物。有A指示物放置的怪兽和名字带有「外星」的怪兽战斗的场合，每有1个A指示物攻击力·守备力下降300。「外星人复仇者」在自己场上只能有1只表侧表示存在。
 function c63253763.initial_effect(c)
 	c:SetUniqueOnField(1,0,63253763)
-	--special summon
+	-- ①：这张卡可以把场上存在的2个A指示物去除，从手卡特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_SPSUMMON_PROC)
@@ -10,9 +12,9 @@ function c63253763.initial_effect(c)
 	e1:SetCondition(c63253763.spcon)
 	e1:SetOperation(c63253763.spop)
 	c:RegisterEffect(e1)
-	--counter
+	-- ②：1回合1次，可以给对方场上表侧表示存在的全部怪兽各放置1个A指示物。
 	local e2=Effect.CreateEffect(c)
-	e2:SetDescription(aux.Stringid(63253763,0))
+	e2:SetDescription(aux.Stringid(63253763,0))  --"放置「A指示物」"
 	e2:SetCategory(CATEGORY_COUNTER)
 	e2:SetType(EFFECT_TYPE_IGNITION)
 	e2:SetRange(LOCATION_MZONE)
@@ -20,7 +22,7 @@ function c63253763.initial_effect(c)
 	e2:SetTarget(c63253763.cttg)
 	e2:SetOperation(c63253763.ctop)
 	c:RegisterEffect(e2)
-	--atk def
+	-- ③：有A指示物放置的怪兽和名字带有「外星」的怪兽战斗的场合，每有1个A指示物攻击力·守备力下降300。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_FIELD)
 	e3:SetCode(EFFECT_UPDATE_ATTACK)
@@ -38,18 +40,27 @@ c63253763.counter_add_list={0x100e}
 c63253763.mentioned_counter={
 	[0x100e]=true,
 }
+-- 特殊召唤条件：主要怪兽区域有空位且场上有至少2个A指示物可去除
 function c63253763.spcon(e,c)
 	if c==nil then return true end
+	-- 检查主要怪兽区域是否有空位
 	return Duel.GetLocationCount(c:GetControler(),LOCATION_MZONE)>0
+		-- 检查场上是否存在至少2个可去除的A指示物
 		and Duel.IsCanRemoveCounter(c:GetControler(),1,1,0x100e,2,REASON_COST)
 end
+-- 特殊召唤Cost处理：去除场上2个A指示物
 function c63253763.spop(e,tp,eg,ep,ev,re,r,rp,c)
+	-- 从场上去除2个A指示物
 	Duel.RemoveCounter(tp,1,1,0x100e,2,REASON_COST)
 end
+-- 放置指示物效果的目标检查：对方场上是否存在可以放置A指示物的怪兽
 function c63253763.cttg(e,tp,eg,ep,ev,re,r,rp,chk)
+	-- 发动条件检查：对方场上是否存在至少1只可放置A指示物的怪兽
 	if chk==0 then return Duel.IsExistingMatchingCard(Card.IsCanAddCounter,tp,0,LOCATION_MZONE,1,nil,0x100e,1) end
 end
+-- 放置指示物效果处理：给对方场上所有表侧表示怪兽各放置1个A指示物
 function c63253763.ctop(e,tp,eg,ep,ev,re,r,rp)
+	-- 获取对方场上所有可放置A指示物的怪兽
 	local g=Duel.GetMatchingGroup(Card.IsCanAddCounter,tp,0,LOCATION_MZONE,nil,0x100e,1)
 	local tc=g:GetFirst()
 	while tc do
@@ -57,13 +68,17 @@ function c63253763.ctop(e,tp,eg,ep,ev,re,r,rp)
 		tc=g:GetNext()
 	end
 end
+-- 攻击力·守备力下降条件：处于伤害计算阶段且存在攻击对象
 function c63253763.adcon(e)
+	-- 确认战斗进入伤害计算阶段且为怪兽间的战斗
 	return Duel.GetCurrentPhase()==PHASE_DAMAGE_CAL and Duel.GetAttackTarget()
 end
+-- 攻守下降目标过滤：有A指示物且与「外星」怪兽战斗的怪兽
 function c63253763.adtg(e,c)
 	local bc=c:GetBattleTarget()
 	return bc and c:GetCounter(0x100e)~=0 and bc:IsSetCard(0xc)
 end
+-- 攻击力·守备力下降数值计算：有A指示物的怪兽指示物数量×(-300)
 function c63253763.adval(e,c)
 	return c:GetCounter(0x100e)*-300
 end
