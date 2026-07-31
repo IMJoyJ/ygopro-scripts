@@ -1,13 +1,17 @@
 --動点するP
+-- 效果：
+-- ①：自己·对方的准备阶段发动。给这张卡放置1个T指示物。
+-- ②：1回合1次，以自己的主要怪兽区域1只灵摆怪兽为对象才能发动。让这张卡的T指示物数量的「作为对象的灵摆怪兽的位置向那个相邻的怪兽区域移动」处理重复。那之后，持有作为对象的怪兽的灵摆刻度数值以下的等级·阶级的融合·超量怪兽在和作为对象的怪兽相同纵列的对方场上存在的场合，那些全部破坏，给与对方那个攻击力合计数值的伤害。
 local s,id,o=GetID()
+-- 初始化效果，设置指示物允许放置、准备阶段触发的指示物添加效果、以及灵摆怪兽移动并破坏融合/超量怪兽并造成伤害的效果
 function s.initial_effect(c)
 	c:EnableCounterPermit(0x73)
-	--Activate
+	-- 永续魔陷/场地卡通用的“允许发动”空效果，无此效果则无法发动
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	--counter
+	-- ①：自己·对方的准备阶段发动。给这张卡放置1个T指示物。
 	local e2=Effect.CreateEffect(c)
 	e2:SetCategory(CATEGORY_COUNTER)
 	e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_F)
@@ -17,7 +21,7 @@ function s.initial_effect(c)
 	e2:SetTarget(s.cttg)
 	e2:SetOperation(s.ctop)
 	c:RegisterEffect(e2)
-	--move
+	-- ②：1回合1次，以自己的主要怪兽区域1只灵摆怪兽为对象才能发动。让这张卡的T指示物数量的「作为对象的灵摆怪兽的位置向那个相邻的怪兽区域移动」处理重复。那之后，持有作为对象的怪兽的灵摆刻度数值以下的等级·阶级的融合·超量怪兽在和作为对象的怪兽相同纵列的对方场上存在的场合，那些全部破坏，给与对方那个攻击力合计数值的伤害。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(id,0))
 	e3:SetCategory(CATEGORY_DAMAGE+CATEGORY_DESTROY)
@@ -34,28 +38,39 @@ end
 s.mentioned_counter={
 	[0x73]=true,
 }
+-- 指示物添加效果的目标设定函数，用于准备阶段触发时设置操作信息
 function s.cttg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
+	-- 设置操作信息为放置1个T指示物
 	Duel.SetOperationInfo(0,CATEGORY_COUNTER,nil,1,0,0x73)
 end
+-- 指示物添加效果的执行函数，将1个T指示物放置到场上
 function s.ctop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	c:AddCounter(0x73,1)
 end
+-- 判断灵摆怪兽是否可以移动到相邻区域的过滤器函数
 function s.cfilter(c)
 	local seq=c:GetSequence()
 	local tp=c:GetControler()
 	if seq>4 or not c:IsType(TYPE_PENDULUM) or c:IsFacedown() then return false end
+	-- 判断灵摆怪兽左侧相邻区域是否可用
 	return (seq>0 and Duel.CheckLocation(tp,LOCATION_MZONE,seq-1))
+		-- 判断灵摆怪兽右侧相邻区域是否可用
 		or (seq<4 and Duel.CheckLocation(tp,LOCATION_MZONE,seq+1))
 end
+-- 灵摆怪兽移动效果的目标选择函数，用于选择可移动的灵摆怪兽
 function s.seqtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	local c=e:GetHandler()
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and s.cfilter(chkc) end
+	-- 判断是否满足发动条件：场上有T指示物且存在可移动的灵摆怪兽
 	if chk==0 then return c:GetCounter(0x73)>0 and Duel.IsExistingTarget(s.cfilter,tp,LOCATION_MZONE,0,1,e:GetHandler()) end
-	Duel.Hint(HINT_SELECTMSG,tp,aux.Stringid(id,1))
+	-- 提示玩家选择要移动的灵摆怪兽
+	Duel.Hint(HINT_SELECTMSG,tp,aux.Stringid(id,1))  --"请选择移动位置的怪兽"
+	-- 选择目标灵摆怪兽
 	Duel.SelectTarget(tp,s.cfilter,tp,LOCATION_MZONE,0,1,1,e:GetHandler())
 end
+-- 获取融合或超量怪兽等级或阶级的函数
 function s.lv_or_rk(c)
 	if c:IsType(TYPE_FUSION) then
 		return c:GetLevel()
@@ -64,13 +79,16 @@ function s.lv_or_rk(c)
 	end
 	return 0
 end
+-- 过滤符合条件的融合/超量怪兽（攻击力不超过灵摆刻度）
 function s.desfilter(c,tp,p)
 	return c:IsFaceup() and c:IsControler(1-tp)
 		and s.lv_or_rk(c)>0
 		and s.lv_or_rk(c)<=p
 end
+-- 灵摆怪兽移动并破坏融合/超量怪兽并造成伤害的效果执行函数
 function s.seqop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
+	-- 获取当前连锁的目标怪兽
 	local tc=Duel.GetFirstTarget()
 	if not tc:IsRelateToChain() then return end
 	if c:GetCounter(0x73)==0 then return end
@@ -79,23 +97,32 @@ function s.seqop(e,tp,eg,ep,ev,re,r,rp)
 		local seq=tc:GetSequence()
 		if seq>4 then return end
 		local flag=0
+		-- 判断灵摆怪兽左侧相邻区域是否可用并设置标志位
 		if seq>0 and Duel.CheckLocation(tp,LOCATION_MZONE,seq-1) then flag=flag|(1<<(seq-1)) end
+		-- 判断灵摆怪兽右侧相邻区域是否可用并设置标志位
 		if seq<4 and Duel.CheckLocation(tp,LOCATION_MZONE,seq+1) then flag=flag|(1<<(seq+1)) end
 		if flag==0 then return end
-		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOZONE)
+		-- 提示玩家选择移动到的位置
+		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOZONE)  --"请选择要移动到的位置"
+		-- 选择场地位置用于移动怪兽
 		local ss=Duel.SelectField(tp,1,LOCATION_MZONE,0,~flag)
 		local nseq=math.log(ss,2)
+		-- 将目标怪兽移动到指定位置
 		Duel.MoveSequence(tc,nseq)
 		ct=ct-1
 	end
 	if ct==0 then
 		local g=tc:GetColumnGroup():Filter(s.desfilter,tc,tp,tc:GetLeftScale())
 		if g:GetCount()>0 then
+			-- 中断当前效果处理，使后续效果视为不同时处理
 			Duel.BreakEffect()
+			-- 破坏符合条件的融合/超量怪兽
 			Duel.Destroy(g,REASON_EFFECT)
+			-- 获取实际被破坏的卡片组
 			local og=Duel.GetOperatedGroup()
 			local dam=og:GetSum(Card.GetPreviousAttackOnField)
 			if dam>0 then
+				-- 对对方造成伤害，伤害值为被破坏怪兽攻击力总和
 				Duel.Damage(1-tp,dam,REASON_EFFECT)
 			end
 		end
