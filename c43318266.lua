@@ -43,41 +43,41 @@ c43318266.mentioned_counter={
 function c43318266.sdcon(e)
 	return e:GetHandler():IsPosition(POS_FACEUP_DEFENSE)
 end
--- 规则层面：过滤场上存在的名字带有「云魔物」的怪兽。
+-- 规则层面：过滤场上存在的名字带有「云魔物」的怪兽（用于计算指示物数量）。
 function c43318266.cfilter(c)
 	return c:IsFaceup() and c:IsSetCard(0x18)
 end
--- 规则层面：统计场上名字带有「云魔物」的怪兽数量，并为当前卡片添加相同数量的雾指示物。
+-- 规则层面：在召唤成功时，将满足条件的「云魔物」怪兽数量作为指示物放置到该卡上。
 function c43318266.addc(e,tp,eg,ep,ev,re,r,rp)
 	if e:GetHandler():IsRelateToEffect(e) then
-		-- 规则层面：获取满足条件的怪兽数量用于指示物添加。
+		-- 规则层面：获取场上满足条件的「云魔物」怪兽数量。
 		local ct=Duel.GetMatchingGroupCount(c43318266.cfilter,tp,LOCATION_MZONE,LOCATION_MZONE,nil)
 		e:GetHandler():AddCounter(0x1019,ct)
 	end
 end
--- 规则层面：检查是否可以移除2个雾指示物作为发动代价。
+-- 规则层面：支付破坏2个雾指示物作为效果发动的代价。
 function c43318266.descost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsCanRemoveCounter(tp,0x1019,2,REASON_COST) end
 	e:GetHandler():RemoveCounter(tp,0x1019,2,REASON_COST)
 end
--- 规则层面：设置选择目标时的提示信息并选取场上一只怪兽作为破坏对象。
+-- 规则层面：选择目标怪兽并设置操作信息，准备进行破坏处理。
 function c43318266.destg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) end
-	-- 规则层面：判断是否存在满足条件的目标怪兽。
+	-- 规则层面：检查是否存在可破坏的目标怪兽。
 	if chk==0 then return Duel.IsExistingTarget(aux.TRUE,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil) end
-	-- 规则层面：向玩家发送“请选择要破坏的卡”的提示信息。
+	-- 规则层面：向玩家发送提示消息“请选择要破坏的卡”。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 规则层面：选择场上一只怪兽作为目标。
+	-- 规则层面：选择场上一只怪兽作为破坏目标。
 	local g=Duel.SelectTarget(tp,aux.TRUE,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,nil)
-	-- 规则层面：设置本次效果操作的信息，包括破坏对象和数量。
+	-- 规则层面：设置当前连锁的操作信息，表明将要破坏1只怪兽。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,1,0,0)
 end
--- 规则层面：执行对目标怪兽的破坏效果。
+-- 规则层面：执行破坏操作，将选定的目标怪兽破坏。
 function c43318266.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 规则层面：获取当前连锁中被选定的目标卡片。
+	-- 规则层面：获取当前连锁中被选择的目标卡。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 规则层面：以效果原因将目标怪兽破坏
+		-- 规则层面：以效果原因破坏目标怪兽。
 		Duel.Destroy(tc,REASON_EFFECT)
 	end
 end
