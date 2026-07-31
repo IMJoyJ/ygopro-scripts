@@ -32,25 +32,25 @@ end
 c78574395.mentioned_counter={
 	[0x32]=true,
 }
--- 攻击力下降数值计算：此卡的气球指示物数量×300
+-- 攻击力下降数值计算：此卡的气球指示物数量×(-300)
 function c78574395.atkval(e,c)
 	return e:GetHandler():GetCounter(0x32)*-300
 end
--- 放置指示物效果的发动代价：将手牌任意数量的卡送去墓地
+-- Cost处理：从手牌选择任意数量可送去墓地的卡丢弃，并记录数量
 function c78574395.cost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 代价检查：手牌中是否存在可以送去墓地的卡
+	-- Cost检查：手牌是否存在至少1张可送去墓地的卡
 	if chk==0 then return Duel.IsExistingMatchingCard(Card.IsAbleToGraveAsCost,tp,LOCATION_HAND,0,1,nil) end
-	-- 把手卡任意数量的卡送去墓地，并记录数量
+	-- 从手牌丢弃1~60张可送去墓地的卡，并返回实际丢弃数量
 	local ct=Duel.DiscardHand(tp,Card.IsAbleToGraveAsCost,1,60,REASON_COST)
 	e:SetLabel(ct)
 end
--- 放置指示物效果的发动准备
+-- 发动准备：检查自身能否放置气球指示物，并设置放置指示物操作信息
 function c78574395.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsCanAddCounter(0x32,1) end
-	-- 设置连锁操作信息：放置对应代价数量的气球指示物
+	-- 设置连锁操作信息：放置Cost记录数量的气球指示物
 	Duel.SetOperationInfo(0,CATEGORY_COUNTER,nil,e:GetLabel(),0,0x32)
 end
--- 放置指示物效果处理：给这张卡放置送去墓地数量的气球指示物
+-- 效果处理：给此卡放置送去墓地手牌数量的气球指示物
 function c78574395.operation(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) and c:IsFaceup() then
