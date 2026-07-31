@@ -5,9 +5,9 @@
 -- ●这张卡从自己墓地加入手卡。
 -- ●从自己墓地把这张卡除外，从自己墓地把1只5星以上的怪兽加入手卡。
 local s,id,o=GetID()
--- 初始化卡片效果：注册①手牌特召与没召唤誓约扣分效果、②墓地回收自身与没召唤誓约扣分效果、③墓地除外自身回收5星以上怪兽与没召唤誓约扣分效果
+-- 创建三个效果，分别对应从手卡特殊召唤、从墓地加入手卡、从墓地除外并抽卡的效果
 function s.initial_effect(c)
-	-- ●这张卡从手卡特殊召唤。
+	-- 这张卡从手卡特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(id,1))  --"特殊召唤"
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -18,7 +18,7 @@ function s.initial_effect(c)
 	e1:SetTarget(s.sptg)
 	e1:SetOperation(s.spop)
 	c:RegisterEffect(e1)
-	-- ●这张卡从自己墓地加入手卡。
+	-- 这张卡从自己墓地加入手卡。
 	local e2=Effect.CreateEffect(c)
 	e2:SetCategory(CATEGORY_TOHAND)
 	e2:SetDescription(aux.Stringid(id,2))  --"加入手卡"
@@ -29,7 +29,7 @@ function s.initial_effect(c)
 	e2:SetTarget(s.thtg)
 	e2:SetOperation(s.thop)
 	c:RegisterEffect(e2)
-	-- ●从自己墓地把这张卡除外，从自己墓地把1只5星以上的怪兽加入手卡。
+	-- 从自己墓地把这张卡除外，从自己墓地把1只5星以上的怪兽加入手卡。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(id,3))  --"这张卡除外"
 	e3:SetCategory(CATEGORY_TOHAND+CATEGORY_REMOVE)
@@ -41,51 +41,51 @@ function s.initial_effect(c)
 	e3:SetOperation(s.thop2)
 	c:RegisterEffect(e3)
 end
--- Cost过滤条件：手牌中5星以上的怪兽且未公开
+-- 过滤函数，用于筛选手牌中等级5以上且未公开的怪兽
 function s.cfilter(c)
 	return c:IsLevelAbove(5) and c:IsType(TYPE_MONSTER) and not c:IsPublic()
 end
--- 效果发动Cost：把手卡1只5星以上的怪兽给对方出示
+-- 检查是否满足cost条件，并选择一张手牌中的5星以上怪兽给对方确认，然后洗切手牌并记录该怪兽的原始卡号
 function s.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- Cost检查：手牌是否存在未公开的5星以上怪兽
+	-- 检查是否满足cost条件，即手牌中是否存在至少1张5星以上的怪兽
 	if chk==0 then return Duel.IsExistingMatchingCard(s.cfilter,tp,LOCATION_HAND,0,1,nil) end
-	-- 提示玩家选择要给对方出示的手牌怪兽
+	-- 向玩家提示“请选择给对方确认的卡”
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_CONFIRM)  --"请选择给对方确认的卡"
-	-- 从手牌选择1只5星以上的怪兽
+	-- 选择一张手牌中的5星以上怪兽
 	local g=Duel.SelectMatchingCard(tp,s.cfilter,tp,LOCATION_HAND,0,1,1,nil)
-	-- 向对方出示选中的手牌怪兽
+	-- 确认对方能看到所选的怪兽
 	Duel.ConfirmCards(1-tp,g)
 	local tc=g:GetFirst()
-	-- 洗混己方手牌
+	-- 洗切自己的手牌
 	Duel.ShuffleHand(tp)
 	e:SetLabel(tc:GetOriginalCodeRule())
 end
--- ①效果发动准备：检查怪兽区域空位与自身特召条件，并设置操作信息
+-- 判断特殊召唤的条件是否满足，即自己场上是否有空位且该卡能被特殊召唤
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
-	-- 检查主要怪兽区域是否有空位
+	-- 检查是否有足够的场地区域进行特殊召唤
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and c:IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置连锁操作信息：从手牌特殊召唤自身
+	-- 设置操作信息为特殊召唤
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,c,1,0,0)
 end
--- ①效果处理：从手牌特殊召唤自身，并注册检查召唤记录及结束阶段扣基本分的延迟效果
+-- 执行特殊召唤操作，并注册两个持续效果用于判定是否触发惩罚效果
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToChain() then
-		-- 将此卡从手牌表侧表示特殊召唤到场上
+		-- 将该卡特殊召唤到场上
 		Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 	end
-	-- 发动后，这个回合中自己没有把出示怪兽或者原本卡名和那只怪兽相同的怪兽召唤的场合，结束阶段让自己失去1000基本分。
+	-- 注册一个在召唤成功时触发的效果，用于记录是否召唤了与所出示怪兽同名的怪兽
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e1:SetCode(EVENT_SUMMON_SUCCESS)
 	e1:SetLabel(e:GetLabel())
 	e1:SetOperation(s.regop)
 	e1:SetReset(RESET_PHASE+PHASE_END)
-	-- 注册监听召唤成功事件的全局持续效果
+	-- 将效果e1注册给玩家
 	Duel.RegisterEffect(e1,tp)
-	-- 结束阶段让自己失去1000基本分。
+	-- 注册一个在结束阶段触发的效果，用于判定是否触发惩罚效果
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e2:SetCode(EVENT_PHASE+PHASE_END)
@@ -94,55 +94,55 @@ function s.spop(e,tp,eg,ep,ev,re,r,rp)
 	e2:SetCondition(s.damcon)
 	e2:SetOperation(s.damop)
 	e2:SetLabelObject(e1)
-	-- 注册结束阶段触发扣除基本分的全局效果
+	-- 将效果e2注册给玩家
 	Duel.RegisterEffect(e2,tp)
 end
--- 召唤怪兽过滤条件：由己方召唤且原本卡名与出示怪兽相同
+-- 过滤函数，用于判断是否为指定玩家召唤且原始卡号与目标一致
 function s.regfilter(c,tp,code)
 	return c:IsSummonPlayer(tp) and c:IsOriginalCodeRule(code)
 end
--- 召唤成功监听处理：若召唤了同名怪兽，清空标记（免除扣分）
+-- 当有怪兽被召唤时，检查是否召唤了与所出示怪兽同名的怪兽，若是则标记为已触发
 function s.regop(e,tp,eg,ep,ev,re,r,rp)
 	if e:GetLabel()==0 then return end
 	if eg:IsExists(s.regfilter,1,nil,tp,e:GetLabel()) then
 		e:SetLabel(0)
 	end
 end
--- 结束阶段扣分条件：未成功召唤出示的怪兽（标记未清空）
+-- 判定惩罚效果是否应该触发，即是否在结束阶段前未召唤过同名怪兽
 function s.damcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetLabelObject():GetLabel()~=0
 end
--- 结束阶段扣分处理：让自己失去1000基本分
+-- 执行惩罚效果，使玩家失去1000基本分
 function s.damop(e,tp,eg,ep,ev,re,r,rp)
-	-- 扣除己方1000基本分
+	-- 使玩家失去1000基本分
 	Duel.SetLP(tp,Duel.GetLP(tp)-1000)
 end
--- ②效果发动准备：设置将墓地的自身加入手牌的操作信息
+-- 判断回手的条件是否满足，即该卡能否被送入手牌
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsAbleToHand() end
-	-- 设置连锁操作信息：将墓地的此卡加入手牌
+	-- 设置操作信息为回手
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,e:GetHandler(),1,0,0)
 end
--- ②效果处理：将墓地的自身加入手牌，并注册结束阶段扣基本分检查
+-- 执行回手操作，并注册两个持续效果用于判定是否触发惩罚效果
 function s.thop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 检查自身是否仍与连锁关联且不受王家长眠之谷影响
+	-- 检查该卡是否与连锁相关且未受王家长眠之谷影响
 	if c:IsRelateToChain() and aux.NecroValleyFilter()(c) then
-		-- 将此卡从墓地加入手牌
+		-- 将该卡送入手牌
 		Duel.SendtoHand(c,nil,REASON_EFFECT)
-		-- 向对方确认加入手牌的此卡
+		-- 确认对方能看到所送入手牌的卡
 		Duel.ConfirmCards(1-tp,c)
 	end
-	-- 发动后，这个回合中自己没有把出示怪兽或者原本卡名和那只怪兽相同的怪兽召唤的场合，结束阶段让自己失去1000基本分。
+	-- 注册一个在召唤成功时触发的效果，用于记录是否召唤了与所出示怪兽同名的怪兽
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e1:SetCode(EVENT_SUMMON_SUCCESS)
 	e1:SetLabel(e:GetLabel())
 	e1:SetOperation(s.regop)
 	e1:SetReset(RESET_PHASE+PHASE_END)
-	-- 注册监听召唤成功事件的全局持续效果
+	-- 将效果e1注册给玩家
 	Duel.RegisterEffect(e1,tp)
-	-- 结束阶段让自己失去1000基本分。
+	-- 注册一个在结束阶段触发的效果，用于判定是否触发惩罚效果
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e2:SetCode(EVENT_PHASE+PHASE_END)
@@ -151,50 +151,50 @@ function s.thop(e,tp,eg,ep,ev,re,r,rp)
 	e2:SetCondition(s.damcon)
 	e2:SetOperation(s.damop)
 	e2:SetLabelObject(e1)
-	-- 注册结束阶段触发扣除基本分的全局效果
+	-- 将效果e2注册给玩家
 	Duel.RegisterEffect(e2,tp)
 end
--- 墓地怪兽过滤条件：5星以上的怪兽且可加入手牌
+-- 过滤函数，用于筛选墓地中等级5以上且能送入手牌的怪兽
 function s.thfilter(c)
 	return c:IsLevelAbove(5) and c:IsType(TYPE_MONSTER) and c:IsAbleToHand()
 end
--- ③效果发动准备：检查墓地符合条件的怪兽与自身除外条件，并设置操作信息
+-- 判断第三个效果的发动条件是否满足，即墓地是否存在至少1张5星以上的怪兽且该卡能除外
 function s.thtg2(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
-	-- 检查墓地是否存在除自身外5星以上的怪兽
+	-- 检查是否有满足条件的墓地怪兽可以被选中
 	if chk==0 then return Duel.IsExistingMatchingCard(s.thfilter,tp,LOCATION_GRAVE,0,1,c)
 		and c:IsAbleToRemove() end
-	-- 设置连锁操作信息：从墓地回收1张卡加入手牌
+	-- 设置操作信息为将墓地中的怪兽送入手牌
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_GRAVE)
-	-- 设置连锁操作信息：将墓地的此卡除外
+	-- 设置操作信息为除外该卡
 	Duel.SetOperationInfo(0,CATEGORY_REMOVE,c,1,0,0)
 end
--- ③效果处理：将墓地的自身除外，从墓地把1只5星以上的怪兽加入手牌，并注册结束阶段扣分检查
+-- 执行第三个效果的操作，先除外该卡再从墓地选择一张5星以上的怪兽送入手牌，并注册两个持续效果用于判定是否触发惩罚效果
 function s.thop2(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 将墓地的此卡除外（受王谷过滤影响）
+	-- 检查该卡是否与连锁相关且未受王家长眠之谷影响且成功除外
 	if c:IsRelateToChain() and aux.NecroValleyFilter()(c) and Duel.Remove(c,0,REASON_EFFECT)~=0 then
-		-- 提示玩家选择要从墓地回收加入手牌的卡
+		-- 向玩家提示“请选择要加入手牌的卡”
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-		-- 从墓地选择1只5星以上的怪兽
+		-- 从墓地中选择一张5星以上的怪兽送入手牌
 		local g=Duel.SelectMatchingCard(tp,aux.NecroValleyFilter(s.thfilter),tp,LOCATION_GRAVE,0,1,1,nil)
 		if g:GetCount()>0 then
-			-- 将选中的怪兽从墓地加入手牌
+			-- 将选中的怪兽送入手牌
 			Duel.SendtoHand(g,nil,REASON_EFFECT)
-			-- 向对方确认加入手牌的怪兽
+			-- 确认对方能看到所送入手牌的卡
 			Duel.ConfirmCards(1-tp,g)
 		end
 	end
-	-- 发动后，这个回合中自己没有把出示怪兽或者原本卡名和那只怪兽相同的怪兽召唤的场合，结束阶段让自己失去1000基本分。
+	-- 注册一个在召唤成功时触发的效果，用于记录是否召唤了与所出示怪兽同名的怪兽
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e1:SetCode(EVENT_SUMMON_SUCCESS)
 	e1:SetLabel(e:GetLabel())
 	e1:SetOperation(s.regop)
 	e1:SetReset(RESET_PHASE+PHASE_END)
-	-- 注册监听召唤成功事件的全局持续效果
+	-- 将效果e1注册给玩家
 	Duel.RegisterEffect(e1,tp)
-	-- 结束阶段让自己失去1000基本分。
+	-- 注册一个在结束阶段触发的效果，用于判定是否触发惩罚效果
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e2:SetCode(EVENT_PHASE+PHASE_END)
@@ -203,6 +203,6 @@ function s.thop2(e,tp,eg,ep,ev,re,r,rp)
 	e2:SetCondition(s.damcon)
 	e2:SetOperation(s.damop)
 	e2:SetLabelObject(e1)
-	-- 注册结束阶段触发扣除基本分的全局效果
+	-- 将效果e2注册给玩家
 	Duel.RegisterEffect(e2,tp)
 end
