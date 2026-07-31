@@ -3,13 +3,13 @@
 -- 这张卡不能通常召唤。把自己墓地1只名字带有「云魔物」的怪兽从游戏中除外特殊召唤。这张卡不会被战斗破坏。这张卡表侧守备示在场上存在的场合，这张卡破坏。1回合只有1次，可以给场上1只怪兽放置1个雾指示物。
 function c13474291.initial_effect(c)
 	c:EnableReviveLimit()
-	-- 这张卡不会被战斗破坏
+	-- 这张卡不会被战斗破坏。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_INDESTRUCTABLE_BATTLE)
 	e1:SetValue(1)
 	c:RegisterEffect(e1)
-	-- 这张卡表侧守备示在场上存在的场合，这张卡破坏
+	-- 这张卡表侧守备示在场上存在的场合，这张卡破坏。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_SINGLE)
 	e2:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
@@ -17,7 +17,7 @@ function c13474291.initial_effect(c)
 	e2:SetCode(EFFECT_SELF_DESTROY)
 	e2:SetCondition(c13474291.sdcon)
 	c:RegisterEffect(e2)
-	-- 把自己墓地1只名字带有「云魔物」的怪兽从游戏中除外特殊召唤
+	-- 把自己墓地1只名字带有「云魔物」的怪兽从游戏中除外特殊召唤。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_FIELD)
 	e3:SetCode(EFFECT_SPSUMMON_PROC)
@@ -27,7 +27,7 @@ function c13474291.initial_effect(c)
 	e3:SetTarget(c13474291.sptg)
 	e3:SetOperation(c13474291.spop)
 	c:RegisterEffect(e3)
-	-- 1回合只有1次，可以给场上1只怪兽放置1个雾指示物
+	-- 1回合只有1次，可以给场上1只怪兽放置1个雾指示物。
 	local e4=Effect.CreateEffect(c)
 	e4:SetDescription(aux.Stringid(13474291,0))  --"放置指示物"
 	e4:SetType(EFFECT_TYPE_IGNITION)
@@ -41,28 +41,28 @@ end
 c13474291.mentioned_counter={
 	[0x1019]=true,
 }
--- 判断当前卡片是否处于表侧守备表示
+-- 定义自我破坏效果的触发条件函数，检查怪兽是否处于表侧守备位置
 function c13474291.sdcon(e)
 	return e:GetHandler():IsPosition(POS_FACEUP_DEFENSE)
 end
--- 过滤满足条件的墓地云魔物怪兽（可除外作为特殊召唤cost）
+-- 定义墓地云魔物怪兽的过滤条件：属于「云魔物」系列、怪兽卡且能作为代价除外
 function c13474291.cfilter(c)
 	return c:IsSetCard(0x18) and c:IsType(TYPE_MONSTER) and c:IsAbleToRemoveAsCost()
 end
--- 判断是否满足特殊召唤条件（场上有空位且墓地有云魔物怪兽）
+-- 特殊召唤时的效果发动条件判定函数，检查场上是否有空位以及墓地里是否存在符合条件的云魔物怪兽
 function c13474291.spcon(e,c)
 	if c==nil then return true end
 	local tp=c:GetControler()
-	-- 检查玩家场上主怪兽区是否有可用空间
+	-- 检索控制器在主要怪兽区的可用空格数，用于判断是否满足苏生位置要求
 	return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查玩家墓地是否存在至少1只名字带有「云魔物」的怪兽
+		-- 结合前一个条件，进一步验证墓地中是否存在至少一只符合过滤条件的云魔物怪兽
 		and Duel.IsExistingMatchingCard(c13474291.cfilter,tp,LOCATION_GRAVE,0,1,nil)
 end
--- 选择并标记要除外的墓地云魔物怪兽
+-- 定义特殊召唤效果的目标选择逻辑，从墓地的符合条件的怪兽中让玩家选定一只作为代价除去
 function c13474291.sptg(e,tp,eg,ep,ev,re,r,rp,chk,c)
-	-- 获取满足条件的墓地云魔物怪兽组
+	-- 检索墓地中的所有符合筛选条件的「云魔物」怪兽组成一个卡组对象
 	local g=Duel.GetMatchingGroup(c13474291.cfilter,tp,LOCATION_GRAVE,0,nil)
-	-- 提示玩家选择要除外的卡
+	-- 弹出对话框或缓存提示信息，要求玩家确认选择哪张墓地怪兽进行除外特殊召唤
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
 	local tc=g:SelectUnselect(nil,tp,false,true,1,1)
 	if tc then
@@ -70,25 +70,25 @@ function c13474291.sptg(e,tp,eg,ep,ev,re,r,rp,chk,c)
 		return true
 	else return false end
 end
--- 执行将选中的卡从游戏中除外的操作
+-- 定义特殊召唤效果的最终处理逻辑，将选定的卡片从游戏中除外并计入特殊召唤原因
 function c13474291.spop(e,tp,eg,ep,ev,re,r,rp,c)
 	local g=e:GetLabelObject()
-	-- 将目标卡片从游戏中除外（特殊召唤原因）
+	-- 执行选定卡组的除外操作，将其从游戏中移出并标记为特殊召唤来源
 	Duel.Remove(g,POS_FACEUP,REASON_SPSUMMON)
 end
--- 设置指示物效果的目标选择逻辑
+-- 定义起动效果的目标选择函数：筛选能够添加雾指示物的表侧表示怪兽作为对象
 function c13474291.cttg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsCanAddCounter(0x1019,1) end
-	-- 检查场上是否存在可放置指示物的怪兽
+	-- 检查场上是否至少有1只能够接受雾指示物的表侧表示怪兽，用于确定目标选择的有效性
 	if chk==0 then return Duel.IsExistingTarget(Card.IsCanAddCounter,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil,0x1019,1) end
-	-- 提示玩家选择要放置指示物的表侧表示怪兽
+	-- 弹出对话框或缓存提示信息，指示玩家从场上的合法对象中选择一张卡片进行后续操作
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
-	-- 选择场上一只可放置指示物的表侧表示怪兽
+	-- 执行最终的目标选择操作，将选定的怪兽设为当前效果的关联目标对象
 	Duel.SelectTarget(tp,Card.IsCanAddCounter,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,nil,0x1019,1)
 end
--- 执行放置雾指示物的操作
+-- 定义起动效果的结算逻辑，从连锁中获取第一张目标卡片并尝试向其添加雾指示物
 function c13474291.ctop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁效果的目标卡片
+	-- 获取当前效果关联的第一张目标卡片实例，以便进行后续的指示物添加操作
 	local tc=Duel.GetFirstTarget()
 	if tc:IsFaceup() and tc:IsRelateToEffect(e) then
 		tc:AddCounter(0x1019,1)

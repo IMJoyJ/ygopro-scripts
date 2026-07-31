@@ -12,7 +12,7 @@ function c15610297.initial_effect(c)
 	e1:SetRange(LOCATION_MZONE)
 	e1:SetValue(1)
 	c:RegisterEffect(e1)
-	-- ②：这张卡和对方怪兽进行战斗的伤害步骤结束时才能发动。怪兽区域的这张卡当作永续魔法卡使用在自己的魔法与陷阱区域表侧表示放置，给那只对方怪兽放置1个方界指示物。有方界指示物放置的怪兽不能攻击，效果无效化。
+	-- ②：这张卡和对方怪兽进行战斗的伤害步骤结束时才能发动。怪兽区域的这张卡当作永续魔法卡使用在自己的魔法与陷阱区域表侧表示放置，给那只对方怪兽放置 1 个方界指示物。有方界指示物放置的怪兽不能攻击，效果无效化。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(15610297,0))
 	e2:SetCategory(CATEGORY_COUNTER)
@@ -35,22 +35,22 @@ end
 c15610297.mentioned_counter={
 	[0x1038]=true,
 }
--- 检查是否满足效果发动条件：对方怪兽存在且正面表示、自身在怪兽区且参与战斗、魔法与陷阱区有空位。
+-- 效果处理：定义触发效果的发动条件检查函数 distg，确认对方怪兽在场正面、可加指示物、自身在怪兽区且与战斗相关以及魔法陷阱区域有空位。
 function c15610297.distg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	local bc=c:GetBattleTarget()
 	if chk==0 then return bc and bc:IsFaceup() and bc:IsRelateToBattle() and bc:IsCanAddCounter(0x1038,1)
 		and c:IsLocation(LOCATION_MZONE) and c:IsRelateToBattle()
-		-- 检查魔法与陷阱区是否有空位以进行移动。
+		-- 条件检查：确认魔法与陷阱区域是否有空位，用于移动卡片位置至魔陷区。
 		and Duel.GetLocationCount(tp,LOCATION_SZONE)>0 end
 end
--- 执行效果处理：将自身移至魔法与陷阱区并变为永续魔法卡，给对方怪兽放置1个方界指示物，并使该怪兽不能攻击和效果无效化。
+-- 效果处理：定义触发效果的发动操作函数 disop，将怪兽移至魔法陷阱区并改变种类为永续魔法卡，记录标志位，给对手怪兽放置指示物并赋予不能攻击及无效化效果。
 function c15610297.disop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if not c:IsRelateToEffect(e) or c:IsImmuneToEffect(e) or not c:IsLocation(LOCATION_MZONE) then return end
-	-- 尝试将自身从怪兽区移动到魔法与陷阱区，若失败则返回。
+	-- 操作检查：确认将卡片移动到魔法陷阱区域是否成功，失败则返回结束处理流程。
 	if not Duel.MoveToField(c,tp,tp,LOCATION_SZONE,POS_FACEUP,true) then return end
-	-- 将自身卡片类型更改为永续魔法卡。
+	-- ②中“怪兽区域的这张卡当作永续魔法卡使用在自己的魔法与陷阱区域表侧表示放置”对应的类型改变逻辑实现。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCode(EFFECT_CHANGE_TYPE)
 	e1:SetType(EFFECT_TYPE_SINGLE)
@@ -62,7 +62,7 @@ function c15610297.disop(e,tp,eg,ep,ev,re,r,rp)
 	local bc=c:GetBattleTarget()
 	if bc:IsRelateToBattle() and bc:IsFaceup() then
 		bc:AddCounter(0x1038,1)
-		-- 使放置了方界指示物的对方怪兽不能攻击。
+		-- ②中“有方界指示物放置的怪兽不能攻击，效果无效化。”对应的逻辑实现及条件检查函数定义。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_CANNOT_ATTACK)
@@ -74,26 +74,26 @@ function c15610297.disop(e,tp,eg,ep,ev,re,r,rp)
 		bc:RegisterEffect(e2)
 	end
 end
--- 条件函数：当怪兽拥有方界指示物时触发效果。
+-- 条件检查：确认对方怪兽身上的方界指示物数量是否大于零，以此决定是否生效不能攻击效果。
 function c15610297.condition(e)
 	return e:GetHandler():GetCounter(0x1038)>0
 end
--- 判断是否已通过效果将自身变为永续魔法卡（通过flag标记判断）。
+-- 发动条件：确认卡片在魔法陷阱区域时身上是否有对应的标志位效果（即已执行过怪兽区转魔陷区的转换）。
 function c15610297.spcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():GetFlagEffect(15610297)~=0
 end
--- 检查是否满足特殊召唤条件：场上存在空位且自身可被特殊召唤。
+-- 发动目标检查：定义特殊召唤的目标选择函数 sptg，初步确认主要怪兽区和卡片苏生能力。
 function c15610297.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查场上是否有空位以进行特殊召唤。
+	-- 条件检查：确认主要怪兽区是否有空位，用于特殊召唤。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置操作信息：准备将自身特殊召唤至怪兽区。
+	-- 操作信息设置：为后续的特殊召唤效果处理确定分类和对象数量（CATEGORY_SPECIAL_SUMMON）。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 执行特殊召唤操作：将自身从魔法与陷阱区特殊召唤至怪兽区。
+-- ③中“魔法与陷阱区域的这张卡特殊召唤。”对应的操作函数定义及执行逻辑。
 function c15610297.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if not c:IsRelateToEffect(e) then return end
-	-- 将自身以正面表示形式特殊召唤至玩家场上。
+	-- 效果处理：将卡片从魔法陷阱区域特殊召唤回主要怪兽区（正面表示）。
 	Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 end

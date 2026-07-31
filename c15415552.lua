@@ -1,13 +1,13 @@
 --Mortilux Heruvur
 local s,id,o=GetID()
--- 为卡片添加XYZ召唤手续并注册触发效果
+-- 初始化卡片效果，包括XYZ召唤手续、墓地触发事件注册及四个主要效果组件(e1-e5)。
 function s.initial_effect(c)
-	-- 为卡片添加XYZ召唤手续，需要8星且叠放2只怪兽
+	-- 设置XYZ召唤手续，要求等级8以上的怪兽叠放。
 	aux.AddXyzProcedure(c,nil,8,2,nil,nil,99)
 	c:EnableReviveLimit()
-	-- 注册合并的延迟事件监听，用于限制自身诱发效果在连锁中只响应一次
+	-- 为单张卡片注册合并的延迟事件监听，以限制其自身诱发效果在一连锁中只响应一次（对应墓地触发）。
 	local custom_code=aux.RegisterMergedDelayedEvent_ToSingleCard(c,id,EVENT_TO_GRAVE)
-	-- 设置一个字段诱发效果，当有对方控制的卡进入墓地时发动，可以将对方墓地的怪兽叠放
+	-- 当这张卡从场上送去墓地时（每回合一次）：选择对方墓地的一只XYZ素材怪兽重叠到这张卡上。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(id,0))
 	e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
@@ -19,7 +19,7 @@ function s.initial_effect(c)
 	e1:SetTarget(s.rmtg)
 	e1:SetOperation(s.rmop)
 	c:RegisterEffect(e1)
-	-- 设置一个永续效果，使该卡不会被战斗破坏
+	-- 当这张卡的叠放数量达到2以上时，不会被战斗破坏的效果发动。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_SINGLE)
 	e2:SetCode(EFFECT_INDESTRUCTABLE_BATTLE)
@@ -29,18 +29,18 @@ function s.initial_effect(c)
 	local e3=e2:Clone()
 	e3:SetCode(EFFECT_INDESTRUCTABLE_EFFECT)
 	c:RegisterEffect(e3)
-	-- 设置一个字段效果，使该卡不能成为对方效果的对象
+	-- 当这张卡的叠放数量达到3以上时，对方效果的对象不能是墓地里的卡。
 	local e4=Effect.CreateEffect(c)
 	e4:SetType(EFFECT_TYPE_FIELD)
 	e4:SetProperty(EFFECT_FLAG_IGNORE_IMMUNE)
 	e4:SetCode(EFFECT_CANNOT_BE_EFFECT_TARGET)
 	e4:SetRange(LOCATION_MZONE)
 	e4:SetTargetRange(LOCATION_GRAVE,LOCATION_GRAVE)
-	-- 设置效果值为过滤函数，用于判断目标是否能成为效果对象
+	-- 设置效果值为一个过滤函数，用于判断目标卡是否由当前处理效果的持有者控制。
 	e4:SetValue(aux.tgoval)
 	e4:SetCondition(s.effcon(3))
 	c:RegisterEffect(e4)
-	-- 设置一个起动效果，可以消耗3个叠放卡将场上怪兽送去墓地
+	-- 发动时（每回合一次）：支付代价（移除最多3张叠放素材），选择场上的一张怪兽送去墓地。
 	local e5=Effect.CreateEffect(c)
 	e5:SetDescription(aux.Stringid(id,1))
 	e5:SetCategory(CATEGORY_TOGRAVE)
@@ -52,67 +52,67 @@ function s.initial_effect(c)
 	e5:SetOperation(s.tgop)
 	c:RegisterEffect(e5)
 end
--- 条件函数，判断是否有对方控制的卡进入墓地
+-- 检查触发时送入墓地的怪兽组中是否包含对方控制的卡片（通常指这张卡本身或相关素材）。
 function s.rmcon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(Card.IsControler,1,nil,1-tp)
 end
--- 过滤函数，用于筛选满足条件的墓地怪兽
+-- 定义了一个过滤器函数，筛选墓地中属于对方、类型为怪兽且可叠放并能成为当前效果对象的卡片。
 function s.xyzfilter(c,tp,e)
 	return c:IsLocation(LOCATION_GRAVE) and c:IsControler(1-tp) and c:IsType(TYPE_MONSTER) and c:IsCanOverlay()
 		and c:IsCanBeEffectTarget(e)
 end
--- 设置效果目标，选择符合条件的墓地怪兽作为对象
+-- 处理目标选择逻辑：过滤符合条件的墓地怪兽并检查是否包含已选对象（如有），若有效则提示玩家选择一张卡作为重叠素材。
 function s.rmtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	local sg=eg:Filter(s.xyzfilter,nil,tp,e)
 	if chkc then return sg:IsContains(chkc) end
 	if chk==0 then return sg:GetCount()>0 end
-	-- 提示玩家选择效果的对象
+	-- 向指定玩家显示\"请选择效果的对象\"的提示信息，用于引导玩家进行卡片选择操作。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)  --"请选择效果的对象"
 	local g=sg:Select(tp,1,1,nil)
-	-- 将选中的卡设为当前连锁的效果对象
+	-- 将当前连锁的处理对象设置为玩家选择的怪兽组g，以便后续效果处理使用。
 	Duel.SetTargetCard(g)
-	-- 设置操作信息，记录将要离开墓地的卡
+	-- 设置当前连锁的操作信息为从墓地离开（CATEGORY_LEAVE_GRAVE），目标数量为1张卡。
 	Duel.SetOperationInfo(0,CATEGORY_LEAVE_GRAVE,g,1,0,0)
 end
--- 设置效果处理函数，将目标怪兽叠放到该卡上
+-- 执行重叠操作：如果满足相关条件且未被王家长眠之谷影响，则将选中的墓地怪兽叠放到当前卡片上。
 function s.rmop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取当前连锁的效果对象
+	-- 获取当前连锁的第一个处理对象卡tc，用于后续的重叠或效果判断逻辑。
 	local tc=Duel.GetFirstTarget()
-	-- 判断该卡和对象卡是否仍在连锁中且未被王家长眠之谷影响
+	-- 检查目标卡和源卡是否都关联到当前连锁且未被王家长眠之谷影响（确保重叠操作有效）。
 	if c:IsRelateToChain() and tc:IsRelateToChain() and aux.NecroValleyFilter()(tc) then
-		-- 将对象怪兽叠放到该卡上
+		-- 将选中的墓地怪兽作为叠放素材叠加到当前卡片c上，实现复活或补充XYZ素材的效果。
 		Duel.Overlay(c,Group.FromCards(tc))
 	end
 end
--- 条件函数生成器，返回一个判断叠放数量是否满足条件的函数
+-- 定义一个条件函数effcon(ct)，用于检查当前卡片的叠放数量是否达到指定阈值ct（如2或3）。
 function s.effcon(ct)
 	return function(e,tp,eg,ep,ev,re,r,rp)
 		return e:GetHandler():GetOverlayCount()>=ct
 	end
 end
--- 设置效果费用，消耗3个叠放卡作为费用
+-- 处理起动效果的代价逻辑：检查并移除最多3张叠放素材作为发动效果的费用。
 function s.tgcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():CheckRemoveOverlayCard(tp,3,REASON_COST) end
 	e:GetHandler():RemoveOverlayCard(tp,3,3,REASON_COST)
 end
--- 设置效果目标，检查场上是否有怪兽可以送去墓地
+-- 处理目标选择逻辑：检查场上是否存在至少一张可送去墓地的怪兽，用于确定操作信息中的数量。
 function s.tgtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查场上是否存在可送去墓地的怪兽
+	-- 检查场上是否满足存在至少一张可送去墓地怪兽的条件（PLAYER_ALL表示任意玩家）。
 	if chk==0 then return Duel.IsExistingMatchingCard(Card.IsAbleToGrave,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil) end
-	-- 设置操作信息，记录将要送去墓地的卡
+	-- 设置当前连锁的操作信息为从墓地离开（CATEGORY_TOGRAVE），目标数量为1张卡，范围为全场或指定区域。
 	Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,nil,1,PLAYER_ALL,LOCATION_MZONE)
 end
--- 设置效果处理函数，选择场上怪兽送去墓地
+-- 处理起动效果的发动操作：提示玩家选择要送去墓地的怪兽并执行发送动作。
 function s.tgop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要送去墓地的卡
+	-- 向指定玩家显示\"请选择要送去墓地的卡\"的提示信息，用于引导玩家进行卡片选择操作。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
-	-- 选择场上符合条件的怪兽作为目标
+	-- 让玩家sel_player从场上（LOCATION_MZONE）中选择一张可送去墓地且数量为1张的怪兽作为目标。
 	local g=Duel.SelectMatchingCard(tp,Card.IsAbleToGrave,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,nil)
 	if g:GetCount()>0 then
-		-- 显示选中的卡被选为对象的动画效果
+		-- 手动为选中的怪兽组g显示被选为对象的动画效果，并记录这些卡被选为对象的状态。
 		Duel.HintSelection(g)
-		-- 将选中的卡以效果原因送去墓地
+		-- 以REASON_EFFECT原因将选中的怪兽组g送入墓地，完成效果的最终结算操作。
 		Duel.SendtoGrave(g,REASON_EFFECT)
 	end
 end

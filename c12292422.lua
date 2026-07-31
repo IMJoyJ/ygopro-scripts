@@ -3,7 +3,7 @@
 -- 这个卡名的卡在1回合只能发动1张。
 -- ①：把手卡1张「化石融合」给对方观看才能发动。从手卡把1只怪兽送去墓地，宣言种族和等级各1个。对方把自身的手卡·卡组确认，有持有宣言的种族·等级的怪兽的场合，那之内的1只送去墓地。
 function c12292422.initial_effect(c)
-	-- 添加卡名关联，使卡组检测系统知道此卡记载着「化石融合」(密码59419719)
+	-- 注册卡片名称代码，用于效果文本检查（对应原文：'这个卡名的卡在1回合只能发动1张。'）
 	aux.AddCodeList(c,59419719)
 	-- ①：把手卡1张「化石融合」给对方观看才能发动。从手卡把1只怪兽送去墓地，宣言种族和等级各1个。对方把自身的手卡·卡组确认，有持有宣言的种族·等级的怪兽的场合，那之内的1只送去墓地。
 	local e1=Effect.CreateEffect(c)
@@ -16,69 +16,69 @@ function c12292422.initial_effect(c)
 	e1:SetOperation(c12292422.operation)
 	c:RegisterEffect(e1)
 end
--- 过滤函数：检查卡片是否为「化石融合」且未公开（在手卡中隐藏）
+-- 定义过滤函数，用于检查卡片名称代码（对应原文：'把手卡1张「化石融合」给对方观看才能发动。」）
 function c12292422.cfilter(c)
 	return c:IsCode(59419719) and not c:IsPublic()
 end
--- 代价处理：检查手卡是否有「化石融合」可给对方确认，并执行展示和洗牌
+-- 定义效果处理时的代价函数，用于检查并选择对方确认的卡片（对应原文：'把手卡1张「化石融合」给对方观看才能发动。」）
 function c12292422.cost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 代价检测：确认玩家手卡中存在未公开的「化石融合」
+	-- 检查代价条件是否成立，即确认是否有符合条件的卡片在手牌（对应原文：'把手卡1张「化石融合」给对方观看才能发动。」）
 	if chk==0 then return Duel.IsExistingMatchingCard(c12292422.cfilter,tp,LOCATION_HAND,0,1,nil) end
-	-- 发送提示信息，要求玩家选择要给对方确认的卡
+	-- 向玩家发送提示信息，指示其进行选择（对应原文：'把手卡1张「化石融合」给对方观看才能发动。」）
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_CONFIRM)  --"请选择给对方确认的卡"
-	-- 让玩家从手卡中选择1张「化石融合」
+	-- 执行选择操作，让玩家指定一张符合条件的卡片（对应原文：'把手卡1张「化石融合」给对方观看才能发动。」）
 	local g=Duel.SelectMatchingCard(tp,c12292422.cfilter,tp,LOCATION_HAND,0,1,1,nil)
-	-- 将选中的卡展示给对方玩家确认
+	-- 将选定的卡片展示给对手查看（对应原文：'把手卡1张「化石融合」给对方观看才能发动。」）
 	Duel.ConfirmCards(1-tp,g)
-	-- 洗切玩家手卡（重置手卡检测状态）
+	-- 手动洗牌玩家的手牌以重置检测状态（对应原文：'把手卡1张「化石融合」给对方观看才能发动。」）
 	Duel.ShuffleHand(tp)
 end
--- 过滤函数：检查卡片是否未公开或是怪兽（用于检测对方是否有可确认的卡）
+-- 定义辅助过滤函数，用于目标效果中判断卡片类型（对应原文：'从手卡把1只怪兽送去墓地...'）
 function c12292422.tgfilter0(c)
 	return not c:IsPublic() or c:IsType(TYPE_MONSTER)
 end
--- 目标处理：检测玩家手卡是否有怪兽，以及对方是否有卡组或手卡可确认
+-- 定义效果处理的目标函数，检查是否满足发动后的操作前提（对应原文：'从手卡把1只怪兽送去墓地...'）
 function c12292422.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then
-		-- 检测玩家手卡是否存在怪兽，若无则不能发动
+		-- 检查目标条件，确保手牌中有可被选中的怪兽（对应原文：'从手卡把1只怪兽送去墓地...'）
 		if not Duel.IsExistingMatchingCard(Card.IsType,tp,LOCATION_HAND,0,1,nil,TYPE_MONSTER) then return false end
-		-- 获取对方卡组数量
+		-- 统计对手卡组或玩家手卡的特定区域数量（对应原文：'对方把自身的手卡·卡组确认...'）
 		local mc=Duel.GetFieldGroupCount(tp,0,LOCATION_DECK)
-		-- 获取对方手卡
+		-- 获取玩家当前手牌的卡片集合（对应原文：'从手卡把1只怪兽送去墓地...'）
 		local g=Duel.GetFieldGroup(tp,0,LOCATION_HAND)
 		return mc>0 or g and g:IsExists(c12292422.tgfilter0,1,nil) end
-	-- 设置操作信息，宣告将执行送墓效果
+	-- 设定连锁操作分类及目标位置，指示后续将卡片送入墓地（对应原文：'从手卡把1只怪兽送去墓地...'）
 	Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,nil,1,tp,LOCATION_DECK)
 end
--- 过滤函数：检查卡片是否符合宣言的种族和等级且可送墓
+-- 定义辅助过滤函数，根据宣告的种族和等级筛选对手的卡片（对应原文：'有持有宣言的种族·等级的怪兽...'）
 function c12292422.tgfilter(c,race,lv)
 	return c:IsType(TYPE_MONSTER) and c:IsRace(race) and c:IsLevel(lv) and c:IsAbleToGrave()
 end
--- 效果处理：从手卡选怪送墓，宣言种族和等级，然后对方确认手卡·卡组并送墓符合条件的怪
+-- 定义效果发动后的具体执行流程，包括选择、宣告和确认（对应原文：'从手卡把1只怪兽送去墓地...'）
 function c12292422.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 发送提示信息，要求玩家选择要送去墓地的卡
+	-- 指示玩家选择一张要送入墓地的卡片（对应原文：'从手卡把1只怪兽送去墓地...'）
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
-	-- 让玩家从手卡中选择1只怪兽
+	-- 玩家从手牌中选择一只怪兽（对应原文：'从手卡把1只怪兽送去墓地...'）
 	local g=Duel.SelectMatchingCard(tp,Card.IsType,tp,LOCATION_HAND,0,1,1,nil,TYPE_MONSTER)
-	-- 若成功送墓且怪兽到达墓地，则执行后续处理（宣言种族和等级）
+	-- 确认怪兽已送入墓地后，准备进行后续的宣告步骤（对应原文：'宣言种族和等级各1个。...'）
 	if g:GetCount()>0 and Duel.SendtoGrave(g,REASON_EFFECT)>0 and g:GetFirst():IsLocation(LOCATION_GRAVE) then
-		-- 发送提示信息，要求玩家宣言种族
+		-- 指示玩家宣言种族信息（对应原文：'对方把自身的手卡·卡组确认...'）
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_RACE)  --"请选择要宣言的种族"
-		-- 让玩家宣言1个种族（从全种族中选择）
+		-- 玩家从可选列表中选择一个种族进行宣告（对应原文：'有持有宣言的种族·等级的怪兽...'）
 		local race=Duel.AnnounceRace(tp,1,RACE_ALL)
-		-- 发送提示信息，要求玩家宣言等级
+		-- 指示玩家宣告等级信息（对应原文：'有持有宣言的种族·等级的怪兽...'）
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_LVRANK)
-		-- 让玩家宣言1个等级（1-12级）
+		-- 玩家选择一个等级进行宣告（对应原文：'有持有宣言的种族·等级的怪兽...'）
 		local lv=Duel.AnnounceLevel(tp)
-		-- 获取对方的手卡和卡组
+		-- 收集对手的场地区域卡片集合用于后续确认（对应原文：'对方把自身的手卡·卡组确认...'）
 		local cg=Duel.GetFieldGroup(tp,0,LOCATION_HAND+LOCATION_DECK)
-		-- 让玩家确认对方的全部手卡和卡组
+		-- 将收集到的对手卡片展示给其查看（对应原文：'对方把自身的手卡·卡组确认...'）
 		Duel.ConfirmCards(1-tp,cg)
-		-- 发送提示信息，要求对方选择要送去墓地的卡
+		-- 指示对手从确认的卡片中选择一张送入墓地（对应原文：'那之内的1只送去墓地。...'）
 		Duel.Hint(HINT_SELECTMSG,1-tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
 		local sg=cg:FilterSelect(1-tp,c12292422.tgfilter,1,1,nil,race,lv)
 		if sg:GetCount()>0 then
-			-- 将对方选中的卡片送去墓地
+			-- 执行最终操作，将符合条件的对手卡片送入墓地（对应原文：'那之内的1只送去墓地。...'）
 			Duel.SendtoGrave(sg,REASON_EFFECT)
 		end
 	end
