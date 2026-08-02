@@ -37,38 +37,39 @@ c98162021.counter_add_list={0x3}
 c98162021.mentioned_counter={
 	[0x3]=true,
 }
+-- 设置效果发动的条件判断和操作信息，预计放置1个武士道指示物
 function c98162021.addct(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置操作信息，表示该效果的处理为在场上放置1个武士道指示物
+	-- 设置操作信息，预计要放置1个武士道指示物
 	Duel.SetOperationInfo(0,CATEGORY_COUNTER,nil,1,0,0x3)
 end
--- 召唤成功时放置指示物效果的处理：若自身仍在场，则给自身放置1个武士道指示物
+-- 效果处理，给这张卡放置1个武士道指示物
 function c98162021.addc(e,tp,eg,ep,ev,re,r,rp)
 	if e:GetHandler():IsRelateToEffect(e) then
 		e:GetHandler():AddCounter(0x3,1)
 	end
 end
--- 攻击力上升值计算：每个武士道指示物使攻击力上升300点
+-- 计算上升的攻击力，数值为武士道指示物数量乘300
 function c98162021.attackup(e,c)
 	return c:GetCounter(0x3)*300
 end
--- 移去自身指示物并给场上其他卡放置指示物效果的发动条件与目标选择判定
+-- 判断能否取除自身指示物并且场上有能放置指示物的卡作为对象
 function c98162021.addct2(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsOnField() and chkc:IsCanAddCounter(0x3,1) end
 	if chk==0 then return e:GetHandler():IsCanRemoveCounter(tp,0x3,1,REASON_EFFECT)
-		-- 判定场上是否存在除自身以外、可以放置武士道指示物的卡片
+		-- 检查场上是否存在至少1张可以放置武士道指示物的卡
 		and Duel.IsExistingTarget(Card.IsCanAddCounter,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,e:GetHandler(),0x3,1) end
-	-- 提示玩家选择要放置指示物的卡片
+	-- 向玩家提示请选择要放置指示物的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_COUNTER)  --"请选择要放置指示物的卡"
-	-- 选择场上1张可以放置武士道指示物的卡作为效果的对象
+	-- 让玩家选择1张可以放置武士道指示物的卡作为对象
 	Duel.SelectTarget(tp,Card.IsCanAddCounter,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,1,e:GetHandler(),0x3,1)
 end
--- 移去自身指示物并给目标卡片放置指示物效果的处理：移去自身1个武士道指示物，并给选择的表侧表示对象卡片放置1个武士道指示物
+-- 效果处理，取除自身的指示物并给目标卡放置1个武士道指示物
 function c98162021.addc2(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:GetCounter(0x3)==0 then return end
 	c:RemoveCounter(tp,0x3,1,REASON_EFFECT)
-	-- 获取在发动时选择的作为效果对象的卡片
+	-- 获取被选为效果对象的卡
 	local tc=Duel.GetFirstTarget()
 	if tc:IsFaceup() and tc:IsRelateToEffect(e) then
 		tc:AddCounter(0x3,1)

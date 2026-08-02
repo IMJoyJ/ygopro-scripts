@@ -9,7 +9,7 @@
 -- ●10：选场上1张卡破坏。
 function c9634146.initial_effect(c)
 	c:EnableReviveLimit()
-	-- 为这张卡添加同调召唤手续（1只调整和1只以上调整以外的怪兽）
+	-- 为信号战士添加同调召唤手续：调整＋调整以外的怪兽1只以上
 	aux.AddSynchroProcedure(c,nil,aux.NonTuner(nil),1)
 	-- ①：每次双方的准备阶段发动。给这张卡以及场地区域的表侧表示的卡全部各放置1个信号指示物。
 	local e1=Effect.CreateEffect(c)
@@ -21,7 +21,7 @@ function c9634146.initial_effect(c)
 	e1:SetRange(LOCATION_MZONE)
 	e1:SetOperation(c9634146.ctop)
 	c:RegisterEffect(e1)
-	-- ②：有信号指示物放置的这张卡不会被战斗以及对方的效果破坏。（此处对应不会被战斗破坏）
+	-- ②：有信号指示物放置的这张卡不会被战斗
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_SINGLE)
 	e2:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
@@ -32,7 +32,7 @@ function c9634146.initial_effect(c)
 	c:RegisterEffect(e2)
 	local e3=e2:Clone()
 	e3:SetCode(EFFECT_INDESTRUCTABLE_EFFECT)
-	-- 设置不会被对方的效果破坏的过滤函数
+	-- 以及对方的效果破坏。
 	e3:SetValue(aux.indoval)
 	c:RegisterEffect(e3)
 	-- ③：1回合1次，可以把自己·对方场上的信号指示物的以下数量取除，那个效果发动。●4：给与对方800伤害。
@@ -47,7 +47,7 @@ function c9634146.initial_effect(c)
 	e4:SetTarget(c9634146.damtg)
 	e4:SetOperation(c9634146.damop)
 	c:RegisterEffect(e4)
-	-- ③：1回合1次，可以把自己·对方场上的信号指示物的以下数量取除，那个效果发动。●7：自己从卡组抽1张。
+	-- ●7：自己从卡组抽1张。
 	local e5=Effect.CreateEffect(c)
 	e5:SetCategory(CATEGORY_DRAW)
 	e5:SetDescription(aux.Stringid(9634146,2))  --"7：自己从卡组抽1张。"
@@ -59,7 +59,7 @@ function c9634146.initial_effect(c)
 	e5:SetTarget(c9634146.drtg)
 	e5:SetOperation(c9634146.drop)
 	c:RegisterEffect(e5)
-	-- ③：1回合1次，可以把自己·对方场上的信号指示物的以下数量取除，那个效果发动。●10：选场上1张卡破坏。
+	-- ●10：选场上1张卡破坏。
 	local e6=Effect.CreateEffect(c)
 	e6:SetCategory(CATEGORY_DESTROY)
 	e6:SetDescription(aux.Stringid(9634146,3))  --"10：选场上1张卡破坏。"
@@ -74,87 +74,88 @@ end
 c9634146.mentioned_counter={
 	[0x104d]=true,
 }
+-- 执行处理阶段：给这张卡以及场地区域的表侧表示的卡放置指示物
 function c9634146.ctop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取双方场地区域的所有卡片
+	-- 获取双方场地区域的卡作为卡片组
 	local g=Duel.GetFieldGroup(tp,LOCATION_FZONE,LOCATION_FZONE)
 	if c:IsRelateToEffect(e) then g:AddCard(c) end
-	-- 遍历需要放置指示物的卡片组
+	-- 遍历卡片组中的卡
 	for tc in aux.Next(g) do
 		if tc:IsCanAddCounter(0x104d,1) then
 			tc:AddCounter(0x104d,1)
 		end
 	end
 end
--- 检查这张卡上是否有信号指示物，作为抗性生效的条件
+-- 判断这张卡上是否有指示物
 function c9634146.incon(e)
 	return e:GetHandler():GetCounter(0x104d)>0
 end
--- 移除指定数量信号指示物的Cost处理函数生成器
+-- 声明移除指示物的Cost函数
 function c9634146.ctcost(ct)
 	return function(e,tp,eg,ep,ev,re,r,rp,chk)
-		-- 检查双方场上是否存在足够数量的信号指示物以作为Cost移除
+		-- 检查是否能移除所需数量的指示物
 		if chk==0 then return Duel.IsCanRemoveCounter(tp,1,1,0x104d,ct,REASON_COST) end
-		-- 向对方玩家提示所选择发动的效果
+		-- 向对方玩家提示选择发动了什么效果
 		Duel.Hint(HINT_OPSELECTED,1-tp,e:GetDescription())
-		-- 从双方场上移除指定数量的信号指示物作为Cost
+		-- 移除所需数量的指示物作为发动的Cost
 		Duel.RemoveCounter(tp,1,1,0x104d,ct,REASON_COST)
 	end
 end
--- 伤害效果的目标确认与操作信息设置函数
+-- 判断是否有符合条件的对象，并设置操作信息
 function c9634146.damtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置效果处理的对象玩家为对方玩家
+	-- 把当前正在处理的连锁的对象玩家设置成对方
 	Duel.SetTargetPlayer(1-tp)
-	-- 设置效果处理的对象参数为800点伤害
+	-- 把当前正在处理的连锁的对象参数设置成800
 	Duel.SetTargetParam(800)
-	-- 设置连锁的操作信息为给与对方800点伤害
+	-- 设置操作信息：包含伤害效果
 	Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,1-tp,800)
 end
--- 伤害效果的执行函数
+-- 执行处理阶段：给与对方伤害
 function c9634146.damop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁中设定的目标玩家和伤害数值
+	-- 获取当前连锁的对象玩家和对象参数
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 以效果伤害的形式给与目标玩家对应的伤害
+	-- 给与目标玩家对应数值的伤害
 	Duel.Damage(p,d,REASON_EFFECT)
 end
--- 抽卡效果的目标确认与操作信息设置函数
+-- 判断是否有符合条件的对象，并设置操作信息
 function c9634146.drtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查自己是否可以从卡组抽1张卡
+	-- 检查玩家是否可以抽卡
 	if chk==0 then return Duel.IsPlayerCanDraw(tp,1) end
-	-- 设置效果处理的对象玩家为自己
+	-- 把当前正在处理的连锁的对象玩家设置成自己
 	Duel.SetTargetPlayer(tp)
-	-- 设置效果处理的对象参数为抽1张卡
+	-- 把当前正在处理的连锁的对象参数设置成1
 	Duel.SetTargetParam(1)
-	-- 设置连锁的操作信息为自己从卡组抽1张卡
+	-- 设置操作信息：包含抽卡效果
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,1)
 end
--- 抽卡效果的执行函数
+-- 执行处理阶段：自己抽卡
 function c9634146.drop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁中设定的目标玩家和抽卡张数
+	-- 获取当前连锁的对象玩家和对象参数
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 以效果抽卡的形式让目标玩家抽对应张数的卡
+	-- 让目标玩家抽卡
 	Duel.Draw(p,d,REASON_EFFECT)
 end
--- 破坏效果的目标确认与操作信息设置函数
+-- 判断是否有符合条件的对象，并设置操作信息
 function c9634146.destg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查场上是否存在至少1张卡片
+	-- 检查场上是否存在可以破坏的卡
 	if chk==0 then return Duel.IsExistingMatchingCard(aux.TRUE,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,nil) end
-	-- 获取场上所有的卡片
+	-- 获取场上所有的卡作为卡片组
 	local g=Duel.GetMatchingGroup(aux.TRUE,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,nil)
-	-- 设置连锁的操作信息为破坏场上的1张卡
+	-- 设置操作信息：包含破坏效果，对象为场上的卡
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,1,0,0)
 end
--- 破坏效果的执行函数
+-- 执行处理阶段：破坏选择的卡
 function c9634146.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要破坏的卡片
+	-- 给玩家提示选择要破坏的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 让玩家选择场上的1张卡片
+	-- 选择场上1张卡
 	local g=Duel.SelectMatchingCard(tp,aux.TRUE,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,1,nil)
 	if #g>0 then
-		-- 手动为选中的卡片显示被选择的动画效果
+		-- 手动为选择的卡显示被选为对象的动画效果
 		Duel.HintSelection(g)
-		-- 以效果破坏的形式破坏选中的卡片
+		-- 破坏选择的卡
 		Duel.Destroy(g,REASON_EFFECT)
 	end
 end

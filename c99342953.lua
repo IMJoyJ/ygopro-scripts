@@ -32,49 +32,49 @@ c99342953.counter_add_list={0x100e}
 c99342953.mentioned_counter={
 	[0x100e]=true,
 }
--- 用于判断被破坏的怪兽是否为名字带有「外星」的怪兽（即是否满足放置指示物条件）
+-- 过滤条件：判断被破坏前是否是场上表侧表示的「外星」怪兽
 function c99342953.ctfilter(c)
 	return c:IsPreviousLocation(LOCATION_MZONE) and c:IsPreviousPosition(POS_FACEUP) and c:IsPreviousSetCard(0xc)
 end
--- 当有被破坏的怪兽时触发，检查是否有名字带有「外星」的怪兽被破坏
+-- 效果触发条件：判断被破坏的卡中是否包含表侧表示的「外星」怪兽
 function c99342953.ctcon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c99342953.ctfilter,1,nil)
 end
--- 将1个A指示物放置到此卡上
+-- 效果处理：给这张卡放置1个A指示物
 function c99342953.ctop(e,tp,eg,ep,ev,re,r,rp)
 	e:GetHandler():AddCounter(0x100e,1)
 end
--- 支付效果代价：移除场上2个A指示物
+-- 效果发动代价：把场上存在的2个A指示物取除
 function c99342953.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断是否可以移除场上2个A指示物作为代价
+	-- 如果是检查阶段，判断场上是否可以取除2个A指示物
 	if chk==0 then return Duel.IsCanRemoveCounter(tp,1,1,0x100e,2,REASON_COST) end
-	-- 执行移除场上2个A指示物的操作
+	-- 将场上存在的2个A指示物取除
 	Duel.RemoveCounter(tp,1,1,0x100e,2,REASON_COST)
 end
--- 用于筛选墓地里名字带有「外星」且可特殊召唤的怪兽
+-- 过滤条件：判断是否是「外星」怪兽且能被特殊召唤
 function c99342953.filter(c,e,tp)
 	return c:IsSetCard(0xc) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 设置特殊召唤效果的目标选择条件：从自己墓地选择1只名字带有「外星」的怪兽作为目标
+-- 效果目标：以自己墓地1只「外星」怪兽为对象
 function c99342953.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and c99342953.filter(chkc,e,tp) end
-	-- 判断场上是否有足够的空间进行特殊召唤
+	-- 检查自己场上是否有空余的怪兽区域
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 判断自己墓地中是否存在满足条件的怪兽
+		-- 检查自己墓地是否存在可以特殊召唤的「外星」怪兽
 		and Duel.IsExistingTarget(c99342953.filter,tp,LOCATION_GRAVE,0,1,nil,e,tp) end
-	-- 提示玩家选择要特殊召唤的卡
+	-- 向玩家发送提示消息：请选择要特殊召唤的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 选择满足条件的1只怪兽作为特殊召唤的目标
+	-- 让玩家从自己墓地选择1只满足条件的怪兽作为对象
 	local g=Duel.SelectTarget(tp,c99342953.filter,tp,LOCATION_GRAVE,0,1,1,nil,e,tp)
-	-- 设置效果处理信息，表明将要特殊召唤1只怪兽
+	-- 设置当前处理的连锁操作信息为特殊召唤选中的怪兽
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,1,0,0)
 end
--- 执行特殊召唤操作：将选定的怪兽特殊召唤到场上
+-- 效果处理：将目标怪兽特殊召唤
 function c99342953.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁中被指定的目标怪兽
+	-- 获取作为对象的墓地怪兽
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 将目标怪兽以正面表示形式特殊召唤到场上
+		-- 将该怪兽以表侧表示特殊召唤
 		Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP)
 	end
 end

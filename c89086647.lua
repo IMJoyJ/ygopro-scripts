@@ -6,7 +6,7 @@
 -- ●10以上：这张卡送去墓地。
 -- ③：这张卡被自身的效果送去墓地的场合才能发动。从自己卡组上面把10张卡送去墓地。
 local s,id,o=GetID()
--- 初始化卡片效果：注册魔陷发动、连锁诱发放置指示物、9以下抗性、10以上自毁送墓以及被自身效果送墓堆卡效果
+-- 初始化效果
 function s.initial_effect(c)
 	c:EnableCounterPermit(0x70)
 	-- 永续魔陷/场地卡通用的“允许发动”空效果，无此效果则无法发动
@@ -26,22 +26,22 @@ function s.initial_effect(c)
 	e1:SetTarget(s.coutg)
 	e1:SetOperation(s.couop)
 	c:RegisterEffect(e1)
-	-- ●9以下：对方不能把这张卡作为效果的对象。
+	-- ●9以下：这张卡不会被对方的效果破坏，对方不能把这张卡作为效果的对象。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_SINGLE)
 	e2:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
 	e2:SetRange(LOCATION_SZONE)
 	e2:SetCode(EFFECT_CANNOT_BE_EFFECT_TARGET)
 	e2:SetCondition(s.cicon)
-	-- ●9以下：这张卡不会被对方的效果破坏
+	-- 设置不能成为对象的值
 	e2:SetValue(aux.tgoval)
 	c:RegisterEffect(e2)
 	local e3=e2:Clone()
 	e3:SetCode(EFFECT_INDESTRUCTABLE_EFFECT)
-	-- ●10以上：这张卡送去墓地。
+	-- 设置不会被破坏的值
 	e3:SetValue(aux.indoval)
 	c:RegisterEffect(e3)
-	-- ③：这张卡被自身的效果送去墓地的场合才能发动。从自己卡组上面把10张卡送去墓地。
+	-- ●10以上：这张卡送去墓地。
 	local e4=Effect.CreateEffect(c)
 	e4:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e4:SetCode(EVENT_ADJUST)
@@ -49,7 +49,7 @@ function s.initial_effect(c)
 	e4:SetCondition(s.adjustcon)
 	e4:SetOperation(s.adjustop)
 	c:RegisterEffect(e4)
-	-- ①效果发动条件：对方把卡的效果发动
+	-- ③：这张卡被自身的效果送去墓地的场合才能发动。从自己卡组上面把10张卡送去墓地。
 	local e5=Effect.CreateEffect(c)
 	e5:SetDescription(aux.Stringid(id,1))  --"送去墓地"
 	e5:SetCategory(CATEGORY_TOGRAVE+CATEGORY_DECKDES)
@@ -64,60 +64,60 @@ end
 s.mentioned_counter={
 	[0x70]=true,
 }
--- ①效果发动准备：检查是否能放置当前连锁数数量的盘子指示物并设置操作信息
+-- 放置指示物的触发条件
 function s.coucon(e,tp,eg,ep,ev,re,r,rp)
 	return rp==1-tp
 end
--- 检查此卡是否可以放置当前连锁数数量的盘子指示物
+-- 放置指示物的目标设定
 function s.coutg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 设置连锁操作信息：放置当前连锁数数量的盘子指示物
+	-- 判断能否给这张卡放置当前连锁数量的指示物
 	if chk==0 then return Duel.IsCanAddCounter(tp,0x70,Duel.GetCurrentChain(),e:GetHandler()) end
-	-- ①效果处理：给此卡放置当前连锁数数量的盘子指示物
+	-- 设置放置指示物的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_COUNTER,nil,Duel.GetCurrentChain(),0,0x70)
 end
--- 检查此卡是否仍与当前连锁相关联
+-- 放置指示物的处理
 function s.couop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToChain() then
-		-- 给此卡放置当前连锁数数量的盘子指示物
+		-- 给这张卡放置当前连锁数量的指示物
 		c:AddCounter(0x70,Duel.GetCurrentChain())
 	end
 end
--- 抗性适用条件：此卡的盘子指示物数量在9以下
+-- 判断指示物数量是否小于10
 function s.cicon(e)
 	return e:GetHandler():GetCounter(0x70)<10
 end
--- 自毁送墓条件：此卡的盘子指示物数量在10以上
+-- 判断指示物数量是否大于9
 function s.adjustcon(e)
 	return e:GetHandler():GetCounter(0x70)>9
 end
--- 自毁送墓处理：将此卡送去墓地
+-- 送去墓地的处理
 function s.adjustop(e,tp,eg,ep,ev,re,r,rp)
-	-- 显示卡片效果发动提示
+	-- 展示本卡发动动画
 	Duel.Hint(HINT_CARD,0,id)
 	local c=e:GetHandler()
-	-- 因效果将此卡送去墓地
+	-- 将这张卡送去墓地
 	Duel.SendtoGrave(c,REASON_EFFECT)
 end
--- ③效果发动条件：此卡被自身的效果送去墓地
+-- 送去墓地效果的触发条件
 function s.tgcon(e,tp,eg,ep,ev,re,r,rp)
 	return re and re:GetHandler()==e:GetHandler()
 end
--- 检查导致此卡送墓的效果来源是否为此卡自身
+-- 送去墓地效果的目标设定
 function s.tgtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- ③效果发动准备：设置从卡组上面将10张卡送去墓地的操作信息
+	-- 判断能否从卡组上方把10张卡送去墓地
 	if chk==0 then return Duel.IsPlayerCanDiscardDeck(tp,10) end
-	-- 检查玩家卡组上面是否有至少10张卡可以送去墓地
+	-- 设置目标玩家为自己
 	Duel.SetTargetPlayer(tp)
-	-- 设置效果目标玩家为自己
+	-- 设置目标数量为10
 	Duel.SetTargetParam(10)
-	-- 设置效果参数为10张卡
+	-- 设置送去墓地的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_DECKDES,nil,0,tp,10)
 end
--- 设置连锁操作信息：卡组破坏（送去墓地）10张卡
+-- 送去墓地效果的处理
 function s.tgop(e,tp,eg,ep,ev,re,r,rp)
-	-- ③效果处理：从自己卡组上面把10张卡送去墓地
+	-- 获取目标玩家和数量
 	local p,val=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 因效果将卡组上面的10张卡送去墓地
+	-- 将卡组顶端的卡送去墓地
 	Duel.DiscardDeck(p,val,REASON_EFFECT)
 end

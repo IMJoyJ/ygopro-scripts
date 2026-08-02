@@ -4,7 +4,7 @@
 -- ②：自己场上的怪兽的攻击力上升这张卡的访问指示物数量×100。
 -- ③：这张卡有访问指示物被放置，那些访问指示物数量变成10的场合才能发动。这张卡回到手卡，把持有把自身作为怪兽特殊召唤效果的1张永续陷阱卡从卡组到自己场上盖放。这个效果盖放的卡在盖放的回合也能发动。
 local s,id,o=GetID()
--- 初始化函数，注册卡片的基本信息、允许放置指示物、发动时的空效果、放置指示物的诱发效果、提升攻击力的永续效果，以及指示物满10个时回手牌并盖放永续陷阱的诱发效果。
+-- 注册卡片的基本属性和所有效果。
 function s.initial_effect(c)
 	c:EnableCounterPermit(0x6c)
 	c:SetCounterLimit(0x6c,10)
@@ -48,29 +48,30 @@ end
 s.mentioned_counter={
 	[0x6c]=true,
 }
+-- 放置指示物效果的发动条件判断：确认发动的效果不是「快回揭示板」本身的效果。
 function s.ctcon(e,tp,eg,ep,ev,re,r,rp)
 	return not re:GetHandler():IsCode(id)
 end
--- 检查本卡是否可以放置访问指示物，作为放置指示物效果的发动靶向检测。
+-- 放置指示物效果的发动前检查：确认这张卡是否还可以放置访问指示物。
 function s.cttg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsCanAddCounter(0x6c,1) end
 end
--- 放置指示物效果的处理：给本卡放置1个访问指示物，并在指示物数量达到10时触发自定义事件。
+-- 给这张卡放置指示物的具体处理，并在数量达到10时触发后续的自定义事件。
 function s.ctop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) then
 		c:AddCounter(0x6c,1)
 		if c:GetCounter(0x6c)==10 then
-			-- 触发自定义事件，用于在指示物数量变为10时诱发后续效果。
+			-- 触发卡片的自定义事件，用于满足效果③的发动条件。
 			Duel.RaiseEvent(c,EVENT_CUSTOM+id,e,0,tp,tp,0)
 		end
 	end
 end
--- 计算攻击力上升值，返回本卡的访问指示物数量乘以100。
+-- 计算自己场上怪兽攻击力上升的数值，即访问指示物数量乘以100。
 function s.val(e,c)
 	return e:GetHandler():GetCounter(0x6c)*100
 end
--- 过滤卡组中满足条件的卡：必须是永续陷阱卡，且具有将其作为怪兽特殊召唤的效果（通过检查其原始等级、种族、属性、攻击力或守备力是否大于0来判定）。
+-- 用于筛选可以盖放的，持有把自身作为怪兽特殊召唤效果的永续陷阱卡的过滤函数。
 function s.filter(c,ignore)
 	return c:IsType(TYPE_TRAP) and c:IsType(TYPE_CONTINUOUS) and c:IsSSetable(ignore)
 		and (c:GetOriginalLevel()>0
@@ -79,30 +80,30 @@ function s.filter(c,ignore)
 		or c:GetBaseAttack()>0
 		or c:GetBaseDefense()>0)
 end
--- 效果③的发动检测：确认触发事件包含本卡、指示物数量为10、本卡可以回到手卡、自己魔陷区有空位，且卡组中存在符合条件的永续陷阱卡。
+-- 回收并盖放卡片效果的发动前检查与操作信息设置。
 function s.settg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	if chk==0 then return eg:IsContains(c) and c:GetCounter(0x6c)==10 and c:IsAbleToHand()
-		-- 检查在将本卡送回手卡后，自己的魔法与陷阱区域是否有可用于盖放卡片的空位。
+		-- 检查这张卡回到手卡后，自己场上是否有可用的魔陷区来盖放卡片。
 		and Duel.GetSZoneCount(tp,c)>0
-		-- 检查卡组中是否存在至少1张满足条件的永续陷阱卡。
+		-- 检查卡组中是否存在满足条件的永续陷阱卡。
 		and Duel.IsExistingMatchingCard(s.filter,tp,LOCATION_DECK,0,1,nil,true) end
-	-- 设置连锁处理的操作信息，表明此效果包含将本卡回到手卡的操作。
+	-- 告知系统该效果包含将这张卡回到手卡的操作。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,c,1,0,0)
 end
--- 效果③的效果处理：将本卡回到手卡，若成功则从卡组选择1张满足条件的永续陷阱卡在自己场上盖放，并赋予其在盖放的回合也能发动的效果。
+-- 回收并盖放卡片效果的具体处理。
 function s.setop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 检查本卡是否仍受效果影响，并将其通过效果送回手卡，确认其已成功到达手卡。
+	-- 将这张卡回到手卡，并确认是否成功回到手卡中。
 	if c:IsRelateToEffect(e) and Duel.SendtoHand(c,nil,REASON_EFFECT)~=0 and c:IsLocation(LOCATION_HAND) then
-		-- 检查自己的魔法与陷阱区域是否有空位，若无空位则结束效果处理。
+		-- 确认自己场上是否有可用的魔陷区用于盖放卡片。
 		if Duel.GetLocationCount(tp,LOCATION_SZONE)<=0 then return end
-		-- 向玩家发送提示信息，要求选择要盖放的卡片。
+		-- 提示玩家选择要从卡组盖放的卡。
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SET)  --"请选择要盖放的卡"
 		-- 让玩家从卡组中选择1张满足条件的永续陷阱卡。
 		local g=Duel.SelectMatchingCard(tp,s.filter,tp,LOCATION_DECK,0,1,1,nil,false)
 		local tc=g:GetFirst()
-		-- 若成功选择卡片，则将其在自己场上盖放。
+		-- 将选中的卡盖放在场上，并确认是否成功盖放。
 		if tc and Duel.SSet(tp,tc)~=0 then
 			-- 这个效果盖放的卡在盖放的回合也能发动。
 			local e1=Effect.CreateEffect(e:GetHandler())

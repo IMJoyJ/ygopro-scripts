@@ -29,27 +29,28 @@ c98719226.counter_add_list={0x100e}
 c98719226.mentioned_counter={
 	[0x100e]=true,
 }
+-- 判断这张卡是否被战斗破坏并且送去了墓地
 function c98719226.ctcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsLocation(LOCATION_GRAVE) and e:GetHandler():IsReason(REASON_BATTLE)
 end
--- 在破坏此卡的怪兽上放置2个A指示物
+-- 效果处理，给破坏这张卡的对方怪兽放置2个A指示物
 function c98719226.ctop(e,tp,eg,ep,ev,re,r,rp)
 	local tc=e:GetHandler():GetReasonCard()
 	if tc:IsFaceup() and tc:IsRelateToBattle() then
 		tc:AddCounter(0x100e,2)
 	end
 end
--- 判断是否在伤害计算时进行战斗
+-- 判断当前是否在伤害计算阶段且存在攻击对象
 function c98719226.adcon(e)
-	-- 返回当前阶段是否为伤害计算阶段且存在攻击对象
+	-- 检查是否处于伤害计算阶段并且存在攻击对象
 	return Duel.GetCurrentPhase()==PHASE_DAMAGE_CAL and Duel.GetAttackTarget()
 end
--- 筛选出带有A指示物且与名字带有「外星」的怪兽进行战斗的怪兽
+-- 判断该怪兽是否有A指示物并且正在与「外星」怪兽进行战斗
 function c98719226.adtg(e,c)
 	local bc=c:GetBattleTarget()
 	return bc and c:GetCounter(0x100e)~=0 and bc:IsSetCard(0xc)
 end
--- 计算并返回攻击力下降的数值（每个A指示物下降300）
+-- 计算下降的数值，根据A指示物的数量乘300进行扣除
 function c98719226.adval(e,c)
 	return c:GetCounter(0x100e)*-300
 end
