@@ -1,8 +1,8 @@
 --結合と乖離のアルス＝マグナ
 local s,id,o=GetID()
--- 初始化卡片效果：注册①手牌除外特召墓地/除外区怪兽与多重攻击授权、②除外区触发特召自身、③/④场上除外墓地卡抽1张效果（符合条件可作诱发即时效果）
+-- 初始化卡片，注册特殊召唤、抽卡等4个效果
 function s.initial_effect(c)
-	-- ①：把手牌的这张卡除外才能发动。从自己的墓地·除外状态把1只魔法师族以外的「结合与乖离」怪兽特殊召唤。这个回合，自己场上的「阿尔斯」连接怪兽在1次战斗阶段中最多2次可以向怪兽攻击。
+	-- 效果①：把这张卡从手卡除外才能发动。从自己墓地·除外状态的怪兽中选1只特定怪兽特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(id,0))
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -13,7 +13,7 @@ function s.initial_effect(c)
 	e1:SetTarget(s.sptg)
 	e1:SetOperation(s.spop)
 	c:RegisterEffect(e1)
-	-- ②：这张卡在除外状态存在的场合，自己场上有同调·连接怪兽特殊召唤的场合才能发动。这张卡特殊召唤。
+	-- 效果②：这张卡在除外状态存在，额外卡组有同调·连接怪兽特殊召唤的场合才能发动。这张卡特殊召唤。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(id,1))
 	e2:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -26,7 +26,7 @@ function s.initial_effect(c)
 	e2:SetTarget(s.sptg2)
 	e2:SetOperation(s.spop2)
 	c:RegisterEffect(e2)
-	-- ③：从自己墓地把1张「结合与乖离」卡除外才能发动。自己抽1张。自己场上有「阿尔斯」连接怪兽存在的场合，这个效果在对方回合也能发动。
+	-- 效果③：从自己墓地把1只特定怪兽除外才能发动。自己抽1张。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(id,2))
 	e3:SetCategory(CATEGORY_DRAW)
@@ -45,40 +45,40 @@ function s.initial_effect(c)
 	e4:SetCondition(s.rmcon2)
 	c:RegisterEffect(e4)
 end
--- ①效果发动Cost：把手牌的自身表侧表示除外
+-- 发动的代价：将此卡自身从手卡除外
 function s.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	if chk==0 then return c:IsAbleToRemoveAsCost() end
-	-- 将手牌的自身表侧表示除外
+	-- 将此卡自身表侧表示除外
 	Duel.Remove(c,POS_FACEUP,REASON_COST)
 end
--- 特殊召唤目标过滤：墓地/除外状态非魔法师族的「结合与乖离」怪兽
+-- 过滤条件：魔法师族以外的特定字段怪兽，且可以被特殊召唤
 function s.spfilter(c,e,tp)
 	return c:IsFaceupEx() and not c:IsRace(RACE_SPELLCASTER) and c:IsSetCard(0x1e6) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- ①效果发动准备与效果目标确认
+-- 检查自己场上是否有空余的怪兽区域，且墓地或除外状态存在满足特殊召唤条件的怪兽
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断自己怪兽区域是否有空位
+	-- 判断自己场上是否有空余的怪兽区域
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查墓地或除外状态是否存在满足条件的怪兽
+		-- 判断自己墓地或除外状态是否存在满足过滤条件的怪兽
 		and Duel.IsExistingMatchingCard(s.spfilter,tp,LOCATION_GRAVE+LOCATION_REMOVED,0,1,nil,e,tp) end
-	-- 设置连锁操作信息：从墓地或除外状态特殊召唤1张卡
+	-- 设置效果的预期操作：从墓地或除外状态特殊召唤1只怪兽
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_GRAVE+LOCATION_REMOVED)
 end
--- ①效果处理：特殊召唤选中的怪兽，并赋予己方「阿尔斯」连接怪兽2次怪兽攻击权
+-- 从墓地或除外状态选1只满足条件的怪兽特殊召唤，并为指定连接怪兽赋予可作2次攻击的效果
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 确认自己怪兽区域是否有空位
+	-- 如果自己场上还有空余的怪兽区域
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)>0 then
 		-- 提示玩家选择要特殊召唤的卡
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-		-- 从墓地或除外状态选择1只满足条件的怪兽
+		-- 让玩家从墓地或除外状态选择1只满足条件的怪兽
 		local g=Duel.SelectMatchingCard(tp,aux.NecroValleyFilter(s.spfilter),tp,LOCATION_GRAVE+LOCATION_REMOVED,0,1,1,nil,e,tp)
 		if g:GetCount()>0 then
 			-- 将选中的怪兽表侧表示特殊召唤
 			Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
 		end
 	end
-	-- 注册全局效果：直到回合结束时，自己场上的「阿尔斯」连接怪兽在1次战斗阶段中最多可以向怪兽作2次攻击。
+	-- 那之后，自己场上的特定连接怪兽在同1次战斗阶段中可以对怪兽作2次攻击。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_EXTRA_ATTACK_MONSTER)
@@ -86,85 +86,85 @@ function s.spop(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetTarget(s.atktg)
 	e1:SetValue(2)
 	e1:SetReset(RESET_PHASE+PHASE_END)
-	-- 给玩家注册全局效果
+	-- 将该多次攻击的永续效果注册给当前玩家
 	Duel.RegisterEffect(e1,tp)
 end
--- 连击效果适用对象过滤：自己场上的「阿尔斯」连接怪兽
+-- 过滤条件：特定的连接怪兽
 function s.atktg(e,c)
 	return c:IsSetCard(0x1ce) and c:IsType(TYPE_LINK)
 end
--- ②效果触发条件过滤：表侧表示特殊召唤成功的同调或连接怪兽
+-- 过滤条件：表侧表示的同调或连接怪兽
 function s.cfilter(c,tp,se)
 	return c:IsFaceup() and c:IsType(TYPE_SYNCHRO+TYPE_LINK)
 end
--- ②效果发动条件：判定是否有除自身以外的同调或连接怪兽特殊召唤
+-- 判断是否有除此卡自身以外的同调或连接怪兽被特殊召唤
 function s.spcon2(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(s.cfilter,1,e:GetHandler())
 end
--- ②效果发动准备：检查怪兽区空位与自身特召可能性
+-- 检查自己场上是否有空余的怪兽区域，且此卡自身可以被特殊召唤
 function s.sptg2(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断自己怪兽区域是否有空位
+	-- 判断自己场上是否有空余的怪兽区域
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置连锁操作信息：特殊召唤自身
+	-- 设置效果的预期操作：将此卡自身特殊召唤
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- ②效果处理：将除外状态的自身表侧表示特殊召唤
+-- 如果此卡仍在触发位置，则将其特殊召唤
 function s.spop2(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToChain() then
-		-- 将自身表侧表示特殊召唤
+		-- 将此卡自身表侧表示特殊召唤
 		Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
--- 诱发即时效果条件过滤：自己场上的「阿尔斯」连接怪兽
+-- 过滤条件：特定的连接怪兽
 function s.confilter(c)
 	return c:IsSetCard(0x1ce) and c:IsType(TYPE_LINK)
 end
--- 启动效果模式发动条件：不能作诱发即时效果发动或场上没有「阿尔斯」连接怪兽
+-- 判断条件：当前不能作为诱发即时效果发动，或者自己场上不存在特定的连接怪兽
 function s.rmcon1(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查是否无法获得诱发即时效果的能力
+	-- 判断当前是否不能作为诱发即时效果发动
 	return not aux.IsCanBeQuickEffect(e:GetHandler(),tp,37279096)
-		-- 或检查自己场上是否存在「阿尔斯」连接怪兽
+		-- 或者自己场上不存在满足条件的特定连接怪兽
 		or not Duel.IsExistingMatchingCard(s.confilter,tp,LOCATION_MZONE,0,1,nil)
 end
--- 诱发即时效果模式发动条件：能作诱发即时效果发动且场上有「阿尔斯」连接怪兽
+-- 判断条件：当前可以作为诱发即时效果发动，并且自己场上存在特定的连接怪兽
 function s.rmcon2(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查是否能获得诱发即时效果的能力
+	-- 判断当前是否可以作为诱发即时效果发动
 	return aux.IsCanBeQuickEffect(e:GetHandler(),tp,37279096)
-		-- 且自己场上存在「阿尔斯」连接怪兽
+		-- 并且自己场上存在满足条件的特定连接怪兽
 		and Duel.IsExistingMatchingCard(s.confilter,tp,LOCATION_MZONE,0,1,nil)
 end
--- Cost过滤条件：自己墓地可除外的「结合与乖离」卡
+-- 过滤条件：特定的怪兽，且可以作为代价被除外
 function s.cfilter2(c)
 	return c:IsSetCard(0x1e6) and c:IsAbleToRemoveAsCost()
 end
--- ③效果发动Cost：从自己墓地把1张「结合与乖离」卡除外
+-- 发动的代价：从自己墓地选1只满足条件的怪兽除外
 function s.drcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断自己墓地是否存在可除外的「结合与乖离」卡
+	-- 检查自己墓地是否存在至少1只可以作为代价除外的怪兽
 	if chk==0 then return Duel.IsExistingMatchingCard(s.cfilter2,tp,LOCATION_GRAVE,0,1,nil) end
 	-- 提示玩家选择要除外的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
-	-- 从墓地选择1张「结合与乖离」卡
+	-- 让玩家从自己墓地选择1只满足条件的怪兽
 	local g=Duel.SelectMatchingCard(tp,s.cfilter2,tp,LOCATION_GRAVE,0,1,1,nil)
-	-- 把选中的卡表侧表示除外
+	-- 将选中的怪兽表侧表示除外
 	Duel.Remove(g,POS_FACEUP,REASON_COST)
 end
--- ③效果发动准备：设置抽卡目标与数量
+-- 检查玩家是否可以抽卡，并设置抽卡的预期操作
 function s.drtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查自己是否可以抽1张卡
+	-- 检查当前玩家是否可以抽1张卡
 	if chk==0 then return Duel.IsPlayerCanDraw(tp,1) end
-	-- 设置抽卡效果的目标玩家为自己
+	-- 将当前玩家设置为连锁的对象玩家
 	Duel.SetTargetPlayer(tp)
-	-- 设置抽卡参数为1张
+	-- 将抽卡数量1设置为连锁的对象参数
 	Duel.SetTargetParam(1)
-	-- 设置连锁操作信息：自己抽1张卡
+	-- 设置效果的预期操作：让目标玩家抽1张卡
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,1)
 end
--- ③效果处理：执行抽卡操作
+-- 获取目标玩家和抽卡数量参数，并执行抽卡操作
 function s.drop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取目标玩家及抽卡数量参数
+	-- 获取当前连锁中设置的对象玩家和对象参数
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 目标玩家抽指定数量的卡
+	-- 让目标玩家因效果抽指定数量的卡
 	Duel.Draw(p,d,REASON_EFFECT)
 end

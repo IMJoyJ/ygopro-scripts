@@ -14,7 +14,7 @@ end
 c99532708.mentioned_counter={
 	[0x100e]=true,
 }
--- 检索满足条件的怪兽组，即具有A指示物且不是火星外星人的怪兽
+-- 判断目标怪兽是否放置有A指示物且卡号不为99532708（「火星外星人」）
 function c99532708.distg(e,c)
 	return c:GetCounter(0x100e)>0 and not c:IsCode(99532708)
 end
