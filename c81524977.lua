@@ -39,39 +39,39 @@ end
 c81524977.mentioned_counter={
 	[0x20]=true,
 }
--- 指示物放置过滤条件：场上表侧表示的植物族怪兽
+-- 过滤条件：表侧表示且为植物族
 function c81524977.ctfilter(c)
 	return c:IsFaceup() and c:IsRace(RACE_PLANT)
 end
--- 指示物放置条件检查：召唤·反转召唤·特殊召唤的怪兽中包含表侧表示的植物族怪兽
+-- 检查是否有满足条件的植物族怪兽
 function c81524977.ctcon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c81524977.ctfilter,1,nil)
 end
--- 指示物放置处理：给此卡放置1个植物指示物
+-- 给这张卡放置1个植物指示物
 function c81524977.ctop(e,tp,eg,ep,ev,re,r,rp)
 	e:GetHandler():AddCounter(0x20,1)
 end
--- 伤害效果Cost：记录当前指示物数量并将场上的此卡送去墓地
+-- 起动效果的代价设置
 function c81524977.damcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsAbleToGraveAsCost() end
 	e:SetLabel(e:GetHandler():GetCounter(0x20))
-	-- 将场上的此卡送去墓地
+	-- 把场上存在的这张卡送去墓地作为代价
 	Duel.SendtoGrave(e:GetHandler(),REASON_COST)
 end
--- 伤害效果准备：检查指示物数量并设置给与对方伤害的操作信息
+-- 起动效果的目标设置
 function c81524977.damtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():GetCounter(0x20)>0 end
-	-- 设置连锁对象玩家为对方
+	-- 把目标玩家设置为对方
 	Duel.SetTargetPlayer(1-tp)
-	-- 设置连锁对象参数为指示物数量×500的伤害数值
+	-- 把目标参数设置为指示物数量×500
 	Duel.SetTargetParam(e:GetLabel()*500)
-	-- 设置连锁操作信息：给与对方指示物数量×500的伤害
+	-- 设置操作信息：给与对方伤害
 	Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,1-tp,e:GetLabel()*500)
 end
--- 伤害效果处理：根据锁定的目标玩家与伤害数值造成效果伤害
+-- 起动效果的处理逻辑
 function c81524977.damop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁中锁定的目标玩家与伤害数值
+	-- 获取目标玩家和目标参数
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 给与目标玩家效果伤害
+	-- 给与对方基本分对应的伤害
 	Duel.Damage(p,d,REASON_EFFECT)
 end

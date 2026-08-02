@@ -40,25 +40,25 @@ end
 c81788994.mentioned_counter={
 	[0x16]=true,
 }
--- 指示物放置过滤条件：因效果送去墓地的「影依」怪兽
+-- 过滤条件：包含「影依」字段的怪兽，并且是因为效果送去墓地
 function c81788994.cfilter(c)
 	return c:IsSetCard(0x9d) and c:IsType(TYPE_MONSTER) and c:IsReason(REASON_EFFECT)
 end
--- 指示物放置条件检查：送去墓地的卡中存在满足条件的「影依」怪兽
+-- 检查送去墓地的卡中是否存在满足条件的「影依」怪兽
 function c81788994.ctcon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c81788994.cfilter,1,nil)
 end
--- 指示物放置处理：根据满足条件的「影依」怪兽数量，给此卡放置对应数量的魔石指示物
+-- 统计送去墓地的满足条件的「影依」怪兽数量，并为这张卡放置对应数量的魔石指示物
 function c81788994.ctop(e,tp,eg,ep,ev,re,r,rp)
 	local ct=eg:FilterCount(c81788994.cfilter,nil)
 	e:GetHandler():AddCounter(0x16,ct)
 end
--- 攻击力下降条件检查：当前为对方回合
+-- 检查当前回合玩家是否不是这张卡的控制者，即是否是对方回合
 function c81788994.atkcon(e)
-	-- 判定回合玩家是否为对方
+	-- 判断当前的回合玩家是否不是这张卡的控制者
 	return Duel.GetTurnPlayer()~=e:GetHandlerPlayer()
 end
--- 攻击力下降数值计算：魔石指示物数量×(-100)
+-- 计算攻击力下降的数值：这张卡的魔石指示物数量乘以-100
 function c81788994.atkval(e,c)
 	return e:GetHandler():GetCounter(0x16)*-100
 end
