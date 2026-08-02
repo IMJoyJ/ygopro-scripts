@@ -27,23 +27,23 @@ end
 c7180418.mentioned_counter={
 	[0x1]=true,
 }
--- 使该怪兽在召唤·反转召唤·特殊召唤成功的回合不能攻击
+-- 为自己注册一个不能攻击的单体永续效果，重置条件为回合结束时
 function c7180418.atklimit(e,tp,eg,ep,ev,re,r,rp)
-	-- 设置该效果为永续效果，并在结束阶段重置
+	-- 这张卡召唤·反转召唤·特殊召唤的回合不能进行攻击。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_CANNOT_ATTACK)
 	e1:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END)
 	e:GetHandler():RegisterEffect(e1)
 end
--- 检查是否可以移除魔力指示物并询问玩家是否移除，若否则破坏此卡
+-- 处理在准备阶段移除魔力指示物或破坏自身的逻辑
 function c7180418.ccost(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断玩家是否能移除一个魔力指示物并且选择是否移除
+	-- 检查是否可以移除1个魔力指示物，如果可以则询问玩家是否要移除
 	if Duel.IsCanRemoveCounter(tp,1,0,0x1,1,REASON_COST) and Duel.SelectYesNo(tp,aux.Stringid(7180418,0)) then  --"是否要除去一个魔力指示物？"
-		-- 从场上移除一个魔力指示物
+		-- 移除1个魔力指示物
 		Duel.RemoveCounter(tp,1,0,0x1,1,REASON_COST)
 	else
-		-- 将此卡因无法支付代价而破坏
+		-- 破坏自身
 		Duel.Destroy(e:GetHandler(),REASON_COST)
 	end
 end

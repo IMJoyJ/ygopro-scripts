@@ -35,41 +35,41 @@ c72345736.counter_add_list={0x3}
 c72345736.mentioned_counter={
 	[0x3]=true,
 }
--- 放置指示物过滤条件：表侧表示的「六武众」怪兽
+-- 检查卡片是否为表侧表示的「六武众」卡
 function c72345736.ctfilter(c)
 	return c:IsFaceup() and c:IsSetCard(0x103d)
 end
--- ①效果处理：出现「六武众」怪兽召唤·特殊召唤时，给此卡放置1个武士道指示物
+-- 检查是否有「六武众」怪兽召唤或特殊召唤，如果有则给这张卡放置1个武士道指示物
 function c72345736.ctop(e,tp,eg,ep,ev,re,r,rp)
 	if eg:IsExists(c72345736.ctfilter,1,nil) then
 		e:GetHandler():AddCounter(0x3,1)
 	end
 end
--- ②效果发动Cost：记录当前放置的指示物数量并把这张卡送去墓地
+-- 检查这张卡是否能作为代价送去墓地，如果能则记录指示物数量并将此卡送去墓地
 function c72345736.drcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsAbleToGraveAsCost() end
 	local ct=e:GetHandler():GetCounter(0x3)
 	e:SetLabel(ct)
-	-- 将自身作为Cost送去墓地
+	-- 把这张卡作为代价送去墓地
 	Duel.SendtoGrave(e:GetHandler(),REASON_COST)
 end
--- ②效果发动准备：检查抽卡条件并设置抽卡参数
+-- 检查此卡是否有指示物且玩家是否能抽出对应数量的卡，并设置抽卡的操作信息
 function c72345736.drtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
-	-- 发动条件检查：此卡放置有武士道指示物且玩家能够抽取对应数量的卡
+	-- 检查此卡是否有武士道指示物以及玩家能否抽出对应数量的卡片
 	if chk==0 then return c:GetCounter(0x3)>0 and Duel.IsPlayerCanDraw(tp,c:GetCounter(0x3)) end
 	local ct=e:GetLabel()
-	-- 设置抽卡玩家为自身
+	-- 将当前玩家设置为抽卡对象
 	Duel.SetTargetPlayer(tp)
-	-- 设置抽卡数量为发动时记录的指示物数量
+	-- 将刚才记录的指示物数量设置为抽卡数量的参数
 	Duel.SetTargetParam(ct)
-	-- 设置连锁操作信息：抽取对应数量的卡
+	-- 设置操作信息：包含抽卡的效果
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,ct)
 end
--- ②效果处理：从卡组抽出目标数量的卡
+-- 执行从卡组抽出对应数量卡片的操作
 function c72345736.drop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取目标玩家与抽卡数量参数
+	-- 获取连锁对象玩家和抽卡数量参数
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 执行抽卡处理
+	-- 让目标玩家抽出对应数量的卡
 	Duel.Draw(p,d,REASON_EFFECT)
 end

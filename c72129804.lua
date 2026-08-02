@@ -25,33 +25,33 @@ end
 c72129804.mentioned_counter={
 	[0x1041]=true,
 }
--- Cost过滤条件：手牌中未公开的「捕食」卡
+-- 过滤手牌中没有公开的「捕食」卡
 function c72129804.cfilter(c)
 	return c:IsSetCard(0xf3) and not c:IsPublic()
 end
--- ①效果发动准备：给对方确认手牌「捕食」卡并选择等量对方怪兽为对象
+-- 选择手牌的「捕食」卡向对方展示，并选择对方场上等量的表侧表示怪兽作为对象
 function c72129804.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	-- 获取手牌中所有符合条件的「捕食」卡
+	-- 获取手牌中可展示的「捕食」卡
 	local hg=Duel.GetMatchingGroup(c72129804.cfilter,tp,LOCATION_HAND,0,e:GetHandler())
-	-- 计算对方场上可放置捕食指示物的怪兽数量（作为选择手牌卡片数量的上限）
+	-- 获取对方场上可以放置捕食指示物的怪兽数量
 	local ct=Duel.GetTargetCount(Card.IsCanAddCounter,tp,0,LOCATION_MZONE,nil,0x1041,1)
 	if chkc then return chkc:IsControler(tp) and chkc:IsLocation(LOCATION_MZONE) and chkc:IsCanAddCounter(0x1041,1) end
 	if chk==0 then return hg:GetCount()>0 and ct>0 end
 	-- 提示玩家选择给对方确认的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_CONFIRM)  --"请选择给对方确认的卡"
 	local g=hg:Select(tp,1,ct,nil)
-	-- 向对方展示选中的手牌「捕食」卡
+	-- 向对方展示选择的卡
 	Duel.ConfirmCards(1-tp,g)
-	-- 将手牌洗混
+	-- 洗切手牌
 	Duel.ShuffleHand(tp)
-	-- 提示玩家选择表侧表示的卡
+	-- 提示玩家选择表侧表示的卡作为对象
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
-	-- 选择与展示数量相等的对方场上怪兽作为对象
+	-- 选择对方场上等量的可以放置指示物的表侧表示怪兽作为对象
 	Duel.SelectTarget(tp,Card.IsCanAddCounter,tp,0,LOCATION_MZONE,g:GetCount(),g:GetCount(),nil,0x1041,1)
 end
--- ①效果处理：给对象怪兽放置捕食指示物并赋予变成1星的持续效果
+-- 为对象怪兽各放置1个捕食指示物，并使其中2星以上的怪兽等级变成1星
 function c72129804.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取与此效果关联的有效对象怪兽
+	-- 获取连锁对象中与效果相关联的卡
 	local tg=Duel.GetChainInfo(0,CHAININFO_TARGET_CARDS):Filter(Card.IsRelateToEffect,nil,e)
 	local tc=tg:GetFirst()
 	while tc do
@@ -68,27 +68,27 @@ function c72129804.activate(e,tp,eg,ep,ev,re,r,rp)
 		tc=tg:GetNext()
 	end
 end
--- 等级变更条件：该怪兽身上存在至少1个捕食指示物
+-- 检查该怪兽是否有捕食指示物放置
 function c72129804.lvcon(e)
 	return e:GetHandler():GetCounter(0x1041)>0
 end
--- 代替破坏过滤条件：自己场上表侧表示被战斗破坏的「捕食植物」怪兽
+-- 检查怪兽是否为自己场上的「捕食植物」怪兽且被战斗破坏
 function c72129804.repfilter(c,tp)
 	return c:IsFaceup() and c:IsSetCard(0x10f3) and c:IsLocation(LOCATION_MZONE)
 		and c:IsControler(tp) and c:IsReason(REASON_BATTLE)
 end
--- ②效果代替破坏发动条件检查及询问是否代替
+-- 检查墓地的此卡是否能除外，并且场上是否有满足代替破坏条件的怪兽
 function c72129804.reptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsAbleToRemove() and eg:IsExists(c72129804.repfilter,1,nil,tp) end
-	-- 询问玩家是否发动墓地代替破坏效果
+	-- 询问玩家是否发动效果代替破坏
 	return Duel.SelectEffectYesNo(tp,e:GetHandler(),96)
 end
--- 确认需要代替破坏的目标怪兽符合条件
+-- 获取要代替破坏的卡
 function c72129804.repval(e,c)
 	return c72129804.repfilter(c,e:GetHandlerPlayer())
 end
--- ②效果代替破坏处理：把墓地的这张卡除外
+-- 把墓地的这张卡除外
 function c72129804.repop(e,tp,eg,ep,ev,re,r,rp)
-	-- 将墓地的此卡表侧表示除外
+	-- 把此卡除外
 	Duel.Remove(e:GetHandler(),POS_FACEUP,REASON_EFFECT)
 end
