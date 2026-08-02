@@ -5,12 +5,12 @@
 -- ①：这张卡连接召唤的场合，以最多有自己的灵摆区域的响鸣指示物数量的对方场上的怪兽为对象才能发动。那些怪兽破坏。
 -- ②：把自己的灵摆区域3个响鸣指示物取除才能发动。这个回合，这张卡在同1次的战斗阶段中可以作3次攻击。
 local s,id,o=GetID()
--- 初始化卡片效果：设定连接召唤手续、限制连接召唤Cost、①特召破坏对方怪兽效果及②去除指示物增加攻击次数效果
+-- 初始化效果
 function s.initial_effect(c)
 	c:EnableReviveLimit()
-	-- 设定连接召唤手续：效果怪兽1只
+	-- 添加连接召唤手续
 	aux.AddLinkProcedure(c,aux.FilterBoolFunction(Card.IsType,TYPE_EFFECT),1,1)
-	-- 这张卡的连接召唤若非自己的灵摆区域的天使族怪兽卡的响鸣指示物是3个以上的场合则不能进行
+	-- 自己对「异响鸣之异神-光耀天使」1回合只能有1次特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_SPSUMMON_COST)
@@ -43,51 +43,51 @@ end
 s.mentioned_counter={
 	[0x6a]=true,
 }
--- Cost过滤条件：灵摆区域指示物在3个以上的天使族怪兽
+-- 用于过滤带有响鸣指示物的天使族怪兽
 function s.cfilter(c)
 	return c:GetOriginalRace()&RACE_FAIRY>0 and c:GetOriginalType()&TYPE_MONSTER>0 and c:GetCounter(0x6a)>2
 end
--- 连接召唤Cost检查
+-- 特殊召唤代价：检查是否有满足要求的灵摆卡
 function s.spcost(e,c,tp,st)
 	if st&SUMMON_TYPE_LINK~=SUMMON_TYPE_LINK then return true end
-	-- 检查灵摆区域是否存在指示物在3个以上的天使族怪兽
+	-- 检查灵摆区是否存在满足要求的卡
 	return Duel.IsExistingMatchingCard(s.cfilter,tp,LOCATION_PZONE,0,1,nil)
 end
--- ①效果发动条件：此卡连接召唤成功
+-- 检查这张卡是否是连接召唤
 function s.descon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsSummonType(SUMMON_TYPE_LINK)
 end
--- ①效果发动准备：统计灵摆区域指示物数量并选择对象
+-- 效果目标（发动时）：以最多有自己的灵摆区域的响鸣指示物数量的对方场上的怪兽为对象
 function s.destg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(1-tp) end
 	local ct=0
-	-- 获取自身灵摆区域的卡
+	-- 获取自己灵摆区域的卡
 	local g=Duel.GetFieldGroup(tp,LOCATION_PZONE,0)
-	-- 统计灵摆区域卡的响鸣指示物总数
+	-- 遍历灵摆区域的卡，统计响鸣指示物数量
 	for tc in aux.Next(g) do ct=ct+tc:GetCounter(0x6a) end
-	-- 发动条件检查：指示物数量大于0且对方场上有可选择的对象怪兽
+	-- 检查响鸣指示物数量是否大于0且对方场上是否存在可被取对象的怪兽
 	if chk==0 then return ct>0 and Duel.IsExistingTarget(nil,tp,0,LOCATION_MZONE,1,nil) end
-	-- 提示玩家选择要破坏的卡
+	-- 向玩家提示选择目标，内容为：“请选择要破坏的卡”
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 选择最多等同于指示物数量的对方场上怪兽作为对象
+	-- 选择目标（从满足条件的卡片组中选择最多响鸣指示物数量的卡）
 	local g=Duel.SelectTarget(tp,nil,tp,0,LOCATION_MZONE,1,ct,nil)
-	-- 设置连锁操作信息：破坏选中的怪兽
+	-- 设置当前处理的连锁的操作信息为破坏目标卡片
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,#g,0,0)
 end
--- ①效果处理：破坏选中的对象怪兽
+-- 效果处理：那些怪兽破坏
 function s.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 破坏连锁关联的对象怪兽
+	-- 破坏那些怪兽
 	Duel.Destroy(Duel.GetTargetsRelateToChain(),REASON_EFFECT)
 end
--- ②效果发动条件：可以进入战斗阶段
+-- 检查是否能够进入战斗阶段
 function s.tacon(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查自身是否可以进入战斗阶段
+	-- 检查回合玩家能否进入战斗阶段
 	return Duel.IsAbleToEnterBP()
 end
--- Cost检查函数：判断灵摆区域卡片能否组合去除共计3个指示物
+-- 检查是否能从灵摆区域取除合计3个响鸣指示物
 function s.chk(g,tp)
 	local tl=0
-	-- 遍历灵摆区域的卡并累加可去除的指示物数量
+	-- 遍历满足条件的卡
 	for tc in aux.Next(g) do
 		local ct=0
 		for i=1,3 do
@@ -97,25 +97,25 @@ function s.chk(g,tp)
 	end
 	return tl>2
 end
--- ②效果发动Cost：从灵摆区域共去除3个响鸣指示物
+-- 发动代价：把自己的灵摆区域3个响鸣指示物取除
 function s.tacost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 获取自身灵摆区域的卡
+	-- 获取自己灵摆区域的卡
 	local g=Duel.GetFieldGroup(tp,LOCATION_PZONE,0)
 	if chk==0 then return g:CheckSubGroup(s.chk,1,99,tp) end
 	local ct=0
 	while ct<3 do
-		-- 提示玩家选择要去除指示物的表侧表示卡
+		-- 向玩家提示选择卡片，内容为：“请选择表侧表示的卡”
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
 		local tc=g:FilterSelect(tp,Card.IsCanRemoveCounter,1,1,nil,tp,0x6a,1,REASON_COST):GetFirst()
 		tc:RemoveCounter(tp,0x6a,1,REASON_COST)
 		ct=ct+1
 	end
 end
--- ②效果发动准备：检查自身是否未追加攻击次数
+-- 效果目标（发动时）：检查是否可以增加攻击次数
 function s.tatg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():GetEffectCount(EFFECT_EXTRA_ATTACK)==0 end
 end
--- ②效果处理：赋予此卡在本回合同1次战斗阶段中作3次攻击的能力
+-- 效果处理：增加攻击次数
 function s.taop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if not c:IsRelateToEffect(e) then return end
