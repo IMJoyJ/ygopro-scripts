@@ -23,19 +23,19 @@ end
 c85754829.mentioned_counter={
 	[0xf]=true,
 }
--- 攻击力上升数值计算：此卡上的虫指示物数量×300
+-- 计算并返回需要上升的攻击力数值，即虫指示物数量×300
 function c85754829.atkval(e,c)
 	return c:GetCounter(0xf)*300
 end
--- 反转检测过滤条件：此前为里侧表示且变为表侧表示的怪兽
+-- 检查怪兽是否原本为背面表示且现在是表侧表示
 function c85754829.cfilter(c)
 	return c:IsPreviousPosition(POS_FACEDOWN) and c:IsFaceup()
 end
--- 放置指示物条件检查：存在除自身外反转的怪兽
+-- 检查表示形式发生变更的怪兽中是否存在从背面表示变为表侧表示的怪兽
 function c85754829.accon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c85754829.cfilter,1,e:GetHandler())
 end
--- 放置指示物处理：给此卡放置1个虫指示物
+-- 给这张卡放置1个虫指示物
 function c85754829.acop(e,tp,eg,ep,ev,re,r,rp)
 	e:GetHandler():AddCounter(0xf,1)
 end

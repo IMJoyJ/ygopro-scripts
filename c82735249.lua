@@ -5,9 +5,9 @@
 -- ②：把自己场上3个音响指示物取除才能发动。从卡组把1只「音响战士」怪兽加入手卡。
 -- ③：自己对「音响战士」怪兽的召唤·特殊召唤成功的场合才能发动。从卡组把1张「音响放大器」加入手卡。
 local s,id,o=GetID()
--- 初始化卡片效果：注册永续魔法发动、音响指示物放置、去除3个指示物检索「音响战士」怪兽、以及「音响战士」召唤/特召成功检索「音响放大器」的效果
+-- 初始化函数，定义卡片代码列表、指示物允许和各个效果
 function c82735249.initial_effect(c)
-	-- 记录此卡记载了「音响放大器」(75304793)的卡名
+	-- 记录该卡片上记载着卡名「音响放大器」（75304793）
 	aux.AddCodeList(c,75304793)
 	c:EnableCounterPermit(0x35)
 	-- 永续魔陷/场地卡通用的“允许发动”空效果，无此效果则无法发动
@@ -24,7 +24,7 @@ function c82735249.initial_effect(c)
 	e2:SetCondition(c82735249.ctcon)
 	e2:SetOperation(c82735249.ctop)
 	c:RegisterEffect(e2)
-	-- ②：把自己场上3个音响指示物去除才能发动。从卡组把1只「音响战士」怪兽加入手卡。
+	-- ②：把自己场上3个音响指示物取除才能发动。从卡组把1只「音响战士」怪兽加入手卡。
 	local e3=Effect.CreateEffect(c)
 	e3:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
 	e3:SetType(EFFECT_TYPE_IGNITION)
@@ -53,74 +53,74 @@ end
 c82735249.mentioned_counter={
 	[0x35]=true,
 }
--- 指示物放置条件：连锁处理中的效果为「音响战士」卡发动的效果，且非卡片发动
+-- 效果发动条件：检查是否为「音响战士」卡持有的效果发动，且不是魔法陷阱卡的发动
 function c82735249.ctcon(e,tp,eg,ep,ev,re,r,rp)
 	return re and re:GetHandler():IsSetCard(0x1066) and not re:IsHasType(EFFECT_TYPE_ACTIVATE)
 end
--- 指示物放置处理：给此卡放置1个音响指示物
+-- 效果处理：给这张卡放置1个音响指示物
 function c82735249.ctop(e,tp,eg,ep,ev,re,r,rp)
 	e:GetHandler():AddCounter(0x35,1)
 end
--- ②效果发动Cost：去除自己场上3个音响指示物
+-- 效果发动代价：取除自己场上3个音响指示物
 function c82735249.thcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- Cost检查：自己场上是否存在至少3个可去除的音响指示物
+	-- 检查自己场上是否能取除3个音响指示物
 	if chk==0 then return Duel.IsCanRemoveCounter(tp,1,0,0x35,3,REASON_COST) end
-	-- 从自己场上去除3个音响指示物
+	-- 执行取除自己场上3个音响指示物的操作
 	Duel.RemoveCounter(tp,1,0,0x35,3,REASON_COST)
 end
--- 卡组检索过滤条件：「音响战士」怪兽且可加入手牌
+-- 检索过滤条件：卡组中能够加入手卡的「音响战士」怪兽
 function c82735249.thfilter(c)
 	return c:IsType(TYPE_MONSTER) and c:IsSetCard(0x1066) and c:IsAbleToHand()
 end
--- ②效果发动准备：设置从卡组检索「音响战士」怪兽的操作信息
+-- 效果目标设置：检查卡组中是否有满足条件的卡并设置加入手卡的操作信息
 function c82735249.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 发动条件检查：卡组中是否存在可加入手牌的「音响战士」怪兽
+	-- 检查卡组是否存在至少1只可以加入手卡的「音响战士」怪兽
 	if chk==0 then return Duel.IsExistingMatchingCard(c82735249.thfilter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置连锁操作信息：从卡组检索1张卡加入手牌
+	-- 设置加入手卡的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- ②效果处理：从卡组把1只「音响战士」怪兽加入手牌
+-- 效果处理：从卡组选择1只「音响战士」怪兽加入手卡并向对方展示
 function c82735249.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要加入手牌的卡
+	-- 向玩家发送提示“请选择要加入手牌的卡”
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 从卡组选择1只满足条件的「音响战士」怪兽
+	-- 让玩家从卡组选择1只符合条件的怪兽
 	local g=Duel.SelectMatchingCard(tp,c82735249.thfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的「音响战士」怪兽加入手牌
+		-- 将选择的怪兽加入手卡
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 向对方确认加入手牌的卡
+		-- 向对方确认加入手卡的卡
 		Duel.ConfirmCards(1-tp,g)
 	end
 end
--- 过滤条件：自己召唤/特殊召唤成功的表侧表示「音响战士」怪兽
+-- 过滤条件：检查是否为表侧表示、自己召唤·特殊召唤成功的「音响战士」怪兽
 function c82735249.cfilter(c,tp)
 	return c:IsFaceup() and c:IsSetCard(0x1066) and c:IsSummonPlayer(tp)
 end
--- ③效果发动条件：自己成功召唤/特殊召唤了「音响战士」怪兽
+-- 效果发动条件：检查是否有自己召唤·特殊召唤成功的「音响战士」怪兽
 function c82735249.thcon2(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c82735249.cfilter,1,nil,tp)
 end
--- 卡组检索过滤条件：「音响放大器」(75304793)且可加入手牌
+-- 检索过滤条件：卡组中能够加入手卡的「音响放大器」
 function c82735249.thfilter2(c)
 	return c:IsCode(75304793) and c:IsAbleToHand()
 end
--- ③效果发动准备：设置从卡组检索「音响放大器」的操作信息
+-- 效果目标设置：检查卡组中是否有「音响放大器」并设置加入手卡操作信息
 function c82735249.thtg2(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 发动条件检查：卡组中是否存在可加入手牌的「音响放大器」
+	-- 检查卡组中是否存在可以加入手卡的「音响放大器」
 	if chk==0 then return Duel.IsExistingMatchingCard(c82735249.thfilter2,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置连锁操作信息：从卡组检索1张卡加入手牌
+	-- 设置加入手卡的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- ③效果处理：从卡组把1张「音响放大器」加入手牌
+-- 效果处理：从卡组把1张「音响放大器」加入手卡并向对方展示
 function c82735249.thop2(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要加入手牌的卡
+	-- 向玩家发送提示“请选择要加入手牌的卡”
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 从卡组选择1张「音响放大器」
+	-- 让玩家从卡组选择1张「音响放大器」
 	local g=Duel.SelectMatchingCard(tp,c82735249.thfilter2,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的「音响放大器」加入手牌
+		-- 将选择的「音响放大器」加入手卡
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 向对方确认加入手牌的卡
+		-- 向对方确认加入手卡的卡
 		Duel.ConfirmCards(1-tp,g)
 	end
 end

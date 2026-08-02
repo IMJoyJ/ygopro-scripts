@@ -24,16 +24,16 @@ end
 c84055227.mentioned_counter={
 	[0x1]=true,
 }
--- ①效果发动条件：此卡因战斗破坏怪兽且战斗目标是怪兽
+-- e1的condition部分，检查此卡是否参与战斗，且战斗对象是否为怪兽卡
 function c84055227.condition(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	return c:IsRelateToBattle() and c:GetBattleTarget():IsType(TYPE_MONSTER)
 end
--- ①效果处理：给此卡放置1个魔力指示物
+-- e1的operation部分，为此卡放置1个魔力指示物
 function c84055227.operation(e,tp,eg,ep,ev,re,r,rp)
 	e:GetHandler():AddCounter(0x1,1)
 end
--- 攻击力上升数值计算：此卡放置的魔力指示物数量×200
+-- e2的value部分，计算并返回卡片上魔力指示物数量乘以200的数值
 function c84055227.attackup(e,c)
 	return c:GetCounter(0x1)*200
 end

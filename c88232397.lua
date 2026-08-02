@@ -8,16 +8,16 @@
 function c88232397.initial_effect(c)
 	c:EnableCounterPermit(0x1)
 	c:SetCounterLimit(0x1,3)
-	-- 只要这张卡在怪兽区域存在，每次自己或者对方把魔法卡发动，给这张卡放置1个魔力指示物（最多3个）。
+	-- 只要这张卡在怪兽区域存在，每次自己或者对方把魔法卡发动
 	local e0=Effect.CreateEffect(c)
 	e0:SetType(EFFECT_TYPE_CONTINUOUS+EFFECT_TYPE_FIELD)
 	e0:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
 	e0:SetCode(EVENT_CHAINING)
 	e0:SetRange(LOCATION_MZONE)
-	-- 注册连锁发生标记：记录连锁发动时此卡在场上存在
+	-- 记录连锁发生时这张卡在场上存在
 	e0:SetOperation(aux.chainreg)
 	c:RegisterEffect(e0)
-	-- 每次自己或者对方把魔法卡发动，给这张卡放置1个魔力指示物（最多3个）。
+	-- 给这张卡放置1个魔力指示物（最多3个）。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_CONTINUOUS+EFFECT_TYPE_FIELD)
 	e1:SetCode(EVENT_CHAIN_SOLVED)
@@ -49,31 +49,31 @@ end
 c88232397.mentioned_counter={
 	[0x1]=true,
 }
--- 放置魔力指示物处理：在魔法卡发动连锁处理结束时为此卡放置1个魔力指示物
+-- 魔法卡发动处理完成时，给这张卡放置1个魔力指示物
 function c88232397.acop(e,tp,eg,ep,ev,re,r,rp)
 	if re:IsHasType(EFFECT_TYPE_ACTIVATE) and re:IsActiveType(TYPE_SPELL) and e:GetHandler():GetFlagEffect(FLAG_ID_CHAINING)>0 then
 		e:GetHandler():AddCounter(0x1,1)
 	end
 end
--- ②效果发动Cost：取除自身1个魔力指示物，并向对方提示选择的效果
+-- 取除这张卡的1个魔力指示物作为代价，并提示发动了哪个效果
 function c88232397.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsCanRemoveCounter(tp,0x1,1,REASON_COST) end
 	e:GetHandler():RemoveCounter(tp,0x1,1,REASON_COST)
-	-- 向对方玩家提示所选择发动的效果分支
+	-- 提示发动了哪个效果
 	Duel.Hint(HINT_OPSELECTED,1-tp,e:GetDescription())
 end
--- 上升等级与攻击力效果处理：使自身的攻击力上升1500，等级上升1星
+-- 这张卡的等级上升1星，攻击力上升1500
 function c88232397.atkop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsFaceup() and c:IsRelateToEffect(e) then
-		-- 攻击力上升1500。
+		-- 攻击力上升1500
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)
 		e1:SetValue(1500)
 		e1:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_DISABLE)
 		c:RegisterEffect(e1)
-		-- 这张卡的等级上升1星。
+		-- 这张卡的等级上升1星
 		local e2=Effect.CreateEffect(c)
 		e2:SetType(EFFECT_TYPE_SINGLE)
 		e2:SetCode(EFFECT_UPDATE_LEVEL)
@@ -82,27 +82,27 @@ function c88232397.atkop(e,tp,eg,ep,ev,re,r,rp)
 		c:RegisterEffect(e2)
 	end
 end
--- 检索/回收目标卡片过滤：卡组或墓地中可加入手牌的「栗子球」怪兽或「增殖」
+-- 过滤「栗子球」怪兽或者「增殖」且能加入手牌
 function c88232397.thfilter(c)
 	return (c:IsSetCard(0xa4) and c:IsType(TYPE_MONSTER) or c:IsCode(40703222)) and c:IsAbleToHand()
 end
--- 检索/回收效果发动准备：检查卡组与墓地是否存在符合条件的卡片并设置操作信息
+-- 检查卡组或墓地是否有满足条件的卡并设置加入手牌操作信息
 function c88232397.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查己方卡组或墓地是否存在可以加入手牌的「栗子球」怪兽或「增殖」
+	-- 检查卡组或墓地是否有满足条件的卡
 	if chk==0 then return Duel.IsExistingMatchingCard(c88232397.thfilter,tp,LOCATION_DECK+LOCATION_GRAVE,0,1,nil) end
-	-- 设置连锁操作信息：从卡组或墓地检索/回收1张卡加入手牌
+	-- 设置加入手牌操作信息
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK+LOCATION_GRAVE)
 end
--- 检索/回收效果处理：从卡组或墓地选1只「栗子球」怪兽或1张「增殖」加入手牌
+-- 从卡组或墓地选1张满足条件的卡加入手牌并确认
 function c88232397.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 向玩家发送选择加入手牌卡片的提示信息
+	-- 向玩家提示选择要加入手牌的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 从卡组或墓地选择1只满足条件的「栗子球」怪兽或1张「增殖」
+	-- 让玩家选1张满足条件的卡
 	local g=Duel.SelectMatchingCard(tp,aux.NecroValleyFilter(c88232397.thfilter),tp,LOCATION_DECK+LOCATION_GRAVE,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的卡片加入手牌
+		-- 把选择的卡加入手牌
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 向对方玩家确认加入手牌的卡片
+		-- 向对方确认加入手牌的卡
 		Duel.ConfirmCards(1-tp,g)
 	end
 end
