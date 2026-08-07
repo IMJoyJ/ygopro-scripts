@@ -5,7 +5,7 @@
 -- ②：这张卡召唤·特殊召唤的场合才能发动。除「死相之冥鉴 许布洛」外的1只6星以上的不死族怪兽从卡组送去墓地。那之后，可以从自己墓地把1只6星以上的不死族怪兽加入手卡。
 -- ③：这张卡在怪兽区域存在的状态，从墓地有怪兽特殊召唤的场合才能发动。进行1只不死族超量怪兽的超量召唤。
 local s,id,o=GetID()
--- 注册卡片初始化效果：不用解放作召唤的召唤手续效果、召唤·特殊召唤时从卡组堆墓并可选回收墓地不死族怪兽的效果，以及从墓地特召怪兽时诱发进行不死族超量召唤的效果。
+-- 初始化效果函数，注册三个效果：不用解放召唤、送去墓地并加入手牌、从墓地特殊召唤时进行超量召唤
 function s.initial_effect(c)
 	-- ①：这张卡可以不用解放作召唤。
 	local e1=Effect.CreateEffect(c)
@@ -42,83 +42,83 @@ function s.initial_effect(c)
 	e4:SetOperation(s.spop)
 	c:RegisterEffect(e4)
 end
--- 不用解放作召唤的条件检查函数：检查所需解放数量为0、等级为5星以上且控制者场上有怪兽区域空位。
+-- 不需解放召唤条件函数，判断是否满足不需解放召唤的条件
 function s.ntcon(e,c,minc)
 	if c==nil then return true end
-	-- 判断召唤所需解放数是否为0、怪兽等级是否在5星以上且场上有可用怪兽格。
+	-- 满足不需解放召唤的条件：不需要解放、等级大于等于5、场上存在空位
 	return minc==0 and c:IsLevelAbove(5) and Duel.GetLocationCount(c:GetControler(),LOCATION_MZONE)>0
 end
--- 卡组送去墓地怪兽过滤函数：检查卡片是否非同名卡、等级6星以上、不死族且能送去墓地。
+-- 过滤函数，用于筛选可送去墓地的卡：不是许布洛、等级≥6、不死族、可送去墓地
 function s.tgfilter(c)
 	return not c:IsCode(id) and c:IsLevelAbove(6) and c:IsRace(RACE_ZOMBIE) and c:IsAbleToGrave()
 end
--- 召唤·特召时堆墓效果的目标检查函数：检查卡组是否存在满足送墓条件的不死族怪兽，并设置操作信息与提示。
+-- 效果处理前的准备函数，检查是否有符合条件的卡并设置操作信息
 function s.tgtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查自己卡组是否存在至少1张除「死相之冥鉴 许布洛」外的6星以上不死族怪兽。
+	-- 检查是否满足条件：场上存在至少1张符合条件的卡
 	if chk==0 then return Duel.IsExistingMatchingCard(s.tgfilter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置当前连锁的操作信息为从卡组将1张卡送去墓地。
+	-- 设置操作信息为将1张卡从卡组送去墓地
 	Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,nil,1,tp,LOCATION_DECK)
-	-- 向对方玩家提示发动了此效果。
+	-- 提示对方玩家选择了该效果
 	Duel.Hint(HINT_OPSELECTED,1-tp,e:GetDescription())
 end
--- 回收手牌怪兽过滤函数：检查卡片是否为6星以上不死族怪兽且能加入手牌。
+-- 过滤函数，用于筛选可加入手牌的卡：等级≥6、不死族、可加入手牌
 function s.thfilter(c)
 	return c:IsLevelAbove(6) and c:IsRace(RACE_ZOMBIE) and c:IsAbleToHand()
 end
--- 召唤·特召时堆墓及回收手牌的处理函数：从卡组把1只6星以上不死族怪兽送去墓地，之后可以从自己墓地把1只6星以上不死族怪兽加入手卡。
+-- 效果处理函数，选择并执行送去墓地和可能的加入手牌操作
 function s.tgop(e,tp,eg,ep,ev,re,r,rp)
-	-- 弹出提示要求玩家选择要送去墓地的卡。
+	-- 提示玩家选择要送去墓地的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
-	-- 从自己卡组选择1张除「死相之冥鉴 许布洛」外的6星以上不死族怪兽。
+	-- 从卡组中选择1张符合条件的卡
 	local g=Duel.SelectMatchingCard(tp,s.tgfilter,tp,LOCATION_DECK,0,1,1,nil)
-	-- 判断所选卡片成功通过效果送去墓地且到达墓地。
+	-- 判断是否成功将卡送去墓地且在墓地
 	if g:GetCount()>0 and Duel.SendtoGrave(g,REASON_EFFECT)~=0 and g:GetFirst():IsLocation(LOCATION_GRAVE) then
-		-- 获取自己墓地中满足条件且不受王家长眠之谷影响的可回收怪兽组。
+		-- 获取可加入手牌的卡组中的卡，排除受王家长眠之谷影响的卡
 		local gg=Duel.GetMatchingGroup(aux.NecroValleyFilter(s.thfilter),tp,LOCATION_GRAVE,0,nil)
-		-- 若墓地存在满足条件的怪兽，询问玩家是否将其加入手卡。
+		-- 判断是否有可加入手牌的卡并询问玩家是否选择加入手牌
 		if gg:GetCount()>0 and Duel.SelectYesNo(tp,aux.Stringid(id,3)) then  --"是否加入手卡？"
-			-- 中断效果处理，使后续加入手卡处理与送去墓地不同时处理。
+			-- 中断当前效果处理，使后续效果视为错时点处理
 			Duel.BreakEffect()
-			-- 弹出提示要求玩家选择要加入手牌的卡。
+			-- 提示玩家选择要加入手牌的卡
 			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
 			local sg=gg:Select(tp,1,1,nil)
-			-- 高亮显示在墓地中被选为目标的卡片。
+			-- 显示所选卡被选为对象的动画效果
 			Duel.HintSelection(sg)
-			-- 将选中的怪兽从墓地加入手牌。
+			-- 将选定的卡加入手牌
 			Duel.SendtoHand(sg,nil,REASON_EFFECT)
 		end
 	end
 end
--- 特殊召唤怪兽过滤函数：检查怪兽是否从墓地特殊召唤且原本类型为怪兽。
+-- 过滤函数，用于筛选从墓地特殊召唤的怪兽：来自墓地、是怪兽类型
 function s.spfilter(c)
 	return c:IsSummonLocation(LOCATION_GRAVE) and c:GetOriginalType()&TYPE_MONSTER~=0
 end
--- 墓地有怪兽特召时效果的条件检查函数：检查是否有怪兽从墓地特殊召唤且不包含自身。
+-- 触发条件函数，判断是否满足超量召唤的发动条件
 function s.spcon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(s.spfilter,1,nil) and not eg:IsContains(e:GetHandler())
 end
--- 超量召唤怪兽过滤函数：检查卡片是否为不死族且当前能进行超量召唤。
+-- 过滤函数，用于筛选可进行超量召唤的卡：不死族、可超量召唤
 function s.xyzfilter(c)
 	return c:IsRace(RACE_ZOMBIE) and c:IsXyzSummonable(nil)
 end
--- 墓地特召时诱发超量召唤效果的目标检查函数：检查额外卡组是否存在可超量召唤的不死族超量怪兽，并设置操作信息与提示。
+-- 超量召唤效果处理前的准备函数，检查是否有符合条件的卡并设置操作信息
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查自己额外卡组是否存在至少1张可以超量召唤的不死族超量怪兽。
+	-- 检查是否满足条件：场上存在至少1张符合条件的卡
 	if chk==0 then return Duel.IsExistingMatchingCard(s.xyzfilter,tp,LOCATION_EXTRA,0,1,nil) end
-	-- 设置当前连锁的操作信息为从额外卡组进行1次特殊召唤。
+	-- 设置操作信息为特殊召唤1只怪兽
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_EXTRA)
-	-- 向对方玩家提示发动了此效果。
+	-- 提示对方玩家选择了该效果
 	Duel.Hint(HINT_OPSELECTED,1-tp,e:GetDescription())
 end
--- 进行不死族超量召唤的处理函数：从额外卡组选择1只可超量召唤的不死族超量怪兽进行超量召唤。
+-- 超量召唤效果处理函数，选择并执行超量召唤操作
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取自己额外卡组中所有可超量召唤的不死族超量怪兽。
+	-- 获取可进行超量召唤的卡组中的卡
 	local g=Duel.GetMatchingGroup(s.xyzfilter,tp,LOCATION_EXTRA,0,nil)
 	if g:GetCount()>0 then
-		-- 弹出提示要求玩家选择要特殊召唤的超量怪兽。
+		-- 提示玩家选择要特殊召唤的卡
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
 		local tg=g:Select(tp,1,1,nil)
-		-- 对选中的怪兽进行超量召唤。
+		-- 执行超量召唤手续
 		Duel.XyzSummon(tp,tg:GetFirst(),nil)
 	end
 end
