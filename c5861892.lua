@@ -16,7 +16,7 @@ function c5861892.initial_effect(c)
 	e1:SetTarget(c5861892.sptg)
 	e1:SetOperation(c5861892.spop)
 	c:RegisterEffect(e1)
-	-- 不能通常召唤，只能通过特定条件特殊召唤
+	-- 不能通常召唤，只能通过特殊召唤条件进行特殊召唤
 	local e2=Effect.CreateEffect(c)
 	e2:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
 	e2:SetType(EFFECT_TYPE_SINGLE)
@@ -48,22 +48,22 @@ function c5861892.initial_effect(c)
 	e4:SetOperation(c5861892.negop)
 	c:RegisterEffect(e4)
 end
--- 过滤场上可以作为特殊召唤代价的怪兽（送去墓地）
+-- 过滤场上可以作为特殊召唤代价送去墓地的怪兽
 function c5861892.spfilter(c)
 	return c:IsAbleToGraveAsCost()
 end
--- 检查场上是否有满足条件的3只怪兽可作为特殊召唤的素材
+-- 检查场上是否有3只怪兽满足条件，用于判断是否能特殊召唤
 function c5861892.spcon(e,c)
 	if c==nil then return true end
 	local tp=c:GetControler()
-	-- 获取玩家场上所有可送去墓地的怪兽组
+	-- 获取自己场上的所有可以送去墓地的怪兽组
 	local mg=Duel.GetMatchingGroup(c5861892.spfilter,tp,LOCATION_MZONE,0,nil)
-	-- 检查是否能选出3只怪兽组成满足条件的子集
+	-- 检查该组怪兽中是否存在3只满足条件的子集
 	return mg:CheckSubGroup(aux.mzctcheck,3,3,tp)
 end
--- 选择3只怪兽作为特殊召唤的素材并设置为效果对象
+-- 选择3只怪兽作为特殊召唤的代价并将其送去墓地
 function c5861892.sptg(e,tp,eg,ep,ev,re,r,rp,chk,c)
-	-- 获取玩家场上所有可送去墓地的怪兽组
+	-- 获取自己场上的所有可以送去墓地的怪兽组
 	local mg=Duel.GetMatchingGroup(c5861892.spfilter,tp,LOCATION_MZONE,0,nil)
 	-- 提示玩家选择要送去墓地的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
@@ -82,36 +82,36 @@ function c5861892.spop(e,tp,eg,ep,ev,re,r,rp,c)
 	Duel.SendtoGrave(g,REASON_SPSUMMON)
 	g:DeleteGroup()
 end
--- 判断是否为正面效果触发（战斗破坏时）
+-- 判断是否为正面效果触发条件，即抛硬币结果为正面
 function c5861892.thcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	return c:GetFlagEffectLabel(FLAG_ID_ARCANA_COIN)==1 and c:IsRelateToBattle()
 		and c:GetBattleTarget():IsLocation(LOCATION_GRAVE)
 end
--- 设置选择目标的提示并选择墓地一张卡加入手牌
+-- 设置选择目标的提示信息并选择墓地一张卡加入手牌
 function c5861892.thtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and chkc:IsAbleToHand() end
-	-- 检查是否有满足条件的墓地卡可作为对象
+	-- 检查是否有满足条件的墓地卡可以加入手牌
 	if chk==0 then return Duel.IsExistingTarget(Card.IsAbleToHand,tp,LOCATION_GRAVE,0,1,nil) end
 	-- 提示玩家选择要加入手牌的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择墓地一张卡作为效果对象
+	-- 选择墓地一张可加入手牌的卡
 	local g=Duel.SelectTarget(tp,Card.IsAbleToHand,tp,LOCATION_GRAVE,0,1,1,nil)
 	-- 设置操作信息，表示将卡加入手牌
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,1,0,0)
 end
--- 执行将选中卡加入手牌的操作并确认对方可见
+-- 执行将选中卡加入手牌的操作并确认对方看到
 function c5861892.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的效果对象卡
+	-- 获取当前连锁的目标卡
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 将目标卡以效果原因送去手牌
+		-- 将目标卡以效果原因加入手牌
 		Duel.SendtoHand(tc,nil,REASON_EFFECT)
-		-- 向对方玩家确认该卡的加入手牌动作
+		-- 向对方玩家确认该卡已加入手牌
 		Duel.ConfirmCards(1-tp,tc)
 	end
 end
--- 判断是否为反面效果触发（受到对方发动时）
+-- 判断是否为反面效果触发条件，即抛硬币结果为反面且目标为自身
 function c5861892.negcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if not re:IsHasProperty(EFFECT_FLAG_CARD_TARGET) then return false end
@@ -134,7 +134,7 @@ function c5861892.negtg(e,tp,eg,ep,ev,re,r,rp,chk)
 		Duel.SetOperationInfo(0,CATEGORY_DESTROY,eg,1,0,0)
 	end
 end
--- 执行反面效果的处理，降低攻击力并无效发动且破坏
+-- 执行反面效果操作，降低攻击力并无效发动且破坏
 function c5861892.negop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	-- 判断是否满足执行反面效果的条件
@@ -151,7 +151,7 @@ function c5861892.negop(e,tp,eg,ep,ev,re,r,rp)
 	if not c:IsHasEffect(EFFECT_REVERSE_UPDATE) then
 		-- 使连锁发动无效并破坏目标卡
 		if Duel.NegateActivation(ev) and re:GetHandler():IsRelateToEffect(re) then
-			-- 破坏目标卡
+			-- 将目标卡以效果原因破坏
 			Duel.Destroy(eg,REASON_EFFECT)
 		end
 	end
