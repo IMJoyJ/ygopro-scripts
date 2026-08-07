@@ -57,29 +57,29 @@ function s.activate(e,tp,eg,ep,ev,re,r,rp)
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
 	-- 获取与当前连锁相关的怪兽对象组
 	local tg=Duel.GetTargetsRelateToChain():Filter(Card.IsType,nil,TYPE_MONSTER)
-	-- 若存在对象且成功破坏了对象
+	-- 判断是否有怪兽被破坏且实际破坏数量大于0
 	if tg:GetCount()>0 and Duel.Destroy(tg,REASON_EFFECT)>0
-		-- 并且成功抽了2张卡
+		-- 判断是否成功抽了2张卡
 		and Duel.Draw(p,d,REASON_EFFECT)~=0
-		-- 并且对方场上存在可以改变表示形式的怪兽
+		-- 判断对方场上是否存在至少1只可以改变表示形式的怪兽
 		and Duel.IsExistingMatchingCard(Card.IsCanChangePosition,tp,0,LOCATION_MZONE,1,nil)
-		-- 并且使用者选择是否改变表示形式
+		-- 询问使用者是否要改变表示形式
 		and Duel.SelectYesNo(tp,aux.Stringid(id,2)) then  --"是否改变表示形式？"
 		-- 提示选择要改变表示形式的怪兽
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_POSCHANGE)  --"请选择要改变表示形式的怪兽"
 		-- 选择1只对方场上的怪兽作为改变表示形式的对象
 		local cg=Duel.SelectMatchingCard(tp,Card.IsCanChangePosition,tp,0,LOCATION_MZONE,1,1,nil)
 		if cg:GetCount()>0 then
-			-- 中断当前效果，使后续处理视为不同时处理
+			-- 中断当前效果，使后续处理视为错时点
 			Duel.BreakEffect()
-			-- 手动显示被选为对象的动画效果
+			-- 为选中的怪兽显示被选为对象的动画效果
 			Duel.HintSelection(cg)
-			-- 将所选怪兽改变为表侧守备表示或表侧攻击表示
+			-- 将选中的怪兽变为表侧守备表示（攻击表示）
 			Duel.ChangePosition(cg:GetFirst(),POS_FACEUP_DEFENSE,POS_FACEUP_DEFENSE,POS_FACEUP_ATTACK,POS_FACEUP_ATTACK)
 		end
 	end
 end
--- 用于判断是否满足②效果发动条件的过滤函数
+-- 过滤条件函数：判断怪兽是否从墓地召唤且为怪兽类型
 function s.cfilter(c,tp)
 	return c:IsSummonLocation(LOCATION_GRAVE) and c:GetPreviousControler()==tp and c:GetOriginalType()&TYPE_MONSTER~=0
 end
@@ -96,7 +96,7 @@ end
 -- 处理②效果的发动效果
 function s.thop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 判断该卡是否与当前连锁相关且未被王家长眠之谷影响
+	-- 判断该卡是否与当前连锁相关且未受王家长眠之谷影响
 	if c:IsRelateToChain() and aux.NecroValleyFilter()(c) then
 		-- 将该卡送入手卡
 		Duel.SendtoHand(c,nil,REASON_EFFECT)

@@ -12,46 +12,46 @@ function c92854392.initial_effect(c)
 	e1:SetOperation(c92854392.activate)
 	c:RegisterEffect(e1)
 end
--- 判断当前回合玩家是否为对方
+-- 判断是否为对方回合
 function c92854392.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 若当前回合玩家不是发动者，则满足条件
+	-- 当前回合玩家不是发动者，则满足条件
 	return Duel.GetTurnPlayer()~=tp
 end
--- 设置选择目标的处理函数，用于选择己方表侧表示的怪兽
+-- 选择自己场上1张表侧表示的怪兽作为目标
 function c92854392.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and chkc:IsFaceup() end
-	-- 检查己方场上是否存在至少1只表侧表示的怪兽
+	-- 检查自己场上是否存在至少1张表侧表示的怪兽
 	if chk==0 then return Duel.IsExistingTarget(Card.IsFaceup,tp,LOCATION_MZONE,0,1) end
-	-- 向玩家发送提示信息“请选择表侧表示的卡”
+	-- 提示选择表侧表示的怪兽
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
-	-- 选择己方场上的1只表侧表示的怪兽作为目标
+	-- 选择1张自己场上的表侧表示怪兽
 	Duel.SelectTarget(tp,Card.IsFaceup,tp,LOCATION_MZONE,0,1,1)
 end
--- 设置效果发动后的处理函数，用于设置攻击限制
+-- 设置效果发动后的处理，使对方必须攻击所选怪兽
 function c92854392.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁中的目标怪兽
+	-- 获取当前连锁的目标怪兽
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
 		local fid=tc:GetRealFieldID()
-		-- 创建一个影响全场的永续效果，使对方必须攻击指定怪兽
+		-- 创建一个影响全场的必须攻击效果
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_FIELD)
 		e1:SetCode(EFFECT_MUST_ATTACK)
 		e1:SetTargetRange(0,LOCATION_MZONE)
 		e1:SetReset(RESET_PHASE+PHASE_BATTLE)
-		-- 将效果e1注册给对方玩家
+		-- 将该效果注册给对方玩家
 		Duel.RegisterEffect(e1,tp)
 		local e2=e1:Clone()
 		e2:SetCode(EFFECT_MUST_ATTACK_MONSTER)
 		e2:SetValue(c92854392.atklimit)
 		e2:SetLabel(fid)
-		-- 将效果e2注册给对方玩家
+		-- 再创建一个限制攻击对象的效果并注册
 		Duel.RegisterEffect(e2,tp)
-		-- 强制改变攻击对象为所选择的怪兽
+		-- 强制改变攻击对象为所选怪兽
 		Duel.ChangeAttackTarget(tc)
 	end
 end
--- 判断怪兽是否为被选中的那只怪兽
+-- 判断攻击怪兽是否为所选怪兽
 function c92854392.atklimit(e,c)
 	return c:GetRealFieldID()==e:GetLabel()
 end
