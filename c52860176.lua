@@ -30,13 +30,13 @@ function c52860176.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 计算己方场上可用怪兽区数量
 	local ft=Duel.GetMZoneCount(tp,e:GetHandler())
 	if chk==0 then return ft>=g:GetCount() and g:GetCount()>0 end
-	-- 设置操作信息，表明此效果会改变目标怪兽的控制权
+	-- 设置操作信息，表明此效果将改变目标怪兽的控制权
 	Duel.SetOperationInfo(0,CATEGORY_CONTROL,g,g:GetCount(),0,0)
 end
 -- 执行控制权转移效果
 function c52860176.operation(e,tp,eg,ep,ev,re,r,rp)
 	-- 再次获取对方场上满足条件的怪兽数量
 	local g=Duel.GetMatchingGroup(c52860176.filter,tp,0,LOCATION_MZONE,nil)
-	-- 将指定怪兽的控制权转移给指定玩家
+	-- 使己方获得这些怪兽的控制权
 	Duel.GetControl(g,tp)
 end

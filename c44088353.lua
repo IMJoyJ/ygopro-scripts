@@ -61,7 +61,7 @@ function s.activate(e,tp,eg,ep,ev,re,r,rp)
 	if tg:GetCount()>0 and Duel.Destroy(tg,REASON_EFFECT)>0
 		-- 并且成功抽了2张卡
 		and Duel.Draw(p,d,REASON_EFFECT)~=0
-		-- 并且对方场上存在可以改变表示形式的怪兽
+		-- 并且对方场上存在可改变表示形式的怪兽
 		and Duel.IsExistingMatchingCard(Card.IsCanChangePosition,tp,0,LOCATION_MZONE,1,nil)
 		-- 并且使用者选择是否改变表示形式
 		and Duel.SelectYesNo(tp,aux.Stringid(id,2)) then  --"是否改变表示形式？"
@@ -72,14 +72,14 @@ function s.activate(e,tp,eg,ep,ev,re,r,rp)
 		if cg:GetCount()>0 then
 			-- 中断当前效果，使之后的效果处理视为不同时处理
 			Duel.BreakEffect()
-			-- 手动为选中的对象显示被选为对象的动画效果
+			-- 手动显示被选为对象的动画效果
 			Duel.HintSelection(cg)
-			-- 将选中的怪兽改变表示形式
+			-- 将所选怪兽改变为表侧守备表示或表侧攻击表示
 			Duel.ChangePosition(cg:GetFirst(),POS_FACEUP_DEFENSE,POS_FACEUP_DEFENSE,POS_FACEUP_ATTACK,POS_FACEUP_ATTACK)
 		end
 	end
 end
--- 用于判断墓地召唤怪兽是否满足条件的过滤函数
+-- 用于判断墓地召唤的怪兽是否为怪兽类型
 function s.cfilter(c,tp)
 	return c:IsSummonLocation(LOCATION_GRAVE) and c:GetPreviousControler()==tp and c:GetOriginalType()&TYPE_MONSTER~=0
 end
@@ -87,7 +87,7 @@ end
 function s.thcon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(s.cfilter,1,nil,tp)
 end
--- 设置②效果的发动时点和目标信息
+-- 设置②效果的发动条件和操作信息
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsAbleToHand() end
 	-- 设置操作信息为回手牌效果，目标为该卡本身
