@@ -34,26 +34,26 @@ end
 function c53855409.spcon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c53855409.gfilter,1,nil,tp)
 end
--- 判断是否可以将此卡从手牌特殊召唤
+-- 判断是否可以将手牌中的此卡特殊召唤到场上
 function c53855409.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断场上是否有足够的空间进行特殊召唤
+	-- 判断场上是否有足够的空位
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置操作信息，表示将要特殊召唤此卡
+	-- 设置效果处理信息，表示要将此卡特殊召唤
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 执行从手牌特殊召唤的处理
+-- 执行将此卡从手牌特殊召唤到场上的操作
 function c53855409.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if not c:IsRelateToEffect(e) then return end
-	-- 将此卡从手牌特殊召唤到场上
+	-- 将此卡以正面表示形式特殊召唤到场上
 	Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 end
--- 判断此卡是否作为同调素材被送去墓地
+-- 判断此卡是否在墓地且因同调召唤而成为素材
 function c53855409.tcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsLocation(LOCATION_GRAVE) and r==REASON_SYNCHRO
 end
--- 判断是否可以特殊召唤2只衍生物
+-- 判断是否可以将2只二重身衍生物特殊召唤到场上
 function c53855409.ttg(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中。禁止双方同时特殊召唤2只以上怪兽
 	if chk==0 then return not Duel.IsPlayerAffectedByEffect(tp,59822133)
@@ -61,25 +61,25 @@ function c53855409.ttg(e,tp,eg,ep,ev,re,r,rp,chk)
 		and Duel.GetLocationCount(tp,LOCATION_MZONE)>1
 		-- 判断是否可以特殊召唤指定的衍生物
 		and Duel.IsPlayerCanSpecialSummonMonster(tp,53855410,0,TYPES_TOKEN_MONSTER,400,400,1,RACE_WARRIOR,ATTRIBUTE_DARK,POS_FACEUP_ATTACK) end
-	-- 设置操作信息，表示将要特殊召唤2只衍生物
+	-- 设置效果处理信息，表示要将2只衍生物以衍生物形式特殊召唤
 	Duel.SetOperationInfo(0,CATEGORY_TOKEN,nil,2,0,0)
-	-- 设置操作信息，表示将要特殊召唤2只衍生物
+	-- 设置效果处理信息，表示要将2只衍生物以特殊召唤形式处理
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,2,0,0)
 end
--- 执行特殊召唤衍生物的处理
+-- 执行将2只二重身衍生物攻击表示特殊召唤到场上的操作
 function c53855409.top(e,tp,eg,ep,ev,re,r,rp)
 	-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中。禁止双方同时特殊召唤2只以上怪兽
 	if Duel.IsPlayerAffectedByEffect(tp,59822133) then return end
-	-- 判断场上是否有至少2个空位
+	-- 判断场上是否有至少2个空位用于特殊召唤
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<2 then return end
 	-- 判断是否可以特殊召唤指定的衍生物
 	if not Duel.IsPlayerCanSpecialSummonMonster(tp,53855410,0,TYPES_TOKEN_MONSTER,400,400,1,RACE_WARRIOR,ATTRIBUTE_DARK,POS_FACEUP_ATTACK) then return end
 	for i=1,2 do
 		-- 创建一只二重身衍生物
 		local token=Duel.CreateToken(tp,53855409+i)
-		-- 将一只衍生物特殊召唤到场上
+		-- 将一只二重身衍生物以攻击表示形式特殊召唤到场上
 		Duel.SpecialSummonStep(token,0,tp,tp,false,false,POS_FACEUP_ATTACK)
 	end
-	-- 完成所有衍生物的特殊召唤
+	-- 完成一次特殊召唤流程
 	Duel.SpecialSummonComplete()
 end

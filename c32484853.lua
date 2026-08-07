@@ -45,23 +45,23 @@ function s.descost(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 将选中的卡送去墓地作为发动费用
 	Duel.SendtoGrave(g,REASON_COST+REASON_DISCARD)
 end
--- 过滤函数，判断怪兽是否为对方召唤且在场上存在
+-- 过滤函数，判断怪兽是否为对方召唤且在场上的怪兽
 function s.desfilter(c,e,tp)
 	return c:IsSummonPlayer(1-tp) and (not e or c:IsRelateToEffect(e))
 		and c:IsType(TYPE_MONSTER) and c:IsLocation(LOCATION_MZONE)
 end
--- 设置效果的目标，确定要破坏的怪兽
+-- 设置效果的目标，确定要破坏的怪兽数量和对象
 function s.destg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return eg:IsExists(s.desfilter,1,nil,nil,tp) end
 	local g=eg:Filter(s.desfilter,nil,nil,tp)
 	-- 设置连锁处理时的目标卡片
 	Duel.SetTargetCard(eg)
-	-- 设置效果操作信息，准备进行破坏处理
+	-- 设置效果操作信息，指定将要破坏的怪兽数量
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,g:GetCount(),0,0)
 end
 -- 效果发动后的处理函数，执行破坏操作
 function s.desop(e,tp,eg,ep,ev,re,r,rp)
 	local g=eg:Filter(s.desfilter,nil,e,tp):Filter(Card.IsRelateToChain,nil)
-	-- 将目标怪兽破坏
+	-- 将目标怪兽以效果原因进行破坏
 	Duel.Destroy(g,REASON_EFFECT)
 end

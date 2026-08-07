@@ -23,20 +23,20 @@ end
 function c52860176.filter(c)
 	return c:IsFaceup() and c:IsLevelBelow(3) and c:IsControlerCanBeChanged(true)
 end
--- 设置效果目标，确保对方场上的3星以下怪兽数量不超过己方怪兽区数量
+-- 设置效果目标，确保对方场上的3星以下怪兽数量不超过己方可用怪兽区数量
 function c52860176.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 获取对方场上满足条件的怪兽组
 	local g=Duel.GetMatchingGroup(c52860176.filter,tp,0,LOCATION_MZONE,nil)
 	-- 计算己方可用怪兽区数量
 	local ft=Duel.GetMZoneCount(tp,e:GetHandler())
 	if chk==0 then return ft>=g:GetCount() and g:GetCount()>0 end
-	-- 设置连锁操作信息，声明将改变控制权
+	-- 设置连锁操作信息，表明此效果为改变控制权的效果
 	Duel.SetOperationInfo(0,CATEGORY_CONTROL,g,g:GetCount(),0,0)
 end
--- 执行效果处理，将符合条件的怪兽控制权转移给使用者
+-- 执行效果，将对方场上的3星以下怪兽的控制权转移给使用者
 function c52860176.operation(e,tp,eg,ep,ev,re,r,rp)
 	-- 再次获取对方场上满足条件的怪兽组
 	local g=Duel.GetMatchingGroup(c52860176.filter,tp,0,LOCATION_MZONE,nil)
-	-- 将指定怪兽组的控制权转移给使用者
+	-- 将指定怪兽组的控制权转移给指定玩家
 	Duel.GetControl(g,tp)
 end
