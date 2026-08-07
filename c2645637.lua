@@ -37,9 +37,9 @@ function c2645637.initial_effect(c)
 end
 -- 使除外状态发动的对方怪兽的效果无效化
 function c2645637.disop(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断连锁是否来自除外区且为怪兽类型
+	-- 判断连锁是否来自除外区且为怪兽卡
 	if Duel.GetChainInfo(ev,CHAININFO_TRIGGERING_LOCATION)==LOCATION_REMOVED and re:IsActiveType(TYPE_MONSTER) and rp==1-tp then
-		-- 使当前连锁效果无效
+		-- 使该连锁效果无效
 		Duel.NegateEffect(ev)
 	end
 end
@@ -78,7 +78,7 @@ end
 -- 处理③效果，使目标怪兽攻击力归零并使其效果无效
 function c2645637.atkop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取当前连锁的目标怪兽
+	-- 获取连锁的目标怪兽
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) and tc:IsFaceup() and tc:GetAttack()>0 then
 		-- 使目标怪兽相关的连锁无效化
