@@ -56,7 +56,7 @@ end
 s.mentioned_counter={
 	[0x76]=true,
 }
--- 放置指示物效果的目标函数，检查是否可以发动
+-- 放置指示物效果的目标函数，检查是否满足条件
 function s.cttg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
 end
@@ -80,18 +80,18 @@ function s.ctop(e,tp,eg,ep,ev,re,r,rp)
 		c:AddCounter(0x76,ct)
 	end
 end
--- 判断目标怪兽是否可以被效果影响的过滤函数
+-- 判断目标怪兽是否满足效果处理条件的过滤函数
 function s.mfilter(c)
 	return c:IsOnField() and c:IsFaceup() and c:IsType(TYPE_MONSTER)
 		and (c:GetAttack()~=0 or not c:IsDisabled())
 end
--- 攻击伤害计算时触发效果的条件函数，检查攻击怪兽是否为对方控制且满足条件
+-- 攻击伤害计算时触发效果的条件函数，检查攻击怪兽是否为对方控制且满足处理条件
 function s.atkcon(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取当前攻击怪兽
 	local a=Duel.GetAttacker()
 	return a:IsControler(1-tp) and s.mfilter(a)
 end
--- 对方怪兽效果发动时触发效果的条件函数，检查发动者是否为对方且满足条件
+-- 对方怪兽效果发动时触发效果的条件函数，检查发动者是否为对方且满足处理条件
 function s.atkcon2(e,tp,eg,ep,ev,re,r,rp)
 	local rc=re:GetHandler()
 	return ep==1-tp and re:IsActiveType(TYPE_MONSTER) and rc:IsRelateToEffect(re) and s.mfilter(rc)
@@ -101,40 +101,40 @@ function s.atkcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsCanRemoveCounter(tp,0x76,1,REASON_COST) end
 	e:GetHandler():RemoveCounter(tp,0x76,1,REASON_COST)
 end
--- 特殊召唤过滤函数，筛选卡组中记载时间黑魔术师的怪兽
+-- 筛选可特殊召唤的时间黑魔术师怪兽的过滤函数
 function s.spfilter(c,e,tp)
-	-- 判断卡片是否记载时间黑魔术师卡号并可特殊召唤
+	-- 判断目标卡是否记载着时间黑魔术师（40235813）且可以特殊召唤
 	return aux.IsCodeListed(c,40235813) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 攻击伤害计算时触发效果的目标函数，检查目标怪兽是否可以被影响且满足召唤条件
+-- 攻击伤害计算时触发效果的目标函数，检查攻击怪兽是否能成为效果对象并满足特殊召唤条件
 function s.atktg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	-- 获取当前攻击怪兽
 	local a=Duel.GetAttacker()
 	if chkc then return false end
 	if chk==0 then return a:IsCanBeEffectTarget(e)
-		-- 检查目标玩家场上是否有空位
+		-- 检查目标玩家场上是否有足够的怪兽区域
 		and Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查目标玩家卡组中是否存在时间黑魔术师怪兽
+		-- 检查卡组中是否存在满足条件的时间黑魔术师怪兽
 		and Duel.IsExistingMatchingCard(s.spfilter,tp,LOCATION_DECK,0,1,nil,e,tp) end
 	-- 设置当前连锁的目标为攻击怪兽
 	Duel.SetTargetCard(a)
 	-- 设置操作信息，提示将进行一次硬币投掷
 	Duel.SetOperationInfo(0,CATEGORY_COIN,nil,0,tp,1)
 end
--- 对方怪兽效果发动时触发效果的目标函数，检查目标怪兽是否可以被影响且满足召唤条件
+-- 对方怪兽效果发动时触发效果的目标函数，检查发动怪兽是否能成为效果对象并满足特殊召唤条件
 function s.atktg2(e,tp,eg,ep,ev,re,r,rp,chk)
 	local tc=re:GetHandler()
 	if chk==0 then return tc:IsOnField() and tc:IsCanBeEffectTarget(e)
-		-- 检查目标玩家场上是否有空位
+		-- 检查目标玩家场上是否有足够的怪兽区域
 		and Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查目标玩家卡组中是否存在时间黑魔术师怪兽
+		-- 检查卡组中是否存在满足条件的时间黑魔术师怪兽
 		and Duel.IsExistingMatchingCard(s.spfilter,tp,LOCATION_DECK,0,1,nil,e,tp) end
 	-- 设置当前连锁的目标为发动怪兽
 	Duel.SetTargetCard(tc)
 	-- 设置操作信息，提示将进行一次硬币投掷
 	Duel.SetOperationInfo(0,CATEGORY_COIN,nil,0,tp,1)
 end
--- 投掷硬币效果的操作函数，猜硬币结果并特殊召唤时间黑魔术师怪兽，使目标怪兽攻击力变为0且效果无效
+-- 投掷硬币效果的操作函数，处理猜硬币结果并特殊召唤时间黑魔术师怪兽
 function s.atkop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	-- 获取当前连锁的目标怪兽
@@ -145,31 +145,31 @@ function s.atkop(e,tp,eg,ep,ev,re,r,rp)
 	local coin=Duel.AnnounceCoin(tp)
 	-- 掷一次硬币决定结果
 	local res=Duel.TossCoin(tp,1)
-	-- 判断猜硬币结果是否失败且场上存在召唤空间
+	-- 判断猜硬币结果是否失败且场上存在特殊召唤区域
 	if coin~=res and Duel.GetLocationCount(tp,LOCATION_MZONE)>0 then
-		-- 提示玩家选择要特殊召唤的卡
+		-- 提示玩家选择要特殊召唤的时间黑魔术师怪兽
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-		-- 从卡组中选择一张时间黑魔术师怪兽进行特殊召唤
+		-- 从卡组中选择满足条件的时间黑魔术师怪兽
 		local g=Duel.SelectMatchingCard(tp,s.spfilter,tp,LOCATION_DECK,0,1,1,nil,e,tp)
-		-- 检查是否成功特殊召唤了怪兽且目标怪兽满足效果处理条件
+		-- 检查是否成功特殊召唤了怪兽并满足后续处理条件
 		if g:GetCount()>0 and Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)~=0
 			and tc:IsFaceup() and tc:IsRelateToChain() and tc:IsCanBeDisabledByEffect(e) then
-			-- 使目标怪兽相关连锁无效化
+			-- 使目标怪兽的连锁无效化
 			Duel.NegateRelatedChain(tc,RESET_TURN_SET)
-			-- 创建使目标怪兽效果无效的永续效果
+			-- 使目标怪兽效果无效化
 			local e1=Effect.CreateEffect(c)
 			e1:SetType(EFFECT_TYPE_SINGLE)
 			e1:SetCode(EFFECT_DISABLE)
 			e1:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END)
 			tc:RegisterEffect(e1)
-			-- 创建使目标怪兽效果无效化的永续效果
+			-- 使目标怪兽效果无效化
 			local e2=Effect.CreateEffect(c)
 			e2:SetType(EFFECT_TYPE_SINGLE)
 			e2:SetCode(EFFECT_DISABLE_EFFECT)
 			e2:SetValue(RESET_TURN_SET)
 			e2:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END)
 			tc:RegisterEffect(e2)
-			-- 创建使目标怪兽攻击力变为0的永续效果
+			-- 将目标怪兽攻击力设为0
 			local e3=Effect.CreateEffect(c)
 			e3:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
 			e3:SetType(EFFECT_TYPE_SINGLE)

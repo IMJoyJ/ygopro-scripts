@@ -39,13 +39,13 @@ function c92854392.activate(e,tp,eg,ep,ev,re,r,rp)
 		e1:SetCode(EFFECT_MUST_ATTACK)
 		e1:SetTargetRange(0,LOCATION_MZONE)
 		e1:SetReset(RESET_PHASE+PHASE_BATTLE)
-		-- 将该效果注册给对方玩家
+		-- 将效果e1注册给对方玩家
 		Duel.RegisterEffect(e1,tp)
 		local e2=e1:Clone()
 		e2:SetCode(EFFECT_MUST_ATTACK_MONSTER)
 		e2:SetValue(c92854392.atklimit)
 		e2:SetLabel(fid)
-		-- 再创建一个限制攻击对象的效果并注册
+		-- 将效果e2注册给对方玩家
 		Duel.RegisterEffect(e2,tp)
 		-- 强制改变攻击对象为所选怪兽
 		Duel.ChangeAttackTarget(tc)
