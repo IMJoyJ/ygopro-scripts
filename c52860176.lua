@@ -33,7 +33,7 @@ function c52860176.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 设置连锁操作信息，表明此效果为改变控制权的效果
 	Duel.SetOperationInfo(0,CATEGORY_CONTROL,g,g:GetCount(),0,0)
 end
--- 执行效果，将对方场上的3星以下怪兽的控制权转移给使用者
+-- 执行效果，将符合条件的对方怪兽控制权转移给使用者
 function c52860176.operation(e,tp,eg,ep,ev,re,r,rp)
 	-- 再次获取对方场上满足条件的怪兽组
 	local g=Duel.GetMatchingGroup(c52860176.filter,tp,0,LOCATION_MZONE,nil)
