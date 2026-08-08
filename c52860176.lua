@@ -23,11 +23,11 @@ end
 function c52860176.filter(c)
 	return c:IsFaceup() and c:IsLevelBelow(3) and c:IsControlerCanBeChanged(true)
 end
--- 设置效果目标，确保对方场上的3星以下怪兽数量不超过己方可用怪兽区数量
+-- 设置效果目标，确保对方场上的3星以下怪兽数量不超过己方怪兽区空位数
 function c52860176.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 获取对方场上满足条件的怪兽组
 	local g=Duel.GetMatchingGroup(c52860176.filter,tp,0,LOCATION_MZONE,nil)
-	-- 计算己方可用怪兽区数量
+	-- 计算己方怪兽区可用数量
 	local ft=Duel.GetMZoneCount(tp,e:GetHandler())
 	if chk==0 then return ft>=g:GetCount() and g:GetCount()>0 end
 	-- 设置连锁操作信息，表明此效果为改变控制权的效果

@@ -5,7 +5,7 @@
 -- ①：这张卡特殊召唤成功的场合，以对方的场上·墓地1只怪兽为对象才能发动。那只怪兽除外。
 -- ②：这张卡已在怪兽区域存在的状态，从墓地有怪兽特殊召唤的场合，以这张卡以外的场上1只表侧表示怪兽为对象才能发动。那只怪兽的效果直到回合结束时无效。
 local s,id,o=GetID()
--- 初始化效果函数，设置同调召唤程序并注册两个诱发效果
+-- 初始化效果函数，设置同调召唤程序并注册两个触发效果
 function c65187687.initial_effect(c)
 	-- 添加同调召唤手续，要求1只调整（不死族）和1只调整以外的怪兽
 	aux.AddSynchroProcedure(c,c65187687.synfilter,aux.NonTuner(nil),1)
@@ -39,7 +39,7 @@ end
 function c65187687.synfilter(c)
 	return c:IsRace(RACE_ZOMBIE)
 end
--- 除外效果的过滤条件，要求是怪兽且能除外
+-- 除外效果的过滤条件，要求是怪兽且能被除外
 function c65187687.rmfilter(c)
 	return c:IsType(TYPE_MONSTER) and c:IsAbleToRemove()
 end
@@ -50,17 +50,17 @@ function c65187687.rmtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chk==0 then return Duel.IsExistingTarget(c65187687.rmfilter,tp,0,LOCATION_MZONE+LOCATION_GRAVE,1,nil) end
 	-- 提示玩家选择要除外的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
-	-- 优先从场上选择满足条件的目标，若无则从墓地选择
+	-- 优先从场上选择满足条件的卡作为目标，若无则从墓地选择
 	local g=aux.SelectTargetFromFieldFirst(tp,c65187687.rmfilter,tp,0,LOCATION_GRAVE+LOCATION_MZONE,1,1,nil)
 	if g:GetFirst():IsLocation(LOCATION_GRAVE) then
-		-- 设置操作信息，将目标卡从墓地除外
+		-- 设置操作信息，表示将从对方墓地除外卡
 		Duel.SetOperationInfo(0,CATEGORY_REMOVE,g,1,1-tp,LOCATION_GRAVE)
 	else
-		-- 设置操作信息，将目标卡从场上除外
+		-- 设置操作信息，表示将从对方场上除外卡
 		Duel.SetOperationInfo(0,CATEGORY_REMOVE,g,1,0,0)
 	end
 end
--- 效果①的处理函数，将目标怪兽除外
+-- 效果①的处理函数，执行除外操作
 function c65187687.rmop(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取效果①的目标怪兽
 	local tc=Duel.GetFirstTarget()
@@ -73,7 +73,7 @@ end
 function c65187687.spfilter(c)
 	return c:IsSummonLocation(LOCATION_GRAVE) and c:GetOriginalType()&TYPE_MONSTER~=0
 end
--- 效果②发动的条件函数，检查是否有从墓地特殊召唤的怪兽且不包含自身
+-- 效果②的发动条件，判断是否有从墓地特殊召唤的怪兽且不包含自身
 function c65187687.discon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c65187687.spfilter,1,nil) and not eg:IsContains(e:GetHandler())
 end
@@ -88,7 +88,7 @@ function c65187687.distg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	-- 选择对方场上1只可以被无效的效果怪兽作为目标
 	Duel.SelectTarget(tp,aux.NegateEffectMonsterFilter,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,nil)
 end
--- 效果②的处理函数，使目标怪兽效果无效直到回合结束
+-- 效果②的处理函数，使目标怪兽效果无效
 function c65187687.disop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	-- 获取效果②的目标怪兽
@@ -96,13 +96,13 @@ function c65187687.disop(e,tp,eg,ep,ev,re,r,rp)
 	if tc:IsFaceup() and tc:IsRelateToEffect(e) then
 		-- 使目标怪兽相关的连锁无效化
 		Duel.NegateRelatedChain(tc,RESET_TURN_SET)
-		-- 使目标怪兽效果无效
+		-- 使目标怪兽效果无效的永续效果
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_DISABLE)
 		e1:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END)
 		tc:RegisterEffect(e1)
-		-- 使目标怪兽的效果无效化
+		-- 使目标怪兽效果无效的永续效果
 		local e2=Effect.CreateEffect(c)
 		e2:SetType(EFFECT_TYPE_SINGLE)
 		e2:SetCode(EFFECT_DISABLE_EFFECT)
