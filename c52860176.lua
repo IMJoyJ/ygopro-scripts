@@ -19,7 +19,7 @@ function c52860176.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 将此卡解放作为费用
 	Duel.Release(e:GetHandler(),REASON_COST)
 end
--- 定义过滤函数，筛选表侧表示、等级3以下且控制权可改变的怪兽
+-- 定义过滤函数，筛选表侧表示且等级3以下且控制权可改变的怪兽
 function c52860176.filter(c)
 	return c:IsFaceup() and c:IsLevelBelow(3) and c:IsControlerCanBeChanged(true)
 end

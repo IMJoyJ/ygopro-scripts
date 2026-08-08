@@ -35,11 +35,11 @@ function c2645637.initial_effect(c)
 	e3:SetCondition(c2645637.atkcon2)
 	c:RegisterEffect(e3)
 end
--- 使除外状态发动的对方怪兽效果无效
+-- 使除外状态发动的对方怪兽的效果无效化
 function c2645637.disop(e,tp,eg,ep,ev,re,r,rp)
 	-- 判断连锁是否来自除外区且为怪兽类型
 	if Duel.GetChainInfo(ev,CHAININFO_TRIGGERING_LOCATION)==LOCATION_REMOVED and re:IsActiveType(TYPE_MONSTER) and rp==1-tp then
-		-- 使该连锁效果无效
+		-- 使当前连锁的效果无效
 		Duel.NegateEffect(ev)
 	end
 end
@@ -63,16 +63,16 @@ end
 function c2645637.atkfilter(c)
 	return c:IsFaceup() and c:GetAttack()>0
 end
--- 选择符合条件的怪兽为目标并设置操作信息
+-- 选择目标怪兽并设置操作信息
 function c2645637.atktg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	local c=e:GetHandler()
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and c2645637.atkfilter(chkc) and chkc~=c end
-	-- 检查是否已使用过效果且场上存在符合条件的目标怪兽
+	-- 检查是否已使用过效果且场上存在符合条件的怪兽
 	if chk==0 then return e:GetHandler():GetFlagEffect(2645637)==0 and Duel.IsExistingTarget(c2645637.atkfilter,tp,LOCATION_MZONE,LOCATION_MZONE,1,c) end
 	e:GetHandler():RegisterFlagEffect(2645637,RESET_CHAIN,0,1)
-	-- 选择一个符合条件的怪兽作为目标
+	-- 选择目标怪兽
 	local g=Duel.SelectTarget(tp,c2645637.atkfilter,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,c)
-	-- 设置操作信息，标记将使目标怪兽效果无效
+	-- 设置操作信息为使效果无效
 	Duel.SetOperationInfo(0,CATEGORY_DISABLE,g,1,0,0)
 end
 -- 处理效果，使目标怪兽攻击力变为0并使其效果无效
