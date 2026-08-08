@@ -23,7 +23,7 @@ end
 function s.cfilter(c,tp)
 	return c:IsSummonPlayer(1-tp)
 end
--- 效果条件函数，检查是否有对方特殊召唤的怪兽
+-- 效果条件函数，检查是否有对方召唤的怪兽
 function s.descon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(s.cfilter,1,nil,tp)
 end
@@ -31,15 +31,15 @@ end
 function s.costfilter(c)
 	return c:IsType(TYPE_SPELL) and c:IsDiscardable()
 end
--- 效果发动时的费用支付函数，确认手牌中有魔法卡且能丢弃此卡
+-- 效果发动时的费用处理函数，检查是否满足丢弃条件
 function s.descost(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	if chk==0 then return c:IsDiscardable() and
-		-- 检查手牌中是否存在满足条件的魔法卡
+		-- 检查手牌中是否存在至少一张魔法卡可以丢弃
 		Duel.IsExistingMatchingCard(s.costfilter,tp,LOCATION_HAND,0,1,c) end
 	-- 提示玩家选择要送去墓地的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
-	-- 选择满足条件的魔法卡并加入丢弃列表
+	-- 选择满足条件的魔法卡加入丢弃组
 	local g=Duel.SelectMatchingCard(tp,s.costfilter,tp,LOCATION_HAND,0,1,1,c)
 	g:AddCard(c)
 	-- 将选中的卡送去墓地作为发动费用
@@ -50,16 +50,16 @@ function s.desfilter(c,e,tp)
 	return c:IsSummonPlayer(1-tp) and (not e or c:IsRelateToEffect(e))
 		and c:IsType(TYPE_MONSTER) and c:IsLocation(LOCATION_MZONE)
 end
--- 设置效果目标，确定要破坏的怪兽数量和对象
+-- 设置效果目标，确定要破坏的怪兽
 function s.destg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return eg:IsExists(s.desfilter,1,nil,nil,tp) end
 	local g=eg:Filter(s.desfilter,nil,nil,tp)
 	-- 设置连锁处理的目标卡片
 	Duel.SetTargetCard(eg)
-	-- 设置操作信息，声明将要破坏怪兽
+	-- 设置效果操作信息，指定将要破坏的怪兽数量
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,g:GetCount(),0,0)
 end
--- 效果处理函数，执行破坏操作
+-- 效果发动时的操作函数，执行破坏效果
 function s.desop(e,tp,eg,ep,ev,re,r,rp)
 	local g=eg:Filter(s.desfilter,nil,e,tp):Filter(Card.IsRelateToChain,nil)
 	-- 将符合条件的怪兽破坏

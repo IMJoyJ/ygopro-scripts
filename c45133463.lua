@@ -13,7 +13,7 @@ function c45133463.initial_effect(c)
 	e1:SetOperation(c45133463.activate)
 	c:RegisterEffect(e1)
 end
--- 筛选出之前在墓地、且之前控制者为自己、且原本类型为怪兽的卡
+-- 筛选出之前在墓地、且之前控制者为自己、且原本是怪兽的卡
 function c45133463.cfiltetr(c,tp)
 	return c:IsPreviousLocation(LOCATION_GRAVE) and c:IsPreviousControler(tp) and c:GetOriginalType()&TYPE_MONSTER~=0
 end
@@ -44,7 +44,7 @@ function c45133463.activate(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取当前连锁中被选择的目标卡
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 将目标卡以正面表示的形式特殊召唤到场上
+		-- 将目标卡以正面表示的方式特殊召唤到场上
 		Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP)
 	end
 end

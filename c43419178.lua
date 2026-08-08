@@ -44,31 +44,31 @@ function s.tgtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.IsExistingMatchingCard(s.tgfilter,tp,LOCATION_DECK,0,1,nil)
 		-- 检查场上有至少1张可送去墓地的卡
 		and Duel.IsExistingMatchingCard(Card.IsAbleToGrave,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,nil) end
-	-- 设置操作信息，表示将要处理2张卡送去墓地
+	-- 设置操作信息，指定将2张卡送去墓地
 	Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,nil,2,tp,LOCATION_DECK+LOCATION_ONFIELD)
 end
--- ①效果的处理函数，选择并执行送去墓地的操作
+-- ①效果的处理函数，执行将卡送去墓地的操作
 function s.tgop(e,tp,eg,ep,ev,re,r,rp)
 	-- 提示玩家选择要送去墓地的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
-	-- 从卡组选择一张「艮神鬼」卡
+	-- 从卡组选择1张「艮神鬼」卡
 	local g=Duel.SelectMatchingCard(tp,s.tgfilter,tp,LOCATION_DECK,0,1,1,nil)
 	local tc=g:GetFirst()
-	-- 确认所选卡已成功送去墓地且在墓地
+	-- 确认所选卡已成功送去墓地并处于墓地状态
 	if tc and Duel.SendtoGrave(tc,REASON_EFFECT)>0 and tc:IsLocation(LOCATION_GRAVE) then
 		-- 再次提示玩家选择要送去墓地的卡
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
-		-- 选择场上一张可送去墓地的卡
+		-- 选择场上1张可送去墓地的卡
 		local sg=Duel.SelectMatchingCard(tp,Card.IsAbleToGrave,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,1,nil)
 		if sg:GetCount()>0 then
-			-- 显示被选为对象的动画效果
+			-- 显示被选为对象的卡的动画效果
 			Duel.HintSelection(sg)
 			-- 将选中的卡送去墓地
 			Duel.SendtoGrave(sg,REASON_EFFECT)
 		end
 	end
 end
--- ②效果的发动条件函数，判断是否为对方怪兽效果发动
+-- ②效果的发动条件，判断是否为对方怪兽效果发动
 function s.setcon(e,tp,eg,ep,ev,re,r,rp)
 	return rp==1-tp and re:IsActiveType(TYPE_MONSTER)
 end
@@ -76,23 +76,23 @@ end
 function s.setfilter(c,res)
 	return c:IsFaceupEx() and (c:IsSetCard(0x1e4) or res and c:IsLocation(LOCATION_GRAVE)) and c:IsType(TYPE_TRAP) and c:IsSSetable()
 end
--- ②效果的目标选择函数，检查是否有符合条件的卡可作为目标
+-- 设置②效果的发动条件和目标选择逻辑
 function s.settg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	-- 检查场上是否存在至少3张里侧表示的卡
+	-- 检查场上有3张以上里侧表示的卡
 	local res=Duel.IsExistingMatchingCard(Card.IsFacedown,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,3,nil)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE+LOCATION_REMOVED) and chkc:IsControler(tp) and s.setfilter(chkc,res) end
 	-- 检查是否存在符合条件的目标卡
 	if chk==0 then return Duel.IsExistingTarget(s.setfilter,tp,LOCATION_GRAVE+LOCATION_REMOVED,0,1,nil,res) end
 	-- 提示玩家选择要盖放的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SET)  --"请选择要盖放的卡"
-	-- 选择一张符合条件的卡作为目标
+	-- 选择目标卡
 	local g=Duel.SelectTarget(tp,s.setfilter,tp,LOCATION_GRAVE+LOCATION_REMOVED,0,1,1,nil,res)
 	if g:IsExists(Card.IsLocation,1,nil,LOCATION_GRAVE) then
-		-- 设置操作信息，表示将要处理一张卡离开墓地
+		-- 设置操作信息，指定将1张卡从墓地离开
 		Duel.SetOperationInfo(0,CATEGORY_LEAVE_GRAVE,g,1,0,0)
 	end
 end
--- ②效果的处理函数，执行盖放操作
+-- ②效果的处理函数，执行将卡盖放的操作
 function s.setop(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取当前连锁的目标卡
 	local tc=Duel.GetFirstTarget()

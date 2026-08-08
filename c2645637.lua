@@ -52,7 +52,7 @@ end
 function c2645637.spfilter(c)
 	return c:IsSummonLocation(LOCATION_GRAVE) and c:GetOriginalType()&TYPE_MONSTER~=0
 end
--- 判断是否为从墓地特殊召唤或墓地怪兽发动效果
+-- 判断是否为从墓地特殊召唤或墓地怪兽发动的效果
 function c2645637.atkcon2(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c2645637.spfilter,1,nil) and not eg:IsContains(e:GetHandler())
 		and not (re and re:IsActivated() and re:IsActiveType(TYPE_MONSTER)
@@ -78,7 +78,7 @@ end
 -- 处理效果，使目标怪兽攻击力变为0并使其效果无效
 function c2645637.atkop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取连锁的目标怪兽
+	-- 获取连锁对象怪兽
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) and tc:IsFaceup() and tc:GetAttack()>0 then
 		-- 使目标怪兽相关的连锁无效化
