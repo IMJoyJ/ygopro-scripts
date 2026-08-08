@@ -34,17 +34,17 @@ function c45133463.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 		and Duel.IsExistingTarget(c45133463.filter,tp,LOCATION_GRAVE,0,1,nil,e,tp) end
 	-- 提示玩家选择要特殊召唤的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 选择满足条件的1只苏帕伊或赤蚁作为特殊召唤目标
+	-- 选择满足条件的1只怪兽作为效果的对象
 	local g=Duel.SelectTarget(tp,c45133463.filter,tp,LOCATION_GRAVE,0,1,1,nil,e,tp)
-	-- 设置效果处理信息，确定将要特殊召唤的卡
+	-- 设置效果处理信息，表明将要特殊召唤1只怪兽
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,1,0,0)
 end
--- 效果发动时执行的操作：将选中的卡特殊召唤
+-- 效果发动时执行的操作：将选中的怪兽特殊召唤
 function c45133463.activate(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取当前连锁中被选择的目标卡
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 将目标卡以正面表示的方式特殊召唤到场上
+		-- 将目标怪兽以正面表示形式特殊召唤到场上
 		Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP)
 	end
 end

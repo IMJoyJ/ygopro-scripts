@@ -26,7 +26,7 @@ function c53855409.initial_effect(c)
 	e2:SetOperation(c53855409.top)
 	c:RegisterEffect(e2)
 end
--- 判断怪兽是否从墓地离开并由该玩家控制，且原本是怪兽卡
+-- 判断怪兽是否从墓地离开并由该玩家控制，且原本为怪兽卡
 function c53855409.gfilter(c,tp)
 	return c:IsPreviousLocation(LOCATION_GRAVE) and c:IsPreviousControler(tp) and c:GetOriginalType()&TYPE_MONSTER~=0
 end
@@ -53,7 +53,7 @@ end
 function c53855409.tcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsLocation(LOCATION_GRAVE) and r==REASON_SYNCHRO
 end
--- 判断是否可以将2只二重身衍生物特殊召唤到场上
+-- 判断是否可以将2只二重身衍生物攻击表示特殊召唤到场上
 function c53855409.ttg(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中。禁止双方同时特殊召唤2只以上怪兽
 	if chk==0 then return not Duel.IsPlayerAffectedByEffect(tp,59822133)
@@ -61,12 +61,12 @@ function c53855409.ttg(e,tp,eg,ep,ev,re,r,rp,chk)
 		and Duel.GetLocationCount(tp,LOCATION_MZONE)>1
 		-- 判断是否可以特殊召唤指定的衍生物
 		and Duel.IsPlayerCanSpecialSummonMonster(tp,53855410,0,TYPES_TOKEN_MONSTER,400,400,1,RACE_WARRIOR,ATTRIBUTE_DARK,POS_FACEUP_ATTACK) end
-	-- 设置效果处理信息，表示要将2只衍生物当作衍生物特殊召唤
+	-- 设置效果处理信息，表示要将2只衍生物生成
 	Duel.SetOperationInfo(0,CATEGORY_TOKEN,nil,2,0,0)
-	-- 设置效果处理信息，表示要将2只衍生物特殊召唤到场上
+	-- 设置效果处理信息，表示要将2只衍生物特殊召唤
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,2,0,0)
 end
--- 执行将2只二重身衍生物特殊召唤到场上的操作
+-- 执行将2只二重身衍生物攻击表示特殊召唤的操作
 function c53855409.top(e,tp,eg,ep,ev,re,r,rp)
 	-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中。禁止双方同时特殊召唤2只以上怪兽
 	if Duel.IsPlayerAffectedByEffect(tp,59822133) then return end
@@ -77,9 +77,9 @@ function c53855409.top(e,tp,eg,ep,ev,re,r,rp)
 	for i=1,2 do
 		-- 创建一只二重身衍生物
 		local token=Duel.CreateToken(tp,53855409+i)
-		-- 将一只二重身衍生物以正面攻击表示形式特殊召唤到场上
+		-- 将一只衍生物以正面攻击表示形式特殊召唤到场上
 		Duel.SpecialSummonStep(token,0,tp,tp,false,false,POS_FACEUP_ATTACK)
 	end
-	-- 完成所有衍生物的特殊召唤操作
+	-- 完成一次特殊召唤流程
 	Duel.SpecialSummonComplete()
 end
