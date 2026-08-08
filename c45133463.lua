@@ -13,38 +13,38 @@ function c45133463.initial_effect(c)
 	e1:SetOperation(c45133463.activate)
 	c:RegisterEffect(e1)
 end
--- 筛选出之前在墓地、且控制者为自己的怪兽卡
+-- 检查特殊召唤的卡原本是否为自己墓地的怪兽卡
 function c45133463.cfiltetr(c,tp)
 	return c:IsPreviousLocation(LOCATION_GRAVE) and c:IsPreviousControler(tp) and c:GetOriginalType()&TYPE_MONSTER~=0
 end
--- 检查是否有满足条件的怪兽从墓地被特殊召唤
+-- 发动条件：检查特殊召唤的怪兽中是否存在从自己墓地特殊召唤的怪兽
 function c45133463.condition(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c45133463.cfiltetr,1,nil,tp)
 end
--- 筛选出卡号为「苏帕伊」或「赤蚁」且可以特殊召唤的卡片
+-- 过滤条件：检查卡片是否为「苏帕伊」或「赤蚁」且能否被特殊召唤
 function c45133463.filter(c,e,tp)
 	return c:IsCode(78552773,78275321) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 设置效果的目标选择函数，用于选择墓地中的符合条件的卡片
+-- 发动时的对象选择与判定：检查目标合法性、怪兽区空位以及墓地是否存在可以特殊召唤的目标
 function c45133463.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and c45133463.filter(chkc,e,tp) end
-	-- 判断是否满足发动条件：场上是否有空位
+	-- 检查自己主要怪兽区是否有空余位置
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 判断是否满足发动条件：墓地中是否存在符合条件的卡片
+		-- 检查自己墓地是否存在可以作为目标的「苏帕伊」或「赤蚁」
 		and Duel.IsExistingTarget(c45133463.filter,tp,LOCATION_GRAVE,0,1,nil,e,tp) end
-	-- 向玩家提示“请选择要特殊召唤的卡”
+	-- 提示玩家选择要特殊召唤的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 选择目标卡片并设置为效果对象
+	-- 选择自己墓地的1只「苏帕伊」或「赤蚁」作为效果的目标
 	local g=Duel.SelectTarget(tp,c45133463.filter,tp,LOCATION_GRAVE,0,1,1,nil,e,tp)
-	-- 设置效果处理信息，确定将要特殊召唤的卡片数量和类型
+	-- 设置操作信息：包含1张目标卡的特殊召唤分类
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,1,0,0)
 end
--- 效果发动时执行的操作：将选中的卡片特殊召唤
+-- 效果处理：将发动时选择的目标怪兽表侧表示特殊召唤到自己场上
 function c45133463.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的效果所选择的目标卡片
+	-- 获取发动时选择的目标怪兽
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 将目标卡片以正面表示的方式特殊召唤到场上
+		-- 将目标怪兽表侧表示特殊召唤到自己场上
 		Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
