@@ -32,14 +32,14 @@ end
 function c57458399.spfilter(c,tp)
 	return c:IsSummonLocation(LOCATION_GRAVE) and c:IsPreviousControler(tp) and c:GetOriginalType()&TYPE_MONSTER~=0
 end
--- 判断是否有满足条件的墓地特殊召唤怪兽，用于①效果的发动条件
+-- 判断是否有满足条件的墓地特殊召唤的怪兽，用于①效果的发动条件
 function c57458399.spcon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c57458399.spfilter,1,nil,tp)
 end
--- 设置①效果的发动时点，检查是否满足特殊召唤条件
+-- 设置①效果的发动时点和目标，检查手牌是否可以特殊召唤
 function c57458399.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
-	-- 检查手牌是否能特殊召唤到场上
+	-- 检查手牌是否可以特殊召唤到场上
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and c:IsCanBeSpecialSummoned(e,0,tp,false,false) end
 	-- 设置连锁操作信息，表示将要特殊召唤此卡
@@ -49,20 +49,20 @@ end
 function c57458399.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) then
-		-- 将此卡以正面表示形式特殊召唤到场上
+		-- 将此卡以正面表示的形式特殊召唤到场上
 		Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
--- 检索满足条件的「战士」「同调士」「星尘」同调怪兽，用于判断是否满足②效果的发动条件
+-- 检索满足条件的墓地或场上的同调怪兽，用于判断是否满足②效果的发动条件
 function c57458399.lvfilter(c)
 	return (c:IsLocation(LOCATION_GRAVE) or c:IsFaceup()) and c:IsOriginalSetCard(0x66,0x1017,0xa3) and c:IsType(TYPE_SYNCHRO)
 end
--- 判断是否有满足条件的「战士」「同调士」「星尘」同调怪兽，用于②效果的发动条件
+-- 判断是否有满足条件的墓地或场上的同调怪兽，用于②效果的发动条件
 function c57458399.lvcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查场上或墓地是否存在符合条件的同调怪兽
+	-- 检查场上或墓地中是否存在符合条件的同调怪兽
 	return Duel.IsExistingMatchingCard(c57458399.lvfilter,tp,LOCATION_MZONE+LOCATION_GRAVE,0,1,nil)
 end
--- 设置②效果的发动时点，检查是否满足等级变更条件
+-- 设置②效果的目标处理流程，检查此卡等级是否可以改变
 function c57458399.lvtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	if chk==0 then return c:IsLevelAbove(1) and not c:IsLevel(4) end
