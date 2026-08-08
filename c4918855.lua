@@ -63,10 +63,10 @@ function c4918855.sptg1(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
 	-- 根据过滤条件从对方墓地选择最多2只怪兽作为目标。
 	local g=Duel.SelectTarget(tp,c4918855.spfilter,tp,0,LOCATION_GRAVE,1,ct,nil,e,tp)
-	-- 设置连锁操作信息，表明本次效果将特殊召唤指定数量的卡片。
+	-- 设置连锁操作信息，表明将要进行特殊召唤操作。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,g:GetCount(),0,0)
 end
--- 处理效果发动后的操作，包括判断是否满足特殊召唤条件、进行特殊召唤并附加效果。
+-- 处理效果发动后的特殊召唤流程，包括检查数量限制、执行特殊召唤并附加无效效果。
 function c4918855.spop1(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取玩家当前场上可用的怪兽区域数量。
 	local ct=Duel.GetLocationCount(tp,LOCATION_MZONE)
@@ -102,58 +102,58 @@ function c4918855.spop1(e,tp,eg,ep,ev,re,r,rp)
 	-- 完成所有特殊召唤步骤，确保所有召唤操作生效。
 	Duel.SpecialSummonComplete()
 end
--- 设置效果发动条件，判断是否满足发动无效效果的条件。
+-- 判断是否满足发动无效效果的条件，包括对方发动的是怪兽效果、该效果可被无效且己方墓地存在同名怪兽。
 function c4918855.negcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查当前连锁是否为怪兽类型的效果，并且该效果可以被无效。
+	-- 判断对方发动的效果是否为怪兽类型。
 	return re:IsActiveType(TYPE_MONSTER) and Duel.IsChainNegatable(ev)
-		-- 检查自己或对方墓地中是否存在与当前发动效果同名的怪兽。
+		-- 检查己方墓地中是否存在与对方发动的怪兽同名的卡片。
 		and Duel.IsExistingMatchingCard(Card.IsCode,tp,LOCATION_GRAVE,LOCATION_GRAVE,1,nil,re:GetHandler():GetCode())
 end
--- 设置效果目标，表明本次效果将使发动无效。
+-- 设置无效效果的目标信息，表明将要使对方发动的效果无效。
 function c4918855.negtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置连锁操作信息，表明本次效果将使发动无效。
+	-- 设置连锁操作信息，表明将要进行无效处理。
 	Duel.SetOperationInfo(0,CATEGORY_NEGATE,eg,1,0,0)
 end
--- 执行效果操作，使当前连锁的效果无效。
+-- 执行无效效果的操作，使对方发动的效果无效。
 function c4918855.negop(e,tp,eg,ep,ev,re,r,rp)
-	-- 使当前连锁的效果无效。
+	-- 使当前连锁的发动无效。
 	Duel.NegateActivation(ev)
 end
--- 定义了用于筛选特殊召唤成功怪兽的过滤条件。
+-- 定义了用于筛选从墓地特殊召唤的怪兽的过滤条件。
 function c4918855.cfilter(c,tp)
 	return c:IsSummonLocation(LOCATION_GRAVE) and c:IsPreviousControler(1-tp) and c:GetOriginalType()&TYPE_MONSTER~=0
 end
--- 设置效果发动条件，判断是否满足从对方墓地特殊召唤的条件。
+-- 判断是否满足发动第三效果的条件，即对方有怪兽从墓地特殊召唤成功。
 function c4918855.spcon2(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c4918855.cfilter,1,nil,tp)
 end
--- 设置效果成本函数，要求玩家解放场上2只怪兽作为代价。
+-- 设置发动第三效果所需的费用，需要解放自己场上的2只怪兽。
 function c4918855.spcost2(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 获取玩家可解放的卡片组。
 	local rg=Duel.GetReleaseGroup(tp)
-	-- 检查是否满足解放2只怪兽的条件。
+	-- 检查是否满足解放条件，即是否有符合条件的2只怪兽可以被解放。
 	if chk==0 then return rg:CheckSubGroup(aux.mzctcheckrel,2,2,tp) end
 	-- 向玩家发送提示信息，提示其选择要解放的卡片。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_RELEASE)  --"请选择要解放的卡"
-	-- 从可解放卡片中选择恰好2只作为解放对象。
+	-- 从可解放的卡片中选择恰好2只进行解放。
 	local g=rg:SelectSubGroup(tp,aux.mzctcheckrel,false,2,2,tp)
 	-- 强制使用代替解放效果次数。
 	aux.UseExtraReleaseCount(g,tp)
-	-- 将选定的卡片以代价形式进行解放。
+	-- 将选定的怪兽进行解放操作。
 	Duel.Release(g,REASON_COST)
 end
--- 设置效果目标，表明本次效果将特殊召唤自身。
+-- 设置第三效果的目标信息，表明将要特殊召唤自己。
 function c4918855.sptg2(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置连锁操作信息，表明本次效果将特殊召唤自身。
+	-- 设置连锁操作信息，表明将要进行特殊召唤操作。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 执行效果操作，将自身从墓地特殊召唤到场上。
+-- 执行第三效果的处理流程，判断是否满足特殊召唤条件并完成特殊召唤。
 function c4918855.spop2(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) then
-		-- 将自身以指定方式特殊召唤到场上。
+		-- 将自身从墓地以通常形式特殊召唤到场上。
 		Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
