@@ -8,7 +8,7 @@
 function c2645637.initial_effect(c)
 	c:SetUniqueOnField(1,0,2645637)
 	c:EnableReviveLimit()
-	-- 添加连接召唤手续，使用2到4个不死族怪兽作为连接素材
+	-- 添加连接召唤手续，要求使用2到4个不死族怪兽作为连接素材
 	aux.AddLinkProcedure(c,aux.FilterBoolFunction(Card.IsLinkRace,RACE_ZOMBIE),2,4)
 	-- 只要这张卡在怪兽区域存在，除外的状态发动的对方怪兽的效果无效化。
 	local e1=Effect.CreateEffect(c)
@@ -37,60 +37,60 @@ function c2645637.initial_effect(c)
 end
 -- 使除外状态发动的对方怪兽的效果无效化
 function c2645637.disop(e,tp,eg,ep,ev,re,r,rp)
-	-- 连锁触发位置在除外区且为怪兽类型且为对方发动时
+	-- 判断连锁是否来自除外区且为怪兽类型
 	if Duel.GetChainInfo(ev,CHAININFO_TRIGGERING_LOCATION)==LOCATION_REMOVED and re:IsActiveType(TYPE_MONSTER) and rp==1-tp then
-		-- 使该连锁效果无效
+		-- 使当前连锁的效果无效
 		Duel.NegateEffect(ev)
 	end
 end
 -- 判断是否为墓地发动的怪兽效果
 function c2645637.atkcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 连锁触发位置在墓地且为怪兽类型
+	-- 判断连锁是否来自墓地且为怪兽类型
 	return re:IsActiveType(TYPE_MONSTER) and Duel.GetChainInfo(ev,CHAININFO_TRIGGERING_LOCATION)==LOCATION_GRAVE
 end
--- 判断是否为从墓地召唤的怪兽
+-- 判断怪兽是否从墓地召唤
 function c2645637.spfilter(c)
 	return c:IsSummonLocation(LOCATION_GRAVE) and c:GetOriginalType()&TYPE_MONSTER~=0
 end
--- 判断是否为从墓地特殊召唤或墓地怪兽发动效果
+-- 判断是否为墓地特殊召唤或墓地怪兽效果发动
 function c2645637.atkcon2(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c2645637.spfilter,1,nil) and not eg:IsContains(e:GetHandler())
 		and not (re and re:IsActivated() and re:IsActiveType(TYPE_MONSTER)
-			-- 连锁触发位置在墓地
+			-- 判断连锁是否来自墓地
 			and Duel.GetChainInfo(ev,CHAININFO_TRIGGERING_LOCATION)==LOCATION_GRAVE)
 end
--- 筛选场上表侧表示且攻击力大于0的怪兽
+-- 判断目标怪兽是否表侧表示且攻击力大于0
 function c2645637.atkfilter(c)
 	return c:IsFaceup() and c:GetAttack()>0
 end
--- 选择目标怪兽并设置操作信息
+-- 选择并设置目标怪兽，准备使其实现攻击力变为0和效果无效
 function c2645637.atktg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	local c=e:GetHandler()
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and c2645637.atkfilter(chkc) and chkc~=c end
-	-- 检查是否已使用过效果且场上存在符合条件的目标怪兽
+	-- 检查是否已使用过此效果且场上存在符合条件的怪兽
 	if chk==0 then return e:GetHandler():GetFlagEffect(2645637)==0 and Duel.IsExistingTarget(c2645637.atkfilter,tp,LOCATION_MZONE,LOCATION_MZONE,1,c) end
 	e:GetHandler():RegisterFlagEffect(2645637,RESET_CHAIN,0,1)
-	-- 选择一个符合条件的目标怪兽
+	-- 选择目标怪兽
 	local g=Duel.SelectTarget(tp,c2645637.atkfilter,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,c)
-	-- 设置操作信息为使目标怪兽效果无效
+	-- 设置操作信息，标记将要使目标怪兽效果无效
 	Duel.SetOperationInfo(0,CATEGORY_DISABLE,g,1,0,0)
 end
 -- 处理效果，使目标怪兽攻击力变为0并使其效果无效
 function c2645637.atkop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取连锁对象怪兽
+	-- 获取当前连锁的目标怪兽
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) and tc:IsFaceup() and tc:GetAttack()>0 then
 		-- 使目标怪兽相关的连锁无效化
 		Duel.NegateRelatedChain(tc,RESET_TURN_SET)
-		-- 将目标怪兽的攻击力设为0
+		-- 设置目标怪兽的攻击力为0
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_SET_ATTACK_FINAL)
 		e1:SetValue(0)
 		e1:SetReset(RESET_EVENT+RESETS_STANDARD)
 		tc:RegisterEffect(e1)
-		-- 使目标怪兽效果无效
+		-- 使目标怪兽的效果无效
 		local e2=Effect.CreateEffect(c)
 		e2:SetType(EFFECT_TYPE_SINGLE)
 		e2:SetCode(EFFECT_DISABLE)
