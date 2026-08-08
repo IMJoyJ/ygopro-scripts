@@ -11,15 +11,15 @@ function c87557188.initial_effect(c)
 end
 -- 检查场上是否存在盖放的卡
 function c87557188.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检索满足条件的卡片组
+	-- 若场上存在盖放的卡则满足效果发动条件
 	if chk==0 then return Duel.IsExistingMatchingCard(Card.IsFacedown,tp,0,LOCATION_ONFIELD,1,nil) end
 end
--- 效果处理函数，确认场上盖放的卡
+-- 确认场上所有盖放的卡
 function c87557188.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取场上所有盖放的卡
+	-- 检索场上所有盖放的卡组成组
 	local g=Duel.GetMatchingGroup(Card.IsFacedown,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,nil)
 	if g:GetCount()>0 then
-		-- 将目标怪兽特殊召唤
+		-- 向玩家确认这些盖放的卡
 		Duel.ConfirmCards(tp,g)
 	end
 end

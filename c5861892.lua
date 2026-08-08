@@ -48,26 +48,26 @@ function c5861892.initial_effect(c)
 	e4:SetOperation(c5861892.negop)
 	c:RegisterEffect(e4)
 end
--- 过滤场上可以作为特殊召唤代价送去墓地的怪兽
+-- 过滤满足条件的场上怪兽（可送去墓地作为cost）
 function c5861892.spfilter(c)
 	return c:IsAbleToGraveAsCost()
 end
--- 检查场上是否有3只怪兽满足条件并能作为特殊召唤的素材
+-- 检查是否满足特殊召唤条件：自己场上是否有3只可以送去墓地的怪兽
 function c5861892.spcon(e,c)
 	if c==nil then return true end
 	local tp=c:GetControler()
-	-- 获取自己场上的所有可送去墓地的怪兽组
+	-- 获取自己场上的所有可以送去墓地的怪兽组
 	local mg=Duel.GetMatchingGroup(c5861892.spfilter,tp,LOCATION_MZONE,0,nil)
-	-- 检查该组怪兽是否能选出3只满足特殊召唤条件
+	-- 判断该怪兽组中是否存在3只可以作为素材并满足召唤条件的子集
 	return mg:CheckSubGroup(aux.mzctcheck,3,3,tp)
 end
--- 选择3只怪兽作为特殊召唤的素材并设置为效果对象
+-- 选择3只满足条件的场上怪兽作为特殊召唤的素材
 function c5861892.sptg(e,tp,eg,ep,ev,re,r,rp,chk,c)
-	-- 获取自己场上的所有可送去墓地的怪兽组
+	-- 获取自己场上的所有可以送去墓地的怪兽组
 	local mg=Duel.GetMatchingGroup(c5861892.spfilter,tp,LOCATION_MZONE,0,nil)
 	-- 提示玩家选择要送去墓地的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
-	-- 从满足条件的怪兽中选择3只组成子集
+	-- 从符合条件的怪兽中选择3只组成子集
 	local sg=mg:SelectSubGroup(tp,aux.mzctcheck,true,3,3,tp)
 	if sg then
 		sg:KeepAlive()
@@ -82,62 +82,62 @@ function c5861892.spop(e,tp,eg,ep,ev,re,r,rp,c)
 	Duel.SendtoGrave(g,REASON_SPSUMMON)
 	g:DeleteGroup()
 end
--- 判断是否为正面效果触发条件（战斗破坏对方怪兽）
+-- 判断是否为正面效果触发条件：抛硬币为正面且自身参与战斗并击败对方怪兽
 function c5861892.thcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	return c:GetFlagEffectLabel(FLAG_ID_ARCANA_COIN)==1 and c:IsRelateToBattle()
 		and c:GetBattleTarget():IsLocation(LOCATION_GRAVE)
 end
--- 设置选择目标的提示并确认是否有满足条件的卡
+-- 设置回收效果的目标选择逻辑，选择自己墓地一张可加入手牌的卡
 function c5861892.thtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and chkc:IsAbleToHand() end
-	-- 检查是否存在满足条件的墓地卡
+	-- 检查是否存在满足条件的墓地卡可以作为回收对象
 	if chk==0 then return Duel.IsExistingTarget(Card.IsAbleToHand,tp,LOCATION_GRAVE,0,1,nil) end
 	-- 提示玩家选择要加入手牌的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择一张墓地中的卡作为目标
+	-- 选择目标墓地卡作为回收对象
 	local g=Duel.SelectTarget(tp,Card.IsAbleToHand,tp,LOCATION_GRAVE,0,1,1,nil)
-	-- 设置操作信息，表示将卡加入手牌
+	-- 设置操作信息，表示将要将一张卡加入手牌
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,1,0,0)
 end
--- 执行将目标卡加入手牌的操作并确认对方看到该卡
+-- 执行回收效果，将选中的墓地卡加入手牌并确认
 function c5861892.thop(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取当前连锁的目标卡
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
 		-- 将目标卡以效果原因加入手牌
 		Duel.SendtoHand(tc,nil,REASON_EFFECT)
-		-- 向对方玩家确认该卡的加入手牌动作
+		-- 向对方确认被加入手牌的卡
 		Duel.ConfirmCards(1-tp,tc)
 	end
 end
--- 判断是否为反面效果触发条件（对方发动效果）
+-- 判断是否为反面效果触发条件：抛硬币为反面且该发动针对自身
 function c5861892.negcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if not re:IsHasProperty(EFFECT_FLAG_CARD_TARGET) then return false end
-	-- 获取当前连锁的目标卡组信息
+	-- 获取当前连锁的目标卡片组
 	local g=Duel.GetChainInfo(ev,CHAININFO_TARGET_CARDS)
 	if not g or not g:IsContains(c) then return false end
 	return c:GetFlagEffectLabel(FLAG_ID_ARCANA_COIN)==0 and (re:IsHasType(EFFECT_TYPE_ACTIVATE) or re:IsActiveType(TYPE_MONSTER))
 end
--- 设置操作信息，表示将使发动无效并破坏
+-- 设置无效并破坏效果的目标选择和操作信息
 function c5861892.negtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	if chk==0 then return c:GetFlagEffect(5861892)==0 end
 	if c:IsHasEffect(EFFECT_REVERSE_UPDATE) then
 		c:RegisterFlagEffect(5861892,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END,0,1)
 	end
-	-- 设置操作信息，表示将使发动无效
+	-- 设置操作信息，表示将要使发动无效
 	Duel.SetOperationInfo(0,CATEGORY_NEGATE,eg,1,0,0)
 	if re:GetHandler():IsRelateToEffect(re) and re:GetHandler():IsDestructable() then
-		-- 设置操作信息，表示将破坏目标卡
+		-- 设置操作信息，表示将要破坏目标卡
 		Duel.SetOperationInfo(0,CATEGORY_DESTROY,eg,1,0,0)
 	end
 end
--- 执行反面效果操作，降低攻击力并无效发动且破坏
+-- 执行无效并破坏效果，降低自身攻击力并处理连锁无效与破坏
 function c5861892.negop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 判断是否满足执行反面效果的条件
+	-- 判断是否满足无效并破坏效果的触发条件
 	if c:IsFacedown() or c:GetAttack()<1000 or not c:IsRelateToEffect(e) or Duel.GetCurrentChain()~=ev+1 then
 		return
 	end
@@ -149,7 +149,7 @@ function c5861892.negop(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetValue(-1000)
 	c:RegisterEffect(e1)
 	if not c:IsHasEffect(EFFECT_REVERSE_UPDATE) then
-		-- 判断是否成功使对方发动无效并破坏目标卡
+		-- 如果连锁有效且目标卡存在，则使该发动无效并破坏目标卡
 		if Duel.NegateActivation(ev) and re:GetHandler():IsRelateToEffect(re) then
 			-- 将目标卡以效果原因破坏
 			Duel.Destroy(eg,REASON_EFFECT)

@@ -33,25 +33,25 @@ function c92854392.activate(e,tp,eg,ep,ev,re,r,rp)
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
 		local fid=tc:GetRealFieldID()
-		-- 设置必须攻击效果，使对方只能攻击该怪兽
+		-- 对方只能以所选择的这只怪兽为攻击对象，且必须用所有表侧攻击表示的怪兽攻击所选择的这只怪兽
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_FIELD)
 		e1:SetCode(EFFECT_MUST_ATTACK)
 		e1:SetTargetRange(0,LOCATION_MZONE)
 		e1:SetReset(RESET_PHASE+PHASE_BATTLE)
-		-- 将效果e1注册给玩家tp
+		-- 将效果注册给全局环境
 		Duel.RegisterEffect(e1,tp)
 		local e2=e1:Clone()
 		e2:SetCode(EFFECT_MUST_ATTACK_MONSTER)
 		e2:SetValue(c92854392.atklimit)
 		e2:SetLabel(fid)
-		-- 将效果e2注册给玩家tp
+		-- 将效果注册给全局环境
 		Duel.RegisterEffect(e2,tp)
 		-- 将攻击对象变为所选择的怪兽
 		Duel.ChangeAttackTarget(tc)
 	end
 end
--- 判断怪兽是否为所选择的怪兽
+-- 判断是否为所选择的怪兽
 function c92854392.atklimit(e,c)
 	return c:GetRealFieldID()==e:GetLabel()
 end
