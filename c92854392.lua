@@ -2,7 +2,7 @@
 -- 效果：
 -- 对方进行攻击宣言时这张卡才能发动。选择自己场上1张表侧表示的怪兽。这张卡发动回合，对方只能以所选择的这只怪兽为攻击对象，且必须用所有表侧攻击表示的怪兽攻击所选择的这只怪兽。
 function c92854392.initial_effect(c)
-	-- 对方进行攻击宣言时这张卡才能发动。选择自己场上1张表侧表示的怪兽。
+	-- 处理卡片效果的发动条件、目标选择及效果操作
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET)
@@ -12,46 +12,46 @@ function c92854392.initial_effect(c)
 	e1:SetOperation(c92854392.activate)
 	c:RegisterEffect(e1)
 end
--- 发动条件检查：判断是否在对方回合进行攻击宣言
+-- 执行对应的效果条件检查或辅助函数处理
 function c92854392.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断当前回合玩家是否为对方玩家
+	-- 执行对应的效果条件检查或辅助函数处理
 	return Duel.GetTurnPlayer()~=tp
 end
--- 发动准备与取对象：选择自己场上1张表侧表示怪兽作为效果对象
+-- 执行对应的效果条件检查或辅助函数处理
 function c92854392.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and chkc:IsFaceup() end
-	-- 发动条件检查：自己场上是否存在表侧表示怪兽
+	-- 执行对应的效果条件检查或辅助函数处理
 	if chk==0 then return Duel.IsExistingTarget(Card.IsFaceup,tp,LOCATION_MZONE,0,1) end
-	-- 提示玩家选择表侧表示的卡
+	-- 执行对应的效果条件检查或辅助函数处理
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
-	-- 选择自己场上1只表侧表示怪兽作为效果对象
+	-- 执行对应的效果条件检查或辅助函数处理
 	Duel.SelectTarget(tp,Card.IsFaceup,tp,LOCATION_MZONE,0,1,1)
 end
--- 效果处理：注册强制攻击限制并转移当前攻击对象
+-- 执行对应的效果条件检查或辅助函数处理
 function c92854392.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁中选择的对象怪兽
+	-- 执行对应的效果条件检查或辅助函数处理
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
 		local fid=tc:GetRealFieldID()
-		-- 这张卡发动回合，对方只能以所选择的这只怪兽为攻击对象，且必须用所有表侧攻击表示的怪兽攻击所选择的这只怪兽。
+		-- 处理卡片效果的发动条件、目标选择及效果操作
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_FIELD)
 		e1:SetCode(EFFECT_MUST_ATTACK)
 		e1:SetTargetRange(0,LOCATION_MZONE)
 		e1:SetReset(RESET_PHASE+PHASE_BATTLE)
-		-- 注册全局效果：对方所有表侧攻击表示怪兽必须进行攻击
+		-- 执行对应的效果条件检查或辅助函数处理
 		Duel.RegisterEffect(e1,tp)
 		local e2=e1:Clone()
 		e2:SetCode(EFFECT_MUST_ATTACK_MONSTER)
 		e2:SetValue(c92854392.atklimit)
 		e2:SetLabel(fid)
-		-- 注册全局效果：对方只能以所选择的这只怪兽为攻击对象
+		-- 执行对应的效果条件检查或辅助函数处理
 		Duel.RegisterEffect(e2,tp)
-		-- 将当前的攻击宣言对象转移为选中的怪兽
+		-- 执行对应的效果条件检查或辅助函数处理
 		Duel.ChangeAttackTarget(tc)
 	end
 end
--- 攻击对象限制过滤：检查被攻击卡片是否为选中的目标怪兽
+-- 执行对应的效果条件检查或辅助函数处理
 function c92854392.atklimit(e,c)
 	return c:GetRealFieldID()==e:GetLabel()
 end
