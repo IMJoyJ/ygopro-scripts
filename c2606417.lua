@@ -3,9 +3,9 @@
 -- ①：自己·对方的准备阶段发动。掷1次骰子，把最多有出现的数目数量的指示物给这张卡放置（最多6个）。
 -- ②：对方怪兽攻击的伤害计算时1次或者对方场上的怪兽的效果发动时，把这张卡1个指示物取除，以那之内的1只为对象才能发动。进行1次投掷硬币，对里表作猜测。猜中的场合，从卡组把有「时间黑魔术师」的卡名记述的1只怪兽特殊召唤，作为对象的怪兽直到回合结束时攻击力变成0，效果无效化。
 local s,id,o=GetID()
--- 定义initial_effect函数，用于注册卡片效果。
+-- 初始化卡片效果，注册时间黑魔术师卡号，允许放置指示物，设置指示物上限为6个，注册准备阶段触发的指示物放置效果，注册攻击伤害计算时和对方怪兽发动效果时的投掷硬币效果
 function s.initial_effect(c)
-	-- 将40235813加入到该卡的CodeList中，表示记录了“时间黑魔术师”的卡名。
+	-- 记录该卡效果文本上记载着「时间黑魔术师」这张卡
 	aux.AddCodeList(c,40235813)
 	c:EnableCounterPermit(0x76)
 	c:SetCounterLimit(0x76,6)
@@ -56,14 +56,14 @@ end
 s.mentioned_counter={
 	[0x76]=true,
 }
--- 定义cttg函数，用于指示物效果的条件判断（总是返回true）。
+-- 指示物放置效果的目标函数，检查是否满足触发条件
 function s.cttg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
 end
--- 实现放置指示物的操作：投掷骰子，根据结果放置指示物，数量不超过6个。
+-- 指示物放置效果的操作函数，投掷骰子并根据结果添加相应数量的指示物
 function s.ctop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 投掷1次骰子。
+	-- 投掷一次骰子获取指示物数量
 	local ct=Duel.TossDice(tp,1)
 	if c:GetCounter(0x76)+ct>6 then ct=6-c:GetCounter(0x76) end
 	if ct>0 then
@@ -72,104 +72,104 @@ function s.ctop(e,tp,eg,ep,ev,re,r,rp)
 			for i=ct,1,-1 do
 				table.insert(tb,i)
 			end
-			-- 提示玩家选择要放置的指示物数量。
+			-- 提示玩家选择要放置的指示物数量
 			Duel.Hint(HINT_SELECTMSG,tp,aux.Stringid(id,2))  --"请选择要放置的指示物的数量"
-			-- 获取玩家选择的指示物数量。
+			-- 玩家宣言要放置的指示物数量
 			ct=Duel.AnnounceNumber(tp,1,table.unpack(tb))
 		end
 		c:AddCounter(0x76,ct)
 	end
 end
--- 定义mfilter函数，用于筛选满足条件的怪兽（场上表侧表示、非不死系）。
+-- 判断目标是否为场上正面表示的怪兽且攻击力非0或未被无效化
 function s.mfilter(c)
 	return c:IsOnField() and c:IsFaceup() and c:IsType(TYPE_MONSTER)
 		and (c:GetAttack()~=0 or not c:IsDisabled())
 end
--- 定义atkcon函数，作为攻击伤害计算时效果的条件：对方怪兽且满足mfilter。
+-- 攻击伤害计算时触发效果的条件函数，检查攻击怪兽是否为对方控制且满足mfilter条件
 function s.atkcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取攻击怪兽。
+	-- 获取当前攻击怪兽
 	local a=Duel.GetAttacker()
 	return a:IsControler(1-tp) and s.mfilter(a)
 end
--- 定义atkcon2函数，作为连锁发动时效果的条件：对方怪兽、处于活动状态、与效果有关联且满足mfilter。
+-- 对方怪兽发动效果时触发效果的条件函数，检查发动者是否为对方控制且为怪兽类型且满足mfilter条件
 function s.atkcon2(e,tp,eg,ep,ev,re,r,rp)
 	local rc=re:GetHandler()
 	return ep==1-tp and re:IsActiveType(TYPE_MONSTER) and rc:IsRelateToEffect(re) and s.mfilter(rc)
 end
--- 定义atkcost函数，作为效果的COST：移除一张指示物。
+-- 消耗一个指示物作为费用的函数
 function s.atkcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsCanRemoveCounter(tp,0x76,1,REASON_COST) end
 	e:GetHandler():RemoveCounter(tp,0x76,1,REASON_COST)
 end
--- 定义spfilter函数，用于筛选可以特殊召唤的“时间黑魔术师”卡名怪兽。
+-- 筛选卡组中可以特殊召唤的「时间黑魔术师」相关怪兽的过滤函数
 function s.spfilter(c,e,tp)
-	-- 判断是否为“时间黑魔术师”卡名的怪兽并且满足特殊召唤条件。
+	-- 判断目标怪兽是否记载着「时间黑魔术师」卡名且可特殊召唤
 	return aux.IsCodeListed(c,40235813) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 定义atktg函数，作为效果的目标选择：攻击怪兽且可以成为效果目标。
+-- 攻击伤害计算时触发效果的目标函数，检查攻击怪兽是否可成为效果对象且满足召唤条件和特殊召唤条件
 function s.atktg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	-- 获取攻击怪兽。
+	-- 获取当前攻击怪兽
 	local a=Duel.GetAttacker()
 	if chkc then return false end
 	if chk==0 then return a:IsCanBeEffectTarget(e)
-		-- 检查场上是否有可用的怪兽区域。
+		-- 检查目标玩家场上是否有空位
 		and Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查卡组中是否存在满足spfilter条件的卡片。
+		-- 检查卡组中是否存在符合条件的「时间黑魔术师」怪兽
 		and Duel.IsExistingMatchingCard(s.spfilter,tp,LOCATION_DECK,0,1,nil,e,tp) end
-	-- 设置当前连锁的目标卡为攻击怪兽。
+	-- 设置当前连锁的目标为攻击怪兽
 	Duel.SetTargetCard(a)
-	-- 设置操作信息，表示硬币效果。
+	-- 设置操作信息，提示将进行一次硬币投掷
 	Duel.SetOperationInfo(0,CATEGORY_COIN,nil,0,tp,1)
 end
--- 定义atktg2函数，作为连锁发动时目标选择：对方场上的怪兽且可以成为效果目标。
+-- 对方怪兽发动效果时触发效果的目标函数，检查发动怪兽是否可成为效果对象且满足召唤条件和特殊召唤条件
 function s.atktg2(e,tp,eg,ep,ev,re,r,rp,chk)
 	local tc=re:GetHandler()
 	if chk==0 then return tc:IsOnField() and tc:IsCanBeEffectTarget(e)
-		-- 检查场上是否有可用的怪兽区域。
+		-- 检查目标玩家场上是否有空位
 		and Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查卡组中是否存在满足spfilter条件的卡片。
+		-- 检查卡组中是否存在符合条件的「时间黑魔术师」怪兽
 		and Duel.IsExistingMatchingCard(s.spfilter,tp,LOCATION_DECK,0,1,nil,e,tp) end
-	-- 设置当前连锁的目标卡为触发的怪兽。
+	-- 设置当前连锁的目标为发动怪兽
 	Duel.SetTargetCard(tc)
-	-- 设置操作信息，表示硬币效果。
+	-- 设置操作信息，提示将进行一次硬币投掷
 	Duel.SetOperationInfo(0,CATEGORY_COIN,nil,0,tp,1)
 end
--- 实现效果的操作：投掷硬币，如果猜中则从卡组特殊召唤“时间黑魔术师”，并使目标怪兽攻击力变为0且效果无效化。
+-- 效果处理函数，执行硬币投掷并根据结果决定是否特殊召唤怪兽及对目标怪兽施加效果
 function s.atkop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取当前连锁的第一个目标卡。
+	-- 获取当前连锁的目标怪兽
 	local tc=Duel.GetFirstTarget()
-	-- 提示玩家选择硬币的正反面。
+	-- 提示玩家选择硬币正反面
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_COIN)  --"请选择硬币的正反面"
-	-- 让玩家宣言硬币的正反面。
+	-- 玩家宣言硬币正反面
 	local coin=Duel.AnnounceCoin(tp)
-	-- 投掷一次硬币。
+	-- 投掷一次硬币获取结果
 	local res=Duel.TossCoin(tp,1)
-	-- 如果硬币正反面与玩家的宣言一致且场上有可用的怪兽区域，则执行特殊召唤效果。
+	-- 判断玩家宣言的正反面与实际投掷结果是否不同且目标玩家场上存在空位
 	if coin~=res and Duel.GetLocationCount(tp,LOCATION_MZONE)>0 then
-		-- 提示玩家选择要特殊召唤的卡片。
+		-- 提示玩家选择要特殊召唤的怪兽
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-		-- 让玩家从卡组中选择满足spfilter条件的卡片。
+		-- 从卡组中选择符合条件的怪兽作为特殊召唤对象
 		local g=Duel.SelectMatchingCard(tp,s.spfilter,tp,LOCATION_DECK,0,1,1,nil,e,tp)
-		-- 如果选择了卡片并且成功特殊召唤，且目标怪兽为表侧表示、与连锁有关联且可以被效果无效化，则执行后续操作。
+		-- 执行特殊召唤操作并检查是否成功
 		if g:GetCount()>0 and Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)~=0
 			and tc:IsFaceup() and tc:IsRelateToChain() and tc:IsCanBeDisabledByEffect(e) then
-			-- 使和当前卡相关的连锁都无效化。
+			-- 使目标怪兽相关的连锁无效化
 			Duel.NegateRelatedChain(tc,RESET_TURN_SET)
-			-- ②：对方怪兽攻击的伤害计算时1次或者对方场上的怪兽的效果发动时，把这张卡1个指示物取除，以那之内的1只为对象才能发动。进行1次投掷硬币，对里表作猜测。猜中的场合，从卡组把有「时间黑魔术师」的卡名记述的1只怪兽特殊召唤，作为对象的怪兽直到回合结束时攻击力变成0，效果无效化。
+			-- 使目标怪兽效果无效
 			local e1=Effect.CreateEffect(c)
 			e1:SetType(EFFECT_TYPE_SINGLE)
 			e1:SetCode(EFFECT_DISABLE)
 			e1:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END)
 			tc:RegisterEffect(e1)
-			-- ②：对方怪兽攻击的伤害计算时1次或者对方场上的怪兽的效果发动时，把这张卡1个指示物取除，以那之内的1只为对象才能发动。进行1次投掷硬币，对里表作猜测。猜中的场合，从卡组把有「时间黑魔术师」的卡名记述的1只怪兽特殊召唤，作为对象的怪兽直到回合结束时攻击力变成0，效果无效化。
+			-- 使目标怪兽效果无效化
 			local e2=Effect.CreateEffect(c)
 			e2:SetType(EFFECT_TYPE_SINGLE)
 			e2:SetCode(EFFECT_DISABLE_EFFECT)
 			e2:SetValue(RESET_TURN_SET)
 			e2:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END)
 			tc:RegisterEffect(e2)
-			-- ②：对方怪兽攻击的伤害计算时1次或者对方场上的怪兽的效果发动时，把这张卡1个指示物取除，以那之内的1只为对象才能发动。进行1次投掷硬币，对里表作猜测。猜中的场合，从卡组把有「时间黑魔术师」的卡名记述的1只怪兽特殊召唤，作为对象的怪兽直到回合结束时攻击力变成0，效果无效化。
+			-- 将目标怪兽攻击力设为0
 			local e3=Effect.CreateEffect(c)
 			e3:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
 			e3:SetType(EFFECT_TYPE_SINGLE)
