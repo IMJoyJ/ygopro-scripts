@@ -2,7 +2,7 @@
 -- 效果：
 -- 从自己墓地有怪兽特殊召唤时才能发动。选择自己墓地存在的1只「苏帕伊」或者「赤蚁」特殊召唤。
 function c45133463.initial_effect(c)
-	-- 处理卡片效果的发动条件、目标选择及效果操作
+	-- 从自己墓地有怪兽特殊召唤时才能发动。选择自己墓地存在的1只「苏帕伊」或者「赤蚁」特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET)
@@ -13,38 +13,38 @@ function c45133463.initial_effect(c)
 	e1:SetOperation(c45133463.activate)
 	c:RegisterEffect(e1)
 end
--- 执行对应的效果条件检查或辅助函数处理
+-- 筛选出之前在墓地且控制者为自己的怪兽卡
 function c45133463.cfiltetr(c,tp)
 	return c:IsPreviousLocation(LOCATION_GRAVE) and c:IsPreviousControler(tp) and c:GetOriginalType()&TYPE_MONSTER~=0
 end
--- 执行对应的效果条件检查或辅助函数处理
+-- 检查是否有满足条件的怪兽从墓地被特殊召唤
 function c45133463.condition(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c45133463.cfiltetr,1,nil,tp)
 end
--- 执行对应的效果条件检查或辅助函数处理
+-- 筛选出卡号为苏帕伊(78552773)或赤蚁(78275321)且可以特殊召唤的怪兽
 function c45133463.filter(c,e,tp)
 	return c:IsCode(78552773,78275321) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 执行对应的效果条件检查或辅助函数处理
+-- 设置效果目标，允许选择自己墓地符合条件的怪兽
 function c45133463.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and c45133463.filter(chkc,e,tp) end
-	-- 执行对应的效果条件检查或辅助函数处理
+	-- 判断场上是否有足够的特殊召唤区域
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 执行对应的效果条件检查或辅助函数处理
+		-- 确认自己墓地是否存在满足条件的怪兽
 		and Duel.IsExistingTarget(c45133463.filter,tp,LOCATION_GRAVE,0,1,nil,e,tp) end
-	-- 执行对应的效果条件检查或辅助函数处理
+	-- 提示玩家选择要特殊召唤的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 执行对应的效果条件检查或辅助函数处理
+	-- 选择满足条件的1只怪兽作为效果目标
 	local g=Duel.SelectTarget(tp,c45133463.filter,tp,LOCATION_GRAVE,0,1,1,nil,e,tp)
-	-- 执行对应的效果条件检查或辅助函数处理
+	-- 设置效果处理信息，确定将特殊召唤1只怪兽
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,1,0,0)
 end
--- 执行对应的效果条件检查或辅助函数处理
+-- 效果发动时，将选中的怪兽特殊召唤到场上
 function c45133463.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 执行对应的效果条件检查或辅助函数处理
+	-- 获取当前效果的目标怪兽
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 执行对应的效果条件检查或辅助函数处理
+		-- 将目标怪兽正面表示特殊召唤到场上
 		Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
