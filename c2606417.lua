@@ -3,9 +3,9 @@
 -- ①：自己·对方的准备阶段发动。掷1次骰子，把最多有出现的数目数量的指示物给这张卡放置（最多6个）。
 -- ②：对方怪兽攻击的伤害计算时1次或者对方场上的怪兽的效果发动时，把这张卡1个指示物取除，以那之内的1只为对象才能发动。进行1次投掷硬币，对里表作猜测。猜中的场合，从卡组把有「时间黑魔术师」的卡名记述的1只怪兽特殊召唤，作为对象的怪兽直到回合结束时攻击力变成0，效果无效化。
 local s,id,o=GetID()
--- 初始化卡片效果（代码列表、放置指示物上限、表侧发动、准备阶段掷骰放置指示物、对方攻击或效果发动时投硬币特招并无效对象怪兽效果）
+-- 初始化卡片效果：注册卡名记述、允许放置指示物、限制指示物数量、发动画框、准备阶段掷骰子放置指示物效果，以及伤害计算时/对方怪兽效果发动时投硬币特召并无效怪兽效果
 function s.initial_effect(c)
-	-- 注册卡名记载：将「时间黑魔术师」（40235813）添加至卡片记载的代码列表中
+	-- 注册卡片记述列表：记述「时间黑魔术师」
 	aux.AddCodeList(c,40235813)
 	c:EnableCounterPermit(0x76)
 	c:SetCounterLimit(0x76,6)
@@ -25,7 +25,7 @@ function s.initial_effect(c)
 	e2:SetTarget(s.cttg)
 	e2:SetOperation(s.ctop)
 	c:RegisterEffect(e2)
-	-- ②：对方怪兽攻击的伤害计算时1次，把这张卡1个指示物取除，以那之内的1只为对象才能发动。进行1次投掷硬币，对里表作猜测。猜中的场合，从卡组把有「时间黑魔术师」的卡名记述的1只怪兽特殊召唤，作为对象的怪兽直到回合结束时攻击力变成0，效果无效化。
+	-- ②：对方怪兽攻击的伤害计算时1次或者对方场上的怪兽的效果发动时，把这张卡1个指示物取除，以那之内的1只为对象才能发动。进行1次投掷硬币，对里表作猜测。猜中的场合，从卡组把有「时间黑魔术师」的卡名记述的1只怪兽特殊召唤，作为对象的怪兽直到回合结束时攻击力变成0，效果无效化。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(id,1))  --"投掷硬币"
 	e3:SetCategory(CATEGORY_ATKCHANGE+CATEGORY_DISABLE+CATEGORY_COIN+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES)
@@ -39,7 +39,7 @@ function s.initial_effect(c)
 	e3:SetTarget(s.atktg)
 	e3:SetOperation(s.atkop)
 	c:RegisterEffect(e3)
-	-- ②：对方场上的怪兽的效果发动时，把这张卡1个指示物取除，以那之内的1只为对象才能发动。进行1次投掷硬币，对里表作猜测。猜中的场合，从卡组把有「时间黑魔术师」的卡名记述的1只怪兽特殊召唤，作为对象的怪兽直到回合结束时攻击力变成0，效果无效化。
+	-- ②：对方怪兽攻击的伤害计算时1次或者对方场上的怪兽的效果发动时，把这张卡1个指示物取除，以那之内的1只为对象才能发动。进行1次投掷硬币，对里表作猜测。猜中的场合，从卡组把有「时间黑魔术师」的卡名记述的1只怪兽特殊召唤，作为对象的怪兽直到回合结束时攻击力变成0，效果无效化。
 	local e4=Effect.CreateEffect(c)
 	e4:SetDescription(aux.Stringid(id,1))  --"投掷硬币"
 	e4:SetCategory(CATEGORY_ATKCHANGE+CATEGORY_DISABLE+CATEGORY_COIN+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES)
@@ -56,14 +56,14 @@ end
 s.mentioned_counter={
 	[0x76]=true,
 }
--- 准备阶段放置指示物效果的发动与目标检查
+-- 放置指示物效果发动条件检查：准备阶段必发效果
 function s.cttg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
 end
--- 准备阶段放置指示物效果的处理：掷1次骰子，玩家可选择放置最多为骰子出现数目数量的指示物
+-- 放置指示物效果处理：掷1次骰子，根据出现的数目给此卡放置最多6个指示物
 function s.ctop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 进行1次掷骰子
+	-- 让玩家掷1次骰子
 	local ct=Duel.TossDice(tp,1)
 	if c:GetCounter(0x76)+ct>6 then ct=6-c:GetCounter(0x76) end
 	if ct>0 then
@@ -72,97 +72,97 @@ function s.ctop(e,tp,eg,ep,ev,re,r,rp)
 			for i=ct,1,-1 do
 				table.insert(tb,i)
 			end
-			-- 设置选择提示：请选择要放置的指示物的数量
+			-- 提示玩家选择要放置的指示物的数量
 			Duel.Hint(HINT_SELECTMSG,tp,aux.Stringid(id,2))  --"请选择要放置的指示物的数量"
-			-- 让玩家选择要放置的指示物数量
+			-- 让玩家宣言放置指示物的数量
 			ct=Duel.AnnounceNumber(tp,1,table.unpack(tb))
 		end
 		c:AddCounter(0x76,ct)
 	end
 end
--- 判断卡片是否为场上表侧表示且攻击力不为0或效果未被无效的怪兽
+-- 怪兽过滤条件：场上表侧表示攻击力不为0或效果未无效的怪兽
 function s.mfilter(c)
 	return c:IsOnField() and c:IsFaceup() and c:IsType(TYPE_MONSTER)
 		and (c:GetAttack()~=0 or not c:IsDisabled())
 end
--- 判断发动条件：攻击怪兽属于对方且在场上表侧表示（攻击力不为0或效果未无效）
+-- 伤害计算时效果发动条件：对方怪兽攻击且满足过滤条件
 function s.atkcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前攻击的怪兽
+	-- 获取此次战斗的攻击怪兽
 	local a=Duel.GetAttacker()
 	return a:IsControler(1-tp) and s.mfilter(a)
 end
--- 判断发动条件：对方发动怪兽效果且该怪兽在场上表侧表示（攻击力不为0或效果未无效）
+-- 怪兽效果发动时效果发动条件：对方场上怪兽发动效果且满足过滤条件
 function s.atkcon2(e,tp,eg,ep,ev,re,r,rp)
 	local rc=re:GetHandler()
 	return ep==1-tp and re:IsActiveType(TYPE_MONSTER) and rc:IsRelateToEffect(re) and s.mfilter(rc)
 end
--- 取除这张卡1个指示物作为Cost
+-- 效果发动Cost：取除这张卡1个指示物
 function s.atkcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsCanRemoveCounter(tp,0x76,1,REASON_COST) end
 	e:GetHandler():RemoveCounter(tp,0x76,1,REASON_COST)
 end
--- 过滤条件：卡名记述有「时间黑魔术师」且可以特殊召唤的怪兽
+-- 卡组特召过滤条件：记载「时间黑魔术师」卡名的可特殊召唤怪兽
 function s.spfilter(c,e,tp)
-	-- 判断卡片是否记述「时间黑魔术师」且能被玩家特殊召唤
+	-- 检查卡片文本是否记载「时间黑魔术师」且能否被特殊召唤
 	return aux.IsCodeListed(c,40235813) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 伤害计算时效果的Target处理：检查对方攻击怪兽能否成为对象、自己怪兽区是否有空位以及卡组是否有可特招怪兽，并选择攻击怪兽为对象
+-- 伤害计算时效果发动准备：选择攻击怪兽为对象，检查怪兽区空位与卡组可特召怪兽
 function s.atktg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	-- 获取当前攻击的怪兽
+	-- 获取攻击怪兽
 	local a=Duel.GetAttacker()
 	if chkc then return false end
 	if chk==0 then return a:IsCanBeEffectTarget(e)
-		-- 检查自己场上是否有空余的怪兽区域
+		-- 检查主要怪兽区域是否有空位
 		and Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查卡组是否存在可以特殊召唤的记述「时间黑魔术师」的怪兽
+		-- 检查卡组是否存在满足条件的记述「时间黑魔术师」的怪兽
 		and Duel.IsExistingMatchingCard(s.spfilter,tp,LOCATION_DECK,0,1,nil,e,tp) end
-	-- 将对方攻击怪兽设定为效果的对象
+	-- 把攻击怪兽设为当前连锁的对象
 	Duel.SetTargetCard(a)
-	-- 设置连锁操作信息：包含投掷硬币分类（1次）
+	-- 设置连锁操作信息：投掷1次硬币
 	Duel.SetOperationInfo(0,CATEGORY_COIN,nil,0,tp,1)
 end
--- 效果发动时效果的Target处理：检查发动的怪兽能否成为对象、自己怪兽区是否有空位以及卡组是否有可特招怪兽，并选择该怪兽为对象
+-- 怪兽效果发动时效果发动准备：选择发动效果的怪兽为对象，检查怪兽区空位与卡组可特召怪兽
 function s.atktg2(e,tp,eg,ep,ev,re,r,rp,chk)
 	local tc=re:GetHandler()
 	if chk==0 then return tc:IsOnField() and tc:IsCanBeEffectTarget(e)
-		-- 检查自己场上是否有空余的怪兽区域
+		-- 检查主要怪兽区域是否有空位
 		and Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查卡组是否存在可以特殊召唤的记述「时间黑魔术师」的怪兽
+		-- 检查卡组是否存在满足条件的记述「时间黑魔术师」的怪兽
 		and Duel.IsExistingMatchingCard(s.spfilter,tp,LOCATION_DECK,0,1,nil,e,tp) end
-	-- 将发动的怪兽设定为效果的对象
+	-- 把发动效果的怪兽设为当前连锁的对象
 	Duel.SetTargetCard(tc)
-	-- 设置连锁操作信息：包含投掷硬币分类（1次）
+	-- 设置连锁操作信息：投掷1次硬币
 	Duel.SetOperationInfo(0,CATEGORY_COIN,nil,0,tp,1)
 end
--- 硬币效果的处理：玩家宣言正反面并进行1次投硬币，猜中时从卡组特殊召唤记述「时间黑魔术师」的怪兽，并使对象怪兽直到回合结束时攻击力变成0且效果无效化
+-- 效果处理：猜测硬币里表并投掷，猜中则从卡组特召记述「时间黑魔术师」的怪兽，并将对象怪兽攻击力变成0且效果无效化
 function s.atkop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取发动的对象怪兽
+	-- 获取连锁中的对象怪兽
 	local tc=Duel.GetFirstTarget()
-	-- 设置提示信息：请选择硬币的正反面
+	-- 提示玩家选择硬币的正反面
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_COIN)  --"请选择硬币的正反面"
 	-- 让玩家宣言硬币的正反面
 	local coin=Duel.AnnounceCoin(tp)
-	-- 进行1次投掷硬币
+	-- 进行1次硬币投掷
 	local res=Duel.TossCoin(tp,1)
-	-- 判断是否猜中硬币正反面且自己怪兽区域有空位
+	-- 判断硬币是否猜中且怪兽区域有空位
 	if coin~=res and Duel.GetLocationCount(tp,LOCATION_MZONE)>0 then
-		-- 设置选择提示：请选择要特殊召唤的卡
+		-- 提示玩家选择要特殊召唤的卡
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-		-- 从卡组选择1只记述「时间黑魔术师」的怪兽
+		-- 从卡组选择1只满足条件的记述「时间黑魔术师」的怪兽
 		local g=Duel.SelectMatchingCard(tp,s.spfilter,tp,LOCATION_DECK,0,1,1,nil,e,tp)
-		-- 若成功选择并表侧表示特殊召唤选中的怪兽
+		-- 将选中的怪兽表侧表示特殊召唤
 		if g:GetCount()>0 and Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)~=0
 			and tc:IsFaceup() and tc:IsRelateToChain() and tc:IsCanBeDisabledByEffect(e) then
-			-- 使对象怪兽当前已发的连锁效果无效化
+			-- 使对象怪兽当前相关的连锁效果无效化
 			Duel.NegateRelatedChain(tc,RESET_TURN_SET)
-			-- 效果无效化
+			-- 效果无效化。
 			local e1=Effect.CreateEffect(c)
 			e1:SetType(EFFECT_TYPE_SINGLE)
 			e1:SetCode(EFFECT_DISABLE)
 			e1:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END)
 			tc:RegisterEffect(e1)
-			-- 效果无效化
+			-- 效果无效化。
 			local e2=Effect.CreateEffect(c)
 			e2:SetType(EFFECT_TYPE_SINGLE)
 			e2:SetCode(EFFECT_DISABLE_EFFECT)

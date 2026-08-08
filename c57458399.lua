@@ -28,46 +28,46 @@ function c57458399.initial_effect(c)
 	e2:SetOperation(c57458399.lvop)
 	c:RegisterEffect(e2)
 end
--- 过滤从自己墓地特殊召唤的怪兽
+-- 特殊召唤怪兽过滤条件：原本是怪兽且原本控制者为当前玩家、召唤位置为自己墓地
 function c57458399.spfilter(c,tp)
 	return c:IsSummonLocation(LOCATION_GRAVE) and c:IsPreviousControler(tp) and c:GetOriginalType()&TYPE_MONSTER~=0
 end
--- 检查触发事件中是否存在从自己墓地特殊召唤的怪兽
+-- ①效果发动条件：确认是否从自己墓地有怪兽被特殊召唤
 function c57458399.spcon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c57458399.spfilter,1,nil,tp)
 end
--- 特殊召唤效果的Target函数，检查自己场上有空余怪兽区域且自身可以特殊召唤
+-- ①效果发动准备/检查：确认主要怪兽区域有空位且自身可以特殊召唤
 function c57458399.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
-	-- 检查自己场上是否有空余的怪兽区域
+	-- 检查主要怪兽区域是否有空余位置
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and c:IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置当前连锁的操作信息为特殊召唤自身1张
+	-- 设置连锁操作信息：特殊召唤自身1张
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,c,1,0,0)
 end
--- 特殊召唤效果的Operation函数，若自身依然与效果相关则将自身特殊召唤
+-- ①效果处理：将自身表侧表示特殊召唤
 function c57458399.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) then
-		-- 将自身表侧表示特殊召唤到自己场上
+		-- 将自身表侧表示特殊召唤
 		Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
--- 过滤自己场上表侧表示或墓地中原本字段包含「战士」、「同调士」、「星尘」的同调怪兽
+-- 目标怪兽过滤条件：场上表侧表示或墓地存在原本卡名包含「战士」、「同调士」、「星尘」的同调怪兽
 function c57458399.lvfilter(c)
 	return (c:IsLocation(LOCATION_GRAVE) or c:IsFaceup()) and c:IsOriginalSetCard(0x66,0x1017,0xa3) and c:IsType(TYPE_SYNCHRO)
 end
--- 检查自己场上或墓地是否存在满足条件的同调怪兽
+-- ②效果发动条件：自己场上或墓地存在符合条件的同调怪兽
 function c57458399.lvcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查自己场上或墓地是否有至少1张符合条件的同调怪兽
+	-- 检查自己场上·墓地是否存在至少1只原本卡名包含「战士」、「同调士」、「星尘」的同调怪兽
 	return Duel.IsExistingMatchingCard(c57458399.lvfilter,tp,LOCATION_MZONE+LOCATION_GRAVE,0,1,nil)
 end
--- 变更等级效果的Target函数，检查自身等级在1以上且当前等级不是4星
+-- ②效果发动准备/检查：确认自身等级在1以上且当前等级不是4星
 function c57458399.lvtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	if chk==0 then return c:IsLevelAbove(1) and not c:IsLevel(4) end
 end
--- 变更等级效果的Operation函数，若自身依然与效果相关且表侧表示存在，则将自身等级直到回合结束时变成4星
+-- ②效果处理：将自身的等级直到回合结束时变成4星
 function c57458399.lvop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) and c:IsFaceup() then

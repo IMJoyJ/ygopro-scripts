@@ -13,30 +13,30 @@ function c52860176.initial_effect(c)
 	e1:SetOperation(c52860176.operation)
 	c:RegisterEffect(e1)
 end
--- 发动代价：检查自身是否可以被解放，并将自身解放
+-- 发动Cost：检查并解放自身
 function c52860176.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsReleasable() end
-	-- 将自己场上的这张卡解放作为发动的代价
+	-- 解放自身作为发动Cost
 	Duel.Release(e:GetHandler(),REASON_COST)
 end
--- 过滤条件：检查卡片是否为对方场上表侧表示、等级3以下且可以改变控制权的怪兽
+-- 控制权变更过滤条件：对方场上表侧表示、3星以下且控制权可变更的怪兽
 function c52860176.filter(c)
 	return c:IsFaceup() and c:IsLevelBelow(3) and c:IsControlerCanBeChanged(true)
 end
--- 效果的发动与操作信息设置：检查怪兽区剩余空位能否容纳满足条件的怪兽并设置操作信息
+-- 发动准备：检查场上符合条件的怪兽与空余怪兽区域并设置操作信息
 function c52860176.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 获取对方场上所有满足条件的3星以下怪兽
 	local g=Duel.GetMatchingGroup(c52860176.filter,tp,0,LOCATION_MZONE,nil)
-	-- 获取自身离开场上后自己场上空余的怪兽区域数量
+	-- 计算解放自身后自己场上空余的怪兽区域数量
 	local ft=Duel.GetMZoneCount(tp,e:GetHandler())
 	if chk==0 then return ft>=g:GetCount() and g:GetCount()>0 end
-	-- 设置操作信息：包含对应数量怪兽的改变控制权分类
+	-- 设置连锁操作信息：获得对方场上满足条件的所有3星以下怪兽的控制权
 	Duel.SetOperationInfo(0,CATEGORY_CONTROL,g,g:GetCount(),0,0)
 end
--- 效果处理：得到对方场上所有符合条件的3星以下怪兽的控制权
+-- 效果处理：得到对方场上全部满足条件的3星以下怪兽的控制权
 function c52860176.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取对方场上当前所有满足条件的3星以下怪兽
+	-- 获取对方场上所有满足条件的3星以下怪兽
 	local g=Duel.GetMatchingGroup(c52860176.filter,tp,0,LOCATION_MZONE,nil)
-	-- 获得目标怪兽组的控制权
+	-- 得到目标怪兽的控制权
 	Duel.GetControl(g,tp)
 end
