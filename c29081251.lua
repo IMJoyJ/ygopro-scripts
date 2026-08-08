@@ -5,7 +5,7 @@
 -- ②：这张卡召唤·特殊召唤的场合才能发动。除「死相之冥鉴 许布洛」外的1只6星以上的不死族怪兽从卡组送去墓地。那之后，可以从自己墓地把1只6星以上的不死族怪兽加入手卡。
 -- ③：这张卡在怪兽区域存在的状态，从墓地有怪兽特殊召唤的场合才能发动。进行1只不死族超量怪兽的超量召唤。
 local s,id,o=GetID()
--- 初始化效果函数，创建三个效果：①不用解放召唤、②召唤/特殊召唤时发动的效果、③怪兽区域存在时从墓地特殊召唤的场合发动的效果
+-- 初始化效果函数，创建三个效果：①不用解放召唤；②召唤·特殊召唤时发动的效果；③在怪兽区域存在且从墓地特殊召唤时发动的效果
 function s.initial_effect(c)
 	-- 效果①：这张卡可以不用解放作召唤
 	local e1=Effect.CreateEffect(c)
@@ -42,83 +42,83 @@ function s.initial_effect(c)
 	e4:SetOperation(s.spop)
 	c:RegisterEffect(e4)
 end
--- 判断是否满足不用解放召唤的条件
+-- 判断是否满足不用解放召唤条件
 function s.ntcon(e,c,minc)
 	if c==nil then return true end
-	-- 满足条件时，不需解放且等级大于等于5，场上还有空位
+	-- 当minc为0且等级大于等于5且场上存在空位时可以不解放召唤
 	return minc==0 and c:IsLevelAbove(5) and Duel.GetLocationCount(c:GetControler(),LOCATION_MZONE)>0
 end
--- 过滤函数：用于筛选除自身外的6星以上不死族怪兽，可被送去墓地
+-- 过滤函数：除自身外的6星以上不死族可送去墓地的卡
 function s.tgfilter(c)
 	return not c:IsCode(id) and c:IsLevelAbove(6) and c:IsRace(RACE_ZOMBIE) and c:IsAbleToGrave()
 end
--- 效果②的目标设定函数，检查卡组是否存在符合条件的怪兽并设置操作信息
+-- 设置效果②的目标，检查是否有满足条件的卡存在于卡组
 function s.tgtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否满足条件：卡组中存在至少1张符合条件的怪兽
+	-- 检查是否满足效果②发动条件
 	if chk==0 then return Duel.IsExistingMatchingCard(s.tgfilter,tp,LOCATION_DECK,0,1,nil) end
 	-- 设置操作信息为将1张卡从卡组送去墓地
 	Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,nil,1,tp,LOCATION_DECK)
-	-- 提示对方玩家选择了“送去墓地”效果
+	-- 提示对方玩家该效果已发动
 	Duel.Hint(HINT_OPSELECTED,1-tp,e:GetDescription())
 end
--- 过滤函数：用于筛选6星以上不死族可加入手牌的怪兽
+-- 过滤函数：6星以上不死族可加入手牌的卡
 function s.thfilter(c)
 	return c:IsLevelAbove(6) and c:IsRace(RACE_ZOMBIE) and c:IsAbleToHand()
 end
--- 效果②的处理函数，选择并送去墓地，再决定是否加入手牌
+-- 执行效果②的操作，选择并送去墓地，再选择是否加入手牌
 function s.tgop(e,tp,eg,ep,ev,re,r,rp)
 	-- 提示玩家选择要送去墓地的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
-	-- 从卡组中选择1张符合条件的怪兽送去墓地
+	-- 从卡组中选择一张满足条件的卡
 	local g=Duel.SelectMatchingCard(tp,s.tgfilter,tp,LOCATION_DECK,0,1,1,nil)
-	-- 确认成功送去墓地后执行后续操作
+	-- 若成功将卡送去墓地且在墓地，则继续处理后续操作
 	if g:GetCount()>0 and Duel.SendtoGrave(g,REASON_EFFECT)~=0 and g:GetFirst():IsLocation(LOCATION_GRAVE) then
-		-- 获取满足条件的可加入手牌的墓地怪兽组（排除王家长眠之谷影响）
+		-- 获取满足条件的可加入手牌的卡组
 		local gg=Duel.GetMatchingGroup(aux.NecroValleyFilter(s.thfilter),tp,LOCATION_GRAVE,0,nil)
-		-- 判断是否有符合条件的墓地怪兽且玩家选择加入手牌
+		-- 判断是否有满足条件的卡并询问是否发动加入手牌效果
 		if gg:GetCount()>0 and Duel.SelectYesNo(tp,aux.Stringid(id,3)) then  --"是否加入手卡？"
-			-- 中断当前效果处理，使之后的效果视为不同时处理
+			-- 中断当前连锁处理，使之后的效果视为不同时处理
 			Duel.BreakEffect()
 			-- 提示玩家选择要加入手牌的卡
 			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
 			local sg=gg:Select(tp,1,1,nil)
-			-- 显示所选卡被选为对象的动画效果
+			-- 显示选中的卡作为对象
 			Duel.HintSelection(sg)
-			-- 将选定的卡加入手牌
+			-- 将选中的卡加入手牌
 			Duel.SendtoHand(sg,nil,REASON_EFFECT)
 		end
 	end
 end
--- 过滤函数：用于筛选从墓地召唤的怪兽（非自身）
+-- 过滤函数：从墓地召唤且为怪兽类型的卡
 function s.spfilter(c)
 	return c:IsSummonLocation(LOCATION_GRAVE) and c:GetOriginalType()&TYPE_MONSTER~=0
 end
--- 效果③的发动条件判断：确认是否有从墓地特殊召唤的怪兽且不包含自身
+-- 判断是否满足效果③发动条件，即是否有从墓地特殊召唤的怪兽
 function s.spcon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(s.spfilter,1,nil) and not eg:IsContains(e:GetHandler())
 end
--- 过滤函数：用于筛选可进行超量召唤的不死族怪兽
+-- 过滤函数：可进行超量召唤的不死族怪兽
 function s.xyzfilter(c)
 	return c:IsRace(RACE_ZOMBIE) and c:IsXyzSummonable(nil)
 end
--- 效果③的目标设定函数，检查额外卡组是否存在符合条件的怪兽并设置操作信息
+-- 设置效果③的目标，检查是否有满足条件的卡存在于额外卡组
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否满足条件：额外卡组中存在至少1张符合条件的怪兽
+	-- 检查是否满足效果③发动条件
 	if chk==0 then return Duel.IsExistingMatchingCard(s.xyzfilter,tp,LOCATION_EXTRA,0,1,nil) end
-	-- 设置操作信息为特殊召唤1只怪兽到额外卡组
+	-- 设置操作信息为将1只怪兽从额外卡组特殊召唤
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_EXTRA)
-	-- 提示对方玩家选择了“超量召唤”效果
+	-- 提示对方玩家该效果已发动
 	Duel.Hint(HINT_OPSELECTED,1-tp,e:GetDescription())
 end
--- 效果③的处理函数，选择并进行超量召唤
+-- 执行效果③的操作，选择并进行超量召唤
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取满足条件的可超量召唤的额外卡组怪兽组
+	-- 获取满足条件的可超量召唤的卡组
 	local g=Duel.GetMatchingGroup(s.xyzfilter,tp,LOCATION_EXTRA,0,nil)
 	if g:GetCount()>0 then
 		-- 提示玩家选择要特殊召唤的卡
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
 		local tg=g:Select(tp,1,1,nil)
-		-- 执行XYZ召唤手续
+		-- 对选中的卡进行超量召唤
 		Duel.XyzSummon(tp,tg:GetFirst(),nil)
 	end
 end

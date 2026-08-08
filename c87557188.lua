@@ -19,7 +19,7 @@ function c87557188.activate(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取场上所有盖放的卡
 	local g=Duel.GetMatchingGroup(Card.IsFacedown,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,nil)
 	if g:GetCount()>0 then
-		-- 将目标卡片交给玩家确认
+		-- 将目标卡片组展示给玩家确认
 		Duel.ConfirmCards(tp,g)
 	end
 end
