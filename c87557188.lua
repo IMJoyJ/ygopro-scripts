@@ -14,12 +14,12 @@ function c87557188.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 检索满足条件的卡片组
 	if chk==0 then return Duel.IsExistingMatchingCard(Card.IsFacedown,tp,0,LOCATION_ONFIELD,1,nil) end
 end
--- 确认场上盖放的卡
+-- 效果处理函数，确认场上盖放的卡
 function c87557188.activate(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取场上所有盖放的卡
 	local g=Duel.GetMatchingGroup(Card.IsFacedown,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,nil)
 	if g:GetCount()>0 then
-		-- 将目标卡片交给玩家确认
+		-- 将目标怪兽特殊召唤
 		Duel.ConfirmCards(tp,g)
 	end
 end

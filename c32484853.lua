@@ -3,7 +3,7 @@
 -- 这个卡名的效果1回合只能使用1次。
 -- ①：对方把怪兽特殊召唤时，从手卡把这张卡和1张魔法卡丢弃才能发动。那些怪兽破坏。
 local s,id,o=GetID()
--- 注册触发效果，当对方特殊召唤怪兽时发动，满足条件则破坏那些怪兽
+-- 创建效果，设置为场地区域触发选发效果，满足条件时可破坏对方特殊召唤的怪兽
 function s.initial_effect(c)
 	-- ①：对方把怪兽特殊召唤时，从手卡把这张卡和1张魔法卡丢弃才能发动。那些怪兽破坏。
 	local e1=Effect.CreateEffect(c)
@@ -19,11 +19,11 @@ function s.initial_effect(c)
 	e1:SetOperation(s.desop)
 	c:RegisterEffect(e1)
 end
--- 过滤函数，判断怪兽是否为对方召唤的
+-- 过滤函数，判断怪兽是否为对方召唤
 function s.cfilter(c,tp)
 	return c:IsSummonPlayer(1-tp)
 end
--- 效果条件函数，检查是否有对方召唤的怪兽
+-- 效果条件函数，检查是否有对方特殊召唤的怪兽
 function s.descon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(s.cfilter,1,nil,tp)
 end
@@ -31,37 +31,37 @@ end
 function s.costfilter(c)
 	return c:IsType(TYPE_SPELL) and c:IsDiscardable()
 end
--- 效果发动时的费用处理函数，检查是否满足丢弃条件
+-- 效果代价函数，检查是否满足丢弃自身和一张魔法卡的条件
 function s.descost(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	if chk==0 then return c:IsDiscardable() and
-		-- 检查手牌中是否存在至少一张魔法卡可以丢弃
+		-- 检索手牌中是否存在满足条件的魔法卡
 		Duel.IsExistingMatchingCard(s.costfilter,tp,LOCATION_HAND,0,1,c) end
 	-- 提示玩家选择要送去墓地的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
-	-- 选择满足条件的魔法卡并加入丢弃列表
+	-- 选择满足条件的魔法卡加入丢弃组
 	local g=Duel.SelectMatchingCard(tp,s.costfilter,tp,LOCATION_HAND,0,1,1,c)
 	g:AddCard(c)
-	-- 将选中的卡送去墓地作为发动费用
+	-- 将选中的卡送去墓地作为效果代价
 	Duel.SendtoGrave(g,REASON_COST+REASON_DISCARD)
 end
--- 过滤函数，判断怪兽是否为对方召唤且在场上的怪兽
+-- 过滤函数，判断怪兽是否为对方特殊召唤且在场上
 function s.desfilter(c,e,tp)
 	return c:IsSummonPlayer(1-tp) and (not e or c:IsRelateToEffect(e))
 		and c:IsType(TYPE_MONSTER) and c:IsLocation(LOCATION_MZONE)
 end
--- 设置效果目标，确定要破坏的怪兽数量和类型
+-- 效果目标函数，设置要破坏的怪兽为对方特殊召唤的怪兽
 function s.destg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return eg:IsExists(s.desfilter,1,nil,nil,tp) end
 	local g=eg:Filter(s.desfilter,nil,nil,tp)
-	-- 设置连锁处理的目标卡片
+	-- 设置连锁处理的目标卡片为对方特殊召唤的怪兽
 	Duel.SetTargetCard(eg)
-	-- 设置操作信息，说明将要进行破坏效果
+	-- 设置操作信息，确定将要破坏的怪兽数量
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,g:GetCount(),0,0)
 end
--- 效果发动时的处理函数，执行破坏操作
+-- 效果处理函数，对满足条件的怪兽进行破坏
 function s.desop(e,tp,eg,ep,ev,re,r,rp)
 	local g=eg:Filter(s.desfilter,nil,e,tp):Filter(Card.IsRelateToChain,nil)
-	-- 将符合条件的怪兽破坏
+	-- 执行破坏操作，将目标怪兽破坏
 	Duel.Destroy(g,REASON_EFFECT)
 end

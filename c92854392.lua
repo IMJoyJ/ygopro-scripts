@@ -51,7 +51,7 @@ function c92854392.activate(e,tp,eg,ep,ev,re,r,rp)
 		Duel.ChangeAttackTarget(tc)
 	end
 end
--- 若攻击则必须攻击X
+-- 判断是否为所选择的怪兽
 function c92854392.atklimit(e,c)
 	return c:GetRealFieldID()==e:GetLabel()
 end
