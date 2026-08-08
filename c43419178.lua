@@ -5,9 +5,9 @@
 -- ①：这张卡特殊召唤的场合才能发动。从卡组把1张「艮神鬼」卡送去墓地，场上1张卡送去墓地。
 -- ②：对方把怪兽的效果发动的场合，以自己的墓地·除外状态的1张「艮神鬼」陷阱卡为对象才能发动（场上的里侧表示卡是3张以上的场合，也能作为代替以自己墓地1张陷阱卡为对象）。那张卡在自己场上盖放。
 local s,id,o=GetID()
--- 初始化效果，设置同调召唤程序并注册两个触发效果
+-- 为鬼神 水子守命添加同调召唤手续并注册两个效果
 function s.initial_effect(c)
-	-- 添加同调召唤手续，要求1只调整和1只调整以外的怪兽
+	-- 添加需要1只调整和1只调整以外的怪兽进行同调召唤的手续
 	aux.AddSynchroProcedure(c,nil,aux.NonTuner(nil),1)
 	c:EnableReviveLimit()
 	-- ①：这张卡特殊召唤的场合才能发动。从卡组把1张「艮神鬼」卡送去墓地，场上1张卡送去墓地。
@@ -34,65 +34,65 @@ function s.initial_effect(c)
 	e2:SetOperation(s.setop)
 	c:RegisterEffect(e2)
 end
--- 过滤满足条件的「艮神鬼」卡
+-- 过滤满足「艮神鬼」卡组且能送去墓地的卡片
 function s.tgfilter(c)
 	return c:IsSetCard(0x1e4) and c:IsAbleToGrave()
 end
--- 设置①效果的发动条件，检查是否满足条件
+-- 检查是否满足①效果的发动条件：卡组存在「艮神鬼」卡，场上有卡可以送去墓地
 function s.tgtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查卡组是否存在至少1张「艮神鬼」卡
+	-- 检查卡组是否存在满足条件的「艮神鬼」卡
 	if chk==0 then return Duel.IsExistingMatchingCard(s.tgfilter,tp,LOCATION_DECK,0,1,nil)
-		-- 检查场上有至少1张可送去墓地的卡
+		-- 检查场上是否存在可送去墓地的卡
 		and Duel.IsExistingMatchingCard(Card.IsAbleToGrave,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,nil) end
-	-- 设置操作信息，指定将2张卡送去墓地
+	-- 设置连锁处理信息，指定将要送去墓地的卡数量为2张
 	Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,nil,2,tp,LOCATION_DECK+LOCATION_ONFIELD)
 end
--- ①效果的处理函数，执行将卡送去墓地的操作
+-- ①效果的发动处理函数：选择并送去墓地1张「艮神鬼」卡和场上的1张卡
 function s.tgop(e,tp,eg,ep,ev,re,r,rp)
 	-- 提示玩家选择要送去墓地的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
-	-- 从卡组选择1张「艮神鬼」卡
+	-- 从卡组中选择1张满足条件的「艮神鬼」卡
 	local g=Duel.SelectMatchingCard(tp,s.tgfilter,tp,LOCATION_DECK,0,1,1,nil)
 	local tc=g:GetFirst()
-	-- 确认所选卡已成功送去墓地并处于墓地状态
+	-- 确认所选卡已成功送去墓地且在墓地
 	if tc and Duel.SendtoGrave(tc,REASON_EFFECT)>0 and tc:IsLocation(LOCATION_GRAVE) then
 		-- 再次提示玩家选择要送去墓地的卡
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
-		-- 选择场上1张可送去墓地的卡
+		-- 从场上选择1张可送去墓地的卡
 		local sg=Duel.SelectMatchingCard(tp,Card.IsAbleToGrave,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,1,nil)
 		if sg:GetCount()>0 then
-			-- 显示被选为对象的卡的动画效果
+			-- 显示所选卡被选为对象的动画效果
 			Duel.HintSelection(sg)
-			-- 将选中的卡送去墓地
+			-- 将场上选中的卡送去墓地
 			Duel.SendtoGrave(sg,REASON_EFFECT)
 		end
 	end
 end
--- ②效果的发动条件，判断是否为对方怪兽效果发动
+-- ②效果的发动条件函数：对方怪兽效果发动时触发
 function s.setcon(e,tp,eg,ep,ev,re,r,rp)
 	return rp==1-tp and re:IsActiveType(TYPE_MONSTER)
 end
--- 过滤满足条件的「艮神鬼」陷阱卡
+-- 过滤满足盖放条件的「艮神鬼」陷阱卡（包括墓地和除外状态）
 function s.setfilter(c,res)
 	return c:IsFaceupEx() and (c:IsSetCard(0x1e4) or res and c:IsLocation(LOCATION_GRAVE)) and c:IsType(TYPE_TRAP) and c:IsSSetable()
 end
--- 设置②效果的发动条件和目标选择逻辑
+-- ②效果的目标选择函数：根据场上里侧表示卡数量决定是否可选择墓地陷阱卡
 function s.settg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	-- 检查场上有3张以上里侧表示的卡
+	-- 检查场上有3张以上里侧表示卡
 	local res=Duel.IsExistingMatchingCard(Card.IsFacedown,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,3,nil)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE+LOCATION_REMOVED) and chkc:IsControler(tp) and s.setfilter(chkc,res) end
-	-- 检查是否存在符合条件的目标卡
+	-- 检查是否存在满足盖放条件的「艮神鬼」陷阱卡
 	if chk==0 then return Duel.IsExistingTarget(s.setfilter,tp,LOCATION_GRAVE+LOCATION_REMOVED,0,1,nil,res) end
 	-- 提示玩家选择要盖放的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SET)  --"请选择要盖放的卡"
-	-- 选择目标卡
+	-- 选择满足条件的「艮神鬼」陷阱卡作为目标
 	local g=Duel.SelectTarget(tp,s.setfilter,tp,LOCATION_GRAVE+LOCATION_REMOVED,0,1,1,nil,res)
 	if g:IsExists(Card.IsLocation,1,nil,LOCATION_GRAVE) then
-		-- 设置操作信息，指定将1张卡从墓地离开
+		-- 设置连锁处理信息，指定将要离开墓地的卡数量为1张
 		Duel.SetOperationInfo(0,CATEGORY_LEAVE_GRAVE,g,1,0,0)
 	end
 end
--- ②效果的处理函数，执行将卡盖放的操作
+-- ②效果的发动处理函数：将选中的卡在自己场上盖放
 function s.setop(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取当前连锁的目标卡
 	local tc=Duel.GetFirstTarget()

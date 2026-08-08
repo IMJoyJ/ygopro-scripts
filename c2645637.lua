@@ -70,15 +70,15 @@ function c2645637.atktg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	-- 检查是否已使用过效果且场上存在符合条件的目标怪兽
 	if chk==0 then return e:GetHandler():GetFlagEffect(2645637)==0 and Duel.IsExistingTarget(c2645637.atkfilter,tp,LOCATION_MZONE,LOCATION_MZONE,1,c) end
 	e:GetHandler():RegisterFlagEffect(2645637,RESET_CHAIN,0,1)
-	-- 选择一个符合条件的目标怪兽
+	-- 选择场上一只符合条件的怪兽作为目标
 	local g=Duel.SelectTarget(tp,c2645637.atkfilter,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,c)
-	-- 设置操作信息，将目标怪兽设为使效果无效的对象
+	-- 设置操作信息，表示将使目标怪兽效果无效
 	Duel.SetOperationInfo(0,CATEGORY_DISABLE,g,1,0,0)
 end
--- 处理效果，使目标怪兽攻击力变为0并使其效果无效
+-- 处理效果，使目标怪兽攻击力归零并使其效果无效
 function c2645637.atkop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取当前连锁的目标怪兽
+	-- 获取连锁的目标怪兽
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) and tc:IsFaceup() and tc:GetAttack()>0 then
 		-- 使目标怪兽相关的连锁无效化
