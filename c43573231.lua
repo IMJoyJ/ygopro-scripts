@@ -1,8 +1,10 @@
 --幻蝶の刺客モルフォ
+-- 效果：
+-- 对方场上的怪兽的表示形式变更时，选择那1只怪兽才能发动。选择的怪兽的攻击力·守备力下降1000。这个效果1回合只能使用1次。
 function c43573231.initial_effect(c)
-	--atk,def
+	-- 创建一个诱发选发效果，当对方场上的怪兽表示形式变更时发动，选择1只怪兽使其攻守下降1000，每回合限使用1次。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(43573231,0))
+	e1:SetDescription(aux.Stringid(43573231,0))  --"攻守下降"
 	e1:SetCategory(CATEGORY_ATKCHANGE+CATEGORY_DEFCHANGE)
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET)
 	e1:SetType(EFFECT_TYPE_TRIGGER_O+EFFECT_TYPE_FIELD)
@@ -13,21 +15,28 @@ function c43573231.initial_effect(c)
 	e1:SetOperation(c43573231.adop)
 	c:RegisterEffect(e1)
 end
+-- 过滤满足条件的怪兽：表示形式变更且为对方控制，且能成为效果对象。
 function c43573231.cfilter(c,e,tp)
 	local np=c:GetPosition()
 	local pp=c:GetPreviousPosition()
 	return c:IsControler(tp) and ((pp==0x1 and np==0x4) or (pp==0x4 and np==0x1) or (pp==0x8 and np==0x1)) and c:IsCanBeEffectTarget(e)
 end
+-- 设置效果的目标为满足条件的对方怪兽，用于选择对象。
 function c43573231.adtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return eg:IsContains(chkc) and c43573231.cfilter(chkc,e,1-tp) end
 	if chk==0 then return eg:IsExists(c43573231.cfilter,1,nil,e,1-tp) end
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)
+	-- 向玩家提示“请选择效果的对象”。
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)  --"请选择效果的对象"
 	local g=eg:FilterSelect(tp,c43573231.cfilter,1,1,nil,e,1-tp)
+	-- 将选择的怪兽设置为效果对象。
 	Duel.SetTargetCard(g)
 end
+-- 处理效果的发动，使目标怪兽攻击力和守备力各下降1000。
 function c43573231.adop(e,tp,eg,ep,ev,re,r,rp)
+	-- 获取当前效果的目标怪兽。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsFaceup() and tc:IsRelateToEffect(e) then
+		-- 为选择的怪兽添加攻击力下降1000的效果。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)

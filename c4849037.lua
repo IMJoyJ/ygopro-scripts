@@ -1,5 +1,8 @@
 --ダンシング・ソルジャー
+-- 效果：
+-- 「诱发之舞」降临。必须从场地和手卡把等级直到6以上的卡作为祭品。
 function c4849037.initial_effect(c)
+	-- 将「诱发之舞」（43417563）加入卡片记述的相关卡片列表中
 	aux.AddCodeList(c,43417563)
 	c:EnableReviveLimit()
 end

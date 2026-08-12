@@ -1,11 +1,13 @@
 --カオス・シールド
+-- 效果：
+-- 自己场上存在的所有怪兽守备力上升300点。
 function c4542651.initial_effect(c)
-	--activate
+	-- 永续魔陷/场地卡通用的“允许发动”空效果，无此效果则无法发动
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	--Def up
+	-- 自己场上存在的所有怪兽守备力上升300点。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD)
 	e2:SetRange(LOCATION_SZONE)

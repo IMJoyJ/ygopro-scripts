@@ -1,7 +1,13 @@
 --クリック＆エコー
+-- 效果：
+-- 这张卡不能作为融合·同调·超量召唤的素材。这个卡名的②的效果1回合可以使用最多2次。
+-- ①：只要这张卡在怪兽区域存在，这张卡不能解放。
+-- ②：这张卡作为连接素材送去墓地的场合发动。这张卡在从那个连接召唤的玩家来看的对方场上守备表示特殊召唤。
+-- ③：只要这张卡的②的效果特殊召唤的这张卡在怪兽区域存在，自己把手卡持续公开。
 local s,id,o=GetID()
+-- 创建并注册多个效果，分别禁止此卡作为融合、同调、超量召唤的素材，并设置其不能被解放，以及触发效果用于特殊召唤
 function s.initial_effect(c)
-	--cannot be material
+	-- 这张卡不能作为融合·同调·超量召唤的素材。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_CANNOT_BE_FUSION_MATERIAL)
@@ -15,7 +21,7 @@ function s.initial_effect(c)
 	local e3=e2:Clone()
 	e3:SetCode(EFFECT_CANNOT_BE_XYZ_MATERIAL)
 	c:RegisterEffect(e3)
-	--cannot tribute
+	-- 只要这张卡在怪兽区域存在，这张卡不能解放。
 	local e4=Effect.CreateEffect(c)
 	e4:SetType(EFFECT_TYPE_SINGLE)
 	e4:SetCode(EFFECT_UNRELEASABLE_SUM)
@@ -26,7 +32,7 @@ function s.initial_effect(c)
 	local e5=e4:Clone()
 	e5:SetCode(EFFECT_UNRELEASABLE_NONSUM)
 	c:RegisterEffect(e5)
-	--spsummon
+	-- 这张卡作为连接素材送去墓地的场合发动。这张卡在从那个连接召唤的玩家来看的对方场上守备表示特殊召唤。
 	local e6=Effect.CreateEffect(c)
 	e6:SetDescription(aux.Stringid(id,0))
 	e6:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -37,9 +43,9 @@ function s.initial_effect(c)
 	e6:SetTarget(s.sptg)
 	e6:SetOperation(s.spop)
 	c:RegisterEffect(e6)
-	--reveal hand
+	-- 只要这张卡的②的效果特殊召唤的这张卡在怪兽区域存在，自己把手卡持续公开。
 	local e7=Effect.CreateEffect(c)
-	e7:SetDescription(aux.Stringid(id,1))
+	e7:SetDescription(aux.Stringid(id,1))  --"自己把手卡持续公开"
 	e7:SetType(EFFECT_TYPE_FIELD)
 	e7:SetCode(EFFECT_PUBLIC)
 	e7:SetRange(LOCATION_MZONE)
@@ -48,24 +54,31 @@ function s.initial_effect(c)
 	e7:SetCondition(s.rvcon)
 	c:RegisterEffect(e7)
 end
+-- 返回值为融合召唤类型时，禁止此卡作为融合素材
 function s.mlimit(e,c,st)
 	return st==SUMMON_TYPE_FUSION
 end
+-- 判断是否为连接召唤的素材并处于墓地状态
 function s.spcon(e,tp,eg,ep,ev,re,r,rp)
 	return r==REASON_LINK and e:GetHandler():IsLocation(LOCATION_GRAVE)
 end
+-- 设置特殊召唤的操作信息，确定将要处理的卡
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
+	-- 设置特殊召唤的操作信息，确定将要处理的卡
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
+-- 执行特殊召唤操作，将此卡从墓地以守备表示特殊召唤到对方场上
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local p=c:GetReasonCard():GetSummonPlayer()
 	if c:IsRelateToChain()
+		-- 执行特殊召唤操作，将此卡以守备表示特殊召唤到对方场上
 		and Duel.SpecialSummon(c,SUMMON_VALUE_SELF,tp,1-p,false,false,POS_FACEUP_DEFENSE)>0 then
 		c:RegisterFlagEffect(id,RESET_EVENT+RESETS_WITHOUT_TEMP_REMOVE,0,1)
 	end
 end
+-- 判断此卡是否为自身召唤且拥有标记效果
 function s.rvcon(e)
 	local c=e:GetHandler()
 	return c:IsSummonType(SUMMON_VALUE_SELF) and c:GetFlagEffect(id)>0

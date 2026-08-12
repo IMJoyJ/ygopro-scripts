@@ -1,11 +1,14 @@
 --進撃の帝王
+-- 效果：
+-- ①：只要这张卡在魔法与陷阱区域存在，自己场上的上级召唤的怪兽不会成为效果的对象，不会被效果破坏。
+-- ②：只要这张卡在魔法与陷阱区域存在，自己不能从额外卡组把怪兽特殊召唤。
 function c19870120.initial_effect(c)
-	--Activate
+	-- 永续魔陷/场地卡通用的“允许发动”空效果，无此效果则无法发动
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	--spsummon limit
+	-- ②：只要这张卡在魔法与陷阱区域存在，自己不能从额外卡组把怪兽特殊召唤。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD)
 	e2:SetRange(LOCATION_SZONE)
@@ -14,7 +17,7 @@ function c19870120.initial_effect(c)
 	e2:SetTargetRange(1,0)
 	e2:SetTarget(c19870120.sumlimit)
 	c:RegisterEffect(e2)
-	--cannot be target
+	-- ①：只要这张卡在魔法与陷阱区域存在，自己场上的上级召唤的怪兽不会成为效果的对象，不会被效果破坏。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_FIELD)
 	e3:SetCode(EFFECT_CANNOT_BE_EFFECT_TARGET)
@@ -24,6 +27,7 @@ function c19870120.initial_effect(c)
 	e3:SetTarget(c19870120.target)
 	e3:SetValue(1)
 	c:RegisterEffect(e3)
+	-- ①：只要这张卡在魔法与陷阱区域存在，自己场上的上级召唤的怪兽不会成为效果的对象，不会被效果破坏。
 	local e4=Effect.CreateEffect(c)
 	e4:SetType(EFFECT_TYPE_FIELD)
 	e4:SetCode(EFFECT_INDESTRUCTABLE_EFFECT)
@@ -34,9 +38,11 @@ function c19870120.initial_effect(c)
 	e4:SetValue(1)
 	c:RegisterEffect(e4)
 end
+-- 判断目标怪兽是否来自额外卡组，用于限制特殊召唤
 function c19870120.sumlimit(e,c,sump,sumtype,sumpos,targetp)
 	return c:IsLocation(LOCATION_EXTRA)
 end
+-- 判断目标怪兽是否为上级召唤，用于设置效果对象
 function c19870120.target(e,c)
 	return c:IsSummonType(SUMMON_TYPE_ADVANCE)
 end

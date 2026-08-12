@@ -1,11 +1,13 @@
 --鉄壁の機皇兵
+-- 效果：
+-- 只要这张卡在场上存在，自己场上表侧攻击表示存在的名字带有「机皇兵」的怪兽的效果无效化，不会被战斗破坏。
 function c59371387.initial_effect(c)
-	--Activate
+	-- 永续魔陷/场地卡通用的“允许发动”空效果，无此效果则无法发动
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	--disable
+	-- 只要这张卡在场上存在，自己场上表侧攻击表示存在的名字带有「机皇兵」的怪兽的效果无效化
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD)
 	e2:SetRange(LOCATION_SZONE)
@@ -13,7 +15,7 @@ function c59371387.initial_effect(c)
 	e2:SetTarget(c59371387.target)
 	e2:SetCode(EFFECT_DISABLE)
 	c:RegisterEffect(e2)
-	--indes
+	-- 只要这张卡在场上存在，自己场上表侧攻击表示存在的名字带有「机皇兵」的怪兽...不会被战斗破坏
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_FIELD)
 	e3:SetRange(LOCATION_SZONE)
@@ -23,6 +25,7 @@ function c59371387.initial_effect(c)
 	e3:SetValue(1)
 	c:RegisterEffect(e3)
 end
+-- 过滤出表侧攻击表示且卡名含有「机皇兵」的怪兽作为效果影响对象
 function c59371387.target(e,c)
 	return c:IsPosition(POS_FACEUP_ATTACK) and c:IsSetCard(0x6013)
 end

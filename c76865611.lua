@@ -1,6 +1,10 @@
 --D・ライトン
+-- 效果：
+-- 这张卡得到这张卡的表示形式的以下效果。
+-- ●攻击表示：只要这张卡在场上表侧表示存在，对方的卡的效果发生的对自己的效果伤害由对方代受。
+-- ●守备表示：这张卡被战斗破坏送去墓地时，这个回合战斗发生的对自己的战斗伤害变成0。
 function c76865611.initial_effect(c)
-	--atk
+	-- ●攻击表示：只要这张卡在场上表侧表示存在，对方的卡的效果发生的对自己的效果伤害由对方代受。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_REFLECT_DAMAGE)
@@ -10,15 +14,16 @@ function c76865611.initial_effect(c)
 	e1:SetTargetRange(1,0)
 	e1:SetValue(c76865611.refval)
 	c:RegisterEffect(e1)
-	--def
+	-- ●守备表示：这张卡被战斗破坏送去墓地时
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_CONTINUOUS)
 	e2:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
 	e2:SetCode(EVENT_LEAVE_FIELD_P)
 	e2:SetOperation(c76865611.check)
 	c:RegisterEffect(e2)
+	-- ●守备表示：这张卡被战斗破坏送去墓地时，这个回合战斗发生的对自己的战斗伤害变成0。
 	local e3=Effect.CreateEffect(c)
-	e3:SetDescription(aux.Stringid(76865611,0))
+	e3:SetDescription(aux.Stringid(76865611,0))  --"战斗伤害变成0"
 	e3:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_F)
 	e3:SetCode(EVENT_BATTLE_DESTROYED)
 	e3:SetCondition(c76865611.cond)
@@ -26,22 +31,28 @@ function c76865611.initial_effect(c)
 	e3:SetLabelObject(e2)
 	c:RegisterEffect(e3)
 end
+-- 判断自身是否处于攻击表示
 function c76865611.cona(e)
 	return e:GetHandler():IsAttackPos()
 end
+-- 判断伤害是否由对方卡片的效果造成
 function c76865611.refval(e,re,val,r,rp,rc)
 	return rp==1-e:GetHandlerPlayer() and bit.band(r,REASON_EFFECT)~=0
 end
+-- 在卡片离场前，检测并记录其是否在未被无效的状态下处于守备表示
 function c76865611.check(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if not c:IsDisabled() and c:IsDefensePos() then e:SetLabel(1)
 	else e:SetLabel(0) end
 end
+-- 判断卡片是否在守备表示状态下被战斗破坏并送去墓地
 function c76865611.cond(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetLabelObject():GetLabel()==1
 		and e:GetHandler():IsLocation(LOCATION_GRAVE) and e:GetHandler():IsReason(REASON_BATTLE)
 end
+-- 在当前回合内适用使自己受到的战斗伤害变成0的效果
 function c76865611.opd(e,tp,eg,ep,ev,re,r,rp)
+	-- 这个回合战斗发生的对自己的战斗伤害变成0。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_AVOID_BATTLE_DAMAGE)
@@ -49,5 +60,6 @@ function c76865611.opd(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetTargetRange(1,0)
 	e1:SetValue(1)
 	e1:SetReset(RESET_PHASE+PHASE_END)
+	-- 将使战斗伤害变成0的效果注册给玩家
 	Duel.RegisterEffect(e1,tp)
 end

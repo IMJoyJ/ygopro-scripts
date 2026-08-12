@@ -1,6 +1,8 @@
 --極星霊スヴァルトアールヴ
+-- 效果：
+-- 把这张卡作为同调素材的场合，其他的同调素材怪兽必须是手卡2只名字带有「极星」的怪兽。
 function c73417207.initial_effect(c)
-	--synchro custom
+	-- 把这张卡作为同调素材的场合，其他的同调素材怪兽必须是手卡2只名字带有「极星」的怪兽。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_TUNER_MATERIAL_LIMIT)
@@ -10,6 +12,7 @@ function c73417207.initial_effect(c)
 	e1:SetValue(LOCATION_HAND)
 	c:RegisterEffect(e1)
 end
+-- 判定其他的同调素材怪兽是否为名字带有「极星」的怪兽
 function c73417207.synlimit(e,c)
 	return c:IsSetCard(0x42)
 end

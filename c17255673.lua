@@ -1,11 +1,15 @@
 --天御巫の闔
+-- 效果：
+-- ①：只要有装备卡装备的怪兽在自己场上存在，可以攻击的对方怪兽必须向有装备卡装备的怪兽作出攻击。
+-- ②：自己的「御巫」怪兽进行战斗的场合，对方直到伤害步骤结束时魔法·陷阱·怪兽的效果不能发动。
+-- ③：自己的「御巫」怪兽进行攻击的伤害步骤结束时，把自己场上1张装备卡送去墓地才能发动。那只怪兽向对方怪兽可以继续攻击。
 function c17255673.initial_effect(c)
-	--activate
+	-- 永续魔陷/场地卡通用的“允许发动”空效果，无此效果则无法发动
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	--must attack
+	-- ①：只要有装备卡装备的怪兽在自己场上存在，可以攻击的对方怪兽必须向有装备卡装备的怪兽作出攻击。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD)
 	e2:SetCode(EFFECT_MUST_ATTACK)
@@ -17,7 +21,7 @@ function c17255673.initial_effect(c)
 	e3:SetCode(EFFECT_MUST_ATTACK_MONSTER)
 	e3:SetValue(c17255673.atklimit)
 	c:RegisterEffect(e3)
-	--act limit
+	-- ②：自己的「御巫」怪兽进行战斗的场合，对方直到伤害步骤结束时魔法·陷阱·怪兽的效果不能发动。
 	local e4=Effect.CreateEffect(c)
 	e4:SetType(EFFECT_TYPE_FIELD)
 	e4:SetCode(EFFECT_CANNOT_ACTIVATE)
@@ -27,7 +31,7 @@ function c17255673.initial_effect(c)
 	e4:SetCondition(c17255673.actcon)
 	e4:SetValue(1)
 	c:RegisterEffect(e4)
-	--extra attack
+	-- ③：自己的「御巫」怪兽进行攻击的伤害步骤结束时，把自己场上1张装备卡送去墓地才能发动。那只怪兽向对方怪兽可以继续攻击。
 	local e5=Effect.CreateEffect(c)
 	e5:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
 	e5:SetRange(LOCATION_FZONE)
@@ -37,38 +41,55 @@ function c17255673.initial_effect(c)
 	e5:SetOperation(c17255673.exop)
 	c:RegisterEffect(e5)
 end
+-- 过滤函数，检查场上是否存在装备有装备卡的怪兽
 function c17255673.atkfilter(c)
 	return c:GetEquipCount()>0
 end
+-- 判断条件函数，用于判断是否满足效果①的发动条件
 function c17255673.atkcon(e)
+	-- 检查以玩家来看的场上是否存在至少1张装备有装备卡的怪兽
 	return Duel.IsExistingMatchingCard(c17255673.atkfilter,e:GetHandlerPlayer(),LOCATION_MZONE,0,1,nil)
 end
+-- 限制效果函数，用于判断是否必须攻击装备有装备卡的怪兽
 function c17255673.atklimit(e,c)
 	return c:GetEquipCount()>0
 end
+-- 判断条件函数，用于判断是否满足效果②的发动条件
 function c17255673.actcon(e)
+	-- 获取当前战斗中的怪兽
 	local a=Duel.GetBattleMonster(e:GetHandlerPlayer())
 	return a and a:IsFaceup() and a:IsSetCard(0x18d)
 end
+-- 判断条件函数，用于判断是否满足效果③的发动条件
 function c17255673.excon(e,tp,eg,ep,ev,re,r,rp)
+	-- 获取当前攻击怪兽
 	local ec=Duel.GetAttacker()
 	e:SetLabelObject(ec)
 	return ec:IsControler(tp) and ec:IsSetCard(0x18d) and ec:IsChainAttackable(0,true)
 end
+-- 过滤函数，用于选择可以作为代价送去墓地的装备卡
 function c17255673.exfilter(c)
 	return c:IsType(TYPE_EQUIP) and c:IsAbleToGraveAsCost()
 end
+-- 费用支付函数，用于选择并送去墓地1张装备卡
 function c17255673.excost(e,tp,eg,ep,ev,re,r,rp,chk)
+	-- 检查是否满足支付装备卡作为代价的条件
 	if chk==0 then return Duel.IsExistingMatchingCard(c17255673.exfilter,tp,LOCATION_ONFIELD,0,1,nil) end
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)
+	-- 提示玩家选择要送去墓地的装备卡
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
+	-- 选择满足条件的装备卡
 	local g=Duel.SelectMatchingCard(tp,c17255673.exfilter,tp,LOCATION_ONFIELD,0,1,1,nil)
+	-- 将选中的装备卡送去墓地
 	Duel.SendtoGrave(g,REASON_COST)
 end
+-- 效果处理函数，用于执行效果③的处理
 function c17255673.exop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local ec=e:GetLabelObject()
 	if not ec or not ec:IsRelateToBattle() then return end
+	-- 使攻击怪兽可以再进行1次攻击
 	Duel.ChainAttack()
+	-- 给攻击怪兽添加不能直接攻击的效果，直到战斗阶段结束
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_CANNOT_DIRECT_ATTACK)

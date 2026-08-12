@@ -1,6 +1,8 @@
 --墓穴の道連れ
+-- 效果：
+-- ①：双方各自把对方手卡确认，从那之中选1张卡丢弃。那之后，双方各自从卡组抽1张。
 function c16435215.initial_effect(c)
-	--Activate
+	-- ①：双方各自把对方手卡确认，从那之中选1张卡丢弃。那之后，双方各自从卡组抽1张。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_TOGRAVE+CATEGORY_HANDES_SELF+CATEGORY_HANDES_OPPO+CATEGORY_DRAW)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -10,33 +12,54 @@ function c16435215.initial_effect(c)
 	e1:SetOperation(c16435215.activate)
 	c:RegisterEffect(e1)
 end
+-- 检查双方手卡数量是否满足效果发动的基本条件
 function c16435215.condition(e,tp,eg,ep,ev,re,r,rp)
 	if e:GetHandler():IsLocation(LOCATION_HAND) then
+		-- 手卡发动时，要求对方手卡在1张以上，且自己手卡在2张以上（含此卡本身）
 		return Duel.GetFieldGroupCount(tp,0,LOCATION_HAND)>0 and Duel.GetFieldGroupCount(tp,LOCATION_HAND,0)>1
 	else
+		-- 非手卡发动时（如场上盖放发动），要求双方手卡均在1张以上
 		return Duel.GetFieldGroupCount(tp,0,LOCATION_HAND)>0 and Duel.GetFieldGroupCount(tp,LOCATION_HAND,0)>0
 	end
 end
+-- 效果发动的可行性检测与丢弃手卡操作信息设置
 function c16435215.target(e,tp,eg,ep,ev,re,r,rp,chk)
+	-- 在发动阶段，检查双方当前是否均能进行抽卡
 	if chk==0 then return Duel.IsPlayerCanDraw(tp,1) and Duel.IsPlayerCanDraw(1-tp,1) end
+	-- 设置自己丢弃1张手卡的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_HANDES_SELF,nil,0,tp,1)
+	-- 设置对方丢弃1张手卡的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_HANDES_OPPO,nil,0,1-tp,1)
 end
+-- 效果处理的具体执行逻辑
 function c16435215.activate(e,tp,eg,ep,ev,re,r,rp)
+	-- 如果效果处理时任意一方没有手卡，则效果不适用
 	if Duel.GetFieldGroupCount(tp,0,LOCATION_HAND)==0 or Duel.GetFieldGroupCount(tp,LOCATION_HAND,0)==0 then return end
+	-- 获取对方的全部手卡
 	local g1=Duel.GetFieldGroup(tp,0,LOCATION_HAND)
+	-- 获取自己的全部手卡
 	local g2=Duel.GetFieldGroup(tp,LOCATION_HAND,0)
+	-- 自己确认对方的全部手卡
 	Duel.ConfirmCards(tp,g1)
+	-- 对方确认自己的全部手卡
 	Duel.ConfirmCards(1-tp,g2)
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DISCARD)
+	-- 提示自己选择要丢弃的手卡
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DISCARD)  --"请选择要丢弃的手牌"
 	local sg1=g1:Select(tp,1,1,nil)
-	Duel.Hint(HINT_SELECTMSG,1-tp,HINTMSG_DISCARD)
+	-- 提示对方选择要丢弃的手卡
+	Duel.Hint(HINT_SELECTMSG,1-tp,HINTMSG_DISCARD)  --"请选择要丢弃的手牌"
 	local sg2=g2:Select(1-tp,1,1,nil)
 	sg1:Merge(sg2)
+	-- 将选中的双方卡片作为效果丢弃送去墓地
 	Duel.SendtoGrave(sg1,REASON_EFFECT+REASON_DISCARD)
+	-- 洗切自己的手卡
 	Duel.ShuffleHand(tp)
+	-- 洗切对方的手卡
 	Duel.ShuffleHand(1-tp)
+	-- 使丢弃手卡和抽卡不视为同时处理
 	Duel.BreakEffect()
+	-- 自己从卡组抽1张卡
 	Duel.Draw(tp,1,REASON_EFFECT)
+	-- 对方从卡组抽1张卡
 	Duel.Draw(1-tp,1,REASON_EFFECT)
 end
