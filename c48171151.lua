@@ -1,11 +1,20 @@
 --星霜の魔術師－アストログラフ・マジシャン
+-- 效果：
+-- ←1 【灵摆】 1→
+-- 这个卡名的灵摆效果1回合只能使用1次。
+-- ①：自己主要阶段才能发动。这张卡破坏，从手卡·卡组把「星霜之魔术师-宙读之魔术士」以外的1只灵摆刻度是1的灵摆怪兽在自己的灵摆区域放置。这个效果放置的卡的灵摆效果在这个回合不能发动。
+-- 【怪兽效果】
+-- 这个卡名的①②的怪兽效果1回合各能使用1次。
+-- ①：自己场上的表侧表示的怪兽卡被战斗·效果破坏的场合才能发动。这张卡从手卡特殊召唤。那之后，可以把那些破坏的怪兽之内1只从自己的额外卡组（表侧）·墓地特殊召唤。
+-- ②：自己·对方的主要阶段才能发动。这张卡解放。那之后，可以让自己的额外卡组（表侧）·场上的怪兽作为融合素材回到卡组，把1只龙族融合怪兽融合召唤。
 local s,id,o=GetID()
+-- 初始化卡片效果：为这张卡附加灵摆属性，注册灵摆区域的起动效果（破坏这张卡并在灵摆区域放置卡，1回合1次）、手卡的诱发特殊召唤效果（怪兽被破坏时触发，1回合1次）、怪兽区域的诱发即时融合召唤效果（主要阶段解放这张卡，1回合1次）
 function s.initial_effect(c)
-	--pendulum
+	-- 为这张卡添加灵摆怪兽属性，使其可以作为灵摆卡发动并用于灵摆召唤
 	aux.EnablePendulumAttribute(c)
-	--place
+	-- 「①：自己主要阶段才能发动。这张卡破坏，从手卡·卡组把「星霜之魔术师-宙读之魔术士」以外的1只灵摆刻度是1的灵摆怪兽在自己的灵摆区域放置。」「这个卡名的灵摆效果1回合只能使用1次。」
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(id,0))
+	e1:SetDescription(aux.Stringid(id,0))  --"在灵摆区域放置"
 	e1:SetCategory(CATEGORY_DESTROY)
 	e1:SetType(EFFECT_TYPE_IGNITION)
 	e1:SetRange(LOCATION_PZONE)
@@ -13,10 +22,11 @@ function s.initial_effect(c)
 	e1:SetTarget(s.ptg)
 	e1:SetOperation(s.pop)
 	c:RegisterEffect(e1)
-	--special summon
+	-- 为这张卡注册合并的「被破坏时」延迟事件监听，得到自定义事件码，使自身的诱发效果在同一连锁中只触发一次
 	local custom_code=aux.RegisterMergedDelayedEvent_ToSingleCard(c,id,EVENT_DESTROYED)
+	-- 「①：自己场上的表侧表示的怪兽卡被战斗·效果破坏的场合才能发动。这张卡从手卡特殊召唤。那之后，可以把那些破坏的怪兽之内1只从自己的额外卡组（表侧）·墓地特殊召唤。」「这个卡名的①的怪兽效果1回合只能使用1次。」
 	local e2=Effect.CreateEffect(c)
-	e2:SetDescription(aux.Stringid(id,1))
+	e2:SetDescription(aux.Stringid(id,1))  --"特殊召唤"
 	e2:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_GRAVE_SPSUMMON)
 	e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
 	e2:SetCode(custom_code)
@@ -27,9 +37,9 @@ function s.initial_effect(c)
 	e2:SetTarget(s.sptg1)
 	e2:SetOperation(s.spop1)
 	c:RegisterEffect(e2)
-	--fusion summon
+	-- 「②：自己·对方的主要阶段才能发动。这张卡解放。那之后，可以让自己的额外卡组（表侧）·场上的怪兽作为融合素材回到卡组，把1只龙族融合怪兽融合召唤。」「这个卡名的②的怪兽效果1回合只能使用1次。」
 	local e3=Effect.CreateEffect(c)
-	e3:SetDescription(aux.Stringid(id,2))
+	e3:SetDescription(aux.Stringid(id,2))  --"融合召唤"
 	e3:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_FUSION_SUMMON)
 	e3:SetType(EFFECT_TYPE_QUICK_O)
 	e3:SetCode(EVENT_FREE_CHAIN)
@@ -41,24 +51,34 @@ function s.initial_effect(c)
 	e3:SetOperation(s.fspop)
 	c:RegisterEffect(e3)
 end
+-- 过滤函数：灵摆怪兽、「星霜之魔术师-宙读之魔术士」以外、灵摆刻度为1、未被禁止在场上出现且满足场上唯一性条件
 function s.pfilter(c,tp)
 	return c:IsType(TYPE_PENDULUM) and not c:IsCode(id) and c:GetLeftScale()==1
 		and not c:IsForbidden() and c:CheckUniqueOnField(tp)
 end
+-- 灵摆效果的发动条件：这张卡自身可以被效果破坏，且自己的手卡·卡组存在满足条件的卡
 function s.ptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	if chk==0 then return c:IsDestructable()
+		-- 检查自己的手卡·卡组是否存在至少1张满足条件的灵摆怪兽
 		and Duel.IsExistingMatchingCard(s.pfilter,tp,LOCATION_HAND+LOCATION_DECK,0,1,nil,tp) end
+	-- 设置连锁的操作信息：确定为破坏效果，对象包含这张卡自身
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,c,1,0,0)
 end
+-- 灵摆效果处理：确认这张卡仍与连锁关联后以效果破坏它，然后从手卡·卡组选择1只灵摆刻度1的灵摆怪兽放置到灵摆区域，并赋予其「这个回合不能把灵摆效果发动」的状态
 function s.pop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if not c:IsRelateToChain() then return end
+	-- 以效果破坏这张卡，若未能破坏则中断后续处理
 	if Duel.Destroy(c,REASON_EFFECT)==0 then return end
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOFIELD)
+	-- 向玩家提示「请选择要放置到场上的卡」
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOFIELD)  --"请选择要放置到场上的卡"
+	-- 让玩家从自己的手卡·卡组选择1只灵摆刻度是1的灵摆怪兽（同名卡以外）
 	local g=Duel.SelectMatchingCard(tp,s.pfilter,tp,LOCATION_HAND+LOCATION_DECK,0,1,1,nil,tp)
 	local tc=g:GetFirst()
+	-- 把选出的卡以表侧表示放置到自己的灵摆区域，若成功则进入赋予不能发动效果的处理
 	if tc and Duel.MoveToField(tc,tp,tp,LOCATION_PZONE,POS_FACEUP,true) then
+		-- 「这个效果放置的卡的灵摆效果在这个回合不能发动。」
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_CANNOT_TRIGGER)
@@ -66,101 +86,142 @@ function s.pop(e,tp,eg,ep,ev,re,r,rp)
 		tc:RegisterEffect(e1,true)
 	end
 end
+-- 过滤函数：先前在自己场上表侧表示存在、被战斗或效果破坏的怪兽卡
 function s.desfilter(c,tp)
 	return c:IsPreviousControler(tp) and c:IsPreviousPosition(POS_FACEUP) and c:IsReason(REASON_BATTLE+REASON_EFFECT)
 		and c:GetOriginalType()&TYPE_MONSTER~=0 and c:IsPreviousLocation(LOCATION_ONFIELD)
 end
+-- 发动条件：被破坏的卡之中存在自己场上表侧表示的怪兽卡
 function s.spcon1(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(s.desfilter,1,nil,tp)
 end
+-- 过滤函数：可以被特殊召唤且属于自己的卡；在额外卡组的需为表侧表示且额外怪兽区有空位；在墓地的需不受「王家长眠之谷」影响且主要怪兽区有空位
 function s.spfilter1(c,e,tp)
 	if not c:IsCanBeSpecialSummoned(e,0,tp,false,false) or not c:IsControler(tp) then return false end
+	-- 若该卡在额外卡组：需为表侧表示，且额外卡组怪兽出场可用的怪兽区有空位
 	if c:IsLocation(LOCATION_EXTRA) then return c:IsFaceup() and Duel.GetLocationCountFromEx(tp,tp,nil,c)>0 end
+	-- 若该卡在墓地：需不受「王家长眠之谷」的影响，且自己的主要怪兽区有空位
 	if c:IsLocation(LOCATION_GRAVE) then return aux.NecroValleyFilter()(c) and Duel.GetLocationCount(tp,LOCATION_MZONE)>0 end
 	return false
 end
+-- 特殊召唤效果的目标设定：确认主要怪兽区有空位且这张卡可以从手卡特殊召唤，把被破坏的怪兽卡设为连锁对象并设置特殊召唤的操作信息
 function s.sptg1(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	if chk==0 then
+		-- 检查自己的主要怪兽区是否有可用空格
 		return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 			and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 	end
 	local desg=eg:Filter(s.desfilter,nil,tp)
+	-- 把那些被破坏的怪兽卡设置为当前连锁的对象
 	Duel.SetTargetCard(desg)
+	-- 设置连锁的操作信息：确定要把这张卡特殊召唤
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,c,1,0,0)
 end
+-- 特殊召唤效果处理：把这张卡从手卡特殊召唤，然后询问玩家是否从被破坏的怪兽之中选1只从额外卡组（表侧）·墓地特殊召唤
 function s.spop1(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if not c:IsRelateToChain() then return end
+	-- 把这张卡从手卡特殊召唤，若失败则中断后续处理
 	if Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)==0 then return end
+	-- 取得与本连锁关联的被破坏的卡之中可以被特殊召唤的卡
 	local desg=Duel.GetTargetsRelateToChain():Filter(s.spfilter1,nil,e,tp)
-	if #desg>0 and Duel.SelectYesNo(tp,aux.Stringid(id,3)) then
-		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
+	-- 若存在可特殊召唤的被破坏的怪兽，询问玩家「是否把怪兽特殊召唤？」
+	if #desg>0 and Duel.SelectYesNo(tp,aux.Stringid(id,3)) then  --"是否把怪兽特殊召唤？"
+		-- 向玩家提示「请选择要特殊召唤的卡」
+		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
 		local sg=desg:Select(tp,1,1,nil)
 		local tc=sg:GetFirst()
 		if tc then
+			-- 中断当前效果处理，使后续的特殊召唤视为不同时处理
 			Duel.BreakEffect()
+			-- 把选出的1只怪兽特殊召唤到自己场上
 			Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP)
 		end
 	end
 end
+-- 融合召唤效果的发动条件判定函数：当前处于主要阶段
 function s.fspcon(e,tp,eg,ep,ev,re,r,rp)
+	-- 确认当前是自己或对方的主要阶段
 	return Duel.IsMainPhase()
 end
+-- 过滤函数：自己怪兽区域表侧表示、可以作为融合素材、可以回到卡组且不受此效果影响的怪兽
 function s.filter0(c,e)
 	return c:IsLocation(LOCATION_MZONE) and c:IsType(TYPE_MONSTER) and c:IsCanBeFusionMaterial() and c:IsAbleToDeck() and not c:IsImmuneToEffect(e)
 end
+-- 过滤函数：场上表侧表示存在、可以作为融合素材、可以回到卡组且不受此效果影响的怪兽（用于额外卡组表侧的卡）
 function s.filter1(c,e)
 	return c:IsFaceupEx() and c:IsType(TYPE_MONSTER) and c:IsCanBeFusionMaterial() and c:IsAbleToDeck() and not c:IsImmuneToEffect(e)
 end
+-- 过滤函数：可以被融合召唤、能以当前素材组进行融合召唤的龙族融合怪兽
 function s.filter2(c,e,tp,m,f,chkf)
 	return c:IsType(TYPE_FUSION) and c:IsRace(RACE_DRAGON) and (not f or f(c))
 		and c:IsCanBeSpecialSummoned(e,SUMMON_TYPE_FUSION,tp,false,false) and c:CheckFusionMaterial(m,nil,chkf)
 end
+-- 融合召唤效果的目标设定：确认这张卡可以被效果解放，并设置解放的操作信息
 function s.fsptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsReleasable(REASON_EFFECT) end
+	-- 设置连锁的操作信息：确定要解放这张卡
 	Duel.SetOperationInfo(0,CATEGORY_RELEASE,e:GetHandler(),1,0,0)
 end
+-- 融合召唤效果处理：把这张卡解放，汇集自己场上与额外卡组（表侧）可作融合素材的怪兽，检索可融合召唤的龙族融合怪兽，询问玩家是否融合召唤；选择素材回到卡组后把该融合怪兽融合召唤
 function s.fspop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if not c:IsRelateToChain() or not c:IsReleasable(REASON_EFFECT) then return end
+	-- 把这张卡以效果解放
 	Duel.Release(c,REASON_EFFECT)
 	local chkf=tp
+	-- 从自己可用的融合素材中筛选场上满足条件的怪兽
 	local mg1=Duel.GetFusionMaterial(tp):Filter(s.filter0,nil,e)
+	-- 从自己额外卡组筛选表侧表示且可作融合素材回到卡组的怪兽
 	local mg2=Duel.GetMatchingGroup(s.filter1,tp,LOCATION_EXTRA,0,nil,e)
 	mg1:Merge(mg2)
+	-- 从自己额外卡组检索能以这些素材进行融合召唤的龙族融合怪兽
 	local sg1=Duel.GetMatchingGroup(s.filter2,tp,LOCATION_EXTRA,0,nil,e,tp,mg1,nil,chkf)
 	local mg3=nil
 	local sg2=nil
+	-- 取得玩家受到的连锁素材效果（若有）
 	local ce=Duel.GetChainMaterial(tp)
 	if ce~=nil then
 		local fgroup=ce:GetTarget()
 		mg3=fgroup(ce,e,tp)
 		local mf=ce:GetValue()
+		-- 按连锁素材效果指定的素材范围，检索可融合召唤的龙族融合怪兽
 		sg2=Duel.GetMatchingGroup(s.filter2,tp,LOCATION_EXTRA,0,nil,e,tp,mg3,mf,chkf)
 	end
-	if (sg1:GetCount()>0 or (sg2~=nil and sg2:GetCount()>0)) and Duel.SelectYesNo(tp,aux.Stringid(id,4)) then
+	-- 若存在可以融合召唤的龙族融合怪兽，询问玩家「是否融合召唤？」
+	if (sg1:GetCount()>0 or (sg2~=nil and sg2:GetCount()>0)) and Duel.SelectYesNo(tp,aux.Stringid(id,4)) then  --"是否融合召唤？"
+		-- 中断当前效果处理，使后续的融合召唤视为不同时处理
 		Duel.BreakEffect()
 		local sg=sg1:Clone()
 		if sg2 then sg:Merge(sg2) end
-		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
+		-- 向玩家提示「请选择要特殊召唤的卡」
+		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
 		local tg=sg:Select(tp,1,1,nil)
 		local tc=tg:GetFirst()
+		-- 判断选择的融合怪兽是否属于常规素材组；若同时可用连锁素材，询问玩家是否使用连锁素材的方式
 		if sg1:IsContains(tc) and (sg2==nil or not sg2:IsContains(tc) or ce~=nil and not Duel.SelectYesNo(tp,ce:GetDescription())) then
+			-- 让玩家为选定的融合怪兽选择一组融合素材
 			local mat=Duel.SelectFusionMaterial(tp,tc,mg1,nil,chkf)
 			tc:SetMaterial(mat)
 			if mat:IsExists(Card.IsFacedown,1,nil) then
 				local cg=mat:Filter(Card.IsFacedown,nil)
+				-- 把素材中里侧表示的卡给对方玩家确认
 				Duel.ConfirmCards(1-tp,cg)
 			end
 			if mat:Filter(s.cfilter,nil):GetCount()>0 then
 				local cg=mat:Filter(s.cfilter,nil)
+				-- 为素材中来自额外卡组·场上表侧的卡显示被选为素材的动画
 				Duel.HintSelection(cg)
 			end
+			-- 把融合素材作为融合召唤的素材以效果回到卡组并洗切
 			Duel.SendtoDeck(mat,nil,SEQ_DECKSHUFFLE,REASON_EFFECT+REASON_MATERIAL+REASON_FUSION)
+			-- 中断当前效果处理，使后续的特殊召唤视为不同时处理
 			Duel.BreakEffect()
+			-- 把选定的龙族融合怪兽当作融合召唤特殊召唤到自己场上
 			Duel.SpecialSummon(tc,SUMMON_TYPE_FUSION,tp,tp,false,false,POS_FACEUP)
 		elseif ce~=nil then
+			-- 按连锁素材效果的范围为融合怪兽选择一组融合素材
 			local mat2=Duel.SelectFusionMaterial(tp,tc,mg3,nil,chkf)
 			local fop=ce:GetOperation()
 			fop(ce,e,tp,tc,mat2)
@@ -168,6 +229,7 @@ function s.fspop(e,tp,eg,ep,ev,re,r,rp)
 		tc:CompleteProcedure()
 	end
 end
+-- 过滤函数：位于额外卡组或场上且表侧表示存在的卡
 function s.cfilter(c)
 	return c:IsLocation(LOCATION_EXTRA+LOCATION_MZONE) and c:IsFaceupEx()
 end
