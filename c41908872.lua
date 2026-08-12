@@ -1,11 +1,20 @@
 --覇王眷竜ライトヴルム
+-- 效果：
+-- ←8 【灵摆】 8→
+-- 这个卡名的灵摆效果1回合只能使用1次。
+-- ①：怪兽特殊召唤的场合，若自己场上有「霸王龙 扎克」和灵摆怪兽各存在则能发动。这张卡特殊召唤。那之后，可以把在自己场上1只灵摆怪兽和这张卡之内1只的属性·等级变成和另1只相同。
+-- 【怪兽效果】
+-- 这个卡名的①②的怪兽效果1回合各能使用1次。
+-- ①：这张卡召唤·特殊召唤的场合才能发动。从自己的额外卡组（表侧）把1只「霸王眷龙」灵摆怪兽或「霸王门」灵摆怪兽加入手卡。那之后，可以进行1只「霸王眷龙」同调怪兽的同调召唤或者1只「霸王眷龙」超量怪兽的超量召唤。
+-- ②：这张卡在额外卡组表侧存在的状态，自己场上的表侧表示的灵摆怪兽被战斗·效果破坏的场合才能发动。这张卡加入手卡。
 function c41908872.initial_effect(c)
+	-- 记录这张卡上记载着「霸王龙 扎克」（卡号13331639）的卡名
 	aux.AddCodeList(c,13331639)
-	--pendulum summon
+	-- 为这张卡添加灵摆怪兽属性，使其能够进行灵摆召唤和作为灵摆卡发动
 	aux.EnablePendulumAttribute(c)
-	--spsummon
+	-- ①：怪兽特殊召唤的场合，若自己场上有「霸王龙 扎克」和灵摆怪兽各存在则能发动。这张卡特殊召唤。那之后，可以把在自己场上1只灵摆怪兽和这张卡之内1只的属性·等级变成和另1只相同。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(41908872,0))
+	e1:SetDescription(aux.Stringid(41908872,0))  --"这张卡特殊召唤"
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
 	e1:SetCode(EVENT_SPSUMMON_SUCCESS)
@@ -16,7 +25,7 @@ function c41908872.initial_effect(c)
 	e1:SetTarget(c41908872.sptg)
 	e1:SetOperation(c41908872.spop)
 	c:RegisterEffect(e1)
-	--to hand
+	-- ①：这张卡召唤·特殊召唤的场合才能发动。从自己的额外卡组（表侧）把1只「霸王眷龙」灵摆怪兽或「霸王门」灵摆怪兽加入手卡。那之后，可以进行1只「霸王眷龙」同调怪兽的同调召唤或者1只「霸王眷龙」超量怪兽的超量召唤。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(41908872,1))
 	e2:SetCategory(CATEGORY_TOHAND+CATEGORY_SPECIAL_SUMMON)
@@ -30,9 +39,9 @@ function c41908872.initial_effect(c)
 	local e3=e2:Clone()
 	e3:SetCode(EVENT_SPSUMMON_SUCCESS)
 	c:RegisterEffect(e3)
-	--to hand
+	-- ②：这张卡在额外卡组表侧存在的状态，自己场上的表侧表示的灵摆怪兽被战斗·效果破坏的场合才能发动。这张卡加入手卡。
 	local e4=Effect.CreateEffect(c)
-	e4:SetDescription(aux.Stringid(41908872,2))
+	e4:SetDescription(aux.Stringid(41908872,2))  --"这张卡加入手卡"
 	e4:SetCategory(CATEGORY_TOHAND)
 	e4:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
 	e4:SetCode(EVENT_DESTROYED)
@@ -44,39 +53,57 @@ function c41908872.initial_effect(c)
 	e4:SetOperation(c41908872.thop2)
 	c:RegisterEffect(e4)
 end
+-- 过滤函数：这张卡是表侧表示的「霸王龙 扎克」，且自己怪兽区域还存在这张卡以外的灵摆怪兽
 function c41908872.cfilter1(c,tp)
 	return c:IsCode(13331639) and c:IsFaceup()
+		-- 检查自己怪兽区域是否存在这张卡以外满足条件的灵摆怪兽
 		and Duel.IsExistingMatchingCard(c41908872.cfilter2,tp,LOCATION_MZONE,0,1,c)
 end
+-- 过滤函数：表侧表示的灵摆怪兽
 function c41908872.cfilter2(c)
 	return c:IsType(TYPE_PENDULUM) and c:IsFaceup()
 end
+-- 灵摆效果的发动条件：自己场上有「霸王龙 扎克」和灵摆怪兽各存在
 function c41908872.spcon(e,tp,eg,ep,ev,re,r,rp)
+	-- 检查自己场上是否存在表侧表示的「霸王龙 扎克」以及其他的灵摆怪兽
 	return Duel.IsExistingMatchingCard(c41908872.cfilter1,tp,LOCATION_ONFIELD,0,1,nil,tp)
 end
+-- 灵摆效果的对象设定：确认自己主要怪兽区域有空位且这张卡可以特殊召唤
 function c41908872.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
+	-- 检查自己主要怪兽区域是否有可用空格，且这张卡可以被特殊召唤
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
+	-- 设置操作信息：这张卡自身将被特殊召唤1张
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
+-- 过滤函数：表侧表示的持有等级的灵摆怪兽，且其属性或等级与这张卡（ec）不同
 function c41908872.filter(c,ec)
 	return c:IsType(TYPE_PENDULUM) and c:IsFaceup() and c:IsLevelAbove(0)
 		and (not c:IsAttribute(ec:GetAttribute()) or not c:IsLevel(ec:GetLevel()))
 end
+-- 灵摆效果处理：这张卡特殊召唤，那之后可以把自己场上1只灵摆怪兽和这张卡之内1只的属性·等级变成和另1只相同
 function c41908872.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
+	-- 若这张卡仍与此效果关联，则将这张卡以表侧攻击表示特殊召唤，成功时继续处理
 	if c:IsRelateToEffect(e) and Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)>0 then
+		-- 取得自己怪兽区域除这张卡以外、属性或等级与这张卡不同的表侧表示灵摆怪兽
 		local g=Duel.GetMatchingGroup(c41908872.filter,tp,LOCATION_MZONE,0,c,c)
-		if g:GetCount()>0 and Duel.SelectYesNo(tp,aux.Stringid(41908872,3)) then
+		-- 若存在可改变的灵摆怪兽，则询问玩家是否改变怪兽的属性·等级
+		if g:GetCount()>0 and Duel.SelectYesNo(tp,aux.Stringid(41908872,3)) then  --"是否改变怪兽的属性·等级？"
+			-- 中断当前效果处理，使之后的属性·等级变更处理与特殊召唤视为不同时处理
 			Duel.BreakEffect()
-			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)
+			-- 提示玩家选择1只表侧表示的灵摆怪兽作为参照对象
+			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
 			local rc=g:Select(tp,1,1,c):GetFirst()
 			local rg=Group.FromCards(c,rc)
-			Duel.Hint(HINT_SELECTMSG,tp,aux.Stringid(41908872,4))
+			-- 提示玩家选择要改变的怪兽（这张卡或选出的灵摆怪兽之内1只）
+			Duel.Hint(HINT_SELECTMSG,tp,aux.Stringid(41908872,4))  --"请选择要改变的怪兽"
 			local sg=rg:Select(tp,1,1,nil)
+			-- 为选中的要改变的怪兽显示选择动画
 			Duel.HintSelection(sg)
 			local tc=sg:GetFirst()
 			local sc=(rg-sg):GetFirst()
+			-- 把在自己场上1只灵摆怪兽和这张卡之内1只的属性变成和另1只相同
 			local e1=Effect.CreateEffect(c)
 			e1:SetType(EFFECT_TYPE_SINGLE)
 			e1:SetCode(EFFECT_CHANGE_ATTRIBUTE)
@@ -91,54 +118,77 @@ function c41908872.spop(e,tp,eg,ep,ev,re,r,rp)
 		end
 	end
 end
+-- 过滤函数：额外卡组表侧的「霸王眷龙」或「霸王门」灵摆怪兽，且可以加入手卡
 function c41908872.thfilter(c)
 	return c:IsSetCard(0x10f8,0x20f8) and c:IsType(TYPE_PENDULUM) and c:IsFaceup() and c:IsAbleToHand()
 end
+-- 怪兽效果①的对象设定：确认自己额外卡组（表侧）存在可加入手卡的「霸王眷龙」或「霸王门」灵摆怪兽
 function c41908872.thtg1(e,tp,eg,ep,ev,re,r,rp,chk)
+	-- 检查自己额外卡组（表侧）是否存在满足条件的灵摆怪兽
 	if chk==0 then return Duel.IsExistingMatchingCard(c41908872.thfilter,tp,LOCATION_EXTRA,0,1,nil) end
+	-- 设置操作信息：将从自己额外卡组把1张卡加入手卡
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_EXTRA)
 end
+-- 过滤函数：可以进行同调召唤的「霸王眷龙」同调怪兽
 function c41908872.scfilter(c)
 	return c:IsSetCard(0x20f8) and c:IsSynchroSummonable(nil)
 end
+-- 过滤函数：可以进行超量召唤的「霸王眷龙」超量怪兽
 function c41908872.xyzfilter(c)
 	return c:IsSetCard(0x20f8) and c:IsXyzSummonable(nil)
 end
+-- 怪兽效果①的处理：从额外卡组（表侧）把1只「霸王眷龙」或「霸王门」灵摆怪兽加入手卡，那之后可以进行1只「霸王眷龙」同调怪兽的同调召唤或1只「霸王眷龙」超量怪兽的超量召唤
 function c41908872.thop1(e,tp,eg,ep,ev,re,r,rp)
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)
+	-- 提示玩家选择要加入手卡的卡
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
+	-- 让玩家从自己额外卡组（表侧）选择1只「霸王眷龙」或「霸王门」灵摆怪兽
 	local tc=Duel.SelectMatchingCard(tp,c41908872.thfilter,tp,LOCATION_EXTRA,0,1,1,nil):GetFirst()
+	-- 把选择的卡加入手卡，并确认确实加入了手卡才继续处理
 	if tc and Duel.SendtoHand(tc,nil,REASON_EFFECT)>0 and tc:IsLocation(LOCATION_HAND) then
+		-- 取得额外卡组中可以进行同调召唤的「霸王眷龙」同调怪兽
 		local g1=Duel.GetMatchingGroup(c41908872.scfilter,tp,LOCATION_EXTRA,0,nil)
+		-- 取得额外卡组中可以进行超量召唤的「霸王眷龙」超量怪兽
 		local g2=Duel.GetMatchingGroup(c41908872.xyzfilter,tp,LOCATION_EXTRA,0,nil)
 		if (g1:GetCount()>0 or g2:GetCount()>0)
-			and Duel.SelectYesNo(tp,aux.Stringid(41908872,5)) then
+			-- 若存在可同调或超量召唤的怪兽，则询问玩家是否进行同调或超量召唤
+			and Duel.SelectYesNo(tp,aux.Stringid(41908872,5)) then  --"是否同调或超量召唤？"
+			-- 中断当前效果处理，使之后的召唤处理与加入手卡视为不同时处理
 			Duel.BreakEffect()
 			local g=g1+g2
-			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
+			-- 提示玩家选择要特殊召唤的卡
+			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
 			local sc=g:Select(tp,1,1,nil):GetFirst()
 			if g1:IsContains(sc) then
+				-- 对选出的「霸王眷龙」同调怪兽进行同调召唤手续
 				Duel.SynchroSummon(tp,sc,nil)
 			else
+				-- 对选出的「霸王眷龙」超量怪兽进行超量召唤手续
 				Duel.XyzSummon(tp,sc,nil)
 			end
 		end
 	end
 end
+-- 过滤函数：被战斗·效果破坏的、原本在自己怪兽区域表侧表示存在的灵摆怪兽
 function c41908872.thfilter2(c,tp)
 	return c:IsReason(REASON_BATTLE+REASON_EFFECT) and bit.band(c:GetPreviousTypeOnField(),TYPE_PENDULUM)~=0
 		and c:IsPreviousLocation(LOCATION_MZONE) and c:IsPreviousControler(tp) and c:IsPreviousPosition(POS_FACEUP)
 end
+-- 怪兽效果②的发动条件：被战斗·效果破坏的卡中有自己场上表侧表示的灵摆怪兽（不含这张卡），且这张卡在额外卡组表侧存在
 function c41908872.thcon2(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	return eg:IsExists(c41908872.thfilter2,1,c,tp) and not eg:IsContains(c) and c:IsFaceup()
 end
+-- 怪兽效果②的对象设定：确认这张卡可以加入手卡
 function c41908872.thtg2(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsAbleToHand() end
+	-- 设置操作信息：这张卡自身将被加入手卡1张
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,e:GetHandler(),1,0,0)
 end
+-- 怪兽效果②的处理：若这张卡仍与此效果关联，则将这张卡加入手卡
 function c41908872.thop2(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) then
+		-- 把这张卡从额外卡组加入持有者的手卡
 		Duel.SendtoHand(c,nil,REASON_EFFECT)
 	end
 end
