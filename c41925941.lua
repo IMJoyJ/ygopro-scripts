@@ -2,7 +2,7 @@
 -- 效果：
 -- 自己场上存在的恶魔族怪兽进行战斗的场合，那个伤害步骤时支付100的倍数的基本分发动。直到这个回合的结束阶段时，进行战斗的1只对方怪兽的攻击力·守备力下降支付的数值。
 function c41925941.initial_effect(c)
-	-- 创建一张永续效果，用于在自由时点发动，属于攻击变化类别，提示在伤害步骤时点发动，且只能在伤害步骤发动，条件为c41925941.condition，费用为c41925941.cost，目标为c41925941.target，效果处理为c41925941.operation
+	-- 自己场上存在的恶魔族怪兽进行战斗的场合，那个伤害步骤时支付100的倍数的基本分发动。直到这个回合的结束阶段时，进行战斗的1只对方怪兽的攻击力·守备力下降支付的数值。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCategory(CATEGORY_ATKCHANGE)
@@ -15,15 +15,15 @@ function c41925941.initial_effect(c)
 	e1:SetOperation(c41925941.operation)
 	c:RegisterEffect(e1)
 end
--- 判断是否满足发动条件：当前阶段为伤害步骤且未计算战斗伤害，攻击怪兽和防守怪兽存在且处于战斗状态，且攻击方或防守方为当前玩家的恶魔族怪兽
+-- 发动条件处理：仅当处于伤害步骤且伤害计算前，并且自己场上有表侧表示恶魔族怪兽正在进行战斗（无论是攻击方还是被攻击方）时满足；同时将对方参与战斗的怪兽记录到效果标签中。
 function c41925941.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前游戏阶段
+	-- 获取当前游戏阶段。
 	local phase=Duel.GetCurrentPhase()
-	-- 若当前阶段不是伤害步骤或战斗伤害已计算，则返回false
+	-- 若当前不是伤害步骤或伤害已经计算完毕，则本效果不能发动。
 	if phase~=PHASE_DAMAGE or Duel.IsDamageCalculated() then return false end
-	-- 获取此次战斗的攻击怪兽
+	-- 取得当前攻击怪兽。
 	local a=Duel.GetAttacker()
-	-- 获取此次战斗的防守怪兽
+	-- 取得被攻击的怪兽（若没有攻击对象则为nil）。
 	local d=Duel.GetAttackTarget()
 	if a:IsControler(tp) then
 		e:SetLabelObject(d)
@@ -35,12 +35,12 @@ function c41925941.condition(e,tp,eg,ep,ev,re,r,rp)
 			and a and a:IsFaceup() and a:IsRelateToBattle()
 	end
 end
--- 定义费用函数：检查玩家是否能支付100点基本分并确认目标怪兽攻击力或守备力是否至少为100点
+-- 发动代价处理：玩家从100的倍数中宣言一个LP数值进行支付；可支付上限取己方当前LP、对方怪兽攻击力/守备力中的较高者、25500三者的最小值并向下取整到百位；支付后将数值记录在效果标签中，用于后续下降攻击力/守备力。
 function c41925941.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	local bc=e:GetLabelObject()
-	-- 若为检查阶段（chk==0），则返回是否能支付100点基本分且目标怪兽攻击力或守备力至少为100点
+	-- 代价检查：己方至少能支付100LP，且对方战斗怪兽的攻击力或守备力至少为100，否则不能发动。
 	if chk==0 then return Duel.CheckLPCost(tp,100,true) and (bc:IsAttackAbove(100) or bc:IsDefenseAbove(100)) end
-	-- 获取当前玩家的基本分
+	-- 以己方当前LP作为可支付LP上限的初始值。
 	local maxc=Duel.GetLP(tp)
 	local maxpay=bc:GetAttack()
 	local def=bc:GetDefense()
@@ -52,26 +52,26 @@ function c41925941.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	for i=1,maxc/100 do
 		t[i]=i*100
 	end
-	-- 让当前玩家宣言一个可支付的基本分数值（以100为单位）
+	-- 让玩家从所有100的倍数可选项中宣言一个数值，作为本次支付的LP。
 	local cost=Duel.AnnounceNumber(tp,table.unpack(t))
-	-- 支付宣言的基本分
+	-- 实际支付宣言的LP数值。
 	Duel.PayLPCost(tp,cost,true)
 	e:SetLabel(cost)
 end
--- 定义目标函数：设置目标怪兽为之前记录的怪兽
+-- 效果对象处理：无需另行选择卡片，直接将效果发动时记录的对方战斗怪兽设置为效果对象。
 function c41925941.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	local tc=e:GetLabelObject()
 	if chk==0 then return true end
-	-- 设置当前连锁的目标为指定怪兽
+	-- 将暂存的对方战斗怪兽设置为当前连锁的处理对象。
 	Duel.SetTargetCard(tc)
 end
--- 定义效果处理函数：获取目标怪兽并应用攻击力和守备力下降效果
+-- 效果处理：若对象怪兽仍与效果相关且是对方怪兽，则赋予其攻击力·守备力下降已支付数值的持续效果，直到结束阶段；下降攻击力和守备力分别通过两个效果实现。
 function c41925941.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的目标怪兽
+	-- 取得效果处理的对象怪兽。
 	local bc=Duel.GetFirstTarget()
 	local val=e:GetLabel()
 	if not bc or not bc:IsRelateToEffect(e) or not bc:IsControler(1-tp) then return end
-	-- 创建一个攻击力下降的效果，数值为支付的基本分，持续到结束阶段
+	-- 直到这个回合的结束阶段时，进行战斗的1只对方怪兽的攻击力·守备力下降支付的数值。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_UPDATE_ATTACK)

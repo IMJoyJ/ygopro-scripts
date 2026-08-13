@@ -11,17 +11,17 @@ function c42024143.initial_effect(c)
 	e1:SetCondition(c42024143.spcon)
 	c:RegisterEffect(e1)
 end
--- 检索满足条件的卡片组：墓地里名字带有「X-剑士」的怪兽
+-- 过滤函数：判断卡是否为名字带有「X-剑士」的怪兽卡（满足系列字段0x100d且是怪兽类型）。
 function c42024143.spfilter(c)
 	return c:IsSetCard(0x100d) and c:IsType(TYPE_MONSTER)
 end
--- 判断特殊召唤条件是否满足：场上怪兽数量为0且手卡有2只以上名字带有「X-剑士」的怪兽
+-- 特殊召唤手续的条件判定：当c为nil时表示仅询问能否进行特殊召唤，返回true；否则需要自己场上主要怪兽区有空位、自己场上没有怪兽、且自己墓地存在至少2只符合条件的「X-剑士」怪兽。
 function c42024143.spcon(e,c)
 	if c==nil then return true end
-	-- 判断自己场上是否有足够的怪兽区域
+	-- 作为特殊召唤条件之一：确认该卡的持有者（控制者）的主要怪兽区存在空位，保证能够特殊召唤上场。
 	return Duel.GetLocationCount(c:GetControler(),LOCATION_MZONE)>0
-		-- 判断自己场上是否没有怪兽存在
+		-- 作为特殊召唤条件之一：确认该卡控制者场上没有怪兽（自己主要怪兽区的怪兽数量为0），满足“自己场上没有怪兽存在”的前提。
 		and Duel.GetFieldGroupCount(c:GetControler(),LOCATION_MZONE,0)==0
-		-- 判断自己墓地是否存在至少2张名字带有「X-剑士」的怪兽卡
+		-- 作为特殊召唤条件之一：确认该卡控制者墓地存在至少2只满足spfilter条件的卡，即名字带有「X-剑士」的怪兽，满足“墓地有X-剑士怪兽2只以上”的要求。
 		and Duel.IsExistingMatchingCard(c42024143.spfilter,c:GetControler(),LOCATION_GRAVE,0,2,nil)
 end

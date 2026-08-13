@@ -15,7 +15,7 @@ function c42055234.initial_effect(c)
 	e1:SetRange(LOCATION_HAND)
 	e1:SetCountLimit(1,42055234)
 	e1:SetHintTiming(TIMING_DAMAGE_STEP)
-	-- 限制效果只能在伤害计算前的时机发动或适用
+	-- 设置①效果的发动条件，使用aux.dscon限制该效果只能在伤害步骤的伤害计算前或非伤害步骤时发动（不能在伤害计算后发动）。
 	e1:SetCondition(aux.dscon)
 	e1:SetCost(c42055234.atkcost)
 	e1:SetTarget(c42055234.atktg)
@@ -42,32 +42,32 @@ function c42055234.initial_effect(c)
 	e3:SetOperation(c42055234.spop)
 	c:RegisterEffect(e3)
 end
--- 将自身从手卡丢弃作为cost
+-- 定义①效果的代价函数：发动前必须把这张卡从手卡丢弃；chk==0时检查这张卡是否可以被丢弃。
 function c42055234.atkcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsDiscardable() end
-	-- 将自身送去墓地作为cost
+	-- 实际执行代价：把这张卡从手卡送去墓地，丢弃原因为COST+REASON_DISCARD。
 	Duel.SendtoGrave(e:GetHandler(),REASON_COST+REASON_DISCARD)
 end
--- 判断目标是否为表侧表示的半龙女仆怪兽
+-- 定义①效果可选择的对象的过滤条件：表侧表示且是「半龙女仆」（0x133）怪兽。
 function c42055234.atkfilter(c)
 	return c:IsFaceup() and c:IsSetCard(0x133)
 end
--- 选择一个满足条件的场上怪兽作为对象
+-- 定义①效果的发动时选择对象的处理：检查对象合法性、是否存在对象，并让玩家选择自己场上1只表侧「半龙女仆」怪兽。
 function c42055234.atktg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and c42055234.atkfilter(chkc) end
-	-- 检查场上是否存在满足条件的怪兽
+	-- 在效果发动时检查自己场上是否存在至少1只符合条件的表侧「半龙女仆」怪兽，若存在才可发动。
 	if chk==0 then return Duel.IsExistingTarget(c42055234.atkfilter,tp,LOCATION_MZONE,0,1,nil) end
-	-- 提示玩家选择表侧表示的怪兽
+	-- 给玩家发送选择提示消息，提示选择表侧表示的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
-	-- 选择满足条件的场上怪兽作为对象
+	-- 让玩家从自己场上选择1只符合条件的表侧「半龙女仆」怪兽，并将其设为效果对象。
 	Duel.SelectTarget(tp,c42055234.atkfilter,tp,LOCATION_MZONE,0,1,1,nil)
 end
--- 使目标怪兽攻击力上升2000
+-- 定义①效果处理函数：取得对象，若对象仍表侧且与效果相关，则赋予其攻击力上升2000直到回合结束。
 function c42055234.atkop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁中的目标怪兽
+	-- 获取效果发动时选择的那1只对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsFaceup() and tc:IsRelateToEffect(e) then
-		-- 给目标怪兽增加2000攻击力直到回合结束
+		-- 那只怪兽的攻击力直到回合结束时上升2000。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)
@@ -76,45 +76,45 @@ function c42055234.atkop(e,tp,eg,ep,ev,re,r,rp)
 		tc:RegisterEffect(e1)
 	end
 end
--- 判断目标是否为表侧表示的融合怪兽
+-- 定义②效果条件的过滤函数：表侧表示且是融合怪兽。
 function c42055234.indfilter(c)
 	return c:IsFaceup() and c:IsType(TYPE_FUSION)
 end
--- 判断自己场上是否存在融合怪兽
+-- 定义②效果的发动条件：自己场上有表侧表示的融合怪兽存在。
 function c42055234.indcon(e)
-	-- 检查自己场上是否存在融合怪兽
+	-- 检查自己场上是否存在至少1只表侧融合怪兽，若存在则②效果适用。
 	return Duel.IsExistingMatchingCard(c42055234.indfilter,e:GetHandlerPlayer(),LOCATION_MZONE,0,1,nil)
 end
--- 判断目标是否为3星半龙女仆怪兽
+-- 定义③效果中可特殊召唤的怪兽过滤条件：手卡中的「半龙女仆」（0x133）且等级为3，并且可以被特殊召唤。
 function c42055234.spfilter(c,e,tp)
 	return c:IsSetCard(0x133) and c:IsLevel(3) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 检查是否满足发动条件：自身能回手、场上存在空位、手卡存在符合条件的怪兽
+-- 定义③效果的发动条件：这张卡能够返回手卡，返回后自己场上有空位，且手卡中存在符合条件的3星「半龙女仆」怪兽。
 function c42055234.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	if chk==0 then return c:IsAbleToHand()
-		-- 检查场上是否存在空位
+		-- 额外检查：这张卡离开场上返回手卡后，自己场上仍有可用的怪兽区空格。
 		and Duel.GetMZoneCount(tp,c)>0
-		-- 检查手卡是否存在符合条件的怪兽
+		-- 额外检查：手卡中存在至少1只符合条件的3星「半龙女仆」怪兽可以特殊召唤。
 		and Duel.IsExistingMatchingCard(c42055234.spfilter,tp,LOCATION_HAND,0,1,nil,e,tp) end
-	-- 设置操作信息：将自身送回手卡
+	-- 设置操作信息：本次效果预计将这张卡返回手卡，用于连锁检测。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,c,1,0,0)
-	-- 设置操作信息：特殊召唤1只怪兽
+	-- 设置操作信息：本次效果预计从手卡特殊召唤1只怪兽（目标为自己，位置为手卡）。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_HAND)
 end
--- 发动效果：将自身送回手卡并特殊召唤1只3星半龙女仆怪兽
+-- 定义③效果处理：若这张卡仍与效果相关且成功返回手卡，并确认已回到手卡且场上有空位，则从手卡选择1只符合条件的3星「半龙女仆」怪兽特殊召唤。
 function c42055234.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 检查自身是否在连锁中有效且成功送回手卡
+	-- 确认这张卡与效果仍有关联，并实际将其返回手卡；只有成功返回（返回值不为0）才继续处理。
 	if c:IsRelateToEffect(e) and Duel.SendtoHand(c,nil,REASON_EFFECT)~=0
-		-- 检查自身是否在手卡且场上存在空位
+		-- 确认这张卡已经回到手卡，且自己场上存在可用的怪兽区空格后才继续特殊召唤。
 		and c:IsLocation(LOCATION_HAND) and Duel.GetLocationCount(tp,LOCATION_MZONE)>0 then
-		-- 提示玩家选择要特殊召唤的怪兽
+		-- 给玩家发送选择提示消息，提示选择要特殊召唤的卡。
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-		-- 选择要特殊召唤的怪兽
+		-- 从手卡中选择1只符合条件的3星「半龙女仆」怪兽。
 		local g=Duel.SelectMatchingCard(tp,c42055234.spfilter,tp,LOCATION_HAND,0,1,1,nil,e,tp)
 		if g:GetCount()>0 then
-			-- 将选择的怪兽特殊召唤到场上
+			-- 将选择的那只怪兽以表侧表示特殊召唤到自己场上。
 			Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
 		end
 	end

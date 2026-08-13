@@ -10,15 +10,15 @@ function c42035044.initial_effect(c)
 	e1:SetOperation(c42035044.atop)
 	c:RegisterEffect(e1)
 end
--- 检查是否满足攻击宣言时的解放要求
+-- 定义攻击代价的检查函数：确认是否存在可解放且不是这张卡自身的怪兽，以判断攻击宣言之际能否满足并支付必须的解放代价。
 function c42035044.atcost(e,c,tp)
-	-- 检测玩家场上是否存在至少1张可解放的卡片
+	-- 调用Duel.CheckReleaseGroupEx检查自己场上·手卡是否存在至少1只可解放且不是这张卡自身的怪兽（攻击宣言代价用），以决定是否满足攻击代价条件。
 	return Duel.CheckReleaseGroupEx(tp,nil,1,REASON_ACTION,false,e:GetHandler())
 end
--- 执行攻击宣言时的解放操作
+-- 定义攻击代价的执行函数：在攻击宣言之际，玩家必须选择并解放这张卡以外的自己场上1只怪兽。
 function c42035044.atop(e,tp,eg,ep,ev,re,r,rp)
-	-- 选择1张满足条件的卡片进行解放
+	-- 通过Duel.SelectReleaseGroupEx从自己场上·手卡选择1只可解放且不是这张卡自身的怪兽作为攻击代价的解放对象。
 	local g=Duel.SelectReleaseGroupEx(tp,nil,1,1,REASON_ACTION,false,e:GetHandler())
-	-- 将选中的卡片从游戏中解放
+	-- 将选中的怪兽以REASON_ACTION（攻击宣言之际）解放。
 	Duel.Release(g,REASON_ACTION)
 end
