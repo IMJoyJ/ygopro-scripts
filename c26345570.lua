@@ -13,7 +13,7 @@ function c26345570.initial_effect(c)
 	e2:SetCode(EFFECT_UPDATE_ATTACK)
 	e2:SetRange(LOCATION_SZONE)
 	e2:SetTargetRange(LOCATION_MZONE,0)
-	-- 设置效果目标为名字带有「先史遗产」的怪兽
+	-- 设置效果适用对象：自己场上名字带有「先史遗产」字段（0x70）的怪兽。
 	e2:SetTarget(aux.TargetBoolFunction(Card.IsSetCard,0x70))
 	e2:SetValue(800)
 	c:RegisterEffect(e2)

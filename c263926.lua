@@ -4,14 +4,14 @@
 -- ①：这张卡可以从手卡攻击表示特殊召唤。
 -- ②：这张卡已在怪兽区域存在的状态，自己场上有这张卡以外的怪兽召唤·反转召唤·特殊召唤的场合发动。这张卡破坏。
 function c263926.initial_effect(c)
-	-- 自己场上有怪兽存在的场合，这张卡不能召唤·特殊召唤。
+	-- 自己场上有怪兽存在的场合，这张卡不能召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
 	e1:SetCode(EFFECT_CANNOT_SUMMON)
 	e1:SetCondition(c263926.sumcon)
 	c:RegisterEffect(e1)
-	-- 自己场上有怪兽存在的场合，这张卡不能召唤·特殊召唤。
+	-- 自己场上有怪兽存在的场合，这张卡不能特殊召唤。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_SINGLE)
 	e2:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
@@ -45,40 +45,40 @@ function c263926.initial_effect(c)
 	e6:SetCode(EVENT_SPSUMMON_SUCCESS)
 	c:RegisterEffect(e6)
 end
--- 规则层面：判断自己场上有怪兽存在
+-- 作为“不能召唤”效果的条件，检查这张卡的控制者场上是否存在怪兽；若有怪兽则不能召唤。
 function c263926.sumcon(e)
-	-- 规则层面：获取己方场上怪兽数量，大于0则返回true
+	-- 检查这张卡的控制者自己场上主要怪兽区是否有怪兽存在（数量>0）。
 	return Duel.GetFieldGroupCount(e:GetHandler():GetControler(),LOCATION_MZONE,0)>0
 end
--- 规则层面：设置特殊召唤条件
+-- 作为“不能特殊召唤”限制的条件，检查尝试特殊召唤的玩家场上是否有怪兽，若没有怪兽则允许特殊召唤。
 function c263926.sumlimit(e,se,sp,st,pos,tp)
-	-- 规则层面：判断特殊召唤玩家场上没有怪兽
+	-- 检查sp（尝试特殊召唤的玩家）自己场上主要怪兽区的怪兽数量是否为0（即没有怪兽）。
 	return Duel.GetFieldGroupCount(sp,LOCATION_MZONE,0)==0
 end
--- 规则层面：设置特殊召唤的条件
+-- 作为“从手卡攻击表示特殊召唤”的规则特殊召唤手续的条件：自己场上没有怪兽，且主要怪兽区有空位。
 function c263926.sprcon(e,c)
 	if c==nil then return true end
 	local tp=c:GetControler()
-	-- 规则层面：判断特殊召唤玩家场上没有怪兽
+	-- 检查tp（这张卡的控制者）自己场上主要怪兽区的怪兽数量是否为0（即自己场上没有怪兽）。
 	return Duel.GetFieldGroupCount(tp,LOCATION_MZONE,0)==0
-		-- 规则层面：判断特殊召唤玩家场上是否有空位
+		-- 同时检查tp的主要怪兽区可用空格数大于0（即可特殊召唤的区域存在）。
 		and Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 end
--- 规则层面：判断连锁触发时是否包含己方怪兽
+-- 作为②效果的条件，检查本次召唤的怪兽中有没有自己场上的这张卡以外的怪兽（即eg中存在控制者为tp的怪兽且不包含此卡）。
 function c263926.descon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(Card.IsControler,1,nil,tp) and not eg:IsContains(e:GetHandler())
 end
--- 规则层面：设置破坏效果的目标和操作信息
+-- ②效果的发动目标设定：若此卡不在连锁串中则可发动，并将效果处理时破坏的对象设置为这张卡自身。
 function c263926.destg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return not e:GetHandler():IsStatus(STATUS_CHAINING) end
-	-- 规则层面：设置破坏效果的处理对象为自身
+	-- 将本次连锁的操作信息登记为“破坏”分类，对象为这张卡自身，数量为1，以用于效果处理时确定操作内容。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,e:GetHandler(),1,0,0)
 end
--- 规则层面：执行破坏效果
+-- ②效果处理：若这张卡仍与效果关联，则将其破坏。
 function c263926.desop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) then
-		-- 规则层面：以效果原因破坏自身
+		-- 以效果原因破坏这张卡。
 		Duel.Destroy(c,REASON_EFFECT)
 	end
 end
