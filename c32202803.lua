@@ -12,7 +12,7 @@ function c32202803.initial_effect(c)
 	e1:SetValue(1)
 	c:RegisterEffect(e1)
 end
--- 检查目标怪兽是否为兽族·兽战士族·鸟兽族且不是该卡本身
+-- 作为EFFECT_INDESTRUCTABLE_BATTLE效果的适用对象判定函数：目标卡片不能是效果持有者自身，且必须是兽族·兽战士族·鸟兽族之一的怪兽，满足条件的己方怪兽获得战斗破坏抗性。
 function c32202803.targt(e,c)
 	return c~=e:GetHandler() and c:IsRace(RACE_BEAST+RACE_BEASTWARRIOR+RACE_WINDBEAST)
 end

@@ -7,7 +7,7 @@ function c32233746.initial_effect(c)
 	e1:SetCategory(CATEGORY_DISABLE_SUMMON+CATEGORY_DESTROY)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_SUMMON)
-	-- 判断当前是否存在尚未结算的连锁环节，确保效果可以在空闲时机发动。
+	-- 设置效果的发动条件为没有正在处理的连锁（即仅在召唤、反转召唤、特殊召唤之际不入连锁地发动）。
 	e1:SetCondition(aux.NegateSummonCondition)
 	e1:SetCost(c32233746.cost)
 	e1:SetTarget(c32233746.target)
@@ -20,27 +20,27 @@ function c32233746.initial_effect(c)
 	e3:SetCode(EVENT_SPSUMMON)
 	c:RegisterEffect(e3)
 end
--- 检查玩家场上是否存在至少1只名字带有「光道」的可解放怪兽，并选择其中1只进行解放。
+-- 定义代价函数：玩家需要解放自己场上1只名字带有「光道」的怪兽作为发动代价。
 function c32233746.cost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查玩家场上是否存在至少1只名字带有「光道」的可解放怪兽。
+	-- 若为发动前检查（chk==0），则确认自己场上是否存在至少1只可解放的、卡名含有「光道」的怪兽；若存在才能发动。
 	if chk==0 then return Duel.CheckReleaseGroup(tp,Card.IsSetCard,1,nil,0x38) end
-	-- 从玩家场上选择1只名字带有「光道」的可解放怪兽。
+	-- 选择自己场上1只名字带有「光道」的怪兽作为解放对象。
 	local g=Duel.SelectReleaseGroup(tp,Card.IsSetCard,1,1,nil,0x38)
-	-- 以代價原因解放所选的怪兽。
+	-- 将选择的怪兽解放，作为发动代价（REASON_COST）。
 	Duel.Release(g,REASON_COST)
 end
--- 设置连锁操作信息，确定要无效召唤和破坏的目标怪兽。
+-- 定义效果发动时的目标处理函数：效果发动必定成功，无需指定对象；把当前被无效召唤的怪兽组记录到操作信息中，用于后续处理。
 function c32233746.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置连锁操作信息，确定要无效召唤的目标怪兽。
+	-- 向连锁处理登记本次操作包含“无效召唤”分类，对象为当前召唤的怪兽组，数量为其数量。
 	Duel.SetOperationInfo(0,CATEGORY_DISABLE_SUMMON,eg,eg:GetCount(),0,0)
-	-- 设置连锁操作信息，确定要破坏的目标怪兽。
+	-- 向连锁处理登记本次操作包含“破坏”分类，对象同样为当前召唤的怪兽组，数量为其数量。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,eg,eg:GetCount(),0,0)
 end
--- 使正在召唤·反转召唤·特殊召唤的怪兽召唤无效并破坏。
+-- 定义效果处理函数：对当前正在召唤·反转召唤·特殊召唤的怪兽群执行召唤无效，并将其破坏。
 function c32233746.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 使正在召唤·反转召唤·特殊召唤的怪兽召唤无效。
+	-- 使正在召唤/反转召唤/特殊召唤的怪兽（eg）的召唤无效化。
 	Duel.NegateSummon(eg)
-	-- 以效果原因破坏目标怪兽。
+	-- 以效果原因破坏那些已被无效召唤的怪兽。
 	Duel.Destroy(eg,REASON_EFFECT)
 end
