@@ -13,36 +13,36 @@ function c33323657.initial_effect(c)
 	e1:SetOperation(c33323657.recop)
 	c:RegisterEffect(e1)
 end
--- 检索满足条件的念动力族怪兽（等级大于0）
+-- 过滤条件：等级大于0且种族为念动力族的怪兽。
 function c33323657.filter(c)
 	return c:GetLevel()>0 and c:IsRace(RACE_PSYCHO)
 end
--- 检查并选择1只满足条件的念动力族怪兽进行解放，记录其等级
+-- 费用处理：检测并选择1只可解放的念动力族怪兽，将其等级记录到效果标签后解放作为代价。
 function c33323657.reccost(e,tp,eg,ep,ev,re,r,rp,chk)
 	e:SetLabel(1)
-	-- 检查场上是否存在满足条件的念动力族怪兽用于解放
+	-- 费用检测：确认自己场上存在至少1只可解放且满足条件的念动力族怪兽。
 	if chk==0 then return Duel.CheckReleaseGroup(tp,c33323657.filter,1,nil) end
-	-- 从场上选择1只满足条件的念动力族怪兽进行解放
+	-- 选择1只满足条件的念动力族怪兽作为解放代价。
 	local g=Duel.SelectReleaseGroup(tp,c33323657.filter,1,1,nil)
 	e:SetLabel(g:GetFirst():GetLevel())
-	-- 将选中的怪兽以代价形式解放
+	-- 将选择的那只怪兽解放，作为发动代价。
 	Duel.Release(g,REASON_COST)
 end
--- 设置连锁处理时的目标玩家和回复LP数值
+-- 目标处理：设定回复对象为自己和回复数值，登记操作信息，并重置标签。
 function c33323657.rectg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetLabel()~=0 end
-	-- 设置连锁处理时的目标玩家为当前玩家
+	-- 将这次效果的目标玩家设定为发动者自己。
 	Duel.SetTargetPlayer(tp)
-	-- 设置连锁处理时的目标参数为解放怪兽等级乘以300
+	-- 将目标参数设定为解放怪兽的等级×300，即回复数值。
 	Duel.SetTargetParam(e:GetLabel()*300)
-	-- 设置连锁操作信息为回复效果，目标玩家和回复数值
+	-- 登记操作信息：本次为回复LP效果，预计回复数值为等级×300。
 	Duel.SetOperationInfo(0,CATEGORY_RECOVER,nil,0,tp,e:GetLabel()*300)
 	e:SetLabel(0)
 end
--- 执行连锁效果，使目标玩家回复指定数值的基本分
+-- 效果处理：取得之前设定的目标玩家和回复数值，执行LP回复。
 function c33323657.recop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的目标玩家和目标参数（回复LP数值）
+	-- 从连锁信息中取出目标玩家和回复参数。
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 使目标玩家回复指定数值的基本分
+	-- 让目标玩家回复对应数值的LP，原因记为效果。
 	Duel.Recover(p,d,REASON_EFFECT)
 end

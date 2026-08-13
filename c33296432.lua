@@ -37,62 +37,62 @@ function c33296432.initial_effect(c)
 	e3:SetOperation(c33296432.spop2)
 	c:RegisterEffect(e3)
 end
--- 过滤函数，检查场上是否存在从额外卡组特殊召唤的怪兽
+-- 过滤条件：判断怪兽是否是从额外卡组特殊召唤的，用于筛选场上存在的这类怪兽。
 function c33296432.cfilter(c)
 	return c:IsSummonLocation(LOCATION_EXTRA)
 end
--- 效果发动条件函数，判断场上是否存在从额外卡组特殊召唤的怪兽
+-- ①的发动条件：双方场上存在至少1只从额外卡组特殊召唤的怪兽。
 function c33296432.spcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查场上是否存在至少1张从额外卡组特殊召唤的怪兽
+	-- 检查双方主要怪兽区中是否存在至少1只从额外卡组特殊召唤的怪兽。
 	return Duel.IsExistingMatchingCard(c33296432.cfilter,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil)
 end
--- 效果发动时的处理函数，判断是否满足特殊召唤的条件
+-- ①发动时的合法性判定：确认自己主要怪兽区有空位，且这张卡自身可以被特殊召唤；通过后登记操作信息。
 function c33296432.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断玩家场上是否有足够的怪兽区域
+	-- 判定阶段（chk==0）：自己的主要怪兽区是否有可用的空格。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置效果处理时将要特殊召唤的卡片信息
+	-- 将本连锁的操作信息登记为“特殊召唤这张卡”（数量为1），用于其他卡的对应判断。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 效果发动时的处理函数，将卡片特殊召唤到场上
+-- ①效果处理：若这张卡仍与当前效果有关联，则将其从手卡特殊召唤到自己场上。
 function c33296432.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) then
-		-- 执行将卡片特殊召唤到场上
+		-- 以表侧表示将这张卡特殊召唤到我方主要怪兽区，并按通常特殊召唤手续进行合法性检查。
 		Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
--- 效果值函数，判断目标怪兽是否从额外卡组特殊召唤
+-- ②的战斗破坏抗性判定：战斗对象怪兽是从额外卡组特殊召唤的场合，这张卡不会被那次战斗破坏。
 function c33296432.indes(e,c)
 	return c:IsSummonLocation(LOCATION_EXTRA)
 end
--- 效果发动条件函数，判断该卡是否因战斗或效果被破坏且在场上
+-- ③的发动条件：这张卡被战斗或效果破坏，且破坏前位于场上。
 function c33296432.spcon2(e,tp,eg,ep,ev,re,r,rp)
 	return bit.band(r,REASON_EFFECT+REASON_BATTLE)~=0 and e:GetHandler():IsPreviousLocation(LOCATION_ONFIELD)
 end
--- 过滤函数，筛选卡组中满足条件的「教导」怪兽
+-- ③的检索/特召对象过滤：属于「教导」字段、不是「教导的天启 阿东」自身、且可以被特殊召唤。
 function c33296432.spfilter(c,e,tp)
 	return c:IsSetCard(0x145) and not c:IsCode(33296432) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 效果发动时的处理函数，判断是否满足特殊召唤的条件
+-- ③发动时的合法性判定：自己主要怪兽区有空位，且卡组存在符合条件的「教导」怪兽；通过后登记操作信息。
 function c33296432.sptg2(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断玩家场上是否有足够的怪兽区域
+	-- 判定阶段（chk==0）：自己的主要怪兽区是否有可用的空格。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查卡组中是否存在至少1张满足条件的「教导」怪兽
+		-- 并且卡组中存在至少1只满足spfilter条件的「教导」怪兽，可作为特殊召唤对象。
 		and Duel.IsExistingMatchingCard(c33296432.spfilter,tp,LOCATION_DECK,0,1,nil,e,tp) end
-	-- 设置效果处理时将要特殊召唤的卡片信息
+	-- 将本连锁的操作信息登记为“从卡组特殊召唤1只怪兽”（对象在效果处理时选择）。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_DECK)
 end
--- 效果发动时的处理函数，从卡组选择并特殊召唤符合条件的怪兽
+-- ③效果处理：若仍有怪兽区空位，则提示玩家从卡组选择1只符合条件的「教导」怪兽并特殊召唤。
 function c33296432.spop2(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断玩家场上是否有足够的怪兽区域
+	-- 处理时安全判定：若我方主要怪兽区已无空位，直接终止处理。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-	-- 提示玩家选择要特殊召唤的卡
+	-- 向操作者显示“请选择要特殊召唤的卡”的提示信息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 从卡组中选择满足条件的1张怪兽卡
+	-- 从卡组选出1只满足spfilter条件的「教导」怪兽，此选择发生在效果处理时，不取对象。
 	local g=Duel.SelectMatchingCard(tp,c33296432.spfilter,tp,LOCATION_DECK,0,1,1,nil,e,tp)
 	if g:GetCount()>0 then
-		-- 执行将选中的怪兽卡特殊召唤到场上
+		-- 将选择的怪兽以表侧表示特殊召唤到我方主要怪兽区。
 		Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
 	end
 end

@@ -13,29 +13,29 @@ function c33420078.initial_effect(c)
 	e1:SetOperation(c33420078.operation)
 	c:RegisterEffect(e1)
 end
--- 检查手牌是否存在可作为代价送回卡组的卡，并选择其中一张送回卡组顶端。
+-- 发动代价处理：从手牌选择1张卡返回卡组最上面，作为发动效果的代价。
 function c33420078.cost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断是否满足发动条件，即手牌中存在至少一张可送回卡组的卡。
+	-- 代价检查：确认手牌中是否存在至少1张可以作为代价返回卡组的卡。
 	if chk==0 then return Duel.IsExistingMatchingCard(Card.IsAbleToDeckAsCost,tp,LOCATION_HAND,0,1,nil) end
-	-- 向玩家提示选择要送回卡组的卡。
+	-- 进行选择提示：显示“请选择要返回卡组的卡”，让玩家选择要返回卡组的手牌。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TODECK)  --"请选择要返回卡组的卡"
-	-- 选择满足条件的手牌送回卡组顶端。
+	-- 从手牌中选择1张满足条件的卡，作为发动代价。
 	local g=Duel.SelectMatchingCard(tp,Card.IsAbleToDeckAsCost,tp,LOCATION_HAND,0,1,1,nil)
-	-- 将选中的卡送回卡组顶端作为发动代价。
+	-- 将选择的卡送回持有者卡组最顶端，并视为支付代价。
 	Duel.SendtoDeck(g,nil,SEQ_DECKTOP,REASON_COST)
 end
--- 判断是否满足特殊召唤条件，即场上存在空位且该卡可被特殊召唤。
+-- 目标与条件检查：确认自己场上主要怪兽区有空位，且自身能够被特殊召唤，才能发动。
 function c33420078.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断场上是否有足够的怪兽区域。
+	-- 检查自己场上是否有可用的主要怪兽区空格。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置连锁操作信息，表示将要特殊召唤此卡。
+	-- 登记操作信息：本连锁即将把该怪兽特殊召唤，用于给其他卡或效果检测。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 执行特殊召唤操作，并设置特殊召唤后该卡离场时的去向为除外区。
+-- 效果处理：将这张卡特殊召唤，若特殊召唤成功，则给它附加离场时除外的不入连锁效果。
 function c33420078.operation(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 判断此卡是否仍存在于场上且成功特殊召唤，若成功则设置其离场时的去向。
+	-- 判断该卡仍与发动效果关联且特殊召唤成功；是则继续执行后续的除外效果附加。
 	if c:IsRelateToEffect(e) and Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)>0 then
 		-- 这个效果特殊召唤的这张卡从场上离开的场合除外。
 		local e1=Effect.CreateEffect(c)

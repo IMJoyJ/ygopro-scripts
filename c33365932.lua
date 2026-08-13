@@ -14,33 +14,33 @@ function c33365932.initial_effect(c)
 	e1:SetOperation(c33365932.op)
 	c:RegisterEffect(e1)
 end
--- 检查玩家是否能支付500基本分并支付
+-- 作为发动代价，支付500基本分；若无法支付则不能发动。
 function c33365932.cost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查玩家是否能支付500基本分
+	-- 效果发动合法性检查：确认玩家能否支付500基本分。
 	if chk==0 then return Duel.CheckLPCost(tp,500) end
-	-- 让玩家支付500基本分
+	-- 实际支付500基本分作为发动代价。
 	Duel.PayLPCost(tp,500)
 end
--- 定义过滤函数，用于筛选卡号为火山弹且可以送去手卡的卡片
+-- 定义检索条件：卡名是「火山弹」（卡号33365932），且可以被加入手卡。
 function c33365932.filter(c)
 	return c:IsCode(33365932) and c:IsAbleToHand()
 end
--- 检查卡组中是否存在满足条件的火山弹并设置连锁操作信息
+-- 效果发动时确认从卡组存在1只符合条件的「火山弹」，并设置“加入手卡”的操作信息。
 function c33365932.tg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查以玩家视角在卡组中是否存在至少1张满足条件的火山弹
+	-- 效果发动条件检查：自己卡组中存在至少1只符合条件的「火山弹」。
 	if chk==0 then return Duel.IsExistingMatchingCard(c33365932.filter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置连锁操作信息，表示将从卡组检索1张火山弹加入手牌
+	-- 将本次效果处理信息设置为“从卡组将1张卡加入手卡”，用于后续连锁判定（如星尘龙等）。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 确认效果发动时卡片位置是否在墓地，若在则检索并加入手牌
+-- 效果处理：若这张卡仍在墓地，则从卡组选1只「火山弹」加入手卡，并让对方确认。
 function c33365932.op(e,tp,eg,ep,ev,re,r,rp)
 	if not e:GetHandler():IsLocation(LOCATION_GRAVE) then return end
-	-- 从卡组中检索满足条件的第一张火山弹
+	-- 从自己卡组中获取第一只符合条件的「火山弹」。
 	local tc=Duel.GetFirstMatchingCard(c33365932.filter,tp,LOCATION_DECK,0,nil)
 	if tc then
-		-- 将检索到的火山弹以效果原因送去手牌
+		-- 将那只「火山弹」加入持有者的手卡，原因记为效果。
 		Duel.SendtoHand(tc,nil,REASON_EFFECT)
-		-- 给对手确认被送去手牌的火山弹
+		-- 向对方玩家展示加入手卡的卡片，以确认检索内容。
 		Duel.ConfirmCards(1-tp,tc)
 	end
 end

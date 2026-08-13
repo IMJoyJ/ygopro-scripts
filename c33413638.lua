@@ -12,16 +12,16 @@ function c33413638.initial_effect(c)
 	e1:SetOperation(c33413638.tdop)
 	c:RegisterEffect(e1)
 end
--- 设置效果处理时的操作信息，指定将自身送入卡组
+-- 定义效果的发动条件判定与操作信息登记：只要送去墓地即可发动，无需其他条件，并将把自身返回卡组的信息登记到本次连锁。
 function c33413638.tdtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置当前连锁处理中将要把目标卡片送入卡组
+	-- 将本次连锁的操作信息设置为“把效果持有者（这张卡）返回卡组”，数量为1，用于其他卡片进行时点或效果应对判定（由于不取对象，因此目标参数等按写法处理）。
 	Duel.SetOperationInfo(0,CATEGORY_TODECK,e:GetHandler(),1,0,0)
 end
--- 效果处理函数，检查卡片是否与效果相关联并执行送回卡组操作
+-- 效果处理函数：先确认这张卡仍与本次效果有联系（未因离场而重置），若符合则将其返回持有者卡组最顶端。
 function c33413638.tdop(e,tp,eg,ep,ev,re,r,rp)
 	if e:GetHandler():IsRelateToEffect(e) then
-		-- 将自身以效果原因送入卡组顶端
+		-- 将以效果原因将这张卡返回其持有者卡组最顶端（SEQ_DECKTOP），因为player参数为nil所以回到持有者卡组。
 		Duel.SendtoDeck(e:GetHandler(),nil,SEQ_DECKTOP,REASON_EFFECT)
 	end
 end
