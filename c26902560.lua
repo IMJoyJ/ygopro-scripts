@@ -11,27 +11,27 @@ function c26902560.initial_effect(c)
 	e1:SetOperation(c26902560.activate)
 	c:RegisterEffect(e1)
 end
--- 过滤函数，检查卡号为24094653且可以送去手卡的卡片
+-- 筛选条件：卡片编号为24094653（即「融合」），且能够被加入手卡。
 function c26902560.filter(c)
 	return c:IsCode(24094653) and c:IsAbleToHand()
 end
--- 效果的发动时点处理，检查是否满足发动条件并设置操作信息
+-- 发动时的目标处理函数：判定能否发动，并设置本次效果的操作信息。
 function c26902560.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查以玩家tp来看的卡组中是否存在至少1张满足filter条件的卡片
+	-- 效果发动前检查（chk==0）：自己卡组中是否存在至少1张符合条件的「融合」，存在才允许发动。
 	if chk==0 then return Duel.IsExistingMatchingCard(c26902560.filter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置操作信息为将1张卡从卡组送去手卡
+	-- 设置操作信息：本次效果为将1张卡从卡组加入手卡，用于连锁和效果检测。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 效果发动时的处理函数，选择并处理目标卡片
+-- 效果处理函数：从自己卡组选择1张「融合」加入手卡，并向对方展示。
 function c26902560.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 向玩家提示“请选择要加入手牌的卡”
+	-- 显示选择提示：请选择要加入手牌的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 从玩家的卡组中选择1张满足filter条件的卡片
+	-- 从自己卡组中选出1张符合条件的「融合」（依据filter过滤）。
 	local g=Duel.SelectMatchingCard(tp,c26902560.filter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的卡片以效果原因送去手卡
+		-- 将选中的卡以效果原因送入持有者的手卡。
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 向对方玩家确认被选中的卡片
+		-- 向对方玩家展示已加入手卡的卡，确认检索到的卡名。
 		Duel.ConfirmCards(1-tp,g)
 	end
 end

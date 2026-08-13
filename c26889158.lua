@@ -32,49 +32,49 @@ function c26889158.initial_effect(c)
 	e3:SetCode(EVENT_SPSUMMON_SUCCESS)
 	c:RegisterEffect(e3)
 end
--- 过滤函数：检查目标是否为「转生炎兽」怪兽且控制者为玩家tp且不是「转生炎兽 羚羊」本身
+-- 筛选满足「转生炎兽 羚羊」以外的「转生炎兽」怪兽且控制者为自己的卡，作为①效果的触发判定条件。
 function c26889158.cfilter(c,tp)
 	return c:IsSetCard(0x119) and c:IsType(TYPE_MONSTER) and not c:IsCode(26889158) and c:IsControler(tp)
 end
--- 条件函数：判断是否有满足条件的「转生炎兽」怪兽被送去墓地
+-- 检查本次送去墓地的卡组中是否存在至少1张满足cfilter条件的卡，即是否有「转生炎兽 羚羊」以外的「转生炎兽」怪兽被送去自己墓地。
 function c26889158.spcon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c26889158.cfilter,1,nil,tp)
 end
--- 目标函数：判断是否可以将自身特殊召唤到场上
+-- ①效果发动时检测：自己场上主要怪兽区有空位，且这张手卡能够被特殊召唤，以判断效果可否发动。
 function c26889158.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 规则层面：判断玩家场上是否有足够的怪兽区域
+	-- 检查自己场上的主要怪兽区域是否存在空位。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 规则层面：设置效果处理信息为特殊召唤
+	-- 设置操作信息，向系统登记本次效果将特殊召唤这张卡（数量为1）。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 效果处理函数：将自身特殊召唤到场上
+-- 处理①效果：若此卡仍与效果关联，则将其从手卡特殊召唤。
 function c26889158.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) then
-		-- 规则层面：执行特殊召唤操作
+		-- 执行特殊召唤，将此卡以表侧攻击表示特殊召唤到自己场上。
 		Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
--- 过滤函数：检查目标是否为「转生炎兽」卡且不是「转生炎兽 羚羊」且可以送去墓地
+-- 筛选②效果所需的卡组对象：满足「转生炎兽」字段、卡名不是「转生炎兽 羚羊」且能够被送去墓地的卡。
 function c26889158.tgfilter(c)
 	return c:IsSetCard(0x119) and not c:IsCode(26889158) and c:IsAbleToGrave()
 end
--- 目标函数：判断是否可以从卡组选择一张「转生炎兽」卡送去墓地
+-- ②效果发动检测：卡组中存在符合条件的「转生炎兽」卡，并设置送去墓地的操作信息。
 function c26889158.tgtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 规则层面：判断卡组中是否存在满足条件的「转生炎兽」卡
+	-- 检查卡组中是否存在至少1张符合tgfilter条件的卡。
 	if chk==0 then return Duel.IsExistingMatchingCard(c26889158.tgfilter,tp,LOCATION_DECK,0,1,nil) end
-	-- 规则层面：设置效果处理信息为送去墓地
+	-- 设置操作信息，声明本次效果将从卡组把1张卡送去墓地。
 	Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,nil,1,tp,LOCATION_DECK)
 end
--- 效果处理函数：从卡组选择一张「转生炎兽」卡送去墓地
+-- 处理②效果：提示玩家选择1张符合条件的卡，将其从卡组送去墓地。
 function c26889158.tgop(e,tp,eg,ep,ev,re,r,rp)
-	-- 规则层面：向玩家提示选择要送去墓地的卡
+	-- 显示选择提示，要求玩家选择要送去墓地的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
-	-- 规则层面：从卡组选择一张满足条件的卡
+	-- 让玩家从卡组选择1张满足tgfilter条件的卡。
 	local g=Duel.SelectMatchingCard(tp,c26889158.tgfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 规则层面：将选中的卡送去墓地
+		-- 将选择的那张卡以效果原因送去墓地。
 		Duel.SendtoGrave(g,REASON_EFFECT)
 	end
 end

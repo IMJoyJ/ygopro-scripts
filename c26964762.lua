@@ -36,119 +36,119 @@ function c26964762.initial_effect(c)
 	e3:SetOperation(c26964762.deckop)
 	c:RegisterEffect(e3)
 end
--- 过滤函数，用于判断墓地中的「命运英雄」怪兽
+-- 判断卡片是否属于「命运英雄」系列的怪兽卡，用于筛选墓地中的命运英雄怪兽。
 function c26964762.spcfilter(c)
 	return c:IsSetCard(0xc008) and c:IsType(TYPE_MONSTER)
 end
--- 效果条件函数，判断自己墓地是否有3只以上「命运英雄」怪兽
+-- ①效果的发动条件：自己墓地存在3只以上「命运英雄」怪兽。
 function c26964762.spcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 检索满足条件的卡片组，检查自己墓地是否有3只以上「命运英雄」怪兽
+	-- 检查自己墓地是否存在至少3只「命运英雄」怪兽。
 	return Duel.IsExistingMatchingCard(c26964762.spcfilter,tp,LOCATION_GRAVE,0,3,nil)
 end
--- 效果费用函数，将自身送去墓地作为费用
+-- ①效果的发动代价：将手牌中的这张卡丢弃送入墓地。
 function c26964762.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsDiscardable() end
-	-- 将自身送去墓地作为费用
+	-- 将这张卡从手牌丢弃送入墓地，作为发动代价。
 	Duel.SendtoGrave(e:GetHandler(),REASON_COST+REASON_DISCARD)
 end
--- 过滤函数，用于判断是否可以特殊召唤的「命运英雄」怪兽
+-- 筛选墓地中可作为特殊召唤对象的「命运英雄」怪兽，要求能被特殊召唤到对方场上且以表侧守备表示出场。
 function c26964762.spfilter(c,e,tp)
 	return c:IsSetCard(0xc008) and c:IsCanBeSpecialSummoned(e,0,tp,false,false,POS_FACEUP_DEFENSE,1-tp)
 end
--- 效果目标函数，设置选择目标的条件
+-- ①效果发动时：选择自己墓地1只「命运英雄」怪兽为对象，并设置特殊召唤的操作信息。
 function c26964762.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and c26964762.spfilter(chkc,e,tp) end
-	-- 判断对方场上是否有空位
+	-- 确认对方怪兽区域存在可用的空格，保证特殊召唤有位置。
 	if chk==0 then return Duel.GetLocationCount(1-tp,LOCATION_MZONE)>0
-		-- 检索满足条件的卡片组，检查自己墓地是否有「命运英雄」怪兽可特殊召唤
+		-- 并确认自己墓地存在1只符合条件的「命运英雄」怪兽可以作为对象。
 		and Duel.IsExistingTarget(c26964762.spfilter,tp,LOCATION_GRAVE,0,1,nil,e,tp) end
-	-- 提示玩家选择要特殊召唤的卡
+	-- 弹出提示框，让玩家选择要特殊召唤的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 选择满足条件的卡片作为目标
+	-- 让玩家从自己墓地选择1只符合条件的「命运英雄」怪兽，并将其登记为效果对象。
 	local g=Duel.SelectTarget(tp,c26964762.spfilter,tp,LOCATION_GRAVE,0,1,1,nil,e,tp)
-	-- 设置效果操作信息，确定要特殊召唤的卡
+	-- 设置操作信息，声明本效果将进行特殊召唤（CATEGORY_SPECIAL_SUMMON）。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,1,0,0)
 end
--- 效果处理函数，将目标怪兽特殊召唤
+-- ①效果处理：将作为对象的那只「命运英雄」怪兽特殊召唤到对方场上表侧守备表示。
 function c26964762.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的效果目标
+	-- 获取效果发动时选择的对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 将目标怪兽特殊召唤到对方场上
+		-- 将对象怪兽特殊召唤到对方场上，表示形式为表侧守备表示。
 		Duel.SpecialSummon(tc,0,tp,1-tp,false,false,POS_FACEUP_DEFENSE)
 	end
 end
--- 效果处理函数，使自己发动的魔法卡效果无效并破坏
+-- ②效果的触发处理：自己发动魔法卡时，使那张魔法卡的效果无效化并破坏。
 function c26964762.disop(e,tp,eg,ep,ev,re,r,rp)
 	if rp==tp and re:IsActiveType(TYPE_SPELL) then
 		local rc=re:GetHandler()
-		-- 使连锁效果无效并判断是否可以破坏
+		-- 先将该魔法卡的效果无效化；若无效成功且该卡仍与连锁相关，则继续执行破坏。
 		if Duel.NegateEffect(ev,true) and rc:IsRelateToEffect(re) then
-			-- 破坏效果的发动卡片
+			-- 以效果破坏那张魔法卡。
 			Duel.Destroy(rc,REASON_EFFECT)
 		end
 	end
 end
--- 效果条件函数，判断是否为自己的准备阶段
+-- ③效果的发动条件：自己准备阶段且当前回合玩家为自己。
 function c26964762.deckcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断当前回合玩家是否为效果发动者
+	-- 确认当前回合玩家是自己，即在自己准备阶段时满足条件。
 	return Duel.GetTurnPlayer()==tp
 end
--- 过滤函数，用于判断可作为除外费用的「命运英雄」怪兽
+-- 判断卡片是否属于「命运英雄」怪兽且可作为代价除外，用于③效果中额外除外的怪兽选择。
 function c26964762.cfilter(c)
 	return c:IsSetCard(0xc008) and c:IsType(TYPE_MONSTER) and c:IsAbleToRemoveAsCost()
 end
--- 效果费用函数，选择除外的卡作为费用
+-- ③效果的发动代价：从自己墓地将这张卡和另1只「命运英雄」怪兽除外。
 function c26964762.deckcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	if chk==0 then return c:IsAbleToRemoveAsCost()
-		-- 检索满足条件的卡片组，检查自己墓地是否有「命运英雄」怪兽可除外
+		-- 并确认自己墓地存在至少1只除这张卡以外的「命运英雄」怪兽可作为代价除外。
 		and Duel.IsExistingMatchingCard(c26964762.cfilter,tp,LOCATION_GRAVE,0,1,c) end
-	-- 提示玩家选择要除外的卡
+	-- 弹出选择提示，让玩家选择要除外的「命运英雄」怪兽。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
-	-- 选择满足条件的卡片作为除外费用
+	-- 让玩家从自己墓地选择1只除这张卡以外的「命运英雄」怪兽作为代价。
 	local g=Duel.SelectMatchingCard(tp,c26964762.cfilter,tp,LOCATION_GRAVE,0,1,1,c)
 	g:AddCard(c)
-	-- 将卡片除外作为费用
+	-- 将代价卡组（包含自身和选择的「命运英雄」怪兽）以表侧表示除外。
 	Duel.Remove(g,POS_FACEUP,REASON_COST)
 end
--- 过滤函数，用于判断是否为通常魔法卡
+-- 筛选通常魔法卡（类型仅为魔法卡，不包含速攻、装备、永续、场地、仪式等）。
 function c26964762.filter(c)
 	return c:GetType()==TYPE_SPELL
 end
--- 效果目标函数，设置选择目标的条件
+-- ③效果发动时确认对方卡组有卡且自己卡组存在通常魔法卡。
 function c26964762.decktg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断自己卡组是否有卡
+	-- 确认对方卡组有卡，保证对方能进行选卡。
 	if chk==0 then return Duel.GetFieldGroupCount(tp,0,LOCATION_DECK)>0
-		-- 检索满足条件的卡片组，检查自己卡组是否有通常魔法卡
+		-- 确认自己卡组存在至少1张通常魔法卡，保证自己能够选卡。
 		and Duel.IsExistingMatchingCard(c26964762.filter,tp,LOCATION_DECK,0,1,nil) end
 end
--- 效果处理函数，双方各自从卡组选1张通常魔法卡放置在卡组最上面
+-- ③效果处理：双方各从自己的卡组选1张通常魔法卡，然后分别放置到各自卡组最上面。
 function c26964762.deckop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要放置到卡组最上面的卡
+	-- 弹出选择提示，让己方玩家选择要放置到卡组最上方的通常魔法卡。
 	Duel.Hint(HINT_SELECTMSG,tp,aux.Stringid(26964762,3))  --"请选择要放置到卡组最上面的卡"
-	-- 选择满足条件的卡作为放置在卡组最上面的卡
+	-- 己方玩家从自己卡组选择1张通常魔法卡。
 	local g1=Duel.SelectMatchingCard(tp,c26964762.filter,tp,LOCATION_DECK,0,1,1,nil)
-	-- 提示对方玩家选择要放置到卡组最上面的卡
+	-- 弹出选择提示，让对方玩家选择要放置到卡组最上方的通常魔法卡。
 	Duel.Hint(HINT_SELECTMSG,1-tp,aux.Stringid(26964762,3))  --"请选择要放置到卡组最上面的卡"
-	-- 选择满足条件的卡作为对方放置在卡组最上面的卡
+	-- 对方玩家从对方自己的卡组选择1张通常魔法卡。
 	local g2=Duel.SelectMatchingCard(1-tp,c26964762.filter,1-tp,LOCATION_DECK,0,1,1,nil)
 	local tc1=g1:GetFirst()
 	local tc2=g2:GetFirst()
 	if tc1 then
-		-- 洗切玩家的卡组
+		-- 洗切己方卡组，为将选中的卡移至卡组顶做准备。
 		Duel.ShuffleDeck(tp)
-		-- 将卡片移动到卡组最上方
+		-- 将己方选中的通常魔法卡移动到卡组最上方。
 		Duel.MoveSequence(tc1,SEQ_DECKTOP)
-		-- 确认玩家卡组最上方的卡
+		-- 向双方确认己方卡组最上方的卡是这张通常魔法卡。
 		Duel.ConfirmDecktop(tp,1)
 	end
 	if tc2 then
-		-- 洗切对方的卡组
+		-- 洗切对方卡组，为将选中的卡移至卡组顶做准备。
 		Duel.ShuffleDeck(1-tp)
-		-- 将卡片移动到对方卡组最上方
+		-- 将对方选中的通常魔法卡移动到对方卡组最上方。
 		Duel.MoveSequence(tc2,SEQ_DECKTOP)
-		-- 确认对方卡组最上方的卡
+		-- 向双方确认对方卡组最上方的卡是这张通常魔法卡。
 		Duel.ConfirmDecktop(1-tp,1)
 	end
 end

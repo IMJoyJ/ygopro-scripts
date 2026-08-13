@@ -22,39 +22,39 @@ function c2694423.initial_effect(c)
 	e2:SetOperation(c2694423.desop)
 	c:RegisterEffect(e2)
 end
--- 效果发动时判断是否可以变更为里侧守备表示且本回合未发动过此效果
+-- 起动效果的发动条件：本卡为表侧且可变成里侧守备，并且本回合尚未使用过该效果（flag为0）；满足条件时注册一次使用标记并设置变更表示形式的操作信息。
 function c2694423.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	if chk==0 then return c:IsCanTurnSet() and c:GetFlagEffect(2694423)==0 end
 	c:RegisterFlagEffect(2694423,RESET_EVENT+RESETS_STANDARD-RESET_TURN_SET+RESET_PHASE+PHASE_END,0,1)
-	-- 设置连锁操作信息为改变表示形式效果，目标为自身
+	-- 将本次效果处理信息设置为改变表示形式，对象为本卡，数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_POSITION,c,1,0,0)
 end
--- 执行将自身变为里侧守备表示的操作
+-- 效果处理时，若本卡仍与效果关联且为表侧表示，则将其变成里侧守备表示。
 function c2694423.operation(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) and c:IsFaceup() then
-		-- 将自身变为里侧守备表示
+		-- 将本卡的表示形式改为里侧守备表示。
 		Duel.ChangePosition(c,POS_FACEDOWN_DEFENSE)
 	end
 end
--- 选择对方场上1只怪兽作为破坏对象
+-- 反转召唤成功时诱发效果的发动条件：选择对方场上1只怪兽作为对象（取对象破坏）。
 function c2694423.destg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(1-tp) end
 	if chk==0 then return true end
-	-- 提示玩家选择要破坏的卡
+	-- 向操作者显示选择提示，提示内容为“请选择要破坏的卡”。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 选择对方场上1只怪兽作为目标
+	-- 选择对方场上1只怪兽作为本效果的对象。
 	local g=Duel.SelectTarget(tp,aux.TRUE,tp,0,LOCATION_MZONE,1,1,nil)
-	-- 设置连锁操作信息为破坏效果，目标为选择的怪兽
+	-- 将本次效果处理信息设置为破坏，对象为选择的怪兽，数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,g:GetCount(),0,0)
 end
--- 执行破坏选择的对方怪兽
+-- 效果处理时，取得对象怪兽，若该怪兽仍与效果关联且当前控制者为对方，则将其破坏。
 function c2694423.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁中设置的目标怪兽
+	-- 取得本连锁中已选择的效果对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if tc and tc:IsRelateToEffect(e) and tc:IsControler(1-tp) then
-		-- 将目标怪兽以效果为原因进行破坏
+		-- 以效果原因将对象怪兽破坏。
 		Duel.Destroy(tc,REASON_EFFECT)
 	end
 end
