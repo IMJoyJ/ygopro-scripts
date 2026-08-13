@@ -32,55 +32,55 @@ function c51543904.initial_effect(c)
 	e2:SetOperation(c51543904.disop)
 	c:RegisterEffect(e2)
 end
--- 设置此卡为No.99怪兽
+-- 将该卡的XYZ编号设为99，用于“No.”相关卡片的特殊判定。
 aux.xyz_number[51543904]=99
--- 过滤手牌中可丢弃的「升阶魔法」魔法卡
+-- cfilter：判断手卡中的卡是否为「升阶魔法」魔法卡且能够被丢弃，作为额外超量召唤的代价条件。
 function c51543904.cfilter(c)
 	return c:IsSetCard(0x95) and c:IsType(TYPE_SPELL) and c:IsDiscardable()
 end
--- 判断场上是否存在「希望皇 霍普」怪兽
+-- ovfilter：判断场上的表侧表示怪兽是否为「希望皇」字段怪兽，以决定能否在其上重叠进行超量召唤。
 function c51543904.ovfilter(c)
 	return c:IsFaceup() and c:IsSetCard(0x107f)
 end
--- 检查是否有满足条件的「升阶魔法」魔法卡并将其丢弃作为召唤代价
+-- xyzop：该卡的追加超量召唤手续：检查手卡是否存在可丢弃的「升阶魔法」，并丢弃1张作为召唤代价。
 function c51543904.xyzop(e,tp,chk)
-	-- 检查是否存在满足条件的「升阶魔法」魔法卡
+	-- 检查手卡中是否存在满足cfilter条件的“升阶魔法”卡，以决定能否以追加手续进行超量召唤。
 	if chk==0 then return Duel.IsExistingMatchingCard(c51543904.cfilter,tp,LOCATION_HAND,0,1,nil) end
-	-- 执行丢弃操作
+	-- 丢弃手卡中1张满足条件的“升阶魔法”魔法卡，作为该超量召唤手续的代价。
 	Duel.DiscardHand(tp,c51543904.cfilter,1,1,REASON_COST+REASON_DISCARD)
 end
--- 过滤墓地中的「No.」怪兽
+-- filter：判断墓地怪兽是否为“No.”怪兽且能够以表侧守备表示被效果特殊召唤，并符合苏生限制。
 function c51543904.filter(c,e,tp)
 	return c:IsSetCard(0x48) and c:IsCanBeSpecialSummoned(e,0,tp,false,false,POS_FACEUP_DEFENSE)
 end
--- 设置特殊召唤效果的目标选择函数
+-- sptg：效果发动前的目标选择与合法性判定：指定墓地的“No.”怪兽为对象，并确认有可用的主要怪兽区及合法对象。
 function c51543904.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and c51543904.filter(chkc,e,tp) end
-	-- 判断是否有足够的召唤位置
+	-- 检查我方主要怪兽区域是否有空位，用于后续特殊召唤。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查墓地中是否存在满足条件的怪兽
+		-- 检查墓地中是否存在满足特殊召唤条件的“No.”怪兽可成为效果对象。
 		and Duel.IsExistingTarget(c51543904.filter,tp,LOCATION_GRAVE,0,1,nil,e,tp) end
-	-- 提示玩家选择要特殊召唤的卡
+	-- 提示玩家选择要特殊召唤的卡片，显示“请选择要特殊召唤的卡”。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 选择目标怪兽
+	-- 从自己墓地选择1只满足特殊召唤条件的“No.”怪兽作为效果对象，并将其登记为连锁对象。
 	local g=Duel.SelectTarget(tp,c51543904.filter,tp,LOCATION_GRAVE,0,1,1,nil,e,tp)
-	-- 设置操作信息，表示将特殊召唤怪兽
+	-- 设置本次操作信息：将对1只怪兽进行特殊召唤，预定的特殊召唤对象为已选择的卡。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,1,0,0)
 end
--- 执行特殊召唤并附加效果
+-- spop：效果处理时，将对象“No.”怪兽表侧守备表示特殊召唤，并使其效果无效化，最后完成特殊召唤流程。
 function c51543904.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取当前连锁的目标怪兽
+	-- 取得本次效果选择的墓地对象怪兽。
 	local tc=Duel.GetFirstTarget()
-	-- 判断目标怪兽是否有效且进行特殊召唤步骤
+	-- 确认对象怪兽仍与效果关联且满足特殊召唤条件后，将其以表侧守备表示加入特殊召唤流程。
 	if tc:IsRelateToEffect(e) and Duel.SpecialSummonStep(tc,0,tp,tp,false,false,POS_FACEUP_DEFENSE) then
-		-- 使特殊召唤的怪兽效果无效
+		-- 这个效果特殊召唤的怪兽的效果无效化。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_DISABLE)
 		e1:SetReset(RESET_EVENT+RESETS_STANDARD)
 		tc:RegisterEffect(e1)
-		-- 使特殊召唤的怪兽效果被无效化
+		-- 这个效果特殊召唤的怪兽的效果无效化。
 		local e2=Effect.CreateEffect(c)
 		e2:SetType(EFFECT_TYPE_SINGLE)
 		e2:SetCode(EFFECT_DISABLE_EFFECT)
@@ -88,39 +88,39 @@ function c51543904.spop(e,tp,eg,ep,ev,re,r,rp)
 		e2:SetReset(RESET_EVENT+RESETS_STANDARD)
 		tc:RegisterEffect(e2)
 	end
-	-- 完成特殊召唤流程
+	-- 完成分步特殊召唤流程，将之前待定的怪兽正式特殊召唤上场。
 	Duel.SpecialSummonComplete()
 end
--- 判断是否可以发动此效果
+-- discon：②效果的发动条件：当怪兽效果以这张卡为对象发动时，且该连锁能被无效，并且本卡未被战斗破坏，才能发动。
 function c51543904.discon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsStatus(STATUS_BATTLE_DESTROYED) then return false end
 	if not re:IsHasProperty(EFFECT_FLAG_CARD_TARGET) or not re:IsActiveType(TYPE_MONSTER) then return end
-	-- 获取连锁的目标卡片组
+	-- 取得该连锁中被选为对象的目标卡组，用于判断是否包含这张卡。
 	local tg=Duel.GetChainInfo(ev,CHAININFO_TARGET_CARDS)
-	-- 判断目标卡片组是否包含此卡且该连锁可被无效
+	-- 仅当对象组中包含本卡且该连锁可以被无效时，②效果才满足发动条件。
 	return tg and tg:IsContains(c) and Duel.IsChainNegatable(ev)
 end
--- 设置破坏效果的费用支付函数
+-- discost：将这张卡1个超量素材取除作为发动代价；先确认有超量素材可移除，然后实际取除1个。
 function c51543904.discost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():CheckRemoveOverlayCard(tp,1,REASON_COST) end
 	e:GetHandler():RemoveOverlayCard(tp,1,1,REASON_COST)
 end
--- 设置破坏效果的目标选择函数
+-- distg：②效果发动的目标设定：允许发动，并把要无效的对方效果来源卡设为操作对象；若来源卡可破坏且仍关联，则同时追加破坏操作信息。
 function c51543904.distg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置操作信息，表示将使发动无效
+	-- 设置操作信息：本次处理将无效对方发动的那个效果（eg）。
 	Duel.SetOperationInfo(0,CATEGORY_NEGATE,eg,1,0,0)
 	if re:GetHandler():IsDestructable() and re:GetHandler():IsRelateToEffect(re) then
-		-- 设置操作信息，表示将破坏目标怪兽
+		-- 追加设置操作信息：若对方效果来源怪兽仍可破坏且与效果关联，则本次处理还会将其破坏。
 		Duel.SetOperationInfo(0,CATEGORY_DESTROY,eg,1,0,0)
 	end
 end
--- 执行破坏效果
+-- disop：实际处理：先将对方那个效果的发动无效化，成功后破坏该效果来源怪兽。
 function c51543904.disop(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断是否成功使连锁无效且目标怪兽有效
+	-- 使对应连锁的发动无效，并确认被无效效果来源的怪兽仍与效果关联后才继续处理破坏。
 	if Duel.NegateActivation(ev) and re:GetHandler():IsRelateToEffect(re) then
-		-- 执行破坏操作
+		-- 以效果破坏那个发动被无效的怪兽。
 		Duel.Destroy(eg,REASON_EFFECT)
 	end
 end

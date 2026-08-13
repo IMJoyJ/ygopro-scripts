@@ -21,8 +21,8 @@ function c51566770.initial_effect(c)
 	e2:SetValue(1)
 	c:RegisterEffect(e2)
 end
--- 检查当前控制者的手卡数量是否为0
+-- 条件函数：判断这张卡的控制者手牌数是否为0，用于决定是否适用破坏免疫效果。
 function c51566770.condition(e)
-	-- 获取当前控制者手上卡片的数量并判断是否等于0
+	-- 获取效果持有者的控制者的手牌区域（LOCATION_HAND）的卡数量，判断其是否为0；若为0则条件成立。
 	return Duel.GetFieldGroupCount(e:GetHandler():GetControler(),LOCATION_HAND,0)==0
 end

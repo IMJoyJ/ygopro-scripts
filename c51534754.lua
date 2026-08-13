@@ -13,26 +13,26 @@ function c51534754.initial_effect(c)
 	e1:SetOperation(c51534754.operation)
 	c:RegisterEffect(e1)
 end
--- 检查此卡是否因战斗破坏而进入墓地且破坏此卡的怪兽仍与本次战斗相关
+-- 判断效果发动条件：这张卡在墓地且是被战斗破坏，同时导致其破坏的怪兽仍与本次战斗相关。
 function c51534754.condition(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsLocation(LOCATION_GRAVE) and e:GetHandler():IsReason(REASON_BATTLE)
 		and e:GetHandler():GetReasonCard():IsRelateToBattle()
 end
--- 设置效果目标为破坏此卡的怪兽，并设定操作信息为破坏该怪兽
+-- 发动时无额外选择要求，将导致这张卡破坏的怪兽设为处理对象，并设置对应的破坏信息。
 function c51534754.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
 	local rc=e:GetHandler():GetReasonCard()
-	-- 将破坏此卡的怪兽设为连锁处理对象
+	-- 将导致这张卡破坏的怪兽设置为当前连锁的处理对象，便于后续效果处理时获取。
 	Duel.SetTargetCard(rc)
-	-- 设置操作信息，表明此效果属于破坏类别，目标为1只怪兽
+	-- 设置本次效果处理的操作信息为：破坏那张怪兽，用于连锁判定和效果发动检测。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,rc,1,0,0)
 end
--- 执行效果操作，若目标怪兽仍与效果相关则将其破坏
+-- 实际处理：取得连锁对象，若该对象仍与此效果关联，则将其破坏。
 function c51534754.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁处理的对象（即破坏此卡的怪兽）
+	-- 获取当前连锁中登记的对象卡，即导致这张卡破坏的怪兽。
 	local rc=Duel.GetFirstTarget()
 	if rc:IsRelateToEffect(e) then
-		-- 将目标怪兽以效果原因进行破坏
+		-- 以效果方式破坏该怪兽，使其被送去墓地。
 		Duel.Destroy(rc,REASON_EFFECT)
 	end
 end
