@@ -1,10 +1,15 @@
 --Gゴーレム・クリスタルハート
+-- 效果：
+-- 电子界族怪兽2只
+-- 这个卡名的①的效果1回合只能使用1次。
+-- ①：以自己墓地1只地属性连接怪兽为对象才能发动。那只怪兽在作为这张卡所连接区的自己场上特殊召唤，给这张卡放置1个G石人指示物。
+-- ②：这张卡所互相连接区的地属性怪兽攻击力上升这张卡的G石人指示物数量×600，同1次的战斗阶段中可以作2次攻击，向守备表示怪兽攻击的场合，给与对方为攻击力超过那个守备力的数值的战斗伤害。
 function c61668670.initial_effect(c)
 	c:EnableCounterPermit(0x64)
-	--link summon
+	-- 为这张卡添加连接召唤手续：以2只电子界族怪兽作为连接素材进行连接召唤
 	aux.AddLinkProcedure(c,aux.FilterBoolFunction(Card.IsLinkRace,RACE_CYBERSE),2,2)
 	c:EnableReviveLimit()
-	--special summon
+	-- ①：以自己墓地1只地属性连接怪兽为对象才能发动。那只怪兽在作为这张卡所连接区的自己场上特殊召唤，给这张卡放置1个G石人指示物。（这个卡名的①的效果1回合只能使用1次）
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(61668670,0))
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_COUNTER)
@@ -15,7 +20,7 @@ function c61668670.initial_effect(c)
 	e1:SetTarget(c61668670.sptg)
 	e1:SetOperation(c61668670.spop)
 	c:RegisterEffect(e1)
-	--atk gain
+	-- ②：这张卡所互相连接区的地属性怪兽攻击力上升这张卡的G石人指示物数量×600
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD)
 	e2:SetCode(EFFECT_UPDATE_ATTACK)
@@ -36,33 +41,45 @@ end
 c61668670.mentioned_counter={
 	[0x64]=true,
 }
+-- 过滤器：判定卡片是否为地属性连接怪兽，且能否在这张卡所连接区的自己场上以表侧表示特殊召唤
 function c61668670.filter(c,e,tp,zone)
 	return c:IsAttribute(ATTRIBUTE_EARTH) and c:IsType(TYPE_LINK) and c:IsCanBeSpecialSummoned(e,0,tp,false,false,POS_FACEUP,tp,zone)
 end
+-- ①效果的对象选择处理：计算这张卡所连接区的可用区域，确认自己墓地存在可作为对象特殊召唤的地属性连接怪兽后，选择自己墓地1只满足条件的怪兽为对象
 function c61668670.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	local zone=e:GetHandler():GetLinkedZone(tp)&0x1f
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and c61668670.filter(chkc,e,tp,zone) end
+	-- 发动条件检查：确认自己墓地存在至少1只能在这张卡所连接区特殊召唤的地属性连接怪兽作为对象
 	if chk==0 then return Duel.IsExistingTarget(c61668670.filter,tp,LOCATION_GRAVE,0,1,nil,e,tp,zone) end
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
+	-- 向玩家发送请选择要特殊召唤的卡的选择提示
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
+	-- 从自己墓地选择1只满足条件的地属性连接怪兽作为效果对象
 	local g=Duel.SelectTarget(tp,c61668670.filter,tp,LOCATION_GRAVE,0,1,1,nil,e,tp,zone)
+	-- 设置连锁的操作信息：本连锁将对作为对象的1张卡进行特殊召唤处理
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,1,0,0)
 end
+-- ①效果的处理：若这张卡和对象怪兽仍与效果相关且连接区可用，则将对象怪兽特殊召唤到这张卡所连接区的自己场上，并给这张卡放置1个G石人指示物
 function c61668670.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local zone=c:GetLinkedZone(tp)&0x1f
+	-- 取得当前连锁处理的效果对象（即发动时选择的那只地属性连接怪兽）
 	local tc=Duel.GetFirstTarget()
 	if c:IsRelateToEffect(e) and tc:IsRelateToEffect(e) and zone~=0 then
+		-- 将对象怪兽在这张卡所连接区的自己场上以表侧表示特殊召唤
 		Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP,zone)
 		c:AddCounter(0x64,1)
 	end
 end
+-- ②效果的适用条件：这张卡处于互相连接状态（所互相连接区存在怪兽）
 function c61668670.atkcon(e)
 	return e:GetHandler():GetMutualLinkedGroupCount()>0
 end
+-- ②效果的适用对象：这张卡所互相连接区的地属性怪兽
 function c61668670.atktg(e,c)
 	local g=e:GetHandler():GetMutualLinkedGroup()
 	return g:IsContains(c) and c:IsAttribute(ATTRIBUTE_EARTH)
 end
+-- ②效果的数值：攻击力上升这张卡的G石人指示物数量×600
 function c61668670.atkval(e,c)
 	return e:GetHandler():GetCounter(0x64)*600
 end
