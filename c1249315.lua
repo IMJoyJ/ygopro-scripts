@@ -4,10 +4,10 @@
 -- 这个卡名的效果1回合只能使用1次。
 -- ①：把这张卡1个超量素材取除，以自己墓地1只怪兽为对象才能发动。那只怪兽加入手卡。那之后，选1张手卡回到卡组。
 function c1249315.initial_effect(c)
-	-- 为卡片添加等级为2、需要2只怪兽进行XYZ召唤的手续
+	-- 为这张卡添加XYZ召唤手续：用任意2只2星怪兽作为超量素材进行XYZ召唤。
 	aux.AddXyzProcedure(c,nil,2,2)
 	c:EnableReviveLimit()
-	-- ①：把这张卡1个超量素材取除，以自己墓地1只怪兽为对象才能发动。那只怪兽加入手卡。那之后，选1张手卡回到卡组。
+	-- 这个卡名的效果1回合只能使用1次。①：把这张卡1个超量素材取除，以自己墓地1只怪兽为对象才能发动。那只怪兽加入手卡。那之后，选1张手卡回到卡组。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(1249315,0))  --"加入手卡"
 	e2:SetCategory(CATEGORY_TOHAND)
@@ -20,41 +20,41 @@ function c1249315.initial_effect(c)
 	e2:SetOperation(c1249315.thop)
 	c:RegisterEffect(e2)
 end
--- 效果的费用支付函数，检查并移除1个超量素材作为代价
+-- 支付代价：发动前检查能否移除这张卡的1个超量素材；可以则把这张卡的1个超量素材移除作为发动代价。
 function c1249315.thcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():CheckRemoveOverlayCard(tp,1,REASON_COST) end
 	e:GetHandler():RemoveOverlayCard(tp,1,1,REASON_COST)
 end
--- 用于筛选墓地中的怪兽是否可以加入手卡的过滤函数
+-- 墓地怪兽的筛选函数：对象必须是怪兽且能够加入手卡。
 function c1249315.thfilter(c)
 	return c:IsType(TYPE_MONSTER) and c:IsAbleToHand()
 end
--- 效果的发动时选择目标函数，用于选择墓地中的怪兽作为对象
+-- 发动时的目标选择处理：检查自己墓地是否存在符合条件的怪兽；存在则让玩家选择1只墓地怪兽作为对象，并设定“加入手卡”的操作信息。
 function c1249315.thtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(tp) and chkc:IsLocation(LOCATION_GRAVE) and c1249315.thfilter(chkc) end
-	-- 判断是否满足选择目标的条件，即墓地是否存在符合条件的怪兽
+	-- 发动条件判定：自己墓地是否存在至少1只满足条件的怪兽，若不存在则不能发动。
 	if chk==0 then return Duel.IsExistingTarget(c1249315.thfilter,tp,LOCATION_GRAVE,0,1,nil) end
-	-- 向玩家发送提示信息，提示选择要加入手卡的卡
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_RTOHAND)
-	-- 选择目标怪兽，从玩家墓地中选择1只符合条件的怪兽
+	-- 给玩家显示“请选择要返回手牌的卡”的选择提示。
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_RTOHAND)  --"请选择要返回手牌的卡"
+	-- 从自己墓地选择1只满足条件的怪兽作为效果对象。
 	local g=Duel.SelectTarget(tp,c1249315.thfilter,tp,LOCATION_GRAVE,0,1,1,nil)
-	-- 设置效果处理时的操作信息，指定将目标怪兽加入手卡
+	-- 将本次操作信息登记为“把1张卡加入手卡”，供后续时点或连锁检测使用。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,1,0,0)
 end
--- 效果的处理函数，执行将目标怪兽加入手卡并返回手卡的处理
+-- 效果处理：取回那名对象怪兽；若成功加入手卡，则再选1张手卡洗回卡组。
 function c1249315.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁中被选择的目标怪兽
+	-- 获取效果发动时选择的那只对象怪兽。
 	local tc=Duel.GetFirstTarget()
-	-- 判断目标怪兽是否仍然有效，并将其加入手卡，若成功则继续处理
+	-- 确认对象仍与效果关联且已成功加入手卡并处于手牌区域，才继续执行“选1张手卡回卡组”的处理。
 	if tc:IsRelateToEffect(e) and Duel.SendtoHand(tc,nil,REASON_EFFECT)>0 and tc:IsLocation(LOCATION_HAND) then
-		-- 向玩家发送提示信息，提示选择要返回卡组的卡
-		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TODECK)
-		-- 从玩家手牌中选择1张卡作为返回卡组的对象
+		-- 给玩家显示“请选择要返回卡组的卡”的选择提示。
+		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TODECK)  --"请选择要返回卡组的卡"
+		-- 从自己手牌选择1张卡（用于返回卡组）。
 		local g=Duel.GetFieldGroup(tp,LOCATION_HAND,0):Select(tp,1,1,nil)
 		if g:GetCount()>0 then
-			-- 中断当前效果处理，使后续处理视为错时点
+			-- 中断当前效果连锁的处理，使前面的回手牌和此后的回卡组不在同一时点被处理（避免误判同时处理）。
 			Duel.BreakEffect()
-			-- 将选中的手卡返回卡组并洗牌
+			-- 将选择的那张手牌洗回持有者卡组（以效果为原因，并触发洗牌）。
 			Duel.SendtoDeck(g,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
 		end
 	end

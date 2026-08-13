@@ -18,33 +18,33 @@ function c1248895.initial_effect(c)
 	e3:SetCode(EVENT_SPSUMMON_SUCCESS)
 	c:RegisterEffect(e3)
 end
--- 过滤函数，用于筛选满足条件的怪兽（表侧表示、攻击力2000以下、可成为效果对象）
+-- 筛选函数：判断怪兽是否表侧表示、攻击力2000以下且能成为效果对象，用于选出可被本效果选择的召唤成功怪兽。
 function c1248895.filter(c,e)
 	return c:IsFaceup() and c:IsAttackBelow(2000) and c:IsCanBeEffectTarget(e)
 end
--- 设置连锁破坏效果的目标选择函数
+-- 发动时选择对象的处理：在连锁确认时校验已选对象是否在召唤成功的那组怪兽中；发动前检查是否存在满足条件的怪兽；若召唤成功的怪兽只有1只则自动设为对象，否则让玩家从其中选择1只并设为对象。
 function c1248895.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return eg:IsContains(chkc) end
 	if chk==0 then return eg:IsExists(c1248895.filter,1,nil,e) end
 	if eg:GetCount()==1 then
-		-- 当连锁中只有一只符合条件的怪兽时，直接将该怪兽设为效果对象
+		-- 当时点只有1只满足条件的怪兽时，直接将该怪兽设置为效果对象。
 		Duel.SetTargetCard(eg)
 	else
-		-- 向玩家提示选择效果对象
-		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)
+		-- 向当前玩家显示“请选择效果的对象”的选择提示，等待玩家选择对象。
+		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)  --"请选择效果的对象"
 		local g=eg:FilterSelect(tp,c1248895.filter,1,1,nil,e)
-		-- 从符合条件的怪兽中选择一只作为效果对象
+		-- 将玩家选择的那只怪兽设置为效果对象。
 		Duel.SetTargetCard(g)
 	end
 end
--- 设置连锁破坏效果的发动处理函数
+-- 效果处理：取得对象怪兽；若对象是衍生物则直接终止；否则找出该对象控制者手卡和卡组中所有与对象同名卡并全部破坏。
 function c1248895.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前效果的对象怪兽
+	-- 获取效果发动时选择的对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	local tpe=tc:GetType()
 	if bit.band(tpe,TYPE_TOKEN)~=0 then return end
-	-- 检索对象怪兽控制者的手卡和卡组中所有同名卡
+	-- 获取对象怪兽控制者手卡与卡组中所有与对象怪兽卡号相同的卡片，构成待破坏的卡片组。
 	local dg=Duel.GetMatchingGroup(Card.IsCode,tc:GetControler(),LOCATION_DECK+LOCATION_HAND,0,nil,tc:GetCode())
-	-- 将检索到的同名卡全部破坏
+	-- 以效果原因将上述同名卡全部破坏。
 	Duel.Destroy(dg,REASON_EFFECT)
 end

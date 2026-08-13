@@ -6,7 +6,7 @@
 -- ③：自己墓地是「被封印的艾克佐迪亚」「被封印者的右腕」「被封印者的左腕」「被封印者的右足」「被封印者的左足」的其中任意种不存在的场合这张卡破坏。
 function c12600382.initial_effect(c)
 	c:EnableReviveLimit()
-	-- ①：这张卡不会被战斗以及魔法·陷阱卡的效果破坏。
+	-- ①：这张卡不会被战斗以及魔法·陷阱卡的效果破坏。——此效果实现不会被战斗破坏的部分。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_INDESTRUCTABLE_BATTLE)
@@ -14,7 +14,7 @@ function c12600382.initial_effect(c)
 	e1:SetRange(LOCATION_MZONE)
 	e1:SetValue(1)
 	c:RegisterEffect(e1)
-	-- ①：这张卡不会被战斗以及魔法·陷阱卡的效果破坏。
+	-- ①：这张卡不会被战斗以及魔法·陷阱卡的效果破坏。——此效果实现不会被魔法·陷阱卡效果破坏的部分。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_SINGLE)
 	e2:SetCode(EFFECT_INDESTRUCTABLE_EFFECT)
@@ -48,20 +48,20 @@ function c12600382.initial_effect(c)
 	e5:SetCondition(c12600382.descon)
 	c:RegisterEffect(e5)
 end
--- 返回效果是否为魔法或陷阱卡的效果
+-- 判定一个效果是否为魔法·陷阱卡效果；若为魔法·陷阱卡效果则本卡不会被该效果破坏。
 function c12600382.efdes(e,re)
 	return re:IsActiveType(TYPE_SPELL+TYPE_TRAP)
 end
--- 判断是否为准备阶段
+-- 触发条件：仅在效果发动者的回合（即自己的准备阶段）满足条件。
 function c12600382.atkcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断是否为当前回合玩家
+	-- 判断当前回合玩家是否为效果拥有者，用于限定只有自己的准备阶段才发动。
 	return tp==Duel.GetTurnPlayer()
 end
--- 执行攻击力上升效果
+-- 处理攻击力上升：先确认本卡仍存在于场上且与效果相关、未变成里侧表示，然后为本卡临时注册一个攻击力上升500的效果。
 function c12600382.atkop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if not c:IsRelateToEffect(e) or c:IsFacedown() then return end
-	-- 将攻击力上升500的效果登记到卡上
+	-- 这张卡的攻击力上升500。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_UPDATE_ATTACK)
@@ -69,17 +69,17 @@ function c12600382.atkop(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetValue(500)
 	c:RegisterEffect(e1)
 end
--- 判断是否满足破坏条件
+-- ③的自坏条件：检查自己墓地中五张「被封印」部件是否任意一种不存在，只要缺任意一种就返回真，使本卡破坏。
 function c12600382.descon(e)
 	local p=e:GetHandlerPlayer()
-	-- 判断墓地是否不存在「被封印的艾克佐迪亚」
+	-- 检查自己墓地是否存在「被封印的艾克佐迪亚」（卡号8124921），若不存在则满足③的破坏条件之一。
 	return not Duel.IsExistingMatchingCard(Card.IsCode,p,LOCATION_GRAVE,0,1,nil,8124921)
-		-- 判断墓地是否不存在「被封印者的右腕」
+		-- 检查自己墓地是否存在「被封印者的右腕」（卡号44519536），若不存在则满足③的破坏条件之一。
 		or not Duel.IsExistingMatchingCard(Card.IsCode,p,LOCATION_GRAVE,0,1,nil,44519536)
-		-- 判断墓地是否不存在「被封印者的左腕」
+		-- 检查自己墓地是否存在「被封印者的左腕」（卡号70903634），若不存在则满足③的破坏条件之一。
 		or not Duel.IsExistingMatchingCard(Card.IsCode,p,LOCATION_GRAVE,0,1,nil,70903634)
-		-- 判断墓地是否不存在「被封印者的右足」
+		-- 检查自己墓地是否存在「被封印者的右足」（卡号7902349），若不存在则满足③的破坏条件之一。
 		or not Duel.IsExistingMatchingCard(Card.IsCode,p,LOCATION_GRAVE,0,1,nil,7902349)
-		-- 判断墓地是否不存在「被封印者的左足」
+		-- 检查自己墓地是否存在「被封印者的左足」（卡号33396948），若不存在则满足③的破坏条件之一。
 		or not Duel.IsExistingMatchingCard(Card.IsCode,p,LOCATION_GRAVE,0,1,nil,33396948)
 end

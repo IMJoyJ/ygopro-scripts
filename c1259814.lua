@@ -7,7 +7,7 @@ function c1259814.initial_effect(c)
 	e0:SetType(EFFECT_TYPE_ACTIVATE)
 	e0:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e0)
-	-- ①：1回合1次，以场上1只表侧表示怪兽为对象才能发动。
+	-- ①：1回合1次，以场上1只表侧表示怪兽为对象才能发动。那只怪兽的种族变成机械族，那个属性也当作「光」「暗」「地」「水」「炎」「风」使用。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(1259814,0))
 	e1:SetType(EFFECT_TYPE_QUICK_O)
@@ -20,7 +20,7 @@ function c1259814.initial_effect(c)
 	e1:SetOperation(c1259814.op)
 	c:RegisterEffect(e1)
 end
--- 判断目标怪兽是否满足效果发动条件（表侧表示且种族不是机械族或属性不足6种）
+-- 筛选可作为对象的场上表侧表示怪兽：若该怪兽不是机械族则直接通过；若已是机械族，则检查其当前属性种类数量，只有未同时拥有光暗地水炎风全属性（即属性种类少于6种）时才能选择。
 function c1259814.filter(c)
 	if not c:IsFaceup() then return false end
 	if not c:IsRace(RACE_MACHINE) then return true end
@@ -32,30 +32,30 @@ function c1259814.filter(c)
 	end
 	return ct<6
 end
--- 设置效果目标为场上1只表侧表示的怪兽
+-- 效果发动时的取对象处理：若指定对象则校验其位于怪兽区且满足筛选函数；若为发动确认阶段则检查场上是否存在至少1只满足条件的表侧表示怪兽，存在才可发动；随后给出选择提示并让玩家选择1只符合条件的表侧表示怪兽作为对象。
 function c1259814.tg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and c1259814.filter(chkc) end
-	-- 检查是否存在满足条件的目标怪兽
+	-- 发动合法性检查：确认场上存在至少1只符合筛选条件的表侧表示怪兽可供选择。
 	if chk==0 then return Duel.IsExistingTarget(c1259814.filter,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil) end
-	-- 提示玩家选择目标怪兽
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)
-	-- 选择满足条件的1只怪兽作为效果对象
+	-- 向选牌玩家显示选择提示信息“请选择表侧表示的卡”。
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
+	-- 玩家从双方怪兽区域选择1只满足筛选条件的表侧表示怪兽，并设定为这张卡效果的对象。
 	Duel.SelectTarget(tp,c1259814.filter,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,nil)
 end
--- 那只怪兽的种族变成机械族，那个属性也当作「光」「暗」「地」「水」「炎」「风」使用。
+-- 效果处理阶段：先取得效果持有者（这张卡本身）及对象怪兽；若对象仍与此效果关联且表侧表示，则分别赋予其“属性追加光暗地水炎风”和“种族变成机械族”的效果，并规定这些效果在标准离场/移动/重置等情况下失效。
 function c1259814.op(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取当前连锁的效果目标怪兽
+	-- 获取这张卡发动时所选择的那个对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) and tc:IsFaceup() then
-		-- 为对象怪兽增加地水火风光暗6种属性
+		-- 那个属性也当作「光」「暗」「地」「水」「炎」「风」使用。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_ADD_ATTRIBUTE)
 		e1:SetValue(ATTRIBUTE_EARTH+ATTRIBUTE_WATER+ATTRIBUTE_FIRE+ATTRIBUTE_WIND+ATTRIBUTE_LIGHT+ATTRIBUTE_DARK)
 		e1:SetReset(RESET_EVENT+RESETS_STANDARD)
 		tc:RegisterEffect(e1)
-		-- 将对象怪兽的种族变为机械族
+		-- 那只怪兽的种族变成机械族。
 		local e2=Effect.CreateEffect(c)
 		e2:SetType(EFFECT_TYPE_SINGLE)
 		e2:SetCode(EFFECT_CHANGE_RACE)
