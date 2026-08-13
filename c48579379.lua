@@ -3,7 +3,7 @@
 -- 这张卡不能通常召唤。把有「进化之茧」装备的状态用自己回合计算经过6回合以上的自己场上1只「飞蛾宝宝」解放的场合可以特殊召唤。
 function c48579379.initial_effect(c)
 	c:EnableReviveLimit()
-	-- 创建一个字段效果，用于处理特殊召唤的条件、目标和操作
+	-- 把有「进化之茧」装备的状态用自己回合计算经过6回合以上的自己场上1只「飞蛾宝宝」解放的场合可以特殊召唤。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD)
 	e2:SetCode(EFFECT_SPSUMMON_PROC)
@@ -14,28 +14,28 @@ function c48579379.initial_effect(c)
 	e2:SetOperation(c48579379.spop)
 	c:RegisterEffect(e2)
 end
--- 过滤函数：检查装备卡是否为「进化之茧」且已过6回合
+-- 检查该卡是否为「进化之茧」且其回合计数器达到6以上，即装备后经过了自己回合计算的6回合以上。
 function c48579379.eqfilter(c)
 	return c:IsCode(40240595) and c:GetTurnCounter()>=6
 end
--- 过滤函数：检查场上是否有满足条件的「飞蛾宝宝」（装备有进化之茧且回合数≥6）
+-- 筛选可作为解放素材的「飞蛾宝宝」：必须是卡名「飞蛾宝宝」，装备有满足条件的「进化之茧」，解放后自己场上仍有怪兽区空位，并且該「飞蛾宝宝」是自己控制或表侧表示。
 function c48579379.rfilter(c,tp)
 	return c:IsCode(58192742) and c:GetEquipGroup():FilterCount(c48579379.eqfilter,nil)>0
-		-- 确保该怪兽在场上的怪兽区域数量大于0，或其为表侧表示
+		-- 额外确认解放该「飞蛾宝宝」后自己场上存在可用的怪兽区，且该怪兽是自己控制或是表侧表示（避免选择无法解放或不可控的里侧怪兽）。
 		and Duel.GetMZoneCount(tp,c)>0 and (c:IsControler(tp) or c:IsFaceup())
 end
--- 判断特殊召唤条件是否满足：检查是否存在可解放的符合条件的怪兽
+-- 特殊召唤规则效果的发动条件：若被检查的卡为nil则条件成立；否则检查自己场上是否存在至少1只满足解放素材条件的「飞蛾宝宝」。
 function c48579379.spcon(e,c)
 	if c==nil then return true end
 	local tp=c:GetControler()
-	-- 调用CheckReleaseGroupEx函数检测是否有满足rfilter条件的卡可被解放
+	-- 检查自己场上·手卡是否存在至少1只满足rfilter条件且可以解放的「飞蛾宝宝」，用于特殊召唤。
 	return Duel.CheckReleaseGroupEx(tp,c48579379.rfilter,1,REASON_SPSUMMON,false,nil,tp)
 end
--- 设置特殊召唤的目标选择逻辑：筛选符合条件的怪兽并提示玩家选择
+-- 特殊召唤处理的选择阶段：从可解放的候选「飞蛾宝宝」中让玩家选择1张，选中后存入效果LabelObject并返回true；若未选择则返回false。
 function c48579379.sptg(e,tp,eg,ep,ev,re,r,rp,chk,c)
-	-- 获取玩家可解放的卡片组，并从中筛选满足rfilter条件的卡片
+	-- 获取自己场上可解放的卡片组，并筛选出满足rfilter（即符合条件的「飞蛾宝宝」）的解放候选集合。
 	local g=Duel.GetReleaseGroup(tp,false,REASON_SPSUMMON):Filter(c48579379.rfilter,nil,tp)
-	-- 向玩家发送提示信息，提示其选择要解放的卡片
+	-- 向当前玩家显示选择提示，提示文字为“请选择要解放的卡”。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_RELEASE)  --"请选择要解放的卡"
 	local tc=g:SelectUnselect(nil,tp,false,true,1,1)
 	if tc then
@@ -43,9 +43,9 @@ function c48579379.sptg(e,tp,eg,ep,ev,re,r,rp,chk,c)
 		return true
 	else return false end
 end
--- 定义特殊召唤的操作函数：将选定的卡片进行解放处理
+-- 特殊召唤的实际处理：取得之前选择的「飞蛾宝宝」并将其解放，完成特殊召唤手续。
 function c48579379.spop(e,tp,eg,ep,ev,re,r,rp,c)
 	local g=e:GetLabelObject()
-	-- 执行解放操作，将目标卡片以特殊召唤理由进行解放
+	-- 将选中的「飞蛾宝宝」作为特殊召唤代价解放。
 	Duel.Release(g,REASON_SPSUMMON)
 end

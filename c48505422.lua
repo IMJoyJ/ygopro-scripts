@@ -22,46 +22,46 @@ function c48505422.initial_effect(c)
 	e2:SetOperation(c48505422.rlop)
 	c:RegisterEffect(e2)
 end
--- 过滤函数，用于判断场上是否存在「真六武众-瑞穂」（卡号74094021）且表侧表示的怪兽。
+-- 检查怪兽是否表侧表示且卡号为74094021（「真六武众-瑞穂」），用于检索场上满足条件的「真六武众-瑞穂」。
 function c48505422.spfilter(c)
 	return c:IsFaceup() and c:IsCode(74094021)
 end
--- 判断是否满足特殊召唤条件：手牌的这张卡可以特殊召唤到场上，且自己场上有「真六武众-瑞穂」表侧表示存在。
+-- 该效果作为手卡特殊召唤规则时的发动条件：需要我方主要怪兽区有空位，且我方场上有表侧表示的「真六武众-瑞穂」。
 function c48505422.spcon(e,c)
 	if c==nil then return true end
-	-- 检查当前玩家在主要怪兽区是否有空位。
+	-- 检查我方主要怪兽区是否存在可用的空格。
 	return Duel.GetLocationCount(c:GetControler(),LOCATION_MZONE)>0 and
-		-- 检查当前玩家场上是否存在至少1只「真六武众-瑞穂」（卡号74094021）且表侧表示的怪兽。
+		-- 检查我方场上是否存在1张满足spfilter过滤条件的表侧表示「真六武众-瑞穂」。
 		Duel.IsExistingMatchingCard(c48505422.spfilter,c:GetControler(),LOCATION_ONFIELD,0,1,nil)
 end
--- 判断该卡是否在解放前处于场上的位置。
+-- 诱发效果的条件判定：这张卡被解放前所在的位置是场上，即作为场上存在的这张卡被解放。
 function c48505422.rlcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsPreviousLocation(LOCATION_ONFIELD)
 end
--- 过滤函数，用于筛选墓地中的名字带有「六武众」（0x103d）且不是「真六武众-竹刀」（48505422）的怪兽。
+-- 墓地检索的过滤条件：是名字带有「六武众」的怪兽、不是这张卡自身、是怪兽且可以加入手卡。
 function c48505422.filter(c)
 	return c:IsSetCard(0x103d) and not c:IsCode(48505422) and c:IsType(TYPE_MONSTER) and c:IsAbleToHand()
 end
--- 设置效果目标：选择自己墓地中满足条件的1只怪兽作为目标。
+-- 发动时的目标选择处理：检查墓地是否存在满足filter的「六武众」怪兽，若有则提示玩家选择1张对象，并设置取对象回手牌的操作信息。
 function c48505422.rltg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(tp) and chkc:IsLocation(LOCATION_GRAVE) and c48505422.filter(chkc) end
-	-- 检查是否至少存在1只满足条件的墓地怪兽。
+	-- 在效果发动时（非选择对象阶段）检查墓地是否存在至少1只满足filter的「六武众」怪兽，判断效果能否发动。
 	if chk==0 then return Duel.IsExistingTarget(c48505422.filter,tp,LOCATION_GRAVE,0,1,nil) end
-	-- 提示玩家选择要加入手牌的卡。
+	-- 给玩家显示“请选择要加入手牌的卡”的提示文字，用于选择卡片时的提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 从玩家墓地中选择满足条件的1只怪兽作为效果对象。
+	-- 让玩家从自己墓地选择1张满足filter的「六武众」怪兽（除外这张卡自身）作为效果对象。
 	local g=Duel.SelectTarget(tp,c48505422.filter,tp,LOCATION_GRAVE,0,1,1,nil)
-	-- 设置连锁操作信息，表示将选择的怪兽送入手牌。
+	-- 设置连锁处理信息，告知系统将由该效果把对象卡加入手牌，数量为1张。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,1,0,0)
 end
--- 处理效果发动后的操作：将目标怪兽加入手牌并确认对方看到该卡。
+-- 效果处理时获取对象，若对象与效果仍有关联，则将其送去手牌并向对方确认。
 function c48505422.rlop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前效果的目标卡。
+	-- 获取效果发动时选择的对象卡。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 将目标怪兽以效果原因送入手牌。
+		-- 将该对象卡以效果原因返回其持有者的手卡。
 		Duel.SendtoHand(tc,nil,REASON_EFFECT)
-		-- 向对方玩家确认该卡的加入手牌动作。
+		-- 向对方玩家展示这张加入手卡的卡片，使其确认。
 		Duel.ConfirmCards(1-tp,tc)
 	end
 end

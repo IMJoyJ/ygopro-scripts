@@ -7,7 +7,7 @@ function c48439321.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- 诱发必发效果，当自己场上的名字带有「魔偶甜点」的怪兽进行战斗的伤害计算后发动
+	-- 自己场上的名字带有「魔偶甜点」的怪兽进行战斗的伤害计算后，给与对方基本分300分伤害。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(48439321,0))  --"伤害"
 	e2:SetCategory(CATEGORY_DAMAGE)
@@ -19,29 +19,29 @@ function c48439321.initial_effect(c)
 	e2:SetOperation(c48439321.damop)
 	c:RegisterEffect(e2)
 end
--- 检查目标怪兽是否为控制者且名字带有「魔偶甜点」
+-- 定义辅助判断函数：检查怪兽c是否存在、控制者是否为tp，且属于「魔偶甜点」（0x71）字段。
 function c48439321.check(c,tp)
 	return c and c:IsControler(tp) and c:IsSetCard(0x71)
 end
--- 判断攻击怪兽或防守怪兽是否为控制者且名字带有「魔偶甜点」
+-- 伤害计算后效果的发动条件函数：若攻击怪兽或攻击对象怪兽中存在我方场上的「魔偶甜点」怪兽，则条件满足。
 function c48439321.damcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 攻击怪兽或防守怪兽满足条件时触发效果
+	-- 具体条件判断：攻击方或攻击目标中任意一方是我方场上的「魔偶甜点」怪兽即可。
 	return c48439321.check(Duel.GetAttacker(),tp) or c48439321.check(Duel.GetAttackTarget(),tp)
 end
--- 设置效果的处理目标为对方玩家，伤害值为300
+-- 效果发动时的目标设定函数：无对象选择条件时直接允许发动；设定伤害对象为对方玩家、伤害数值为300，并登记伤害效果的操作信息。
 function c48439321.damtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 将连锁处理的目标玩家设为对方
+	-- 将当前连锁的对象玩家设为对方玩家（1-tp），即伤害承受方。
 	Duel.SetTargetPlayer(1-tp)
-	-- 将连锁处理的目标参数设为300
+	-- 将当前连锁的对象参数设为300，即本次给予的伤害数值。
 	Duel.SetTargetParam(300)
-	-- 设置当前连锁的操作信息为造成300点伤害
+	-- 登记本次连锁的操作信息：效果分类为伤害效果，目标为对方玩家，伤害数值为300，因不取对象所以对象卡组设为nil，数量为0。
 	Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,1-tp,300)
 end
--- 执行效果处理，对对方玩家造成300点伤害
+-- 效果处理时的操作函数：读取连锁中记录的目标玩家和伤害数值，并执行伤害。
 function c48439321.damop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁处理的目标玩家和伤害值
+	-- 从当前连锁信息中取得目标玩家（CHAININFO_TARGET_PLAYER）和目标参数（CHAININFO_TARGET_PARAM），分别保存到p和d。
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 以效果原因对目标玩家造成指定伤害
+	-- 以效果伤害（REASON_EFFECT）为原因，对玩家p造成d点伤害。
 	Duel.Damage(p,d,REASON_EFFECT)
 end
