@@ -5,7 +5,7 @@
 -- ②：这张卡召唤·特殊召唤的场合才能发动。从卡组把有「元素英雄」怪兽的卡名记述的1张魔法·陷阱卡加入手卡。
 -- ③：这张卡被送去墓地的场合，以对方墓地1张卡为对象才能发动。那张卡除外。
 local s,id,o=GetID()
--- 创建并注册三个效果：①特殊召唤、②检索、③除外
+-- 定义卡片的初始效果注册函数，依次为此卡注册效果①（手卡起动效果，送墓新空间侠为代价特殊召唤自身）、效果②（召唤·特殊召唤成功时检索记述元素英雄怪兽名的魔法陷阱）、效果③（被送去墓地时取对象除外对方墓地一张卡），并分别设置1回合1次的次数限制。
 function s.initial_effect(c)
 	-- ①：这张卡在手卡存在的场合，从卡组把1只「新空间侠」怪兽送去墓地才能发动。这张卡特殊召唤。
 	local e1=Effect.CreateEffect(c)
@@ -44,82 +44,82 @@ function s.initial_effect(c)
 	e4:SetOperation(s.rmop)
 	c:RegisterEffect(e4)
 end
--- 过滤函数，用于筛选满足条件的「新空间侠」怪兽（必须是怪兽类型且能作为cost送去墓地）
+-- 定义费用筛选函数：判定卡是否为新空间侠怪兽（0x1f系列），且可作为代价从卡组送去墓地。
 function s.costfilter(c)
 	return c:IsSetCard(0x1f) and c:IsType(TYPE_MONSTER) and c:IsAbleToGraveAsCost()
 end
--- 效果处理：检查是否满足cost条件并选择一张「新空间侠」怪兽送去墓地
+-- 实现效果①的发动代价：从卡组选择1只满足costfilter的「新空间侠」怪兽送去墓地，作为特殊召唤此卡的代价。
 function s.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否满足cost条件：卡组中是否存在至少一张「新空间侠」怪兽
+	-- 在代价检查阶段，确认自己的卡组中是否存在至少1张满足costfilter的「新空间侠」怪兽，若不存在则不能发动。
 	if chk==0 then return Duel.IsExistingMatchingCard(s.costfilter,tp,LOCATION_DECK,0,1,nil) end
-	-- 提示玩家选择要送去墓地的卡
+	-- 提示发动者选择要送去墓地的卡，显示“请选择要送去墓地的卡”的选择消息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
-	-- 选择一张「新空间侠」怪兽
+	-- 让发动者从自己卡组中选择1张满足costfilter的「新空间侠」怪兽作为发动代价。
 	local g=Duel.SelectMatchingCard(tp,s.costfilter,tp,LOCATION_DECK,0,1,1,nil)
-	-- 将选中的卡送去墓地作为cost
+	-- 将选中的「新空间侠」怪兽以代价（REASON_COST）形式送去墓地。
 	Duel.SendtoGrave(g,REASON_COST)
 end
--- 效果处理：检查是否可以特殊召唤此卡
+-- 设置效果①的发动目标条件：自己主要怪兽区有空位，且此卡能够被特殊召唤。
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否可以特殊召唤此卡：场上是否有空位且此卡可以被特殊召唤
+	-- 检查自己场上是否存在可用的主要怪兽区域，只有存在空位时才能触发特殊召唤。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置操作信息：将此卡特殊召唤
+	-- 登记效果①的处理信息：将这张卡本身作为将要特殊召唤的对象，数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 效果处理：执行特殊召唤
+-- 处理效果①：若此卡仍与当前连锁相关联，则将其从手卡特殊召唤到场上。
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToChain() then
-		-- 将此卡特殊召唤到场上
+		-- 实际把此卡以表侧表示特殊召唤到发动者场上，sumtype为0表示通常特殊召唤。
 		Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
--- 过滤函数，用于筛选满足条件的「元素英雄」魔法/陷阱卡（必须是魔法/陷阱类型且能加入手牌）
+-- 定义检索筛选函数：判定卡是否在卡面文本中记述了「元素英雄」怪兽（0x3008系列）卡名，且为魔法·陷阱卡并能够加入手卡。
 function s.thfilter(c)
-	-- 判断卡片是否属于「元素英雄」系列
+	-- 检查该魔法·陷阱卡是否在卡名或效果文本中记述了「元素英雄」系列怪兽，同时自身为魔法或陷阱卡。
 	return aux.IsSetNameMonsterListed(c,0x3008) and c:IsType(TYPE_SPELL+TYPE_TRAP)
 		and c:IsAbleToHand()
 end
--- 效果处理：检查是否可以检索魔法/陷阱卡
+-- 设置效果②的发动条件：自己卡组中存在满足thfilter的卡，并登记从卡组将1张卡加入手卡的操作信息。
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否满足检索条件：卡组中是否存在至少一张「元素英雄」魔法/陷阱卡
+	-- 在发动判定阶段，确认自己卡组中是否存在至少1张满足thfilter的魔法·陷阱卡，若不存在则不能发动。
 	if chk==0 then return Duel.IsExistingMatchingCard(s.thfilter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置操作信息：将一张魔法/陷阱卡加入手牌
+	-- 登记效果②的处理信息：效果处理时从自己卡组将1张符合条件的卡加入手卡。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 效果处理：执行检索并加入手牌
+-- 处理效果②：从卡组选择1张满足条件的魔法·陷阱卡加入手卡，并向对方展示确认。
 function s.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要加入手牌的卡
+	-- 提示发动者选择要加入手卡的卡，显示“请选择要加入手牌的卡”的选择消息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择一张「元素英雄」魔法/陷阱卡
+	-- 让发动者从自己卡组中选择1张满足thfilter的魔法·陷阱卡。
 	local g=Duel.SelectMatchingCard(tp,s.thfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的卡加入手牌
+		-- 将选中的魔法·陷阱卡加入其持有者的手卡（nil表示加入持有者手卡），处理原因为效果。
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 确认对方看到加入手牌的卡
+		-- 向对手玩家展示本次加入手卡的卡，以确认检索结果。
 		Duel.ConfirmCards(1-tp,g)
 	end
 end
--- 效果处理：检查是否可以除外对方墓地的卡
+-- 设置效果③：以对方墓地1张卡为对象，判定该卡能否被除外；并登记除外操作信息。
 function s.rmtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(1-tp) and chkc:IsAbleToRemove() end
-	-- 检查是否满足除外条件：对方墓地是否存在至少一张可除外的卡
+	-- 检查对方墓地中是否存在至少1张可以被除外（满足IsAbleToRemove）的卡，作为发动条件。
 	if chk==0 then return Duel.IsExistingTarget(Card.IsAbleToRemove,tp,0,LOCATION_GRAVE,1,nil) end
-	-- 提示玩家选择要除外的卡
+	-- 提示发动者选择要除外的卡，显示“请选择要除外的卡”的选择消息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
-	-- 选择一张对方墓地的卡作为除外目标
+	-- 让发动者从对方墓地选择1张可除外的卡作为效果对象，并自动登记为该连锁的对象。
 	local g=Duel.SelectTarget(tp,Card.IsAbleToRemove,tp,0,LOCATION_GRAVE,1,1,nil)
-	-- 设置操作信息：将一张对方墓地的卡除外
+	-- 登记效果③的处理信息：将选中的对象卡除外，归属于对方墓地，数量1。
 	Duel.SetOperationInfo(0,CATEGORY_REMOVE,g,1,1-tp,LOCATION_GRAVE)
 end
--- 效果处理：执行除外
+-- 处理效果③：若对象仍与当前连锁相关，且不受王家长眠之谷等效果的影响，则将其除外。
 function s.rmop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的目标卡
+	-- 获取效果③选择的对象卡（取对象时保存的第一张目标卡）。
 	local tc=Duel.GetFirstTarget()
-	-- 判断目标卡是否有效且未受王家长眠之谷影响
+	-- 判定对象卡是否仍与当前效果连锁有联系（未离场或未失效），并且通过王家长眠之谷的抗性过滤。
 	if tc:IsRelateToChain() and aux.NecroValleyFilter()(tc) then
-		-- 将目标卡除外
+		-- 将满足条件的对象卡以表侧表示除外，处理原因为效果（REASON_EFFECT）。
 		Duel.Remove(tc,POS_FACEUP,REASON_EFFECT)
 	end
 end

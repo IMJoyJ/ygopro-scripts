@@ -12,29 +12,29 @@ function c30996652.initial_effect(c)
 	e1:SetOperation(c30996652.activate)
 	c:RegisterEffect(e1)
 end
--- 检索满足条件的墓地「机块」怪兽，该怪兽可以被特殊召唤
+-- 过滤条件：对象必须是「机块」字段的怪兽，并且可以被当前效果以表侧表示特殊召唤。
 function c30996652.filter(c,e,tp)
 	return c:IsSetCard(0x14b) and c:IsCanBeSpecialSummoned(e,0,tp,false,false,POS_FACEUP)
 end
--- 判断是否满足发动条件，检查是否有满足条件的墓地怪兽可被选择
+-- 目标选择处理：发动时只能选择自己墓地1只满足条件的「机块」怪兽作为对象，且我方主要怪兽区需要有可用空格。
 function c30996652.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and c30996652.filter(chkc,e,tp) end
-	-- 判断场上是否有空位可以特殊召唤
+	-- 发动合法性检查：我方主要怪兽区必须存在可用的空格。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 判断是否在墓地存在满足条件的怪兽
+		-- 同时检查自己墓地是否存在至少1只满足条件的「机块」怪兽可以作为效果对象。
 		and Duel.IsExistingTarget(c30996652.filter,tp,LOCATION_GRAVE,0,1,nil,e,tp) end
-	-- 提示玩家选择要特殊召唤的卡
+	-- 向操作者显示选择提示信息“请选择要特殊召唤的卡”。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 选择满足条件的墓地怪兽作为对象
+	-- 从自己墓地选择1只满足条件的「机块」怪兽作为效果对象，并自动与当前效果建立关联。
 	local g=Duel.SelectTarget(tp,c30996652.filter,tp,LOCATION_GRAVE,0,1,1,nil,e,tp)
-	-- 设置连锁操作信息，确定特殊召唤的怪兽
+	-- 设置本次连锁的特殊召唤操作信息，以便其他卡检测该效果将进行特殊召唤。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,1,0,0)
 end
--- 处理效果发动后的操作，将选中的怪兽特殊召唤
+-- 效果处理：将对象怪兽特殊召唤，并为其附加“离场时回到持有者卡组最下面”的永续效果。
 function c30996652.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁效果的目标怪兽
+	-- 获取发动时选择的对象怪兽。
 	local tc=Duel.GetFirstTarget()
-	-- 确认目标怪兽有效且成功特殊召唤
+	-- 若对象仍与效果关联，则将其以表侧表示特殊召唤到自己场上；仅在特殊召唤成功时才继续附加离场回卡组的效果。
 	if tc:IsRelateToEffect(e) and Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP)~=0 then
 		-- 这个效果特殊召唤的怪兽从场上离开的场合回到持有者卡组最下面。
 		local e1=Effect.CreateEffect(e:GetHandler())
