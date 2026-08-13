@@ -14,29 +14,29 @@ function c33883834.initial_effect(c)
 	e1:SetOperation(c33883834.op)
 	c:RegisterEffect(e1)
 end
--- 判断是否满足发动条件，即攻击怪兽或防守怪兽是「六武众」，且该玩家未发动过此效果
+-- 判断发动条件：当前伤害计算时，进行战斗的攻击方或攻击对象中存在自己操控的「六武众」怪兽，且本回合尚未发动过此效果（flag为0）。
 function c33883834.con(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前攻击怪兽
+	-- 获取当前战斗的攻击怪兽。
 	local a=Duel.GetAttacker()
-	-- 获取当前防守怪兽
+	-- 获取当前战斗的被攻击怪兽。
 	local d=Duel.GetAttackTarget()
 	return d and ((a:IsControler(tp) and a:IsSetCard(0x103d)) or (d:IsControler(tp) and d:IsSetCard(0x103d)))
-		-- 确保该玩家在本次伤害计算中未发动过此效果
+		-- 检查自己尚未发动过本效果，保证同一次伤害计算只能发动一次。
 		and Duel.GetFlagEffect(tp,33883834)==0
 end
--- 设置发动此效果的代价，将自身送去墓地并注册标识效果
+-- 支付发动代价：确认手牌中的此卡能作为cost送入墓地；随后将其送入墓地，并注册一个伤害计算阶段结束即重置的发动标记，用于防止重复发动。
 function c33883834.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsAbleToGraveAsCost() end
-	-- 将自身从手牌送去墓地作为发动代价
+	-- 将这张卡从手牌送入墓地，作为发动效果的代价（REASON_COST）。
 	Duel.SendtoGrave(e:GetHandler(),REASON_COST)
-	-- 为使用者注册一个在伤害计算阶段结束时重置的标识效果，防止重复发动
+	-- 为发动者登记本效果的发动标记，该标记在伤害计算阶段结束时清除；配合condition中的检查，使同一伤害计算阶段内只能发动一次。
 	Duel.RegisterFlagEffect(tp,33883834,RESET_PHASE+PHASE_DAMAGE_CAL,0,1)
 end
--- 设置效果发动后的处理，为攻击或防守的「六武众」怪兽赋予不被战斗破坏的效果
+-- 效果处理：若攻击怪兽和攻击对象仍与本次战斗关联，则给自己操控的那只进行战斗的「六武众」怪兽附加“不会因战斗被破坏”的效果，直到回合结束。
 function c33883834.op(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前攻击怪兽
+	-- 获取当前战斗的攻击怪兽。
 	local a=Duel.GetAttacker()
-	-- 获取当前防守怪兽
+	-- 获取当前战斗的被攻击怪兽。
 	local d=Duel.GetAttackTarget()
 	if not a:IsRelateToBattle() or not d:IsRelateToBattle() then return end
 	-- 那只怪兽在这个回合不会被战斗破坏。

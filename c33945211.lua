@@ -36,83 +36,83 @@ function c33945211.initial_effect(c)
 	e3:SetOperation(c33945211.atkop)
 	c:RegisterEffect(e3)
 end
--- 过滤函数，检查墓地是否存在满足条件的「海晶少女」陷阱卡并确保卡组中存在不同名的「海晶少女」陷阱卡
+-- 作为①的代价过滤器：判断墓地中的卡是否为「海晶少女」陷阱卡、能否作为代价除外，并且卡组中存在至少1张卡名不同的可加入手卡的「海晶少女」陷阱卡。
 function c33945211.costfilter(c,tp)
 	return c:IsSetCard(0x12b) and c:IsType(TYPE_TRAP) and c:IsAbleToRemoveAsCost()
-		-- 检查卡组中是否存在与除外卡不同名的「海晶少女」陷阱卡
+		-- 额外检查卡组中是否有与该墓地陷阱卡卡名不同的「海晶少女」陷阱卡可加入手卡，以保证检索目标存在。
 		and Duel.IsExistingMatchingCard(c33945211.srfilter,tp,LOCATION_DECK,0,1,nil,c:GetCode())
 end
--- 过滤函数，用于检索卡组中满足条件的「海晶少女」陷阱卡
+-- 检索目标过滤器：满足「海晶少女」陷阱卡、与除外的那张卡卡名不同，并且可以加入手卡。
 function c33945211.srfilter(c,code)
 	return c:IsSetCard(0x12b) and c:IsType(TYPE_TRAP) and not c:IsCode(code) and c:IsAbleToHand()
 end
--- 发动效果时，从墓地选择一张「海晶少女」陷阱卡除外作为费用
+-- ①效果的代价处理：从自己墓地选择1张符合条件的「海晶少女」陷阱卡，记录其卡号后将其表侧除外作为发动代价，后续检索时排除同名卡。
 function c33945211.srcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否满足发动条件，即墓地存在满足条件的「海晶少女」陷阱卡
+	-- 代价检测：确认自己墓地存在至少1张可作为代价的「海晶少女」陷阱卡且卡组中有可检索的对应目标。
 	if chk==0 then return Duel.IsExistingMatchingCard(c33945211.costfilter,tp,LOCATION_GRAVE,0,1,nil,tp) end
-	-- 提示玩家选择要除外的卡
+	-- 显示提示，让玩家选择要从墓地除外的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
-	-- 选择一张满足条件的卡并获取其引用
+	-- 让玩家从自己墓地选择1张符合条件的「海晶少女」陷阱卡作为代价卡。
 	local tc=Duel.SelectMatchingCard(tp,c33945211.costfilter,tp,LOCATION_GRAVE,0,1,1,nil,tp):GetFirst()
 	e:SetLabel(tc:GetCode())
-	-- 将选中的卡从墓地除外作为发动效果的费用
+	-- 将选中的墓地陷阱卡表侧表示除外，支付发动代价。
 	Duel.Remove(tc,POS_FACEUP,REASON_COST)
 end
--- 设置效果处理时的操作信息，准备从卡组检索卡牌
+-- ①效果的发动目标：无特殊发动条件，同时设置操作信息，表示后续会从卡组把1张卡加入手卡。
 function c33945211.srtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置操作信息，表示将从卡组检索一张卡加入手牌
+	-- 设置操作信息：效果处理时将执行从卡组加入1张手卡的操作（CATEGORY_TOHAND），供连锁与相关效果检测。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 效果处理函数，选择一张卡组中的「海晶少女」陷阱卡加入手牌
+-- ①效果处理：根据代价除外的那张卡的卡名，从卡组选择1张卡名不同的「海晶少女」陷阱卡加入手卡，并向对方展示。
 function c33945211.srop(e,tp,eg,ep,ev,re,r,rp)
 	local code=e:GetLabel()
-	-- 提示玩家选择要加入手牌的卡
+	-- 显示提示，让玩家选择要加入手牌的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 从卡组中选择一张满足条件的卡
+	-- 从卡组选择1张与除外卡卡名不同的「海晶少女」陷阱卡作为加入手卡的对象。
 	local g=Duel.SelectMatchingCard(tp,c33945211.srfilter,tp,LOCATION_DECK,0,1,1,nil,code)
 	if g:GetCount()>0 then
-		-- 将选中的卡加入手牌
+		-- 将检索到的卡加入持有者的手卡。
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 向对方确认加入手牌的卡
+		-- 向对方玩家展示本次检索加入手卡的卡。
 		Duel.ConfirmCards(1-tp,g)
 	end
 end
--- 过滤函数，用于判断是否为被效果破坏且未被代替破坏的场上怪兽
+-- 代替破坏的过滤条件：被破坏的怪兽必须在自己场上且位于怪兽区域，破坏原因是效果破坏，并且不是由代替破坏造成的破坏。
 function c33945211.repfilter(c,tp)
 	return c:IsLocation(LOCATION_MZONE) and c:IsControler(tp)
 		and c:IsReason(REASON_EFFECT) and not c:IsReason(REASON_REPLACE)
 end
--- 代替破坏效果的处理函数，判断是否发动效果并除外自身
+-- ②效果的发动判定：当自己场上的怪兽将被效果破坏时，判断墓地这张卡能否除外并询问玩家是否使用代替破坏；若选择是，则除外自身并允许代替。
 function c33945211.reptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsAbleToRemove() and eg:IsExists(c33945211.repfilter,1,nil,tp) end
-	-- 询问玩家是否发动效果
+	-- 询问玩家是否发动②效果，用墓地这张卡代替怪兽被效果破坏。
 	if Duel.SelectEffectYesNo(tp,e:GetHandler(),96) then
-		-- 将自身从墓地除外
+		-- 将墓地的这张卡除外，执行代替破坏的替代处理。
 		Duel.Remove(e:GetHandler(),POS_FACEUP,REASON_EFFECT)
 		return true
 	else return false end
 end
--- 返回代替破坏的条件，即是否为场上被效果破坏的怪兽
+-- 代替破坏判定值函数：判断将被破坏的怪兽是否为满足条件的己方效果破坏怪兽，供EFFECT_DESTROY_REPLACE调用。
 function c33945211.repval(e,c)
 	return c33945211.repfilter(c,e:GetHandlerPlayer())
 end
--- 设置效果处理时的目标选择，选择一只表侧表示的怪兽
+-- ③效果的发动条件与取对象：这张卡被除外时，可以选择自己场上1只表侧表示怪兽为对象；此函数负责检查合法对象并选择对象。
 function c33945211.atktg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and chkc:IsFaceup() end
-	-- 检查是否满足发动条件，即场上是否存在表侧表示的怪兽
+	-- 发动条件检测：确认自己场上存在至少1只表侧表示怪兽可作为效果对象。
 	if chk==0 then return Duel.IsExistingTarget(Card.IsFaceup,tp,LOCATION_MZONE,0,1,nil) end
-	-- 提示玩家选择效果的对象
+	-- 显示提示，让玩家选择要上升攻击力的对象怪兽。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)  --"请选择效果的对象"
-	-- 选择一只表侧表示的怪兽作为效果对象
+	-- 选择自己场上1只表侧表示怪兽作为效果的对象，并登记到当前连锁。
 	Duel.SelectTarget(tp,Card.IsFaceup,tp,LOCATION_MZONE,0,1,1,nil)
 end
--- 效果处理函数，使目标怪兽攻击力上升600
+-- ③效果处理：如果对象怪兽仍在场上且表侧表示，则给它装备一个攻击力上升600的效果。
 function c33945211.atkop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁效果的目标怪兽
+	-- 获取本次效果处理的对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) and tc:IsFaceup() then
-		-- 创建攻击力上升600的效果并注册到目标怪兽上
+		-- 那只怪兽的攻击力上升600。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)

@@ -5,9 +5,9 @@
 -- ②：装备怪兽攻击的伤害步骤结束时，把这张卡送去墓地才能发动。这次战斗阶段中，自己的战士族怪兽以及炎属性怪兽各可以作2次攻击。
 -- ③：这张卡为让怪兽的效果发动，被送去墓地的场合或者被除外的场合才能发动。这张卡加入手卡。
 local s,id,o=GetID()
--- 初始化卡片效果，创建多个效果并注册到卡片上
+-- 创建并注册这张卡的全部效果：装备魔法发动、装备对象限制、攻击力上升300、②伤害步骤结束时送墓发动附加攻击次数、③作为怪兽效果发动代价送墓/除外时加入手卡。
 function s.initial_effect(c)
-	-- ①：装备怪兽的攻击力上升300。
+	-- 战士族怪兽或炎属性怪兽才能装备。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_EQUIP)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -55,50 +55,50 @@ function s.initial_effect(c)
 	e6:SetCode(EVENT_REMOVE)
 	c:RegisterEffect(e6)
 end
--- 筛选可装备的怪兽，必须是正面表示且满足装备限制条件
+-- 装备对象过滤函数：要求怪兽表侧表示且满足装备限制（战士族或炎属性），用于选择可装备对象。
 function s.filter(c)
 	return c:IsFaceup() and s.eqlim(nil,c)
 end
--- 设置装备效果的目标选择逻辑，选择一个正面表示的怪兽作为装备对象
+-- 发动时的目标选择处理：检查是否存在合法对象，若存在则让玩家选择一只符合条件的表侧怪兽作为装备对象，并设置装备操作信息。
 function s.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and s.filter(chkc) end
-	-- 检查是否有符合条件的装备目标
+	-- 发动合法判定：确认双方主要怪兽区存在至少1只满足过滤条件且能成为装备对象的表侧怪兽。
 	if chk==0 then return Duel.IsExistingTarget(s.filter,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil) end
-	-- 提示玩家选择要装备的怪兽
+	-- 向操作玩家发送选择提示，提示其选择要装备的怪兽。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_EQUIP)  --"请选择要装备的卡"
-	-- 选择一个正面表示的怪兽作为装备对象
+	-- 让玩家从双方主要怪兽区选择1只符合条件的表侧怪兽作为这张卡的装备对象，并登记为连锁对象。
 	Duel.SelectTarget(tp,s.filter,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,nil)
-	-- 设置装备效果的操作信息
+	-- 设置操作信息：本连锁效果将进行装备处理，处理对象为这张卡自身，数量1。
 	Duel.SetOperationInfo(0,CATEGORY_EQUIP,e:GetHandler(),1,0,0)
 end
--- 执行装备操作，将装备卡装备给目标怪兽
+-- 效果处理：获取装备卡自身和选择的目标，在双方仍有效且目标表侧时，把这张卡装备给目标怪兽。
 function s.operation(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取当前连锁的装备目标怪兽
+	-- 获取当前连锁中第一个对象，即选择要装备的怪兽。
 	local tc=Duel.GetFirstTarget()
-	-- 确认装备卡和目标怪兽都有效且正面表示时进行装备
+	-- 确认装备卡和目标怪兽都仍与效果相关、目标仍表侧，满足则将装备卡装备给目标怪兽。
 	if c:IsRelateToEffect(e) and tc:IsRelateToEffect(e) and tc:IsFaceup() then Duel.Equip(tp,c,tc) end
 end
--- 定义装备限制条件，只能装备给战士族或炎属性怪兽
+-- 装备限制判定：怪兽是战士族或炎属性时允许装备，对应“战士族怪兽或炎属性怪兽才能装备”。
 function s.eqlim(e,c)
 	return c:IsRace(RACE_WARRIOR) or c:IsAttribute(ATTRIBUTE_FIRE)
 end
--- 判断是否满足发动②效果的条件，即装备怪兽为攻击怪兽且参与战斗
+-- ②效果的发动条件：这张卡的装备怪兽进行攻击，并且在伤害步骤结束时仍处于与战斗相关的状态。
 function s.dacon(e,tp,eg,ep,ev,re,r,rp)
 	local tc=e:GetHandler():GetEquipTarget()
-	-- 装备怪兽为攻击怪兽且参与战斗
+	-- 判定当前攻击的怪兽正是这张卡的装备怪兽，且该怪兽仍与战斗相关，满足时②效果可以发动。
 	return Duel.GetAttacker()==tc and tc:IsRelateToBattle()
 end
--- 设置②效果的发动费用，将装备卡送去墓地
+-- ②效果的发动代价：检查这张卡能否作为代价送墓，能则支付代价将其送入墓地。
 function s.dacost(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	if chk==0 then return c:IsAbleToGraveAsCost() end
-	-- 将装备卡送去墓地作为发动费用
+	-- 把这张卡送去墓地，作为②效果发动的代价。
 	Duel.SendtoGrave(c,REASON_COST)
 end
--- 发动②效果，使己方战士族或炎属性怪兽在本次战斗阶段中可额外攻击一次
+-- ②效果处理：给本方场上的战士族怪兽和炎属性怪兽附加1次额外攻击次数，效果持续到本次战斗阶段结束。
 function s.daop(e,tp,eg,ep,ev,re,r,rp)
-	-- ③：这张卡为让怪兽的效果发动，被送去墓地的场合或者被除外的场合才能发动。这张卡加入手卡。
+	-- ②：这次战斗阶段中，自己的战士族怪兽以及炎属性怪兽各可以作2次攻击。③：这张卡为让怪兽的效果发动，被送去墓地的场合或者被除外的场合才能发动。这张卡加入手卡。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_EXTRA_ATTACK)
@@ -106,28 +106,28 @@ function s.daop(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetTarget(s.datg)
 	e1:SetReset(RESET_PHASE+PHASE_BATTLE)
 	e1:SetValue(1)
-	-- 注册额外攻击效果到玩家场上
+	-- 将额外攻击效果注册到场上，作用于本方玩家，使其场上的战士族/炎属性怪兽在本战斗阶段获得额外攻击次数。
 	Duel.RegisterEffect(e1,tp)
 end
--- 定义额外攻击效果的目标筛选条件，只能是战士族或炎属性怪兽
+-- 额外攻击效果的适用对象过滤：本方场上的战士族或炎属性怪兽。
 function s.datg(e,c)
 	return c:IsRace(RACE_WARRIOR) or c:IsAttribute(ATTRIBUTE_FIRE)
 end
--- 判断③效果是否满足发动条件，即装备卡因效果发动被送去墓地且该效果为怪兽效果
+-- ③效果的发动条件：这张卡作为怪兽效果发动的代价被送去墓地，且那个效果是已发动的怪兽效果。
 function s.thcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	return c:IsReason(REASON_COST) and re:IsActivated() and re:IsActiveType(TYPE_MONSTER)
 end
--- 设置③效果的发动目标，将装备卡加入手牌
+-- ③效果发动时的目标处理：检查这张卡能否加入手卡，能则设置回手操作信息。
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	if chk==0 then return c:IsAbleToHand() end
-	-- 设置③效果的操作信息，指定将装备卡加入手牌
+	-- 设置操作信息：本连锁将把这张卡加入手卡，处理对象为这张卡自身。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,c,1,0,0)
 end
--- 执行③效果，将装备卡加入手牌
+-- ③效果处理：若这张卡仍与效果相关，则将其加入持有者的手卡。
 function s.thop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 确认装备卡有效时将其加入手牌
+	-- 确认这张卡没有被移走等仍与效果相关，若是则将其加入持有者手卡（回手原因为效果）。
 	if c:IsRelateToEffect(e) then Duel.SendtoHand(c,nil,REASON_EFFECT) end
 end
