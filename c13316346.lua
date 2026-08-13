@@ -12,12 +12,12 @@ function c13316346.initial_effect(c)
 	e1:SetValue(2000)
 	c:RegisterEffect(e1)
 end
--- 过滤函数，用于判断场上是否存在满足条件的怪兽
+-- 筛选满足“表侧表示且名字带有「零件」”的怪兽，作为攻击力上升条件的判定对象。
 function c13316346.filter(c)
 	return c:IsFaceup() and c:IsSetCard(0x51)
 end
--- 效果条件函数，用于判断是否满足攻击力上升的效果触发条件
+-- 判定自己场上是否存在至少1只表侧表示且名字带有「零件」的怪兽，以决定是否适用攻击力上升效果。
 function c13316346.atkcon(e)
-	-- 检索满足条件的卡片组，检查自己场上是否存在至少1张表侧表示的「零件」怪兽
+	-- 检查自己怪兽区域是否存在至少1只表侧表示且名字带有「零件」的怪兽；存在时条件成立，攻击力上升效果适用。
 	return Duel.IsExistingMatchingCard(c13316346.filter,e:GetHandlerPlayer(),LOCATION_MZONE,0,1,nil)
 end

@@ -8,12 +8,12 @@ function c13220032.initial_effect(c)
 	e1:SetRange(LOCATION_MZONE)
 	e1:SetTargetRange(LOCATION_MZONE,0)
 	e1:SetCode(EFFECT_UPDATE_ATTACK)
-	-- 设置效果目标为自身场上表侧表示存在的光属性怪兽
+	-- 设置效果适用的对象为自己场上表侧表示的光属性怪兽。
 	e1:SetTarget(aux.TargetBoolFunction(Card.IsAttribute,ATTRIBUTE_LIGHT))
 	e1:SetValue(c13220032.atkval)
 	c:RegisterEffect(e1)
 end
--- 定义攻击力上升值的计算函数，返回装备卡数量乘以300
+-- 返回这张卡装备的装备卡数量×300作为攻击力上升的数值。
 function c13220032.atkval(e,c)
 	return e:GetHandler():GetEquipCount()*300
 end
