@@ -6,7 +6,7 @@
 -- ●中央：这张卡的等级上升2星。
 -- ●那以外：这张卡的等级上升1星。
 function c34244455.initial_effect(c)
-	-- 创建一个永续效果，仅对自己生效，当此卡在主要怪兽区域时，根据其所在位置调整等级
+	-- ①：这张卡只要在主要怪兽区域存在，得到那个位置的以下效果。●左端：这张卡的等级上升4星。●右端：这张卡的等级上升3星。●中央：这张卡的等级上升2星。●那以外：这张卡的等级上升1星。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
@@ -16,11 +16,11 @@ function c34244455.initial_effect(c)
 	e1:SetValue(c34244455.lvval)
 	c:RegisterEffect(e1)
 end
--- 条件函数：判断此卡是否在主要怪兽区域（序号小于5）
+-- 条件函数：判断这张卡是否位于主要怪兽区域（格子序号小于5，即0~4号位），是则允许适用位置对应的等级上升效果；序号5/6的额外怪兽区域不满足。
 function c34244455.lvcon(e)
 	return e:GetHandler():GetSequence()<5
 end
--- 值函数：根据此卡在怪兽区域中的位置返回对应的等级提升值，左端(0)升4星，右端(4)升3星，中央(2)升2星，其余位置升1星
+-- 取值函数：根据卡片所在主怪兽区域的格子序号实际返回等级上升数值：序号0（左端）上升4星，序号4（右端）上升3星，序号2（中央）上升2星，其余序号（1、3）上升1星。
 function c34244455.lvval(e,c)
 	local seq=c:GetSequence()
 	if seq==0 then return 4 end

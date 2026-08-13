@@ -13,20 +13,20 @@ function c34193084.initial_effect(c)
 	e1:SetOperation(c34193084.spop)
 	c:RegisterEffect(e1)
 end
--- 效果发动条件：卡片之前在手卡或卡组位置，且因对方效果进入墓地
+-- 诱发条件判断：这张卡之前位于手卡或卡组，且是因效果（非战斗）被送去墓地，且该效果的控制者为对方玩家。
 function c34193084.spcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsPreviousLocation(LOCATION_HAND+LOCATION_DECK) and bit.band(r,REASON_EFFECT)~=0 and rp==1-tp
 end
--- 效果处理目标设定：将自身设置为特殊召唤的目标
+-- 发动前目标处理：在合法性检查阶段（chk==0）直接判定可以发动；在确定发动时登记特殊召唤这张卡的操作信息。
 function c34193084.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置操作信息：标记此次连锁处理为特殊召唤类别
+	-- 登记本次连锁的特殊召唤操作信息：将这张卡作为预定特殊召唤的确定对象，数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 效果处理执行：若卡片与效果相关则进行特殊召唤
+-- 效果处理时的实际执行：若这张卡仍与当前效果保持关联（未被无效或离场导致联系重置），则将其特殊召唤。
 function c34193084.spop(e,tp,eg,ep,ev,re,r,rp)
 	if e:GetHandler():IsRelateToEffect(e) then
-		-- 执行特殊召唤：将自身以正面表示方式特殊召唤到自己场上
+		-- 将这张卡以表侧攻击表示特殊召唤到玩家tp的场上（此调用不忽略召唤条件与苏生限制）。
 		Duel.SpecialSummon(e:GetHandler(),0,tp,tp,false,false,POS_FACEUP)
 	end
 end

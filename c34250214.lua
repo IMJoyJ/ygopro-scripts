@@ -28,65 +28,65 @@ function c34250214.initial_effect(c)
 	e2:SetOperation(c34250214.spop)
 	c:RegisterEffect(e2)
 end
--- 支付500基本分的费用处理
+-- ①效果的代价函数：以支付500基本分作为发动代价，供效果发动时调用。
 function c34250214.thcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查玩家是否能支付500基本分
+	-- 代价判定阶段：检查当前玩家能否支付500基本分。
 	if chk==0 then return Duel.CheckLPCost(tp,500) end
-	-- 让玩家支付500基本分
+	-- 代价执行阶段：实际扣除500基本分。
 	Duel.PayLPCost(tp,500)
 end
--- 检索满足条件的「吸血鬼」怪兽的过滤函数
+-- 定义检索过滤条件：从卡组中筛选「吸血鬼的使魔」以外的1只「吸血鬼」怪兽，且该卡可以加入手卡。
 function c34250214.thfilter(c)
 	return c:IsSetCard(0x8e) and c:IsType(TYPE_MONSTER) and not c:IsCode(34250214) and c:IsAbleToHand()
 end
--- 设置效果发动时的处理信息，准备从卡组检索1张「吸血鬼」怪兽
+-- ①效果的发动目标函数：确认卡组存在符合条件的检索对象，并设置将卡组中的卡加入手卡的操作信息。
 function c34250214.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查玩家是否在卡组中存在满足条件的「吸血鬼」怪兽
+	-- 检查卡组中是否存在满足检索条件的「吸血鬼」怪兽。
 	if chk==0 then return Duel.IsExistingMatchingCard(c34250214.thfilter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置连锁操作信息，表示将要从卡组检索1张卡加入手牌
+	-- 设置操作信息：本次效果要把卡组的1张卡加入手卡，用于后续处理与发动检测。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 处理效果发动时的检索和展示操作
+-- 执行检索：提示玩家选择1只符合条件的「吸血鬼」怪兽，将其加入手卡并让对方确认。
 function c34250214.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要加入手牌的卡
+	-- 显示“请选择要加入手牌的卡”的提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择满足条件的1张卡从卡组加入手牌
+	-- 从卡组选择1张满足过滤条件的「吸血鬼」怪兽。
 	local g=Duel.SelectMatchingCard(tp,c34250214.thfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的卡加入手牌
+		-- 将选择的卡加入手卡（reason为效果）。
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 向对方确认展示加入手牌的卡
+		-- 向对方玩家展示加入手卡的卡。
 		Duel.ConfirmCards(1-tp,g)
 	end
 end
--- 用于选择送去墓地的「吸血鬼」卡的过滤函数
+-- ②效果代价的过滤条件：选择手牌或自己场上的表侧表示卡中1张「吸血鬼」卡，可作为cost送墓，且送墓后自己场上仍有可用怪兽区用于特殊召唤。
 function c34250214.costfilter(c,tp)
-	-- 过滤条件：卡为「吸血鬼」种族，且在手牌或场上表侧表示，可作为墓地费用，且场上存在可用怪兽区
+	-- 判定卡是否满足：属于「吸血鬼」字段，位于手牌或场上表侧表示，可作为cost送去墓地，并且送墓后仍有怪兽区空位。
 	return c:IsSetCard(0x8e) and (c:IsLocation(LOCATION_HAND) or c:IsFaceup()) and c:IsAbleToGraveAsCost() and Duel.GetMZoneCount(tp,c)>0
 end
--- 处理特殊召唤时的费用支付操作
+-- ②效果的代价函数：从手卡以及自己场上的表侧表示的卡之中选择1张「吸血鬼」卡作为cost送去墓地，并确认场上留有特殊召唤的空位。
 function c34250214.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查玩家是否在手牌或场上存在满足条件的「吸血鬼」卡
+	-- 检查是否存在满足代价条件的「吸血鬼」卡。
 	if chk==0 then return Duel.IsExistingMatchingCard(c34250214.costfilter,tp,LOCATION_ONFIELD+LOCATION_HAND,0,1,nil,tp) end
-	-- 提示玩家选择要送去墓地的卡
+	-- 显示“请选择要送去墓地的卡”的提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
-	-- 选择满足条件的1张卡送去墓地作为费用
+	-- 从手卡和场上表侧表示卡中选择1张满足条件的「吸血鬼」卡。
 	local g=Duel.SelectMatchingCard(tp,c34250214.costfilter,tp,LOCATION_ONFIELD+LOCATION_HAND,0,1,1,nil,tp)
-	-- 将选中的卡送去墓地
+	-- 将选择的卡作为代价送去墓地。
 	Duel.SendtoGrave(g,REASON_COST)
 end
--- 设置特殊召唤时的处理信息
+-- ②效果的目标函数：确认这张卡可以特殊召唤，并设置特殊召唤的操作信息。
 function c34250214.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置连锁操作信息，表示将要特殊召唤1张卡
+	-- 设置操作信息：本次效果要将这张卡自身特殊召唤。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 处理特殊召唤效果的发动和后续处理
+-- 效果处理：将这张卡特殊召唤；若成功，给它附加离场时除外的不被无效的效果。
 function c34250214.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 判断卡片是否能被特殊召唤并执行特殊召唤
+	-- 确认这张卡与效果仍有关联，并以表侧表示特殊召唤成功（返回数量大于0）。
 	if c:IsRelateToEffect(e) and Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)>0 then
-		-- 特殊召唤后将该卡从场上离开时将其移除
+		-- 这个效果特殊召唤的这张卡从场上离开的场合除外。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_LEAVE_FIELD_REDIRECT)

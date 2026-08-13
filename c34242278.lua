@@ -26,66 +26,66 @@ function c34242278.initial_effect(c)
 	e3:SetType(EFFECT_TYPE_IGNITION)
 	e3:SetRange(LOCATION_MZONE+LOCATION_HAND)
 	e3:SetCountLimit(1,34242278)
-	-- 效果的发动需要将此卡除外作为费用
+	-- 设置②效果的发动代价：把手卡·场上的这张卡自身除外（通过aux.bfgcost实现）。
 	e3:SetCost(aux.bfgcost)
 	e3:SetTarget(c34242278.thtg)
 	e3:SetOperation(c34242278.thop)
 	c:RegisterEffect(e3)
 end
--- 过滤函数：检查玩家是否拥有光属性且可作为除外费用的怪兽
+-- 定义过滤器：筛选出光属性且可以作为代价除外的怪兽卡（用于从自己墓地选择）。
 function c34242278.cfilter(c)
 	return c:IsAttribute(ATTRIBUTE_LIGHT) and c:IsAbleToRemoveAsCost()
 end
--- 效果的发动费用：选择1只光属性怪兽除外
+-- 定义①效果的发动代价函数：检查墓地是否存在光属性怪兽可作为代价，存在则让玩家选择1张并除外。
 function c34242278.drcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否满足除外费用的条件
+	-- 代价合法性检查（chk==0）：确认自己墓地存在至少1只满足条件的光属性怪兽可作为代价。
 	if chk==0 then return Duel.IsExistingMatchingCard(c34242278.cfilter,tp,LOCATION_GRAVE,0,1,nil) end
-	-- 提示玩家选择要除外的卡
+	-- 向玩家发出选择提示，提示信息为“请选择要除外的卡”。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
-	-- 选择满足条件的1只光属性怪兽
+	-- 让玩家从自己墓地的光属性怪兽中选择1张（满足cfilter）作为发动代价。
 	local g=Duel.SelectMatchingCard(tp,c34242278.cfilter,tp,LOCATION_GRAVE,0,1,1,nil)
-	-- 将选中的怪兽除外作为费用
+	-- 将选中的卡片以表侧表示除外，作为发动代价。
 	Duel.Remove(g,POS_FACEUP,REASON_COST)
 end
--- 设置效果的目标为抽卡
+-- 定义①效果的发动目标检测与操作信息登记：检查自己能否抽卡，并设置抽卡玩家为自己、抽卡数量为1，登记抽卡操作信息。
 function c34242278.drtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查玩家是否可以抽卡
+	-- 发动合法性检查（chk==0）：确认自己可以抽1张卡（未受不能抽卡限制）。
 	if chk==0 then return Duel.IsPlayerCanDraw(tp,1) end
-	-- 设置效果的目标玩家为使用者
+	-- 将当前连锁的对象玩家设为自己，表示由自己抽卡。
 	Duel.SetTargetPlayer(tp)
-	-- 设置效果的目标参数为抽卡数量1
+	-- 将当前连锁的对象参数设为1，表示抽卡数量为1。
 	Duel.SetTargetParam(1)
-	-- 设置效果的操作信息为抽卡
+	-- 登记操作信息：本次连锁为抽卡效果，抽卡玩家为自己，抽卡数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,1)
 end
--- 效果的处理：执行抽卡
+-- 定义①效果的处理函数：根据连锁中登记的抽卡玩家和数量执行抽卡。
 function c34242278.drop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁中设定的目标玩家和参数
+	-- 从当前连锁信息中取出对象玩家p（抽卡玩家）和对象参数d（抽卡数量）。
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 执行抽卡效果
+	-- 让玩家p以效果原因抽d张卡。
 	Duel.Draw(p,d,REASON_EFFECT)
 end
--- 过滤函数：检查卡组中是否存在6星以下的风属性兽族怪兽
+-- 定义过滤器：筛选出等级6以下、风属性、兽族且可以加入手卡的怪兽卡，用于②效果的卡组检索。
 function c34242278.thfilter(c)
 	return c:IsLevelBelow(6) and c:IsAttribute(ATTRIBUTE_WIND) and c:IsRace(RACE_BEAST) and c:IsAbleToHand()
 end
--- 设置效果的目标为从卡组检索并加入手牌
+-- 定义②效果的发动目标检测与操作信息登记：确认卡组存在符合条件的怪兽，并登记从卡组将1张加入手卡的操作信息。
 function c34242278.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查卡组中是否存在满足条件的怪兽
+	-- 发动合法性检查（chk==0）：确认卡组中存在至少1只满足条件的6星以下风属性兽族怪兽。
 	if chk==0 then return Duel.IsExistingMatchingCard(c34242278.thfilter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置效果的操作信息为从卡组检索并加入手牌
+	-- 登记操作信息：本次连锁为回手牌/检索效果，处理时从自己卡组选择1张卡加入手卡。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 效果的处理：从卡组检索并加入手牌
+-- 定义②效果的处理函数：提示玩家选择符合条件的怪兽加入手卡，若选择则加入持有者手卡并让对方确认。
 function c34242278.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要加入手牌的卡
+	-- 向玩家发出选择提示，提示内容为“请选择要加入手牌的卡”。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择满足条件的1只6星以下的风属性兽族怪兽
+	-- 让玩家从卡组中选择1只满足条件的6星以下风属性兽族怪兽（thfilter）加入手卡。
 	local g=Duel.SelectMatchingCard(tp,c34242278.thfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的怪兽加入手牌
+		-- 将选中的卡片加入其持有者的手卡（nil表示送回持有者手卡），原因是效果。
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 向对方确认加入手牌的卡
+		-- 让对方玩家确认这些加入手卡的卡片。
 		Duel.ConfirmCards(1-tp,g)
 	end
 end

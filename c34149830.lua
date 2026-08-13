@@ -19,33 +19,33 @@ function c34149830.initial_effect(c)
 	e2:SetOperation(c34149830.operation)
 	c:RegisterEffect(e2)
 end
--- 判断是否满足发动条件：攻击怪兽为表侧攻击表示且攻击力小于等于对方怪兽的攻击力
+-- 判定发动条件：当前战斗中的己方表侧攻击怪兽将要被战斗破坏（不持有不会被战斗破坏的效果，且攻击力不高于战斗对象）。
 function c34149830.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取此次战斗的攻击怪兽
+	-- 取得当前攻击怪兽作为战斗中的攻击方。
 	local tc=Duel.GetAttacker()
 	local bc=tc:GetBattleTarget()
 	if tc:IsControler(1-tp) then
-		-- 获取攻击怪兽的战斗目标
+		-- 当攻击方为对方怪兽时，把己方被攻击的怪兽设为战斗对象。
 		tc=Duel.GetAttackTarget()
-		-- 获取攻击目标的攻击怪兽
+		-- 当攻击方为对方怪兽时，把对方攻击怪兽设为战斗对象。
 		bc=Duel.GetAttacker()
 	end
 	return tc and bc and not tc:IsHasEffect(EFFECT_INDESTRUCTABLE_BATTLE)
 		and tc:IsPosition(POS_FACEUP_ATTACK) and tc:GetAttack()<=bc:GetAttack()
 end
--- 筛选手卡中4星以下的战士族且可以特殊召唤的怪兽
+-- 定义特殊召唤的筛选条件：手卡中4星以下、战士族且可以被特殊召唤的怪兽。
 function c34149830.spfilter(c,e,tp)
 	return c:IsLevelBelow(4) and c:IsRace(RACE_WARRIOR) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 判断是否可以发动效果：当前卡未在连锁中且手卡存在满足条件的怪兽
+-- 发动时判定：该卡没有处于连锁串中，且我方手卡存在满足特殊召唤条件的怪兽。
 function c34149830.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return not e:GetHandler():IsStatus(STATUS_CHAINING)
-		-- 检查手卡是否存在满足条件的怪兽
+		-- 检查我方手卡是否存在至少1张满足spfilter条件的怪兽。
 		and Duel.IsExistingMatchingCard(c34149830.spfilter,tp,LOCATION_HAND,0,1,nil,e,tp) end
 end
--- 发动效果：使自己受到的战斗伤害变为0，并在伤害步骤结束时特殊召唤怪兽
+-- 效果处理：先给己方附加避免战斗伤害的效果，再在伤害步骤结束时执行从手卡特召怪兽的效果。
 function c34149830.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 使自己受到的战斗伤害变为0
+	-- 可以把那次战斗发生的对自己的战斗伤害变成0
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_AVOID_BATTLE_DAMAGE)
@@ -53,27 +53,27 @@ function c34149830.operation(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetReset(RESET_PHASE+PHASE_DAMAGE_CAL)
 	e1:SetTargetRange(1,0)
 	e1:SetValue(1)
-	-- 将效果注册给玩家
+	-- 将避免己方战斗伤害的效果注册给当前玩家。
 	Duel.RegisterEffect(e1,tp)
-	-- 在伤害步骤结束时触发特殊召唤效果
+	-- 那次伤害步骤结束时从手卡把1只4星以下的战士族怪兽特殊召唤。
 	local e2=Effect.CreateEffect(e:GetHandler())
 	e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e2:SetCode(EVENT_DAMAGE_STEP_END)
 	e2:SetReset(RESET_PHASE+PHASE_DAMAGE)
 	e2:SetOperation(c34149830.spop)
-	-- 将效果注册给玩家
+	-- 将伤害步骤结束时执行特殊召唤的效果注册到当前场上。
 	Duel.RegisterEffect(e2,tp)
 end
--- 处理伤害步骤结束后的特殊召唤
+-- 伤害步骤结束时的处理：若我方主要怪兽区有空位，则从手牌选择1只符合条件的战士族怪兽特殊召唤。
 function c34149830.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查场上是否有足够的召唤区域
+	-- 检查我方主要怪兽区是否有空位，若无空位则无法进行特殊召唤。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-	-- 提示玩家选择要特殊召唤的怪兽
+	-- 向玩家显示“请选择要特殊召唤的卡”的选择提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 选择满足条件的怪兽
+	-- 从手卡选择1张满足spfilter条件（4星以下战士族且可特殊召唤）的怪兽。
 	local g=Duel.SelectMatchingCard(tp,c34149830.spfilter,tp,LOCATION_HAND,0,1,1,nil,e,tp)
 	if g:GetCount()~=0 then
-		-- 将选中的怪兽特殊召唤到场上
+		-- 将选择的怪兽以表侧表示特殊召唤到我方场上。
 		Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
 	end
 end

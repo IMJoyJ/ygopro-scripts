@@ -10,11 +10,11 @@ function c34257001.initial_effect(c)
 	e1:SetValue(1200)
 	c:RegisterEffect(e1)
 end
--- 判断是否处于伤害步骤或伤害计算时，并且当前卡是攻击怪兽
+-- 判定当前阶段是否为伤害步骤或伤害计算时，且攻击怪兽为效果持有者自身，以此作为攻击力上升效果适用的条件。
 function c34257001.condtion(e)
-	-- 获取当前游戏阶段
+	-- 获取当前游戏阶段并保存到局部变量ph。
 	local ph=Duel.GetCurrentPhase()
 	return (ph==PHASE_DAMAGE or ph==PHASE_DAMAGE_CAL)
-		-- 判断攻击怪兽是否为当前效果所属的卡
+		-- 判断当前攻击怪兽是否为效果持有者（即此卡自己）。
 		and Duel.GetAttacker()==e:GetHandler()
 end
