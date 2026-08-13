@@ -33,74 +33,74 @@ function c50354944.initial_effect(c)
 	e3:SetHintTiming(TIMING_DAMAGE_STEP)
 	e3:SetCountLimit(1,50354945)
 	e3:SetCondition(c50354944.atkcon)
-	-- 将此卡从手卡除外作为效果发动的代价
+	-- 设置③效果的发动代价为“把墓地的这张卡除外”，使用aux.bfgcost简化实现。
 	e3:SetCost(aux.bfgcost)
 	e3:SetTarget(c50354944.atktg)
 	e3:SetOperation(c50354944.atkop)
 	c:RegisterEffect(e3)
 end
--- 过滤函数：检查手牌中是否存在等级5以上的可送入墓地的怪兽
+-- 过滤条件：手卡中存在5星以上且可以作为代价送去墓地的怪兽。
 function c50354944.cfilter(c)
 	return c:IsLevelAbove(5) and c:IsAbleToGraveAsCost()
 end
--- 效果发动时的处理：选择并送入墓地1只满足条件的怪兽
+-- ①效果的代价处理：从手卡选择1只5星以上怪兽（不能选择发动效果的这张卡自身）送去墓地作为代价。
 function c50354944.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断是否满足发动条件：确认场上存在至少1只等级5以上的怪兽可以送入墓地
+	-- 代价检查：确认手卡中是否存在满足条件的怪兽可以作为代价。
 	if chk==0 then return Duel.IsExistingMatchingCard(c50354944.cfilter,tp,LOCATION_HAND,0,1,e:GetHandler()) end
-	-- 提示玩家选择要送入墓地的卡
+	-- 弹出提示，让玩家选择要送去墓地的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
-	-- 选择满足条件的怪兽并将其加入到送入墓地的组中
+	-- 从手卡选择1只满足条件的5星以上怪兽，且排除发动效果的这张卡自身。
 	local g=Duel.SelectMatchingCard(tp,c50354944.cfilter,tp,LOCATION_HAND,0,1,1,e:GetHandler())
-	-- 将选中的怪兽送入墓地作为发动效果的代价
+	-- 将选择的卡送去墓地，作为效果的发动代价。
 	Duel.SendtoGrave(g,REASON_COST)
 end
--- 判断是否满足特殊召唤的条件：确认场上存在空位且此卡可以被特殊召唤
+-- ①效果的目标处理：确认自己场上主要怪兽区有空位且自身可以被特殊召唤，并设置特殊召唤的操作信息。
 function c50354944.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断是否满足特殊召唤的条件：确认场上存在空位
+	-- 检查自己主要怪兽区是否有空余区域，用于判断能否特殊召唤。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置连锁操作信息，表示将要进行特殊召唤
+	-- 设置本次连锁的操作信息：登记为特殊召唤自身。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 执行特殊召唤的操作：将此卡特殊召唤到场上
+-- ①效果的处理：将这张卡从手卡特殊召唤到场上的主要怪兽区。
 function c50354944.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if not c:IsRelateToEffect(e) then return end
-	-- 将此卡以特殊召唤方式送入场上
+	-- 将这张卡以表侧攻击表示特殊召唤到自己场上。
 	Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 end
--- 过滤函数：检查目标怪兽是否为表侧表示且攻击力与原本不同
+-- ②效果的判定条件：被解放的怪兽种族必须为战士族。
 function c50354944.condition(e,c)
 	return c:IsRace(RACE_WARRIOR)
 end
--- 判断效果发动时机：确认当前阶段为战斗阶段且未进入伤害计算阶段
+-- ③效果的发动条件：仅限自己或对方的战斗阶段，且满足伤害步骤前发动的限制。
 function c50354944.atkcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前游戏阶段
+	-- 获取当前游戏阶段。
 	local ph=Duel.GetCurrentPhase()
-	-- 返回当前阶段是否在战斗开始到战斗阶段之间，并且尚未完成伤害计算
+	-- 判断当前阶段是否处于战斗阶段开始到战斗阶段结束之间，并满足伤害步骤中伤害计算前才能发动的限制。
 	return ph>=PHASE_BATTLE_START and ph<=PHASE_BATTLE and aux.dscon(e,tp,eg,ep,ev,re,r,rp)
 end
--- 过滤函数：检查目标怪兽是否为表侧表示且攻击力与原本不同
+-- 对象选择条件：场上表侧表示且当前攻击力与原本攻击力不同的怪兽。
 function c50354944.atkfilter(c)
 	return c:IsFaceup() and not c:IsAttack(c:GetBaseAttack())
 end
--- 效果发动时的处理：选择并指定一个满足条件的场上怪兽作为对象
+-- ③效果的目标选择：选择场上1只表侧表示且攻击力与原本攻击力不同的怪兽作为对象。
 function c50354944.atktg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and c50354944.atkfilter(chkc) end
-	-- 判断是否满足发动条件：确认场上存在至少1只满足条件的怪兽可以被指定为对象
+	-- 检查场上是否存在满足条件的怪兽可以作为效果对象。
 	if chk==0 then return Duel.IsExistingTarget(c50354944.atkfilter,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil) end
-	-- 提示玩家选择要指定的对象
+	-- 弹出提示，让玩家选择效果对象。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)  --"请选择效果的对象"
-	-- 选择满足条件的怪兽作为效果的目标
+	-- 选择场上1只符合条件的怪兽作为效果对象。
 	Duel.SelectTarget(tp,c50354944.atkfilter,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,nil)
 end
--- 执行效果处理：将目标怪兽的攻击力修改为原本数值
+-- ③效果的处理：将对象怪兽的攻击力变成原本攻击力。
 function c50354944.atkop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁中指定的目标怪兽
+	-- 取得这个效果选择的对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) and tc:IsFaceup() then
 		local atk=tc:GetBaseAttack()
-		-- 设置一个永久改变目标怪兽攻击力的效果，使其变为原本攻击力
+		-- 那只怪兽的攻击力变成原本数值。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_SET_ATTACK_FINAL)

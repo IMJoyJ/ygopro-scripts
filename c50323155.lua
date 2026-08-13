@@ -12,23 +12,23 @@ function c50323155.initial_effect(c)
 	e1:SetOperation(c50323155.activate)
 	c:RegisterEffect(e1)
 end
--- 判断是否为对方特殊召唤且仅召唤1只怪兽，并确保当前无未处理的连锁。
+-- 定义发动条件函数：判断是否满足发动时机，即对方特殊召唤且不是自己操作、特殊召唤的怪兽仅为1只、且当前没有连锁处理中。
 function c50323155.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 对方玩家与发动玩家不同，且此次特殊召唤的怪兽数量为1，同时满足无未处理连锁条件。
+	-- 条件表达式：对方回合玩家不等于特殊召唤玩家（即对方特殊召唤）、特殊召唤的怪兽数量为1、且当前无连锁处理（允许发动无效召唤）。
 	return tp~=ep and eg:GetCount()==1 and aux.NegateSummonCondition()
 end
--- 设置效果的目标为本次特殊召唤的怪兽，准备无效召唤和破坏操作。
+-- 目标函数：本效果不取对象，满足发动条件时直接通过，并预设本次处理将无效特殊召唤并破坏那只怪兽。
 function c50323155.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置操作信息：将本次特殊召唤无效（CATEGORY_DISABLE_SUMMON）
+	-- 设置操作信息：向连锁登记本次效果将无效特殊召唤，对象为本次特殊召唤的怪兽组eg，数量为eg:GetCount()。
 	Duel.SetOperationInfo(0,CATEGORY_DISABLE_SUMMON,eg,eg:GetCount(),0,0)
-	-- 设置操作信息：破坏本次特殊召唤的怪兽（CATEGORY_DESTROY）
+	-- 设置操作信息：向连锁登记本次效果将破坏对象，对象为本次特殊召唤的怪兽组eg，数量为eg:GetCount()。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,eg,eg:GetCount(),0,0)
 end
--- 执行效果：使特殊召唤无效并破坏该怪兽。
+-- 效果处理函数：实际执行使这次特殊召唤无效，并将那只怪兽破坏。
 function c50323155.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 使本次特殊召唤无效
+	-- 使eg（本次特殊召唤的怪兽）的特殊召唤无效。
 	Duel.NegateSummon(eg)
-	-- 以效果为原因破坏该怪兽
+	-- 以效果原因将eg（被无效召唤的怪兽）破坏。
 	Duel.Destroy(eg,REASON_EFFECT)
 end
