@@ -6,7 +6,7 @@
 -- ③：这张卡有「No.9 天盖星 戴森球」在作为超量素材的场合，得到以下效果。
 -- ●1回合1次，把这张卡的超量素材任意数量取除才能发动。给与对方取除数量×800伤害。
 function c32559361.initial_effect(c)
-	-- 添加XYZ召唤手续，使用等级为10的怪兽3只作为超量素材
+	-- 为这张卡添加超量召唤手续：可用任意10星怪兽3只叠放进行超量召唤。
 	aux.AddXyzProcedure(c,nil,10,3)
 	c:EnableReviveLimit()
 	-- ②：这张卡和对方怪兽进行战斗的伤害步骤开始时才能发动。那只怪兽在这张卡下面重叠作为超量素材。
@@ -42,69 +42,69 @@ function c32559361.initial_effect(c)
 	e3:SetOperation(c32559361.damop2)
 	c:RegisterEffect(e3)
 end
--- 设置该卡为No.9系列的XYZ怪兽
+-- 将该卡登记为No.9，用于No.卡相关规则判定。
 aux.xyz_number[32559361]=9
--- 判断是否可以将战斗中的对方怪兽作为超量素材
+-- ②效果的发动条件判定：本卡必须为超量怪兽，且存在战斗对象，该对象可作为超量素材，满足时允许发动。
 function c32559361.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	local tc=c:GetBattleTarget()
 	if chk==0 then return tc and c:IsType(TYPE_XYZ) and tc:IsCanOverlay() end
 end
--- 将战斗中的对方怪兽叠放至自身作为超量素材，并将该怪兽原本的叠放卡送去墓地
+-- ②效果处理：若本卡与战斗对象均关联此次战斗且对象为怪兽、不免疫此效果、可作为超量素材，则将战斗对象叠放在本卡下方；若对象自身有超量素材则先将那些素材送去墓地。
 function c32559361.operation(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local tc=c:GetBattleTarget()
 	if c:IsRelateToEffect(e) and tc:IsRelateToBattle() and tc:IsType(TYPE_MONSTER) and not tc:IsImmuneToEffect(e) and tc:IsCanOverlay() then
 		local og=tc:GetOverlayGroup()
 		if og:GetCount()>0 then
-			-- 将目标怪兽原本的叠放卡送去墓地
+			-- 将战斗对象原本持有的超量素材按规则理由全部送去墓地。
 			Duel.SendtoGrave(og,REASON_RULE)
 		end
-		-- 将目标怪兽叠放至自身作为超量素材
+		-- 将战斗对象作为超量素材叠放在本卡下方。
 		Duel.Overlay(c,Group.FromCards(tc))
 	end
 end
--- 判断是否拥有超量素材以发动效果
+-- ①效果的发动条件与对象设定：本卡有超量素材才可发动；以对方为对象，并按当前素材数×300设置伤害信息。
 function c32559361.damtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():GetOverlayCount()>0 end
 	local ct=e:GetHandler():GetOverlayCount()
-	-- 设置连锁处理的目标玩家为对方
+	-- 将对方玩家设为该效果的对象（伤害对象）。
 	Duel.SetTargetPlayer(1-tp)
-	-- 设置连锁操作信息为对对方造成伤害
+	-- 设置连锁操作信息，声明伤害分类、伤害对象及预计伤害数值（当前素材数×300）。
 	Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,1-tp,ct*300)
 end
--- 对对方造成伤害
+-- ①效果处理：根据记录的对象玩家和当前超量素材数量，给予对象玩家素材数×300的伤害。
 function c32559361.damop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁处理的目标玩家
+	-- 获取该连锁中记录的对象玩家。
 	local p=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER)
 	local ct=e:GetHandler():GetOverlayCount()
-	-- 对目标玩家造成伤害
+	-- 以效果原因给予对象玩家ct×300伤害。
 	Duel.Damage(p,ct*300,REASON_EFFECT)
 end
--- 判断是否拥有「No.9 天盖星 戴森球」作为超量素材
+-- ③效果的条件判定：本卡的超量素材中存在「No.9 天盖星 戴森球」（卡号1992816）时才可发动。
 function c32559361.damcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():GetOverlayGroup():IsExists(Card.IsCode,1,nil,1992816)
 end
--- 支付将自身超量素材取除的代价
+-- ③效果的发动代价：从本卡取除任意数量（至少1张）超量素材作为代价，并将取除数量保存到效果的Label中供后续使用。
 function c32559361.damcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():CheckRemoveOverlayCard(tp,1,REASON_COST) end
 	local ct=e:GetHandler():RemoveOverlayCard(tp,1,99,REASON_COST)
 	e:SetLabel(ct)
 end
--- 判断是否可以发动效果
+-- ③效果发动时：以对方为对象，并根据取除数量设置伤害信息。
 function c32559361.damtg2(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
 	local ct=e:GetLabel()
-	-- 设置连锁处理的目标玩家为对方
+	-- 将对方玩家设为该效果的对象（伤害对象）。
 	Duel.SetTargetPlayer(1-tp)
-	-- 设置连锁操作信息为对对方造成伤害
+	-- 设置连锁操作信息，声明伤害分类、伤害对象及预计伤害数值（取除数量×800）。
 	Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,1-tp,ct*800)
 end
--- 对对方造成伤害
+-- ③效果处理：根据记录的对象玩家和取除数量，给予对方取除数量×800的伤害。
 function c32559361.damop2(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁处理的目标玩家
+	-- 获取该连锁中记录的对象玩家。
 	local p=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER)
 	local ct=e:GetLabel()
-	-- 对目标玩家造成伤害
+	-- 以效果原因给予对象玩家ct×800伤害。
 	Duel.Damage(p,ct*800,REASON_EFFECT)
 end

@@ -21,7 +21,7 @@ function c32491822.initial_effect(c)
 	e2:SetTarget(c32491822.sptg)
 	e2:SetOperation(c32491822.spop)
 	c:RegisterEffect(e2)
-	-- 这张卡战斗破坏对方怪兽送去墓地的场合发动。给与对方1000伤害。
+	-- ②：这张卡战斗破坏对方怪兽送去墓地的场合发动。给与对方1000伤害。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(32491822,0))  --"伤害"
 	e3:SetCategory(CATEGORY_DAMAGE)
@@ -31,7 +31,7 @@ function c32491822.initial_effect(c)
 	e3:SetTarget(c32491822.damtg)
 	e3:SetOperation(c32491822.damop)
 	c:RegisterEffect(e3)
-	-- 只要这张卡在怪兽区域守备表示存在，对方怪兽不能选择这张卡以外的怪兽作为攻击对象。
+	-- ①：只要这张卡在怪兽区域守备表示存在，对方怪兽不能选择其他怪兽作为攻击对象。
 	local e4=Effect.CreateEffect(c)
 	e4:SetType(EFFECT_TYPE_FIELD)
 	e4:SetRange(LOCATION_MZONE)
@@ -41,31 +41,31 @@ function c32491822.initial_effect(c)
 	e4:SetValue(c32491822.atlimit)
 	c:RegisterEffect(e4)
 end
--- 过滤满足条件的永续魔法卡，包括表侧表示的和被影响状态下可以选为对象的里侧永续魔法卡。
+-- 筛选可作为特殊召唤素材的魔法卡：能够作为cost送去墓地，且要么是表侧表示的永续魔法卡，要么在适用「失乐之霹雳」效果时是里侧表示的魔法卡。
 function c32491822.spfilter(c,check)
 	return c:IsAbleToGraveAsCost()
 		and (c:IsFaceup() and c:GetType()==TYPE_SPELL+TYPE_CONTINUOUS or check and c:IsFacedown() and c:IsType(TYPE_SPELL))
 end
--- 检查玩家场上是否有3张满足条件的永续魔法卡，确保特殊召唤条件成立。
+-- 特殊召唤条件的合法性检查：从自己场上筛选出可作为cost的魔法卡，并确认能选出3张且送去墓地后我方场上仍有可用怪兽区空格。
 function c32491822.spcon(e,c)
 	if c==nil then return true end
 	local tp=c:GetControler()
-	-- 检查玩家是否受到效果影响，影响永续魔法卡的选卡条件。
+	-- 检查我方是否适用「失乐之霹雳」的效果，以决定素材选择是否包含里侧表示的魔法卡。
 	local check=Duel.IsPlayerAffectedByEffect(tp,54828837)
-	-- 获取满足特殊召唤条件的永续魔法卡组。
+	-- 获取自己场上可作为特殊召唤素材的魔法卡集合（filter中根据check决定是否包含里侧魔法卡）。
 	local g=Duel.GetMatchingGroup(c32491822.spfilter,tp,LOCATION_ONFIELD,0,nil,check)
-	-- 检查该卡组中是否存在3张满足条件的卡。
+	-- 检查能否从候选集合中选出3张卡作为素材，且这些卡送去墓地后我方场上仍有空余的怪兽区域可用。
 	return g:CheckSubGroup(aux.mzctcheck,3,3,tp)
 end
--- 选择满足条件的3张永续魔法卡并设置为特殊召唤的代价。
+-- 特殊召唤的素材选择处理：选取3张满足条件的魔法卡作为送去墓地的cost，并保存选择结果供后续处理。
 function c32491822.sptg(e,tp,eg,ep,ev,re,r,rp,chk,c)
-	-- 检查玩家是否受到效果影响，影响永续魔法卡的选卡条件。
+	-- 检查我方是否适用「失乐之霹雳」的效果，以决定素材选择是否包含里侧表示的魔法卡。
 	local check=Duel.IsPlayerAffectedByEffect(tp,54828837)
-	-- 获取满足特殊召唤条件的永续魔法卡组。
+	-- 获取自己场上可作为特殊召唤素材的魔法卡集合（filter中根据check决定是否包含里侧魔法卡）。
 	local g=Duel.GetMatchingGroup(c32491822.spfilter,tp,LOCATION_ONFIELD,0,nil,check)
-	-- 提示玩家选择要送去墓地的卡。
+	-- 给玩家显示选择提示，要求其选择要送去墓地的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
-	-- 从满足条件的卡组中选择3张卡组成子集。
+	-- 让玩家从候选集合中选择3张卡作为素材；aux.mzctcheck确保送墓后我方可用的怪兽区域仍有空位。
 	local sg=g:SelectSubGroup(tp,aux.mzctcheck,true,3,3,tp)
 	if sg then
 		sg:KeepAlive()
@@ -73,41 +73,41 @@ function c32491822.sptg(e,tp,eg,ep,ev,re,r,rp,chk,c)
 		return true
 	else return false end
 end
--- 将选中的卡组送去墓地，完成特殊召唤。
+-- 特殊召唤手续的实际处理：将之前选定的3张魔法卡送去墓地，完成特殊召唤的cost。
 function c32491822.spop(e,tp,eg,ep,ev,re,r,rp,c)
 	local g=e:GetLabelObject()
-	-- 将选中的卡组以特殊召唤原因送去墓地。
+	-- 把选定的3张魔法卡送去墓地（作为特殊召唤的必要手续）。
 	Duel.SendtoGrave(g,REASON_SPSUMMON)
 	g:DeleteGroup()
 end
--- 判断是否满足发动伤害效果的条件，即该卡参与战斗且击败对方怪兽。
+-- 效果②的发动条件判定：本卡进行战斗并破坏了对方怪兽，且该怪兽被战斗送去墓地。
 function c32491822.damcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local bc=c:GetBattleTarget()
 	return c:IsRelateToBattle() and bc:IsLocation(LOCATION_GRAVE) and bc:IsReason(REASON_BATTLE) and bc:IsType(TYPE_MONSTER)
 end
--- 设置伤害效果的目标玩家和伤害值。
+-- 效果②的取对象/信息设置：将伤害对象设为对方玩家，伤害数值设为1000，并登记伤害效果信息。
 function c32491822.damtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置伤害效果的目标玩家为对方。
+	-- 将本次连锁的对象玩家设为对方玩家（承受伤害者）。
 	Duel.SetTargetPlayer(1-tp)
-	-- 设置伤害效果的伤害值为1000。
+	-- 将本次连锁的对象参数设为1000（即给予的伤害数值）。
 	Duel.SetTargetParam(1000)
-	-- 设置伤害效果的操作信息。
+	-- 登记操作信息：这是一个造成1000点伤害的效果，对象为对方玩家。
 	Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,1-tp,1000)
 end
--- 执行伤害效果，对目标玩家造成1000点伤害。
+-- 效果②的实际处理：从连锁信息中读取对象玩家和伤害数值，给对方造成伤害。
 function c32491822.damop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁中设定的目标玩家和伤害值。
+	-- 获取当前连锁中设置的对象玩家和伤害数值。
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 对目标玩家造成指定伤害。
+	-- 对对象玩家造成指定数值的伤害（原因记为效果伤害）。
 	Duel.Damage(p,d,REASON_EFFECT)
 end
--- 判断该卡是否处于守备表示状态。
+-- 效果①的生效条件：这张卡在怪兽区域以守备表示存在。
 function c32491822.atcon(e)
 	return e:GetHandler():IsDefensePos()
 end
--- 限制对方不能选择该卡以外的怪兽作为攻击对象。
+-- 定义不能被选择为攻击对象的卡片：这张卡以外的怪兽不能被对方选择为攻击对象。
 function c32491822.atlimit(e,c)
 	return c~=e:GetHandler()
 end

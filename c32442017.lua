@@ -4,7 +4,7 @@
 -- ①：自己主要阶段才能发动。自己的手卡·场上（表侧表示）1张其他的「终刻」卡破坏。那之后，从卡组选1只「终刻」怪兽加入手卡或特殊召唤。这个效果的发动后，直到回合结束时自己不是超量怪兽不能从额外卡组特殊召唤。
 -- ②：这张卡被效果破坏的场合，以场上1只表侧表示怪兽为对象才能发动。那只怪兽破坏。
 local s,id,o=GetID()
--- 初始化卡片效果，注册场地魔法卡的发动和两个效果
+-- 注册三个效果：e1作为魔陷发动的基础空效果，e2为①起动效果（破坏自身手卡/场上的其他「终刻」卡并检索/特召），e3为②被效果破坏时破坏场上1只表侧表示怪兽的诱发效果。
 function s.initial_effect(c)
 	-- 永续魔陷/场地卡通用的“允许发动”空效果，无此效果则无法发动
 	local e1=Effect.CreateEffect(c)
@@ -34,72 +34,72 @@ function s.initial_effect(c)
 	e3:SetOperation(s.desop)
 	c:RegisterEffect(e3)
 end
--- 过滤函数，判断手卡或场上的「终刻」卡是否满足破坏条件并能检索或特殊召唤「终刻」怪兽
+-- 筛选可破坏的“其他「终刻」卡”：需为「终刻」字段且在手牌或场上表侧表示；若chk为真，还额外检查卡组是否存在可加入手卡或特殊召唤的「终刻」怪兽。
 function s.cfilter(c,e,tp,chk)
 	return c:IsSetCard(0x1d2) and c:IsFaceupEx()
-		-- 判断是否能检索或特殊召唤「终刻」怪兽
+		-- 当chk为真时，追加检查卡组中是否存在可被检索或特殊召唤的「终刻」怪兽，用于证明效果处理时后续操作可行。
 		and (not chk or Duel.IsExistingMatchingCard(s.thfilter,tp,LOCATION_DECK,0,1,nil,e,tp,c,chk))
 end
--- 过滤函数，判断卡组中的「终刻」怪兽是否可以加入手卡或特殊召唤
+-- 筛选卡组中可被检索/特殊召唤的「终刻」怪兽：必须为「终刻」怪兽，且能够加入手卡，或当前有可用怪兽区且能够特殊召唤。
 function s.thfilter(c,e,tp,ec)
 	return c:IsSetCard(0x1d2) and c:IsType(TYPE_MONSTER)
-		-- 判断「终刻」怪兽是否可以加入手卡或特殊召唤
+		-- 满足“能加入手卡”或“有怪兽区且能特殊召唤”二者之一，即可作为检索/特召候选。
 		and (c:IsAbleToHand() or (Duel.GetMZoneCount(tp,ec)>0 and c:IsCanBeSpecialSummoned(e,0,tp,false,false)))
 end
--- 效果的发动条件判断，检查是否有满足条件的「终刻」卡
+-- ①效果的目标阶段：确认场上/手牌存在可破坏的“其他「终刻」卡”且卡组有可检索/特召目标；取得所有满足条件的可破坏候选卡，并向系统登记将要破坏1张卡。
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否有满足条件的「终刻」卡
+	-- 发动合法性检查：存在至少1张可破坏的“其他「终刻」卡”，且卡组中存在可加入手卡或特殊召唤的「终刻」怪兽。
 	if chk==0 then return Duel.IsExistingMatchingCard(s.cfilter,tp,LOCATION_HAND+LOCATION_ONFIELD,0,1,e:GetHandler(),e,tp,true) end
-	-- 获取满足条件的「终刻」卡组
+	-- 取得所有满足条件的可破坏候选卡（手卡或场上表侧表示、其他「终刻」卡），供操作信息使用。
 	local g=Duel.GetMatchingGroup(s.cfilter,tp,LOCATION_HAND+LOCATION_ONFIELD,0,e:GetHandler(),e,tp,true)
-	-- 设置操作信息，指定要破坏的卡
+	-- 登记破坏操作信息：将破坏1张上述候选卡，category包含破坏，供相关效果（如星尘龙）检测。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,1,0,0)
 end
--- 效果处理函数，执行破坏并检索或特殊召唤操作
+-- ①效果处理：选择并破坏1张“其他「终刻」卡”；破坏成功后从卡组选1只「终刻」怪兽，根据玩家选择或条件加入手卡或特殊召唤；处理完成后施加本回合只能从额外卡组特殊召唤超量怪兽的自肃。
 function s.thop(e,tp,eg,ep,ev,re,r,rp)
 	local dg=nil
-	-- 提示玩家选择要破坏的卡
+	-- 显示“请选择要破坏的卡”的提示消息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 检查是否有满足条件的「终刻」卡
+	-- 判断是否存在“可破坏且卡组有可检索/特召目标”的候选卡，以决定后续选择时使用的过滤参数。
 	if Duel.IsExistingMatchingCard(s.cfilter,tp,LOCATION_HAND+LOCATION_ONFIELD,0,1,nil,e,tp,true) then
-		-- 选择要破坏的「终刻」卡
+		-- 选择1张可破坏的“其他「终刻」卡”，要求卡组中存在可加入手卡或特殊召唤的「终刻」怪兽（chk=true），并且排除本卡自身。
 		dg=Duel.SelectMatchingCard(tp,s.cfilter,tp,LOCATION_HAND+LOCATION_ONFIELD,0,1,1,aux.ExceptThisCard(e),e,tp,true)
 	else
-		-- 选择要破坏的「终刻」卡
+		-- 选择1张可破坏的“其他「终刻」卡”，不要求卡组中存在检索/特召目标（chk=false），同样排除本卡自身；作为无法按严格条件选择时的后备路径。
 		dg=Duel.SelectMatchingCard(tp,s.cfilter,tp,LOCATION_HAND+LOCATION_ONFIELD,0,1,1,aux.ExceptThisCard(e),e,tp,false)
 	end
 	if dg and dg:GetCount()>0 then
 		local fg=dg:Filter(Card.IsLocation,nil,LOCATION_ONFIELD)
 		if fg:GetCount()>0 then
-			-- 显示被选为对象的卡
+			-- 为场上被选中的破坏候选卡显示选中动画，并记录其为对象。
 			Duel.HintSelection(fg)
 		end
-		-- 破坏选中的卡
+		-- 执行破坏操作；若实际破坏成功（返回值不为0），才继续后续从卡组检索/特殊召唤的处理。
 		if Duel.Destroy(dg,REASON_EFFECT)~=0 then
-			-- 提示玩家选择要操作的卡
+			-- 显示“请选择要操作的卡”的提示消息。
 			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_OPERATECARD)  --"请选择要操作的卡"
-			-- 从卡组选择要加入手卡或特殊召唤的「终刻」怪兽
+			-- 从卡组选择1只满足条件的「终刻」怪兽（可加入手卡或可特殊召唤）。
 			local g=Duel.SelectMatchingCard(tp,s.thfilter,tp,LOCATION_DECK,0,1,1,nil,e,tp,nil)
-			-- 获取玩家场上可用的怪兽区数量
+			-- 获取当前玩家可用的怪兽区空格数，用于判断能否特殊召唤。
 			local ft=Duel.GetLocationCount(tp,LOCATION_MZONE)
 			local tc=g:GetFirst()
 			if tc then
-				-- 中断当前效果，使之后的效果处理视为不同时处理
+				-- 中断当前效果处理，使破坏与后续检索/特召不在同一时点处理，制造时点变化。
 				Duel.BreakEffect()
-				-- 判断是否选择加入手卡或特殊召唤
+				-- 判断将选出的「终刻」怪兽加入手卡还是特殊召唤：若其不能特殊召唤、没有怪兽区空格，或玩家选择“加入手卡”（选项0），则加入手卡；否则特殊召唤。
 				if tc:IsAbleToHand() and (not tc:IsCanBeSpecialSummoned(e,0,tp,false,false) or ft<=0 or Duel.SelectOption(tp,1190,1152)==0) then
-					-- 将卡加入手卡
+					-- 将选出的「终刻」怪兽加入其持有者的手卡，原因为效果。
 					Duel.SendtoHand(tc,nil,REASON_EFFECT)
-					-- 确认对方查看该卡
+					-- 向对方玩家展示加入手卡的「终刻」怪兽，确认检索内容。
 					Duel.ConfirmCards(1-tp,tc)
 				else
-					-- 将卡特殊召唤
+					-- 将选出的「终刻」怪兽以表侧攻击表示特殊召唤到自己场上。
 					Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP)
 				end
 			end
 		end
 	end
-	-- 注册效果，使玩家在回合结束前不能特殊召唤非超量怪兽
+	-- 这个效果的发动后，直到回合结束时自己不是超量怪兽不能从额外卡组特殊召唤。②：这张卡被效果破坏的场合，以场上1只表侧表示怪兽为对象才能发动。那只怪兽破坏。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_CANNOT_SPECIAL_SUMMON)
@@ -107,40 +107,40 @@ function s.thop(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetTargetRange(1,0)
 	e1:SetReset(RESET_PHASE+PHASE_END)
 	e1:SetTarget(s.splimit)
-	-- 注册效果到玩家
+	-- 将自肃效果注册到场上，使其作用于当前玩家（tp），持续到回合结束。
 	Duel.RegisterEffect(e1,tp)
 end
--- 限制效果，禁止特殊召唤非超量怪兽
+-- 自肃的过滤条件：当怪兽不是超量怪兽且位于额外卡组时，禁止该特殊召唤。
 function s.splimit(e,c)
 	return not c:IsType(TYPE_XYZ) and c:IsLocation(LOCATION_EXTRA)
 end
--- 判断该卡是否因效果破坏
+-- ②效果的发动条件：这张卡被效果破坏时才可发动。
 function s.descon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	return c:IsReason(REASON_EFFECT)
 end
--- 过滤函数，判断目标怪兽是否表侧表示
+-- 取对象过滤：选择场上表侧表示怪兽。
 function s.desfilter(c)
 	return c:IsFaceup()
 end
--- 效果的发动条件判断，检查是否有满足条件的场上怪兽
+-- ②效果目标处理：选择场上1只表侧表示怪兽作为对象，并设置破坏该卡的操作信息。
 function s.destg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and s.desfilter(chkc) end
-	-- 检查是否有满足条件的场上怪兽
+	-- 发动时检查是否存在表侧表示怪兽可取对象。
 	if chk==0 then return Duel.IsExistingTarget(s.desfilter,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil) end
-	-- 提示玩家选择要破坏的卡
+	-- 显示“请选择要破坏的卡”的提示消息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 选择要破坏的场上怪兽
+	-- 选择场上1只表侧表示怪兽作为效果对象，并登记为当前连锁的对象。
 	local g=Duel.SelectTarget(tp,s.desfilter,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,nil)
-	-- 设置操作信息，指定要破坏的怪兽
+	-- 登记破坏操作信息：将破坏所选对象怪兽。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,1,0,0)
 end
--- 效果处理函数，执行破坏目标怪兽操作
+-- ②效果处理：取得对象怪兽，若其仍与连锁相关且为怪兽，则将其破坏。
 function s.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的目标怪兽
+	-- 取得②效果选择的对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToChain() and tc:IsType(TYPE_MONSTER) then
-		-- 破坏目标怪兽
+		-- 将对象怪兽破坏，原因为效果。
 		Duel.Destroy(tc,REASON_EFFECT)
 	end
 end
