@@ -4,7 +4,7 @@
 -- ①：自己场上没有怪兽存在的场合才能发动。从卡组把1只4星以下的「空牙团」怪兽特殊召唤。对方场上有怪兽2只以上存在的场合，可以再从卡组把1只「空牙团」怪兽特殊召唤。这个回合，自己不是「空牙团」怪兽不能特殊召唤。
 -- ②：自己为让「空牙团」怪兽的效果发动而把手卡丢弃的场合，可以作为那1张卡的代替而把墓地的这张卡除外。
 local s,id,o=GetID()
--- 创建并注册两个效果：①主要怪兽区无怪兽时可发动特殊召唤效果；②墓地时可代替手卡丢弃发动空牙团效果
+-- 初始化函数：注册卡片①效果的发动（从卡组特殊召唤「空牙团」怪兽）与②效果的墓地代替丢弃效果。
 function s.initial_effect(c)
 	-- ①：自己场上没有怪兽存在的场合才能发动。从卡组把1只4星以下的「空牙团」怪兽特殊召唤。对方场上有怪兽2只以上存在的场合，可以再从卡组把1只「空牙团」怪兽特殊召唤。这个回合，自己不是「空牙团」怪兽不能特殊召唤。
 	local e1=Effect.CreateEffect(c)
@@ -28,57 +28,57 @@ function s.initial_effect(c)
 	e2:SetCountLimit(1,id+o)
 	c:RegisterEffect(e2)
 end
--- 判断自己场上是否没有怪兽
+-- ①效果的发动条件函数：判定自己场上没有怪兽存在时才允许发动。
 function s.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 自己场上没有怪兽存在
+	-- 检查自己的主要怪兽区是否存在怪兽：若不存在怪兽，则条件成立，允许发动。
 	return not Duel.IsExistingMatchingCard(nil,tp,LOCATION_MZONE,0,1,nil)
 end
--- 筛选满足条件的4星以下空牙团怪兽
+-- 第一个特殊召唤的筛选条件：卡组中的「空牙团」怪兽、4星以下、且能被当前效果特殊召唤。
 function s.spfilter(c,e,tp)
 	return c:IsSetCard(0x114) and c:IsLevelBelow(4) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 筛选满足条件的空牙团怪兽（无星数限制）
+-- 第二个特殊召唤的筛选条件：卡组中的「空牙团」怪兽、且能被当前效果特殊召唤（无等级限制）。
 function s.spfilter2(c,e,tp)
 	return c:IsSetCard(0x114) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 设置效果发动时的处理目标为从卡组特殊召唤怪兽
+-- ①效果发动时的目标合法性判断函数：确认自己怪兽区有空位，且卡组存在可特殊召唤的4星以下「空牙团」怪兽；满足则返回真，并设置特殊召唤的操作信息。
 function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断自己场上是否有空格
+	-- 发动合法性检查：自己的主要怪兽区必须有可用空格。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 判断卡组中是否存在满足条件的空牙团怪兽
+		-- 且卡组中存在至少1只满足第一个特殊召唤条件的「空牙团」怪兽，才允许发动。
 		and Duel.IsExistingMatchingCard(s.spfilter,tp,LOCATION_DECK,0,1,nil,e,tp) end
-	-- 设置连锁处理信息为特殊召唤怪兽
+	-- 设置操作信息：本效果将进行特殊召唤，预计从自己的卡组特殊召唤1只怪兽（对象在效果处理时选择）。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_DECK)
 end
--- 处理效果发动时的特殊召唤操作
+-- ①效果处理：先从卡组选1只4星以下的「空牙团」怪兽特殊召唤；若对方场上有2只以上怪兽且自己怪兽区有空位且卡组还有可特殊召唤的「空牙团」怪兽，则询问玩家是否再特殊召唤1只；最后给自己附加本回合不能特殊召唤「空牙团」以外怪兽的限制。
 function s.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断自己场上是否有空格
+	-- 效果处理时再次确认自己的主要怪兽区仍存在空位，才执行特殊召唤。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)>0 then
-		-- 提示玩家选择要特殊召唤的卡
+		-- 向玩家发送选择提示消息：请选择要特殊召唤的卡。
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-		-- 选择满足条件的空牙团怪兽
+		-- 让玩家从卡组选择1张满足第一个过滤条件的「空牙团」怪兽作为特殊召唤对象。
 		local g=Duel.SelectMatchingCard(tp,s.spfilter,tp,LOCATION_DECK,0,1,1,nil,e,tp)
-		-- 将选中的怪兽特殊召唤
+		-- 若成功选到卡且该怪兽特殊召唤成功，才进入后续是否追加特殊召唤的判断。
 		if g:GetCount()>0 and Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)~=0
-			-- 判断对方场上是否有2只以上怪兽
+			-- 检查对方场上是否存在至少2只怪兽（对方怪兽2只以上存在的场合成立）。
 			and Duel.IsExistingMatchingCard(aux.TRUE,tp,0,LOCATION_MZONE,2,nil)
-			-- 判断自己场上是否有空格
+			-- 并且自己怪兽区仍有空位，才能追加特殊召唤。
 			and Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-			-- 判断卡组中是否存在满足条件的空牙团怪兽
+			-- 并且卡组中仍存在至少1只可特殊召唤的「空牙团」怪兽（满足第二个过滤条件），才能追加召唤。
 			and Duel.IsExistingMatchingCard(s.spfilter2,tp,LOCATION_DECK,0,1,nil,e,tp)
-			-- 询问玩家是否再特殊召唤一次
+			-- 询问玩家是否再特殊召唤1只「空牙团」怪兽；选择“是”才执行追加特殊召唤。
 			and Duel.SelectYesNo(tp,aux.Stringid(id,2)) then  --"是否再特殊召唤？"
-			-- 中断当前效果处理
+			-- 中断当前效果处理，使追加的特殊召唤被视为不同时处理，避免错失时点。
 			Duel.BreakEffect()
-			-- 提示玩家选择要特殊召唤的卡
+			-- 向玩家发送选择提示消息：请选择要特殊召唤的卡。
 			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-			-- 选择满足条件的空牙团怪兽
+			-- 让玩家从卡组选择1张满足第二个过滤条件的「空牙团」怪兽作为追加特殊召唤对象。
 			local g2=Duel.SelectMatchingCard(tp,s.spfilter2,tp,LOCATION_DECK,0,1,1,nil,e,tp)
-			-- 将选中的怪兽特殊召唤
+			-- 将追加选择的「空牙团」怪兽以表侧表示特殊召唤到自己的怪兽区。
 			Duel.SpecialSummon(g2,0,tp,tp,false,false,POS_FACEUP)
 		end
 	end
-	-- 设置永续效果：本回合不能特殊召唤非空牙团怪兽
+	-- 这个回合，自己不是「空牙团」怪兽不能特殊召唤。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_CANNOT_SPECIAL_SUMMON)
@@ -86,10 +86,10 @@ function s.activate(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetTargetRange(1,0)
 	e1:SetTarget(s.splimit)
 	e1:SetReset(RESET_PHASE+PHASE_END)
-	-- 注册该永续效果给玩家
+	-- 将上述特殊召唤限制效果注册给当前回合玩家，效果持续到结束阶段。
 	Duel.RegisterEffect(e1,tp)
 end
--- 设置效果目标为非空牙团怪兽
+-- 限制函数：被特殊召唤的怪兽不是「空牙团」字段时，该特殊召唤被禁止。
 function s.splimit(e,c)
 	return not c:IsSetCard(0x114)
 end

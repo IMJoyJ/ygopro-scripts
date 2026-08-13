@@ -14,27 +14,27 @@ function c53540729.initial_effect(c)
 	e1:SetOperation(c53540729.operation)
 	c:RegisterEffect(e1)
 end
--- 检索满足条件的表侧表示的「发条」怪兽（等级大于等于1）
+-- 定义可选择目标的条件：怪兽必须表侧表示、属于「发条」系列（0x58）且等级不低于1星，用于限制只能选择自己场上符合条件的「发条」怪兽。
 function c53540729.filter(c)
 	return c:IsFaceup() and c:IsSetCard(0x58) and c:IsLevelAbove(1)
 end
--- 选择满足条件的1只自己场上的表侧表示怪兽作为对象
+-- 目标选择处理：若已指定对象则检查其是否位于己方怪兽区、控制者为自己且满足过滤条件；若无对象则在发动时确认存在至少1只可选对象；然后给出选择提示，并让玩家从己方场上符合条件的「发条」怪兽中选择1只作为效果对象。
 function c53540729.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and c53540729.filter(chkc) end
-	-- 判断是否满足发动条件：自己场上是否存在满足filter条件的怪兽
+	-- 效果发动判定：在发动条件检查阶段，确认自己场上存在至少1只满足条件的表侧表示「发条」怪兽，否则效果不能发动。
 	if chk==0 then return Duel.IsExistingTarget(c53540729.filter,tp,LOCATION_MZONE,0,1,nil) end
-	-- 提示玩家选择表侧表示的卡
+	-- 向操作玩家显示选择提示，提示内容为“请选择表侧表示的卡”，用于引导选择目标怪兽。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
-	-- 选择满足filter条件的1只自己场上的表侧表示怪兽作为对象
+	-- 让玩家从自己场上表侧表示且符合过滤条件的「发条」怪兽中选择1只，并将其设置为当前连锁的效果对象（取对象效果）。
 	local g=Duel.SelectTarget(tp,c53540729.filter,tp,LOCATION_MZONE,0,1,1,nil)
 end
--- 使对象怪兽在结束阶段时攻击力上升600，等级上升1
+-- 效果处理：取得效果对象后，确认对象仍在场上表侧表示且与本效果存在关联，然后给对象注册攻击力上升600和等级上升1星的两个持续效果，这两个效果不可被无效，持续到结束阶段，并随着常规离场、回手等重置条件被重置。
 function c53540729.operation(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取当前连锁效果的目标怪兽
+	-- 获取效果发动时选择的对象怪兽（本效果只选择1只对象，因此取第一张对象卡）。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsFaceup() and tc:IsRelateToEffect(e) then
-		-- 使对象怪兽的攻击力上升600
+		-- 攻击力上升600。
 		local e1=Effect.CreateEffect(c)
 		e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
 		e1:SetType(EFFECT_TYPE_SINGLE)
@@ -42,7 +42,7 @@ function c53540729.operation(e,tp,eg,ep,ev,re,r,rp)
 		e1:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END)
 		e1:SetValue(600)
 		tc:RegisterEffect(e1)
-		-- 使对象怪兽的等级上升1
+		-- 等级上升1星。
 		local e2=Effect.CreateEffect(c)
 		e2:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
 		e2:SetType(EFFECT_TYPE_SINGLE)

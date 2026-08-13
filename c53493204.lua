@@ -9,7 +9,7 @@ function c53493204.initial_effect(c)
 	e1:SetCondition(c53493204.subcon)
 	c:RegisterEffect(e1)
 end
--- 当此卡在手牌、主要怪兽区或墓地时，才能作为融合素材使用
+-- 判定这张卡当前是否位于手牌、主要怪兽区或墓地，以决定其能否作为代替融合素材来使用。
 function c53493204.subcon(e)
 	return e:GetHandler():IsLocation(LOCATION_HAND+LOCATION_MZONE+LOCATION_GRAVE)
 end

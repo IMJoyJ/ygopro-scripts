@@ -2,7 +2,7 @@
 -- 效果：
 -- 只要这张卡在自己场上表侧攻击表示存在，每次自己的准备阶段回复1000基本分。
 function c53530069.initial_effect(c)
-	-- 创建一个诱发必发效果，当自己的准备阶段开始时发动，满足条件则回复基本分
+	-- 只要这张卡在自己场上表侧攻击表示存在，每次自己的准备阶段回复1000基本分。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(53530069,0))  --"回复"
 	e1:SetCategory(CATEGORY_RECOVER)
@@ -16,28 +16,28 @@ function c53530069.initial_effect(c)
 	e1:SetOperation(c53530069.operation)
 	c:RegisterEffect(e1)
 end
--- 只要这张卡在自己场上表侧攻击表示存在，每次自己的准备阶段回复1000基本分。
+-- 回复效果的发动条件判断：若当前为效果控制者的准备阶段，且此卡在自己场上为表侧攻击表示，则满足条件。
 function c53530069.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断是否为当前回合玩家且该卡处于表侧攻击表示
+	-- 判断是否满足条件：当前回合玩家为效果控制者tp，且效果持有者（此卡）为攻击表示。
 	return tp==Duel.GetTurnPlayer() and e:GetHandler():IsAttackPos()
 end
--- 设置连锁处理时的目标玩家和参数为1000点基本分
+-- 回复效果的目标设定：将回复对象玩家设为tp，回复数值设为1000，并登记对应的操作信息，以便后续处理及连锁判断。
 function c53530069.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 将效果的目标玩家设为当前玩家
+	-- 将当前连锁的对象玩家设置为tp，即回复基本分的玩家为此卡的控制者。
 	Duel.SetTargetPlayer(tp)
-	-- 将效果的目标参数设为1000点基本分
+	-- 将当前连锁的对象参数设置为1000，表示回复的基本分数值。
 	Duel.SetTargetParam(1000)
-	-- 设置连锁操作信息，表示本次效果为回复基本分的效果
+	-- 登记操作信息：本效果将让玩家tp回复1000基本分，类别为CATEGORY_RECOVER，用于连锁和效果发动检测。
 	Duel.SetOperationInfo(0,CATEGORY_RECOVER,nil,0,tp,1000)
 end
--- 执行效果处理，若该卡仍处于表侧攻击表示且与效果相关则进行基本分回复
+-- 回复效果的实际处理：若此卡仍为表侧攻击表示且与发动时的效果仍有关联，则执行回复操作。
 function c53530069.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁中目标玩家和目标参数（即回复的LP数）
+	-- 从当前连锁信息中获取之前设定的对象玩家p和回复数值d。
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
 	local c=e:GetHandler()
 	if c:IsPosition(POS_FACEUP_ATTACK) and c:IsRelateToEffect(e) then
-		-- 以REASON_EFFECT原因使指定玩家回复对应数值的基本分
+		-- 以效果为原因，使玩家p回复d点基本分，完成实际回复。
 		Duel.Recover(p,d,REASON_EFFECT)
 	end
 end

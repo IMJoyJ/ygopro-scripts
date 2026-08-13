@@ -14,7 +14,7 @@ function c53569894.initial_effect(c)
 	e2:SetCode(EVENT_LEAVE_FIELD_P)
 	e2:SetOperation(c53569894.checkop)
 	c:RegisterEffect(e2)
-	-- 自己场上存在的「斯芬克斯·安德鲁」和「斯芬克斯·迪蕾雅」破坏并从游戏中除外。
+	-- 自己场上存在的「斯芬克斯·安德鲁」和「斯芬克斯·迪蕾雅」破坏并从游戏中除外
 	local e3=Effect.CreateEffect(c)
 	e3:SetCategory(CATEGORY_DESTROY+CATEGORY_REMOVE)
 	e3:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_CONTINUOUS)
@@ -23,24 +23,24 @@ function c53569894.initial_effect(c)
 	e3:SetOperation(c53569894.leave)
 	c:RegisterEffect(e3)
 end
--- 过滤场上表侧表示的「斯芬克斯·安德鲁」和「斯芬克斯·迪蕾雅」
+-- 筛选出自己场上表侧表示且卡名为「斯芬克斯·安德鲁」或「斯芬克斯·迪蕾雅」的卡
 function c53569894.filter(c)
 	return c:IsFaceup() and c:IsCode(15013468,51402177)
 end
--- 检查卡片是否处于无效状态或未准备就绪
+-- 因离场前需要判断效果是否有效：若这张卡处于无效状态或尚未生效则标记为1，否则标记为0，供离场处理判断触发条件是否成立
 function c53569894.checkop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsDisabled() or not c:IsStatus(STATUS_EFFECT_ENABLED) then
 		e:SetLabel(1)
 	else e:SetLabel(0) end
 end
--- 当卡片离开场上的时候，如果满足条件则破坏并除外符合条件的怪兽
+-- 离场时触发：若离场前效果有效且原控制者是自己，则选出自己场上符合条件的「斯芬克斯·安德鲁」和「斯芬克斯·迪蕾雅」并执行破坏、除外处理
 function c53569894.leave(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if e:GetLabelObject():GetLabel()==0 and c:IsPreviousControler(tp) then
-		-- 检索满足条件的卡片组
+		-- 取得自己场上所有表侧表示且卡名为「斯芬克斯·安德鲁」或「斯芬克斯·迪蕾雅」的卡
 		local g=Duel.GetMatchingGroup(c53569894.filter,tp,LOCATION_ONFIELD,0,nil)
-		-- 以效果原因将目标卡片破坏并送入除外区
+		-- 将选出的怪兽破坏并除外，即送去除外区
 		Duel.Destroy(g,REASON_EFFECT,LOCATION_REMOVED)
 	end
 end

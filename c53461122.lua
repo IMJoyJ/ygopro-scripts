@@ -9,7 +9,7 @@ function c53461122.initial_effect(c)
 	e1:SetValue(c53461122.condition)
 	c:RegisterEffect(e1)
 end
--- 检查怪兽是否为地属性且为通常怪兽，满足条件时返回真以允许作为2个祭品
+-- 定义该效果的条件判定函数：检查作为祭品的怪兽是否满足地属性且为通常怪兽，满足时该怪兽可作为2只祭品使用。
 function c53461122.condition(e,c)
 	return c:IsAttribute(ATTRIBUTE_EARTH) and c:IsType(TYPE_NORMAL)
 end
