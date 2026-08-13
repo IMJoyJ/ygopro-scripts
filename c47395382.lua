@@ -3,7 +3,7 @@
 -- 「魔轰神」调整＋调整以外的怪兽1只以上
 -- ①：这张卡同调召唤时才能发动。自己直到手卡变成2张为止抽卡。
 function c47395382.initial_effect(c)
-	-- 添加同调召唤手续，要求1只调整且为魔轰神卡组的怪兽，以及至少1只非调整的怪兽参与同调
+	-- 为这张卡添加同调召唤手续：调整素材要求为「魔轰神」怪兽（Card.IsSetCard,0x35），调整以外的素材为任意怪兽1只以上，即素材要求为「魔轰神」调整＋调整以外的怪兽1只以上。
 	aux.AddSynchroProcedure(c,aux.FilterBoolFunction(Card.IsSetCard,0x35),aux.NonTuner(nil),1)
 	c:EnableReviveLimit()
 	-- ①：这张卡同调召唤时才能发动。自己直到手卡变成2张为止抽卡。
@@ -18,34 +18,34 @@ function c47395382.initial_effect(c)
 	e1:SetOperation(c47395382.op)
 	c:RegisterEffect(e1)
 end
--- 判断此卡是否为同调召唤成功
+-- 同调召唤成功时触发条件：这张卡以同调召唤（SUMMON_TYPE_SYNCHRO）方式特殊召唤成功。
 function c47395382.con(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsSummonType(SUMMON_TYPE_SYNCHRO)
 end
--- 设置效果的发动条件，检查玩家手牌数量是否少于2且可以抽卡
+-- 效果发动前的合法性检查和发动时登记：先判断自己手牌是否不足2张且能否抽卡；若可发动，则将对象玩家设为自己、抽卡数量设为2-当前手牌数，并登记抽卡的操作信息。
 function c47395382.tg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then
-		-- 获取当前玩家手牌数量
+		-- 取得自己当前的手卡数量。
 		local h=Duel.GetFieldGroupCount(tp,LOCATION_HAND,0)
-		-- 返回手牌数小于2并且玩家可以抽卡的数量
+		-- 判断是否满足发动条件：自己手卡数小于2，且自己可以抽（2-手牌数）张卡。
 		return h<2 and Duel.IsPlayerCanDraw(tp,2-h)
 	end
-	-- 再次获取当前玩家手牌数量
+	-- 发动时再次取得自己当前的手卡数量，用于计算需要抽的卡数。
 	local h=Duel.GetFieldGroupCount(tp,LOCATION_HAND,0)
-	-- 设置连锁的目标玩家为当前处理的玩家
+	-- 将当前连锁的处理对象玩家设置为效果发动者自己。
 	Duel.SetTargetPlayer(tp)
-	-- 设置连锁的目标参数为需要抽卡的数量
+	-- 将当前连锁的处理参数设置为（2-当前手牌数），即需要抽的卡数。
 	Duel.SetTargetParam(2-h)
-	-- 设置效果操作信息，指定将要进行抽卡效果
+	-- 设置操作信息：本次效果处理将执行抽卡，目标玩家为自己，预定的抽卡数量为2-当前手牌数，没有确定的对象卡。
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,2-h)
 end
--- 设置效果的处理函数，执行实际抽卡操作
+-- 效果处理：取得之前登记的对象玩家，若其手牌仍然不足2张，则抽取补足到2张所需数量的卡。
 function c47395382.op(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的目标玩家
+	-- 取得当前连锁登记的对象玩家（即效果发动者自己）。
 	local p=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER)
-	-- 获取目标玩家的手牌数量
+	-- 取得该玩家当前的手卡数量。
 	local h=Duel.GetFieldGroupCount(p,LOCATION_HAND,0)
 	if h>=2 then return end
-	-- 让目标玩家以效果原因抽卡
+	-- 让玩家p抽取（2-当前手牌数）张卡，使其手卡变成2张。
 	Duel.Draw(p,2-h,REASON_EFFECT)
 end

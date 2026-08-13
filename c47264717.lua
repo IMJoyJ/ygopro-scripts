@@ -14,33 +14,33 @@ function c47264717.initial_effect(c)
 	e1:SetOperation(c47264717.activate)
 	c:RegisterEffect(e1)
 end
--- 过滤函数，用于检测场上是否存在表侧表示的「星尘」怪兽
+-- 过滤条件：判断卡片是否为「星尘」字段且表侧表示的怪兽。
 function c47264717.cfilter(c)
 	return c:IsSetCard(0xa3) and c:IsFaceup()
 end
--- 条件函数，判断场上有无「星尘」怪兽存在
+-- 效果发动条件：己方或对方场上怪兽区存在至少1只表侧表示的「星尘」怪兽。
 function c47264717.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查以玩家tp来看，自己的主要怪兽区和对方的主要怪兽区是否存在至少1张满足cfilter条件的卡
+	-- 判断己方或对方场上怪兽区是否存在至少1只满足过滤条件（「星尘」字段且表侧表示）的怪兽。
 	return Duel.IsExistingMatchingCard(c47264717.cfilter,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil)
 end
--- 目标选择函数，设置效果的目标为场上任意一张非自身卡片
+-- 效果发动时的取对象处理：确认合法对象，选择场上1张除本卡以外的卡作为对象，并登记破坏操作信息。
 function c47264717.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsOnField() and chkc~=e:GetHandler() end
-	-- 检查是否满足发动条件，即场上是否存在至少1张可以成为效果对象的卡
+	-- 首次发动判定：确认场上存在除本卡以外可被选择为对象的卡。
 	if chk==0 then return Duel.IsExistingTarget(aux.TRUE,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,e:GetHandler()) end
-	-- 向玩家提示“请选择要破坏的卡”
+	-- 提示操作玩家选择要破坏的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 选择场上一张卡作为效果对象
+	-- 由操作玩家从双方场上选择1张除本卡以外的卡，并将其登记为效果对象。
 	local g=Duel.SelectTarget(tp,aux.TRUE,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,1,e:GetHandler())
-	-- 设置连锁操作信息为破坏效果，目标为所选卡片
+	-- 设置本次连锁的操作信息为破坏操作：破坏对象为选择的目标卡，数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,1,0,0)
 end
--- 效果发动函数，执行破坏操作
+-- 效果处理阶段：取出效果对象卡，若该卡仍与本次效果关联，则将其破坏。
 function c47264717.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的效果对象卡片
+	-- 获取本次效果发动时选择的第1个对象卡。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 以效果原因将目标卡片破坏
+		-- 以效果原因将对象卡破坏。
 		Duel.Destroy(tc,REASON_EFFECT)
 	end
 end

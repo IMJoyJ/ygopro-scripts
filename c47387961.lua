@@ -3,7 +3,7 @@
 -- 4星「纹章兽」怪兽×2
 -- ①：1回合1次，以对方场上1只超量怪兽为对象才能发动。这张卡原本攻击力变成和那只怪兽的攻击力相同，得到和那只怪兽的原本的卡名·效果相同的卡名·效果。那之后，作为对象的怪兽的攻击力变成0，效果无效化。这个效果直到结束阶段适用。
 function c47387961.initial_effect(c)
-	-- 为卡片添加等级为4、需要2只「纹章兽」怪兽的XYZ召唤手续
+	-- 为这张卡添加超量召唤手续，对应召唤条件“4星「纹章兽」怪兽×2”：需要2只等级4且卡名属于「纹章兽」系列的怪兽作为超量素材。
 	aux.AddXyzProcedure(c,aux.FilterBoolFunction(Card.IsSetCard,0x76),4,2)
 	c:EnableReviveLimit()
 	-- ①：1回合1次，以对方场上1只超量怪兽为对象才能发动。这张卡原本攻击力变成和那只怪兽的攻击力相同，得到和那只怪兽的原本的卡名·效果相同的卡名·效果。那之后，作为对象的怪兽的攻击力变成0，效果无效化。这个效果直到结束阶段适用。
@@ -18,30 +18,30 @@ function c47387961.initial_effect(c)
 	e1:SetOperation(c47387961.operation)
 	c:RegisterEffect(e1)
 end
--- 设置该卡为No.8系列怪兽
+-- 将这张卡的卡号登记进XYZ编号表，作为“No.8”供No.相关规则和效果识别。
 aux.xyz_number[47387961]=8
--- 过滤函数：判断目标是否为表侧表示的超量怪兽
+-- 定义对象筛选条件：卡片需为表侧表示的超量怪兽。
 function c47387961.filter(c)
 	return c:IsFaceup() and c:IsType(TYPE_XYZ)
 end
--- 设置效果的目标选择处理，选择对方场上的1只表侧表示的超量怪兽作为对象
+-- 处理效果发动时的对象指定：校验指定对象必须是对方场上表侧表示的超量怪兽；若无指定对象且存在合法目标，则让玩家选择1只作为对象。
 function c47387961.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(1-tp) and chkc:IsLocation(LOCATION_MZONE) and c47387961.filter(chkc) end
-	-- 检查是否有满足条件的超量怪兽可作为对象
+	-- 效果发动合法性检查：确认对方场上存在至少1只可被选择为对象的表侧表示超量怪兽，否则不能发动。
 	if chk==0 then return Duel.IsExistingTarget(c47387961.filter,tp,0,LOCATION_MZONE,1,nil) end
-	-- 提示玩家选择一张表侧表示的卡
+	-- 向操作玩家显示“请选择表侧表示的卡”的选择提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
-	-- 选择对方场上的一只表侧表示的超量怪兽作为效果对象
+	-- 让玩家从对方场上选择1只表侧表示超量怪兽，并将其登记为本次效果的对象。
 	Duel.SelectTarget(tp,c47387961.filter,tp,0,LOCATION_MZONE,1,1,nil)
 end
--- 效果发动时的处理函数，包括复制目标怪兽的卡名和攻击力，并使目标怪兽攻击力变为0且效果无效化
+-- 效果处理：若此卡与对象怪兽仍相关联且均表侧表示，则复制对象怪兽的原本卡名与原本效果，将此卡原本攻击力变成对象怪兽当前攻击力，将对象怪兽攻击力变成0并无效其效果，并安排结束阶段解除这些效果。
 function c47387961.operation(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取当前连锁中被选择的目标怪兽
+	-- 取得本效果发动时选择的对象怪兽（对方场上表侧表示的超量怪兽）。
 	local tc=Duel.GetFirstTarget()
 	if tc and c:IsRelateToEffect(e) and c:IsFaceup() and tc:IsFaceup() and tc:IsRelateToEffect(e) then
 		local atk=tc:GetAttack()
-		-- 将自身卡名替换为与目标怪兽相同的原始卡名
+		-- 得到和那只怪兽的原本的卡名·效果相同的卡名·效果
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
@@ -54,7 +54,7 @@ function c47387961.operation(e,tp,eg,ep,ev,re,r,rp)
 		e2:SetValue(atk)
 		c:RegisterEffect(e2)
 		local cid=c:CopyEffect(tc:GetOriginalCode(),RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END,1)
-		-- 将目标怪兽的攻击力设置为0
+		-- 作为对象的怪兽的攻击力变成0
 		local e4=Effect.CreateEffect(c)
 		e4:SetType(EFFECT_TYPE_SINGLE)
 		e4:SetCode(EFFECT_SET_ATTACK_FINAL)
@@ -63,15 +63,15 @@ function c47387961.operation(e,tp,eg,ep,ev,re,r,rp)
 		tc:RegisterEffect(e4)
 		e1:SetLabelObject(e2)
 		e2:SetLabelObject(e4)
-		-- 判断目标怪兽是否可以被无效化
+		-- 判断对象怪兽是否为表侧表示且未被无效的效果怪兽（或原本是效果怪兽），决定是否对其适用“效果无效化”。
 		if aux.NegateMonsterFilter(tc) then
-			-- 使目标怪兽的效果无效
+			-- 效果无效化
 			local e5=Effect.CreateEffect(c)
 			e5:SetType(EFFECT_TYPE_SINGLE)
 			e5:SetCode(EFFECT_DISABLE)
 			e5:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END)
 			tc:RegisterEffect(e5)
-			-- 使目标怪兽的效果无效化（持续效果）
+			-- 效果无效化
 			local e6=Effect.CreateEffect(c)
 			e6:SetType(EFFECT_TYPE_SINGLE)
 			e6:SetCode(EFFECT_DISABLE_EFFECT)
@@ -80,7 +80,7 @@ function c47387961.operation(e,tp,eg,ep,ev,re,r,rp)
 			e4:SetLabelObject(e5)
 			e5:SetLabelObject(e6)
 		end
-		-- 注册一个在结束阶段触发的效果，用于清除复制效果和相关状态
+		-- 这个效果直到结束阶段适用
 		local e7=Effect.CreateEffect(c)
 		e7:SetDescription(aux.Stringid(47387961,1))  --"结束复制效果"
 		e7:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
@@ -95,7 +95,7 @@ function c47387961.operation(e,tp,eg,ep,ev,re,r,rp)
 		c:RegisterEffect(e7)
 	end
 end
--- 结束阶段时清除复制效果及相关的状态
+-- 结束阶段处理：解除复制来的效果、卡名/攻击力变化以及无效化等效果，使此卡和对象怪兽恢复原状，并提示玩家复制结束。
 function c47387961.rstop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local cid=e:GetLabel()
@@ -113,8 +113,8 @@ function c47387961.rstop(e,tp,eg,ep,ev,re,r,rp)
 		e5:Reset()
 		e6:Reset()
 	end
-	-- 显示被选为对象的动画效果
+	-- 手动展示此卡被选中/解除复制的动画，向双方显示这张卡。
 	Duel.HintSelection(Group.FromCards(c))
-	-- 提示对方玩家该效果已被发动
+	-- 向对方玩家提示此效果已结束（“对方选择了：结束复制效果”）。
 	Duel.Hint(HINT_OPSELECTED,1-tp,e:GetDescription())
 end

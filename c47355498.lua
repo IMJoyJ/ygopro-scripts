@@ -14,14 +14,14 @@ function c47355498.initial_effect(c)
 	e2:SetCode(EFFECT_UPDATE_ATTACK)
 	e2:SetRange(LOCATION_FZONE)
 	e2:SetTargetRange(LOCATION_MZONE,LOCATION_MZONE)
-	-- 选择场上所有「守墓」怪兽作为效果的对象
+	-- 筛选场上所有「守墓」怪兽作为攻击力上升效果的适用对象。
 	e2:SetTarget(aux.TargetBoolFunction(Card.IsSetCard,0x2e))
 	e2:SetValue(500)
 	c:RegisterEffect(e2)
 	local e3=e2:Clone()
 	e3:SetCode(EFFECT_UPDATE_DEFENSE)
 	c:RegisterEffect(e3)
-	-- ②：只要这张卡在场地区域存在，双方不能把墓地的卡除外。
+	-- ②：双方不能把墓地的卡除外。
 	local e4=Effect.CreateEffect(c)
 	e4:SetType(EFFECT_TYPE_FIELD)
 	e4:SetCode(EFFECT_CANNOT_REMOVE)
@@ -33,7 +33,7 @@ function c47355498.initial_effect(c)
 	e5:SetTargetRange(0,LOCATION_GRAVE)
 	e5:SetCondition(c47355498.conntp)
 	c:RegisterEffect(e5)
-	-- ②：只要这张卡在场地区域存在，对墓地的卡有涉及的效果无效化并且不适用。
+	-- ②：对墓地的卡有涉及的效果无效化并且不适用。
 	local e6=Effect.CreateEffect(c)
 	e6:SetType(EFFECT_TYPE_FIELD)
 	e6:SetProperty(EFFECT_FLAG_IGNORE_IMMUNE)
@@ -46,7 +46,7 @@ function c47355498.initial_effect(c)
 	e7:SetTargetRange(0,LOCATION_GRAVE)
 	e7:SetCondition(c47355498.conntp)
 	c:RegisterEffect(e7)
-	-- ②：只要这张卡在场地区域存在，对墓地的卡有涉及的效果无效化并且不适用。
+	-- ②：对墓地的卡有涉及的效果无效化并且不适用。
 	local e8=Effect.CreateEffect(c)
 	e8:SetType(EFFECT_TYPE_FIELD)
 	e8:SetCode(EFFECT_NECRO_VALLEY)
@@ -59,7 +59,7 @@ function c47355498.initial_effect(c)
 	e9:SetTargetRange(0,1)
 	e9:SetCondition(c47355498.conntp)
 	c:RegisterEffect(e9)
-	-- ②：只要这张卡在场地区域存在，对墓地的卡有涉及的效果无效化并且不适用。
+	-- ②：对墓地的卡有涉及的效果无效化并且不适用。
 	local e10=Effect.CreateEffect(c)
 	e10:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e10:SetCode(EVENT_CHAIN_SOLVING)
@@ -67,23 +67,23 @@ function c47355498.initial_effect(c)
 	e10:SetOperation(c47355498.disop)
 	c:RegisterEffect(e10)
 end
--- 判断是否受到「王家长眠之谷」效果影响的条件函数
+-- 判断效果控制者是否不受「王家长眠之谷」影响，若不受则允许该方相关效果生效。
 function c47355498.contp(e)
-	-- 若该玩家未被「王家长眠之谷」免疫，则返回true
+	-- 当效果控制者没有「不受王家长眠之谷影响」的免疫效果时返回true。
 	return not Duel.IsPlayerAffectedByEffect(e:GetHandler():GetControler(),EFFECT_NECRO_VALLEY_IM)
 end
--- 判断是否受到「王家长眠之谷」效果影响的条件函数
+-- 判断对方玩家是否不受「王家长眠之谷」影响，若不受则允许对方相关效果生效。
 function c47355498.conntp(e)
-	-- 若对方玩家未被「王家长眠之谷」免疫，则返回true
+	-- 当对方玩家没有「不受王家长眠之谷影响」的免疫效果时返回true。
 	return not Duel.IsPlayerAffectedByEffect(1-e:GetHandler():GetControler(),EFFECT_NECRO_VALLEY_IM)
 end
--- 用于检测连锁效果中涉及墓地操作的卡牌是否受「王家长眠之谷」影响
+-- 判断卡片c是否带有王家长眠之谷影响标记，并且与当前连锁的效果re相关。
 function c47355498.disfilter(c,re)
 	return c:IsHasEffect(EFFECT_NECRO_VALLEY) and c:IsRelateToEffect(re)
 end
--- 检查连锁效果是否涉及对墓地的操作并判断是否应被无效
+-- 检查当前连锁是否存在指定类别的操作信息，并判断该效果是否涉及墓地且应被王谷无效。
 function c47355498.discheck(ev,category,re,im0,im1)
-	-- 获取连锁效果的操作信息，包括目标、数量、玩家等参数
+	-- 获取连锁ev中指定类别效果的操作信息，包括是否存在、对象组、数量、目标玩家和目标位置。
 	local ex,tg,ct,p,v=Duel.GetOperationInfo(ev,category)
 	if not ex then return false end
 	if v==LOCATION_GRAVE and ct>0 then
@@ -97,15 +97,15 @@ function c47355498.discheck(ev,category,re,im0,im1)
 	end
 	return false
 end
--- 处理连锁效果时的无效化操作函数
+-- 在连锁处理时检测效果是否涉及墓地（如特殊召唤、回手牌、回卡组、回额外、离开墓地、除外），若是则无效该效果。
 function c47355498.disop(e,tp,eg,ep,ev,re,r,rp)
 	local tc=re:GetHandler()
-	-- 若当前连锁效果无法被无效或其发动卡已免疫，则不进行无效化
+	-- 若该连锁效果不能被无效，或效果持有者具有「不受王家长眠之谷影响」的免疫，则直接返回不处理。
 	if not Duel.IsChainDisablable(ev) or tc:IsHasEffect(EFFECT_NECRO_VALLEY_IM) then return end
 	local res=false
-	-- 判断玩家0是否未被「王家长眠之谷」免疫
+	-- 记录玩家0是否没有「不受王家长眠之谷影响」的免疫效果（即是否受王谷管辖）。
 	local im0=not Duel.IsPlayerAffectedByEffect(0,EFFECT_NECRO_VALLEY_IM)
-	-- 判断玩家1是否未被「王家长眠之谷」免疫
+	-- 记录玩家1是否没有「不受王家长眠之谷影响」的免疫效果（即是否受王谷管辖）。
 	local im1=not Duel.IsPlayerAffectedByEffect(1,EFFECT_NECRO_VALLEY_IM)
 	if not res and c47355498.discheck(ev,CATEGORY_SPECIAL_SUMMON,re,im0,im1) then res=true end
 	if not res and c47355498.discheck(ev,CATEGORY_TOHAND,re,im0,im1) then res=true end
@@ -113,6 +113,6 @@ function c47355498.disop(e,tp,eg,ep,ev,re,r,rp)
 	if not res and c47355498.discheck(ev,CATEGORY_TOEXTRA,re,im0,im1) then res=true end
 	if not res and c47355498.discheck(ev,CATEGORY_LEAVE_GRAVE,re,im0,im1) then res=true end
 	if not res and c47355498.discheck(ev,CATEGORY_REMOVE,re,im0,im1) then res=true end
-	-- 如果满足条件则使当前连锁效果无效
+	-- 如果确认当前连锁效果涉及墓地且应被王谷无效，则无效该连锁效果的发动/处理。
 	if res then Duel.NegateEffect(ev,true) end
 end

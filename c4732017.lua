@@ -14,24 +14,24 @@ function c4732017.initial_effect(c)
 	e1:SetOperation(c4732017.operation)
 	c:RegisterEffect(e1)
 end
--- 效果发动时检查此卡是否由墓地特殊召唤
+-- 判断特殊召唤成功的此卡在特殊召唤前是否位于墓地，即是否从墓地特殊召唤成功。
 function c4732017.condition(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsPreviousLocation(LOCATION_GRAVE)
 end
--- 设置效果的对象玩家为自己，对象参数为1，操作信息为抽卡
+-- 效果发动时进行目标设定：设置抽卡玩家为效果发动者、抽卡数量为1，并将操作信息登记为抽卡效果。
 function c4732017.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 将当前连锁的效果对象玩家设置成自己
+	-- 将当前连锁的处理对象玩家设为效果发动者tp，表示由该玩家执行抽卡。
 	Duel.SetTargetPlayer(tp)
-	-- 将当前连锁的效果对象参数设置成1
+	-- 将当前连锁的处理对象参数设为1，表示抽卡数量为1张。
 	Duel.SetTargetParam(1)
-	-- 设置当前处理的连锁的操作信息为抽卡效果，抽1张卡
+	-- 登记操作信息：效果类别为抽卡（CATEGORY_DRAW），对象玩家为tp，预计处理数量为1张；因抽卡数量在处理时可以确定但卡组不取对象，所以目标卡为nil。
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,1)
 end
--- 效果处理时执行抽卡操作
+-- 效果处理时，从当前连锁信息中取得之前设定的对象玩家和抽卡数量，并让该玩家抽对应数量的卡。
 function c4732017.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的效果对象玩家和对象参数
+	-- 从当前正在处理的连锁信息中获取之前设置的对象玩家p和对象参数d（抽卡数量）。
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 让指定玩家以效果原因抽指定数量的卡
+	-- 让对象玩家p以效果原因（REASON_EFFECT）抽取d张卡。
 	Duel.Draw(p,d,REASON_EFFECT)
 end
