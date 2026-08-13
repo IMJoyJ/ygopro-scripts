@@ -23,17 +23,17 @@ function c41628550.initial_effect(c)
 	e3:SetValue(1)
 	c:RegisterEffect(e3)
 end
--- 设置效果处理时的目标为自身，用于表示形式变更效果的连锁信息登记
+-- 作为①效果的发动条件判定：chk==0时直接返回true表示满足召唤成功的发动条件，并登记改变表示形式的操作信息。
 function c41628550.postg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 登记表示形式变更为守备表示的连锁操作信息
+	-- 将本次连锁要进行的操作信息设为“改变表示形式”，对象为这张卡，数量1；用于正确传递效果类别，使相关卡能据此响应。
 	Duel.SetOperationInfo(0,CATEGORY_POSITION,e:GetHandler(),1,0,0)
 end
--- 表示形式变更效果的处理函数，将自身变为守备表示
+-- 效果处理时执行以下动作：获取效果持有者（这张卡），若这张卡仍与该效果关联（未被无效或离场），则变更其表示形式。
 function c41628550.posop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) then
-		-- 将自身变为表侧守备表示
+		-- 将这张卡的表示形式变更：若当前是表侧攻击表示则变成表侧守备表示；其他表示形式则变成表侧攻击表示。
 		Duel.ChangePosition(c,POS_FACEUP_DEFENSE,POS_FACEUP_ATTACK,POS_FACEUP_ATTACK,POS_FACEUP_ATTACK)
 	end
 end

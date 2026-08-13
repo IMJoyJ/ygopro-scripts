@@ -2,7 +2,7 @@
 -- 效果：
 -- 场上表侧表示存在的这张卡成为魔法·陷阱·效果怪兽的效果的对象时发动。从自己的手卡·卡组·墓地选1只龙族的通常怪兽，攻击力·守备力变成0特殊召唤。这个效果1回合只能使用1次。
 function c41639001.initial_effect(c)
-	-- 创建一个诱发即时必发效果，效果描述为“特殊召唤”，类型为快速效果，分类为特殊召唤，属性为伤害步骤可发动，触发事件为连锁发动，发动位置为怪兽区域，限制每回合只能发动一次，条件为c41639001.spcon，目标为c41639001.sptg，效果处理为c41639001.spop
+	-- 场上表侧表示存在的这张卡成为魔法·陷阱·效果怪兽的效果的对象时发动。从自己的手卡·卡组·墓地选1只龙族的通常怪兽，攻击力·守备力变成0特殊召唤。这个效果1回合只能使用1次。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(41639001,0))  --"特殊召唤"
 	e1:SetType(EFFECT_TYPE_QUICK_F)
@@ -16,37 +16,37 @@ function c41639001.initial_effect(c)
 	e1:SetOperation(c41639001.spop)
 	c:RegisterEffect(e1)
 end
--- 当连锁的发动效果具有取对象属性且该效果的对象包含此卡时，满足发动条件
+-- 判定发动条件：当前连锁的效果是否为取对象效果，且该效果的对象中是否包含此卡。
 function c41639001.spcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if not re:IsHasProperty(EFFECT_FLAG_CARD_TARGET) then return false end
-	-- 获取当前连锁的效果对象卡片组
+	-- 取得当前连锁中被选为对象的卡片组，用于检查此卡是否为对象。
 	local g=Duel.GetChainInfo(ev,CHAININFO_TARGET_CARDS)
 	return g and g:IsContains(c)
 end
--- 过滤条件：满足通常怪兽、龙族且可以特殊召唤的卡片
+-- 定义可特殊召唤的怪兽的过滤条件：必须是龙族的通常怪兽，且能被效果特殊召唤。
 function c41639001.spfilter(c,e,tp)
 	return c:IsType(TYPE_NORMAL) and c:IsRace(RACE_DRAGON) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 设置效果处理时要特殊召唤1只怪兽，对象为玩家自己，位置为手卡·卡组·墓地
+-- 效果发动时的目标处理：本效果不取对象，允许发动并登记特殊召唤的操作信息。
 function c41639001.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置操作信息为特殊召唤1只怪兽，对象为玩家自己，位置为手卡·卡组·墓地
+	-- 登记本次效果将进行特殊召唤的操作信息，数量为1，检索范围为手卡·卡组·墓地（0x13），持有者为自己。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,0x13)
 end
--- 若场上没有空位则不发动；提示玩家选择要特殊召唤的卡，从手卡·卡组·墓地选择1只龙族通常怪兽，特殊召唤之，并将该怪兽攻击力和守备力设为0
+-- 效果处理：若我方主要怪兽区有空位，则从手卡·卡组·墓地选1只龙族的通常怪兽，将其攻击力·守备力变成0并以表侧攻击表示特殊召唤。
 function c41639001.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 若玩家场上没有空位则不发动
+	-- 如果我方主要怪兽区没有可用的空格，则无法进行特殊召唤，直接结束效果处理。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-	-- 提示玩家选择要特殊召唤的卡
+	-- 向玩家显示“请选择要特殊召唤的卡”的提示，引导玩家进行选择。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 从手卡·卡组·墓地选择1只满足条件的龙族通常怪兽
+	-- 让玩家从自己的手卡·卡组·墓地中选出1只符合条件的龙族通常怪兽（过滤条件为spfilter，且不受王家长眠之谷等效果影响）。
 	local g=Duel.SelectMatchingCard(tp,aux.NecroValleyFilter(c41639001.spfilter),tp,0x13,0,1,1,nil,e,tp)
 	local tc=g:GetFirst()
 	if not tc then return end
-	-- 特殊召唤该怪兽，若成功则继续设置其攻击力和守备力为0
+	-- 将选中的怪兽以表侧攻击表示进行特殊召唤（分步特殊召唤的第一阶段）。
 	if Duel.SpecialSummonStep(tc,0,tp,tp,false,false,POS_FACEUP) then
-		-- 设置该怪兽的攻击力为0
+		-- 攻击力·守备力变成0
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_SET_ATTACK)
@@ -57,6 +57,6 @@ function c41639001.spop(e,tp,eg,ep,ev,re,r,rp)
 		e2:SetCode(EFFECT_SET_DEFENSE)
 		tc:RegisterEffect(e2)
 	end
-	-- 完成特殊召唤流程
+	-- 完成特殊召唤处理，使分步特殊召唤的怪兽正式登场。若召唤成功则留在场上。
 	Duel.SpecialSummonComplete()
 end

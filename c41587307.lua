@@ -19,24 +19,24 @@ function c41587307.initial_effect(c)
 	e2:SetValue(1)
 	c:RegisterEffect(e2)
 end
--- 选择装备对象，目标为场上表侧表示怪兽
+-- 发动时的目标选择处理：检查对象是否为场上表侧表示怪兽，若无合法对象且不在选择阶段则判定不可发动；提示“请选择要装备的卡”，选择1只表侧表示怪兽作为装备对象，并登记装备类操作信息。
 function c41587307.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsFaceup() end
-	-- 检查是否场上存在表侧表示怪兽作为装备对象
+	-- 非效果处理时，检查场上是否存在至少1只表侧表示怪兽可作为装备对象，以决定效果能否发动。
 	if chk==0 then return Duel.IsExistingTarget(Card.IsFaceup,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil) end
-	-- 向玩家提示选择要装备的卡
+	-- 向操作玩家弹出选择提示（HINTMSG_EQUIP），内容为“请选择要装备的卡”，实际是选择要装备给的对象怪兽。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_EQUIP)  --"请选择要装备的卡"
-	-- 选择一个场上表侧表示的怪兽作为装备对象
+	-- 从双方场上选择1只表侧表示怪兽作为这张装备卡的装备对象，并将其登记为当前连锁的对象。
 	Duel.SelectTarget(tp,Card.IsFaceup,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,nil)
-	-- 设置效果的处理信息，表示将把此卡装备给目标怪兽
+	-- 设置操作信息为“装备”（CATEGORY_EQUIP），声明本连锁处理时将把这张装备卡装备给对象，供其他卡效果判定使用。
 	Duel.SetOperationInfo(0,CATEGORY_EQUIP,e:GetHandler(),1,0,0)
 end
--- 装备效果的处理函数，将此卡装备给选择的怪兽
+-- 效果处理阶段：取出装备对象，确认装备卡与对象仍与本次连锁相关且对象仍为表侧表示后，执行装备处理。
 function c41587307.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁中被选择的装备对象
+	-- 获取当前连锁处理中的装备对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if e:GetHandler():IsRelateToEffect(e) and tc:IsRelateToEffect(e) and tc:IsFaceup() then
-		-- 执行装备操作，将此卡装备给目标怪兽
+		-- 将这张装备卡装备给选定的对象怪兽，完成装备魔法卡的装备动作。
 		Duel.Equip(tp,e:GetHandler(),tc)
 	end
 end

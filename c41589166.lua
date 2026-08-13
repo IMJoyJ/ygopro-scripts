@@ -11,7 +11,7 @@ function c41589166.initial_effect(c)
 	e1:SetValue(c41589166.efilter)
 	c:RegisterEffect(e1)
 end
--- 使陷阱卡的效果不能影响此卡
+-- 免疫效果的过滤函数：若试图对这张卡生效的效果是陷阱卡效果，则返回真，使这张卡不受该陷阱卡效果影响。
 function c41589166.efilter(e,te)
 	return te:IsActiveType(TYPE_TRAP)
 end
