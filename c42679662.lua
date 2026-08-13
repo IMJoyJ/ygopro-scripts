@@ -12,27 +12,27 @@ function c42679662.initial_effect(c)
 	e1:SetOperation(c42679662.operation)
 	c:RegisterEffect(e1)
 end
--- 筛选满足条件的怪兽：特殊召唤且可以送入卡组
+-- 定义选择对象的过滤条件：怪兽必须是特殊召唤的怪兽，并且可以被送回持有者卡组。
 function c42679662.filter(c)
 	return c:IsSummonType(SUMMON_TYPE_SPECIAL) and c:IsAbleToDeck()
 end
--- 设置效果目标：选择场上1只满足条件的怪兽
+-- 效果发动时的目标选择处理：若正在检查取对象合法性则验证对象位置与条件；在可发动时提示玩家选择，从双方怪兽区域选择1只特殊召唤怪兽作为对象，并登记将对象返回卡组的操作信息。
 function c42679662.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and c42679662.filter(chkc) end
 	if chk==0 then return true end
-	-- 向玩家提示“请选择要返回卡组的卡”
+	-- 向操作玩家显示选择提示，提示文字为“请选择要返回卡组的卡”。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TODECK)  --"请选择要返回卡组的卡"
-	-- 选择满足条件的怪兽作为目标
+	-- 让玩家从双方怪兽区域选择1只满足过滤器条件的特殊召唤怪兽，将其设置为该效果的对象。
 	local g=Duel.SelectTarget(tp,c42679662.filter,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,nil)
-	-- 设置效果操作信息，指定将目标怪兽送入卡组
+	-- 设置连锁处理信息：本次效果的处理分类为回卡组，处理对象为已选择的怪兽，数量为该组卡的数量。
 	Duel.SetOperationInfo(0,CATEGORY_TODECK,g,g:GetCount(),0,0)
 end
--- 效果处理函数：将目标怪兽送入卡组
+-- 效果处理阶段：取得效果对象，若该对象仍与效果相关联，则将其返回持有者卡组并触发洗牌。
 function c42679662.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁效果的目标怪兽
+	-- 取得当前连锁中记录的第一张效果对象卡。
 	local tc=Duel.GetFirstTarget()
 	if tc and tc:IsRelateToEffect(e) then
-		-- 将目标怪兽送入卡组并洗牌
+		-- 以效果为理由将对象卡送回持有者卡组，使用洗牌规则（弹回卡组后洗牌）。
 		Duel.SendtoDeck(tc,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
 	end
 end

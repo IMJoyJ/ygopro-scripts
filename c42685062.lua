@@ -2,13 +2,13 @@
 -- 效果：
 -- 这张卡不能特殊召唤。这张卡可以把1只怪兽解放作召唤。这个方法召唤的这张卡的等级变成5星，原本的攻击力·守备力变成一半数值。
 function c42685062.initial_effect(c)
-	-- 这张卡不能特殊召唤
+	-- 这张卡不能特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_SPSUMMON_CONDITION)
 	c:RegisterEffect(e1)
-	-- 这张卡可以把1只怪兽解放作召唤
+	-- 这张卡可以把1只怪兽解放作召唤。这个方法召唤的这张卡的等级变成5星，原本的攻击力·守备力变成一半数值。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(42685062,0))  --"解放１只怪兽召唤"
 	e2:SetType(EFFECT_TYPE_SINGLE)
@@ -18,20 +18,20 @@ function c42685062.initial_effect(c)
 	e2:SetValue(SUMMON_TYPE_ADVANCE)
 	c:RegisterEffect(e2)
 end
--- 判断召唤所需的祭品条件是否满足
+-- 作为召唤规则效果的发动条件：若c为空表示该召唤方式本身可用；否则要求本次上级召唤所需解放数不超过1，且存在可解放的1只怪兽。
 function c42685062.sumcon(e,c,minc)
 	if c==nil then return true end
-	-- 需要至少1个祭品且场上存在满足条件的祭品
+	-- 判断本次召唤的解放数要求不超过1，且场上存在满足条件的1只解放用怪兽。
 	return minc<=1 and Duel.CheckTribute(c,1)
 end
--- 执行解放祭品并设置等级与攻击力守备力的效果
+-- 执行该召唤规则效果的操作：选择1只怪兽作为祭品，将所选怪兽作为召唤素材解放；随后给这张卡依次注册等级变为5星、原本攻击力变为1300、原本守备力变为900的持续效果（对应原本攻击力·守备力变为一半数值）。
 function c42685062.sumop(e,tp,eg,ep,ev,re,r,rp,c)
-	-- 选择1个祭品
+	-- 选择用于上级召唤这张卡的1只解放怪兽（祭品）。
 	local g=Duel.SelectTribute(tp,c,1,1)
 	c:SetMaterial(g)
-	-- 解放所选祭品
+	-- 将选择的怪兽作为上级召唤的素材解放（送入墓地）。
 	Duel.Release(g,REASON_SUMMON+REASON_MATERIAL)
-	-- 这个方法召唤的这张卡的等级变成5星，原本的攻击力·守备力变成一半数值
+	-- 这个方法召唤的这张卡的等级变成5星。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_CHANGE_LEVEL)

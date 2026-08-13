@@ -12,26 +12,26 @@ function c4266839.initial_effect(c)
 	e1:SetOperation(c4266839.eqop)
 	c:RegisterEffect(e1)
 end
--- 判断是否为对方怪兽攻击此卡且此卡为里侧守备表示
+-- 装备效果（变成装备卡）的发动条件判断：判断被攻击的怪兽是否为这张卡自身，且这张卡在被攻击前的表示形式为里侧守备表示。
 function c4266839.eqcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断是否为对方怪兽攻击此卡且此卡为里侧守备表示
+	-- 具体条件：当前攻击目标为这张卡，且这张卡在战斗确认时的表示形式为里侧守备表示。
 	return Duel.GetAttackTarget()==e:GetHandler() and e:GetHandler():GetBattlePosition()==POS_FACEDOWN_DEFENSE
 end
--- 将此卡装备给攻击怪兽并设置装备限制和回复LP效果
+-- 装备效果的处理：若攻击怪兽和这张卡仍与本次战斗相关联，且自己魔陷区有空位且攻击怪兽为表侧表示，则将这张卡装备给攻击怪兽，并为装备怪兽添加装备限制，同时为这张卡注册准备阶段回复LP的效果；否则将这张卡破坏。
 function c4266839.eqop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取此次战斗的攻击怪兽
+	-- 获取攻击怪兽，作为要装备的对象（攻击怪兽）。
 	local tc=Duel.GetAttacker()
 	if not tc:IsRelateToBattle() or not c:IsRelateToBattle() then return end
-	-- 判断装备区域是否已满或攻击怪兽为里侧表示
+	-- 检查自己魔陷区是否有空位，以及攻击怪兽是否为里侧表示；若没有空位或攻击怪兽为里侧表示，则无法进行装备。
 	if Duel.GetLocationCount(tp,LOCATION_SZONE)<=0 or tc:IsFacedown() then
-		-- 若装备失败则破坏此卡
+		-- 由于无法装备（没有空位或攻击怪兽里侧），将这张卡破坏。
 		Duel.Destroy(c,REASON_EFFECT)
 		return
 	end
-	-- 将此卡装备给攻击怪兽
+	-- 将这张卡作为装备卡装备给攻击怪兽。
 	Duel.Equip(tp,c,tc)
-	-- 装备对象限制，确保此卡只能装备给拥有者
+	-- 这张卡变成攻击怪兽的装备卡
 	local e1=Effect.CreateEffect(tc)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_EQUIP_LIMIT)
@@ -53,30 +53,30 @@ function c4266839.eqop(e,tp,eg,ep,ev,re,r,rp)
 	e2:SetReset(RESET_EVENT+RESETS_STANDARD)
 	c:RegisterEffect(e2)
 end
--- 装备对象限制函数，确保只能装备给拥有者
+-- 装备限制函数：仅允许效果创建者（即原攻击怪兽）作为这张卡的装备对象。
 function c4266839.eqlimit(e,c)
 	return e:GetOwner()==c
 end
--- 判断是否为对方回合
+-- 回复LP效果的发动条件：当前回合玩家不是这张卡的控制者，即处于对方的回合。
 function c4266839.recon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断是否为对方回合
+	-- 具体条件：当前回合玩家不等于此卡控制者，也就是对方回合的准备阶段。
 	return Duel.GetTurnPlayer()~=tp
 end
--- 设置回复LP效果的目标和数值
+-- 回复LP效果的发动时处理：设置回复数值为装备怪兽当前攻击力的一半（向上取整），并声明该效果为回复效果。
 function c4266839.retg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
 	local ec=e:GetHandler():GetEquipTarget()
-	-- 设置回复LP效果的目标和数值
+	-- 设置操作信息：声明将回复装备怪兽攻击力一半（向上取整）的LP，用于效果发动判定与连锁处理。
 	Duel.SetOperationInfo(0,CATEGORY_RECOVER,nil,0,tp,math.ceil(ec:GetAttack()/2))
 end
--- 执行回复LP效果
+-- 回复LP效果的处理：若这张卡仍与效果关联且仍装备着怪兽，则回复其控制者该装备怪兽攻击力一半的LP。
 function c4266839.reop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if not c:IsRelateToEffect(e) then return end
 	local ec=c:GetEquipTarget()
 	if ec then
 		local atk=ec:GetAttack()
-		-- 使玩家回复装备怪兽攻击力一半的LP
+		-- 实际执行LP回复，回复值为装备怪兽当前攻击力的一半（向上取整）。
 		Duel.Recover(tp,math.ceil(atk/2),REASON_EFFECT)
 	end
 end

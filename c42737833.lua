@@ -13,33 +13,33 @@ function c42737833.initial_effect(c)
 	e1:SetOperation(c42737833.operation)
 	c:RegisterEffect(e1)
 end
--- 检查触发效果的条件：卡片在墓地且因战斗破坏被送去墓地
+-- 判定发动条件：效果持有者位于墓地，且是被战斗破坏（满足“这张卡被战斗破坏送去墓地时”）。
 function c42737833.condition(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsLocation(LOCATION_GRAVE) and e:GetHandler():IsReason(REASON_BATTLE)
 end
--- 过滤函数：选择等级4以下、种族为「X-剑士」且可以特殊召唤的怪兽
+-- 定义可特殊召唤的卡牌条件：4星以下、卡名含有「X-剑士」字段、并且可以被特殊召唤。
 function c42737833.filter(c,e,tp)
 	return c:IsLevelBelow(4) and c:IsSetCard(0x100d) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 效果发动时的处理：确认场上是否有空位且卡组中存在满足条件的怪兽
+-- 发动时可行性检查：自己主要怪兽区有空位，且卡组中存在符合条件的「X-剑士」怪兽。
 function c42737833.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查场上是否有空位
+	-- 检查自己场上是否还有可用的主要怪兽区空位。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查卡组中是否存在满足条件的怪兽
+		-- 检查卡组中是否存在至少1只满足filter条件的「X-剑士」怪兽。
 		and Duel.IsExistingMatchingCard(c42737833.filter,tp,LOCATION_DECK,0,1,nil,e,tp) end
-	-- 设置效果处理信息：准备从卡组特殊召唤一只怪兽
+	-- 设置本次连锁的特殊召唤操作信息：从卡组特殊召唤1只怪兽。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_DECK)
 end
--- 效果发动时的处理：若场上存在空位则提示选择并特殊召唤符合条件的怪兽
+-- 效果处理：若场上仍有空位，则从卡组选择1只符合条件的「X-剑士」怪兽，以表侧表示特殊召唤。
 function c42737833.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 再次检查场上是否有空位，若无则取消特殊召唤
+	-- 效果处理时再次确认自己场上是否有可用主要怪兽区空位，没有则效果不处理。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-	-- 提示玩家选择要特殊召唤的怪兽
+	-- 向玩家展示选择提示，提示内容为“请选择要特殊召唤的卡”。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 从卡组中选择一只满足条件的怪兽
+	-- 从卡组中选出1张满足filter条件的「X-剑士」怪兽。
 	local g=Duel.SelectMatchingCard(tp,c42737833.filter,tp,LOCATION_DECK,0,1,1,nil,e,tp)
 	if g:GetCount()>0 then
-		-- 将选中的怪兽正面表示特殊召唤到场上
+		-- 将选中的怪兽以表侧表示特殊召唤到自己场上（默认表侧攻击表示）。
 		Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
 	end
 end

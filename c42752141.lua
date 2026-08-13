@@ -3,7 +3,7 @@
 -- 恐龙族4星怪兽×2
 -- ①：这张卡以外的怪兽的效果发动时，把这张卡1个超量素材取除才能发动。那个发动无效并破坏。
 function c42752141.initial_effect(c)
-	-- 为卡片添加XYZ召唤手续，使用满足恐龙族条件的怪兽作为素材进行召唤
+	-- 为这张卡添加XYZ召唤手续：用2只恐龙族4星怪兽叠放作为超量素材进行XYZ召唤。
 	aux.AddXyzProcedure(c,aux.FilterBoolFunction(Card.IsRace,RACE_DINOSAUR),4,2)
 	c:EnableReviveLimit()
 	-- ①：这张卡以外的怪兽的效果发动时，把这张卡1个超量素材取除才能发动。那个发动无效并破坏。
@@ -20,32 +20,32 @@ function c42752141.initial_effect(c)
 	e1:SetOperation(c42752141.operation)
 	c:RegisterEffect(e1)
 end
--- 效果发动时的条件判断，确保不是自身发动且怪兽效果可被无效
+-- 效果发动条件：不处于战斗破坏确定状态、不是本效果自身、发动中的效果为怪兽效果且该连锁的发动可以被无效时才能发动。
 function c42752141.condition(e,tp,eg,ep,ev,re,r,rp)
 	return re~=e and not e:GetHandler():IsStatus(STATUS_BATTLE_DESTROYED)
-		-- 确保发动的是怪兽效果且该连锁可被无效
+		-- 进一步判定：触发的效果是怪兽效果，且该连锁的发动可以被无效。
 		and re:IsActiveType(TYPE_MONSTER) and Duel.IsChainNegatable(ev)
 end
--- 支付效果的代价，从自身取除1个超量素材
+-- 支付代价：检查并取除这张卡的1个超量素材作为效果发动的代价。
 function c42752141.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():CheckRemoveOverlayCard(tp,1,REASON_COST) end
 	e:GetHandler():RemoveOverlayCard(tp,1,1,REASON_COST)
 end
--- 设置效果处理时的操作信息，包括使发动无效和破坏目标怪兽
+-- 效果处理前设置操作信息：将无效对象设为正在发动的效果；若其效果怪兽可被破坏且仍与该效果关联，则同时设置破坏对象。
 function c42752141.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置使连锁发动无效的操作信息
+	-- 设置本次连锁的操作信息：无效类别，对象为触发连锁的卡（eg），数量1，表示要无效该效果的发动。
 	Duel.SetOperationInfo(0,CATEGORY_NEGATE,eg,1,0,0)
 	if re:GetHandler():IsDestructable() and re:GetHandler():IsRelateToEffect(re) then
-		-- 设置破坏目标怪兽的操作信息
+		-- 设置本次连锁的操作信息：破坏类别，对象为触发连锁的卡（eg），数量1，表示要破坏那张卡。
 		Duel.SetOperationInfo(0,CATEGORY_DESTROY,eg,1,0,0)
 	end
 end
--- 效果处理时执行的操作，先使连锁无效再破坏目标怪兽
+-- 效果处理时：先无效对方怪兽效果的发动；若无效成功且该怪兽仍与所发动的效果相关联，则将其破坏。
 function c42752141.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断连锁是否成功无效且目标怪兽仍然有效
+	-- 如果该连锁的发动被成功无效，且效果怪兽仍与所发动效果存在关联（未离场或失去联系），才继续执行破坏。
 	if Duel.NegateActivation(ev) and re:GetHandler():IsRelateToEffect(re) then
-		-- 将目标怪兽因效果破坏
+		-- 以效果原因破坏eg中的卡，即发动了被无效效果的怪兽。
 		Duel.Destroy(eg,REASON_EFFECT)
 	end
 end

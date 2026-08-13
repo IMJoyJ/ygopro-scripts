@@ -12,30 +12,30 @@ function c42598242.initial_effect(c)
 	e1:SetOperation(c42598242.activate)
 	c:RegisterEffect(e1)
 end
--- 检查是否可以丢弃1张手卡作为发动代价
+-- 发动代价处理函数：先检查手牌中是否存在可丢弃的卡，然后实际丢弃1张手卡作为发动代价。
 function c42598242.cost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断是否满足丢弃手卡的条件
+	-- 代价检测阶段：确认手牌中存在至少1张除本卡以外可以丢弃的手卡，以满足丢弃1张手卡的代价条件。
 	if chk==0 then return Duel.IsExistingMatchingCard(Card.IsDiscardable,tp,LOCATION_HAND,0,1,e:GetHandler()) end
-	-- 执行丢弃1张手卡的操作
+	-- 实际执行代价：从手牌选择并丢弃1张卡送去墓地，丢弃原因标记为COST+DISCARD。
 	Duel.DiscardHand(tp,Card.IsDiscardable,1,1,REASON_COST+REASON_DISCARD)
 end
--- 定义过滤函数，用于筛选特殊召唤的怪兽
+-- 筛选条件：怪兽的召唤类型为特殊召唤（即该怪兽是特殊召唤的怪兽）。
 function c42598242.filter(c)
 	return c:IsSummonType(SUMMON_TYPE_SPECIAL)
 end
--- 设置连锁处理的目标，确定要破坏的特殊召唤怪兽
+-- 发动目标条件与操作信息设定：确认场上有特殊召唤的怪兽，并将场上所有特殊召唤的怪兽登记为将被破坏的对象。
 function c42598242.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断场上是否存在特殊召唤的怪兽
+	-- 发动条件检测：确认场上存在至少1只特殊召唤的怪兽，满足发动条件。
 	if chk==0 then return Duel.IsExistingMatchingCard(c42598242.filter,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil) end
-	-- 获取场上所有特殊召唤的怪兽组成Group
+	-- 获取场上所有特殊召唤的怪兽组成集合（不取对象，效果处理时适用）。
 	local g=Duel.GetMatchingGroup(c42598242.filter,tp,LOCATION_MZONE,LOCATION_MZONE,nil)
-	-- 设置连锁操作信息，标记将要破坏的怪兽数量
+	-- 将破坏分类及预计破坏数量写入操作信息，供连锁中相关效果的发动检测与判定。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,g:GetCount(),0,0)
 end
--- 执行破坏场上所有特殊召唤怪兽的效果
+-- 效果处理函数：在效果处理时获取场上全部特殊召唤的怪兽，并将其全部破坏。
 function c42598242.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 再次获取场上所有特殊召唤的怪兽组成Group
+	-- 效果处理时重新获取场上所有特殊召唤的怪兽，以当前场上实际存在为准。
 	local g=Duel.GetMatchingGroup(c42598242.filter,tp,LOCATION_MZONE,LOCATION_MZONE,nil)
-	-- 将指定怪兽以效果原因进行破坏
+	-- 以效果原因将获取到的特殊召唤怪兽全部破坏。
 	Duel.Destroy(g,REASON_EFFECT)
 end
