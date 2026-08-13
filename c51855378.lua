@@ -12,22 +12,22 @@ function c51855378.initial_effect(c)
 	e1:SetOperation(c51855378.operation)
 	c:RegisterEffect(e1)
 end
--- 过滤函数，用于筛选墓地里满足条件的「废品」怪兽（名字带废品、是怪兽卡、可以作为除外的代价）
+-- 过滤条件：卡是名字带有「废品」的怪兽，并且可以作为代价除外。
 function c51855378.cfilter(c)
 	return c:IsSetCard(0x43) and c:IsType(TYPE_MONSTER) and c:IsAbleToRemoveAsCost()
 end
--- 效果的发动费用处理，检查是否满足除外1只「废品」怪兽的条件并执行除外操作
+-- 发动代价处理：先检查自己墓地是否存在满足条件的「废品」怪兽，存在则让玩家选择1只，将其正面表示除外作为发动代价。
 function c51855378.cost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查在自己墓地是否存在至少1张满足cfilter条件的卡
+	-- 代价检查：确认自己墓地是否存在至少1只符合过滤条件的「废品」怪兽可作为代价。
 	if chk==0 then return Duel.IsExistingMatchingCard(c51855378.cfilter,tp,LOCATION_GRAVE,0,1,nil) end
-	-- 提示玩家选择要除外的卡
+	-- 提示玩家选择要除外的卡片（用于选择提示）。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
-	-- 选择满足条件的1张卡从墓地除外
+	-- 从自己墓地选择1只符合过滤条件的「废品」怪兽作为代价。
 	local g=Duel.SelectMatchingCard(tp,c51855378.cfilter,tp,LOCATION_GRAVE,0,1,1,nil)
-	-- 将选中的卡以正面表示的形式从游戏中除外作为效果的发动代价
+	-- 将选中的卡以表侧表示除外，作为发动代价。
 	Duel.Remove(g,POS_FACEUP,REASON_COST)
 end
--- 效果的发动处理，使自身攻击力上升400点直到结束阶段
+-- 效果处理：若这张卡仍表侧表示且与发动效果关联，则让它攻击力上升400，该上升持续到结束阶段。
 function c51855378.operation(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsFaceup() and c:IsRelateToEffect(e) then
