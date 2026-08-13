@@ -6,7 +6,7 @@
 -- ●中央：这张卡不会成为对方的效果的对象，不会被对方的效果破坏。
 -- ●那以外：和这张卡相同纵列的怪兽不能把效果发动。
 function c15419596.initial_effect(c)
-	-- ●左端：这张卡的攻击力·守备力上升1000。
+	-- ①：这张卡只要在主要怪兽区域存在，得到那个位置的以下效果。●左端：这张卡的攻击力·守备力上升1000。（此段实现攻击力上升部分）
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
@@ -27,24 +27,24 @@ function c15419596.initial_effect(c)
 	e3:SetCondition(c15419596.eacon)
 	e3:SetValue(1)
 	c:RegisterEffect(e3)
-	-- ●中央：这张卡不会成为对方的效果的对象，不会被对方的效果破坏。
+	-- ●中央：这张卡不会成为对方的效果的对象，不会被对方的效果破坏。（此段实现‘不会成为对方的效果的对象’部分）
 	local e4=Effect.CreateEffect(c)
 	e4:SetType(EFFECT_TYPE_SINGLE)
 	e4:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
 	e4:SetCode(EFFECT_CANNOT_BE_EFFECT_TARGET)
 	e4:SetRange(LOCATION_MZONE)
 	e4:SetCondition(c15419596.indcon)
-	-- 规则层面：设置效果过滤函数，用于判断是否不会成为对方效果的对象。
+	-- 将本效果的判定函数设为 aux.tgoval，使对方的效果不能选择这张卡为对象，对应‘不会成为对方的效果的对象’。
 	e4:SetValue(aux.tgoval)
 	c:RegisterEffect(e4)
-	-- ●中央：这张卡不会成为对方的效果的对象，不会被对方的效果破坏。
+	-- ●中央：这张卡不会成为对方的效果的对象，不会被对方的效果破坏。（此段实现‘不会被对方的效果破坏’部分）
 	local e5=Effect.CreateEffect(c)
 	e5:SetType(EFFECT_TYPE_SINGLE)
 	e5:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
 	e5:SetCode(EFFECT_INDESTRUCTABLE_EFFECT)
 	e5:SetRange(LOCATION_MZONE)
 	e5:SetCondition(c15419596.indcon)
-	-- 规则层面：设置效果过滤函数，用于判断是否不会被对方效果破坏。
+	-- 将本效果的判定函数设为 aux.indoval，使这张卡不会被对方的效果破坏，对应‘不会被对方的效果破坏’。
 	e5:SetValue(aux.indoval)
 	c:RegisterEffect(e5)
 	-- ●那以外：和这张卡相同纵列的怪兽不能把效果发动。
@@ -58,24 +58,24 @@ function c15419596.initial_effect(c)
 	e6:SetValue(c15419596.aclimit)
 	c:RegisterEffect(e6)
 end
--- 规则层面：当此卡位于场地最左端（序号0）时触发效果。
+-- 判定这张卡是否位于主要怪兽区域的最左端（序列0），只有满足时攻击力上升效果适用。
 function c15419596.atkcon(e)
 	return e:GetHandler():GetSequence()==0
 end
--- 规则层面：当此卡位于场地最右端（序号4）时触发效果。
+-- 判定这张卡是否位于主要怪兽区域的最右端（序列4），只有满足时才能获得追加攻击效果。
 function c15419596.eacon(e)
 	return e:GetHandler():GetSequence()==4
 end
--- 规则层面：当此卡位于场地中央（序号2）时触发效果。
+-- 判定这张卡是否位于主要怪兽区域的中央（序列2），只有满足时才能获得‘不会成为对方效果对象/不会被对方效果破坏’的抗性。
 function c15419596.indcon(e)
 	return e:GetHandler():GetSequence()==2
 end
--- 规则层面：当此卡位于场地左端或右端（序号1或3）时触发效果。
+-- 判定这张卡是否位于主要怪兽区域的‘那以外’位置（序列1或3），这是‘相同纵列的怪兽不能发动效果’的适用条件。
 function c15419596.actcon(e)
 	local c=e:GetHandler()
 	return c:GetSequence()==1 or c:GetSequence()==3
 end
--- 规则层面：判断目标怪兽是否在同一纵列且为怪兽卡，从而限制其发动效果。
+-- 发动效果判定：若发动效果的卡为与此卡同一纵列且位于主要怪兽区域的怪兽，则该效果不能发动，实现‘和这张卡相同纵列的怪兽不能把效果发动’。
 function c15419596.aclimit(e,re,tp)
 	local tc=re:GetHandler()
 	return tc:IsLocation(LOCATION_MZONE) and re:IsActiveType(TYPE_MONSTER) and e:GetHandler():GetColumnGroup():IsContains(tc)

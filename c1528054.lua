@@ -6,12 +6,12 @@
 -- ②：这张卡和怪兽进行战斗的场合，那2只不会被那次战斗破坏。
 -- ③：魔法与陷阱区域的卡在怪兽区域特殊召唤的场合，以对方场上1张魔法·陷阱卡为对象才能发动。那张卡破坏。
 local s,id,o=GetID()
--- 初始化效果函数，设置连接召唤程序、启用特殊召唤限制，并注册三个效果
+-- 初始化效果登记：给此卡添加“2只效果怪兽”的连接召唤手续并允许苏生限制，随后注册①的盖放永续陷阱诱发效果、②的战斗破坏免疫永续效果、③的破坏对方魔陷诱发效果。
 function s.initial_effect(c)
-	-- 设置连接召唤需要2只效果怪兽作为素材
+	-- 设置连接召唤手续：此卡必须用2只效果怪兽作为连接素材才能连接召唤。
 	aux.AddLinkProcedure(c,aux.FilterBoolFunction(Card.IsLinkType,TYPE_EFFECT),2)
 	c:EnableReviveLimit()
-	-- ①：这张卡连接召唤的场合才能发动。把持有把自身作为怪兽特殊召唤效果的1张永续陷阱卡从卡组到自己场上盖放。
+	-- 这个卡名的①③的效果1回合各能使用1次。①：这张卡连接召唤的场合才能发动。把持有把自身作为怪兽特殊召唤效果的1张永续陷阱卡从卡组到自己场上盖放。这张卡在这个回合不能作为连接素材。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(id,0))  --"盖放永续陷阱卡"
 	e1:SetCategory(CATEGORY_SSET)
@@ -32,7 +32,7 @@ function s.initial_effect(c)
 	e2:SetTarget(s.indtg)
 	e2:SetValue(1)
 	c:RegisterEffect(e2)
-	-- ③：魔法与陷阱区域的卡在怪兽区域特殊召唤的场合，以对方场上1张魔法·陷阱卡为对象才能发动。那张卡破坏。
+	-- 这个卡名的①③的效果1回合各能使用1次。③：魔法与陷阱区域的卡在怪兽区域特殊召唤的场合，以对方场上1张魔法·陷阱卡为对象才能发动。那张卡破坏。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(id,1))  --"破坏魔法·陷阱卡"
 	e3:SetCategory(CATEGORY_DESTROY)
@@ -46,11 +46,11 @@ function s.initial_effect(c)
 	e3:SetOperation(s.desop)
 	c:RegisterEffect(e3)
 end
--- 效果条件：只有在连接召唤成功时才能发动
+-- ①效果的发动条件：只有这张卡以连接召唤方式成功特殊召唤的场合才能发动。
 function s.setcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsSummonType(SUMMON_TYPE_LINK)
 end
--- 过滤函数：筛选可以盖放的永续陷阱卡，必须是陷阱卡、永续类型且可以盖放，并且具有种族、属性、等级、攻防等任意一项非零值
+-- ①效果的检索过滤条件：选择卡组中1张可以盖放的永续陷阱卡，且其持有等级/种族/属性/攻击力/守备力中至少一项，代表它具备“把自身作为怪兽特殊召唤”的效果。
 function s.filter(c)
 	return c:IsType(TYPE_TRAP) and c:IsType(TYPE_CONTINUOUS) and c:IsSSetable()
 		and (c:GetOriginalLevel()>0
@@ -59,30 +59,30 @@ function s.filter(c)
 		or c:GetBaseAttack()>0
 		or c:GetBaseDefense()>0)
 end
--- 效果目标函数：检查是否有满足条件的卡片可以盖放
+-- ①效果的发动合法判定：自己魔陷区有空位，并且卡组中存在符合条件的永续陷阱卡时才能发动。
 function s.settg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查场上是否有足够的魔法陷阱区域
+	-- 检查自己魔陷区是否有可用的空格用于盖放。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_SZONE)>0
-		-- 检查卡组中是否存在满足条件的卡片
+		-- 检查卡组中是否存在至少1张满足s.filter过滤条件的永续陷阱卡。
 		and Duel.IsExistingMatchingCard(s.filter,tp,LOCATION_DECK,0,1,nil) end
 end
--- 效果处理函数：选择并盖放一张符合条件的永续陷阱卡，并使该卡在本回合不能作为连接素材
+-- ①效果处理：玩家从卡组选择1张符合条件的永续陷阱卡盖放到自己魔陷区；随后若这张卡仍与效果关联，给它附加“这个回合不能作为连接素材”的永续效果。
 function s.setop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 检查场上是否有足够的魔法陷阱区域
+	-- 处理时再次确认自己魔陷区仍有空格，只有有空格才执行盖放。
 	if Duel.GetLocationCount(tp,LOCATION_SZONE)>0 then
-		-- 提示玩家选择要盖放的卡
+		-- 给操作玩家显示“请选择要盖放的卡”的选择提示。
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SET)  --"请选择要盖放的卡"
-		-- 选择满足条件的永续陷阱卡
+		-- 从自己卡组中选出1张满足s.filter的永续陷阱卡（让玩家选择）。
 		local g=Duel.SelectMatchingCard(tp,s.filter,tp,LOCATION_DECK,0,1,1,nil)
 		local tc=g:GetFirst()
 		if tc then
-			-- 将选中的卡片盖放
+			-- 将选中的卡以里侧表示盖放到自己的魔法与陷阱区域。
 			Duel.SSet(tp,tc)
 		end
 	end
 	if c:IsRelateToEffect(e) then
-		-- 使该卡在本回合不能作为连接素材
+		-- ①：这张卡连接召唤的场合才能发动。把持有把自身作为怪兽特殊召唤效果的1张永续陷阱卡从卡组到自己场上盖放。这张卡在这个回合不能作为连接素材。②：这张卡和怪兽进行战斗的场合，那2只不会被那次战斗破坏。③：魔法与陷阱区域的卡在怪兽区域特殊召唤的场合，以对方场上1张魔法·陷阱卡为对象才能发动。那张卡破坏。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
@@ -92,42 +92,42 @@ function s.setop(e,tp,eg,ep,ev,re,r,rp)
 		c:RegisterEffect(e1,true)
 	end
 end
--- 战斗破坏无效效果的目标函数：该卡或其战斗对手
+-- ②效果的战斗破坏免疫对象判定：当场上怪兽进行战斗时，若该怪兽是这张卡自身或这张卡的战斗对象，则赋予其战斗破坏免疫。
 function s.indtg(e,c)
 	local tc=e:GetHandler()
 	return c==tc or c==tc:GetBattleTarget()
 end
--- 过滤函数：判断卡片是否从魔法陷阱区域特殊召唤
+-- 用于③效果的条件过滤：判断一张卡是否在特殊召唤之前位于魔法与陷阱区域（即从魔陷区被特殊召唤到怪兽区）。
 function s.cfilter(c,tp)
 	return c:IsPreviousLocation(LOCATION_SZONE)
 end
--- 效果条件：魔法陷阱区域的卡在怪兽区域特殊召唤时才能发动
+-- ③效果的发动条件：本次特殊召唤成功的怪兽群中不包含此卡自身，且其中至少有一只卡是从魔法与陷阱区域特殊召唤到怪兽区的。
 function s.descon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	return not eg:IsContains(c) and eg:IsExists(s.cfilter,1,nil)
 end
--- 过滤函数：筛选魔法或陷阱卡
+-- ③效果对象过滤：选择场上存在的魔法·陷阱卡（作为破坏对象）。
 function s.desfilter(c)
 	return c:IsType(TYPE_SPELL+TYPE_TRAP)
 end
--- 效果目标函数：选择对方场上的魔法或陷阱卡
+-- ③效果的目标指定：选择对方场上1张魔法·陷阱卡为对象，并设置破坏信息；若检查对象则需满足是对方场上且是魔陷。
 function s.destg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsOnField() and s.desfilter(chkc) and chkc:IsControler(1-tp) end
-	-- 检查对方场上是否存在魔法或陷阱卡
+	-- ③效果发动时检查是否存在至少1张符合条件的对方场上的魔法·陷阱卡可以作为对象。
 	if chk==0 then return Duel.IsExistingTarget(s.desfilter,tp,0,LOCATION_ONFIELD,1,nil) end
-	-- 提示玩家选择要破坏的卡
+	-- 给操作玩家显示“请选择要破坏的卡”的选择提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 选择对方场上的魔法或陷阱卡
+	-- 从对方场上选择1张魔法·陷阱卡作为对象（同时将该卡登记为当前连锁的效果对象）。
 	local g=Duel.SelectTarget(tp,s.desfilter,tp,0,LOCATION_ONFIELD,1,1,nil)
-	-- 设置操作信息：破坏选中的卡
+	-- 设定本次连锁处理信息：将破坏1张卡的分类设为CATEGORY_DESTROY，并记录对象卡。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,1,0,0)
 end
--- 效果处理函数：破坏选中的魔法或陷阱卡
+-- ③效果处理：取得连锁对象，若对象仍与效果关联，将其破坏。
 function s.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁中的目标卡
+	-- 取得发动③效果时选择的对象卡。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 破坏目标卡
+		-- 以效果原因将对象卡破坏。
 		Duel.Destroy(tc,REASON_EFFECT)
 	end
 end
