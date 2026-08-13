@@ -14,42 +14,42 @@ function c48686504.initial_effect(c)
 	e1:SetOperation(c48686504.operation)
 	c:RegisterEffect(e1)
 end
--- 过滤函数：检查场上是否存在满足条件的可解放的植物族怪兽（表侧表示且有可用怪兽区）
+-- 筛选解放候选：怪兽必须表侧表示且为植物族，并确认解放后自己场上仍有可用怪兽区域。
 function c48686504.costfilter(c,tp)
 	return c:IsFaceup() and c:IsRace(RACE_PLANT)
-		-- 判断目标怪兽是否拥有可用的怪兽区（即该怪兽解放后不会导致怪兽区不足）
+		-- 确认解放该怪兽后自己场上仍有空的怪兽区域，保证后续特殊召唤能够进行。
 		and Duel.GetMZoneCount(tp,c,tp)>0
 end
--- 效果Cost处理：检查并选择1只满足条件的怪兽进行解放
+-- 发动代价的处理：从自己场上选择并解放1只表侧表示的植物族怪兽，作为效果的发动代价。
 function c48686504.cost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查场上是否存在至少1张满足costfilter条件的可解放怪兽
+	-- 发动前检查自己场上是否存在至少1只满足解放条件的表侧表示植物族怪兽，即代价是否能够支付。
 	if chk==0 then return Duel.CheckReleaseGroup(tp,c48686504.costfilter,1,nil,tp) end
-	-- 从场上选择1张满足costfilter条件的可解放怪兽
+	-- 从自己场上选择1只满足条件的表侧表示植物族怪兽（costfilter），作为要解放的对象。
 	local g=Duel.SelectReleaseGroup(tp,c48686504.costfilter,1,1,nil,tp)
-	-- 将选中的怪兽以REASON_COST原因进行解放
+	-- 将选择的植物族怪兽解放，解放原因记为REASON_COST，作为发动该效果的代价。
 	Duel.Release(g,REASON_COST)
 end
--- 过滤函数：检查卡组中是否存在可以特殊召唤的植物族怪兽
+-- 筛选卡组中的怪兽：必须是植物族，并且能够通过当前效果以表侧表示特殊召唤。
 function c48686504.filter(c,e,tp)
 	return c:IsRace(RACE_PLANT) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 效果Target处理：确认卡组中存在至少1只可特殊召唤的植物族怪兽
+-- 效果发动时的目标处理：检查卡组中是否存在符合条件的植物族怪兽，并登记特殊召唤的操作信息。
 function c48686504.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查卡组中是否存在至少1张满足filter条件的植物族怪兽
+	-- 检查卡组是否存在至少1只符合条件的植物族怪兽，决定效果能否发动。
 	if chk==0 then return Duel.IsExistingMatchingCard(c48686504.filter,tp,LOCATION_DECK,0,1,nil,e,tp) end
-	-- 设置操作信息，表示将要从卡组特殊召唤1只植物族怪兽
+	-- 登记本次效果将进行的操作为从卡组特殊召唤1只怪兽，位置为卡组，数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,0,LOCATION_DECK)
 end
--- 效果Operation处理：确认场上存在可用空间后选择并特殊召唤1只植物族怪兽
+-- 效果处理时的实际动作：从卡组选择1只植物族怪兽并进行特殊召唤。
 function c48686504.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断场上是否还有可用的怪兽区（防止无法特殊召唤）
+	-- 效果处理前再次确认自己场上有可用的怪兽区域，若无空位则直接终止处理。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-	-- 提示玩家选择要特殊召唤的卡
+	-- 向当前玩家显示特殊召唤的选择提示，提示文字为“请选择要特殊召唤的卡”。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 从卡组中选择1张满足filter条件的植物族怪兽
+	-- 从卡组中选择1只符合条件的植物族怪兽作为特殊召唤的对象。
 	local g=Duel.SelectMatchingCard(tp,c48686504.filter,tp,LOCATION_DECK,0,1,1,nil,e,tp)
 	if g:GetCount()>0 then
-		-- 将选中的怪兽以正面表示形式特殊召唤到场上
+		-- 将选择的植物族怪兽以表侧表示特殊召唤到自己场上（攻击表示）。
 		Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
