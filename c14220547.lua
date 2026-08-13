@@ -9,7 +9,7 @@ function c14220547.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- ①：自己用魔法卡的效果只把仪式怪兽1只特殊召唤的场合才能发动。把自己或者对方的额外卡组确认，那之内的1只怪兽送去墓地。
+	-- 这个卡名的①②的效果1回合各能使用1次。①：自己用魔法卡的效果只把仪式怪兽1只特殊召唤的场合才能发动。把自己或者对方的额外卡组确认，那之内的1只怪兽送去墓地。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(14220547,0))  --"额外卡组送去墓地"
 	e2:SetCategory(CATEGORY_TOGRAVE)
@@ -22,7 +22,7 @@ function c14220547.initial_effect(c)
 	e2:SetTarget(c14220547.tgtg)
 	e2:SetOperation(c14220547.tgop)
 	c:RegisterEffect(e2)
-	-- ②：自己用魔法卡的效果只把融合怪兽1只特殊召唤的场合，以那1只怪兽为对象才能发动。那只怪兽直到回合结束时攻击力上升自身的原本攻击力数值，只能向对方场上的攻击表示怪兽攻击。
+	-- 这个卡名的①②的效果1回合各能使用1次。②：自己用魔法卡的效果只把融合怪兽1只特殊召唤的场合，以那1只怪兽为对象才能发动。那只怪兽直到回合结束时攻击力上升自身的原本攻击力数值，只能向对方场上的攻击表示怪兽攻击。
 	local e3=Effect.CreateEffect(c)
 	e3:SetCategory(CATEGORY_ATKCHANGE)
 	e3:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
@@ -35,73 +35,73 @@ function c14220547.initial_effect(c)
 	e3:SetOperation(c14220547.atkop)
 	c:RegisterEffect(e3)
 end
--- 过滤满足条件的仪式怪兽，即该怪兽是仪式怪兽且是由魔法卡特殊召唤的。
+-- ①效果的诱发条件过滤器：候选怪兽必须是表侧表示、仪式怪兽，其特殊召唤信息含TYPE_SPELL（即由魔法卡的效果特殊召唤），且效果发动玩家为本方tp（rp==tp）。
 function c14220547.tcfilter(c,tp,re,rp)
 	return c:IsFaceup() and c:IsType(TYPE_RITUAL) and c:GetSpecialSummonInfo(SUMMON_INFO_TYPE)&TYPE_SPELL~=0 and rp==tp
 end
--- 判断是否只特殊召唤了1只仪式怪兽，且该怪兽是由魔法卡特殊召唤的。
+-- ①效果的发动条件：这次成功特殊召唤的怪兽只有1只，且这1只怪兽满足tcfilter，即符合“自己用魔法卡的效果只把仪式怪兽1只特殊召唤”的场合。
 function c14220547.tgcon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:GetCount()==1 and eg:FilterCount(c14220547.tcfilter,nil,tp,re,rp)==1
 end
--- 设置效果目标为对方额外卡组中的任意1只怪兽。
+-- ①效果的目标处理：先确认双方额外卡组总数大于0才可发动；随后登记本次处理会把1张额外卡组的卡送去墓地。
 function c14220547.tgtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否对方额外卡组中存在怪兽。
+	-- 发动合法性检查：双方额外卡组中的卡合计数量大于0，否则不能发动①效果。
 	if chk==0 then return Duel.GetFieldGroupCount(tp,LOCATION_EXTRA,LOCATION_EXTRA)>0 end
-	-- 设置连锁操作信息，表示将从对方额外卡组中选择1只怪兽送去墓地。
+	-- 登记效果操作信息：不取对象，预计将来自任意一方额外卡组的1张卡送去墓地，以便后续连锁判定/发动检测。
 	Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,nil,1,PLAYER_ALL,LOCATION_EXTRA)
 end
--- 处理效果，选择对方额外卡组中的1只怪兽送去墓地。
+-- ①效果处理：分别取得自己和对方额外卡组；只要有一方有卡，就让发动者选择处理自己还是对方额外卡组；若选对方则先展示对方额外卡组；再从所选额外卡组选1张卡，以效果原因送去墓地；若选的是对方额外卡组，最后洗切对方额外卡组。
 function c14220547.tgop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取己方额外卡组中的所有怪兽。
+	-- 取得自己的额外卡组全部卡片，作为可能被确认并送墓的候选组。
 	local g1=Duel.GetFieldGroup(tp,LOCATION_EXTRA,0)
-	-- 获取对方额外卡组中的所有怪兽。
+	-- 取得对方的额外卡组全部卡片，作为可能被确认并送墓的候选组。
 	local g2=Duel.GetFieldGroup(tp,0,LOCATION_EXTRA)
 	if (#g1~=0 or #g2~=0) then
 		local g=nil
-		-- 如果己方额外卡组不为空，且对方额外卡组为空或玩家选择确认己方额外卡组，则选择己方额外卡组。
-		if #g1~=0 and (#g2==0 or Duel.SelectOption(tp,aux.Stringid(14220547,1),aux.Stringid(14220547,2))==0) then  --"确认自己的额外卡组" / "确认对方的额外卡组"
+		-- 选择额外卡组：若自己额外卡组有卡，且（对方额外卡组无卡或玩家选择了“自己的额外卡组”），则处理自己额外卡组；否则选择并处理对方额外卡组。
+		if #g1~=0 and (#g2==0 or Duel.SelectOption(tp,aux.Stringid(14220547,1),aux.Stringid(14220547,2))==0) then  --"确认自己的额外卡组/确认对方的额外卡组"
 			g=g1
 		else
 			g=g2
-			-- 确认对方额外卡组中的怪兽。
+			-- 把对方的额外卡组公开给本方玩家确认。
 			Duel.ConfirmCards(tp,g,true)
 		end
-		-- 提示玩家选择要送去墓地的怪兽。
-		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)
+		-- 弹出“请选择要送去墓地的卡”的选择提示，用于后续选卡。
+		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
 		local tg=g:FilterSelect(tp,Card.IsAbleToGrave,1,1,nil)
-		-- 将选择的怪兽送去墓地。
+		-- 将选中的卡以『效果』的原因送去墓地。
 		Duel.SendtoGrave(tg,REASON_EFFECT)
-		-- 如果选择了对方额外卡组，则洗切对方额外卡组。
+		-- 若刚才处理的是对方额外卡组，则选卡送墓后洗切对方额外卡组，防止顺序被公开。
 		if g==g2 then Duel.ShuffleExtra(1-tp) end
 	end
 end
--- 过滤满足条件的融合怪兽，即该怪兽是融合怪兽且是由魔法卡特殊召唤的。
+-- ②效果的诱发条件过滤器：候选怪兽必须是表侧表示、融合怪兽，其特殊召唤信息含TYPE_SPELL（即由魔法卡的效果特殊召唤），且效果发动玩家为本方tp（rp==tp）。
 function c14220547.acfilter(c,tp,re,rp)
 	return c:IsFaceup() and c:IsType(TYPE_FUSION) and c:GetSpecialSummonInfo(SUMMON_INFO_TYPE)&TYPE_SPELL~=0 and rp==tp
 end
--- 判断是否只特殊召唤了1只融合怪兽，且该怪兽是由魔法卡特殊召唤的。
+-- ②效果的发动条件：这次特殊召唤的怪兽只有1只，且这1只怪兽满足acfilter，即符合“自己用魔法卡的效果只把融合怪兽1只特殊召唤”的场合。
 function c14220547.atkcon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:GetCount()==1 and eg:FilterCount(c14220547.acfilter,nil,tp,re,rp)==1
 end
--- 判断目标怪兽是否为特殊召唤的怪兽。
+-- 对象选择过滤函数：候选卡必须是本次特殊召唤成功的那只融合怪兽（在eg组内）。
 function c14220547.tgfilter(c,eg)
 	return eg:IsContains(c)
 end
--- 设置效果目标为特殊召唤的怪兽。
+-- ②效果的取对象处理：发动时若场上存在可成为对象的、刚刚特殊召唤成功的那只融合怪兽，则通过Duel.SetTargetCard将其设为当前连锁的对象；chkc时直接不通过，避免二段选择。
 function c14220547.atktg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return false end
-	-- 检查是否存在特殊召唤的怪兽作为目标。
+	-- 发动合法性检测：在自己的主要怪兽区或对方的怪兽区存在刚刚特殊召唤成功的那只融合怪兽，可以作为对象。
 	if chk==0 then return Duel.IsExistingTarget(c14220547.tgfilter,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil,eg) end
-	-- 设置当前效果的目标为特殊召唤的怪兽。
+	-- 将刚刚特殊召唤成功的那只融合怪兽（eg）登记为当前连锁的对象。
 	Duel.SetTargetCard(eg)
 end
--- 处理效果，使目标怪兽攻击力提升并只能攻击对方场上的攻击表示怪兽。
+-- ②效果处理：若对象怪兽仍在场上、表侧表示且与本效果仍关联，则给它适用三个直至回合结束的效果：攻击力上升其原本攻击力、只能选择对方攻击表示怪兽作为攻击对象、不能直接攻击。
 function c14220547.atkop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取当前效果的目标怪兽。
+	-- 从当前连锁取得对象怪兽，即刚特殊召唤成功的那只融合怪兽。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) and tc:IsFaceup() then
-		-- 使目标怪兽的攻击力提升其原本攻击力数值。
+		-- 那只怪兽直到回合结束时攻击力上升自身的原本攻击力数值
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)
@@ -110,7 +110,7 @@ function c14220547.atkop(e,tp,eg,ep,ev,re,r,rp)
 		e1:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END)
 		e1:SetValue(tc:GetBaseAttack())
 		tc:RegisterEffect(e1)
-		-- 使目标怪兽只能攻击对方场上的攻击表示怪兽。
+		-- 只能向对方场上的攻击表示怪兽攻击
 		local e2=Effect.CreateEffect(c)
 		e2:SetType(EFFECT_TYPE_SINGLE)
 		e2:SetCode(EFFECT_CANNOT_SELECT_BATTLE_TARGET)
@@ -119,7 +119,7 @@ function c14220547.atkop(e,tp,eg,ep,ev,re,r,rp)
 		e2:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END)
 		e2:SetValue(c14220547.atlimit)
 		tc:RegisterEffect(e2)
-		-- 使目标怪兽不能直接攻击。
+		-- 只能向对方场上的攻击表示怪兽攻击
 		local e3=Effect.CreateEffect(c)
 		e3:SetType(EFFECT_TYPE_SINGLE)
 		e3:SetCode(EFFECT_CANNOT_DIRECT_ATTACK)
@@ -129,7 +129,7 @@ function c14220547.atkop(e,tp,eg,ep,ev,re,r,rp)
 		tc:RegisterEffect(e3)
 	end
 end
--- 判断目标怪兽是否为攻击表示或是否为效果持有者控制。
+-- 攻击对象限制判定：若候选攻击对象不是攻击表示，或与效果拥有者为同一控制者，则不能选择为攻击对象；由此实现“只能向对方场上的攻击表示怪兽攻击”。
 function c14220547.atlimit(e,c)
 	return not c:IsAttackPos() or c:IsControler(e:GetHandlerPlayer())
 end
