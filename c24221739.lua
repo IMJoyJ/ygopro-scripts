@@ -12,8 +12,8 @@ function c24221739.initial_effect(c)
 	e1:SetCondition(c24221739.con)
 	c:RegisterEffect(e1)
 end
--- 判断当前阶段是否不是抽卡阶段
+-- 条件函数：判定当前是否处于“抽卡阶段以外”的时点，用于使禁抽效果仅在非抽卡阶段适用。
 function c24221739.con(e)
-	-- 若当前阶段不是抽卡阶段则效果适用
+	-- 返回当前阶段不是抽卡阶段，即满足“不能在抽卡阶段以外进行抽卡”的非抽卡阶段条件。
 	return Duel.GetCurrentPhase()~=PHASE_DRAW
 end

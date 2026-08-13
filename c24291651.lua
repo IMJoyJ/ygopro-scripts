@@ -12,15 +12,15 @@ function c24291651.initial_effect(c)
 	e1:SetOperation(c24291651.posop)
 	c:RegisterEffect(e1)
 end
--- 效果发动条件：持有该效果的卡必须处于攻击表示
+-- 条件：这张卡为表侧攻击表示。
 function c24291651.poscon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsAttackPos()
 end
--- 效果处理：检查卡是否为表侧表示且与效果相关，若是则将其变为守备表示
+-- 效果处理：这张卡仍表侧表示且与效果关联时，将其变为表侧守备表示。
 function c24291651.posop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsFaceup() and c:IsRelateToEffect(e) then
-		-- 将目标怪兽变为表侧守备表示
+		-- 将这张卡的表示形式变为表侧守备表示。
 		Duel.ChangePosition(c,POS_FACEUP_DEFENSE)
 	end
 end
