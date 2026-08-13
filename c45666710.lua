@@ -3,7 +3,7 @@
 -- 这个卡名的卡在1回合只能发动1张。
 -- ①：从自己墓地的怪兽以及除外的自己怪兽之中以1只「星义」怪兽为对象才能发动。那只怪兽特殊召唤。这个效果特殊召唤的原本等级是11星以上的怪兽在这个回合不能把效果发动。
 function c45666710.initial_effect(c)
-	-- 创建效果，设置为发动时点，可以取对象，发动次数限制为1次
+	-- 这个卡名的卡在1回合只能发动1张。①：从自己墓地的怪兽以及除外的自己怪兽之中以1只「星义」怪兽为对象才能发动。那只怪兽特殊召唤。这个效果特殊召唤的原本等级是11星以上的怪兽在这个回合不能把效果发动。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -15,37 +15,37 @@ function c45666710.initial_effect(c)
 	e1:SetOperation(c45666710.activate)
 	c:RegisterEffect(e1)
 end
--- 过滤函数，用于判断目标是否为「星义」怪兽且可以特殊召唤
+-- 判定可作为对象的『星义』怪兽：位于自己墓地或表侧除外，且能被当前效果特殊召唤。
 function c45666710.filter(c,e,tp)
 	return (c:IsFaceup() or c:IsLocation(LOCATION_GRAVE)) and c:IsSetCard(0x13d) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 效果处理时点，判断是否满足发动条件
+-- 目标检查：若为连锁处理中的对象（chkc），需位于自己墓地或除外区、由己方控制且满足filter；若为发动时判定（chk==0），则检查是否有可特殊召唤的空位及合法对象。
 function c45666710.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE+LOCATION_REMOVED) and chkc:IsControler(tp) and c45666710.filter(chkc,e,tp) end
-	-- 判断场上是否有足够的特殊召唤区域
+	-- 发动判定条件之一：自己主要怪兽区存在可用的空格。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 判断自己墓地和除外区是否存在符合条件的「星义」怪兽
+		-- 发动判定条件之二：自己墓地或除外区存在至少1只满足filter条件且可以成为对象的『星义』怪兽。
 		and Duel.IsExistingTarget(c45666710.filter,tp,LOCATION_GRAVE+LOCATION_REMOVED,0,1,nil,e,tp) end
-	-- 提示玩家选择要特殊召唤的卡
+	-- 向玩家显示提示：请选择要特殊召唤的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 选择符合条件的1只怪兽作为效果对象
+	-- 让玩家从自己墓地或除外区选择1只满足filter条件的『星义』怪兽，并将其登记为当前效果的对象。
 	local g=Duel.SelectTarget(tp,c45666710.filter,tp,LOCATION_GRAVE+LOCATION_REMOVED,0,1,1,nil,e,tp)
-	-- 设置效果处理信息，表示将特殊召唤1只怪兽
+	-- 设置操作信息：本效果将特殊召唤所选择的对象，数量为1，供后续效果检测使用。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,1,0,0)
 end
--- 效果处理函数，执行特殊召唤及后续处理
+-- 效果处理：若对象仍与该效果关联，则将其特殊召唤；若其原本等级为11星以上，再为其附加本回合不能发动效果的限制；最后完成特殊召唤。
 function c45666710.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前效果的目标怪兽
+	-- 取得当前处理的效果所选择的对象怪兽。
 	local tc=Duel.GetFirstTarget()
-	-- 判断目标怪兽是否仍然有效，是否成功特殊召唤，且等级大于等于11
+	-- 若对象仍与效果关联，则将其以表侧表示特殊召唤；同时若其原本等级在11星以上，则进入附加限制的处理分支。
 	if tc:IsRelateToEffect(e) and Duel.SpecialSummonStep(tc,0,tp,tp,false,false,POS_FACEUP) and tc:GetOriginalLevel()>=11 then
-		-- 效果特殊召唤的原本等级是11星以上的怪兽在这个回合不能把效果发动
+		-- 这个效果特殊召唤的原本等级是11星以上的怪兽在这个回合不能把效果发动。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_CANNOT_TRIGGER)
 		e1:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END)
 		tc:RegisterEffect(e1)
 	end
-	-- 完成特殊召唤流程
+	-- 完成整个特殊召唤流程，触发特殊召唤成功时的时点处理。
 	Duel.SpecialSummonComplete()
 end

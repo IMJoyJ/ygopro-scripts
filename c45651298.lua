@@ -12,18 +12,18 @@ function c45651298.initial_effect(c)
 	e1:SetCondition(c45651298.spcon)
 	c:RegisterEffect(e1)
 end
--- 检索满足条件的卡片组：检查场上是否存在表侧表示的3星怪兽
+-- 过滤条件：表侧表示且等级为3的怪兽，用于筛选自己场上是否存在可作为条件的3星怪兽。
 function c45651298.filter(c)
 	return c:IsFaceup() and c:IsLevel(3)
 end
--- 判断特殊召唤条件是否满足：对方场上有怪兽存在、自己场上存在空位、自己场上存在3星怪兽
+-- 特殊召唤规则效果的判定函数：若c为nil则视为该规则召唤本身可被系统询问；否则需要同时满足对方场上有怪兽、自己主怪兽区有空位、自己场上有表侧表示3星怪兽，才能从手卡特殊召唤这张卡。
 function c45651298.spcon(e,c)
 	if c==nil then return true end
 	local tp=c:GetControler()
-	-- 判断对方场上有怪兽存在
+	-- 检查对方场上是否存在怪兽（对方怪兽区卡数大于0）。
 	return Duel.GetFieldGroupCount(tp,0,LOCATION_MZONE)>0
-		-- 判断自己场上存在空位
+		-- 检查自己主怪兽区是否有可用的空格，确保有位置可以特殊召唤这张卡。
 		and Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 判断自己场上存在3星怪兽
+		-- 检查自己场上是否存在至少1张表侧表示且等级为3的怪兽（通过过滤器检索，不取对象）。
 		and Duel.IsExistingMatchingCard(c45651298.filter,tp,LOCATION_MZONE,0,1,nil)
 end

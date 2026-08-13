@@ -13,7 +13,7 @@ function c45778932.initial_effect(c)
 	e2:SetRange(LOCATION_FZONE)
 	e2:SetTargetRange(LOCATION_MZONE,LOCATION_MZONE)
 	e2:SetCode(EFFECT_UPDATE_ATTACK)
-	-- 检索满足风属性条件的怪兽组
+	-- 设定该效果只对场上的风属性怪兽适用
 	e2:SetTarget(aux.TargetBoolFunction(Card.IsAttribute,ATTRIBUTE_WIND))
 	e2:SetValue(500)
 	c:RegisterEffect(e2)
