@@ -18,42 +18,42 @@ function c25988873.initial_effect(c)
 	e2:SetValue(TYPE_TUNER)
 	c:RegisterEffect(e2)
 end
--- 过滤函数，用于筛选手卡中满足条件的「龙骑兵团」鸟兽族怪兽，可特殊召唤。
+-- 过滤出满足条件的卡：手卡中卡名含有「龙骑兵团」、种族为鸟兽族且可以特殊召唤的怪兽。
 function c25988873.filter(c,e,tp)
 	return c:IsSetCard(0x29) and c:IsRace(RACE_WINDBEAST) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 判断是否满足发动条件：场上存在空位且手卡存在符合条件的怪兽。
+-- 该效果发动条件的判定：己方主要怪兽区和魔陷区均有空位，且手卡存在符合条件的龙骑兵团鸟兽族怪兽。
 function c25988873.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断是否满足发动条件：场上存在空位。
+	-- 检查己方主要怪兽区和魔陷区是否有空位。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0 and Duel.GetLocationCount(tp,LOCATION_SZONE)>0
-		-- 判断是否满足发动条件：手卡存在符合条件的怪兽。
+		-- 检查手卡中是否存在1只以上满足filter条件的怪兽（可特殊召唤的龙骑兵团鸟兽族）。
 		and Duel.IsExistingMatchingCard(c25988873.filter,tp,LOCATION_HAND,0,1,nil,e,tp) end
-	-- 设置操作信息：将要特殊召唤1只怪兽。
+	-- 设置操作信息：本次效果涉及从手卡特殊召唤1只怪兽（处理时确定具体卡牌）。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_HAND)
-	-- 设置操作信息：将要装备1张卡。
+	-- 设置操作信息：本次效果涉及将效果发动者（这张卡）作为装备卡装备。
 	Duel.SetOperationInfo(0,CATEGORY_EQUIP,e:GetHandler(),1,0,0)
 end
--- 处理效果发动：检查是否有足够的怪兽区和魔陷区空位，选择并特殊召唤符合条件的怪兽。
+-- 效果处理：若主要怪兽区有空位，则从手卡选1只符合条件的龙骑兵团鸟兽族怪兽特殊召唤，然后检查这张卡仍能装备时将其装备给那只怪兽，并附加装备对象限制。
 function c25988873.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查是否有足够的怪兽区空位，若无则不执行效果。
+	-- 若己方主要怪兽区没有空位，则结束处理。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-	-- 提示玩家选择要特殊召唤的卡。
+	-- 向玩家显示“请选择要特殊召唤的卡”的选择提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 从手卡中选择1只符合条件的怪兽。
+	-- 从手卡选择1只满足filter条件的怪兽作为特殊召唤对象。
 	local g=Duel.SelectMatchingCard(tp,c25988873.filter,tp,LOCATION_HAND,0,1,1,nil,e,tp)
 	local tc=g:GetFirst()
 	if not tc then return end
-	-- 将选中的怪兽特殊召唤到场上。
+	-- 将选择的怪兽以表侧表示特殊召唤到己方场上。
 	Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP)
 	local c=e:GetHandler()
 	if c:IsFacedown() or not c:IsRelateToEffect(e) or c:IsControler(1-tp)
-		-- 检查是否有足够的魔陷区空位，若无则不执行效果。
+		-- 若这张卡已里侧、与效果失去联系、控制权改变或己方魔陷区没有空位，则不再进行装备。
 		or Duel.GetLocationCount(tp,LOCATION_SZONE)<=0 then return end
-	-- 中断当前效果，使之后的效果处理视为不同时处理。
+	-- 中断当前效果链，使后续装备处理视为另开时点处理（避免错过时点）。
 	Duel.BreakEffect()
-	-- 将装备卡装备给特殊召唤的怪兽。
+	-- 将这张卡作为装备卡装备给特殊召唤的怪兽；若装备失败则终止后续处理。
 	if not Duel.Equip(tp,c,tc,false) then return end
-	-- 设置装备对象限制，确保只有被装备的怪兽可以作为装备对象。
+	-- 把这张卡当作装备卡使用来装备。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_EQUIP_LIMIT)
@@ -63,7 +63,7 @@ function c25988873.spop(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetLabelObject(tc)
 	c:RegisterEffect(e1)
 end
--- 判断装备对象是否为指定的怪兽。
+-- 装备限制函数：仅允许装备给被特殊召唤的那只怪兽（LabelObject记录的对象）。
 function c25988873.eqlimit(e,c)
 	return e:GetLabelObject()==c
 end

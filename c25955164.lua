@@ -16,21 +16,21 @@ function c25955164.initial_effect(c)
 	e1:SetOperation(c25955164.operation)
 	c:RegisterEffect(e1)
 end
--- 判断是否满足发动条件，即当前回合玩家不是使用者且攻击怪兽是该卡本身。
+-- 效果发动条件判断：必须是对方回合，且这张卡是被攻击的怪兽（即伤害计算时这张卡作为攻击目标）。
 function c25955164.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断当前回合玩家不是使用者且攻击怪兽是该卡本身。
+	-- 当前回合玩家不是这张卡的控制者，且攻击目标就是这张卡自身，满足发动条件。
 	return Duel.GetTurnPlayer()~=tp and Duel.GetAttackTarget()==e:GetHandler()
 end
--- 设置效果目标为当前攻击怪兽。
+-- 效果发动时的取对象处理：选择1只攻击怪兽作为对象，并设置目标。
 function c25955164.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查攻击怪兽是否可以成为效果对象。
+	-- 发动时点检查：攻击怪兽能够成为该效果的对象，则满足发动条件。
 	if chk==0 then return Duel.GetAttacker():IsCanBeEffectTarget(e) end
-	-- 将当前攻击怪兽设置为效果对象。
+	-- 将攻击怪兽设置为当前连锁的效果对象。
 	Duel.SetTargetCard(Duel.GetAttacker())
 end
--- 执行效果操作，将目标怪兽攻击力设为0。
+-- 效果处理：将对象怪兽的攻击力变成0，持续到伤害计算阶段结束。
 function c25955164.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁中的目标怪兽。
+	-- 获取发动时选择的那只攻击怪兽。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
 		-- 那只攻击怪兽的攻击力变成0。
