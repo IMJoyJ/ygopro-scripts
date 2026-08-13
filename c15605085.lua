@@ -26,52 +26,52 @@ function c15605085.initial_effect(c)
 	e2:SetOperation(c15605085.damop)
 	c:RegisterEffect(e2)
 end
--- 检索满足条件的「次世代」怪兽（包括自己控制且正面表示的怪兽）
+-- 筛选可作祭品的「次世代」怪兽：属于己方控制的卡，或表侧表示的卡（涵盖双方场上符合条件的候选）。
 function c15605085.otfilter(c,tp)
 	return c:IsSetCard(0x2) and (c:IsControler(tp) or c:IsFaceup())
 end
--- 判断是否满足上级召唤条件：怪兽等级不低于7，最少需要祭品数量为1，且场上存在满足条件的祭品
+-- 召唤规则效果的发动条件：若c为空则视为可发动；否则取得召唤者tp，检索候选祭品组，并判定该卡等级不低于7、所需解放数不超过1且场上存在合法的1只祭品。
 function c15605085.otcon(e,c,minc)
 	if c==nil then return true end
 	local tp=c:GetControler()
-	-- 获取场上满足祭品条件的怪兽组
+	-- 以tp视角获取双方怪兽区域中满足otfilter（「次世代」且为己方控制或表侧表示）的怪兽，作为祭品候选组。
 	local mg=Duel.GetMatchingGroup(c15605085.otfilter,tp,LOCATION_MZONE,LOCATION_MZONE,nil,tp)
-	-- 返回上级召唤条件是否满足
+	-- 判定上级召唤成立的条件：c的等级在7以上，要求的最少祭品数不超过1，且候选祭品组中存在可用作1只祭品的怪兽。
 	return c:IsLevelAbove(7) and minc<=1 and Duel.CheckTribute(c,1,1,mg)
 end
--- 执行上级召唤操作：选择祭品并解放
+-- 召唤规则效果的操作：重新获取祭品候选组，选择1只祭品，将所选祭品设置为该卡的素材，并以召唤和素材的理由解放它们。
 function c15605085.otop(e,tp,eg,ep,ev,re,r,rp,c)
-	-- 获取场上满足祭品条件的怪兽组
+	-- 在处理召唤操作时，再次获取双方怪兽区域中满足otfilter的「次世代」怪兽，作为祭品候选组。
 	local mg=Duel.GetMatchingGroup(c15605085.otfilter,tp,LOCATION_MZONE,LOCATION_MZONE,nil,tp)
-	-- 从满足条件的怪兽中选择1个作为祭品
+	-- 让玩家tp为这张卡从候选组中选择1只祭品，返回所选祭品的组sg。
 	local sg=Duel.SelectTribute(tp,c,1,1,mg)
 	c:SetMaterial(sg)
-	-- 将选中的祭品解放并用于上级召唤
+	-- 以召唤（REASON_SUMMON）和作为素材（REASON_MATERIAL）的理由解放所选祭品。
 	Duel.Release(sg,REASON_SUMMON+REASON_MATERIAL)
 end
--- 检索满足条件的「次世代」怪兽（送入墓地前为己方控制且在主要怪兽区正面表示）
+-- 判定某张卡是否为“自己场上被送去墓地表侧表示「次世代」怪兽”：满足「次世代」字段、之前控制者为tp、之前位于怪兽区域且为表侧表示。
 function c15605085.cfilter(c,tp)
 	return c:IsSetCard(0x2) and c:IsPreviousControler(tp) and c:IsPreviousLocation(LOCATION_MZONE)
 		and c:IsPreviousPosition(POS_FACEUP)
 end
--- 判断是否满足发动条件：是否有己方正面表示的「次世代」怪兽被送入墓地
+-- 伤害效果的发动条件：本次送去墓地的卡组eg中至少存在1只满足cfilter（自己场上表侧表示的「次世代」怪兽）的卡。
 function c15605085.damcon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c15605085.cfilter,1,nil,tp)
 end
--- 设置伤害效果的目标玩家和伤害值
+-- 伤害效果的目标设置：效果处理时确定对方为对象，伤害值为500，并登记操作信息为造成500点伤害。
 function c15605085.damtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置连锁处理的目标玩家为对方
+	-- 把当前连锁的对象玩家设置为对方（1-tp）。
 	Duel.SetTargetPlayer(1-tp)
-	-- 设置连锁处理的目标参数为500
+	-- 把当前连锁的对象参数设置为500，作为伤害数值。
 	Duel.SetTargetParam(500)
-	-- 设置连锁操作信息为造成500点伤害
+	-- 登记操作信息：将对1-tp玩家造成500点伤害（分类为CATEGORY_DAMAGE）。
 	Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,1-tp,500)
 end
--- 执行伤害效果：对目标玩家造成500点伤害
+-- 伤害效果的处理：从连锁信息中获取目标玩家和伤害值，实际给对方造成效果伤害。
 function c15605085.damop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁处理的目标玩家和伤害值
+	-- 从当前连锁信息中取出目标玩家p和目标参数d（即设置了对象玩家为对方、参数为500）。
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 对目标玩家造成指定伤害值
+	-- 以效果（REASON_EFFECT）为理由对玩家p造成d点伤害。
 	Duel.Damage(p,d,REASON_EFFECT)
 end

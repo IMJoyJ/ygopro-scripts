@@ -23,21 +23,21 @@ function c15452043.initial_effect(c)
 	e3:SetOperation(c15452043.operation)
 	c:RegisterEffect(e3)
 end
--- 检查怪兽是否为当前玩家召唤·特殊召唤
+-- 过滤函数，判断特殊召唤成功的怪兽是否由己方玩家tp特殊召唤，用于确认“自己对怪兽的特殊召唤成功”这一条件。
 function c15452043.cfilter(c,tp)
 	return c:IsSummonPlayer(tp)
 end
--- 判断是否为己方怪兽的特殊召唤成功且不是自身召唤
+-- ②效果的发动条件：本次特殊召唤成功的怪兽集合中不包含本卡（避免与①重复处理本卡自身特殊召唤），且存在至少1只由自己特殊召唤的怪兽。
 function c15452043.condition(e,tp,eg,ep,ev,re,r,rp)
 	return not eg:IsContains(e:GetHandler()) and eg:IsExists(c15452043.cfilter,1,nil,tp)
 end
--- 检索对方场上所有表侧表示的怪兽并对其攻击力和守备力各下降600
+-- 效果处理：选取对方场上的全部表侧表示怪兽，逐只使其攻击力·守备力下降600，该变化持续到怪兽离场等标准重置时。
 function c15452043.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取对方场上所有表侧表示的怪兽
+	-- 取得对方场上的全部表侧表示怪兽（对方怪兽区域）作为效果处理的对象。
 	local g=Duel.GetMatchingGroup(Card.IsFaceup,tp,0,LOCATION_MZONE,nil)
 	local tc=g:GetFirst()
 	while tc do
-		-- 为怪兽设置攻击力下降600的效果
+		-- 对方场上的全部怪兽的攻击力下降600（对应“攻击力·守备力下降600”中的攻击力部分，守备力下降由后续克隆效果处理）。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)
