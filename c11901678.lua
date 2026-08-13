@@ -3,7 +3,7 @@
 -- 「恶魔召唤」＋「真红眼黑龙」
 function c11901678.initial_effect(c)
 	c:EnableReviveLimit()
-	-- 将使用卡号为70781052和74677422的2只怪兽作为融合素材的融合召唤手续加入此卡
+	-- 为『暗黑魔龙』添加融合召唤手续：以卡号70781052（『恶魔召唤』）和卡号74677422（『真红眼黑龙』）作为融合素材，并启用融合素材代用规则。
 	aux.AddFusionProcCode2(c,70781052,74677422,true,true)
 end
 c11901678.material_setcode=0x3b

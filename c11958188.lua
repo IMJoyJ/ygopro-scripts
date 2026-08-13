@@ -15,35 +15,35 @@ function c11958188.initial_effect(c)
 	e1:SetOperation(c11958188.desop)
 	c:RegisterEffect(e1)
 end
--- 过滤满足条件的怪兽：是「武神」卡、当前控制者是玩家、上一个控制者是玩家、在墓地、被战斗破坏
+-- 筛选出自己场上被对方怪兽战斗破坏后送去自己墓地的「武神」怪兽：它必须持有「武神」字段、当前控制者为自己、上一个控制者为自己、位于墓地且破坏原因是战斗破坏。
 function c11958188.cfilter(c,tp)
 	return c:IsSetCard(0x88) and c:IsControler(tp) and c:IsPreviousControler(tp)
 		and c:IsLocation(LOCATION_GRAVE) and c:IsReason(REASON_BATTLE)
 end
--- 效果发动条件：场上被战斗破坏的「武神」怪兽数量大于0
+-- 发动条件：当战斗破坏送入墓地的事件发生时，从相关怪兽中筛选满足条件的「武神」怪兽，若存在则先记录其中一只，并返回真以允许发动。
 function c11958188.descon(e,tp,eg,ep,ev,re,r,rp)
 	local g=eg:Filter(c11958188.cfilter,nil,tp)
 	e:SetLabelObject(g:GetFirst())
 	return g:GetCount()>0
 end
--- 效果发动费用：将自身送去墓地作为费用
+-- 发动代价：检查这张卡是否可以从手卡送去墓地作为代价；若可以，在实际发动时支付该代价。
 function c11958188.descost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsAbleToGraveAsCost() end
-	-- 将自身从手牌送去墓地作为发动费用
+	-- 将这张卡从手卡送去墓地，作为发动效果的代价。
 	Duel.SendtoGrave(e:GetHandler(),REASON_COST)
 end
--- 设置效果处理目标：将对方怪兽设为破坏对象
+-- 取对象：取出被记录的战斗破坏的「武神」怪兽的战斗来源（即对方怪兽），若该怪兽仍与本次战斗关联则合法，并登记将破坏该怪兽。
 function c11958188.destg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local tc=e:GetLabelObject():GetReasonCard()
 	if chk==0 then return tc:IsRelateToBattle() end
-	-- 设置连锁操作信息：确定要破坏的怪兽
+	-- 设置操作信息：效果处理时将破坏1只已确定的对方怪兽，供连锁判定等系统查询。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,tc,1,0,0)
 end
--- 效果处理函数：对目标怪兽进行破坏
+-- 效果处理：取出之前记录的对方怪兽，若其仍与本次战斗关联，则将其破坏。
 function c11958188.desop(e,tp,eg,ep,ev,re,r,rp)
 	local tc=e:GetLabelObject():GetReasonCard()
 	if tc:IsRelateToBattle() then
-		-- 对目标怪兽进行效果破坏
+		-- 将那只对方怪兽以效果破坏。
 		Duel.Destroy(tc,REASON_EFFECT)
 	end
 end
