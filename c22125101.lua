@@ -5,7 +5,7 @@
 -- ①：这张卡在额外怪兽区域连接召唤的场合，支付1200基本分才能发动。从卡组把1只灵摆怪兽加入手卡。这个回合自己只要灵摆召唤不成功，不能把怪兽的效果发动，自己的灵摆区域的卡的效果无效化。
 -- ②：这张卡所连接区有原本等级不同的怪兽2只同时灵摆召唤的场合，以场上2张卡为对象才能发动。那些卡破坏。
 function c22125101.initial_effect(c)
-	-- 为卡片添加连接召唤手续，要求使用至少2张且至多2张满足类型为效果怪兽的连接素材
+	-- 为这张卡设置连接召唤手续：用2只效果怪兽作为连接素材，且素材组中必须至少包含1只灵摆怪兽。
 	aux.AddLinkProcedure(c,aux.FilterBoolFunction(Card.IsLinkType,TYPE_EFFECT),2,2,c22125101.lcheck)
 	c:EnableReviveLimit()
 	-- ①：这张卡在额外怪兽区域连接召唤的场合，支付1200基本分才能发动。从卡组把1只灵摆怪兽加入手卡。这个回合自己只要灵摆召唤不成功，不能把怪兽的效果发动，自己的灵摆区域的卡的效果无效化。
@@ -20,7 +20,7 @@ function c22125101.initial_effect(c)
 	e1:SetTarget(c22125101.thtg)
 	e1:SetOperation(c22125101.thop)
 	c:RegisterEffect(e1)
-	-- ②：这张卡所连接区有原本等级不同的怪兽2只同时灵摆召唤的场合，以场上2张卡为对象才能发动。那些卡破坏。
+	-- 这个卡名的②的效果1回合只能使用1次。②：这张卡所连接区有原本等级不同的怪兽2只同时灵摆召唤的场合，以场上2张卡为对象才能发动。那些卡破坏。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(22125101,1))
 	e2:SetCategory(CATEGORY_DESTROY)
@@ -35,62 +35,62 @@ function c22125101.initial_effect(c)
 	c:RegisterEffect(e2)
 	if not c22125101.global_check then
 		c22125101.global_check=true
-		-- 注册一个全局持续效果，用于记录灵摆召唤成功的玩家
+		-- 包含灵摆怪兽的效果怪兽2只；①：这张卡在额外怪兽区域连接召唤的场合，支付1200基本分才能发动。从卡组把1只灵摆怪兽加入手卡。这个回合自己只要灵摆召唤不成功，不能把怪兽的效果发动，自己的灵摆区域的卡的效果无效化。
 		local ge1=Effect.CreateEffect(c)
 		ge1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 		ge1:SetCode(EVENT_SPSUMMON_SUCCESS_G_P)
 		ge1:SetOperation(c22125101.checkop)
-		-- 将全局效果ge1注册到玩家0（游戏环境）
+		-- 将全局判定效果ge1注册到场上，用于监听全场特殊召唤成功前事件，为①效果的自肃条件提供辅助标记。
 		Duel.RegisterEffect(ge1,0)
 	end
 end
--- 当有灵摆召唤成功时，为对应玩家注册一个标识效果
+-- checkop：在每次特殊召唤成功前，给进行召唤的玩家rp注册1个22125101标记，用于记录发生过特殊召唤/灵摆召唤，从而控制①自肃是否适用。
 function c22125101.checkop(e,tp,eg,ep,ev,re,r,rp)
-	-- 为玩家rp注册一个标识效果，用于标记该玩家在本回合内是否已经发动过②效果
+	-- 给玩家rp注册22125101标记，持续到结束阶段；有该标记时①效果的自肃不再适用。
 	Duel.RegisterFlagEffect(rp,22125101,RESET_PHASE+PHASE_END,0,1)
 end
--- 连接召唤时的过滤函数，检查连接素材中是否包含灵摆怪兽
+-- lcheck：连接素材的额外检查条件，要求素材组中至少存在1只灵摆怪兽，以满足“包含灵摆怪兽的效果怪兽2只”的素材要求。
 function c22125101.lcheck(g)
 	return g:IsExists(Card.IsLinkType,1,nil,TYPE_PENDULUM)
 end
--- 判断是否为连接召唤且在额外怪兽区域
+-- thcon：①效果的发动条件，判定这张卡是以连接召唤方式特殊召唤成功，并且位于额外怪兽区域（sequence>4）。
 function c22125101.thcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	return c:IsSummonType(SUMMON_TYPE_LINK) and c:GetSequence()>4
 end
--- 支付1200基本分作为效果发动的费用
+-- thcost：①效果的发动代价处理，检查并支付1200基本分。
 function c22125101.thcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查玩家是否能支付1200基本分
+	-- 代价检测：在chk==0时确认玩家能够支付1200基本分，否则不能发动。
 	if chk==0 then return Duel.CheckLPCost(tp,1200) end
-	-- 让玩家支付1200基本分
+	-- 实际支付1200基本分作为①效果的发动代价。
 	Duel.PayLPCost(tp,1200)
 end
--- 检索满足条件的灵摆怪兽过滤函数
+-- thfilter：检索过滤器，选择卡组中的灵摆怪兽且能够加入手卡的卡。
 function c22125101.thfilter(c)
 	return c:IsType(TYPE_PENDULUM) and c:IsAbleToHand()
 end
--- 设置效果发动时的操作信息，指定从卡组检索1张灵摆怪兽加入手牌
+-- thtg：①效果发动时确认卡组存在符合条件的灵摆怪兽，并登记“从卡组将1张卡加入手卡”的操作信息。
 function c22125101.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查玩家在卡组中是否存在满足条件的灵摆怪兽
+	-- 目标检测：若卡组中不存在符合条件的灵摆怪兽，则①效果无法发动。
 	if chk==0 then return Duel.IsExistingMatchingCard(c22125101.thfilter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置操作信息，指定将1张卡从卡组加入手牌
+	-- 登记操作信息：本次效果处理中会有1张卡从卡组加入手卡（不确定具体哪张，因此目标组为nil）。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 处理效果发动的执行逻辑，包括检索灵摆怪兽、确认卡片、重置标识并施加限制
+-- thop：①效果处理：玩家从卡组选择1只灵摆怪兽加入手卡并展示给对方；随后清除自己的22125101标记使自肃开始，并给自己附加“不能发动怪兽效果”“灵摆区域卡效果无效”以及“灵摆区发动无效化”的自我限制。
 function c22125101.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要加入手牌的卡
+	-- 给出选择提示，让玩家在卡组中选择一张要加入手卡的灵摆怪兽。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择满足条件的灵摆怪兽加入手牌
+	-- 从卡组选择1张满足thfilter的灵摆怪兽。
 	local g=Duel.SelectMatchingCard(tp,c22125101.thfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的灵摆怪兽送入手牌
+		-- 将选择的灵摆怪兽加入持有者的手卡。
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 向对方确认被送入手牌的卡片
+		-- 将加入手卡的卡片展示给对手确认。
 		Duel.ConfirmCards(1-tp,g)
 	end
-	-- 重置玩家的标识效果，表示本回合已使用过②效果
+	-- 清除自己22125101的标记，使①效果的自肃开始适用（即保持“本回合尚未灵摆召唤成功”的状态）。
 	Duel.ResetFlagEffect(tp,22125101)
-	-- 创建并注册一个禁止玩家发动怪兽效果的永续效果
+	-- 这个回合自己只要灵摆召唤不成功，不能把怪兽的效果发动。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_CANNOT_ACTIVATE)
@@ -99,71 +99,71 @@ function c22125101.thop(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetCondition(c22125101.discon)
 	e1:SetValue(c22125101.actlimit)
 	e1:SetReset(RESET_PHASE+PHASE_END)
-	-- 将效果e1注册给玩家tp
+	-- 将“不能发动怪兽效果”的自肃效果注册给自己玩家，持续到结束阶段。
 	Duel.RegisterEffect(e1,tp)
-	-- 创建并注册一个无效化玩家灵摆区域卡片效果的永续效果
+	-- 自己的灵摆区域的卡的效果无效化。
 	local e2=Effect.CreateEffect(e:GetHandler())
 	e2:SetType(EFFECT_TYPE_FIELD)
 	e2:SetCode(EFFECT_DISABLE)
 	e2:SetTargetRange(LOCATION_PZONE,0)
 	e2:SetCondition(c22125101.discon)
 	e2:SetReset(RESET_PHASE+PHASE_END)
-	-- 将效果e2注册给玩家tp
+	-- 将“自己灵摆区域的卡的效果无效化”的自肃效果注册给自己，持续到结束阶段。
 	Duel.RegisterEffect(e2,tp)
-	-- 创建并注册一个在连锁处理时无效灵摆区域魔法卡效果的持续效果
+	-- 这个回合自己只要灵摆召唤不成功，自己的灵摆区域的卡的效果无效化；②：这张卡所连接区有原本等级不同的怪兽2只同时灵摆召唤的场合，以场上2张卡为对象才能发动。那些卡破坏。
 	local e3=Effect.CreateEffect(e:GetHandler())
 	e3:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e3:SetCode(EVENT_CHAIN_SOLVING)
 	e3:SetCondition(c22125101.discon)
 	e3:SetOperation(c22125101.disop)
 	e3:SetReset(RESET_PHASE+PHASE_END)
-	-- 将效果e3注册给玩家tp
+	-- 注册自肃的连锁无效效果：在处理连锁时，若自己从灵摆区域发动了效果，则将其无效。
 	Duel.RegisterEffect(e3,tp)
 end
--- 限制效果发动的函数，仅对怪兽类型的效果生效
+-- actlimit：限制本次“不能发动”的范围为怪兽效果，即只有发动的效果类型为怪兽卡时才被禁止。
 function c22125101.actlimit(e,re,tp)
 	return re:IsActiveType(TYPE_MONSTER)
 end
--- 判断是否为本回合内未使用过②效果的玩家
+-- discon：自肃效果的适用条件，玩家没有22125101标记（本回合尚未灵摆召唤成功）时，自肃效果适用。
 function c22125101.discon(e)
 	local tp=e:GetHandlerPlayer()
-	-- 判断玩家是否未使用过②效果
+	-- 判断玩家tp的22125101标记数量是否为0；为0表示尚未灵摆召唤成功，自肃条件满足。
 	return Duel.GetFlagEffect(tp,22125101)==0
 end
--- 处理连锁中灵摆区域魔法卡效果被无效的逻辑
+-- disop：连锁处理时，若该连锁是自己从灵摆区域发动的灵摆魔法效果，则将其无效化，完善“灵摆区域卡的效果无效化”的判定。
 function c22125101.disop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁触发时的玩家和位置信息
+	-- 获取当前连锁的发动者所属玩家和发动位置，用于判断是否为自己从灵摆区域发动的效果。
 	local p,loc=Duel.GetChainInfo(ev,CHAININFO_TRIGGERING_CONTROLER,CHAININFO_TRIGGERING_LOCATION)
 	if re:GetActiveType()==TYPE_PENDULUM+TYPE_SPELL and p==tp and bit.band(loc,LOCATION_PZONE)~=0 then
-		-- 使连锁效果无效
+		-- 将对应的连锁效果无效化。
 		Duel.NegateEffect(ev)
 	end
 end
--- 灵摆召唤成功时的过滤函数，用于筛选满足条件的灵摆怪兽
+-- cfilter：筛选出表侧表示、刚刚以灵摆召唤方式特殊召唤成功、原本等级大于0，并且包含在这次灵摆召唤组eg中的怪兽。
 function c22125101.cfilter(c,eg)
 	return c:IsFaceup() and c:IsSummonType(SUMMON_TYPE_PENDULUM) and c:GetOriginalLevel()>0 and eg:IsContains(c)
 end
--- 判断是否满足②效果发动条件，即连接区有2只不同等级的灵摆怪兽
+-- descon：②效果的发动条件，这张卡的连接区中存在2只同时灵摆召唤的怪兽，且它们的原本等级互不相同。
 function c22125101.descon(e,tp,eg,ep,ev,re,r,rp)
 	local g=e:GetHandler():GetLinkedGroup():Filter(c22125101.cfilter,nil,eg)
 	return #g==2 and g:GetClassCount(Card.GetOriginalLevel)==2
 end
--- 设置效果发动时的操作信息，指定选择2张场上卡进行破坏
+-- destg：②效果发动时选择场上2张卡作为对象，并登记破坏这些卡的操作信息。
 function c22125101.destg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsOnField() end
-	-- 检查场上是否存在至少2张满足条件的卡
+	-- 目标检测：场上存在2张可以成为对象的卡时才可发动②效果。
 	if chk==0 then return Duel.IsExistingTarget(aux.TRUE,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,2,nil) end
-	-- 提示玩家选择要破坏的卡
+	-- 提示玩家选择要破坏的2张卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 选择2张场上卡作为破坏对象
+	-- 选择场上2张卡作为②效果的对象。
 	local g=Duel.SelectTarget(tp,aux.TRUE,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,2,2,nil)
-	-- 设置操作信息，指定破坏2张卡
+	-- 登记操作信息：本次效果将破坏这2张卡。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,2,0,0)
 end
--- 处理效果发动的执行逻辑，包括选择破坏对象并执行破坏
+-- desop：②效果处理时，将选择的目标中仍与效果相关的卡破坏。
 function c22125101.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁中目标卡组并筛选出与效果相关的卡
+	-- 获取本连锁发动时选择的2张目标卡，并筛选出仍然与效果e保持联系的卡（未被离场重置联系）。
 	local g=Duel.GetChainInfo(0,CHAININFO_TARGET_CARDS):Filter(Card.IsRelateToEffect,nil,e)
-	-- 将目标卡破坏
+	-- 以效果原因将这些卡破坏。
 	Duel.Destroy(g,REASON_EFFECT)
 end

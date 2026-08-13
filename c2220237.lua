@@ -8,7 +8,7 @@
 function c2220237.initial_effect(c)
 	c:SetUniqueOnField(1,0,2220237)
 	c:EnableReviveLimit()
-	-- 添加连接召唤手续，要求使用1到1张满足过滤条件的怪兽作为连接素材
+	-- 为这张卡设定连接召唤手续：使用1只满足c2220237.matfilter的怪兽（电子界族连接怪兽）作为连接素材。
 	aux.AddLinkProcedure(c,c2220237.matfilter,1,1)
 	-- 这张卡不能作为连接素材。
 	local e1=Effect.CreateEffect(c)
@@ -37,9 +37,9 @@ function c2220237.initial_effect(c)
 	e4:SetCondition(c2220237.damcon)
 	c:RegisterEffect(e4)
 end
--- 特殊召唤成功时注册效果，使自己在该回合内受到的效果伤害变为0，并设置标记防止重复触发
+-- 特殊召唤成功时触发的处理（②）：给控制者注册持续到结束阶段的伤害变更效果，使本回合内自己受到的效果伤害变为0，并附加效果伤害变成0的标记。
 function c2220237.regop(e,tp,eg,ep,ev,re,r,rp)
-	-- 设置一个影响全场的永续效果，使自己受到的战斗或效果伤害变为0（仅在未触发过时生效）
+	-- 电子界族连接怪兽1只。②：这张卡特殊召唤成功的回合，自己受到的效果伤害变成0。③：自己因战斗·效果受到伤害的场合，1回合只有1次让那次伤害变成0。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_CHANGE_DAMAGE)
@@ -47,24 +47,24 @@ function c2220237.regop(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetTargetRange(1,0)
 	e1:SetValue(c2220237.damval1)
 	e1:SetReset(RESET_PHASE+PHASE_END)
-	-- 将效果e1注册给玩家tp
+	-- 把e1（EFFECT_CHANGE_DAMAGE，效果伤害改为0）注册给玩家tp，持续到结束阶段。
 	Duel.RegisterEffect(e1,tp)
 	local e2=e1:Clone()
 	e2:SetCode(EFFECT_NO_EFFECT_DAMAGE)
 	e2:SetReset(RESET_PHASE+PHASE_END)
-	-- 将效果e2注册给玩家tp
+	-- 把e2（EFFECT_NO_EFFECT_DAMAGE，效果伤害变成0的标记）注册给玩家tp，持续到结束阶段。
 	Duel.RegisterEffect(e2,tp)
 end
--- 连接素材过滤器，筛选电子界族且为连接怪兽的卡片
+-- 连接素材过滤函数：筛选电子界族且为连接怪兽的卡，用于连接召唤素材的判定。
 function c2220237.matfilter(c)
 	return c:IsLinkRace(RACE_CYBERSE) and c:IsLinkType(TYPE_LINK)
 end
--- 伤害值计算函数，若伤害来源为效果则伤害变为0
+-- 伤害变更函数：当伤害原因包含效果伤害时返回0（将效果伤害变为0），否则保留原伤害值，用于②的效果。
 function c2220237.damval1(e,re,val,r,rp,rc)
 	if bit.band(r,REASON_EFFECT)~=0 then return 0
 	else return val end
 end
--- 伤害值计算函数，若伤害来源为战斗或效果且未触发过则伤害变为0，并设置标记防止重复触发
+-- 伤害变更函数：当自己受到战斗/效果伤害且这张卡本回合未使用过③（flag为0）时，将那次伤害变为0并注册flag标记（表示已发动过③），否则保留原伤害，用于③的1回合1次效果。
 function c2220237.damval2(e,re,val,r,rp,rc)
 	local c=e:GetHandler()
 	if bit.band(r,REASON_BATTLE+REASON_EFFECT)~=0 and c:GetFlagEffect(2220237)==0 then
@@ -73,7 +73,7 @@ function c2220237.damval2(e,re,val,r,rp,rc)
 	end
 	return val
 end
--- 伤害减免条件函数，判断是否已触发过伤害减免效果
+-- 条件函数：返回这张卡是否尚未使用过③（flag为0），作为EFFECT_NO_EFFECT_DAMAGE的适用条件。
 function c2220237.damcon(e)
 	return e:GetHandler():GetFlagEffect(2220237)==0
 end

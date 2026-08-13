@@ -28,37 +28,37 @@ function c22174866.initial_effect(c)
 	e3:SetOperation(c22174866.thop)
 	c:RegisterEffect(e3)
 end
--- 判断是否满足效果①的发动条件，即当前玩家的LP是否高于对方玩家的LP
+-- ①效果的发动条件：判定这张卡的控制者基本分是否比对方多，满足时攻击力·守备力下降效果适用。
 function c22174866.adcon(e)
 	local tp=e:GetHandlerPlayer()
-	-- 返回当前玩家的LP是否高于对方玩家的LP
+	-- 返回当前效果持有者的LP是否大于对方LP，用于①效果的条件判定。
 	return Duel.GetLP(tp)>Duel.GetLP(1-tp)
 end
--- 判断是否满足效果②的发动条件，即当前处理的回复LP事件是否由自己发动
+-- ②效果的发动条件：基本分回复的玩家是这张卡的控制者（自己回复LP时才能发动）。
 function c22174866.thcon(e,tp,eg,ep,ev,re,r,rp)
 	return ep==tp
 end
--- 过滤对方场上的魔法或陷阱卡，确保这些卡可以被送回手牌
+-- ②效果的对象筛选：只选择对方场上的魔法·陷阱卡，且该卡能够加入手卡。
 function c22174866.thfilter(c)
 	return c:IsType(TYPE_SPELL+TYPE_TRAP) and c:IsAbleToHand()
 end
--- 设置效果②的发动目标，选择对方场上的1张魔法或陷阱卡作为目标
+-- ②效果的目标处理：以对方场上1张满足条件的魔法·陷阱卡为对象，并设置将该卡返回手牌的操作信息。
 function c22174866.thtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsOnField() and chkc:IsControler(1-tp) and c22174866.thfilter(chkc) end
 	if chk==0 then return true end
-	-- 向玩家提示“请选择要返回手牌的卡”
+	-- 显示“请选择要返回手牌的卡”的提示文字，供后续选择卡片时使用。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_RTOHAND)  --"请选择要返回手牌的卡"
-	-- 从对方场上选择1张魔法或陷阱卡作为效果②的目标
+	-- 从对方场上选择1张符合条件的魔法·陷阱卡，并将其设为当前连锁的效果对象。
 	local g=Duel.SelectTarget(tp,c22174866.thfilter,tp,0,LOCATION_ONFIELD,1,1,nil)
-	-- 设置效果②的处理信息，表示将目标卡送回手牌
+	-- 设置本效果的处理信息：将选中的卡返回持有者手牌（CATEGORY_TOHAND），数量为选择的卡片数。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,g:GetCount(),0,0)
 end
--- 执行效果②的处理，将目标卡送回持有者手牌
+-- ②效果解决时：取回之前选择的对象，若对象仍与效果关联，则将其返回持有者手牌。
 function c22174866.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁中被选择的目标卡
+	-- 取出当前连锁中记录的第一个效果对象（即选择的魔法·陷阱卡）。
 	local tc=Duel.GetFirstTarget()
 	if tc and tc:IsRelateToEffect(e) then
-		-- 将目标卡以效果原因送回其持有者手牌
+		-- 将对象卡返回持有者手牌，返回原因记为“效果”。
 		Duel.SendtoHand(tc,nil,REASON_EFFECT)
 	end
 end

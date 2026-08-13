@@ -12,25 +12,25 @@ function c22371016.initial_effect(c)
 	e1:SetOperation(c22371016.rmop)
 	c:RegisterEffect(e1)
 end
--- 检查战斗中的对方怪兽是否为光属性，用于确定是否发动效果
+-- 伤害计算后，判定本次战斗对象：若这张卡是攻击怪兽则取攻击目标，否则取攻击怪兽；将战斗对象记录到LabelObject并确认其为光属性，满足条件则登记除外操作信息。
 function c22371016.rmtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then
 		local c=e:GetHandler()
-		-- 获取此次战斗的攻击怪兽
+		-- 获取本次战斗的攻击怪兽。
 		local a=Duel.GetAttacker()
-		-- 如果攻击怪兽是自己，则获取攻击目标怪兽
+		-- 若攻击怪兽是这张卡自身，则将战斗对象改为其攻击目标（即对方怪兽）。
 		if a==c then a=Duel.GetAttackTarget() end
 		e:SetLabelObject(a)
 		return a and a:IsAttribute(ATTRIBUTE_LIGHT)
 	end
-	-- 设置效果处理时要除外的怪兽为操作信息
+	-- 设置效果处理时，将LabelObject中记录的1只光属性怪兽除外的操作信息。
 	Duel.SetOperationInfo(0,CATEGORY_REMOVE,e:GetLabelObject(),1,0,0)
 end
--- 将符合条件的怪兽从游戏中除外
+-- 效果处理时，检查记录的战斗对象是否仍与本次战斗关联（未离场导致关系重置），若是则将其除外。
 function c22371016.rmop(e,tp,eg,ep,ev,re,r,rp)
 	local tc=e:GetLabelObject()
 	if tc:IsRelateToBattle() then
-		-- 以效果为原因，将目标怪兽除外
+		-- 将那只战斗对象怪兽以表侧表示从游戏中除外。
 		Duel.Remove(tc,POS_FACEUP,REASON_EFFECT)
 	end
 end
