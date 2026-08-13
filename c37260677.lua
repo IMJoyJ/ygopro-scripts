@@ -5,12 +5,12 @@
 -- ①：以自己墓地或对方场上1只效果怪兽为对象才能发动。那只效果怪兽当作装备魔法卡使用给这张卡装备。
 -- ②：怪兽的效果发动时，把自己场上1张表侧表示的「大贤者」怪兽卡送去墓地才能发动。那个效果无效。那之后，可以把对方场上1张卡破坏。
 local s,id,o=GetID()
--- 初始化效果，设置融合召唤条件并注册两个效果
+-- 定义该卡初始化流程：启用苏生限制（必须正规融合召唤过才能从墓地等特殊召唤），添加以「大贤者」怪兽＋融合/同调/超量/连接怪兽为素材的融合召唤手续，并注册①装备②无效破坏两个效果。
 function s.initial_effect(c)
 	c:EnableReviveLimit()
-	-- 添加融合召唤手续，使用满足条件的「大贤者」怪兽和融合·同调·超量·连接怪兽作为素材
+	-- 添加融合召唤手续：融合素材为1只「大贤者」怪兽和1只融合·同调·超量·连接怪兽，使此卡可用这些素材融合召唤。
 	aux.AddFusionProcFun2(c,aux.FilterBoolFunction(Card.IsFusionSetCard,0x150),s.mfilter,true)
-	-- 效果①：以自己墓地或对方场上1只效果怪兽为对象才能发动。那只效果怪兽当作装备魔法卡使用给这张卡装备。
+	-- ①：以自己墓地或对方场上1只效果怪兽为对象才能发动。那只效果怪兽当作装备魔法卡使用给这张卡装备。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(id,0))  --"装备"
 	e1:SetType(EFFECT_TYPE_IGNITION)
@@ -20,7 +20,7 @@ function s.initial_effect(c)
 	e1:SetTarget(s.eqtg)
 	e1:SetOperation(s.eqop)
 	c:RegisterEffect(e1)
-	-- 效果②：怪兽的效果发动时，把自己场上1张表侧表示的「大贤者」怪兽卡送去墓地才能发动。那个效果无效。那之后，可以把对方场上1张卡破坏。
+	-- ②：怪兽的效果发动时，把自己场上1张表侧表示的「大贤者」怪兽卡送去墓地才能发动。那个效果无效。那之后，可以把对方场上1张卡破坏。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(id,1))  --"效果无效"
 	e2:SetCategory(CATEGORY_DISABLE)
@@ -35,42 +35,42 @@ function s.initial_effect(c)
 	c:RegisterEffect(e2)
 end
 s.material_type=TYPE_FUSION+TYPE_SYNCHRO+TYPE_XYZ+TYPE_LINK
--- 过滤函数，用于筛选融合类型为融合·同调·超量·连接的怪兽
+-- 过滤函数：判断怪兽是否为融合、同调、超量或连接怪兽中的任意一种，用于限定融合素材的另一方。
 function s.mfilter(c)
 	return c:IsFusionType(TYPE_FUSION|TYPE_SYNCHRO|TYPE_XYZ|TYPE_LINK)
 end
--- 过滤函数，用于筛选可以被装备的怪兽（满足位置、控制权、类型等条件）
+-- 装备效果的对象过滤器：可选择自己墓地的效果怪兽或对方场上的表侧效果怪兽，且该卡不是禁止卡、场上无同名卡限制、满足装备条件。
 function s.eqfilter(c,tp)
 	return c:IsFaceupEx() and c:IsAllTypes(TYPE_EFFECT+TYPE_MONSTER) and not c:IsForbidden() and c:CheckUniqueOnField(tp)
 		and (c:IsLocation(LOCATION_GRAVE) and c:IsControler(tp)
 		or c:IsLocation(LOCATION_MZONE) and c:IsControler(1-tp) and c:IsAbleToChangeControler())
 end
--- 效果①的目标选择函数，检查目标是否满足装备条件
+-- 发动时合法性判定：若指定对象则检查对象位置和过滤条件；否则检查自己魔陷区有空位且存在合法对象。
 function s.eqtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE+LOCATION_ONFIELD) and s.eqfilter(chkc,tp) end
-	-- 检查场上是否有足够的装备区域
+	-- 检查自己魔陷区是否有可用空格，用于后续放置装备卡。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_SZONE)>0
-		-- 检查是否存在满足条件的目标怪兽
+		-- 检查是否存在符合条件的对象：自己墓地或对方场上的效果怪兽，并且能够成为效果对象。
 		and Duel.IsExistingTarget(s.eqfilter,tp,LOCATION_GRAVE,LOCATION_ONFIELD,1,nil,tp) end
-	-- 提示玩家选择要装备的卡
+	-- 弹出“请选择要装备的卡”的提示消息，引导玩家选择装备对象。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_EQUIP)  --"请选择要装备的卡"
-	-- 优先从场上选择目标怪兽，若无则从墓地选择
+	-- 选择1张装备对象：优先选择对方场上的效果怪兽；若场上没有合法目标，则选择自己墓地的效果怪兽，并将所选卡设为该效果的取对象目标。
 	local g=aux.SelectTargetFromFieldFirst(tp,s.eqfilter,tp,LOCATION_GRAVE,LOCATION_ONFIELD,1,1,nil,tp)
 	if g:FilterCount(Card.IsLocation,nil,LOCATION_GRAVE)>0 then
-		-- 设置操作信息，记录将要离开墓地的卡
+		-- 设置操作信息：有卡将从墓地离开，便于其他卡检测离墓事件（如王家长眠之谷等）。
 		Duel.SetOperationInfo(0,CATEGORY_LEAVE_GRAVE,g,1,0,0)
 	end
 end
--- 效果①的处理函数，执行装备操作
+-- 效果处理：取得对象卡，确认合法后将其作为装备魔法卡装备给此卡，并添加只能装备给此卡的限制。
 function s.eqop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取效果的目标怪兽
+	-- 获取效果发动时选择的对象卡。
 	local tc=Duel.GetFirstTarget()
-	-- 检查目标怪兽是否有效且满足装备条件
+	-- 验证对象仍与效果相关、不受王家长眠之谷影响、表侧表示且为效果怪兽，确保可以继续装备。
 	if tc:IsRelateToEffect(e) and aux.NecroValleyFilter()(tc) and tc:IsFaceupEx() and tc:IsAllTypes(TYPE_EFFECT+TYPE_MONSTER) then
 		local c=e:GetHandler()
-		-- 尝试将目标怪兽装备给自身
+		-- 将选中的效果怪兽作为装备魔法卡装备给这张卡；若装备失败则不再继续处理。
 		if not Duel.Equip(tp,tc,c,false) then return end
-		-- 设置装备限制效果，防止被其他卡装备
+		-- 那只效果怪兽当作装备魔法卡使用给这张卡装备。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetProperty(EFFECT_FLAG_OWNER_RELATE)
@@ -80,52 +80,52 @@ function s.eqop(e,tp,eg,ep,ev,re,r,rp)
 		tc:RegisterEffect(e1)
 	end
 end
--- 装备限制效果的值函数，限制只能被自身装备
+-- 装备限制：该装备卡只能装备给此效果的持有者（此卡），防止其装备到其他怪兽身上。
 function s.eqlimit(e,c)
 	return e:GetOwner()==c
 end
--- 效果②的发动条件，判断是否为怪兽效果的发动
+-- ②效果的发动条件：仅在怪兽效果发动时才能发动（检测到连锁中的效果为怪兽效果）。
 function s.discon(e,tp,eg,ep,ev,re,r,rp)
 	return re:IsActiveType(TYPE_MONSTER)
 end
--- 过滤函数，用于筛选场上的「大贤者」怪兽
+-- cost用卡过滤：自己场上表侧表示、属于「大贤者」系列、原始类型为怪兽且可作为代价送去墓地。
 function s.cfilter(c)
 	return c:IsFaceup() and c:IsSetCard(0x150)
 		and bit.band(c:GetOriginalType(),TYPE_MONSTER)~=0 and c:IsAbleToGraveAsCost()
 end
--- 效果②的费用支付函数，选择并送入墓地一张「大贤者」怪兽
+-- 支付cost：从自己场上选择1张表侧表示的「大贤者」怪兽卡送去墓地作为发动代价。
 function s.discost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查场上是否存在满足条件的「大贤者」怪兽
+	-- cost检查：确认自己场上有满足条件的「大贤者」怪兽卡可以作为cost。
 	if chk==0 then return Duel.IsExistingMatchingCard(s.cfilter,tp,LOCATION_ONFIELD,0,1,nil) end
-	-- 提示玩家选择要送去墓地的卡
+	-- 弹出“请选择要送去墓地的卡”的提示，要求玩家选择cost卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
-	-- 选择要送去墓地的卡
+	-- 从自己场上选择1张符合条件的表侧表示「大贤者」怪兽卡作为cost。
 	local g=Duel.SelectMatchingCard(tp,s.cfilter,tp,LOCATION_ONFIELD,0,1,1,nil)
-	-- 将选中的卡送去墓地作为费用
+	-- 将选择的卡送去墓地，作为效果发动的代价。
 	Duel.SendtoGrave(g,REASON_COST)
 end
--- 效果②的目标选择函数，设置操作信息
+-- ②效果的目标/操作信息设定：发动时不需要选择对象，但设置操作信息为无效该怪兽效果。
 function s.distg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置操作信息，记录将要使效果无效的卡
+	-- 设置操作信息：将发动中的怪兽效果（eg）标记为将被无效的对象，供其他卡响应检测。
 	Duel.SetOperationInfo(0,CATEGORY_DISABLE,eg,1,0,0)
 end
--- 效果②的处理函数，使效果无效并可选择破坏对方卡牌
+-- ②效果处理：无效该怪兽效果；若无效成功且对方场上有卡，则询问是否将对方场上1张卡破坏；选择是则执行破坏。
 function s.disop(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断是否成功使效果无效并检查对方场上是否存在卡
+	-- 执行无效该怪兽效果，并检查对方场上是否存在可破坏的卡，决定是否进入后续破坏选择。
 	if Duel.NegateEffect(ev) and Duel.IsExistingMatchingCard(aux.TRUE,tp,0,LOCATION_ONFIELD,1,nil)
-		-- 询问玩家是否破坏对方卡牌
+		-- 询问玩家是否要破坏对方场上1张卡。
 		and Duel.SelectYesNo(tp,aux.Stringid(id,2)) then  --"是否把卡破坏？"
-		-- 中断当前效果，使后续处理视为错时点
+		-- 中断当前效果处理，使后续破坏处理与无效处理不在同一时点进行（对应“那之后”的时点）。
 		Duel.BreakEffect()
-		-- 提示玩家选择要破坏的卡
+		-- 弹出“请选择要破坏的卡”的提示，要求玩家选择破坏对象。
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-		-- 选择要破坏的卡
+		-- 选择对方场上的1张卡作为破坏对象。
 		local g=Duel.SelectMatchingCard(tp,aux.TRUE,tp,0,LOCATION_ONFIELD,1,1,nil)
 		if g:GetCount()>0 then
-			-- 显示被选为对象的卡的动画效果
+			-- 向玩家展示被选为对象的卡片动画，并记录这些卡被选为对象。
 			Duel.HintSelection(g)
-			-- 将选中的卡破坏
+			-- 以效果破坏选中的对方场上的卡片。
 			Duel.Destroy(g,REASON_EFFECT)
 		end
 	end

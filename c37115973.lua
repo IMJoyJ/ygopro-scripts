@@ -27,13 +27,13 @@ function c37115973.initial_effect(c)
 	e4:SetTargetRange(1,1)
 	e4:SetTarget(c37115973.splimit)
 	c:RegisterEffect(e4)
-	-- 此外，这张卡不会被和超量怪兽的战斗破坏，不受超量怪兽的效果影响。
+	-- 此外，这张卡不会被和超量怪兽的战斗破坏
 	local e5=Effect.CreateEffect(c)
 	e5:SetType(EFFECT_TYPE_SINGLE)
 	e5:SetCode(EFFECT_INDESTRUCTABLE_BATTLE)
 	e5:SetValue(c37115973.indval)
 	c:RegisterEffect(e5)
-	-- 此外，这张卡不会被和超量怪兽的战斗破坏，不受超量怪兽的效果影响。
+	-- 不受超量怪兽的效果影响。
 	local e6=Effect.CreateEffect(c)
 	e6:SetType(EFFECT_TYPE_SINGLE)
 	e6:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
@@ -42,36 +42,36 @@ function c37115973.initial_effect(c)
 	e6:SetValue(c37115973.efilter)
 	c:RegisterEffect(e6)
 end
--- 检索满足条件的「No.」超量怪兽（属于编号系列且为超量怪兽且能回到额外卡组）
+-- 过滤条件：选择持有「No.」字段的超量怪兽，且该卡可以被送回额外卡组。
 function c37115973.filter(c)
 	return c:IsSetCard(0x48) and c:IsType(TYPE_XYZ) and c:IsAbleToExtra()
 end
--- 设置连锁操作信息，确定要处理的「No.」超量怪兽数量
+-- 效果发动时的合法性检查始终通过；收集场上所有符合条件的「No.」超量怪兽，并设置将那些卡送回额外卡组的操作信息。
 function c37115973.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 获取场上满足条件的「No.」超量怪兽组
+	-- 获取全场（双方怪兽区域）中所有符合filter条件的「No.」超量怪兽。
 	local g=Duel.GetMatchingGroup(c37115973.filter,tp,LOCATION_MZONE,LOCATION_MZONE,nil)
-	-- 设置当前处理的连锁操作信息为将怪兽送回额外卡组
+	-- 设置操作信息：本次效果处理涉及将g中的卡返回额外卡组，数量为g的数量，用于连锁/效果发动时对“回额外卡组”类动作的判定。
 	Duel.SetOperationInfo(0,CATEGORY_TOEXTRA,g,g:GetCount(),0,0)
 end
--- 将场上满足条件的「No.」超量怪兽全部送回持有者的额外卡组
+-- 效果处理时再次获取场上符合条件的「No.」超量怪兽，若存在则全部送回持有者的额外卡组。
 function c37115973.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取场上满足条件的「No.」超量怪兽组
+	-- 效果处理时重新获取当前场上符合条件的「No.」超量怪兽，避免使用发动时已过时的集合。
 	local g=Duel.GetMatchingGroup(c37115973.filter,tp,LOCATION_MZONE,LOCATION_MZONE,nil)
 	if g:GetCount()>0 then
-		-- 将怪兽组以效果原因送回卡组顶端
+		-- 以效果原因将g中的全部「No.」超量怪兽返回持有者的额外卡组（额外卡组顶端）。
 		Duel.SendtoDeck(g,nil,SEQ_DECKTOP,REASON_EFFECT)
 	end
 end
--- 限制对方不能特殊召唤「No.」超量怪兽
+-- 特殊召唤限制的判断条件：被特殊召唤的怪兽持有「No.」字段且为超量怪兽时，禁止该特殊召唤。
 function c37115973.splimit(e,c)
 	return c:IsSetCard(0x48) and c:IsType(TYPE_XYZ)
 end
--- 使这张卡不会被超量怪兽的战斗破坏
+-- 战斗破坏抗性的判定条件：与此卡战斗的对方怪兽是超量怪兽时，此卡不会被那次战斗破坏。
 function c37115973.indval(e,c)
 	return c:IsType(TYPE_XYZ)
 end
--- 使这张卡不受超量怪兽的效果影响
+-- 效果免疫的判定条件：来源效果的类型是超量怪兽（即超量怪兽发动的效果）时，此卡不受该效果影响。
 function c37115973.efilter(e,te)
 	return te:IsActiveType(TYPE_XYZ)
 end

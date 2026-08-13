@@ -18,39 +18,39 @@ function c37231841.initial_effect(c)
 	e2:SetOperation(c37231841.operation)
 	c:RegisterEffect(e2)
 end
--- 过滤函数，用于筛选手卡中等级7以上的可送入卡组的怪兽
+-- 过滤函数：判断手牌中的怪兽是否为7星以上且可以返回卡组。
 function c37231841.filter(c)
 	return c:IsLevelAbove(7) and c:IsAbleToDeck()
 end
--- 效果的发动条件判断，检查玩家是否可以抽卡且手卡是否存在满足条件的怪兽
+-- 发动条件与目标选择前的检查：确认玩家可以抽卡，并且手牌中存在至少1只满足条件的7星以上怪兽。
 function c37231841.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查玩家是否可以抽卡
+	-- 检查玩家是否能够抽卡，作为效果可发动的条件之一。
 	if chk==0 then return Duel.IsPlayerCanDraw(tp)
-		-- 检查手卡中是否存在至少1张等级7以上的怪兽
+		-- 检查手牌中是否存在至少1张符合条件的7星以上怪兽，作为效果可发动的条件之一。
 		and Duel.IsExistingMatchingCard(c37231841.filter,tp,LOCATION_HAND,0,1,nil) end
-	-- 设置效果处理时将要送入卡组的卡的处理信息
+	-- 设置操作信息：本效果会将1张手牌返回卡组，用于连锁判定和时点检测。
 	Duel.SetOperationInfo(0,CATEGORY_TODECK,nil,1,tp,LOCATION_HAND)
-	-- 设置效果处理时将要抽卡的处理信息
+	-- 设置操作信息：本效果会抽1张卡，用于连锁判定和时点检测。
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,1)
 end
--- 效果的处理函数，执行将怪兽送入卡组并抽卡的操作
+-- 效果处理：选择手卡1只7星以上怪兽返回卡组并洗切，之后抽1张卡。
 function c37231841.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查玩家是否可以抽卡，若不可以则中断效果处理
+	-- 效果处理时再次确认玩家可以抽卡，若不能则直接结束处理。
 	if not Duel.IsPlayerCanDraw(tp) then return end
-	-- 提示玩家选择要送入卡组的怪兽
+	-- 弹出选择提示，要求玩家选择要返回卡组的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TODECK)  --"请选择要返回卡组的卡"
-	-- 选择满足条件的1张手卡怪兽
+	-- 从手牌中选择1只满足条件的7星以上怪兽作为返回卡组的对象。
 	local g=Duel.SelectMatchingCard(tp,c37231841.filter,tp,LOCATION_HAND,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 向对方确认所选怪兽的卡面信息
+		-- 向对方玩家展示所选择的手牌怪兽，确认选择结果。
 		Duel.ConfirmCards(1-tp,g)
-		-- 将选中的怪兽送入卡组并洗牌
+		-- 将选择的怪兽返回持有者卡组，并标记为需要洗切。
 		Duel.SendtoDeck(g,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
-		-- 手动洗切玩家的卡组
+		-- 洗切我方卡组。
 		Duel.ShuffleDeck(tp)
-		-- 中断当前效果，使后续处理视为不同时处理
+		-- 中断当前效果链，使后续抽卡处理与回卡组处理视为不同时处理，避免错误时点。
 		Duel.BreakEffect()
-		-- 让玩家抽1张卡
+		-- 抽1张卡。
 		Duel.Draw(tp,1,REASON_EFFECT)
 	end
 end

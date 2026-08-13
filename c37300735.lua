@@ -2,7 +2,7 @@
 -- 效果：
 -- 这张卡作为同调召唤的素材送去墓地的场合，给与对方基本分500分伤害。
 function c37300735.initial_effect(c)
-	-- 诱发必发效果，当这张卡作为同调召唤的素材送去墓地时发动
+	-- 这张卡作为同调召唤的素材送去墓地的场合，给与对方基本分500分伤害。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(37300735,0))  --"给予对方500伤害"
 	e1:SetCategory(CATEGORY_DAMAGE)
@@ -14,24 +14,24 @@ function c37300735.initial_effect(c)
 	e1:SetOperation(c37300735.damop)
 	c:RegisterEffect(e1)
 end
--- 满足条件：此卡在墓地且因同调召唤被送入墓地
+-- damcon条件：效果触发时，此卡必须位于墓地，且其离开场上的原因是作为同调召唤的素材（REASON_SYNCHRO）。
 function c37300735.damcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsLocation(LOCATION_GRAVE) and r==REASON_SYNCHRO
 end
--- 设置连锁处理目标为对方玩家，伤害值为500
+-- damtg目标处理：该效果不取对象，因此发动条件直接通过；将对方玩家设为效果对象，登记伤害数值500，并设置连锁的操作信息为对对方造成500点伤害。
 function c37300735.damtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 将连锁处理的目标玩家设置为对方（1-tp）
+	-- 将当前连锁的效果对象玩家设置为对方玩家（1-tp）。
 	Duel.SetTargetPlayer(1-tp)
-	-- 将连锁处理的目标参数设置为500
+	-- 将当前连锁的效果对象参数设置为500，即后续要造成的伤害数值。
 	Duel.SetTargetParam(500)
-	-- 设置连锁操作信息为伤害效果，对象为对方玩家，伤害值为500
+	-- 登记当前连锁的操作信息：效果分类为伤害效果（CATEGORY_DAMAGE），目标玩家为对方（1-tp），伤害数值为500，用于其他卡片的连锁判定。
 	Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,1-tp,500)
 end
--- 效果处理时，对对方玩家造成500点伤害
+-- damop处理：从连锁信息中读取目标玩家和伤害参数，对对方造成相应效果伤害。
 function c37300735.damop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁处理的目标玩家和伤害值
+	-- 从当前连锁信息中同时获取效果对象玩家（CHAININFO_TARGET_PLAYER）和参数（CHAININFO_TARGET_PARAM），分别赋值给p和d。
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 对目标玩家造成指定伤害，伤害原因为效果
+	-- 以REASON_EFFECT（效果）为原因，对玩家p造成d点伤害。
 	Duel.Damage(p,d,REASON_EFFECT)
 end
