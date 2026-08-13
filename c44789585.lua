@@ -22,24 +22,24 @@ function c44789585.initial_effect(c)
 	e2:SetOperation(c44789585.damop)
 	c:RegisterEffect(e2)
 end
--- 判断伤害是否由战斗造成
+-- 返回破坏原因r中是否包含战斗破坏（REASON_BATTLE），用于判定本次破坏是否属于战斗破坏，从而决定是否适用“1回合1次不会被战斗破坏”的替代效果。
 function c44789585.valcon(e,re,r,rp)
 	return bit.band(r,REASON_BATTLE)~=0
 end
--- 设置伤害效果的目标玩家和伤害值
+-- 诱发效果的发动目标处理：在效果发动时（chk==0）无条件允许发动，将对方玩家设为伤害对象、伤害数值设为500，并登记伤害效果的操作信息；效果处理时将实际造成伤害。
 function c44789585.damtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置连锁处理时伤害效果的目标玩家为对方
+	-- 将当前连锁的效果对象玩家设为对方玩家（1-tp），即伤害的承受者。
 	Duel.SetTargetPlayer(1-tp)
-	-- 设置连锁处理时伤害效果的伤害值为500
+	-- 将当前连锁的效果对象参数设为500，表示这次效果造成的伤害数值为500。
 	Duel.SetTargetParam(500)
-	-- 设置连锁的操作信息为造成伤害效果
+	-- 登记当前连锁的操作信息：效果分类为伤害（CATEGORY_DAMAGE），对象玩家为对方，预计伤害值为500，供连锁处理及后续判定使用。
 	Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,1-tp,500)
 end
--- 执行伤害效果的处理函数
+-- 效果处理时的操作函数：取出效果发动时记录的伤害对象玩家和伤害值，并对该玩家造成效果伤害。
 function c44789585.damop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁中设定的目标玩家和伤害值
+	-- 从当前连锁信息中取出之前用SetTargetPlayer和SetTargetParam记录的对象玩家p和对象参数d（伤害值）。
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 对目标玩家造成指定伤害值的伤害，伤害原因为效果
+	-- 以效果原因（REASON_EFFECT）对玩家p造成d点伤害（若受“伤害变成回复”等影响，实际伤害值由Duel.Damage返回）。
 	Duel.Damage(p,d,REASON_EFFECT)
 end

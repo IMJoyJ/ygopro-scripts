@@ -12,18 +12,18 @@ function c44717069.initial_effect(c)
 	e1:SetOperation(c44717069.operation)
 	c:RegisterEffect(e1)
 end
--- 定义过滤函数，用于筛选场上表侧表示的海星怪兽
+-- 筛选函数：判断怪兽是否为表侧表示且卡名是「海星」（44717069）。
 function c44717069.filter(c)
 	return c:IsFaceup() and c:IsCode(44717069)
 end
--- 效果的发动条件判断，检查自己场上是否存在至少1只表侧表示的海星怪兽
+-- 发动条件判定函数：效果发动时（chk==0）检查自己场上是否存在满足筛选条件的表侧表示「海星」怪兽，若存在则允许发动。
 function c44717069.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查自己场上是否存在至少1只表侧表示的海星怪兽
+	-- 在发动时判定自己场上是否存在至少1张表侧表示且卡名为「海星」的怪兽，作为效果的发动条件。
 	if chk==0 then return Duel.IsExistingMatchingCard(c44717069.filter,tp,LOCATION_MZONE,0,1,nil) end
 end
--- 效果的处理流程，获取场上所有表侧表示的海星怪兽并为它们加上等级上升1的永久效果
+-- 效果处理函数：获取自己场上所有表侧表示「海星」，对其中每只怪兽赋予等级上升1星的持续效果，直到其离开场上等状态重置。
 function c44717069.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取场上所有表侧表示的海星怪兽
+	-- 获取满足筛选条件的卡组：自己场上所有表侧表示且卡名为「海星」的怪兽集合。
 	local g=Duel.GetMatchingGroup(c44717069.filter,tp,LOCATION_MZONE,0,nil)
 	local c=e:GetHandler()
 	local tc=g:GetFirst()

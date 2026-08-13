@@ -4,11 +4,11 @@
 -- ①：自己场上有「维萨斯-斯塔弗罗斯特」或者攻击力1500/守备力2100的怪兽存在的场合，这张卡可以从手卡特殊召唤。
 -- ②：这张卡被战斗·效果破坏的场合才能发动。从卡组把1只「末那愚子族·小温顺」特殊召唤。那之后，可以让这个效果特殊召唤的怪兽的等级上升2星。
 local s,id,o=GetID()
--- 初始化卡片效果，注册两个效果：①特殊召唤条件；②被破坏时的发动效果
+-- 初始化效果注册：登记关联卡名，注册①的规则特殊召唤效果和②的被破坏时诱发效果。
 function s.initial_effect(c)
-	-- 记录该卡具有「维萨斯-斯塔弗罗斯特」的卡名
+	-- 将卡名『维萨斯-斯塔弗罗斯特』登记到这张卡上，用于关联卡名检索/判定。
 	aux.AddCodeList(c,56099748)
-	-- ①：自己场上有「维萨斯-斯塔弗罗斯特」或者攻击力1500/守备力2100的怪兽存在的场合，这张卡可以从手卡特殊召唤
+	-- 这个卡名的①的方法的特殊召唤1回合只能有1次。①：自己场上有「维萨斯-斯塔弗罗斯特」或者攻击力1500/守备力2100的怪兽存在的场合，这张卡可以从手卡特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(id,0))
 	e1:SetType(EFFECT_TYPE_FIELD)
@@ -18,7 +18,7 @@ function s.initial_effect(c)
 	e1:SetCountLimit(1,id+EFFECT_COUNT_CODE_OATH)
 	e1:SetCondition(s.sprcon)
 	c:RegisterEffect(e1)
-	-- ②：这张卡被战斗·效果破坏的场合才能发动。从卡组把1只「末那愚子族·小温顺」特殊召唤。那之后，可以让这个效果特殊召唤的怪兽的等级上升2星
+	-- ②：这张卡被战斗·效果破坏的场合才能发动。从卡组把1只「末那愚子族·小温顺」特殊召唤。那之后，可以让这个效果特殊召唤的怪兽的等级上升2星。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(id,1))
 	e2:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -30,54 +30,54 @@ function s.initial_effect(c)
 	e2:SetOperation(s.spop)
 	c:RegisterEffect(e2)
 end
--- 过滤函数，用于判断场上是否存在符合条件的怪兽（为「维萨斯-斯塔弗罗斯特」或攻击力1500/守备力2100的怪兽）
+-- 判定条件：怪兽为表侧表示，且满足『卡名是维萨斯-斯塔弗罗斯特』或『攻击力1500且守备力2100的怪兽』之一。
 function s.filter(c)
 	local b1=c:IsCode(56099748)
 	local b2=c:IsAttack(1500) and c:IsDefense(2100) and c:IsType(TYPE_MONSTER)
 	return c:IsFaceup() and (b1 or b2)
 end
--- 特殊召唤条件函数，检查是否满足特殊召唤的条件：场上存在符合条件的怪兽且有空场
+-- ①的规则特殊召唤的发动条件：自己场上存在满足s.filter的怪兽，且自己的主要怪兽区有空位（当c不存在时用于规则效果判定返回true）。
 function s.sprcon(e,c)
 	if c==nil then return true end
 	local tp=c:GetControler()
-	-- 检查玩家场上是否有空位
+	-- 判定自己的主要怪兽区是否有空位。
 	return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查玩家场上是否存在符合条件的怪兽
+		-- 判定自己场上是否存在至少1只满足s.filter条件的表侧表示怪兽。
 		and Duel.IsExistingMatchingCard(s.filter,tp,LOCATION_ONFIELD,0,1,nil)
 end
--- 被破坏时的发动条件函数，判断破坏原因是否为效果或战斗
+-- ②的发动条件：这张卡被战斗或效果破坏（检查破坏原因包含战斗破坏或效果破坏）。
 function s.spcon(e,tp,eg,ep,ev,re,r,rp)
 	return bit.band(r,REASON_EFFECT+REASON_BATTLE)~=0
 end
--- 过滤函数，用于筛选卡组中可以特殊召唤的「末那愚子族·小温顺」
+-- ②特殊召唤的对象筛选：必须是从卡组选出的同名卡『末那愚子族·小温顺』，且满足当前效果的特殊召唤条件。
 function s.spfilter(c,e,tp)
 	return c:IsCode(id) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 特殊召唤目标函数，检查是否满足发动条件：卡组中存在可特殊召唤的卡且场上存在空位
+-- ②的发动目标判定：自己主要怪兽区有空位且卡组存在符合条件的同名怪兽，满足才能发动。
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查场上是否有空位
+	-- 判定自己主要怪兽区是否有空位。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查卡组中是否存在符合条件的卡
+		-- 判定卡组是否存在1张可特殊召唤的同名卡。
 		and Duel.IsExistingMatchingCard(s.spfilter,tp,LOCATION_DECK,0,1,nil,e,tp) end
-	-- 设置连锁操作信息，提示将从卡组特殊召唤1只怪兽
+	-- 设置本次连锁的操作信息：效果包含特殊召唤，预定从卡组特殊召唤1只怪兽到tp的场上。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_DECK)
 end
--- 特殊召唤效果处理函数，执行从卡组特殊召唤并可选择是否提升等级
+-- ②的效果处理：先确认怪兽区有空位，然后从卡组选择1只同名怪兽表侧攻击表示特殊召唤；若特殊召唤成功且该怪兽等级不低于1，再询问玩家是否使其等级上升2星，选择是则赋予其等级+2的效果。
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查场上是否有空位，若无则不执行特殊召唤
+	-- 效果处理时若场上没有可用的主要怪兽区，则不进行特殊召唤。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-	-- 提示玩家选择要特殊召唤的卡
+	-- 显示『请选择要特殊召唤的卡』的提示，让玩家选择怪兽卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 从卡组中选择1只符合条件的卡
+	-- 从卡组筛选符合条件的1张同名怪兽卡作为特殊召唤对象。
 	local g=Duel.SelectMatchingCard(tp,s.spfilter,tp,LOCATION_DECK,0,1,1,nil,e,tp)
 	local tc=g:GetFirst()
-	-- 判断是否成功特殊召唤且该怪兽等级大于等于1
+	-- 确认特殊召唤成功且该怪兽的当前等级不低于1，作为是否询问等级提升的前提。
 	if tc and Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP)>0 and tc:IsLevelAbove(1)
-		-- 询问玩家是否提升等级
+		-- 询问玩家是否让这只特殊召唤的怪兽等级上升2星。
 		and Duel.SelectYesNo(tp,aux.Stringid(id,2)) then  --"是否上升等级？"
-		-- 中断当前效果处理，使后续效果视为错时处理
+		-- 中断当前效果处理，使后续的等级上升效果作为另一段处理，避免占用同一时点。
 		Duel.BreakEffect()
-		-- 创建等级提升效果，使怪兽等级上升2星
+		-- 那之后，可以让这个效果特殊召唤的怪兽的等级上升2星。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)

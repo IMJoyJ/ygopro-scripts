@@ -2,14 +2,14 @@
 -- 效果：
 -- 反转：这张卡在结束阶段时表侧表示存在的场合，自己从卡组抽1张卡。
 function c44811425.initial_effect(c)
-	-- 反转：这张卡在结束阶段时表侧表示存在的场合，自己从卡组抽1张卡。
+	-- 反转：
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_CONTINUOUS)
 	e1:SetCode(EVENT_FLIP)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
 	e1:SetOperation(c44811425.flipop)
 	c:RegisterEffect(e1)
-	-- 反转：这张卡在结束阶段时表侧表示存在的场合，自己从卡组抽1张卡。
+	-- 这张卡在结束阶段时表侧表示存在的场合，自己从卡组抽1张卡。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(44811425,0))  --"抽卡"
 	e2:SetCategory(CATEGORY_DRAW)
@@ -23,30 +23,30 @@ function c44811425.initial_effect(c)
 	e2:SetOperation(c44811425.drop)
 	c:RegisterEffect(e2)
 end
--- 在卡片翻转时，为该卡片注册一个标记flag，用于后续判断是否满足抽卡条件。
+-- 翻转时给这张卡自身注册一个标识效果（44811425），标记该卡本回合/本次在场期间发生过反转，后续结束阶段条件判断用。
 function c44811425.flipop(e,tp,eg,ep,ev,re,r,rp)
 	e:GetHandler():RegisterFlagEffect(44811425,RESET_EVENT+RESETS_STANDARD,0,1)
 end
--- 判断该卡片是否拥有标记flag，若存在则触发抽卡效果。
+-- 判定条件：检查这张卡是否带有“已反转”的标识效果（44811425），有则满足结束阶段抽卡效果的发动条件。
 function c44811425.drcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():GetFlagEffect(44811425)~=0
 end
--- 设置抽卡效果的目标玩家和抽卡数量，并注册操作信息。
+-- 效果发动时的目标处理：无需选择对象；将对象玩家设为效果发动者，将对象参数设为1（抽卡张数），并设置操作信息为抽卡。
 function c44811425.drtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置当前连锁操作的目标玩家为效果发动者。
+	-- 将当前连锁的对象玩家设置为tp（效果发动者），即由自己抽卡。
 	Duel.SetTargetPlayer(tp)
-	-- 设置当前连锁操作的目标参数为抽卡数量1。
+	-- 将当前连锁的对象参数设置为1，表示抽卡张数为1。
 	Duel.SetTargetParam(1)
-	-- 设置当前连锁操作为抽卡效果，目标玩家为效果发动者，抽卡数量为1。
+	-- 设置操作信息：该效果属于抽卡效果，预定的目标玩家为tp，预计抽1张卡，不取对象。
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,1)
 end
--- 执行抽卡操作，若卡片表侧表示则从卡组抽1张卡。
+-- 效果处理：从连锁信息中取出抽卡玩家和抽卡张数，若这张卡仍表侧表示，则执行抽卡。
 function c44811425.drop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁操作的目标玩家和抽卡数量。
+	-- 获取当前连锁中记录的对象玩家p和对象参数d，即抽卡玩家与抽卡张数。
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
 	if e:GetHandler():IsFaceup() then
-		-- 让指定玩家从卡组抽指定数量的卡，原因设为效果。
+		-- 让玩家p以“效果”为原因抽取d张卡。
 		Duel.Draw(p,d,REASON_EFFECT)
 	end
 end

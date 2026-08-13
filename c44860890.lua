@@ -23,35 +23,35 @@ function c44860890.initial_effect(c)
 	e2:SetValue(c44860890.indval)
 	c:RegisterEffect(e2)
 end
--- 效果发动条件：这张卡是从场上送去墓地
+-- e1的发动条件：判断这张卡在送去墓地之前是否位于场上（从场上区域被送去墓地）；若是，则满足“这张卡从场上送去墓地的场合”的触发条件。
 function c44860890.setcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsPreviousLocation(LOCATION_ONFIELD)
 end
--- 过滤函数：名字带有「炎舞」且为魔法卡且可以盖放
+-- 筛选条件：候选卡必须持有「炎舞」字段、是魔法卡，并且当前可以被盖放到魔法与陷阱区域（满足盖放限制）。
 function c44860890.filter(c)
 	return c:IsSetCard(0x7c) and c:IsType(TYPE_SPELL) and c:IsSSetable()
 end
--- 效果发动时点：检查卡组是否存在满足条件的魔法卡
+-- e1的发动目标检查：在发动时判断自己卡组是否存在至少1张满足c44860890.filter的「炎舞」魔法卡；若不存在则不能发动。
 function c44860890.settg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查卡组是否存在满足条件的魔法卡
+	-- 效果发动合法性判定：检查自己卡组是否有符合条件的「炎舞」魔法卡，有则返回true允许发动。
 	if chk==0 then return Duel.IsExistingMatchingCard(c44860890.filter,tp,LOCATION_DECK,0,1,nil) end
 end
--- 效果处理：选择并盖放一张满足条件的魔法卡
+-- e1效果处理：提示玩家选择要盖放的卡，从卡组选择1张符合条件的「炎舞」魔法卡；若选到则将其盖放到自己场上。
 function c44860890.setop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要盖放的卡
+	-- 向当前玩家发送选择提示信息，使后续选择框显示“请选择要盖放的卡”的提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SET)  --"请选择要盖放的卡"
-	-- 从卡组选择满足条件的魔法卡
+	-- 从自己卡组中精确选择1张满足c44860890.filter的「炎舞」魔法卡，选择结果存入g。
 	local g=Duel.SelectMatchingCard(tp,c44860890.filter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的魔法卡盖放
+		-- 将选出的那1张「炎舞」魔法卡由当前玩家盖放到自己的魔法与陷阱区域。
 		Duel.SSet(tp,g:GetFirst())
 	end
 end
--- 判断目标是否为表侧表示的「炎舞」魔法·陷阱卡
+-- 保护对象筛选：判断需要接受保护判定的卡片是否为表侧表示、持有「炎舞」字段且为魔法·陷阱卡；满足条件才受e2保护。
 function c44860890.indtg(e,c)
 	return c:IsFaceup() and c:IsSetCard(0x7c) and c:IsType(TYPE_SPELL+TYPE_TRAP)
 end
--- 返回值：若对方控制此卡则该效果不生效
+-- 保护条件判定：若试图破坏的效果由这张卡的控制者的对方玩家发动（即e:GetHandler():GetControler()不等于效果发动者tp），则返回true，使该效果不能破坏受保护的「炎舞」魔法·陷阱卡，体现“不会被对方的卡的效果破坏”。
 function c44860890.indval(e,re,tp)
 	return e:GetHandler():GetControler()~=tp
 end

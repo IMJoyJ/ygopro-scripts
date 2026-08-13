@@ -12,17 +12,17 @@ function c44729197.initial_effect(c)
 	e1:SetValue(c44729197.val)
 	c:RegisterEffect(e1)
 end
--- 判断当前是否处于伤害步骤或伤害计算时
+-- 效果发动条件：当前阶段为伤害步骤或伤害计算时，即仅在战斗伤害相关步骤内适用此攻击力变化效果。
 function c44729197.condtion(e)
-	-- 获取当前游戏阶段
+	-- 获取当前游戏阶段，用于判断是否处于伤害步骤或伤害计算时。
 	local ph=Duel.GetCurrentPhase()
 	return ph==PHASE_DAMAGE or ph==PHASE_DAMAGE_CAL
 end
--- 根据攻击者和被攻击者判断攻击力变化值
+-- 计算攻击力变动值：若此卡为攻击者且存在攻击对象则上升500，若此卡为攻击对象则下降500，否则不改变。
 function c44729197.val(e,c)
-	-- 当此卡为攻击者且存在攻击目标时，攻击力上升500
+	-- 当此卡是发起攻击的怪兽且对方存在被攻击的怪兽时，攻击力上升500。
 	if Duel.GetAttacker()==e:GetHandler() and Duel.GetAttackTarget()~=nil then return 500
-	-- 当此卡为攻击目标时，攻击力下降500
+	-- 当此卡是对方怪兽的攻击对象时，攻击力下降500。
 	elseif e:GetHandler()==Duel.GetAttackTarget() then return -500
 	else return 0 end
 end
