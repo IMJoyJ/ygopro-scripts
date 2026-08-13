@@ -3,7 +3,7 @@
 -- 调整＋调整以外的名字带有「科技属」的怪兽1只以上
 -- 这张卡向守备表示怪兽攻击时，若攻击力超过那个守备力，给与对方基本分那个数值的战斗伤害。场上存在的这张卡被破坏时，从自己卡组抽1张卡。
 function c24943456.initial_effect(c)
-	-- 添加同调召唤手续，要求1只调整和1只调整以外的名字带有「科技属」的怪兽作为素材
+	-- 为这张卡添加同调召唤手续：调整＋调整以外的名字带有「科技属」的怪兽1只以上。
 	aux.AddSynchroProcedure(c,nil,aux.NonTuner(Card.IsSetCard,0x27),1)
 	c:EnableReviveLimit()
 	-- 这张卡向守备表示怪兽攻击时，若攻击力超过那个守备力，给与对方基本分那个数值的战斗伤害。
@@ -23,24 +23,24 @@ function c24943456.initial_effect(c)
 	e2:SetOperation(c24943456.drop)
 	c:RegisterEffect(e2)
 end
--- 效果发动时判断该卡是否因破坏而离场
+-- 抽卡效果的发动条件：该卡此前位于场上，且因被破坏而离场。
 function c24943456.drcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsPreviousLocation(LOCATION_ONFIELD) and e:GetHandler():IsReason(REASON_DESTROY)
 end
--- 设置抽卡效果的目标玩家和抽卡数量
+-- 抽卡效果的目标设定：必发效果；将抽卡玩家（tp）设为对象玩家，抽卡数量设为1。
 function c24943456.drtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置效果的目标玩家为当前玩家
+	-- 将本连锁的对象玩家设为tp，即由这张卡的持有者/控制者抽卡。
 	Duel.SetTargetPlayer(tp)
-	-- 设置效果的目标参数为抽卡数量1
+	-- 将本连锁的对象参数设为1，表示抽1张卡。
 	Duel.SetTargetParam(1)
-	-- 设置连锁的操作信息为抽卡效果，目标玩家为当前玩家，抽卡数量为1
+	-- 设置操作信息：效果类别为抽卡，对象玩家为tp，抽卡数量参数为1。
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,1)
 end
--- 执行抽卡效果，从卡组抽取1张卡
+-- 抽卡效果的处理：从连锁信息中取出对象玩家和数量，实际执行抽卡。
 function c24943456.drop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁中设定的目标玩家和抽卡数量
+	-- 从当前连锁信息中获取之前设置的对象玩家p和对象参数d（即抽卡者与抽卡数）。
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 让目标玩家从卡组抽取指定数量的卡
+	-- 让玩家p以效果原因抽d张卡，完成从卡组抽1张卡。
 	Duel.Draw(p,d,REASON_EFFECT)
 end
