@@ -6,32 +6,32 @@
 -- ●装备的这张卡特殊召唤。
 -- ②：装备怪兽可以直接攻击。那次直接攻击给与对方的战斗伤害变成一半。
 function c39299733.initial_effect(c)
-	-- 为卡片注册同盟怪兽机制，使其可以装备给符合条件的怪兽并具有装备怪兽破坏时代替破坏的效果
+	-- 调用辅助函数为这张卡注册同盟怪兽的通用效果（装备、代破、特殊召唤等），装备对象限定为天使族怪兽。
 	aux.EnableUnionAttribute(c,c39299733.filter)
-	-- 装备怪兽可以直接攻击
+	-- ②：装备怪兽可以直接攻击。
 	local e5=Effect.CreateEffect(c)
 	e5:SetType(EFFECT_TYPE_EQUIP)
 	e5:SetCode(EFFECT_DIRECT_ATTACK)
 	c:RegisterEffect(e5)
-	-- 那次直接攻击给与对方的战斗伤害变成一半
+	-- 那次直接攻击给与对方的战斗伤害变成一半。
 	local e6=Effect.CreateEffect(c)
 	e6:SetType(EFFECT_TYPE_EQUIP)
 	e6:SetCode(EFFECT_CHANGE_BATTLE_DAMAGE)
 	e6:SetCondition(c39299733.rdcon)
-	-- 设置战斗伤害为对方受到的一半
+	-- 设置战斗伤害变更效果：对方因这次直接攻击受到的战斗伤害变为一半。
 	e6:SetValue(aux.ChangeBattleDamage(1,HALF_DAMAGE))
 	c:RegisterEffect(e6)
 end
--- 定义可以装备的怪兽必须为天使族
+-- 过滤函数：只有天使族怪兽才能成为这张卡的装备对象。
 function c39299733.filter(c)
 	return c:IsRace(RACE_FAIRY)
 end
--- 判断是否满足战斗伤害减半的条件，包括未攻击目标、装备怪兽未多次直接攻击、己方场上存在怪兽
+-- 伤害减半效果的适用条件：装备怪兽正在进行直接攻击，且对方场上有怪兽，并且直接攻击效果数量正常。
 function c39299733.rdcon(e)
 	local c=e:GetHandler():GetEquipTarget()
 	local tp=e:GetHandlerPlayer()
-	-- 确保当前没有攻击目标
+	-- 检查当前战斗阶段是否没有攻击对象，即是否正在进行直接攻击。
 	return Duel.GetAttackTarget()==nil
-		-- 装备怪兽未多次直接攻击且己方场上存在怪兽
+		-- 进一步确认装备怪兽具备直接攻击能力（效果数量未异常叠加），且对方场上有怪兽，保证只有通过效果进行的直接攻击才减半。
 		and c:GetEffectCount(EFFECT_DIRECT_ATTACK)<2 and Duel.GetFieldGroupCount(tp,0,LOCATION_MZONE)>0
 end
