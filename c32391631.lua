@@ -7,7 +7,7 @@ function c32391631.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- 只要这张卡在场上存在，可以攻击的怪兽必须作出攻击。
+	-- 场上存在的怪兽进行攻击的场合，那只怪兽的控制者在伤害步骤结束时回复300基本分。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(32391631,0))  --"LP回复"
 	e2:SetCategory(CATEGORY_RECOVER)
@@ -18,7 +18,7 @@ function c32391631.initial_effect(c)
 	e2:SetTarget(c32391631.rectg)
 	e2:SetOperation(c32391631.recop)
 	c:RegisterEffect(e2)
-	-- 场上存在的怪兽进行攻击的场合，那只怪兽的控制者在伤害步骤结束时回复300基本分。
+	-- 只要这张卡在场上存在，可以攻击的怪兽必须作出攻击。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_FIELD)
 	e3:SetCode(EFFECT_MUST_ATTACK)
@@ -37,46 +37,46 @@ function c32391631.initial_effect(c)
 	e5:SetOperation(c32391631.desop)
 	c:RegisterEffect(e5)
 end
--- 判断攻击怪兽是否参与了战斗
+-- 伤害步骤结束时的触发条件：判定当前攻击的怪兽是否仍与本次战斗关联，只有仍有关联才处理回复效果。
 function c32391631.reccon(e,tp,eg,ep,ev,re,r,rp)
-	-- 攻击怪兽必须参与了战斗
+	-- 检查攻击怪兽是否仍与本次战斗关联，防止攻击怪兽已离场时仍错误触发回复。
 	return Duel.GetAttacker():IsRelateToBattle()
 end
--- 设置LP回复效果的目标玩家和回复值
+-- 设置回复效果的操作信息：将回复对象玩家设为当前回合玩家，回复数值设为300，并登记回复类操作信息。
 function c32391631.rectg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置效果的目标玩家为当前回合玩家
+	-- 把当前连锁的对象玩家设为当前回合玩家（即攻击怪兽的控制者）。
 	Duel.SetTargetPlayer(Duel.GetTurnPlayer())
-	-- 设置效果的目标参数为300
+	-- 把当前连锁的对象参数设为300，表示要回复的LP数值。
 	Duel.SetTargetParam(300)
-	-- 设置连锁操作信息为回复效果
+	-- 登记回复效果的操作信息：目标玩家为当前回合玩家，回复量为300，用于效果联动检测。
 	Duel.SetOperationInfo(0,CATEGORY_RECOVER,nil,0,Duel.GetTurnPlayer(),300)
 end
--- 执行LP回复效果
+-- 回复效果的处理：确认攻击怪兽仍与本次战斗关联后，从连锁信息中取得目标玩家和回复量，并执行回复300LP。
 function c32391631.recop(e,tp,eg,ep,ev,re,r,rp)
-	-- 若攻击怪兽未参与战斗则不执行效果
+	-- 若攻击怪兽已经不在场上或与本次战斗无关，则不进行回复处理。
 	if not Duel.GetAttacker():IsRelateToBattle() then return end
-	-- 获取连锁中设置的目标玩家和参数
+	-- 取出本次连锁中保存的目标玩家和回复参数。
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 使目标玩家回复指定数值的基本分
+	-- 以效果原因让目标玩家回复对应的LP数值。
 	Duel.Recover(p,d,REASON_EFFECT)
 end
--- 破坏效果的过滤函数，筛选表侧攻击表示且未攻击宣言的怪兽
+-- 筛选出当前回合玩家场上表侧攻击表示且本回合没有进行过攻击宣言的怪兽。
 function c32391631.desfilter(c)
 	return c:IsPosition(POS_FACEUP_ATTACK) and c:GetAttackAnnouncedCount()==0
 end
--- 设置破坏效果的目标卡片组
+-- 破坏效果的目标设定：无条件可发动，登记将满足条件的怪兽全部破坏的操作信息。
 function c32391631.destg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 获取满足条件的怪兽组
+	-- 获取当前回合玩家场上满足条件（表侧攻击且未攻击宣言）的怪兽群，并排除效果所属卡自身。
 	local g=Duel.GetMatchingGroup(c32391631.desfilter,Duel.GetTurnPlayer(),LOCATION_MZONE,0,e:GetHandler())
-	-- 设置连锁操作信息为破坏效果
+	-- 将待破坏的怪兽组及数量写入操作信息，表明该效果预定破坏这些怪兽。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,g:GetCount(),0,0)
 end
--- 执行破坏效果
+-- 破坏效果的处理：按条件重新筛选出当前应破坏的怪兽，并将其全部破坏。
 function c32391631.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取满足条件的怪兽组（排除自身）
+	-- 效果处理时再次获取当前回合玩家场上表侧攻击且未攻击宣言的怪兽群（排除效果发动者自身）。
 	local g=Duel.GetMatchingGroup(c32391631.desfilter,Duel.GetTurnPlayer(),LOCATION_MZONE,0,aux.ExceptThisCard(e))
-	-- 将目标怪兽全部破坏
+	-- 以效果原因将这些怪兽全部破坏。
 	Duel.Destroy(g,REASON_EFFECT)
 end

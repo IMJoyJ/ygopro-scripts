@@ -10,13 +10,13 @@ function c32296881.initial_effect(c)
 	e1:SetOperation(c32296881.drop)
 	c:RegisterEffect(e1)
 end
--- 检测发动的卡是否为反击陷阱卡，是则执行抽卡效果
+-- 效果处理函数：在连锁处理结束时，检查本次连锁中发动的效果是否为反击陷阱卡的发动，若是则触发本卡的效果进行抽卡。
 function c32296881.drop(e,tp,eg,ep,ev,re,r,rp)
 	if not re:IsHasType(EFFECT_TYPE_ACTIVATE) or not re:IsActiveType(TYPE_COUNTER) then return end
-	-- 向玩家显示此卡发动的动画提示
+	-- 向玩家展示丰穰之阿耳特弥斯的卡片动画，提示该效果正在发动。
 	Duel.Hint(HINT_CARD,0,32296881)
-	-- 中断当前效果处理，避免时点错乱
+	-- 中断当前效果处理流程，使后续的抽卡处理独立于当前连锁解决时点，避免错时点。
 	Duel.BreakEffect()
-	-- 让发动者从卡组抽1张卡
+	-- 让这张卡的控制者tp从卡组抽1张卡，抽卡原因视为效果。
 	Duel.Draw(tp,1,REASON_EFFECT)
 end
