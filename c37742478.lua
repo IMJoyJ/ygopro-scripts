@@ -26,47 +26,47 @@ function c37742478.initial_effect(c)
 	e2:SetOperation(c37742478.operation2)
 	c:RegisterEffect(e2)
 end
--- 检查效果发动时是否满足条件，即该卡能否被送至手牌
+-- 发动选择阶段：若此卡能满足回到手卡的条件则允许发动，并设定将这张卡返回手卡的操作信息。
 function c37742478.target1(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsAbleToHand() end
-	-- 设置连锁操作信息，表示该效果将把目标卡送至手牌
+	-- 设置本次连锁的操作信息：确定处理类别为回到手卡，对象为效果发动者自身，数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,e:GetHandler(),1,0,0)
 end
--- 执行效果处理，将该卡送至手牌
+-- 效果处理阶段：若此卡仍处于表侧表示且与发动效果保持关联，则将其送回持有者手卡。
 function c37742478.operation1(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsFaceup() and c:IsRelateToEffect(e) then
-		-- 将该卡以效果原因送至手牌
+		-- 以效果原因将这张欧尼斯特从场上送回持有者的手卡。
 		Duel.SendtoHand(c,nil,REASON_EFFECT)
 	end
 end
--- 判断是否满足效果发动条件，即是否处于伤害步骤且未计算伤害，且参与战斗的光属性怪兽存在
+-- 判定②效果的发动条件：当前必须处于伤害步骤且尚未进行伤害计算，并且存在进行战斗的己方光属性怪兽和对方怪兽，该己方光属性怪兽需与战斗关联。
 function c37742478.condition2(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前游戏阶段
+	-- 获取当前所在阶段，用于判断是否处于伤害步骤。
 	local phase=Duel.GetCurrentPhase()
-	-- 若当前阶段不是伤害步骤或伤害已计算，则效果不满足发动条件
+	-- 若当前不是伤害步骤，或已经进行了伤害计算，则不能发动（即只能在伤害计算前发动）。
 	if phase~=PHASE_DAMAGE or Duel.IsDamageCalculated() then return false end
-	-- 获取攻击怪兽
+	-- 取得本次战斗的攻击怪兽。
 	local a=Duel.GetAttacker()
-	-- 获取攻击目标怪兽
+	-- 取得本次战斗的攻击对象怪兽。
 	local d=Duel.GetAttackTarget()
 	return d~=nil and d:IsFaceup() and ((a:IsControler(tp) and a:IsAttribute(ATTRIBUTE_LIGHT) and a:IsRelateToBattle())
 		or (d:IsControler(tp) and d:IsAttribute(ATTRIBUTE_LIGHT) and d:IsRelateToBattle()))
 end
--- 检查发动效果时是否满足条件，即该卡能否被送至墓地作为代价
+-- 支付代价：从手卡将这张欧尼斯特送去墓地，作为发动②效果所需的cost。
 function c37742478.cost2(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsAbleToGraveAsCost() end
-	-- 将该卡以代价原因送至墓地
+	-- 以cost原因将这张欧尼斯特从手卡送去墓地。
 	Duel.SendtoGrave(e:GetHandler(),REASON_COST)
 end
--- 执行效果处理，使光属性怪兽攻击力上升
+-- 效果处理：根据战斗双方中哪一方是己方控制的光属性怪兽，为该怪兽赋予攻击力上升效果，数值等于对方怪兽当前攻击力，持续到回合结束。
 function c37742478.operation2(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取攻击怪兽
+	-- 取得本次战斗的攻击怪兽。
 	local a=Duel.GetAttacker()
-	-- 获取攻击目标怪兽
+	-- 取得本次战斗的攻击对象怪兽。
 	local d=Duel.GetAttackTarget()
 	if not a:IsRelateToBattle() or not d:IsRelateToBattle() then return end
-	-- 为攻击怪兽添加攻击力提升效果，提升数值等于对方怪兽的攻击力
+	-- 那只怪兽的攻击力直到回合结束时上升进行战斗的对方怪兽的攻击力数值。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetOwnerPlayer(tp)
 	e1:SetType(EFFECT_TYPE_SINGLE)

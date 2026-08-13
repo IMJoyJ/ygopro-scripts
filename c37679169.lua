@@ -26,41 +26,41 @@ function c37679169.initial_effect(c)
 	e2:SetOperation(c37679169.spop)
 	c:RegisterEffect(e2)
 end
--- 过滤函数，用于检测卡组中是否存在满足条件的「星际仙踪」怪兽（怪兽卡且能作为cost送去墓地）
+-- 定义过滤函数：筛选出属于「星际仙踪」系列、是怪兽卡且可以作为代价送去墓地的卡。
 function c37679169.cfilter(c)
 	return c:IsSetCard(0xd2) and c:IsType(TYPE_MONSTER) and c:IsAbleToGraveAsCost()
 end
--- 效果处理：从卡组选择1只「星际仙踪」怪兽送去墓地作为cost，并记录其等级
+-- 效果①的代价处理：从卡组选择1只符合条件的「星际仙踪」怪兽送去墓地作为代价，并将其等级记录到效果标签中供后续下降数值使用。
 function c37679169.adcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否满足cost条件：卡组中是否存在至少1张符合条件的「星际仙踪」怪兽
+	-- 代价检测：确认卡组中存在至少1只满足条件的「星际仙踪」怪兽可以作为代价送去墓地，否则无法发动。
 	if chk==0 then return Duel.IsExistingMatchingCard(c37679169.cfilter,tp,LOCATION_DECK,0,1,nil) end
-	-- 提示玩家选择要送去墓地的卡
+	-- 弹出“请选择要送去墓地的卡”的选择提示信息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
-	-- 从卡组选择1张符合条件的「星际仙踪」怪兽
+	-- 让玩家从卡组选择1张满足条件的「星际仙踪」怪兽作为代价候选。
 	local g=Duel.SelectMatchingCard(tp,c37679169.cfilter,tp,LOCATION_DECK,0,1,1,nil)
 	local tc=g:GetFirst()
-	-- 将选中的卡送去墓地作为cost
+	-- 将选中的怪兽作为代价送去墓地。
 	Duel.SendtoGrave(tc,REASON_COST)
 	e:SetLabel(tc:GetLevel())
 end
--- 效果处理：选择场上1只表侧表示怪兽作为对象
+-- 效果①的取对象处理：选择场上1只表侧表示怪兽作为对象，同时进行是否存在合法对象的检测。
 function c37679169.adtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsFaceup() and chkc:IsLocation(LOCATION_MZONE) end
-	-- 检查是否满足选择对象条件：场上是否存在至少1只表侧表示怪兽
+	-- 目标检测：确认场上存在至少1只表侧表示怪兽可以作为效果对象。
 	if chk==0 then return Duel.IsExistingTarget(Card.IsFaceup,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil) end
-	-- 提示玩家选择效果的对象
+	-- 弹出“请选择效果的对象”的选择提示信息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)  --"请选择效果的对象"
-	-- 选择场上1只表侧表示怪兽作为对象
+	-- 让玩家选择1只场上的表侧表示怪兽作为效果对象，并将其登记为当前连锁的对象。
 	Duel.SelectTarget(tp,Card.IsFaceup,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,nil)
 end
--- 效果处理：使对象怪兽的攻击力和守备力下降
+-- 效果①处理：根据记录的被送去墓地的怪兽等级，使对象怪兽的攻击力·守备力下降相应数值（等级×100）。
 function c37679169.adop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取当前连锁效果选择的对象怪兽
+	-- 获取效果①选择的对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsFaceup() and tc:IsRelateToEffect(e) then
 		local lv=e:GetLabel()
-		-- 创建一个使对象怪兽攻击力下降的效果
+		-- 作为对象的怪兽的攻击力·守备力下降因为这个效果发动而送去墓地的怪兽的等级×100。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)
@@ -72,41 +72,41 @@ function c37679169.adop(e,tp,eg,ep,ev,re,r,rp)
 		tc:RegisterEffect(e2)
 	end
 end
--- 效果处理：判断此卡是否因战斗或效果破坏而送去墓地
+-- 效果②的发动条件：这张卡被战斗或效果破坏并送去墓地时满足条件。
 function c37679169.spcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	return c:IsReason(REASON_DESTROY) and c:IsReason(REASON_BATTLE+REASON_EFFECT)
 end
--- 效果处理：将此卡从墓地除外作为cost
+-- 效果②的代价处理：将墓地中的这张卡除外作为发动代价。
 function c37679169.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	if chk==0 then return c:IsAbleToRemoveAsCost() and c:IsLocation(LOCATION_GRAVE) end
-	-- 将此卡从墓地除外作为cost
+	-- 将墓地中的这张卡以表侧表示除外，作为发动代价。
 	Duel.Remove(c,POS_FACEUP,REASON_COST)
 end
--- 过滤函数，用于检测卡组中是否存在满足条件的4星以下「星际仙踪」怪兽（可特殊召唤）
+-- 定义特殊召唤的过滤函数：筛选属于「星际仙踪」系列、4星以下且可以被特殊召唤的怪兽。
 function c37679169.spfilter(c,e,tp)
 	return c:IsSetCard(0xd2) and c:IsLevelBelow(4) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 效果处理：判断是否满足特殊召唤条件
+-- 效果②的目标检测与设定：确认自己场上有空位且卡组中存在符合条件的「星际仙踪」怪兽，并设置特殊召唤的操作信息。
 function c37679169.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查场上是否有足够的召唤区域
+	-- 检测自己主要怪兽区是否有空位，确保可以特殊召唤。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查卡组中是否存在至少1张符合条件的「星际仙踪」怪兽
+		-- 检测卡组中是否存在至少1只满足条件的「星际仙踪」怪兽可以特殊召唤。
 		and Duel.IsExistingMatchingCard(c37679169.spfilter,tp,LOCATION_DECK,0,1,nil,e,tp) end
-	-- 设置操作信息：准备特殊召唤1张「星际仙踪」怪兽
+	-- 登记本次效果将进行特殊召唤的操作信息：从卡组特殊召唤1只怪兽。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_DECK)
 end
--- 效果处理：从卡组选择1只符合条件的「星际仙踪」怪兽并特殊召唤
+-- 效果②处理：从卡组选择1只符合条件的「星际仙踪」怪兽特殊召唤到自己场上。
 function c37679169.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查场上是否有足够的召唤区域
+	-- 处理时再次确认主要怪兽区有空位，若没有空位则终止处理。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-	-- 提示玩家选择要特殊召唤的卡
+	-- 弹出“请选择要特殊召唤的卡”的选择提示信息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 从卡组选择1只符合条件的「星际仙踪」怪兽
+	-- 让玩家从卡组选择1只满足条件的「星际仙踪」怪兽用于特殊召唤。
 	local g=Duel.SelectMatchingCard(tp,c37679169.spfilter,tp,LOCATION_DECK,0,1,1,nil,e,tp)
 	if g:GetCount()>0 then
-		-- 将选中的怪兽特殊召唤到场上
+		-- 将选中的怪兽以表侧攻击表示特殊召唤到自己的主要怪兽区。
 		Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
