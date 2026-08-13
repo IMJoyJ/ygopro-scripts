@@ -8,7 +8,7 @@ function c27971137.initial_effect(c)
 	e1:SetCode(EVENT_ATTACK_ANNOUNCE)
 	e1:SetOperation(c27971137.atkop)
 	c:RegisterEffect(e1)
-	-- 场上的这张卡被破坏送去墓地的场合，可以从卡组把1只攻击力和守备力是0的1星怪兽特殊召唤。
+	-- 此外，场上的这张卡被破坏送去墓地的场合，可以从卡组把1只攻击力和守备力是0的1星怪兽特殊召唤。这个效果特殊召唤的怪兽的效果无效化，下次的自己的结束阶段时破坏。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(27971137,1))  --"特殊召唤"
 	e2:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -20,10 +20,10 @@ function c27971137.initial_effect(c)
 	e2:SetOperation(c27971137.spop)
 	c:RegisterEffect(e2)
 end
--- 攻击宣言时，使自身攻击力上升500。
+-- 攻击宣言时，为自身施加攻击力上升500的效果，该效果持续到标准重置条件（离场、回手牌/卡组等）或效果无效时失效。
 function c27971137.atkop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 使自身攻击力上升500。
+	-- 这张卡的攻击力在每次这张卡攻击宣言上升500。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_UPDATE_ATTACK)
@@ -31,50 +31,50 @@ function c27971137.atkop(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_DISABLE)
 	c:RegisterEffect(e1)
 end
--- 送去墓地时，满足条件则发动。
+-- 判定触发条件：此卡在场上被破坏并送去墓地，即满足“场上的这张卡被破坏送去墓地的场合”。
 function c27971137.spcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsPreviousLocation(LOCATION_ONFIELD) and e:GetHandler():IsReason(REASON_DESTROY)
 end
--- 过滤满足等级为1、攻击力为0、守备力为0且可特殊召唤的怪兽。
+-- 筛选卡组中满足“1星且攻击力和守备力都是0”并且可以被特殊召唤的怪兽。
 function c27971137.filter(c,e,tp)
 	return c:IsLevel(1) and c:IsAttack(0) and c:IsDefense(0) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 准备特殊召唤满足条件的怪兽。
+-- 效果发动时进行合法性检查：自己主要怪兽区有空位，且卡组中存在至少1只符合条件的怪兽。
 function c27971137.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断场上是否有特殊召唤空间。
+	-- 发动条件之一：自己主要怪兽区域存在可用的空格。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 判断卡组中是否存在满足条件的怪兽。
+		-- 发动条件之二：卡组中存在至少1只满足“1星且攻击力/守备力为0”并可被特殊召唤的怪兽。
 		and Duel.IsExistingMatchingCard(c27971137.filter,tp,LOCATION_DECK,0,1,nil,e,tp) end
-	-- 设置操作信息为特殊召唤。
+	-- 登记本次连锁的特殊召唤操作信息：从卡组特殊召唤1只怪兽，以供后续效果检测（如星尘龙等）。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_DECK)
 end
--- 处理特殊召唤效果。
+-- 效果处理：从卡组选1只符合条件的怪兽以表侧表示特殊召唤，并对其附加效果无效化及下次自己的结束阶段破坏的持续效果。
 function c27971137.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断场上是否有特殊召唤空间。
+	-- 效果处理时再次确认：若自己主要怪兽区没有可用的空格，则不再进行特殊召唤。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-	-- 提示选择要特殊召唤的卡。
+	-- 给玩家显示选择要特殊召唤的卡片的提示信息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 选择满足条件的怪兽。
+	-- 从卡组选择出1只满足条件的怪兽。
 	local g=Duel.SelectMatchingCard(tp,c27971137.filter,tp,LOCATION_DECK,0,1,1,nil,e,tp)
 	local tc=g:GetFirst()
 	if tc then
-		-- 将选中的怪兽特殊召唤。
+		-- 将选择的怪兽以表侧攻击表示特殊召唤到自己场上。
 		Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP)
 		tc:RegisterFlagEffect(27971137,RESET_EVENT+RESETS_STANDARD,0,1)
-		-- 使特殊召唤的怪兽效果无效。
+		-- 这个效果特殊召唤的怪兽的效果无效化。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_DISABLE)
 		e1:SetReset(RESET_EVENT+RESETS_STANDARD)
 		tc:RegisterEffect(e1)
-		-- 使特殊召唤的怪兽效果无效化。
+		-- 这个效果特殊召唤的怪兽的效果无效化。
 		local e2=Effect.CreateEffect(e:GetHandler())
 		e2:SetType(EFFECT_TYPE_SINGLE)
 		e2:SetCode(EFFECT_DISABLE_EFFECT)
 		e2:SetValue(RESET_TURN_SET)
 		e2:SetReset(RESET_EVENT+RESETS_STANDARD)
 		tc:RegisterEffect(e2)
-		-- 设置下次自己的结束阶段时破坏该怪兽的效果。
+		-- 下次的自己的结束阶段时破坏。
 		local de=Effect.CreateEffect(e:GetHandler())
 		de:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 		de:SetCode(EVENT_PHASE+PHASE_END)
@@ -83,28 +83,28 @@ function c27971137.spop(e,tp,eg,ep,ev,re,r,rp)
 		de:SetLabelObject(tc)
 		de:SetCondition(c27971137.descon)
 		de:SetOperation(c27971137.desop)
-		-- 判断是否为自己的结束阶段。
+		-- 如果当前已经处于自己的结束阶段，则需要把破坏时机推迟到下一个自己的结束阶段。
 		if Duel.GetTurnPlayer()==tp and Duel.GetCurrentPhase()==PHASE_END then
-			-- 记录当前回合数。
+			-- 记录当前的回合数，用于区分“下次的结束阶段”而不是当前这一次。
 			de:SetLabel(Duel.GetTurnCount())
 			de:SetReset(RESET_PHASE+PHASE_END+RESET_SELF_TURN,2)
 		else
 			de:SetLabel(0)
 			de:SetReset(RESET_PHASE+PHASE_END+RESET_SELF_TURN)
 		end
-		-- 注册破坏效果。
+		-- 将“结束阶段破坏”的持续效果注册到决斗中，使其在合适的结束阶段生效。
 		Duel.RegisterEffect(de,tp)
 	end
 end
--- 判断是否为自己的结束阶段且未被处理。
+-- 判定是否满足破坏条件：轮到自己的结束阶段、且不是记录中的那个结束阶段、且被特殊召唤的怪兽仍然存在。
 function c27971137.descon(e,tp,eg,ep,ev,re,r,rp)
 	local tc=e:GetLabelObject()
-	-- 满足结束阶段且未被处理的条件。
+	-- 具体条件：当前回合玩家是自己、回合数不是记录值、怪兽仍带有本效果标记（未被其他方式无效/离场）。
 	return Duel.GetTurnPlayer()==tp and Duel.GetTurnCount()~=e:GetLabel() and tc:GetFlagEffect(27971137)~=0
 end
--- 破坏该怪兽。
+-- 效果处理：破坏那只被特殊召唤的怪兽。
 function c27971137.desop(e,tp,eg,ep,ev,re,r,rp)
 	local tc=e:GetLabelObject()
-	-- 将该怪兽破坏。
+	-- 以效果原因将那只怪兽破坏。
 	Duel.Destroy(tc,REASON_EFFECT)
 end

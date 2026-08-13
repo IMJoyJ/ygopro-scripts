@@ -9,7 +9,7 @@ function c27979109.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- ①：自己抽卡阶段作为进行通常抽卡的代替才能发动。从自己的卡组·墓地选1张装备魔法卡加入手卡。
+	-- 这个卡名的①②的效果1回合各能使用1次。①：自己抽卡阶段作为进行通常抽卡的代替才能发动。从自己的卡组·墓地选1张装备魔法卡加入手卡。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(27979109,0))
 	e2:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
@@ -36,76 +36,76 @@ function c27979109.initial_effect(c)
 	c:RegisterEffect(e3)
 end
 c27979109.has_text_type=TYPE_DUAL
--- 效果发动条件：只有在自己的抽卡阶段才能发动
+-- ①效果的发动条件：仅在己方抽卡阶段才能发动，即效果发动者必须是当前回合玩家。
 function c27979109.thcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断当前回合玩家是否为效果发动者
+	-- 判定tp是否为当前回合玩家，确保该效果只在自己回合的抽卡阶段满足发动条件。
 	return tp==Duel.GetTurnPlayer()
 end
--- 过滤函数：筛选可加入手牌的装备魔法卡
+-- ①的检索对象过滤条件：装备魔法卡且能够加入手牌。
 function c27979109.thfilter(c)
 	return c:IsType(TYPE_EQUIP) and c:IsAbleToHand()
 end
--- 效果发动时点：设置效果处理信息，准备从卡组·墓地选1张装备魔法卡加入手牌
+-- ①效果发动时处理：先检查能否通常抽卡以及卡组·墓地是否有符合条件的装备魔法卡；若可发动，则放弃本次通常抽卡，并设置从卡组·墓地选1张加入手牌的操作信息。
 function c27979109.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断是否满足发动条件：当前玩家可以进行通常抽卡且卡组或墓地存在装备魔法卡
+	-- 合法性检查：自己本回合可进行通常抽卡，且卡组或墓地存在至少1张符合条件的装备魔法卡。
 	if chk==0 then return aux.IsPlayerCanNormalDraw(tp) and Duel.IsExistingMatchingCard(c27979109.thfilter,tp,LOCATION_DECK+LOCATION_GRAVE,0,1,nil) end
-	-- 禁止当前玩家进行通常抽卡
+	-- 放弃本次通常抽卡，作为代替抽卡效果的发动代价，并将常规抽卡数设为0且注册不可抽卡限制。
 	aux.GiveUpNormalDraw(e,tp)
-	-- 设置效果处理信息：将1张装备魔法卡从卡组·墓地加入手牌
+	-- 设置操作信息：本次效果为把1张卡从卡组或墓地加入手牌，count为1（处理时选择具体卡片）。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,0,LOCATION_DECK+LOCATION_GRAVE)
 end
--- 效果处理函数：选择并处理装备魔法卡加入手牌
+-- ①效果处理：从自己卡组或墓地选择1张不受王家长眠之谷影响的装备魔法卡加入手牌；加入成功则给对方确认。
 function c27979109.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要加入手牌的装备魔法卡
+	-- 显示选择提示：请选择要加入手牌的卡（HINTMSG_ATOHAND）。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择满足条件的装备魔法卡
+	-- 从自己的卡组或墓地中选择1张符合条件的装备魔法卡（使用不受王家长眠之谷影响的过滤条件；不取对象，在处理时选择）。
 	local g=Duel.SelectMatchingCard(tp,aux.NecroValleyFilter(c27979109.thfilter),tp,LOCATION_DECK+LOCATION_GRAVE,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的装备魔法卡加入手牌
+		-- 将选择的装备魔法卡加入其持有者的手牌，原因为效果（REASON_EFFECT）。
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 向对方确认加入手牌的装备魔法卡
+		-- 向对方玩家展示加入手牌的卡，以确认检索结果。
 		Duel.ConfirmCards(1-tp,g)
 	end
 end
--- 过滤函数：筛选场上存在的装备魔法卡
+-- ②的条件过滤：表侧表示的装备魔法卡，用于判断自己场上是否存在装备魔法卡。
 function c27979109.cfilter(c)
 	return c:IsFaceup() and c:IsType(TYPE_EQUIP)
 end
--- 效果发动条件：场上有装备魔法卡存在
+-- ②效果的发动条件：自己场上有表侧表示的装备魔法卡存在。
 function c27979109.drcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断场上有装备魔法卡存在
+	-- 检查自己魔陷区是否存在至少1张表侧表示的装备魔法卡。
 	return Duel.IsExistingMatchingCard(c27979109.cfilter,tp,LOCATION_SZONE,0,1,nil)
 end
--- 过滤函数：筛选可作为代价送回卡组的战士族·炎属性怪兽或二重怪兽
+-- ②的cost对象过滤：从墓地选择1只战士族·炎属性怪兽或者二重怪兽，且能够作为cost返回卡组。
 function c27979109.costfilter(c)
 	return ((c:IsAttribute(ATTRIBUTE_FIRE) and c:IsRace(RACE_WARRIOR)) or c:IsType(TYPE_DUAL)) and c:IsAbleToDeckAsCost()
 end
--- 效果发动时点：设置效果处理信息，准备支付代价并抽卡
+-- ②发动cost：从自己墓地选择1只战士族·炎属性怪兽或二重怪兽，将其返回持有者卡组最下面。
 function c27979109.drcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断是否满足发动条件：墓地存在符合条件的怪兽
+	-- cost合法性检查：自己墓地是否存在至少1只符合条件的怪兽可作为返回卡组的cost。
 	if chk==0 then return Duel.IsExistingMatchingCard(c27979109.costfilter,tp,LOCATION_GRAVE,0,1,nil) end
-	-- 提示玩家选择要返回卡组的怪兽
+	-- 显示选择提示：请选择要返回卡组的卡（HINTMSG_TODECK）。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TODECK)  --"请选择要返回卡组的卡"
-	-- 选择满足条件的怪兽
+	-- 从自己墓地选择1只符合条件的怪兽（战士族·炎属性或二重）作为cost。
 	local g=Duel.SelectMatchingCard(tp,c27979109.costfilter,tp,LOCATION_GRAVE,0,1,1,nil)
-	-- 将选中的怪兽送回卡组最下面
+	-- 将作为cost的卡返回持有者卡组最下面（SEQ_DECKBOTTOM），原因为cost（REASON_COST）。
 	Duel.SendtoDeck(g,nil,SEQ_DECKBOTTOM,REASON_COST)
 end
--- 效果发动时点：设置效果处理信息，准备抽卡
+-- ②效果发动前处理：检查能否抽1张卡；设置抽卡对象为自己、抽卡数为1，并登记操作信息。
 function c27979109.drtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断是否满足发动条件：当前玩家可以抽卡
+	-- 合法性检查：玩家tp能否通过效果抽1张卡（不受不能抽卡限制等）。
 	if chk==0 then return Duel.IsPlayerCanDraw(tp,1) end
-	-- 设置效果处理的目标玩家为效果发动者
+	-- 设置连锁的对象玩家为自己（tp），供后续抽卡处理使用。
 	Duel.SetTargetPlayer(tp)
-	-- 设置效果处理的目标参数为抽卡数量1
+	-- 设置连锁的对象参数为1，表示抽卡数量为1张。
 	Duel.SetTargetParam(1)
-	-- 设置效果处理信息：从卡组抽1张卡
+	-- 设置操作信息：本次效果为抽卡效果，目标玩家为自己，抽卡数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,1)
 end
--- 效果处理函数：执行抽卡效果
+-- ②效果处理：从连锁信息中取出目标玩家和抽卡数量，执行抽卡。
 function c27979109.drop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁中设定的目标玩家和抽卡数量
+	-- 获取当前连锁信息中的目标玩家（p）和对象参数（d），即抽牌玩家与抽卡数。
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 执行抽卡效果
+	-- 让玩家p以效果原因（REASON_EFFECT）抽d张卡。
 	Duel.Draw(p,d,REASON_EFFECT)
 end

@@ -13,27 +13,27 @@ function c28002611.initial_effect(c)
 	e1:SetOperation(c28002611.op)
 	c:RegisterEffect(e1)
 end
--- 定义过滤函数，用于筛选手卡中属于「变形斗士」且为怪兽的卡片。
+-- 过滤条件：判定卡片是否为「变形斗士」字段的怪兽卡。
 function c28002611.filter(c)
 	return c:IsSetCard(0x26) and c:IsType(TYPE_MONSTER)
 end
--- 设置效果的发动条件，检查玩家手卡中是否存在至少1张符合条件的「变形斗士」怪兽。
+-- 效果的目标设定：检查手牌是否存在至少1张「变形斗士」怪兽可供选择，并登记把怪兽送去墓地的操作信息。
 function c28002611.tg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断是否满足发动条件，即手卡中是否存在至少1张「变形斗士」怪兽。
+	-- 效果发动的合法性检查：确认我方手牌中存在至少1张符合条件的「变形斗士」怪兽。
 	if chk==0 then return Duel.IsExistingMatchingCard(c28002611.filter,tp,LOCATION_HAND,0,1,nil) end
-	-- 设置连锁操作信息，表示该效果会将目标怪兽送去墓地。
+	-- 登记当前连锁的操作信息：本效果将把手牌的「变形斗士」怪兽送去墓地，预期数量为1张，位置为手牌。
 	Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,nil,1,tp,LOCATION_HAND)
 end
--- 定义效果发动后的处理流程，包括选择并送入墓地的怪兽数量、计算攻击力提升值并应用到自身。
+-- 效果处理：从手牌选择任意数量的「变形斗士」怪兽送去墓地，之后根据送入墓地的数量提高这张卡的攻击力。
 function c28002611.op(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsFacedown() or not c:IsRelateToEffect(e) then return end
-	-- 向玩家发送提示信息，提示其选择要送去墓地的卡片。
+	-- 弹出选择提示，要求玩家选择要送去墓地的卡片。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
-	-- 让玩家从手卡中选择1到63张符合条件的「变形斗士」怪兽送入墓地。
+	-- 从手牌中选择1至63张满足条件的「变形斗士」怪兽。
 	local g=Duel.SelectMatchingCard(tp,c28002611.filter,tp,LOCATION_HAND,0,1,63,nil)
 	if g:GetCount()==0 then return end
-	-- 将选中的怪兽送入墓地，并记录其为效果原因。
+	-- 将选择的卡以效果原因送入墓地。
 	Duel.SendtoGrave(g,REASON_EFFECT)
 	-- 这张卡的攻击力上升这个效果送去墓地的怪兽数量×800。
 	local e1=Effect.CreateEffect(c)

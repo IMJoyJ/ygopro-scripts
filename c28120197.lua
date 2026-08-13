@@ -22,20 +22,20 @@ function c28120197.initial_effect(c)
 	e3:SetCondition(c28120197.dcon2)
 	c:RegisterEffect(e3)
 end
--- 当攻击怪兽的控制者与场地卡控制者相同时，且攻击目标为守备表示的岩石族怪兽时，触发效果
+-- 效果条件判断：当攻击怪兽的控制者为该效果持有者，且攻击目标存在并是守备表示岩石族怪兽时，条件成立，即我方怪兽攻击对方守备表示的岩石族怪兽并受到战斗伤害的场合，触发伤害翻倍。
 function c28120197.dcon1(e)
-	-- 获取此次战斗中攻击的怪兽
+	-- 获取当前战斗的攻击怪兽。
 	local a=Duel.GetAttacker()
-	-- 获取此次战斗中被攻击的怪兽
+	-- 获取当前战斗的被攻击怪兽（攻击目标）。
 	local d=Duel.GetAttackTarget()
 	return a:GetControler()==e:GetHandlerPlayer()
 		and d and d:IsDefensePos() and d:IsRace(RACE_ROCK)
 end
--- 当攻击怪兽的控制者与场地卡控制者不同时，且攻击目标为守备表示的岩石族怪兽时，触发效果
+-- 效果条件判断：当攻击怪兽的控制者不是该效果持有者（即对方），且攻击目标存在并是守备表示岩石族怪兽时，条件成立，即对方怪兽攻击我方守备表示的岩石族怪兽并受到战斗伤害的场合，触发伤害翻倍。
 function c28120197.dcon2(e)
-	-- 获取此次战斗中攻击的怪兽
+	-- 获取当前战斗的攻击怪兽。
 	local a=Duel.GetAttacker()
-	-- 获取此次战斗中被攻击的怪兽
+	-- 获取当前战斗的被攻击怪兽（攻击目标）。
 	local d=Duel.GetAttackTarget()
 	return a:GetControler()==1-e:GetHandlerPlayer()
 		and d and d:IsDefensePos() and d:IsRace(RACE_ROCK)
