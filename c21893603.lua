@@ -30,57 +30,57 @@ function c21893603.initial_effect(c)
 	e3:SetOperation(c21893603.thop2)
 	c:RegisterEffect(e3)
 end
--- 检索满足条件的「星杯」怪兽（卡名、类型、能加入手牌）
+-- 检索过滤函数：判定卡组中的卡是否为「星杯」怪兽且可以加入手卡。
 function c21893603.thfilter(c)
 	return c:IsSetCard(0xfd) and c:IsType(TYPE_MONSTER) and c:IsAbleToHand()
 end
--- 效果处理时判断是否满足条件（卡组存在满足条件的怪兽）
+-- ①效果的发动条件和处理信息：检查卡组是否存在符合条件的「星杯」怪兽，并设置回手牌/检索的操作信息。
 function c21893603.thtg1(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断卡组是否存在满足条件的怪兽
+	-- 发动条件判定：仅在效果发动时确认卡组存在至少1只符合条件的「星杯」怪兽才允许发动。
 	if chk==0 then return Duel.IsExistingMatchingCard(c21893603.thfilter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置连锁操作信息：将1张卡从卡组加入手牌
+	-- 设置操作信息：预计将1张卡从卡组加入手牌，用于连锁/效果检测。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 效果处理：选择并加入手牌
+-- ①效果处理：从卡组选择1只「星杯」怪兽加入手牌，并让对方确认。
 function c21893603.thop1(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要加入手牌的卡
+	-- 提示玩家选择要加入手牌的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择满足条件的卡组怪兽
+	-- 从卡组选择1只满足条件的「星杯」怪兽。
 	local g=Duel.SelectMatchingCard(tp,c21893603.thfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的怪兽加入手牌
+		-- 将选中的卡以效果原因加入持有者手卡。
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 向对方确认加入手牌的卡
+		-- 向对方玩家展示加入手牌的卡，以确认检索内容。
 		Duel.ConfirmCards(1-tp,g)
 	end
 end
--- 过滤手卡或场上怪兽（类型为怪兽、能送去墓地）
+-- 代价过滤函数：判定手牌或场上的怪兽是否可以作为代价送去墓地。
 function c21893603.thcfilter(c)
 	return c:IsType(TYPE_MONSTER) and c:IsAbleToGraveAsCost()
 end
--- 效果处理：支付代价（将手卡或场上的1只怪兽送去墓地）
+-- 作为②效果的发动代价，从自己的手牌·场上选择1只怪兽送去墓地。
 function c21893603.thcost2(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断手卡或场上是否存在满足条件的怪兽
+	-- 代价条件判定：确认存在至少1只可以作为代价的怪兽。
 	if chk==0 then return Duel.IsExistingMatchingCard(c21893603.thcfilter,tp,LOCATION_HAND+LOCATION_MZONE,0,1,nil) end
-	-- 提示玩家选择要送去墓地的卡
+	-- 提示玩家选择要送去墓地的怪兽。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
-	-- 选择满足条件的手卡或场上的怪兽
+	-- 从手牌·场上选择1只满足条件的怪兽。
 	local g=Duel.SelectMatchingCard(tp,c21893603.thcfilter,tp,LOCATION_HAND+LOCATION_MZONE,0,1,1,nil)
-	-- 将选中的怪兽送去墓地作为代价
+	-- 将选择的怪兽作为代价送去墓地。
 	Duel.SendtoGrave(g,REASON_COST)
 end
--- 效果处理：判断墓地的这张卡是否能加入手牌
+-- ②效果的目标判定：确认墓地的这张卡可以加入手牌，并设置回手牌操作信息。
 function c21893603.thtg2(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	if chk==0 then return c:IsAbleToHand() end
-	-- 设置连锁操作信息：将此卡加入手牌
+	-- 设置操作信息：将这张卡从墓地加入手牌。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,c,1,0,0)
 end
--- 效果处理：将此卡加入手牌
+-- ②效果处理：如果这张卡仍与效果关联，则将其加入手牌。
 function c21893603.thop2(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) then
-		-- 将此卡加入手牌
+		-- 将墓地中的这张卡以效果原因加入持有者手卡。
 		Duel.SendtoHand(c,nil,REASON_EFFECT)
 	end
 end

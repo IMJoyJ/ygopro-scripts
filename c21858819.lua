@@ -5,7 +5,7 @@
 -- ①：自己或者对方的怪兽被战斗破坏送去墓地时，把这张卡1个超量素材取除，以那1只怪兽为对象才能发动。那只怪兽在自己场上守备表示特殊召唤。
 -- ②：以这张卡以外的自己场上1只特殊召唤的表侧表示怪兽为对象才能发动。自己基本分回复那只怪兽的原本攻击力的数值。
 function c21858819.initial_effect(c)
-	-- 添加XYZ召唤手续，使用等级为10、数量为2只以上的怪兽进行叠放
+	-- 为这张卡添加XYZ召唤手续：以等级10的怪兽2只以上（最多99只）为素材进行XYZ召唤。
 	aux.AddXyzProcedure(c,nil,10,2,nil,nil,99)
 	c:EnableReviveLimit()
 	-- ①：自己或者对方的怪兽被战斗破坏送去墓地时，把这张卡1个超量素材取除，以那1只怪兽为对象才能发动。那只怪兽在自己场上守备表示特殊召唤。
@@ -33,60 +33,60 @@ function c21858819.initial_effect(c)
 	e2:SetOperation(c21858819.recop)
 	c:RegisterEffect(e2)
 end
--- 支付1个超量素材作为cost
+-- 代价函数：发动前检查这张卡是否有1个超量素材可去除；支付时将这张卡的1个超量素材去除作为发动代价。
 function c21858819.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():CheckRemoveOverlayCard(tp,1,REASON_COST) end
 	e:GetHandler():RemoveOverlayCard(tp,1,1,REASON_COST)
 end
--- 过滤满足条件的被战斗破坏送入墓地的怪兽，可作为效果对象且能特殊召唤
+-- 筛选被战斗破坏送去墓地、且能够成为此效果对象、并能以表侧守备表示被特殊召唤的怪兽。
 function c21858819.filter(c,e,tp)
 	return c:IsLocation(LOCATION_GRAVE) and c:IsReason(REASON_BATTLE)
 		and c:IsCanBeEffectTarget(e) and c:IsCanBeSpecialSummoned(e,0,tp,false,false,POS_FACEUP_DEFENSE)
 end
--- 设置效果目标为符合条件的被战斗破坏怪兽，并准备特殊召唤
+-- 发动时条件判定和取对象准备：从战斗破坏送墓的怪兽中筛出满足条件的卡，将其中一张暂存为LabelObject，并确认存在可特殊召唤的对象。
 function c21858819.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then
 		local g=eg:Filter(c21858819.filter,nil,e,tp)
 		e:SetLabelObject(g:GetFirst())
 		return g:GetCount()~=0
 	end
-	-- 设置当前连锁的效果对象为指定怪兽
+	-- 把选定的那只怪兽设为当前连锁的对象。
 	Duel.SetTargetCard(e:GetLabelObject())
-	-- 设置操作信息为特殊召唤该怪兽
+	-- 设置操作信息：本次效果将特殊召唤对象怪兽1只。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetLabelObject(),1,0,0)
 end
--- 执行效果，将目标怪兽特殊召唤到场上
+-- 效果处理：若对象仍与此效果关联，则将那只怪兽以表侧守备表示特殊召唤到自己场上。
 function c21858819.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的效果对象
+	-- 取得本次效果的对象卡。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 将目标怪兽以守备表示特殊召唤到场上
+		-- 将目标怪兽以表侧守备表示特殊召唤到自己场上（不进行苏生限制/召唤条件检测）。
 		Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP_DEFENSE)
 	end
 end
--- 过滤满足条件的特殊召唤的表侧表示怪兽
+-- 选择怪兽的过滤条件：表侧表示、原本攻击力大于0、且是通过特殊召唤方式出场的怪兽。
 function c21858819.recfilter(c)
 	return c:IsFaceup() and c:GetBaseAttack()>0 and c:IsSummonType(SUMMON_TYPE_SPECIAL)
 end
--- 设置效果目标为符合条件的特殊召唤怪兽，并准备回复LP
+-- ②效果的取对象处理：不能选择自身；选择自己场上1只满足条件的表侧表示特殊召唤怪兽，并设置回复LP的操作信息。
 function c21858819.rectg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	local c=e:GetHandler()
 	if chkc then return chkc~=c and chkc:IsControler(tp) and chkc:IsLocation(LOCATION_MZONE) and c21858819.recfilter(chkc) end
-	-- 检查是否存在符合条件的特殊召唤怪兽作为效果对象
+	-- 发动条件判定：确认自己场上是否存在1只满足条件且可成为对象的怪兽。
 	if chk==0 then return Duel.IsExistingTarget(c21858819.recfilter,tp,LOCATION_MZONE,0,1,c) end
-	-- 提示玩家选择效果对象
+	-- 向玩家发出选择对象的目标提示信息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)  --"请选择效果的对象"
-	-- 选择符合条件的特殊召唤怪兽作为效果对象
+	-- 让玩家从自己场上选择1只满足条件的怪兽（不能选择这张卡自身）作为效果对象。
 	local g=Duel.SelectTarget(tp,c21858819.recfilter,tp,LOCATION_MZONE,0,1,1,c)
-	-- 设置操作信息为回复LP
+	-- 设置操作信息：效果将回复基本分，回复数值为目标怪兽的原本攻击力。
 	Duel.SetOperationInfo(0,CATEGORY_RECOVER,nil,0,tp,g:GetFirst():GetBaseAttack())
 end
--- 执行效果，回复LP
+-- 效果处理：取得对象怪兽，若对象仍与此效果相关且满足表侧表示、原本攻击力大于0，则回复相应基本分。
 function c21858819.recop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的效果对象
+	-- 取得本次回复效果选择的怪兽对象。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) and tc:IsFaceup() and tc:GetBaseAttack()>0 then
-		-- 使玩家回复目标怪兽攻击力数值的LP
+		-- 回复自己基本分，数值为目标怪兽的原本攻击力。
 		Duel.Recover(tp,tc:GetBaseAttack(),REASON_EFFECT)
 	end
 end

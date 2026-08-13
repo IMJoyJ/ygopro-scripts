@@ -3,10 +3,10 @@
 -- 4星怪兽×3
 -- 1回合1次，把这张卡1个超量素材取除才能发动。这张卡的攻击力上升场上的超量素材数量×300的数值。
 function c2191144.initial_effect(c)
-	-- 为卡片添加等级为4、需要3只怪兽的XYZ召唤手续
+	-- 为这张卡添加超量召唤手续：使用3只4星怪兽叠放召唤（对应超量召唤条件“4星怪兽×3”）。
 	aux.AddXyzProcedure(c,nil,4,3)
 	c:EnableReviveLimit()
-	-- 1回合1次，把这张卡1个超量素材取除才能发动。这张卡的攻击力上升场上的超量素材数量×300的数值。
+	-- 对应效果原文：“1回合1次，把这张卡1个超量素材取除才能发动。这张卡的攻击力上升场上的超量素材数量×300的数值。”
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(2191144,0))  --"攻击上升"
 	e1:SetCategory(CATEGORY_ATKCHANGE)
@@ -18,24 +18,24 @@ function c2191144.initial_effect(c)
 	e1:SetOperation(c2191144.atkop)
 	c:RegisterEffect(e1)
 end
--- 检查是否可以移除1个超量素材作为发动代价，并执行移除操作
+-- 发动代价处理：先检查这张卡是否有至少1个超量素材可作为代价取除；确认后实际取除1个超量素材（REASON_COST）。
 function c2191144.atkcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():CheckRemoveOverlayCard(tp,1,REASON_COST) end
 	e:GetHandler():RemoveOverlayCard(tp,1,1,REASON_COST)
 end
--- 设置效果目标，判断场上是否有超过1个超量素材
+-- 发动条件判定：确认场上超量素材总数大于1才允许发动，避免取除素材后攻击力上升为0的无意义发动。
 function c2191144.atktg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断场上是否有超过1个超量素材
+	-- 检查阶段：若为发动条件确认（chk==0），返回场上超量素材总数是否大于1。
 	if chk==0 then return Duel.GetOverlayCount(tp,1,1)>1 end
 end
--- 效果发动时，若卡片表侧表示且与效果相关，则根据场上超量素材数量提升攻击力
+-- 效果处理：若这张卡仍表侧表示且与发动时的效果存在关联，则获取当前场上超量素材数量ct，若ct>0则赋予这张卡攻击力上升ct×300的持续效果（直到离场/无效等重置）。
 function c2191144.atkop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsFaceup() and c:IsRelateToEffect(e) then
-		-- 获取场上超量素材的数量
+		-- 获取当前场上（双方场上）的超量素材总数，存入变量ct。
 		local ct=Duel.GetOverlayCount(tp,1,1)
 		if ct>0 then
-			-- 将攻击力提升场上超量素材数量×300的数值
+			-- 对应效果原文：“这张卡的攻击力上升场上的超量素材数量×300的数值。”
 			local e1=Effect.CreateEffect(c)
 			e1:SetType(EFFECT_TYPE_SINGLE)
 			e1:SetCode(EFFECT_UPDATE_ATTACK)
