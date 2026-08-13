@@ -25,49 +25,49 @@ function c44891812.initial_effect(c)
 	e2:SetRange(LOCATION_GRAVE)
 	e2:SetProperty(EFFECT_FLAG_CARD_TARGET)
 	e2:SetCondition(c44891812.spcon)
-	-- 将这张卡除外作为费用
+	-- 设置效果②的发动代价为把墓地中的这张卡除外（使用aux.bfgcost简化实现）。
 	e2:SetCost(aux.bfgcost)
 	e2:SetTarget(c44891812.sptg)
 	e2:SetOperation(c44891812.spop)
 	c:RegisterEffect(e2)
 end
--- 判断自己墓地是否存在魔法·陷阱卡
+-- 效果①的发动条件判定函数：确认自己墓地中没有魔法·陷阱卡存在。
 function c44891812.defcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 返回值为0表示自己墓地没有魔法·陷阱卡
+	-- 检查自己墓地中魔法·陷阱卡的数量是否为0。
 	return Duel.GetMatchingGroupCount(Card.IsType,tp,LOCATION_GRAVE,0,nil,TYPE_SPELL+TYPE_TRAP)==0
 end
--- 将此卡从手牌丢弃作为费用
+-- 效果①的发动代价函数：将手卡的这张卡丢弃作为发动代价。
 function c44891812.defcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	if chk==0 then return c:IsDiscardable() end
-	-- 将此卡送入墓地作为费用
+	-- 将这张卡丢弃送入墓地，原因标记为COST（代价）和DISCARD（丢弃）。
 	Duel.SendtoGrave(c,REASON_COST+REASON_DISCARD)
 end
--- 定义过滤函数，筛选表侧表示的「超重武者」怪兽且守备力不为0
+-- 效果①的对象过滤器：用于选择自己场上的表侧表示、卡名含有「超重武者」字段、且守备力不为0的怪兽。
 function c44891812.deffilter(c)
-	-- 返回值为true表示该怪兽为表侧表示、属于「超重武者」卡组且守备力不为0
+	-- 对象必须满足：表侧表示、属于0x9a（超重武者）字段、且守备力不为0。
 	return c:IsFaceup() and c:IsSetCard(0x9a) and aux.nzdef(c)
 end
--- 获取攻击怪兽和被攻击怪兽，并设置目标选择条件
+-- 效果①的发动目标处理：获取攻击怪兽和战斗对象，并处理取对象效果的合法性检测。
 function c44891812.deftg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	-- 获取此次战斗的攻击怪兽
+	-- 获取当前进行战斗的攻击方怪兽。
 	local a=Duel.GetAttacker()
 	local d=a:GetBattleTarget()
 	if a:IsControler(1-tp) then a,d=d,a end
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp)
 		and c44891812.deffilter(chkc) and chkc~=e:GetLabelObject() end
 	if chk==0 then return a and a:IsDefensePos() and d and d:IsControler(1-tp)
-		-- 判断场上是否存在满足条件的「超重武者」怪兽作为目标
+		-- 检查除攻击怪兽外，自己场上是否存在1只满足条件的「超重武者」怪兽可以作为效果对象。
 		and Duel.IsExistingTarget(c44891812.deffilter,tp,LOCATION_MZONE,0,1,a) end
-	-- 提示玩家选择表侧表示的卡
+	-- 向玩家发出“请选择表侧表示的卡”的选择提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
-	-- 选择满足条件的「超重武者」怪兽作为目标
+	-- 让玩家从自己场上选择1只满足条件的「超重武者」怪兽作为效果对象。
 	Duel.SelectTarget(tp,c44891812.deffilter,tp,LOCATION_MZONE,0,1,1,a)
 	e:SetLabelObject(a)
 end
--- 设置攻击怪兽的守备力在伤害计算时增加目标怪兽的守备力
+-- 效果①处理：使进行战斗的自己怪兽的守备力仅在那次伤害计算时上升作为对象的怪兽的守备力数值。
 function c44891812.defop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取效果的目标怪兽
+	-- 获取效果对象（被取为对象的「超重武者」怪兽，其守备力数值将被用于提升）。
 	local tc=Duel.GetFirstTarget()
 	local ac=e:GetLabelObject()
 	if ac:IsRelateToBattle() and ac:IsFaceup() and tc:IsRelateToEffect(e) and tc:IsFaceup() then
@@ -80,39 +80,39 @@ function c44891812.defop(e,tp,eg,ep,ev,re,r,rp)
 		ac:RegisterEffect(e1)
 	end
 end
--- 判断是否为对方怪兽的直接攻击宣言
+-- 效果②的发动条件判定函数：对方怪兽进行直接攻击宣言。
 function c44891812.spcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取此次攻击的怪兽
+	-- 获取攻击宣言的怪兽。
 	local at=Duel.GetAttacker()
-	-- 返回值为true表示是对方怪兽的直接攻击宣言
+	-- 攻击怪兽是对方怪兽且攻击对象为空，即直接攻击。
 	return at:IsControler(1-tp) and Duel.GetAttackTarget()==nil
 end
--- 定义过滤函数，筛选可特殊召唤的「超重武者」怪兽
+-- 效果②的对象过滤器：墓地中属于「超重武者」字段且可以被特殊召唤的怪兽。
 function c44891812.spfilter(c,e,tp)
 	return c:IsSetCard(0x9a) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 设置特殊召唤目标选择条件
+-- 取对象合法性检查：只能选择自己墓地中满足特殊召唤条件的「超重武者」怪兽，且不能选择效果②自身这张卡。
 function c44891812.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	local c=e:GetHandler()
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp)
 		and c44891812.spfilter(chkc,e,tp) and chkc~=c end
-	-- 判断是否有足够的召唤位置
+	-- 发动条件检查：自己主要怪兽区存在可用空位。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 判断墓地是否存在满足条件的「超重武者」怪兽
+		-- 检查自己墓地中是否存在满足特殊召唤条件的「超重武者」怪兽。
 		and Duel.IsExistingTarget(c44891812.spfilter,tp,LOCATION_GRAVE,0,1,c,e,tp) end
-	-- 提示玩家选择要特殊召唤的卡
+	-- 向玩家发出“请选择要特殊召唤的卡”的选择提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 选择满足条件的「超重武者」怪兽作为目标
+	-- 让玩家从自己墓地选择1只「超重武者」怪兽作为效果对象。
 	local g=Duel.SelectTarget(tp,c44891812.spfilter,tp,LOCATION_GRAVE,0,1,1,c,e,tp)
-	-- 设置操作信息，用于后续特殊召唤处理
+	-- 设置连锁处理信息，标明该效果处理时将进行特殊召唤，对象为选择的那1张卡。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,1,0,0)
 end
--- 将目标怪兽特殊召唤
+-- 效果②处理：将选择的怪兽特殊召唤。
 function c44891812.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取效果的目标怪兽
+	-- 获取效果对象（墓地中选出的「超重武者」怪兽）。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 将目标怪兽以表侧表示形式特殊召唤到场上
+		-- 将对象怪兽以表侧表示形式特殊召唤到自己的场上。
 		Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP)
 	end
 end

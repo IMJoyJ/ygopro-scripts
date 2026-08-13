@@ -25,58 +25,58 @@ function c44956694.initial_effect(c)
 	e2:SetOperation(c44956694.spop)
 	c:RegisterEffect(e2)
 end
--- 过滤函数：检索满足条件的墓地电子界族怪兽（非ROM云雌羊）
+-- 定义效果①的取对象过滤器：对象必须是自己墓地的电子界族怪兽、可以加入手牌、且不是「ROM云雌羊」（卡号44956694）。
 function c44956694.thfilter(c)
 	return c:IsRace(RACE_CYBERSE) and c:IsAbleToHand() and not c:IsCode(44956694)
 end
--- 效果处理：选择目标怪兽（墓地，电子界族，可加入手牌，非ROM云雌羊）
+-- 效果①的发动条件检查与取对象处理：确认墓地存在符合条件的怪兽后，提示玩家选择1只作为对象，并登记回手牌的操作信息。
 function c44956694.thtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and c44956694.thfilter(chkc) end
-	-- 条件判断：确认场上是否存在满足条件的目标怪兽
+	-- 发动时点检查（chk==0）：确认自己墓地存在至少1只可作为效果对象的电子界族怪兽，否则不能发动。
 	if chk==0 then return Duel.IsExistingTarget(c44956694.thfilter,tp,LOCATION_GRAVE,0,1,nil) end
-	-- 提示信息：提示玩家选择要加入手牌的卡
+	-- 显示对象选择提示：请选择要加入手牌的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择目标：从自己墓地选择1只满足条件的怪兽作为目标
+	-- 让发动玩家从自己墓地选择1只符合条件的电子界族怪兽，并将其登记为效果对象。
 	local g=Duel.SelectTarget(tp,c44956694.thfilter,tp,LOCATION_GRAVE,0,1,1,nil)
-	-- 设置操作信息：将要加入手牌的怪兽设置为效果处理对象
+	-- 设置操作信息：本次连锁处理会将选择的对象卡加入手牌（CATEGORY_TOHAND）。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,1,0,0)
 end
--- 效果处理：将目标怪兽加入手牌
+-- 效果①处理时的操作：取得对象卡，若该卡仍与效果相关，则将其加入持有者手牌。
 function c44956694.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取目标：获取当前连锁效果的目标怪兽
+	-- 取得效果①发动时选择的对象卡。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 执行效果：将目标怪兽送入手牌
+		-- 将对象卡以效果原因送入其持有者的手牌。
 		Duel.SendtoHand(tc,nil,REASON_EFFECT)
 	end
 end
--- 条件判断：确认该卡是否因战斗或效果被破坏
+-- 效果②的发动条件：这张卡因战斗或效果被破坏时满足（用位运算判断破坏原因含REASON_BATTLE或REASON_EFFECT）。
 function c44956694.spcon(e,tp,eg,ep,ev,re,r,rp)
 	return bit.band(r,REASON_EFFECT+REASON_BATTLE)~=0
 end
--- 过滤函数：检索满足条件的卡组电子界族怪兽（非ROM云雌羊，4星以下，可特殊召唤）
+-- 定义效果②的特殊召唤过滤器：选择卡组中等级4以下、电子界族、不是「ROM云雌羊」自身、且可以被特殊召唤的怪兽。
 function c44956694.spfilter(c,e,tp)
 	return c:IsLevelBelow(4) and c:IsRace(RACE_CYBERSE) and not c:IsCode(44956694) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 效果处理：判断是否可以发动特殊召唤效果
+-- 效果②目标设定的发动条件检查：确认自己怪兽区有空位，且卡组中存在符合条件的电子界族怪兽。
 function c44956694.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 条件判断：确认自己场上是否有空位可特殊召唤
+	-- 发动时点检查（chk==0）：自己场上怪兽区必须有可用空格。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 条件判断：确认卡组中是否存在满足条件的怪兽
+		-- 并且卡组中必须存在至少1只符合条件的电子界族怪兽；两项条件同时满足才能发动。
 		and Duel.IsExistingMatchingCard(c44956694.spfilter,tp,LOCATION_DECK,0,1,nil,e,tp) end
-	-- 设置操作信息：将要特殊召唤的怪兽设置为效果处理对象
+	-- 设置操作信息：效果处理时将把1只怪兽从卡组特殊召唤（具体怪兽在处理时选择）。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_DECK)
 end
--- 效果处理：从卡组特殊召唤满足条件的怪兽
+-- 效果②处理时的操作：若怪兽区有空位，则从卡组选择1只符合条件的电子界族怪兽，以表侧表示特殊召唤。
 function c44956694.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 条件判断：确认自己场上是否有空位可特殊召唤
+	-- 处理时再次检查：怪兽区没有空格则效果不处理，直接结束。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-	-- 提示信息：提示玩家选择要特殊召唤的卡
+	-- 显示特殊召唤选择提示：请选择要特殊召唤的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 选择目标：从卡组选择1只满足条件的怪兽
+	-- 从卡组选择1只符合条件的电子界族怪兽（不取对象，于效果处理时选择）。
 	local g=Duel.SelectMatchingCard(tp,c44956694.spfilter,tp,LOCATION_DECK,0,1,1,nil,e,tp)
 	if g:GetCount()>0 then
-		-- 执行效果：将目标怪兽特殊召唤到场上
+		-- 将选择的怪兽以表侧表示特殊召唤到自己场上（执行通常的特殊召唤判定与苏生限制）。
 		Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
 	end
 end

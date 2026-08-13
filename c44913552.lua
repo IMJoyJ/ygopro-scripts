@@ -11,15 +11,15 @@ function c44913552.initial_effect(c)
 	e2:SetOperation(c44913552.skipop)
 	c:RegisterEffect(e2)
 end
--- 将下次对方回合主要阶段1跳过的效果注册给全局环境
+-- 该函数是效果的发动处理：本卡战斗破坏对方怪兽后，创建一个针对对方玩家的持续效果，使其下次对方回合的主要阶段1被跳过。
 function c44913552.skipop(e,tp,eg,ep,ev,re,r,rp)
-	-- 下次的对方回合的主要阶段1跳过
+	-- 下次的对方回合的主要阶段1跳过。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
 	e1:SetTargetRange(0,1)
 	e1:SetCode(EFFECT_SKIP_M1)
 	e1:SetReset(RESET_PHASE+PHASE_END+RESET_OPPO_TURN)
-	-- 将跳过主要阶段1的效果注册给对方玩家
+	-- 将“跳过主要阶段1”的效果注册到对方玩家，使该效果在下次对方回合生效。
 	Duel.RegisterEffect(e1,tp)
 end

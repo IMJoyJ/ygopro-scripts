@@ -9,11 +9,11 @@
 -- ②：怪兽区域的这张卡被破坏的场合才能发动。选自己的灵摆区域1张卡特殊召唤，这张卡在自己的灵摆区域放置。
 function c45014450.initial_effect(c)
 	c:EnableReviveLimit()
-	-- 为卡片添加灵摆怪兽属性，不注册灵摆卡的发动效果
+	-- 为这张灵摆怪兽卡添加灵摆召唤、灵摆放置等基本属性；active_effect=false表示不注册灵摆卡“卡的发动”效果，仅作为灵摆怪兽存在。
 	aux.EnablePendulumAttribute(c,false)
-	-- 设置融合召唤手续，使用满足条件的「凶饿毒」怪兽和「异色眼」怪兽各1只为融合素材
+	-- 为这张卡添加融合召唤手续：以1只「凶饿毒」怪兽和1只「异色眼」怪兽作为融合素材进行融合召唤。
 	aux.AddFusionProcFun2(c,aux.FilterBoolFunction(Card.IsFusionSetCard,0x1050),aux.FilterBoolFunction(Card.IsFusionSetCard,0x99),true)
-	-- ①：1回合1次，以自己场上1只融合怪兽为对象才能发动。那只怪兽的攻击力直到回合结束时上升对方场上的怪兽数量×1000。
+	-- 这张卡用融合召唤以及灵摆召唤才能特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
@@ -54,35 +54,35 @@ function c45014450.initial_effect(c)
 	e6:SetOperation(c45014450.penop)
 	c:RegisterEffect(e6)
 end
--- 限制此卡只能通过融合召唤或灵摆召唤特殊召唤
+-- 特殊召唤条件的判定：仅允许以融合召唤或灵摆召唤的方式特殊召唤这张卡，其他特殊召唤方式均不被允许。
 function c45014450.splimit(e,se,sp,st)
 	return bit.band(st,SUMMON_TYPE_FUSION)==SUMMON_TYPE_FUSION or bit.band(st,SUMMON_TYPE_PENDULUM)==SUMMON_TYPE_PENDULUM
 end
--- 过滤满足条件的融合怪兽
+-- 过滤条件：表侧表示且为融合怪兽，用于选择自己场上的融合怪兽作为灵摆效果的对象。
 function c45014450.atkfilter(c)
 	return c:IsFaceup() and c:IsType(TYPE_FUSION)
 end
--- 设置效果目标为己方场上的融合怪兽
+-- 灵摆效果①的发动条件与取对象处理：需要自己场上存在1只表侧表示融合怪兽，且对方场上存在怪兽（用于计算上升数值）；满足条件时选择1只符合条件的融合怪兽作为对象。
 function c45014450.atktg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(tp) and chkc:IsLocation(LOCATION_MZONE) and c45014450.atkfilter(chkc) end
-	-- 检查己方场上是否存在融合怪兽
+	-- 发动条件检查阶段：确认自己场上存在至少1只满足条件的表侧表示融合怪兽，可以作为取对象目标。
 	if chk==0 then return Duel.IsExistingTarget(c45014450.atkfilter,tp,LOCATION_MZONE,0,1,nil)
-		-- 检查对方场上是否存在怪兽
+		-- 同时确认对方场上存在至少1只怪兽，否则攻击力上升数值无意义，不能发动。
 		and Duel.GetFieldGroupCount(tp,0,LOCATION_MZONE)>0 end
-	-- 提示玩家选择表侧表示的卡
+	-- 向操作者显示选择提示，要求选择表侧表示的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
-	-- 选择己方场上的融合怪兽作为效果对象
+	-- 执行对象选择：选择自己场上1只表侧表示融合怪兽，并将其记录为当前连锁的对象。
 	Duel.SelectTarget(tp,c45014450.atkfilter,tp,LOCATION_MZONE,0,1,1,nil)
 end
--- 处理效果，使目标融合怪兽攻击力上升
+-- 灵摆效果①的处理：获得对象怪兽和对方场上怪兽数量，令该对象怪兽的攻击力上升（对方场上怪兽数量×1000），直到回合结束时适用。
 function c45014450.atkop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取效果的目标怪兽
+	-- 获取效果发动时选择的融合怪兽对象。
 	local tc=Duel.GetFirstTarget()
-	-- 获取对方场上的怪兽数量
+	-- 获取对方场上存在的怪兽数量，用于计算攻击力上升的数值。
 	local ct=Duel.GetFieldGroupCount(tp,0,LOCATION_MZONE)
 	if c:IsRelateToEffect(e) and tc:IsFaceup() and tc:IsRelateToEffect(e) and ct>0 then
-		-- 使目标融合怪兽攻击力上升对方场上的怪兽数量×1000
+		-- 那只怪兽的攻击力直到回合结束时上升对方场上的怪兽数量×1000。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)
@@ -91,33 +91,33 @@ function c45014450.atkop(e,tp,eg,ep,ev,re,r,rp)
 		tc:RegisterEffect(e1)
 	end
 end
--- 设置复制效果的费用，防止重复发动
+-- 复制效果①的发动代价：通过标志位限制该效果1回合只能发动1次；若本回合尚未发动过则注册标志，否则无法发动。
 function c45014450.copycost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():GetFlagEffect(45014450)==0 end
 	e:GetHandler():RegisterFlagEffect(45014450,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END,0,1)
 end
--- 过滤满足条件的对方表侧表示怪兽
+-- 复制效果的对象过滤条件：表侧表示怪兽且不是衍生物（衍生物不能复制卡名/效果）。
 function c45014450.copyfilter(c)
 	return c:IsFaceup() and not c:IsType(TYPE_TOKEN)
 end
--- 设置效果目标为对方场上的表侧表示怪兽
+-- 复制效果①的发动条件与取对象处理：选择对方场上1只表侧表示的非衍生物怪兽作为对象；满足条件时进行选择并记录。
 function c45014450.copytg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(1-tp) and chkc:IsLocation(LOCATION_MZONE) and c45014450.copyfilter(chkc) end
-	-- 检查对方场上是否存在表侧表示怪兽
+	-- 发动条件检查阶段：确认对方场上存在至少1只满足条件的表侧表示怪兽，可以作为取对象目标。
 	if chk==0 then return Duel.IsExistingTarget(c45014450.copyfilter,tp,0,LOCATION_MZONE,1,nil) end
-	-- 提示玩家选择表侧表示的卡
+	-- 向操作者显示选择提示，要求选择表侧表示的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
-	-- 选择对方场上的表侧表示怪兽作为效果对象
+	-- 执行对象选择：选择对方场上1只表侧表示非衍生物怪兽，并将其记录为当前连锁的对象。
 	Duel.SelectTarget(tp,c45014450.copyfilter,tp,0,LOCATION_MZONE,1,1,nil)
 end
--- 处理效果，使此卡复制目标怪兽的卡名和效果
+-- 复制效果①的处理：若此卡与对象怪兽均与效果相关且表侧表示，则此卡获得对象怪兽的原本卡名；若对象不是陷阱怪兽，则复制其效果；同时此卡攻击力上升对象怪兽当前攻击力数值，以上状态保持到结束阶段。
 function c45014450.copyop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取效果的目标怪兽
+	-- 获取复制效果选择的对方怪兽对象。
 	local tc=Duel.GetFirstTarget()
 	if tc and c:IsRelateToEffect(e) and c:IsFaceup() and tc:IsRelateToEffect(e) and tc:IsFaceup() and not tc:IsType(TYPE_TOKEN) then
 		local code=tc:GetOriginalCodeRule()
-		-- 使此卡的卡号变为目标怪兽的原始卡号
+		-- 这张卡得到和那只怪兽相同的原本的卡名·效果。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
@@ -127,7 +127,7 @@ function c45014450.copyop(e,tp,eg,ep,ev,re,r,rp)
 		c:RegisterEffect(e1)
 		if not tc:IsType(TYPE_TRAPMONSTER) then
 			local cid=c:CopyEffect(code,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END,1)
-			-- 设置复制效果在结束阶段结束后自动解除
+			-- 直到结束阶段，这张卡得到和那只怪兽相同的原本的卡名·效果（结束时清除复制状态）。
 			local e3=Effect.CreateEffect(c)
 			e3:SetDescription(aux.Stringid(45014450,2))  --"结束复制效果"
 			e3:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
@@ -142,7 +142,7 @@ function c45014450.copyop(e,tp,eg,ep,ev,re,r,rp)
 			c:RegisterEffect(e3)
 		end
 		local atk=tc:GetAttack()
-		-- 使此卡攻击力上升目标怪兽的攻击力
+		-- 直到结束阶段，这张卡的攻击力上升那只怪兽的攻击力数值。
 		local e2=Effect.CreateEffect(c)
 		e2:SetType(EFFECT_TYPE_SINGLE)
 		e2:SetCode(EFFECT_UPDATE_ATTACK)
@@ -151,7 +151,7 @@ function c45014450.copyop(e,tp,eg,ep,ev,re,r,rp)
 		c:RegisterEffect(e2)
 	end
 end
--- 处理复制效果的结束操作
+-- 结束阶段时清除复制来的效果和卡名变更效果，并向对方提示复制效果结束。
 function c45014450.rstop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local cid=e:GetLabel()
@@ -161,41 +161,41 @@ function c45014450.rstop(e,tp,eg,ep,ev,re,r,rp)
 	end
 	local e1=e:GetLabelObject()
 	e1:Reset()
-	-- 显示被选为对象的卡的动画效果
+	-- 向玩家显示这张卡作为被操作对象的动画，并记录其为对象。
 	Duel.HintSelection(Group.FromCards(c))
-	-- 提示对方玩家选择了该效果
+	-- 向对方玩家提示“对方选择了：”并显示该效果描述，告知对方复制效果已经结束。
 	Duel.Hint(HINT_OPSELECTED,1-tp,e:GetDescription())
 end
--- 判断此卡是否从怪兽区域被破坏
+-- 灵摆效果②的发动条件：这张卡被破坏前位于怪兽区域且为表侧表示，满足“怪兽区域的这张卡被破坏”的条件。
 function c45014450.pencon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	return c:IsPreviousLocation(LOCATION_MZONE) and c:IsFaceup()
 end
--- 过滤满足条件的灵摆区域卡片
+-- 特殊召唤过滤条件：判断灵摆区域的卡是否能够被效果特殊召唤（不检查苏生限制等条件）。
 function c45014450.penfilter(c,e,tp)
 	return c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 设置灵摆区域特殊召唤的效果目标
+-- 灵摆效果②的发动条件：自己主要怪兽区域有空位，且自己的灵摆区域存在可以特殊召唤的卡；满足则设置将灵摆区1张卡特殊召唤的操作信息。
 function c45014450.pentg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查己方场上是否有空位
+	-- 发动条件检查：确保自己场上主要怪兽区域至少有一个可用空格，用于后续特殊召唤灵摆区的卡。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查己方灵摆区域是否存在可特殊召唤的卡片
+		-- 同时检查自己的灵摆区域是否存在至少1张满足特殊召唤条件的卡。
 		and Duel.IsExistingMatchingCard(c45014450.penfilter,tp,LOCATION_PZONE,0,1,nil,e,tp) end
-	-- 设置操作信息，表示将特殊召唤灵摆区域的卡片
+	-- 设置连锁处理的操作信息：本次效果处理涉及特殊召唤，预定处理1张卡，来源为自己的灵摆区域。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_PZONE)
 end
--- 处理灵摆区域特殊召唤效果
+-- 灵摆效果②的处理：若这张卡仍与效果相关且主要怪兽区域有空位，则从自己的灵摆区域选择1张卡特殊召唤；若成功，则把这张卡放置到自己的灵摆区域。
 function c45014450.penop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 检查此卡是否仍存在于场上且己方场上是否有空位
+	-- 效果处理前的安全性检查：若这张卡已与效果失去联系或自己场上没有可用怪兽区域，则终止处理。
 	if not c:IsRelateToEffect(e) or Duel.GetLocationCount(tp,LOCATION_MZONE)<1 then return end
-	-- 提示玩家选择要特殊召唤的卡
+	-- 向操作者显示选择提示，要求选择要特殊召唤的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 选择己方灵摆区域的卡片进行特殊召唤
+	-- 从自己的灵摆区域选择1张满足条件的卡，准备特殊召唤。
 	local g=Duel.SelectMatchingCard(tp,c45014450.penfilter,tp,LOCATION_PZONE,0,1,1,nil,e,tp)
-	-- 执行特殊召唤操作
+	-- 检查是否成功选择了卡且特殊召唤成功（至少1张），成功后继续执行放置灵摆区域。
 	if g:GetCount()>0 and Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)>0 then
-		-- 将此卡移回灵摆区域
+		-- 把这张卡移动到自己的灵摆区域，实现“这张卡在自己的灵摆区域放置”。
 		Duel.MoveToField(c,tp,tp,LOCATION_PZONE,POS_FACEUP,true)
 	end
 end

@@ -17,7 +17,7 @@ function c44910027.initial_effect(c)
 	e1:SetOperation(c44910027.ttop)
 	e1:SetValue(SUMMON_TYPE_ADVANCE)
 	c:RegisterEffect(e1)
-	-- 只能用自己场上3只龙族怪兽作为祭品进行祭品召唤出场。
+	-- 只能用自己场上3只龙族怪兽作为祭品进行祭品召唤出场。（此效果同样适用于里侧守备表示放置的祭品召唤）
 	local e2=Effect.CreateEffect(c)
 	e2:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
 	e2:SetType(EFFECT_TYPE_SINGLE)
@@ -26,7 +26,7 @@ function c44910027.initial_effect(c)
 	e2:SetOperation(c44910027.ttop)
 	e2:SetValue(SUMMON_TYPE_ADVANCE)
 	c:RegisterEffect(e2)
-	-- 只能用自己场上3只龙族怪兽作为祭品进行祭品召唤出场。
+	-- 只能用自己场上3只龙族怪兽作为祭品
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_SINGLE)
 	e3:SetCode(EFFECT_TRIBUTE_LIMIT)
@@ -39,21 +39,21 @@ function c44910027.initial_effect(c)
 	e4:SetCode(EFFECT_MATCH_KILL)
 	c:RegisterEffect(e4)
 end
--- 判断召唤所需的祭品数量是否满足条件并检查场上是否存在符合条件的祭品。
+-- 此函数用作召唤规则限制的条件判定：若c为nil（系统询问能否召唤）则直接允许；否则检查此次召唤的祭品要求不超过3张且场上存在至少3只可作祭品的怪兽，以确保必须用3只祭品进行上级召唤。
 function c44910027.ttcon(e,c,minc)
 	if c==nil then return true end
-	-- 判断召唤所需的祭品数量是否满足条件并检查场上是否存在符合条件的祭品。
+	-- 检查系统所需祭品数是否不超过3，并且场上存在至少3只满足解放条件的祭品怪兽，从而强制此次召唤必须解放3只怪兽。
 	return minc<=3 and Duel.CheckTribute(c,3)
 end
--- 选择3个祭品并将其解放以完成召唤。
+-- 此函数为召唤规则限制的执行操作：先让玩家选择3只祭品，将所选祭品设为这张卡的召唤素材，然后将它们解放，完成以3只怪兽作为祭品的祭品召唤。
 function c44910027.ttop(e,tp,eg,ep,ev,re,r,rp,c)
-	-- 选择3个祭品。
+	-- 让当前玩家从自己场上选择3只怪兽作为这张卡的祭品（因祭品限制效果，实际只能选择龙族怪兽）。
 	local g=Duel.SelectTribute(tp,c,3,3)
 	c:SetMaterial(g)
-	-- 将选中的祭品以召唤和素材的名义进行解放。
+	-- 将所选的3只祭品怪兽以“上级召唤素材”的理由解放，使其成为召唤这张卡而支付的祭品。
 	Duel.Release(g,REASON_SUMMON+REASON_MATERIAL)
 end
--- 限制非龙族怪兽作为祭品。
+-- 此函数返回true表示该怪兽不能作为这张卡的祭品；即非龙族怪兽被排除在祭品之外，确保只能用龙族怪兽作为祭品。
 function c44910027.tlimit(e,c)
 	return not c:IsRace(RACE_DRAGON)
 end

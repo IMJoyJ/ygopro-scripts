@@ -18,29 +18,29 @@ function c44901281.initial_effect(c)
 	e3:SetCode(EVENT_SPSUMMON)
 	c:RegisterEffect(e3)
 end
--- 检查场上是否存在表侧表示的「X-剑士」怪兽
+-- 过滤函数，用于筛选表侧表示且属于「X-剑士」系列的怪兽。
 function c44901281.filter(c)
 	return c:IsFaceup() and c:IsSetCard(0x100d)
 end
--- 判断是否满足发动条件，即己方场上存在「X-剑士」怪兽且当前无未处理的连锁
+-- 发动条件：自己场上有表侧表示的「X-剑士」怪兽，且当前没有处理中的连锁（满足召唤无效类效果的发动时机）。
 function c44901281.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 检索己方场上是否存在至少1只表侧表示的「X-剑士」怪兽
+	-- 检查自己场上是否存在至少1只表侧表示且属于「X-剑士」系列的怪兽。
 	return Duel.IsExistingMatchingCard(c44901281.filter,tp,LOCATION_MZONE,0,1,nil)
-		-- 确保当前没有尚未结算的连锁环节
+		-- 并且当前没有处于连锁处理中（召唤无效类效果只能在无连锁处理时发动）。
 		and aux.NegateSummonCondition()
 end
--- 设置连锁处理信息，确定将要无效召唤和破坏的怪兽
+-- 效果发动时的目标处理：不取对象，登记无效召唤与破坏的操作信息后即可发动。
 function c44901281.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置将要无效召唤的怪兽
+	-- 设置操作信息：本效果包含无效召唤，对象为当前召唤/特殊召唤/反转召唤的怪兽组（eg），数量为eg的怪兽数量。
 	Duel.SetOperationInfo(0,CATEGORY_DISABLE_SUMMON,eg,eg:GetCount(),0,0)
-	-- 设置将要破坏的怪兽
+	-- 设置操作信息：本效果包含破坏，对象为当前召唤的怪兽组（eg），数量为eg的怪兽数量。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,eg,eg:GetCount(),0,0)
 end
--- 执行效果，使怪兽召唤无效并破坏
+-- 效果处理：使召唤无效，并将那些怪兽破坏。
 function c44901281.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 使目标怪兽的召唤无效
+	-- 使正在进行的召唤/反转召唤/特殊召唤无效（eg为被无效的怪兽组）。
 	Duel.NegateSummon(eg)
-	-- 以效果为破坏原因破坏目标怪兽
+	-- 以效果为原因将这些被无效召唤的怪兽破坏。
 	Duel.Destroy(eg,REASON_EFFECT)
 end
