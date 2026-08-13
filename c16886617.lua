@@ -6,14 +6,14 @@
 function c16886617.initial_effect(c)
 	c:EnableReviveLimit()
 	c:SetUniqueOnField(1,1,16886617)
-	-- ①：「爬虫妖女·和修吉」在场上只能有1只表侧表示存在。
+	-- 这张卡不能通常召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
 	e1:SetCode(EFFECT_SPSUMMON_CONDITION)
 	e1:SetValue(0)
 	c:RegisterEffect(e1)
-	-- 这张卡不能通常召唤。把自己·对方场上2只攻击力0的怪兽解放的场合才能特殊召唤。
+	-- 把自己·对方场上2只攻击力0的怪兽解放的场合才能特殊召唤。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD)
 	e2:SetCode(EFFECT_SPSUMMON_PROC)
@@ -35,26 +35,26 @@ function c16886617.initial_effect(c)
 	e5:SetOperation(c16886617.desop)
 	c:RegisterEffect(e5)
 end
--- 过滤函数，返回满足条件的怪兽：表侧表示、攻击力为0、可因特殊召唤而解放
+-- 检查怪兽是否为表侧表示、攻击力为0且可以作为特殊召唤的解放素材。
 function c16886617.rfilter(c)
 	return c:IsFaceup() and c:IsAttack(0) and c:IsReleasable(REASON_SPSUMMON)
 end
--- 特殊召唤条件函数，检查场上是否存在满足条件的2只怪兽
+-- 特殊召唤条件判定：若c为nil则视为条件满足；否则需存在2只表侧表示且攻击力0且可解放的怪兽作为素材，并确保解放后己方仍有怪兽区域空位。
 function c16886617.spcon(e,c)
 	if c==nil then return true end
 	local tp=c:GetControler()
-	-- 获取满足条件的怪兽组（场上所有怪兽）
+	-- 获取双方怪兽区域中满足表侧表示、攻击力0、可解放条件的怪兽组。
 	local rg=Duel.GetMatchingGroup(c16886617.rfilter,tp,LOCATION_MZONE,LOCATION_MZONE,nil)
-	-- 检查该组怪兽中是否存在满足条件的2只怪兽
+	-- 检查上述怪兽组中是否存在2张卡作为解放素材，使解放后tp仍有怪兽区域空位。
 	return rg:CheckSubGroup(aux.mzctcheck,2,2,tp)
 end
--- 特殊召唤目标函数，选择满足条件的2只怪兽进行解放
+-- 特殊召唤发动时选择素材：从满足条件的怪兽中选出2张（要求解放后仍有空位），保存选中素材并返回true；未选择则返回false。
 function c16886617.sptg(e,tp,eg,ep,ev,re,r,rp,chk,c)
-	-- 获取满足条件的怪兽组（场上所有怪兽）
+	-- 检索双方场上满足表侧表示、攻击力0、可解放条件的怪兽组。
 	local rg=Duel.GetMatchingGroup(c16886617.rfilter,tp,LOCATION_MZONE,LOCATION_MZONE,nil)
-	-- 提示玩家选择要解放的卡
+	-- 发送选择提示，让玩家选择要解放的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_RELEASE)  --"请选择要解放的卡"
-	-- 从满足条件的怪兽中选择2只进行解放
+	-- 玩家从候选怪兽组中选择2张作为解放素材，且需满足解放后己方仍有怪兽区域空位。
 	local sg=rg:SelectSubGroup(tp,aux.mzctcheck,true,2,2,tp)
 	if sg then
 		sg:KeepAlive()
@@ -62,35 +62,35 @@ function c16886617.sptg(e,tp,eg,ep,ev,re,r,rp,chk,c)
 		return true
 	else return false end
 end
--- 特殊召唤操作函数，将选中的怪兽解放
+-- 特殊召唤处理时取出保存的素材组并解放，完成以解放素材进行特殊召唤的手续。
 function c16886617.spop(e,tp,eg,ep,ev,re,r,rp,c)
 	local g=e:GetLabelObject()
-	-- 以特殊召唤原因为由解放选中的怪兽
+	-- 将选择的素材怪兽解放，解放原因为特殊召唤。
 	Duel.Release(g,REASON_SPSUMMON)
 	g:DeleteGroup()
 end
--- 破坏效果过滤函数，返回满足条件的怪兽：表侧表示
+-- 该效果的对象过滤条件：对象必须是表侧表示怪兽。
 function c16886617.desfilter(c)
 	return c:IsFaceup()
 end
--- 破坏效果目标函数，选择对方场上1只表侧表示怪兽作为目标
+-- ②效果的发动条件与取对象：检测对方场上是否存在表侧表示怪兽；发动时选择对方场上1只表侧表示怪兽作为对象，并设置破坏的操作信息。
 function c16886617.destg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(1-tp) and c16886617.desfilter(chkc) end
-	-- 检查是否存在满足条件的对方怪兽
+	-- 效果发动合法性检查：若对方场上不存在表侧表示怪兽，则不能发动。
 	if chk==0 then return Duel.IsExistingTarget(c16886617.desfilter,tp,0,LOCATION_MZONE,1,nil) end
-	-- 提示玩家选择要破坏的卡
+	-- 提示玩家选择要破坏的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 选择对方场上1只表侧表示怪兽作为目标
+	-- 选择对方场上1只表侧表示怪兽作为效果对象，同时将其登记为当前连锁的对象。
 	local g=Duel.SelectTarget(tp,c16886617.desfilter,tp,0,LOCATION_MZONE,1,1,nil)
-	-- 设置操作信息，确定要破坏的怪兽数量和类型
+	-- 设置操作信息，声明本次连锁将破坏所选择的1张卡。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,1,0,0)
 end
--- 破坏效果操作函数，对目标怪兽进行破坏
+-- 效果处理阶段：取得对象，若对象仍表侧表示且与发动效果存在关联，则将其破坏。
 function c16886617.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的目标怪兽
+	-- 获得该效果发动时选择的对象的卡。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsFaceup() and tc:IsRelateToEffect(e) then
-		-- 以效果原因为由破坏目标怪兽
+		-- 以卡片效果的原因破坏对象怪兽。
 		Duel.Destroy(tc,REASON_EFFECT)
 	end
 end

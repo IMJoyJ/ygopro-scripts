@@ -6,9 +6,9 @@
 -- ②：把这张卡1个超量素材取除才能发动。从卡组把1只「虫惑魔」怪兽加入手卡。
 -- ③：原本持有者是对方的怪兽被效果所送去墓地的场合或者所除外的场合才能发动。选那之内的1只作为这张卡的超量素材。
 local s,id,o=GetID()
--- 初始化效果，添加XYZ召唤手续并注册三个效果
+-- 初始化此卡效果：添加XYZ召唤手续（4星怪兽×2），并注册效果①的免疫、效果②的检索、效果③的叠放，同时为③注册合并延迟事件。
 function s.initial_effect(c)
-	-- 添加XYZ召唤手续，使用4星怪兽叠放，最少2只
+	-- 为这张卡添加XYZ召唤手续：用等级4的怪兽2只作为超量素材进行XYZ召唤。
 	aux.AddXyzProcedure(c,nil,4,2)
 	c:EnableReviveLimit()
 	-- ①：持有超量素材的这张卡不受和给这张卡作为超量素材中的怪兽相同种族的怪兽（除这张卡外）发动的效果以及陷阱卡的效果影响。
@@ -31,7 +31,7 @@ function s.initial_effect(c)
 	e2:SetTarget(s.thtg)
 	e2:SetOperation(s.thop)
 	c:RegisterEffect(e2)
-	-- 注册合并的延迟事件，监听送去墓地和除外事件
+	-- 为这张卡注册合并延迟事件：将‘被效果送去墓地’和‘被效果除外’合并为一个自定义事件码，用于③效果在同一连锁中只触发一次。
 	local custom_code=aux.RegisterMergedDelayedEvent_ToSingleCard(c,id,{EVENT_TO_GRAVE,EVENT_REMOVE})
 	-- ③：原本持有者是对方的怪兽被效果所送去墓地的场合或者所除外的场合才能发动。选那之内的1只作为这张卡的超量素材。
 	local e3=Effect.CreateEffect(c)
@@ -45,17 +45,17 @@ function s.initial_effect(c)
 	e3:SetOperation(s.mtop)
 	c:RegisterEffect(e3)
 end
--- 效果条件：持有超量素材
+-- ①效果的适用条件：仅当这张卡持有超量素材时，免疫效果才适用。
 function s.imcon(e)
 	local c=e:GetHandler()
 	return c:GetOverlayCount()>0
 end
--- 效果值：免疫效果过滤器
+-- ①效果的免疫判定：陷阱卡效果直接免疫；对怪兽效果，则计算本卡超量素材中怪兽的原始种族集合，若效果来源卡不是本卡、拥有该种族之一且效果已发动，则使该效果对本卡无效。
 function s.efilter(e,re)
 	if re:IsActiveType(TYPE_TRAP) then return true end
 	local g=e:GetHandler():GetOverlayGroup():Filter(Card.IsType,nil,TYPE_MONSTER)
 	local race=0
-	-- 遍历超量素材中的怪兽
+	-- 遍历超量素材中的怪兽卡，累加它们的原始种族。
 	for tc in aux.Next(g) do
 		race=race|tc:GetOriginalRace()
 	end
@@ -63,60 +63,60 @@ function s.efilter(e,re)
 	return re:GetOwner()~=e:GetOwner() and race~=0
 		and rc:IsRace(race) and re:IsActivated()
 end
--- 效果Cost：去除1个超量素材
+-- ②效果的发动代价：从这张卡上取除1个超量素材（若不能取除则无法发动）。
 function s.thcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():CheckRemoveOverlayCard(tp,1,REASON_COST) end
 	e:GetHandler():RemoveOverlayCard(tp,1,1,REASON_COST)
 end
--- 检索过滤器：虫惑魔族怪兽
+-- ②效果的检索过滤条件：选择卡组中1张‘虫惑魔’怪兽卡且能够加入手卡的卡。
 function s.thfilter(c)
 	return c:IsSetCard(0x108a) and c:IsType(TYPE_MONSTER) and c:IsAbleToHand()
 end
--- 效果Target：检索1只虫惑魔族怪兽
+-- ②效果的发动条件与处理信息：发动时检查卡组中是否存在符合条件的虫惑魔怪兽，并设置本次操作将1张卡从卡组加入手牌。
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否存在满足条件的卡
+	-- 发动条件（chk==0）：确认卡组中至少存在1张满足s.thfilter的虫惑魔怪兽。
 	if chk==0 then return Duel.IsExistingMatchingCard(s.thfilter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置操作信息为检索效果
+	-- 设置操作信息：声明本效果处理时将1张卡从卡组加入手牌（CATEGORY_TOHAND），供连锁相关判定使用。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 效果Operation：选择并加入手牌
+-- ②效果处理：提示玩家选择1张符合条件的虫惑魔怪兽，将其加入手牌并让对手确认。
 function s.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示选择要加入手牌的卡
+	-- 显示选择提示‘请选择要加入手牌的卡’。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择满足条件的卡
+	-- 从卡组选择1张满足s.thfilter的虫惑魔怪兽（不取对象，效果处理时选择）。
 	local g=Duel.SelectMatchingCard(tp,s.thfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将卡加入手牌
+		-- 将选中的卡加入其持有者手牌（nil表示加入原持有者手牌），原因记为效果。
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 确认对方查看加入手牌的卡
+		-- 让对方玩家确认刚刚加入手牌的卡。
 		Duel.ConfirmCards(1-tp,g)
 	end
 end
--- 效果Target过滤器：对方怪兽被效果送入墓地或除外
+-- ③效果的过滤条件：怪兽不是衍生物、是怪兽卡、原本持有者为对方、因效果或效果改变去向被送去墓地/除外、当前位于墓地或除外区、为表侧表示且可以作为超量素材。
 function s.cfilter(c,tp)
 	return not c:IsType(TYPE_TOKEN) and c:IsType(TYPE_MONSTER)
 		and c:GetOwner()==1-tp and c:IsReason(REASON_EFFECT+REASON_REDIRECT)
 		and c:IsLocation(LOCATION_GRAVE+LOCATION_REMOVED)
 		and c:IsFaceupEx() and c:IsCanOverlay()
 end
--- 效果Target：设置目标怪兽
+-- ③效果的发动条件与对象设定：从触发事件中筛出满足条件的怪兽，若本卡是XYZ怪兽且存在至少1只，则将它们全部设为关联对象。
 function s.mttg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local g=eg:Filter(s.cfilter,nil,tp)
 	if chk==0 then return e:GetHandler():IsType(TYPE_XYZ) and #g>0 end
-	-- 设置连锁处理的目标卡
+	-- 将满足条件的怪兽设置为当前连锁的对象，使它们与效果建立关联，便于处理时判断是否仍然可用。
 	Duel.SetTargetCard(g)
 end
--- 效果Operation：选择并作为超量素材叠放
+-- ③效果处理：从仍与连锁相关的可选怪兽中选1只（排除受王家长眠之谷影响的卡），叠放在这张卡下面作为超量素材。
 function s.mtop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local g=eg:Filter(s.cfilter,nil,tp)
-	-- 过滤不受王家长眠之谷影响的卡
+	-- 进一步筛选：保留与当前连锁有关联且不受王家长眠之谷效果影响的怪兽卡。
 	local mg=g:Filter(aux.NecroValleyFilter(Card.IsRelateToChain),nil)
 	if #mg>0 and c:IsRelateToChain() then
-		-- 提示选择作为超量素材的卡
+		-- 显示选择提示‘请选择要作为超量素材的卡’。
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_XMATERIAL)  --"请选择要作为超量素材的卡"
 		local og=mg:Select(tp,1,1,nil)
-		-- 将卡叠放为超量素材
+		-- 将选中的卡叠放在这张卡下方作为超量素材。
 		Duel.Overlay(c,og)
 	end
 end

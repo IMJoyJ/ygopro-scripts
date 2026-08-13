@@ -13,33 +13,33 @@ function c16796157.initial_effect(c)
 	e1:SetOperation(c16796157.thop)
 	c:RegisterEffect(e1)
 end
--- 检查是否可以解放这张卡作为发动代价
+-- 代价函数：发动前检查此卡能否解放，若能则解放自身作为发动代价。
 function c16796157.thcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsReleasable() end
-	-- 将这张卡解放作为发动代价
+	-- 以解放自身（REASON_COST）来支付发动代价。
 	Duel.Release(e:GetHandler(),REASON_COST)
 end
--- 过滤函数，用于筛选「异次元超能人·星斗罗宾」卡
+-- 过滤条件：卡名必须为「异次元超能人·星斗罗宾」且能够加入手卡。
 function c16796157.filter(c)
 	return c:IsCode(80208158) and c:IsAbleToHand()
 end
--- 设置效果的发动目标，检查场上是否存在满足条件的卡
+-- 目标函数：确认卡组或墓地存在可检索目标，并设置效果处理的回手牌信息。
 function c16796157.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查以自己为玩家，在墓地和卡组中是否存在至少1张「异次元超能人·星斗罗宾」
+	-- 发动合法性检查：自己的卡组·墓地中存在至少1只「异次元超能人·星斗罗宾」且能加入手卡。
 	if chk==0 then return Duel.IsExistingMatchingCard(c16796157.filter,tp,LOCATION_GRAVE+LOCATION_DECK,0,1,nil) end
-	-- 设置连锁处理信息，表示将要将1张卡从墓地或卡组加入手牌
+	-- 设置操作信息：本次处理将执行把1张卡加入手牌（CATEGORY_TOHAND）的检索效果，来源为卡组·墓地。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_GRAVE+LOCATION_DECK)
 end
--- 处理效果的发动，选择并把符合条件的卡加入手牌
+-- 效果处理函数：从符合条件的卡中选择1张加入手牌，并向对方确认。
 function c16796157.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要加入手牌的卡
+	-- 弹出选择提示，提示玩家选择要加入手牌的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 从墓地和卡组中选择1张「异次元超能人·星斗罗宾」
+	-- 从自己的卡组·墓地选择1张符合条件的「异次元超能人·星斗罗宾」（应用王家长眠之谷的过滤规则）。
 	local g=Duel.SelectMatchingCard(tp,aux.NecroValleyFilter(c16796157.filter),tp,LOCATION_GRAVE+LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的卡加入手牌
+		-- 将选择的卡加入其持有者的手卡（效果处理）。
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 向对方确认加入手牌的卡
+		-- 将加入手卡的卡展示给对方玩家确认。
 		Duel.ConfirmCards(1-tp,g)
 	end
 end

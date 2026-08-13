@@ -12,14 +12,14 @@ function c16751086.initial_effect(c)
 	e1:SetOperation(c16751086.operation)
 	c:RegisterEffect(e1)
 end
--- 效果处理时设置操作信息，确定将对方卡组最上面3张卡送去墓地
+-- 该函数是效果发动时的处理：由于是必发的诱发效果，且无发动条件限制，chk==0时直接返回true表示可发动；随后登记本次操作效果为将对方卡组上方3张卡送去墓地。
 function c16751086.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置连锁操作信息，指定对方卡组最上面3张卡送去墓地
+	-- 设置本次连锁的处理信息：类别为卡组送墓（CATEGORY_DECKDES），对象不取对象，预计将对方（1-tp）卡组最上方3张卡送去墓地。
 	Duel.SetOperationInfo(0,CATEGORY_DECKDES,nil,0,1-tp,3)
 end
--- 效果发动时执行的操作函数，用于处理将对方卡组最上面3张卡送去墓地
+-- 该函数是效果处理时的操作：实际执行将对方卡组最上方3张卡送去墓地。
 function c16751086.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 执行将对方卡组最上面3张卡以效果为原因送去墓地
+	-- 以效果原因（REASON_EFFECT）将对方（1-tp）卡组最上方3张卡送去墓地。
 	Duel.DiscardDeck(1-tp,3,REASON_EFFECT)
 end

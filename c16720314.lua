@@ -3,7 +3,7 @@
 -- 这个卡名的卡在1回合只能发动1张。
 -- ①：自己场上没有怪兽存在，持有比原本攻击力高的攻击力的怪兽在对方场上存在的场合才能发动。自己从卡组抽2张。
 function c16720314.initial_effect(c)
-	-- 创建效果对象并设置其分类为抽卡、对象为玩家、类型为发动、时点为自由时点、发动次数限制为1次、条件函数为condition、目标函数为target、效果处理函数为activate
+	-- 这个卡名的卡在1回合只能发动1张。①：自己场上没有怪兽存在，持有比原本攻击力高的攻击力的怪兽在对方场上存在的场合才能发动。自己从卡组抽2张。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_DRAW)
 	e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
@@ -15,32 +15,32 @@ function c16720314.initial_effect(c)
 	e1:SetOperation(c16720314.activate)
 	c:RegisterEffect(e1)
 end
--- 过滤函数：检查怪兽是否表侧表示且当前攻击力高于原本攻击力
+-- 定义过滤条件：该怪兽须为表侧表示，且当前攻击力大于其原本攻击力（即持有比原本攻击力高的攻击力的怪兽）。
 function c16720314.cfilter(c)
 	return c:IsFaceup() and c:GetAttack()>c:GetBaseAttack()
 end
--- 效果发动条件：自己场上没有怪兽且对方场上存在攻击力高于原本攻击力的怪兽
+-- 发动条件：自己场上没有怪兽存在，且对方场上有至少1只满足cfilter条件（表侧表示且当前攻击力高于原本攻击力）的怪兽。
 function c16720314.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查自己场上是否没有怪兽
+	-- 检查自己场上的怪兽区（包含额外怪兽区）没有怪兽存在，即自己场上没有怪兽。
 	return Duel.GetFieldGroupCount(tp,LOCATION_MZONE,0)==0
-		-- 检查对方场上是否存在满足过滤条件的怪兽
+		-- 检查对方场上的怪兽区是否存在至少1只满足cfilter条件的怪兽（表侧表示且当前攻击力高于原本攻击力）。
 		and Duel.IsExistingMatchingCard(c16720314.cfilter,tp,0,LOCATION_MZONE,1,nil)
 end
--- 设置效果目标：检查玩家是否可以抽2张卡，并设置目标玩家和抽卡数量
+-- 效果发动时的目标设置：验证玩家可以抽2张卡，并以玩家为对象记录抽卡玩家和抽卡数量，同时登记抽卡操作信息。
 function c16720314.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查玩家是否可以抽2张卡
+	-- 效果发动合法性检查：在发动时（chk==0）确认玩家tp可以进行抽2张卡，若不能则不能发动。
 	if chk==0 then return Duel.IsPlayerCanDraw(tp,2) end
-	-- 设置当前连锁的目标玩家为效果发动玩家
+	-- 将当前连锁的对象玩家设置为发动者tp，即以自己为抽卡对象。
 	Duel.SetTargetPlayer(tp)
-	-- 设置当前连锁的目标参数为2（抽卡数量）
+	-- 将当前连锁的对象参数设置为2，表示抽卡数量为2张。
 	Duel.SetTargetParam(2)
-	-- 设置当前连锁的操作信息为抽卡效果，目标玩家为效果发动玩家，抽卡数量为2
+	-- 登记此次效果处理包含抽卡分类的操作信息：预计由tp玩家抽2张卡（因为抽卡对象和数量已确定，无需指定具体卡片，故targets为nil）。
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,2)
 end
--- 效果处理函数：从卡组抽卡
+-- 效果处理阶段：从当前连锁信息中取出之前保存的对象玩家和抽卡张数，并执行抽卡。
 function c16720314.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的目标玩家和目标参数（抽卡数量）
+	-- 从当前连锁信息中取出对象玩家和对象参数，分别赋值给p和d。
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 执行抽卡效果，抽卡数量为d，抽卡原因为效果
+	-- 让对象玩家p以效果原因抽d张卡，完成抽卡效果。
 	Duel.Draw(p,d,REASON_EFFECT)
 end

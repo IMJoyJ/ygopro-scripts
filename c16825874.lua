@@ -19,28 +19,28 @@ function c16825874.initial_effect(c)
 	e2:SetOperation(c16825874.cop)
 	c:RegisterEffect(e2)
 end
--- 判断是否为同调召唤作为素材
+-- 检查这张卡是否作为同调素材被使用（r==REASON_SYNCHRO），仅当用于同调召唤时才执行后续给同调怪兽附加效果的处理。
 function c16825874.ccon(e,tp,eg,ep,ev,re,r,rp)
 	return r==REASON_SYNCHRO
 end
--- 当怪兽作为同调素材时，将其效果无效化并除外
+-- 处理作为同调素材时的效果：取得同调召唤出的怪兽，依次为它附加离场时除外、效果不能发动、效果无效化三个效果。
 function c16825874.cop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local rc=c:GetReasonCard()
-	-- 从场上离开时从游戏中除外
+	-- 从场上离开的场合从游戏中除外。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_LEAVE_FIELD_REDIRECT)
 	e1:SetValue(LOCATION_REMOVED)
 	e1:SetReset(RESET_EVENT+0x7e0000)
 	rc:RegisterEffect(e1,true)
-	-- 效果不能发动
+	-- 效果不能发动。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_SINGLE)
 	e2:SetCode(EFFECT_CANNOT_TRIGGER)
 	e2:SetReset(RESET_EVENT+RESETS_STANDARD)
 	rc:RegisterEffect(e2,true)
-	-- 效果无效化
+	-- 无效化。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_SINGLE)
 	e3:SetCode(EFFECT_DISABLE)

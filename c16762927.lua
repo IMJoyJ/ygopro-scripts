@@ -26,15 +26,15 @@ function c16762927.initial_effect(c)
 	e3:SetTargetRange(0,1)
 	c:RegisterEffect(e3)
 end
--- 检查玩家是否能作为Cost把count张卡送去墓地。
+-- 作为 EFFECT_ATTACK_COST 的代价检查函数，判断对方玩家能否满足“把卡组最上面的1张卡送去墓地”的代价；通过查询对方玩家身上的守墓的使魔标记数量来决定需要丢弃的卡数（此处为1），并调用 Duel.IsPlayerCanDiscardDeckAsCost 检查是否能将等量卡组送去墓地。
 function c16762927.atcost(e,c,tp)
-	-- 获取玩家当前已使用的标记效果数量。
+	-- 取得对方玩家 tp 身上 code 为 16762927 的标记效果数量，用于表示该效果要求丢弃的卡组数量（由于 e3 的注册，此处通常为1）。
 	local ct=Duel.GetFlagEffect(tp,16762927)
-	-- 判断玩家是否能支付将count张卡从卡组送去墓地的代价。
+	-- 返回对方玩家 tp 能否将 ct 张卡组最上面的卡作为 Cost 送去墓地；若可行则允许攻击宣言支付代价，否则不能攻击宣言。
 	return Duel.IsPlayerCanDiscardDeckAsCost(tp,ct)
 end
--- 将玩家卡组最上面的1张卡送去墓地。
+-- EFFECT_ATTACK_COST 的代价支付操作函数，在对方玩家攻击宣言时，实际执行“把卡组最上面的1张卡送去墓地”的处理。
 function c16762927.atop(e,tp,eg,ep,ev,re,r,rp)
-	-- 执行将卡组最上端1张卡送去墓地的操作。
+	-- 将对方玩家 tp 的卡组最上面1张卡以 Cost 为理由送去墓地，从而完成攻击宣言所需的代价。
 	Duel.DiscardDeck(tp,1,REASON_COST)
 end

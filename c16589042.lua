@@ -11,11 +11,11 @@ function c16589042.initial_effect(c)
 	e1:SetCondition(c16589042.ntcon)
 	c:RegisterEffect(e1)
 end
--- 判断召唤条件是否满足，包括等级、手卡数量和场上空位
+-- 召唤规则效果的条件函数：当c为nil时表示存在可尝试的召唤方式；否则需满足无需解放、此卡等级5以上、我方手牌只有此卡且主要怪兽区有空位。
 function c16589042.ntcon(e,c,minc)
 	if c==nil then return true end
-	-- 检查召唤时是否满足等级不低于5且手卡只有这张卡
+	-- 判定无需解放（minc==0）、此卡等级为5以上、并且我方手牌只有这1张卡。
 	return minc==0 and c:IsLevelAbove(5) and Duel.GetFieldGroupCount(c:GetControler(),LOCATION_HAND,0)==1
-		-- 检查召唤时场上是否有可用的怪兽区域
+		-- 判定我方主要怪兽区存在可用的空格，以确认能够通常召唤此卡。
 		and Duel.GetLocationCount(c:GetControler(),LOCATION_MZONE)>0
 end

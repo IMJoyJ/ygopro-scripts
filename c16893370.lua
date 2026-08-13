@@ -7,7 +7,7 @@
 -- ●场上1只其他的表侧表示怪兽变成里侧守备表示。
 -- ③：这张卡的攻击力上升自己的额外卡组的里侧的卡数量×100。
 local s,id,o=GetID()
--- 初始化效果函数，注册三个效果：攻击力提升、手牌发动效果、特殊召唤后触发效果
+-- 注册三个效果：e1为③攻击力上升的永续效果，e2为①手牌起动效果（回卡组底并特殊召唤），e3为②特殊召唤成功时触发并可二选一的效果。
 function s.initial_effect(c)
 	-- ③：这张卡的攻击力上升自己的额外卡组的里侧的卡数量×100。
 	local e1=Effect.CreateEffect(c)
@@ -40,59 +40,59 @@ function s.initial_effect(c)
 	e3:SetOperation(s.operation)
 	c:RegisterEffect(e3)
 end
--- 计算额外卡组中里侧表示的卡的数量并乘以100作为攻击力加成
+-- 定义攻击力上升数值的计算函数：统计自身控制者额外卡组里侧表示的卡数量并乘以100。
 function s.atkval(e,c)
-	-- 返回额外卡组中里侧表示的卡的数量乘以100
+	-- 返回自己额外卡组里侧表示的卡数量×100，作为③的攻击力上升数值。
 	return Duel.GetMatchingGroupCount(Card.IsFacedown,c:GetControler(),LOCATION_EXTRA,0,nil)*100
 end
--- 过滤函数，判断目标怪兽是否可以送回卡组且场上存在可用怪兽区
+-- 定义①效果中可作为对象的怪兽的筛选条件：该怪兽离开后自己场上仍有空余怪兽区，且该怪兽可以被效果送回卡组。
 function s.filter(c,tp)
-	-- 返回场上存在可用怪兽区且目标怪兽可以送回卡组
+	-- 判断该怪兽离开后自己的怪兽区仍有空格，且该怪兽能够返回卡组。
 	return Duel.GetMZoneCount(tp,c)>0 and c:IsAbleToDeck()
 end
--- 设置①效果的发动条件和目标选择
+-- ①效果的发动条件和取对象合法性判断：取对象时需选择自己场上的怪兽，且该怪兽满足s.filter；发动时需存在满足条件的对象，且这张卡在手牌可以被特殊召唤。
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	local c=e:GetHandler()
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and s.filter(chkc,tp) end
-	-- 检查是否存在满足条件的怪兽作为目标
+	-- 发动时检查：自己场上是否存在1只满足返回卡组条件的怪兽可作为对象，以及这张卡能够特殊召唤。
 	if chk==0 then return Duel.IsExistingTarget(s.filter,tp,LOCATION_MZONE,0,1,nil,tp)
 		and c:IsCanBeSpecialSummoned(e,0,tp,false,false,POS_FACEUP) end
-	-- 提示玩家选择要送回卡组的怪兽
+	-- 向玩家提示“请选择要返回卡组的卡”。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TODECK)  --"请选择要返回卡组的卡"
-	-- 选择目标怪兽
+	-- 从自己场上选择1只满足s.filter条件的怪兽作为效果对象，并记录为连锁对象。
 	local g=Duel.SelectTarget(tp,s.filter,tp,LOCATION_MZONE,0,1,1,nil,tp)
-	-- 设置操作信息：将目标怪兽送回卡组
+	-- 登记操作信息：将选择的对象怪兽返回卡组。
 	Duel.SetOperationInfo(0,CATEGORY_TODECK,g,#g,0,0)
-	-- 设置操作信息：将自身特殊召唤
+	-- 登记操作信息：将这张卡特殊召唤。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,c,1,0,0)
 end
--- ①效果的处理函数，将目标怪兽送回卡组并特殊召唤自身
+-- ①效果处理：对象怪兽返回卡组最下面后，若这张卡仍与效果关联且自己场上有空位，则将其表侧攻击表示特殊召唤。
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取效果的目标怪兽
+	-- 取回①效果发动时选择的对象怪兽。
 	local tc=Duel.GetFirstTarget()
-	-- 检查目标怪兽是否有效且已成功送回卡组
+	-- 确认对象怪兽仍与当前效果关联，并将其送回持有者卡组最下面；若实际返回成功则继续处理。
 	if tc:IsRelateToEffect(e) and Duel.SendtoDeck(tc,nil,SEQ_DECKBOTTOM,REASON_EFFECT)~=0
 		and tc:IsLocation(LOCATION_DECK+LOCATION_EXTRA)
-		-- 检查是否有足够的怪兽区且自身有效
+		-- 确认这张卡仍与效果关联且自己场上有可用的怪兽区域。
 		and Duel.GetLocationCount(tp,LOCATION_MZONE)>0 and c:IsRelateToEffect(e) then
-		-- 将自身特殊召唤到场上
+		-- 将这张卡以表侧攻击表示特殊召唤到自己场上。
 		Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
--- 过滤函数，用于选择可加入额外卡组的「梦见之妮穆蕾莉娅」灵摆卡
+-- 定义「梦见之妮穆蕾莉娅」的筛选条件：卡号为70155677、是灵摆怪兽且未被禁止。
 function s.edfilter(c)
 	return c:IsCode(70155677) and c:IsType(TYPE_PENDULUM) and not c:IsForbidden()
 end
--- 过滤函数，用于选择可变为里侧守备表示的场上表侧表示怪兽
+-- 定义可变成里侧守备表示的怪兽的筛选条件：表侧表示且可以被变为里侧守备表示。
 function s.posfilter(c)
 	return c:IsFaceup() and c:IsCanTurnSet()
 end
--- ②效果的目标选择函数，根据可选效果设置选项并选择
+-- ②效果的发动条件与选项选择：若卡组存在可加入额外卡组的「梦见之妮穆蕾莉娅」，或场上存在其他可变为里侧守备表示的怪兽，则让玩家二选一，并动态设置效果类别和操作信息。
 function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 获取卡组中符合条件的「梦见之妮穆蕾莉娅」灵摆卡
+	-- 取得卡组中满足edfilter条件的「梦见之妮穆蕾莉娅」的集合。
 	local g1=Duel.GetMatchingGroup(s.edfilter,tp,LOCATION_DECK,0,nil)
-	-- 获取场上符合条件的表侧表示怪兽
+	-- 取得场上除自身以外、满足posfilter条件的其他表侧表示怪兽的集合。
 	local g2=Duel.GetMatchingGroup(s.posfilter,tp,LOCATION_MZONE,LOCATION_MZONE,e:GetHandler())
 	if chk==0 then return #g1>0 or #g2>0 end
 	e:SetCategory(0)
@@ -109,41 +109,41 @@ function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
 		opval[off]=1
 		off=off+1
 	end
-	-- 让玩家选择要发动的效果
+	-- 让玩家在“加入额外卡组”和“变成里侧守备”两个选项中选择一个，返回序号加1以对应opval。
 	local op=Duel.SelectOption(tp,table.unpack(ops))+1
 	local sel=opval[op]
 	e:SetLabel(sel)
 	if sel==0 then
 		e:SetCategory(CATEGORY_TOEXTRA)
-		-- 设置操作信息：将卡加入额外卡组
+		-- 登记操作信息：从卡组将1张卡表侧加入额外卡组。
 		Duel.SetOperationInfo(0,CATEGORY_TOEXTRA,nil,1,tp,LOCATION_DECK)
 	elseif sel==1 then
 		e:SetCategory(CATEGORY_POSITION+CATEGORY_MSET)
-		-- 设置操作信息：将怪兽变为里侧守备表示
+		-- 登记操作信息：将1只其他怪兽变成里侧守备表示。
 		Duel.SetOperationInfo(0,CATEGORY_POSITION,g2,1,0,0)
 	end
 end
--- ②效果的处理函数，根据选择的效果执行相应操作
+-- ②效果处理：根据目标阶段选择的选项执行——若选0则从卡组选1只「梦见之妮穆蕾莉娅」表侧加入额外卡组；若选1则选场上其他1只表侧表示怪兽变成里侧守备表示。
 function s.operation(e,tp,eg,ep,ev,re,r,rp)
 	local sel=e:GetLabel()
 	if sel==0 then
-		-- 提示玩家选择要加入额外卡组的卡
+		-- 向玩家提示“请选择要操作的卡”。
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_OPERATECARD)  --"请选择要操作的卡"
-		-- 选择要加入额外卡组的卡
+		-- 从卡组选择1只满足edfilter条件的「梦见之妮穆蕾莉娅」。
 		local g=Duel.SelectMatchingCard(tp,s.edfilter,tp,LOCATION_DECK,0,1,1,nil)
 		if #g>0 then
-			-- 将选中的卡加入额外卡组
+			-- 将选择的卡以表侧表示加入额外卡组。
 			Duel.SendtoExtraP(g,nil,REASON_EFFECT)
 		end
 	elseif sel==1 then
-		-- 提示玩家选择要改变表示形式的怪兽
+		-- 向玩家提示“请选择要改变表示形式的怪兽”。
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_POSCHANGE)  --"请选择要改变表示形式的怪兽"
-		-- 选择要变为里侧守备表示的怪兽
+		-- 选择场上除自身以外的1只表侧表示且可变为里侧守备表示的怪兽，排除当前效果关联的自身。
 		local sg=Duel.SelectMatchingCard(tp,s.posfilter,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,aux.ExceptThisCard(e))
 		if #sg>0 then
-			-- 显示选中的怪兽被选为对象的动画
+			-- 显示选中对象的动画，并记录这些卡被选为对象。
 			Duel.HintSelection(sg)
-			-- 将选中的怪兽变为里侧守备表示
+			-- 将选择的怪兽变成里侧守备表示。
 			Duel.ChangePosition(sg,POS_FACEDOWN_DEFENSE)
 		end
 	end
