@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：以自己场上1只表侧表示怪兽为对象才能发动。那只自己的表侧表示怪兽直到结束阶段除外。
 function c36261276.initial_effect(c)
-	-- 创建效果，设置效果分类为除外，设置效果属性为取对象，设置效果类型为发动，设置效果代码为自由时点，设置效果目标函数为c36261276.target，设置效果处理函数为c36261276.operation
+	-- ①：以自己场上1只表侧表示怪兽为对象才能发动。那只自己的表侧表示怪兽直到结束阶段除外。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_REMOVE)
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET)
@@ -12,29 +12,29 @@ function c36261276.initial_effect(c)
 	e1:SetOperation(c36261276.operation)
 	c:RegisterEffect(e1)
 end
--- 过滤函数，用于判断目标怪兽是否为表侧表示且能被除外
+-- 过滤条件：对象必须是自己场上表侧表示且可以被除外的怪兽。
 function c36261276.filter(c)
 	return c:IsFaceup() and c:IsAbleToRemove()
 end
--- 效果目标处理函数，判断是否能选择满足条件的怪兽作为对象
+-- 发动时的目标选择处理：检查对象合法性、选择1只表侧表示怪兽作为对象，并设置除外相关的操作信息。
 function c36261276.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(tp) and chkc:IsLocation(LOCATION_MZONE) and c36261276.filter(chkc) end
-	-- 检查是否满足发动条件，即场上是否存在满足条件的怪兽
+	-- 判定是否存在至少1只满足条件的表侧表示怪兽可以作为对象。
 	if chk==0 then return Duel.IsExistingTarget(c36261276.filter,tp,LOCATION_MZONE,0,1,nil) end
-	-- 向玩家提示选择要除外的卡
+	-- 向操作者显示“请选择要除外的卡”的提示信息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
-	-- 选择满足条件的怪兽作为对象
+	-- 选择自己场上1只表侧表示且可除外的怪兽作为效果对象（同时确定取对象）。
 	local g=Duel.SelectTarget(tp,c36261276.filter,tp,LOCATION_MZONE,0,1,1,nil)
-	-- 设置操作信息，记录将要除外的怪兽
+	-- 设置本次连锁的处理信息，表明将执行除外1张卡的操作。
 	Duel.SetOperationInfo(0,CATEGORY_REMOVE,g,1,0,0)
 end
--- 效果处理函数，处理将目标怪兽除外并设置结束阶段返回场上的效果
+-- 效果处理：若对象仍合法，则将其暂时除外，并注册一个结束阶段将其返回场上的效果。
 function c36261276.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的目标怪兽
+	-- 获取效果发动时选择的那张对象怪兽。
 	local tc=Duel.GetFirstTarget()
-	-- 判断目标怪兽是否仍然在场且满足除外条件，若满足则执行除外操作
+	-- 验证对象仍与效果关联、仍表侧表示且仍由自己控制，然后以“效果+暂时”的理由将其除外；若除外成功则继续处理。
 	if tc:IsRelateToEffect(e) and tc:IsFaceup() and tc:IsControler(tp) and Duel.Remove(tc,0,REASON_EFFECT+REASON_TEMPORARY)~=0 then
-		-- 创建结束阶段触发的效果，用于在结束阶段将怪兽返回场上
+		-- 那只自己的表侧表示怪兽直到结束阶段除外。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 		e1:SetCode(EVENT_PHASE+PHASE_END)
@@ -42,12 +42,12 @@ function c36261276.operation(e,tp,eg,ep,ev,re,r,rp)
 		e1:SetLabelObject(tc)
 		e1:SetCountLimit(1)
 		e1:SetOperation(c36261276.retop)
-		-- 将创建的效果注册给玩家
+		-- 将“结束阶段返回”的持续效果注册到场上，使其在该回合结束阶段触发。
 		Duel.RegisterEffect(e1,tp)
 	end
 end
--- 返回场上效果处理函数，将指定怪兽返回场上
+-- 结束阶段的返回处理：被暂时除外的对象怪兽返回场上。
 function c36261276.retop(e,tp,eg,ep,ev,re,r,rp)
-	-- 将指定怪兽返回场上
+	-- 将LabelObject中记录的怪兽（之前被暂时除外的怪兽）返回场上，表示形式默认取离场前的表示形式。
 	Duel.ReturnToField(e:GetLabelObject())
 end

@@ -24,38 +24,38 @@ function c36354007.initial_effect(c)
 	e2:SetOperation(c36354007.desop)
 	c:RegisterEffect(e2)
 end
--- 判断是否满足上级召唤的祭品条件，即至少需要3只怪兽作为祭品。
+-- 召唤规则效果的发动条件判断：若正在处理的召唤怪兽不存在（规则查询用）则直接允许；否则要求「解放3只怪兽」的召唤条件成立，且允许的解放数不超过3。
 function c36354007.ttcon(e,c,minc)
 	if c==nil then return true end
-	-- 检查场上是否存在至少3个可用于通常召唤的祭品。
+	-- 检查当前是否满足「把3只怪兽解放作召唤」的条件：提供的解放数上限不少于3，且场上存在至少3只可作为祭品的怪兽。
 	return minc<=3 and Duel.CheckTribute(c,3)
 end
--- 选择并解放3只怪兽用于上级召唤。
+-- 召唤规则效果的处理操作：让玩家选择3只要解放的怪兽，将所选怪兽设定为这张卡的召唤素材，并以召唤手续解放它们。
 function c36354007.ttop(e,tp,eg,ep,ev,re,r,rp,c)
-	-- 向玩家提示选择要解放的卡片。
+	-- 给出选择提示，提示玩家选择要解放的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_RELEASE)  --"请选择要解放的卡"
-	-- 从场上选择恰好3只怪兽作为祭品。
+	-- 让玩家从场上选择3只怪兽作为这张卡上级召唤的祭品。
 	local g=Duel.SelectTribute(tp,c,3,3)
 	c:SetMaterial(g)
-	-- 将选中的怪兽以召唤和素材的名义进行解放。
+	-- 将选择的3只怪兽以「上级召唤的素材」原因解放，完成召唤手续。
 	Duel.Release(g,REASON_SUMMON+REASON_MATERIAL)
 end
--- 判断该卡是否通过上级召唤成功（即是否为3只怪兽解放召唤）。
+-- ①效果的发动条件：这张卡以「解放3只怪兽进行上级召唤」的方式（召唤类型等于上级召唤+自身特殊值）召唤成功时，触发该必发效果。
 function c36354007.descon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():GetSummonType()==SUMMON_TYPE_ADVANCE+SUMMON_VALUE_SELF
 end
--- 设置连锁操作信息，确定要破坏对方场上所有怪兽。
+-- ①效果的发动条件与目标阶段：满足条件时必定进入发动；处理前先将对方场上的全部怪兽登记为破坏对象。
 function c36354007.destg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 获取对方场上所有怪兽作为破坏目标。
+	-- 取得对方场上全部怪兽（不取对象，处理时确定这些卡）。
 	local g=Duel.GetMatchingGroup(aux.TRUE,tp,0,LOCATION_MZONE,nil)
-	-- 设置当前连锁处理中将要破坏的怪兽数量。
+	-- 将本次操作信息登记为破坏效果，预定破坏对象为对方场上全部怪兽，数量为其数量。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,g:GetCount(),0,0)
 end
--- 对对方场上所有怪兽进行破坏处理。
+-- ①效果的解决处理：处理时再次取得对方场上全部怪兽，并将它们全部破坏。
 function c36354007.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取对方场上所有怪兽作为破坏目标。
+	-- 取得对方场上当前存在的全部怪兽（用于破坏处理）。
 	local g=Duel.GetMatchingGroup(aux.TRUE,tp,0,LOCATION_MZONE,nil)
-	-- 以效果原因破坏对方场上所有怪兽。
+	-- 以效果原因将对方场上的全部怪兽破坏。
 	Duel.Destroy(g,REASON_EFFECT)
 end

@@ -8,7 +8,7 @@ function c36415522.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- ①：1回合1次，对方怪兽的直接攻击宣言时才能把这个效果发动。
+	-- ①：1回合1次，对方怪兽的直接攻击宣言时才能把这个效果发动。那次攻击无效，从卡组把1只「娱乐伙伴」怪兽特殊召唤。这个效果特殊召唤的怪兽的效果无效化。
 	local e2=Effect.CreateEffect(c)
 	e2:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
@@ -19,7 +19,7 @@ function c36415522.initial_effect(c)
 	e2:SetTarget(c36415522.sptg)
 	e2:SetOperation(c36415522.spop)
 	c:RegisterEffect(e2)
-	-- ②：自己怪兽和对方怪兽进行战斗的攻击宣言时，把魔法与陷阱区域的表侧表示的这张卡送去墓地才能发动。
+	-- ②：自己怪兽和对方怪兽进行战斗的攻击宣言时，把魔法与陷阱区域的表侧表示的这张卡送去墓地才能发动。那次战斗发生的对自己的战斗伤害变成0。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
 	e3:SetCode(EVENT_ATTACK_ANNOUNCE)
@@ -29,45 +29,45 @@ function c36415522.initial_effect(c)
 	e3:SetOperation(c36415522.atkop)
 	c:RegisterEffect(e3)
 end
--- 过滤函数，用于判断卡组中是否存在满足条件的「娱乐伙伴」怪兽
+-- 过滤卡组中属于「娱乐伙伴」字段且满足当前效果特殊召唤条件的怪兽。
 function c36415522.filter(c,e,tp)
 	return c:IsSetCard(0x9f) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 效果条件函数，判断是否为对方怪兽的直接攻击
+-- 效果①的发动条件：仅在对方怪兽的直接攻击宣言时才能发动。
 function c36415522.spcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 对方怪兽的直接攻击宣言时
+	-- 攻击者是对方怪兽且攻击目标为nil（即直接攻击）。
 	return Duel.GetAttacker():IsControler(1-tp) and Duel.GetAttackTarget()==nil
 end
--- 设置特殊召唤的卡的筛选条件
+-- 效果①的目标判定：检查己方主要怪兽区是否有空位，且卡组中存在符合条件的「娱乐伙伴」怪兽。
 function c36415522.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断场上是否有足够的怪兽区域
+	-- 检查自己场上是否有可用的主要怪兽区空格。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 判断卡组中是否存在满足条件的「娱乐伙伴」怪兽
+		-- 检查卡组中是否存在至少1张满足filter条件的「娱乐伙伴」怪兽。
 		and Duel.IsExistingMatchingCard(c36415522.filter,tp,LOCATION_DECK,0,1,nil,e,tp) end
-	-- 设置连锁操作信息，表示将要特殊召唤一张怪兽
+	-- 设置本次连锁的操作信息：效果包含从卡组特殊召唤1只怪兽，供后续相关卡片的检测使用。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_DECK)
 end
--- 效果处理函数，执行特殊召唤和无效化效果
+-- 处理效果①：无效对方的直接攻击，从卡组选1只「娱乐伙伴」怪兽特殊召唤，并使那只怪兽效果无效化。
 function c36415522.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 无效此次攻击
+	-- 若攻击无效化失败（攻击已被其他效果无效或无法无效），则不再进行后续特殊召唤处理。
 	if not Duel.NegateAttack() then return end
-	-- 判断场上是否有足够的怪兽区域
+	-- 若己方没有可用的主要怪兽区空格，则无法特殊召唤，直接结束处理。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-	-- 提示玩家选择要特殊召唤的卡
+	-- 向操作者显示“请选择要特殊召唤的卡”的提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 从卡组中选择一张满足条件的「娱乐伙伴」怪兽
+	-- 从己方卡组中筛选出1张符合条件的「娱乐伙伴」怪兽，由选择者确定。
 	local g=Duel.SelectMatchingCard(tp,c36415522.filter,tp,LOCATION_DECK,0,1,1,nil,e,tp)
 	local tc=g:GetFirst()
-	-- 特殊召唤选中的怪兽
+	-- 若成功通过SpecialSummonStep将选中的怪兽以表侧表示特殊召唤，则为其附加无效化效果。
 	if tc and Duel.SpecialSummonStep(tc,0,tp,tp,false,false,POS_FACEUP) then
-		-- 使特殊召唤的怪兽效果无效
+		-- 这个效果特殊召唤的怪兽的效果无效化。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_DISABLE)
 		e1:SetReset(RESET_EVENT+RESETS_STANDARD)
 		tc:RegisterEffect(e1)
-		-- 使特殊召唤的怪兽效果无效化
+		-- 这个效果特殊召唤的怪兽的效果无效化。
 		local e2=Effect.CreateEffect(c)
 		e2:SetType(EFFECT_TYPE_SINGLE)
 		e2:SetCode(EFFECT_DISABLE_EFFECT)
@@ -75,31 +75,31 @@ function c36415522.spop(e,tp,eg,ep,ev,re,r,rp)
 		e2:SetReset(RESET_EVENT+RESETS_STANDARD)
 		tc:RegisterEffect(e2)
 	end
-	-- 完成特殊召唤流程
+	-- 完成特殊召唤处理，将之前暂定的特殊召唤正式生效。
 	Duel.SpecialSummonComplete()
 end
--- 攻击时的费用支付函数，将自身送去墓地
+-- 效果②的发动代价：将魔法陷阱区表侧表示的这张卡送去墓地，并判断其能否作为代价。
 function c36415522.atkcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	if chk==0 then return c:IsStatus(STATUS_EFFECT_ENABLED) and c:IsAbleToGraveAsCost() end
-	-- 将自身送去墓地作为费用
+	-- 以规则代价（COST）的形式将这张卡送去墓地。
 	Duel.SendtoGrave(c,REASON_COST)
 end
--- 攻击时的目标选择函数
+-- 效果②的发动对象选择：确认正在战斗的双方怪兽属于不同控制者，并将对方那只怪兽作为后续判定对象。
 function c36415522.atktg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 获取此次攻击的攻击怪兽
+	-- 获取攻击宣言的怪兽。
 	local a=Duel.GetAttacker()
-	-- 获取此次攻击的防守怪兽
+	-- 获取被攻击的怪兽（直接攻击时为nil）。
 	local d=Duel.GetAttackTarget()
 	if chk==0 then return d and a:GetControler()~=d:GetControler() end
 	if a:IsControler(1-tp) then a=d end
 	e:SetLabelObject(a)
 end
--- 效果处理函数，使战斗伤害变为0
+-- 处理效果②：为己方玩家附加在这只对方怪兽参与战斗时使战斗伤害变为0的效果。
 function c36415522.atkop(e,tp,eg,ep,ev,re,r,rp)
 	local tc=e:GetLabelObject()
 	if tc:IsRelateToBattle() then
-		-- 注册战斗伤害无效效果
+		-- 那次战斗发生的对自己的战斗伤害变成0。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_FIELD)
 		e1:SetCode(EFFECT_AVOID_BATTLE_DAMAGE)
@@ -109,13 +109,13 @@ function c36415522.atkop(e,tp,eg,ep,ev,re,r,rp)
 		e1:SetCondition(c36415522.damcon)
 		e1:SetReset(RESET_PHASE+PHASE_DAMAGE_CAL)
 		e1:SetLabelObject(tc)
-		-- 将效果注册到玩家
+		-- 将避免战斗伤害的效果注册到游戏中，持续至伤害计算阶段结束。
 		Duel.RegisterEffect(e1,tp)
 	end
 end
--- 伤害无效效果的条件函数
+-- 判定避免战斗伤害效果是否应该生效：只要记录的那只怪兽是当前战斗的攻击者或被攻击者之一即生效。
 function c36415522.damcon(e)
 	local tc=e:GetLabelObject()
-	-- 判断目标怪兽是否参与了此次战斗
+	-- 判断标签对象是否等于当前攻击者或被攻击者。
 	return tc==Duel.GetAttacker() or tc==Duel.GetAttackTarget()
 end
