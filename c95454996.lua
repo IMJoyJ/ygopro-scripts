@@ -1,12 +1,19 @@
 --M∀LICE＜Q＞WHITE BINDER
+-- 效果：
+-- 包含「码丽丝」怪兽的怪兽2只以上
+-- 这个卡名的①②③的效果1回合各能使用1次。
+-- ①：这张卡特殊召唤的场合，以自己·对方的墓地的卡合计最多3张为对象才能发动。那些卡除外。
+-- ②：自己主要阶段才能发动。从自己的卡组·墓地把1张「码丽丝」陷阱卡在自己场上盖放。
+-- ③：这张卡被除外的场合，支付900基本分才能发动。这张卡特殊召唤。那之后，自己可以抽1张。
 local s,id,o=GetID()
+-- 初始化效果：注册连接召唤手续与苏生限制，并依次注册①除外效果（特殊召唤成功时诱发的取对象除外效果，1回合1次）、②盖放陷阱效果（主要阶段起动效果，1回合1次）、③特殊召唤效果（被除外时诱发的特殊召唤·抽卡效果，1回合1次）
 function s.initial_effect(c)
-	--link summon
+	-- 为这张卡添加连接召唤手续：用2只以上的怪兽作为连接素材，且素材需满足s.lcheck的过滤条件（包含「码丽丝」怪兽）
 	aux.AddLinkProcedure(c,nil,2,99,s.lcheck)
 	c:EnableReviveLimit()
-	--remove
+	-- ①：这张卡特殊召唤的场合，以自己·对方的墓地的卡合计最多3张为对象才能发动。那些卡除外。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(id,0))
+	e1:SetDescription(aux.Stringid(id,0))  --"除外效果"
 	e1:SetCategory(CATEGORY_REMOVE)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET+EFFECT_FLAG_DELAY)
@@ -15,9 +22,9 @@ function s.initial_effect(c)
 	e1:SetTarget(s.rmtg)
 	e1:SetOperation(s.rmop)
 	c:RegisterEffect(e1)
-	--set
+	-- ②：自己主要阶段才能发动。从自己的卡组·墓地把1张「码丽丝」陷阱卡在自己场上盖放。
 	local e2=Effect.CreateEffect(c)
-	e2:SetDescription(aux.Stringid(id,1))
+	e2:SetDescription(aux.Stringid(id,1))  --"盖放陷阱"
 	e2:SetCategory(CATEGORY_SSET)
 	e2:SetType(EFFECT_TYPE_IGNITION)
 	e2:SetRange(LOCATION_MZONE)
@@ -25,9 +32,9 @@ function s.initial_effect(c)
 	e2:SetTarget(s.settg)
 	e2:SetOperation(s.setop)
 	c:RegisterEffect(e2)
-	--special summon
+	-- ③：这张卡被除外的场合，支付900基本分才能发动。这张卡特殊召唤。那之后，自己可以抽1张。
 	local e3=Effect.CreateEffect(c)
-	e3:SetDescription(aux.Stringid(id,2))
+	e3:SetDescription(aux.Stringid(id,2))  --"特殊召唤"
 	e3:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DRAW)
 	e3:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e3:SetCode(EVENT_REMOVE)
@@ -38,50 +45,78 @@ function s.initial_effect(c)
 	e3:SetOperation(s.spop)
 	c:RegisterEffect(e3)
 end
+-- 连接素材的过滤函数：要求作为素材的怪兽组中至少存在1只「码丽丝」（系列字段0x1bf）连接素材
 function s.lcheck(g)
 	return g:IsExists(Card.IsLinkSetCard,1,nil,0x1bf)
 end
+-- ①效果的对象选择处理：对象需在自己或对方墓地且可以除外；检查墓地是否存在可取为对象的可以除外的卡；提示玩家选择要除外的卡，选择自己·对方墓地1～3张可以除外的卡作为对象，并设置除外效果的操作信息
 function s.rmtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsAbleToRemove() end
+	-- 检查双方墓地是否存在至少1张可以除外、且能成为这个效果对象的卡
 	if chk==0 then return Duel.IsExistingTarget(Card.IsAbleToRemove,tp,LOCATION_GRAVE,LOCATION_GRAVE,1,nil) end
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)
+	-- 向玩家提示「请选择要除外的卡」
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
+	-- 让自己玩家从自己·对方的墓地选择1～3张可以除外的卡，并将选择的卡设置为这个效果的对象
 	local g=Duel.SelectTarget(tp,Card.IsAbleToRemove,tp,LOCATION_GRAVE,LOCATION_GRAVE,1,3,nil)
+	-- 设置操作信息：声明这个连锁将把那些作为对象的卡全部除外（CATEGORY_REMOVE）
 	Duel.SetOperationInfo(0,CATEGORY_REMOVE,g,g:GetCount(),0,0)
 end
+-- ①效果的处理：取回与这个连锁关联的对象卡，过滤掉受王家长眠之谷影响的卡，剩下的卡全部以表侧表示除外
 function s.rmop(e,tp,eg,ep,ev,re,r,rp)
+	-- 取得与当前连锁关联的对象卡，并用王家长眠之谷过滤器筛掉受其影响的卡
 	local tg=Duel.GetTargetsRelateToChain():Filter(aux.NecroValleyFilter(),nil)
 	if tg:GetCount()>0 then
+		-- 将那些卡以表侧表示、因效果而除外
 		Duel.Remove(tg,POS_FACEUP,REASON_EFFECT)
 	end
 end
+-- 盖放用的过滤函数：「码丽丝」（系列字段0x1bf）的、可以在自己场上盖放的陷阱卡
 function s.setfilter(c)
 	return c:IsSetCard(0x1bf) and c:IsType(TYPE_TRAP) and c:IsSSetable()
 end
+-- ②效果的发动条件检查：检查自己的卡组·墓地是否存在至少1张可以盖放的「码丽丝」陷阱卡
 function s.settg(e,tp,eg,ep,ev,re,r,rp,chk)
+	-- 检查自己的卡组·墓地是否存在至少1张满足条件（「码丽丝」陷阱卡且可盖放）的卡
 	if chk==0 then return Duel.IsExistingMatchingCard(s.setfilter,tp,LOCATION_DECK+LOCATION_GRAVE,0,1,nil) end
 end
+-- ②效果的处理：提示玩家选择要盖放的卡，从自己的卡组·墓地选择1张「码丽丝」陷阱卡（经王家长眠之谷过滤），将其在自己场上盖放
 function s.setop(e,tp,eg,ep,ev,re,r,rp)
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SET)
+	-- 向玩家提示「请选择要盖放的卡」
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SET)  --"请选择要盖放的卡"
+	-- 让自己玩家从自己的卡组·墓地选择1张满足条件且不受王家长眠之谷影响的「码丽丝」陷阱卡
 	local g=Duel.SelectMatchingCard(tp,aux.NecroValleyFilter(s.setfilter),tp,LOCATION_DECK+LOCATION_GRAVE,0,1,1,nil)
 	if #g>0 then
+		-- 把选择的卡在自己场上盖放
 		Duel.SSet(tp,g)
 	end
 end
+-- ③效果的代价处理：检查自己是否能支付900基本分，能则支付900基本分
 function s.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
+	-- 检查自己是否能支付900基本分
 	if chk==0 then return Duel.CheckLPCost(tp,900) end
+	-- 让自己支付900基本分
 	Duel.PayLPCost(tp,900)
 end
+-- ③效果的发动条件检查：自己的主要怪兽区存在可用空格，且这张卡可以被特殊召唤
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
+	-- 检查自己的主要怪兽区是否存在可用的空格
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
+	-- 设置操作信息：声明这个连锁将把这张卡特殊召唤（CATEGORY_SPECIAL_SUMMON）
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
+-- ③效果的处理：这张卡与效果关联的情况下将其特殊召唤到自己场上，特殊召唤成功后若自己可以抽卡则询问是否抽卡，选择是则中断处理后自己抽1张
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
+	-- 确认这张卡仍与这个效果关联，并将其以表侧表示特殊召唤到自己场上
 	if c:IsRelateToEffect(e) and Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)~=0
+		-- 检查自己是否可以因效果抽1张卡
 		and Duel.IsPlayerCanDraw(tp,1)
-		and Duel.SelectYesNo(tp,aux.Stringid(id,3)) then
+		-- 向玩家询问「是否抽卡？」，玩家选择是才继续处理
+		and Duel.SelectYesNo(tp,aux.Stringid(id,3)) then  --"是否抽卡？"
+		-- 中断当前效果处理，使之后的抽卡视为不同时处理（对应「那之后」）
 		Duel.BreakEffect()
+		-- 让自己以效果原因抽1张卡
 		Duel.Draw(tp,1,REASON_EFFECT)
 	end
 end
