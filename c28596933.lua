@@ -11,39 +11,39 @@ function c28596933.initial_effect(c)
 	e1:SetOperation(c28596933.activate)
 	c:RegisterEffect(e1)
 end
--- 过滤函数，用于筛选场上表侧表示的龙族5星以上可以送入手牌的怪兽
+-- 筛选可作为回手对象的龙族怪兽：需要表侧表示、龙族、5星以上且能被效果送回手卡，用于从自己场上选择符合条件的龙族。
 function c28596933.filter(c)
 	return c:IsFaceup() and c:IsRace(RACE_DRAGON) and c:IsLevelAbove(5) and c:IsAbleToHand()
 end
--- 过滤函数，用于筛选场上的魔法·陷阱卡
+-- 筛选可被破坏的魔法·陷阱卡：卡片类型为魔法卡或陷阱卡，用于确定场上要被破坏的魔法陷阱。
 function c28596933.dfilter(c)
 	return c:IsType(TYPE_SPELL+TYPE_TRAP)
 end
--- 效果发动时的处理函数，判断是否满足发动条件
+-- 效果发动时的合法性判定部分：若chk==0，检查是否满足发动所需的两个条件并返回结果，条件为存在可回手的龙族怪兽且场上存在可破坏的魔法陷阱卡。
 function c28596933.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断自己场上是否存在满足条件的龙族怪兽
+	-- 检查自己场上主要怪兽区是否存在至少1只符合条件的龙族怪兽（表侧、龙族、5星以上、可回手牌）。
 	if chk==0 then return Duel.IsExistingMatchingCard(c28596933.filter,tp,LOCATION_MZONE,0,1,nil)
-		-- 判断场地上是否存在魔法·陷阱卡
+		-- 检查双方场上是否存在至少1张这张卡以外的魔法·陷阱卡（用于作为将被破坏的魔法陷阱）。
 		and Duel.IsExistingMatchingCard(c28596933.dfilter,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,e:GetHandler()) end
-	-- 获取场上所有魔法·陷阱卡的集合
+	-- 在发动条件满足后，获取当前场上（双方区域）除这张卡以外的所有魔法·陷阱卡，作为破坏对象集合，用于后续设置操作信息。
 	local sg=Duel.GetMatchingGroup(c28596933.dfilter,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,e:GetHandler())
-	-- 设置将要处理的卡为1只怪兽，送去手牌
+	-- 登记操作信息：声明效果将把1张卡从自己场上主要怪兽区返回持有者手卡（由于对象在处理时才确定，目标暂设为nil，数量为1）。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_MZONE)
-	-- 设置将要处理的卡为场上所有魔法·陷阱卡，进行破坏
+	-- 登记操作信息：声明效果将破坏当前场上的这些魔法·陷阱卡，数量为集合中的卡数。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,sg,sg:GetCount(),0,0)
 end
--- 效果发动时的处理函数，执行效果内容
+-- 效果处理：先由玩家选择自己场上1只5星以上龙族怪兽送回持有者手卡，若送回成功且该卡确实在手卡，则将场上除这张发动卡以外的所有魔法·陷阱卡破坏。
 function c28596933.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要送入手牌的怪兽
+	-- 显示选择提示，提示玩家选择要返回手卡的龙族怪兽。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_RTOHAND)  --"请选择要返回手牌的卡"
-	-- 选择满足条件的1只怪兽
+	-- 从自己场上主要怪兽区选择1只满足条件的龙族怪兽（表侧、龙族、5星以上、可回手牌）。
 	local g=Duel.SelectMatchingCard(tp,c28596933.filter,tp,LOCATION_MZONE,0,1,1,nil)
 	local tc=g:GetFirst()
-	-- 确认选择的怪兽成功送入手牌后执行后续破坏效果
+	-- 判断回手是否成功：选择的龙族怪兽存在，且通过效果送回持有者手卡后确实位于手卡，才继续执行破坏；否则不破坏。
 	if tc and Duel.SendtoHand(tc,nil,REASON_EFFECT)~=0 and tc:IsLocation(LOCATION_HAND) then
-		-- 获取场上所有魔法·陷阱卡的集合（排除此卡）
+		-- 获取当前场上除这张发动卡以外的所有魔法·陷阱卡，作为本次要破坏的对象集合。
 		local sg=Duel.GetMatchingGroup(c28596933.dfilter,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,aux.ExceptThisCard(e))
-		-- 将场上所有魔法·陷阱卡破坏
+		-- 以效果原因破坏这些魔法·陷阱卡，将它们全部破坏并送去墓地。
 		Duel.Destroy(sg,REASON_EFFECT)
 	end
 end

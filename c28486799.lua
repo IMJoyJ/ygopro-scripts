@@ -19,29 +19,29 @@ function c28486799.initial_effect(c)
 	e2:SetOperation(c28486799.drop)
 	c:RegisterEffect(e2)
 end
--- 判断是否满足发动条件，即自己受到伤害且伤害来源为对方，伤害值大于等于1000，并且是对方怪兽攻击或对方效果造成的伤害。
+-- 判断是否满足发动条件：自己受到伤害、伤害来自对方（对方的怪兽攻击或对方的效果），且伤害数值为1000以上。
 function c28486799.drcon(e,tp,eg,ep,ev,re,r,rp)
 	return ep==tp and rp==1-tp and ev>=1000
-		-- 当伤害由对方怪兽攻击造成时，检查该攻击怪兽是否控制者为对方。
+		-- 伤害来源判定：如果是效果伤害则re存在；如果是战斗伤害则攻击怪兽的控制者为对方，即对方怪兽的攻击。
 		and (re or (Duel.GetAttacker() and Duel.GetAttacker():IsControler(1-tp)))
 end
--- 设置效果的目标和参数，计算应抽取的卡牌数量，并准备后续操作信息。
+-- 发动时设定：计算抽卡张数d（伤害数值除以1000取整），将对象玩家设为自己，对象参数设为d，并声明此次效果将进行抽卡。
 function c28486799.drtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local d=math.floor(ev/1000)
 	if chk==0 then return true end
-	-- 设置当前连锁效果的目标玩家为效果使用者。
+	-- 将当前连锁的对象玩家设置为tp（自己），表示抽卡玩家是自己。
 	Duel.SetTargetPlayer(tp)
-	-- 设置当前连锁效果的目标参数为根据伤害计算出的抽卡数量。
+	-- 将当前连锁的对象参数设置为d，表示抽卡张数为d（每满1000伤害抽1张）。
 	Duel.SetTargetParam(d)
-	-- 设置当前连锁效果的操作信息，包括抽卡类别、目标玩家及抽卡数量。
+	-- 设置操作信息：声明本次效果处理将进行抽卡，对象玩家为tp，预计抽卡数量为d，因不取对象所以targets为nil。
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,d)
 end
--- 执行效果操作，根据连锁信息获取目标玩家和抽卡数量并执行抽卡。
+-- 效果处理阶段：读取之前设定的对象玩家和抽卡张数，若d大于0则让该玩家以效果原因抽d张卡。
 function c28486799.drop(e,tp,eg,ep,ev,re,r,rp)
-	-- 从当前处理的连锁中获取目标玩家和目标参数（抽卡数量）。
+	-- 从当前连锁信息中取出之前设定的对象玩家和对象参数，分别赋值给p和d，即获取由谁抽卡以及抽卡数量。
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
 	if d>0 then
-		-- 让指定玩家按照目标参数数量从卡组抽卡，原因设为效果。
+		-- 让玩家p以效果原因（REASON_EFFECT）抽d张卡，完成实际抽卡动作。
 		Duel.Draw(p,d,REASON_EFFECT)
 	end
 end

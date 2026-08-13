@@ -3,7 +3,7 @@
 -- ①：1回合1次，从自己墓地把1只「代行者」怪兽除外，以自己场上1只天使族·光属性怪兽为对象才能发动。那只自己的天使族·光属性怪兽的攻击力直到回合结束时上升800。
 -- ②：1回合1次，从手卡丢弃1只天使族怪兽，以除外的1只自己的天使族·光属性怪兽为对象才能发动。那只怪兽特殊召唤。这个效果在场上有「天空的圣域」存在的场合才能发动和处理。
 function c28573958.initial_effect(c)
-	-- 注册此卡具有「代行者」卡名的代码列表
+	-- 将「天空的圣域」（卡号56433456）加入本卡的代码列表，用于识别本卡上记载的这张卡名。
 	aux.AddCodeList(c,56433456)
 	-- ①：1回合1次，从自己墓地把1只「代行者」怪兽除外，以自己场上1只天使族·光属性怪兽为对象才能发动。那只自己的天使族·光属性怪兽的攻击力直到回合结束时上升800。
 	local e1=Effect.CreateEffect(c)
@@ -31,41 +31,41 @@ function c28573958.initial_effect(c)
 	e2:SetOperation(c28573958.spop)
 	c:RegisterEffect(e2)
 end
--- 过滤函数：检查墓地是否有「代行者」怪兽且可作为除外的代价
+-- 筛选自己墓地中满足「代行者」字段且可以作为发动代价除外的怪兽。
 function c28573958.cfilter1(c)
 	return c:IsSetCard(0x44) and c:IsAbleToRemoveAsCost()
 end
--- 效果处理：检查是否有满足条件的墓地「代行者」怪兽，若有则选择并除外
+-- 效果①的代价处理：检查自己墓地存在符合条件的「代行者」怪兽，让玩家选择1张并表侧表示除外作为发动代价。
 function c28573958.atcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否满足除外「代行者」怪兽的条件
+	-- 在代价合法性检查（chk==0）时，确认自己墓地存在至少1只符合「代行者」字段且可作为代价除外的怪兽。
 	if chk==0 then return Duel.IsExistingMatchingCard(c28573958.cfilter1,tp,LOCATION_GRAVE,0,1,nil) end
-	-- 提示玩家选择要除外的卡
+	-- 向玩家发出选择提示，要求选择要除外的卡片。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
-	-- 选择满足条件的1张墓地「代行者」怪兽
+	-- 让玩家从自己墓地选择1只符合代价条件的「代行者」怪兽。
 	local g=Duel.SelectMatchingCard(tp,c28573958.cfilter1,tp,LOCATION_GRAVE,0,1,1,nil)
-	-- 将选中的怪兽除外作为效果的代价
+	-- 将选择的怪兽表侧表示除外，作为效果发动的代价。
 	Duel.Remove(g,POS_FACEUP,REASON_COST)
 end
--- 过滤函数：检查场上是否为表侧表示的天使族·光属性怪兽
+-- 筛选自己场上表侧表示的天使族・光属性怪兽。
 function c28573958.filter1(c)
 	return c:IsFaceup() and c:IsAttribute(ATTRIBUTE_LIGHT) and c:IsRace(RACE_FAIRY)
 end
--- 效果处理：检查是否有满足条件的场上天使族·光属性怪兽，若有则选择作为对象
+-- 效果①的取对象处理：从自己场上选择1只表侧表示的天使族・光属性怪兽作为效果对象。
 function c28573958.attg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and c28573958.filter1(chkc) end
-	-- 检查是否满足选择场上天使族·光属性怪兽的条件
+	-- 在发动合法性检查时，确认自己场上存在至少1只可作为对象的天使族・光属性表侧表示怪兽。
 	if chk==0 then return Duel.IsExistingTarget(c28573958.filter1,tp,LOCATION_MZONE,0,1,nil) end
-	-- 提示玩家选择表侧表示的卡
+	-- 向玩家发出选择提示，要求选择要提升攻击力的表侧表示的怪兽。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
-	-- 选择满足条件的1张场上天使族·光属性怪兽
+	-- 从自己场上选择1只表侧表示的天使族・光属性怪兽，并将其设为当前连锁的对象。
 	Duel.SelectTarget(tp,c28573958.filter1,tp,LOCATION_MZONE,0,1,1,nil)
 end
--- 效果处理：为选中的怪兽在回合结束时增加800攻击力
+-- 效果①的处理：获取对象怪兽，若其仍表侧表示且与效果存在关联，则使其攻击力上升800直到回合结束，且赋予该提升效果不可被无效的性质。
 function c28573958.atop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁效果的目标怪兽
+	-- 获取效果①选择的对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsFaceup() and tc:IsRelateToEffect(e) then
-		-- 为选中的怪兽增加800攻击力的效果
+		-- 那只自己的天使族·光属性怪兽的攻击力直到回合结束时上升800。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
 		e1:SetType(EFFECT_TYPE_SINGLE)
@@ -75,48 +75,48 @@ function c28573958.atop(e,tp,eg,ep,ev,re,r,rp)
 		tc:RegisterEffect(e1)
 	end
 end
--- 效果条件：检查场上有「天空的圣域」存在
+-- 效果②的发动条件：场上存在「天空的圣域」时才能发动。
 function c28573958.spcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查场上有「天空的圣域」存在
+	-- 检查当前场上是否有卡号56433456（「天空的圣域」）生效。
 	return Duel.IsEnvironment(56433456)
 end
--- 过滤函数：检查手卡是否有天使族怪兽且可作为丢弃的代价
+-- 筛选手卡中满足天使族且可以丢弃的卡。
 function c28573958.cfilter2(c)
 	return c:IsRace(RACE_FAIRY) and c:IsDiscardable()
 end
--- 效果处理：检查是否有满足条件的天使族怪兽，若有则选择并丢弃
+-- 效果②的代价处理：检查手卡存在可丢弃的天使族怪兽，并丢弃1张作为发动代价。
 function c28573958.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否满足丢弃天使族怪兽的条件
+	-- 在代价合法性检查时，确认手卡存在至少1张可丢弃的天使族怪兽。
 	if chk==0 then return Duel.IsExistingMatchingCard(c28573958.cfilter2,tp,LOCATION_HAND,0,1,nil) end
-	-- 将选中的天使族怪兽丢弃作为效果的代价
+	-- 从手卡丢弃1张天使族怪兽，作为效果的发动代价（代价+丢弃）。
 	Duel.DiscardHand(tp,c28573958.cfilter2,1,1,REASON_COST+REASON_DISCARD)
 end
--- 过滤函数：检查除外的怪兽是否为表侧表示的天使族·光属性怪兽且可特殊召唤
+-- 筛选除外区中表侧表示、天使族・光属性、且能被当前效果特殊召唤的自己的怪兽。
 function c28573958.filter2(c,e,tp)
 	return c:IsFaceup() and c:IsAttribute(ATTRIBUTE_LIGHT) and c:IsRace(RACE_FAIRY) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 效果处理：检查是否有满足条件的除外天使族·光属性怪兽，若有则选择作为对象
+-- 效果②的取对象处理：确认自己主要怪兽区有空位，并从除外区选择1只符合条件的怪兽作为对象。
 function c28573958.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_REMOVED) and chkc:IsControler(tp) and c28573958.filter2(chkc,e,tp) end
-	-- 检查是否有足够的召唤位置
+	-- 在发动合法性检查时，确认自己主要怪兽区存在可用的空格。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查是否有满足条件的除外天使族·光属性怪兽
+		-- 并且确认除外区存在至少1只符合条件的天使族・光属性怪兽可作为效果对象。
 		and Duel.IsExistingTarget(c28573958.filter2,tp,LOCATION_REMOVED,0,1,nil,e,tp) end
-	-- 提示玩家选择要特殊召唤的卡
+	-- 向玩家发出选择提示，要求选择要特殊召唤的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 选择满足条件的1张除外天使族·光属性怪兽
+	-- 从自己除外区选择1只符合条件的怪兽，并将其设为当前连锁的对象。
 	local g=Duel.SelectTarget(tp,c28573958.filter2,tp,LOCATION_REMOVED,0,1,1,nil,e,tp)
-	-- 设置效果处理信息，确定特殊召唤的怪兽数量
+	-- 设置操作信息，声明本次连锁将进行1只怪兽的特殊召唤。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,1,0,0)
 end
--- 效果处理：若场上有「天空的圣域」则将选中的怪兽特殊召唤
+-- 效果②的处理：处理时再次确认「天空的圣域」在场，获取对象怪兽并确认关联后，将其表侧表示特殊召唤到自己的主要怪兽区。
 function c28573958.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查场上有「天空的圣域」存在
+	-- 效果处理时若「天空的圣域」不在场上存在，则本次处理不适用（直接结束）。
 	if not Duel.IsEnvironment(56433456) then return end
-	-- 获取当前连锁效果的目标怪兽
+	-- 获取效果②选择的对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 将选中的怪兽特殊召唤到场上
+		-- 将对象怪兽以表侧表示特殊召唤到自己的主要怪兽区。
 		Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
