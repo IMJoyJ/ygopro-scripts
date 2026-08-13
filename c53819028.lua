@@ -25,7 +25,7 @@ function c53819028.initial_effect(c)
 	e2:SetTarget(c53819028.destg)
 	e2:SetOperation(c53819028.desop)
 	c:RegisterEffect(e2)
-	-- ③：场上的这张卡被效果送去墓地的场合或者被战斗破坏的场合才能发动。从卡组把「捕食植物 瓶子草蚁」以外的1张「捕食」卡加入手卡。
+	-- 「捕食植物 瓶子草蚁」的③的效果1回合只能使用1次。③：场上的这张卡被效果送去墓地的场合或者被战斗破坏的场合才能发动。从卡组把「捕食植物 瓶子草蚁」以外的1张「捕食」卡加入手卡。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(53819028,2))
 	e3:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
@@ -41,74 +41,74 @@ function c53819028.initial_effect(c)
 	e4:SetCondition(c53819028.thcon)
 	c:RegisterEffect(e4)
 end
--- 判断是否为对方怪兽的直接攻击宣言
+-- 效果①的发动条件：对方怪兽的直接攻击宣言时，即攻击怪兽的控制者为对方且攻击目标不存在。
 function c53819028.spcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 攻击怪兽控制者不是自己且攻击目标为空
+	-- 判断是否为对方怪兽的直接攻击宣言：攻击者控制者不是己方且攻击目标为空。
 	return Duel.GetAttacker():GetControler()~=tp and Duel.GetAttackTarget()==nil
 end
--- 判断是否满足特殊召唤条件
+-- 效果①的发动目标检查：确认自己场上有空余的怪兽区域，且这张卡可以被特殊召唤。
 function c53819028.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
-	-- 判断场上是否有足够的怪兽区域
+	-- 检查自己场上是否有可用的怪兽区空位。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and c:IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置特殊召唤的操作信息
+	-- 设置操作信息：本效果将进行特殊召唤（对象为此卡，数量1）。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,c,1,0,0)
 end
--- 执行特殊召唤操作
+-- 效果①的处理：若此卡仍与效果关联，将其表侧攻击表示特殊召唤到自己的怪兽区。
 function c53819028.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if not c:IsRelateToEffect(e) then return end
-	-- 将卡片特殊召唤到场上
+	-- 由己方将此卡以表侧攻击表示特殊召唤到自己场上。
 	Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 end
--- 设置破坏效果的目标
+-- 效果②的目标选择：确定与这张卡战斗的对方怪兽（若这张卡是攻击者则取攻击目标，否则取攻击者），并确认它仍与战斗关联。
 function c53819028.destg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 获取攻击怪兽
+	-- 获取当前战斗的攻击怪兽。
 	local tc=Duel.GetAttacker()
-	-- 如果攻击怪兽是自身，则获取攻击目标
+	-- 若攻击者是此卡自身，则将战斗对象改为攻击目标（即对方被攻击的怪兽）。
 	if tc==e:GetHandler() then tc=Duel.GetAttackTarget() end
 	if chk==0 then return tc and tc:IsRelateToBattle() end
-	-- 设置破坏的操作信息
+	-- 设置操作信息：本效果将破坏目标怪兽（数量1）。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,tc,1,0,0)
 end
--- 执行破坏操作
+-- 效果②的处理：若该怪兽仍与战斗关联且控制者为对方，将其破坏。
 function c53819028.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取攻击怪兽
+	-- 获取当前战斗的攻击怪兽。
 	local tc=Duel.GetAttacker()
-	-- 如果攻击怪兽是自身，则获取攻击目标
+	-- 若攻击者是此卡自身，则将战斗对象改为攻击目标。
 	if tc==e:GetHandler() then tc=Duel.GetAttackTarget() end
 	if tc:IsRelateToBattle() and tc:IsControler(1-tp) then
-		-- 将目标怪兽破坏
+		-- 以效果破坏该对方怪兽。
 		Duel.Destroy(tc,REASON_EFFECT)
 	end
 end
--- 判断是否为战斗破坏或效果送去墓地
+-- 效果③用于‘被效果送去墓地’场合的追加条件：此卡是被效果送入墓地，且之前位于场上。
 function c53819028.thcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	return c:IsReason(REASON_EFFECT) and c:IsPreviousLocation(LOCATION_ONFIELD)
 end
--- 过滤满足条件的「捕食」卡
+-- 检索过滤器：满足‘捕食’字段、可以从卡组加入手卡、且卡名不是「捕食植物 瓶子草蚁」的卡。
 function c53819028.thfilter(c)
 	return c:IsSetCard(0xf3) and c:IsAbleToHand() and not c:IsCode(53819028)
 end
--- 设置检索操作信息
+-- 效果③的发动的目标检查：确认卡组中存在1张符合条件的「捕食」卡。
 function c53819028.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断卡组中是否存在满足条件的卡
+	-- 检查卡组中是否存在至少1张满足thfilter条件的卡。
 	if chk==0 then return Duel.IsExistingMatchingCard(c53819028.thfilter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置检索的操作信息
+	-- 设置操作信息：本效果将把1张卡从卡组加入手卡。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 执行检索操作
+-- 效果③的处理：从卡组选择1张符合条件的「捕食」卡加入手卡，并让对方确认。
 function c53819028.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示选择要加入手牌的卡
+	-- 显示从卡组选择要加入手卡的卡片的提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择满足条件的卡
+	-- 从卡组选择1张满足thfilter条件的卡（自己选择）。
 	local g=Duel.SelectMatchingCard(tp,c53819028.thfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将卡加入手牌
+		-- 将选择的卡加入手卡（默认加入持有者手卡，即自己），原因为效果。
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 确认对方看到被加入手牌的卡
+		-- 让对方玩家确认加入手卡的卡片。
 		Duel.ConfirmCards(1-tp,g)
 	end
 end
