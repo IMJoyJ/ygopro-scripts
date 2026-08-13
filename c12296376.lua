@@ -16,7 +16,7 @@ function c12296376.initial_effect(c)
 	e2:SetOperation(c12296376.operation)
 	c:RegisterEffect(e2)
 end
--- 当此卡参与战斗时，检索与该卡战斗的怪兽并为其注册不能改变表示形式的效果。
+-- 当电气啄木鸟与怪兽进行过战斗后（伤害计算后），取得其战斗对象；若对象存在，则对该怪兽赋予“不能变更表示形式”的效果，该效果随对象离场、回手牌/卡组等标准重置条件而失去。
 function c12296376.operation(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local bc=c:GetBattleTarget()

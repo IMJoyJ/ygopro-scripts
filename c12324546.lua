@@ -38,32 +38,32 @@ function c12324546.initial_effect(c)
 	e5:SetValue(c12324546.eqlimit)
 	c:RegisterEffect(e5)
 end
--- 判断装备对象是否为名字带有「六武众」的怪兽
+-- 判断怪兽是否为名字带有「六武众」的怪兽，作为此卡装备对象的限制条件。
 function c12324546.eqlimit(e,c)
 	return c:IsSetCard(0x103d)
 end
--- 判断目标怪兽是否为名字带有「六武众」的怪兽
+-- 装备目标筛选：选择表侧表示且名字带有「六武众」的怪兽。
 function c12324546.filter(c)
 	return c:IsFaceup() and c:IsSetCard(0x103d)
 end
--- 设置效果目标，选择名字带有「六武众」的怪兽
+-- 装备魔法发动时的目标处理：选择双方场上1只表侧表示的名字带有「六武众」的怪兽作为装备对象，并登记装备操作信息。
 function c12324546.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and c12324546.filter(chkc) end
-	-- 检查是否满足选择目标的条件
+	-- 发动时判定：场上是否存在满足条件的表侧表示「六武众」怪兽，若不存在则无法发动。
 	if chk==0 then return Duel.IsExistingTarget(c12324546.filter,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil) end
-	-- 向玩家提示选择装备对象
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_EQUIP)
-	-- 选择名字带有「六武众」的怪兽作为装备对象
+	-- 显示选择提示：“请选择要装备的卡”。
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_EQUIP)  --"请选择要装备的卡"
+	-- 让当前玩家从自己和对方场上选择1只表侧表示的名字带有「六武众」的怪兽作为装备对象。
 	Duel.SelectTarget(tp,c12324546.filter,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,nil)
-	-- 设置效果处理信息，确定装备操作
+	-- 设置连锁操作信息：本连锁将进行装备（CATEGORY_EQUIP），对象为此卡，数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_EQUIP,e:GetHandler(),1,0,0)
 end
--- 设置效果处理流程，执行装备操作
+-- 效果处理：若此卡和目标怪兽均与效果相关且目标仍为表侧表示，则将此卡装备给目标怪兽。
 function c12324546.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁效果的目标怪兽
+	-- 获取发动时选择的目标怪兽。
 	local tc=Duel.GetFirstTarget()
 	if e:GetHandler():IsRelateToEffect(e) and tc:IsRelateToEffect(e) and tc:IsFaceup() then
-		-- 将装备卡装备给目标怪兽
+		-- 将此卡作为装备卡装备给目标怪兽。
 		Duel.Equip(tp,e:GetHandler(),tc)
 	end
 end

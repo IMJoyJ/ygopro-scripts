@@ -13,18 +13,18 @@ function c12299841.initial_effect(c)
 	e1:SetOperation(c12299841.operation)
 	c:RegisterEffect(e1)
 end
--- 效果发动时执行的操作函数
+-- 效果处理时，若这张卡仍表侧表示且与发动效果保持关联，则给这张卡附加攻击力上升400、等级上升1星的持续效果，持续到结束阶段。
 function c12299841.operation(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsFaceup() and c:IsRelateToEffect(e) then
-		-- 直到结束阶段时这张卡的攻击力上升400
+		-- 直到结束阶段时这张卡的攻击力上升400。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)
 		e1:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_DISABLE+RESET_PHASE+PHASE_END)
 		e1:SetValue(400)
 		c:RegisterEffect(e1)
-		-- 直到结束阶段时这张卡的等级上升1星
+		-- 直到结束阶段时这张卡的等级上升1星。
 		local e2=Effect.CreateEffect(c)
 		e2:SetType(EFFECT_TYPE_SINGLE)
 		e2:SetCode(EFFECT_UPDATE_LEVEL)
