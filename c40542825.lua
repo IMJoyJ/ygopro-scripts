@@ -32,28 +32,28 @@ function c40542825.initial_effect(c)
 	e3:SetCondition(c40542825.condition)
 	c:RegisterEffect(e3)
 end
--- 过滤满足条件的场上表侧表示怪兽，用于特殊召唤的条件检查
+-- 定义素材过滤条件：怪兽须表侧表示，且可以作为cost送去墓地。
 function c40542825.spfilter(c)
 	return c:IsFaceup() and c:IsAbleToGraveAsCost()
 end
--- 检查所选的两张怪兽是否满足「光灵使 莱娜」和光属性的组合要求
+-- 定义素材组合合法性判定：所选2张素材送入墓地后己方仍有空余怪兽区域，且组合中一张是「光灵使 莱娜」（卡号73318863），另一张是光属性怪兽。
 function c40542825.fselect(g,tp)
-	-- 检查所选的两张怪兽是否满足「光灵使 莱娜」和光属性的组合要求
+	-- 验证素材组同时满足“送入墓地后空位检查”和“一张光灵使莱娜、一张光属性怪兽”的组合条件。
 	return aux.mzctcheck(g,tp) and aux.gffcheck(g,Card.IsCode,73318863,Card.IsAttribute,ATTRIBUTE_LIGHT)
 end
--- 判断是否满足特殊召唤的条件，即场上有满足条件的两张怪兽
+-- 特殊召唤规则条件：若询问对象为nil则直接允许；否则检查己方场上是否存在满足条件的2张素材组合。
 function c40542825.spcon(e,c)
 	if c==nil then return true end
 	local tp=c:GetControler()
-	-- 获取场上满足条件的怪兽组
+	-- 取得己方场上所有可作为素材的怪兽（表侧表示且能作为cost送墓）。
 	local g=Duel.GetMatchingGroup(c40542825.spfilter,tp,LOCATION_MZONE,0,nil)
 	return g:CheckSubGroup(c40542825.fselect,2,2,tp)
 end
--- 选择满足条件的两张怪兽并将其送去墓地
+-- 特殊召唤规则的目标选择：让玩家从候选素材中选择2张，选中后保留为效果标签以供处理时送墓，若取消则本次特殊召唤不进行。
 function c40542825.sptg(e,tp,eg,ep,ev,re,r,rp,chk,c)
-	-- 获取场上满足条件的怪兽组
+	-- 取得己方场上所有可作为素材的怪兽，供玩家选择。
 	local g=Duel.GetMatchingGroup(c40542825.spfilter,tp,LOCATION_MZONE,0,nil)
-	-- 提示玩家选择要送去墓地的卡
+	-- 向玩家显示“请选择要送去墓地的卡”的提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
 	local sg=g:SelectSubGroup(tp,c40542825.fselect,true,2,2,tp)
 	if sg then
@@ -62,38 +62,38 @@ function c40542825.sptg(e,tp,eg,ep,ev,re,r,rp,chk,c)
 		return true
 	else return false end
 end
--- 将选择的怪兽组送去墓地
+-- 特殊召唤规则的实际处理：将保存的2张素材怪兽送去墓地，完成召唤手续。
 function c40542825.spop(e,tp,eg,ep,ev,re,r,rp,c)
 	local g=e:GetLabelObject()
-	-- 将选择的怪兽组送去墓地
+	-- 以“特殊召唤”为原因将选中的素材怪兽送去墓地。
 	Duel.SendtoGrave(g,REASON_SPSUMMON)
 	g:DeleteGroup()
 end
--- 过滤满足条件的魔法师族守备力为1500的怪兽
+-- 定义检索目标：守备力1500的魔法师族怪兽、卡名不是「凭依装着-莱娜」且可以加入手卡。
 function c40542825.thfilter(c)
 	return c:IsDefense(1500) and c:IsRace(RACE_SPELLCASTER) and not c:IsCode(40542825) and c:IsAbleToHand()
 end
--- 判断该卡是否为通过①的方法特殊召唤
+-- 判断此卡是否通过①的方法（即由自身规则效果）特殊召唤成功，作为后续检索和贯穿伤害效果的条件。
 function c40542825.condition(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():GetSummonType()==SUMMON_TYPE_SPECIAL+SUMMON_VALUE_SELF
 end
--- 设置检索效果的处理信息
+-- 检索效果发动条件：卡组中存在符合条件的怪兽；同时设置操作信息为从卡组将1张卡加入手卡。
 function c40542825.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查卡组中是否存在满足条件的怪兽
+	-- 在发动合法确认阶段检查卡组中是否存在1张符合条件的检索目标。
 	if chk==0 then return Duel.IsExistingMatchingCard(c40542825.thfilter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置检索效果的处理信息
+	-- 设置操作信息：本次效果从卡组将1张卡加入手卡。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 选择满足条件的怪兽并加入手牌
+-- 检索效果处理：选择1张符合条件的守备力1500魔法师族怪兽加入手卡，并向对方确认。
 function c40542825.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要加入手牌的卡
+	-- 向玩家显示“请选择要加入手牌的卡”的提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择满足条件的怪兽
+	-- 从卡组选择1张符合过滤条件（守备力1500魔法师族、非本卡、可加入手卡）的怪兽。
 	local g=Duel.SelectMatchingCard(tp,c40542825.thfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选择的怪兽加入手牌
+		-- 将选择的卡以效果原因加入持有者手卡。
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 向对方确认加入手牌的卡
+		-- 向对方玩家展示本次加入手卡的卡。
 		Duel.ConfirmCards(1-tp,g)
 	end
 end
