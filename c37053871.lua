@@ -18,21 +18,21 @@ function c37053871.initial_effect(c)
 	e2:SetOperation(c37053871.atkop)
 	c:RegisterEffect(e2)
 end
--- 攻击发动时，攻击怪兽控制者不是自己且攻击目标是自己的场合才能发动
+-- 判断是否满足效果发动条件：攻击怪兽为对方怪兽，且其攻击对象为自己场上的怪兽。
 function c37053871.atkcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取此次战斗的攻击怪兽
+	-- 获取正在进行攻击宣言的怪兽。
 	local a=Duel.GetAttacker()
-	-- 获取此次战斗的攻击目标怪兽
+	-- 获取被攻击的怪兽（攻击对象）。
 	local at=Duel.GetAttackTarget()
 	return a:IsControler(1-tp) and at and at:IsControler(tp)
 end
--- 发动时点，检查攻击怪兽是否能进行直接攻击
+-- 效果发动前的合法性检查函数，确认攻击怪兽能否被改为直接攻击。
 function c37053871.atktg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 若攻击怪兽未被无效直接攻击效果影响则可以发动
+	-- 检查攻击怪兽是否具有“不能直接攻击”的效果；若没有该效果，则允许发动。
 	if chk==0 then return not Duel.GetAttacker():IsHasEffect(EFFECT_CANNOT_DIRECT_ATTACK) end
 end
--- 效果处理，将攻击目标变为基本分
+-- 效果处理函数，将本次攻击变更为直接攻击。
 function c37053871.atkop(e,tp,eg,ep,ev,re,r,rp)
-	-- 将攻击对象变为基本分，即变为直接攻击
+	-- 将攻击对象设置为nil，使攻击变为对自己基本分的直接攻击。
 	Duel.ChangeAttackTarget(nil)
 end

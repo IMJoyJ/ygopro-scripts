@@ -24,36 +24,36 @@ function c37104630.initial_effect(c)
 	e2:SetOperation(c37104630.desop)
 	c:RegisterEffect(e2)
 end
--- 设置效果只能选择4星以下的海龙族怪兽作为额外召唤目标
+-- 可追加召唤的怪兽需满足4星以下且海龙族。
 function c37104630.extg(e,c)
 	return c:IsLevelBelow(4) and c:IsRace(RACE_SEASERPENT)
 end
--- 判断是否满足效果发动条件，即该卡因支付代价送去墓地且是水属性怪兽效果发动
+-- 发动条件：此卡为让水属性怪兽效果发动而被作为代价送去墓地，且该效果是已发动的水属性怪兽效果。
 function c37104630.descon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsReason(REASON_COST) and re:IsActivated() and re:IsActiveType(TYPE_MONSTER)
 		and re:GetHandler():IsAttribute(ATTRIBUTE_WATER)
 end
--- 过滤对方场上表侧表示的卡作为破坏目标
+-- 选择对象用的过滤函数：对象必须是表侧表示的卡。
 function c37104630.desfilter(c)
 	return c:IsFaceup()
 end
--- 选择对方场上一张表侧表示的卡作为破坏对象，并设置操作信息
+-- 效果的目标筛选与登记：对象必须是对方场上表侧表示的卡；发动时让玩家选择1张并写入破坏操作信息。
 function c37104630.destg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsOnField() and chkc:IsControler(1-tp) and c37104630.desfilter(chkc) end
 	if chk==0 then return true end
-	-- 向玩家提示“请选择要破坏的卡”
+	-- 向操作者显示“请选择要破坏的卡”的提示信息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 选择对方场上一张表侧表示的卡作为破坏对象
+	-- 让玩家从对方场上选择1张表侧表示的卡作为效果对象，同时将其登记为当前连锁的对象。
 	local g=Duel.SelectTarget(tp,c37104630.desfilter,tp,0,LOCATION_ONFIELD,1,1,nil)
-	-- 设置当前连锁的操作信息为破坏效果，目标为已选择的卡
+	-- 设置操作信息：本次效果分类为破坏，对象为已选择的卡，数量为1，供后续响应判定使用。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,g:GetCount(),0,0)
 end
--- 执行破坏效果，将目标卡破坏
+-- 效果结算：取得对象卡，若仍与效果关联且表侧表示，则将其破坏。
 function c37104630.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的破坏目标卡
+	-- 获取当前连锁中登记的第一张对象卡。
 	local tc=Duel.GetFirstTarget()
 	if tc and tc:IsRelateToEffect(e) and tc:IsFaceup() then
-		-- 以效果原因破坏目标卡
+		-- 以效果原因将对象卡破坏。
 		Duel.Destroy(tc,REASON_EFFECT)
 	end
 end

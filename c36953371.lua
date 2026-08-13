@@ -5,7 +5,7 @@
 -- ①：这张卡可以用表侧守备表示的状态作出攻击。那个场合，这张卡用守备力当作攻击力使用进行伤害计算。
 -- ②：自己墓地没有魔法·陷阱卡存在，这张卡同调召唤成功时才能发动。对方场上的魔法·陷阱卡全部破坏。
 function c36953371.initial_effect(c)
-	-- 添加同调召唤手续，要求1只机械族调整和至少1只调整以外的「超重武者」怪兽
+	-- 设定同调召唤手续：机械族调整1只＋调整以外的「超重武者」怪兽1只以上，其中调整须为机械族，非调整须为「超重武者」系列（0x9a）怪兽且数量至少1只。
 	aux.AddSynchroProcedure(c,aux.FilterBoolFunction(Card.IsRace,RACE_MACHINE),aux.NonTuner(Card.IsSetCard,0x9a),1)
 	c:EnableReviveLimit()
 	-- ①：这张卡可以用表侧守备表示的状态作出攻击。那个场合，这张卡用守备力当作攻击力使用进行伤害计算。
@@ -24,29 +24,29 @@ function c36953371.initial_effect(c)
 	e2:SetOperation(c36953371.desop)
 	c:RegisterEffect(e2)
 end
--- 判断是否为同调召唤且自己墓地没有魔法·陷阱卡
+-- 效果发动条件检查：判定这张卡是否为同调召唤成功，并且自己墓地没有魔法·陷阱卡存在，两者同时满足才可发动。
 function c36953371.descon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsSummonType(SUMMON_TYPE_SYNCHRO)
-		-- 检查自己墓地是否存在魔法·陷阱卡
+		-- 检查自己墓地是否存在魔法·陷阱卡；若不存在（not ...）则条件成立。
 		and not Duel.IsExistingMatchingCard(Card.IsType,tp,LOCATION_GRAVE,0,1,nil,TYPE_SPELL+TYPE_TRAP)
 end
--- 过滤函数，用于筛选魔法·陷阱卡
+-- 定义筛选函数：判断卡片是否为魔法卡或陷阱卡（即对方场上的魔法·陷阱卡）。
 function c36953371.filter(c)
 	return c:IsType(TYPE_SPELL+TYPE_TRAP)
 end
--- 设置效果目标，检查对方场上是否存在魔法·陷阱卡并设置破坏操作信息
+-- 发动时选择目标：验证对方场上有魔法·陷阱卡存在，并取得对方场上所有魔法·陷阱卡，将破坏这些卡的信息登记到连锁处理中。
 function c36953371.destg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查对方场上是否存在魔法·陷阱卡
+	-- 在发动时（chk==0）检查对方场上是否存在至少1张可被破坏的魔法·陷阱卡，作为发动合法性条件。
 	if chk==0 then return Duel.IsExistingMatchingCard(c36953371.filter,tp,0,LOCATION_ONFIELD,1,nil) end
-	-- 获取对方场上所有魔法·陷阱卡组成的组
+	-- 获取对方场上所有魔法·陷阱卡，构成一个卡组对象，用于后续破坏。
 	local g=Duel.GetMatchingGroup(c36953371.filter,tp,0,LOCATION_ONFIELD,nil)
-	-- 设置连锁操作信息，指定将要破坏的卡组和数量
+	-- 登记这次效果将破坏的对象和数量到连锁操作信息，分类为破坏效果。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,g:GetCount(),0,0)
 end
--- 执行效果操作，破坏对方场上的所有魔法·陷阱卡
+-- 效果处理时：再次取得对方场上所有魔法·陷阱卡，并将其全部破坏。
 function c36953371.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取对方场上所有魔法·陷阱卡组成的组
+	-- 取得当前对方场上存在的所有魔法·陷阱卡（不取对象）。
 	local g=Duel.GetMatchingGroup(c36953371.filter,tp,0,LOCATION_ONFIELD,nil)
-	-- 将指定的魔法·陷阱卡以效果原因破坏
+	-- 将所有符合条件的卡片以效果破坏送入墓地。
 	Duel.Destroy(g,REASON_EFFECT)
 end

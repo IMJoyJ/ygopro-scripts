@@ -23,38 +23,38 @@ function c36931229.initial_effect(c)
 	e2:SetOperation(c36931229.operation)
 	c:RegisterEffect(e2)
 end
--- 判断效果是否可以发动，条件为该卡必须处于攻击表示。
+-- 发动条件判定：本效果只能在持有者自身处于攻击表示时才能发动。
 function c36931229.condition(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsAttackPos()
 end
--- 过滤函数，用于筛选场上5星以下且攻击力大于0的怪兽。
+-- 筛选可用作解放的怪兽：必须是5星以下且记载攻击力大于0的怪兽。
 function c36931229.filter(c)
 	return c:IsLevelBelow(5) and c:GetTextAttack()>0
 end
--- 处理效果的解放费用，检查并选择满足条件的怪兽进行解放。
+-- 代价处理：选择并解放自己场上1只5星以下的怪兽，将解放怪兽的原本攻击力记录到效果标签中，作为后续伤害数值。
 function c36931229.cost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检测是否满足解放条件，即场上是否存在符合条件的怪兽。
+	-- 代价检查：在发动前确认自己场上是否存在至少1只满足条件的可解放怪兽。
 	if chk==0 then return Duel.CheckReleaseGroup(tp,c36931229.filter,1,nil) end
-	-- 从场上选择一张符合条件的怪兽作为解放对象。
+	-- 选择解放对象：从自己场上选出1只符合条件的怪兽作为解放代价。
 	local sg=Duel.SelectReleaseGroup(tp,c36931229.filter,1,1,nil)
 	e:SetLabel(sg:GetFirst():GetTextAttack())
-	-- 将选中的怪兽以代價原因进行解放。
+	-- 执行解放：将该怪兽解放，作为发动效果所需的代价（REASON_COST）。
 	Duel.Release(sg,REASON_COST)
 end
--- 设置连锁处理时的目标玩家和伤害值。
+-- 效果目标设定：登记伤害对象为对方玩家，伤害数值为之前记录的解放怪兽的原本攻击力，并写入连锁操作信息。
 function c36931229.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置连锁处理时的目标玩家为对方玩家。
+	-- 将效果的对象玩家设为对方（1-tp），即伤害承受者。
 	Duel.SetTargetPlayer(1-tp)
-	-- 设置连锁处理时的目标参数为解放怪兽的攻击力。
+	-- 将效果参数设为记录在标签中的原本攻击力数值，作为伤害值。
 	Duel.SetTargetParam(e:GetLabel())
-	-- 设置连锁操作信息，表明将对对方造成指定数值的伤害。
+	-- 登记伤害操作信息：类别为伤害（CATEGORY_DAMAGE），对象为对方玩家，预计伤害数值为记录的原本攻击力。
 	Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,1-tp,e:GetLabel())
 end
--- 执行连锁效果，对指定玩家造成相应数值的伤害。
+-- 效果处理：从连锁信息中取出对象玩家和伤害数值，对对方造成对应伤害。
 function c36931229.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的目标玩家和目标参数（即伤害值）。
+	-- 读取当前连锁中保存的对象玩家（p）和伤害参数（d）。
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 以效果原因对目标玩家造成指定数值的伤害。
+	-- 以效果原因（REASON_EFFECT）对玩家p造成d点伤害。
 	Duel.Damage(p,d,REASON_EFFECT)
 end
