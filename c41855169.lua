@@ -2,7 +2,7 @@
 -- 效果：
 -- 把手卡随机1张丢弃去墓地才能发动。场上的特殊召唤的怪兽全部破坏。此外，只要这张卡在场上表侧表示存在，双方不能把怪兽特殊召唤。
 function c41855169.initial_effect(c)
-	-- 双方不能把怪兽特殊召唤
+	-- 此外，只要这张卡在场上表侧表示存在，双方不能把怪兽特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetRange(LOCATION_MZONE)
@@ -10,7 +10,7 @@ function c41855169.initial_effect(c)
 	e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
 	e1:SetTargetRange(1,1)
 	c:RegisterEffect(e1)
-	-- 场上的特殊召唤的怪兽全部破坏
+	-- 把手卡随机1张丢弃去墓地才能发动。场上的特殊召唤的怪兽全部破坏。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(41855169,0))  --"特殊召唤的怪兽全部破坏"
 	e2:SetCategory(CATEGORY_DESTROY)
@@ -21,37 +21,37 @@ function c41855169.initial_effect(c)
 	e2:SetOperation(c41855169.operation)
 	c:RegisterEffect(e2)
 end
--- 过滤函数：检查手卡中可以丢弃且能送入墓地的卡片，并排除具有效果81674782的卡片
+-- 作为代价可丢弃手卡的过滤条件：需要能够丢弃、能够作为代价送去墓地，且不受“不能丢弃”效果影响。
 function c41855169.cfilter(c)
 	return c:IsDiscardable() and c:IsAbleToGraveAsCost() and not c:IsHasEffect(81674782)
 end
--- 效果处理：检测手卡是否存在满足条件的卡片，若存在则随机选择一张丢入墓地作为代价
+-- 发动代价处理：从手卡中随机选择1张卡送去墓地作为发动代价。
 function c41855169.cost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检测条件：检查手卡中是否存在至少一张满足cfilter条件的卡片
+	-- 发动时检查是否存在满足代价条件的手卡，若存在才可发动。
 	if chk==0 then return Duel.IsExistingMatchingCard(c41855169.cfilter,tp,LOCATION_HAND,0,1,nil) end
-	-- 获取手卡组：获取当前玩家手卡区域的所有卡片
+	-- 取得我方全部手卡，用于后续随机选择。
 	local g=Duel.GetFieldGroup(tp,LOCATION_HAND,0)
 	local sg=g:RandomSelect(tp,1)
-	-- 执行丢弃：将选中的卡片以丢弃和支付代价的原因送入墓地
+	-- 将随机选出的1张手卡以“代价+丢弃”的原因送去墓地，完成发动代价。
 	Duel.SendtoGrave(sg,REASON_COST+REASON_DISCARD)
 end
--- 过滤函数：检查场上怪兽是否为特殊召唤召唤上场的
+-- 过滤器：判断怪兽的召唤类型为特殊召唤，即该怪兽是通过特殊召唤出场的。
 function c41855169.filter(c)
 	return c:IsSummonType(SUMMON_TYPE_SPECIAL)
 end
--- 效果目标设定：检测场上是否存在至少一张特殊召唤的怪兽，若存在则设置破坏操作信息
+-- 发动时目标判定：若场上有特殊召唤的怪兽，则将场上所有特殊召唤的怪兽作为破坏对象，并设置对应的破坏操作信息。
 function c41855169.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检测条件：检查场上是否存在至少一张特殊召唤的怪兽
+	-- 发动时检查场上是否存在特殊召唤的怪兽。
 	if chk==0 then return Duel.IsExistingMatchingCard(c41855169.filter,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil) end
-	-- 获取特殊召唤怪兽组：获取当前玩家场上所有特殊召唤的怪兽
+	-- 取得场上所有特殊召唤的怪兽，作为破坏对象的候选集合。
 	local g=Duel.GetMatchingGroup(c41855169.filter,tp,LOCATION_MZONE,LOCATION_MZONE,nil)
-	-- 设置操作信息：设置本次连锁将要处理的破坏对象为所有特殊召唤的怪兽
+	-- 将需要破坏的怪兽集合及其数量写入连锁的操作信息，用于其他卡片的时点/应对检测。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,g:GetCount(),0,0)
 end
--- 效果处理：对所有特殊召唤的怪兽进行破坏
+-- 效果处理时，破坏场上所有特殊召唤的怪兽。
 function c41855169.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取特殊召唤怪兽组：获取当前玩家场上所有特殊召唤的怪兽
+	-- 效果处理时重新取得场上所有特殊召唤的怪兽，因为处理阶段怪兽可能会发生变化。
 	local g=Duel.GetMatchingGroup(c41855169.filter,tp,LOCATION_MZONE,LOCATION_MZONE,nil)
-	-- 执行破坏：将所有特殊召唤的怪兽以效果原因破坏
+	-- 以效果原因将这些怪兽全部破坏并送去墓地。
 	Duel.Destroy(g,REASON_EFFECT)
 end

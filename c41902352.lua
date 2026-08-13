@@ -17,11 +17,11 @@ function c41902352.initial_effect(c)
 	e2:SetCost(c41902352.spcost)
 	c:RegisterEffect(e2)
 end
--- 判断当前卡片是否为特殊召唤方式出场
+-- 取效果的持有者（这张卡），判断其召唤类型是否包含特殊召唤（SUMMON_TYPE_SPECIAL）；该结果为是否附加『不能作为同调素材』限制的条件。
 function c41902352.synlimit(e)
 	return e:GetHandler():IsSummonType(SUMMON_TYPE_SPECIAL)
 end
--- 设置特殊召唤时的代价，防止作为同调素材被特殊召唤
+-- 此函数作为特殊召唤手续的代价判定：若召唤类型 sumtype 等于『特殊召唤+作为同调素材』则返回 false，导致该特殊召唤不被允许；以此防止这张卡通过『被作为同调素材的特殊召唤』方式成为同调素材。
 function c41902352.spcost(e,c,tp,sumtype)
 	return sumtype~=SUMMON_TYPE_SPECIAL+SUMMON_VALUE_SYNCHRO_MATERIAL
 end

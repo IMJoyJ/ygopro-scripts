@@ -3,10 +3,10 @@
 -- 调整＋调整以外的怪兽1只以上
 -- 自己回合有场地魔法卡发动的场合，从卡组抽1张卡。「妖精龙 古代妖」的这个效果1回合只能使用1次。此外，1回合1次，场地魔法卡表侧表示存在的场合，可以选择场上表侧攻击表示存在的1只怪兽破坏。
 function c4179255.initial_effect(c)
-	-- 添加同调召唤手续，要求1只调整和1只调整以外的怪兽
+	-- 为这张卡添加同调召唤手续：使用任意1只调整 + 调整以外的怪兽1只以上作为素材，实现“调整＋调整以外的怪兽1只以上”的召唤条件。
 	aux.AddSynchroProcedure(c,nil,aux.NonTuner(nil),1)
 	c:EnableReviveLimit()
-	-- 自己回合有场地魔法卡发动的场合，从卡组抽1张卡。「妖精龙 古代妖」的这个效果1回合只能使用1次。
+	-- 对应效果原文：“自己回合有场地魔法卡发动的场合，从卡组抽1张卡。「妖精龙 古代妖」的这个效果1回合只能使用1次。”
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_DRAW)
 	e1:SetDescription(aux.Stringid(4179255,0))  --"抽卡"
@@ -22,7 +22,7 @@ function c4179255.initial_effect(c)
 	local e2=e1:Clone()
 	e2:SetCode(4179255)
 	c:RegisterEffect(e2)
-	-- 此外，1回合1次，场地魔法卡表侧表示存在的场合，可以选择场上表侧攻击表示存在的1只怪兽破坏。
+	-- 对应效果原文：“此外，1回合1次，场地魔法卡表侧表示存在的场合，可以选择场上表侧攻击表示存在的1只怪兽破坏。”
 	local e3=Effect.CreateEffect(c)
 	e3:SetCategory(CATEGORY_DESTROY)
 	e3:SetDescription(aux.Stringid(4179255,1))  --"怪兽破坏"
@@ -35,57 +35,57 @@ function c4179255.initial_effect(c)
 	e3:SetOperation(c4179255.desop)
 	c:RegisterEffect(e3)
 end
--- 判断是否为自己的回合且发动的是场地魔法卡的效果
+-- 抽卡效果的发动条件：判定是否在“自己回合有场地魔法卡发动”的时点，即当前回合玩家为tp，且触发连锁的效果re是场地魔法卡的发动。
 function c4179255.drcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断是否为自己的回合且发动的是场地魔法卡的效果
+	-- 条件表达式：当前回合玩家等于tp，且触发连锁的效果re存在，且re是场地魔法卡类型，且re属于卡的发动（EFFECT_TYPE_ACTIVATE），满足时抽卡效果可以发动。
 	return Duel.GetTurnPlayer()==tp and re and re:IsActiveType(TYPE_FIELD) and re:IsHasType(EFFECT_TYPE_ACTIVATE)
 end
--- 设置抽卡效果的目标玩家为自己，抽卡数量为1
+-- 抽卡效果的发动时处理：设定本次效果的对象玩家为tp，抽卡数量为1，并设置操作信息为抽卡效果。
 function c4179255.drtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置抽卡效果的目标玩家为自己
+	-- 将当前连锁的对象玩家设置为tp，表示由tp来抽卡。
 	Duel.SetTargetPlayer(tp)
-	-- 设置抽卡效果的抽卡数量为1
+	-- 将当前连锁的对象参数设置为1，表示抽卡数量为1张。
 	Duel.SetTargetParam(1)
-	-- 设置抽卡效果的操作信息
+	-- 设置操作信息：宣告为抽卡效果，对象玩家为tp，预计抽卡数量为1（因不取对象，对象卡组设为nil）。
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,1)
 end
--- 执行抽卡效果
+-- 抽卡效果的实际处理：从目标玩家p手中抽取d张卡。
 function c4179255.drop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁的目标玩家和目标参数
+	-- 从当前连锁信息中取出之前设定的目标玩家p（抽卡玩家）和目标参数d（抽卡数量）。
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 让目标玩家从卡组抽指定数量的卡
+	-- 让玩家p以效果原因抽d张卡。
 	Duel.Draw(p,d,REASON_EFFECT)
 end
--- 判断场地区是否存在表侧表示的场地魔法卡
+-- 破坏效果的发动条件：场上（双方场地区）存在表侧表示的场地魔法卡。
 function c4179255.descon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断场地区是否存在表侧表示的场地魔法卡
+	-- 检查是否存在至少1张表侧表示的场地魔法卡（LOCATION_FZONE），存在则满足发动条件。
 	return Duel.IsExistingMatchingCard(Card.IsFaceup,tp,LOCATION_FZONE,LOCATION_FZONE,1,nil)
 end
--- 判断目标怪兽是否为表侧攻击表示
+-- 破坏对象的过滤函数：只选择表侧攻击表示（POS_FACEUP_ATTACK）的怪兽。
 function c4179255.desfilter(c)
 	return c:IsPosition(POS_FACEUP_ATTACK)
 end
--- 设置怪兽破坏效果的目标选择和操作信息
+-- 破坏效果的发动时处理：选择场上1只表侧攻击表示怪兽作为对象，并设置破坏的操作信息，包含合法性检查和玩家选择。
 function c4179255.destg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and c4179255.desfilter(chkc) end
-	-- 检查场上是否存在满足条件的怪兽作为目标
+	-- 效果发动合法性检查：场上是否存在可作为对象的表侧攻击表示怪兽，若不存在则不能发动。
 	if chk==0 then return Duel.IsExistingTarget(c4179255.desfilter,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil) end
-	-- 提示选择要破坏的怪兽
+	-- 向玩家tp显示选择提示消息“请选择要破坏的卡”。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 选择场上表侧攻击表示的1只怪兽作为破坏对象
+	-- 玩家tp从场上选择1只满足过滤条件的怪兽，并将其登记为当前连锁的效果对象。
 	local g=Duel.SelectTarget(tp,c4179255.desfilter,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,nil)
-	-- 设置破坏效果的操作信息
+	-- 设置操作信息：宣告为破坏效果，对象为已选择的怪兽组g，处理数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,1,0,0)
 end
--- 执行怪兽破坏效果
+-- 破坏效果处理：若对象怪兽仍与效果关联且仍为表侧攻击表示，并且场上仍有表侧表示的场地魔法卡，则将该怪兽破坏。
 function c4179255.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的目标怪兽
+	-- 获取本效果选择的对象卡片（第一张目标怪兽）。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) and tc:IsPosition(POS_FACEUP_ATTACK)
-		-- 确认场地区存在表侧表示的场地魔法卡
+		-- 效果处理时再次确认场上存在至少1张表侧表示的场地魔法卡，以确保满足“场地魔法卡表侧表示存在的场合”这一条件。
 		and Duel.IsExistingMatchingCard(nil,tp,LOCATION_FZONE,LOCATION_FZONE,1,nil) then
-		-- 破坏目标怪兽
+		-- 以效果原因破坏对象怪兽tc。
 		Duel.Destroy(tc,REASON_EFFECT)
 	end
 end

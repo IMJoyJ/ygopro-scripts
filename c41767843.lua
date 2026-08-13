@@ -14,27 +14,27 @@ function c41767843.initial_effect(c)
 	e1:SetOperation(c41767843.operation)
 	c:RegisterEffect(e1)
 end
--- 判断是否满足发动条件，即攻击怪兽是幻奏卡组且参与了战斗且对方怪兽攻击力或守备力大于0
+-- 判定是否满足发动条件：伤害计算时存在我方「幻奏」怪兽与对方怪兽进行战斗，且对方怪兽的攻击力或守备力至少一项大于0；若攻击者为对方怪兽则先交换，确保以我方「幻奏」怪兽为判定对象。
 function c41767843.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取本次战斗的攻击怪兽
+	-- 获取当前战斗的攻击怪兽。
 	local a=Duel.GetAttacker()
-	-- 获取本次战斗的防守怪兽
+	-- 获取当前战斗的被攻击怪兽（攻击对象）。
 	local d=Duel.GetAttackTarget()
 	if not d then return false end
 	if a:IsControler(1-tp) then a,d=d,a end
 	return a:IsSetCard(0x9b) and a:IsRelateToBattle() and (d:GetAttack()>0 or d:GetDefense()>0)
 end
--- 检查是否满足发动代价，即是否能将此卡送入墓地作为代价
+-- 代价判定与执行：先检查此卡是否可作为代价从手卡送去墓地，若可以则将其从手卡送去墓地作为发动代价。
 function c41767843.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsAbleToGraveAsCost() end
-	-- 将此卡送入墓地作为发动代价
+	-- 执行代价操作：将此卡从手卡送去墓地，作为发动效果的代价。
 	Duel.SendtoGrave(e:GetHandler(),REASON_COST)
 end
--- 执行效果，将对方怪兽的攻击力和守备力在本回合结束前设为0
+-- 效果处理：根据攻击方确定本次战斗中的对方怪兽（若攻击方为对方则取攻击者，否则取攻击对象），若该怪兽仍与战斗相关且不是里侧表示，则令其攻击力和守备力直到回合结束时变为0。
 function c41767843.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取本次战斗的攻击怪兽
+	-- 获取当前战斗的攻击怪兽。
 	local a=Duel.GetAttacker()
-	-- 获取本次战斗的防守怪兽
+	-- 获取当前战斗的被攻击怪兽（攻击对象）。
 	local d=Duel.GetAttackTarget()
 	if a:IsControler(1-tp) then d=a end
 	if not d:IsRelateToBattle() or d:IsFacedown() then return end
