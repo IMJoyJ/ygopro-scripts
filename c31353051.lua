@@ -24,40 +24,40 @@ function c31353051.initial_effect(c)
 	e2:SetOperation(c31353051.regop)
 	c:RegisterEffect(e2)
 end
--- 检查连锁效果是否以这张卡为对象且对象为连接怪兽
+-- ①效果的发动条件：检测到以这张卡为对象的连接怪兽效果发动时才允许发动本效果。
 function c31353051.descon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if not re:IsHasProperty(EFFECT_FLAG_CARD_TARGET) then return false end
-	-- 获取连锁对象卡片组
+	-- 获取当前连锁中对方发动的效果所取的对象卡组。
 	local g=Duel.GetChainInfo(ev,CHAININFO_TARGET_CARDS)
 	if not g or not g:IsContains(c) then return false end
 	return re:IsActiveType(TYPE_LINK)
 end
--- 设置效果处理时的破坏和伤害操作信息
+-- ①效果的发动时需要满足的条件及操作信息设定：此卡可破坏，并设定将破坏此卡、双方受到2000伤害。
 function c31353051.destg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	if chk==0 then return c:IsDestructable() end
-	-- 设置将此卡破坏的操作信息
+	-- 设定本次效果处理中包含破坏这张卡的操作信息。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,c,1,0,0)
-	-- 设置双方各受到2000伤害的操作信息
+	-- 设定本次效果处理中双方玩家各受到2000伤害的操作信息。
 	Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,PLAYER_ALL,2000)
 end
--- 处理效果发动时的破坏和伤害效果
+-- ①效果处理：若此卡仍与效果关联且破坏成功，则先破坏此卡，再分别给予双方2000伤害。
 function c31353051.desop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 确认此卡存在于场上且成功破坏
+	-- 确认此卡没有被无效或离开过导致与效果失去关联，然后以效果破坏此卡；只有破坏成功才继续后续伤害。
 	if c:IsRelateToEffect(e) and Duel.Destroy(c,REASON_EFFECT)>0 then
-		-- 中断当前效果处理，使后续效果视为错时处理
+		-- 中断当前效果处理，使后续的伤害视为另一次处理，避免与破坏同时处理。
 		Duel.BreakEffect()
-		-- 给发动者造成2000伤害
+		-- 给发动方玩家造成2000点效果伤害。
 		Duel.Damage(tp,2000,REASON_EFFECT,true)
-		-- 给对方玩家造成2000伤害
+		-- 给对方玩家造成2000点效果伤害。
 		Duel.Damage(1-tp,2000,REASON_EFFECT,true)
-		-- 完成伤害处理时点
+		-- 完成伤害/回复的过程，触发因伤害产生的时点。
 		Duel.RDComplete()
 	end
 end
--- 当此卡因战斗或效果被破坏并送入墓地时，注册结束阶段触发效果
+-- ②效果的诱发注册：当这张卡因战斗或效果被破坏并送去墓地时，在结束阶段设置一个可选发动的特殊召唤效果。
 function c31353051.regop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsReason(REASON_BATTLE+REASON_EFFECT) and c:IsReason(REASON_DESTROY) and c:IsPreviousLocation(LOCATION_ONFIELD) then
@@ -75,29 +75,29 @@ function c31353051.regop(e,tp,eg,ep,ev,re,r,rp)
 		c:RegisterEffect(e1)
 	end
 end
--- 过滤函数：检查是否为「弹丸」卡组且非本卡，且可特殊召唤
+-- 从卡组选择满足条件的怪兽：持有「弹丸」字段、不是「爆炸弹丸龙」本身、且能够被特殊召唤。
 function c31353051.spfilter(c,e,tp)
 	return c:IsSetCard(0x102) and not c:IsCode(31353051) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 设置特殊召唤效果的发动条件
+-- ②效果发动条件：自己主要怪兽区有空位，且卡组中存在符合条件的「弹丸」怪兽。满足则设定特殊召唤的操作信息。
 function c31353051.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查场上是否有足够的召唤区域
+	-- 在发动时检查自己场上是否有可用的怪兽区区域。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查卡组中是否存在满足条件的「弹丸」怪兽
+		-- 检查卡组中是否存在满足 spfilter 条件的「弹丸」怪兽。
 		and Duel.IsExistingMatchingCard(c31353051.spfilter,tp,LOCATION_DECK,0,1,nil,e,tp) end
-	-- 设置特殊召唤操作信息
+	-- 设定本次效果处理为从卡组特殊召唤1只怪兽的操作信息。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_DECK)
 end
--- 处理特殊召唤效果
+-- ②效果处理：若仍有空位，则从卡组选择1只符合条件的「弹丸」怪兽以表侧攻击表示特殊召唤。
 function c31353051.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查场上是否有足够的召唤区域
+	-- 效果处理时再次确认自己场上是否有可用的怪兽区区域，若无空位则效果不处理。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-	-- 提示玩家选择要特殊召唤的卡
+	-- 弹出选择提示，要求玩家从卡组选择要特殊召唤的怪兽。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 选择满足条件的「弹丸」怪兽
+	-- 从卡组中选出1只符合条件的「弹丸」怪兽。
 	local g=Duel.SelectMatchingCard(tp,c31353051.spfilter,tp,LOCATION_DECK,0,1,1,nil,e,tp)
 	if g:GetCount()>0 then
-		-- 将选中的怪兽特殊召唤到场上
+		-- 将选择的怪兽以表侧表示特殊召唤到自己场上。
 		Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
 	end
 end

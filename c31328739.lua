@@ -2,7 +2,7 @@
 -- 效果：
 -- 把自己场上存在的1只念动力族怪兽解放发动。对方手卡全部加入卡组洗切。那之后，对方从卡组抽3张卡。
 function c31328739.initial_effect(c)
-	-- 把自己场上存在的1只念动力族怪兽解放发动。
+	-- 把自己场上存在的1只念动力族怪兽解放发动。对方手卡全部加入卡组洗切。那之后，对方从卡组抽3张卡。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_TODECK+CATEGORY_DRAW)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -13,35 +13,35 @@ function c31328739.initial_effect(c)
 	e1:SetOperation(c31328739.activate)
 	c:RegisterEffect(e1)
 end
--- 检查并选择1只自己场上的念动力族怪兽进行解放作为发动代价。
+-- 代价函数：从自己场上选择并解放1只念动力族怪兽作为发动费用。
 function c31328739.cost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查自己场上是否存在满足条件的念动力族怪兽以供解放。
+	-- 发动合法性检查：确认自己场上存在至少1只可解放的念动力族怪兽。
 	if chk==0 then return Duel.CheckReleaseGroup(tp,Card.IsRace,1,nil,RACE_PSYCHO) end
-	-- 选择1只自己场上的念动力族怪兽作为解放对象。
+	-- 从自己场上选择1只念动力族怪兽作为解放代价。
 	local g=Duel.SelectReleaseGroup(tp,Card.IsRace,1,1,nil,RACE_PSYCHO)
-	-- 将选中的怪兽以REASON_COST原因进行解放。
+	-- 将选择的念动力族怪兽解放，作为发动代价。
 	Duel.Release(g,REASON_COST)
 end
--- 对方手卡全部加入卡组洗切。那之后，对方从卡组抽3张卡。
+-- 发动时的目标设定函数：确认对方手牌有卡且对方可以抽3张，并将效果对象玩家指定为对方。
 function c31328739.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查对方手牌数量是否大于0且对方是否可以抽3张卡。
+	-- 发动条件判定：对方手牌存在卡，且对方玩家可以抽3张卡。
 	if chk==0 then return Duel.GetFieldGroupCount(tp,0,LOCATION_HAND)>0 and Duel.IsPlayerCanDraw(1-tp,3) end
-	-- 将对方设置为该效果的目标玩家。
+	-- 将当前连锁效果的对象玩家设为对方（1-tp）。
 	Duel.SetTargetPlayer(1-tp)
 end
--- 执行效果的主要处理流程，包括将对方手牌送入卡组并洗切、再抽3张卡。
+-- 效果处理函数：将对方全部手牌洗回卡组，然后让对方抽3张卡。
 function c31328739.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的目标玩家（即对方）。
+	-- 从当前连锁信息中取得效果对象玩家（对方）。
 	local p=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER)
-	-- 获取目标玩家（对方）手牌组。
+	-- 取得对象玩家手牌区的全部卡。
 	local g=Duel.GetFieldGroup(p,LOCATION_HAND,0)
 	if g:GetCount()==0 then return end
-	-- 将对方手牌全部送入卡组并标记需要洗牌。
+	-- 将对方手牌全部弹回其持有者卡组，并标记需要洗切。
 	Duel.SendtoDeck(g,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
-	-- 对目标玩家（对方）的卡组进行洗切。
+	-- 洗切对方卡组。
 	Duel.ShuffleDeck(p)
-	-- 中断当前效果处理，使后续效果视为不同时处理。
+	-- 中断效果处理，使后续抽卡与之前的回卡组处理视为不同时处理。
 	Duel.BreakEffect()
-	-- 让目标玩家（对方）从卡组抽3张卡。
+	-- 对方玩家抽3张卡。
 	Duel.Draw(p,3,REASON_EFFECT)
 end

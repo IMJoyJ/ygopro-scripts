@@ -10,7 +10,7 @@ function c31383545.initial_effect(c)
 	e1:SetOperation(c31383545.regop)
 	c:RegisterEffect(e1)
 end
--- 当此卡因自身送去墓地时，将效果注册到墓地
+-- 这张卡被送去墓地时，若其之前由我方控制且位于场上，则满足“从自己场上送去墓地”的条件，在墓地内注册一个可在结束阶段发动的诱发选发效果；该效果1回合1次，到结束阶段时重置。
 function c31383545.regop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsPreviousControler(tp) and c:IsPreviousLocation(LOCATION_ONFIELD) then
@@ -28,27 +28,27 @@ function c31383545.regop(e,tp,eg,ep,ev,re,r,rp)
 		c:RegisterEffect(e1)
 	end
 end
--- 过滤函数，用于筛选「X-剑士」怪兽
+-- 检索对象必须为含有「X-剑士」字段的怪兽，并且不能被“不能加入手卡”的效果限制。
 function c31383545.filter(c)
 	return c:IsSetCard(0x100d) and c:IsType(TYPE_MONSTER) and c:IsAbleToHand()
 end
--- 设置效果处理时的检索操作信息
+-- 效果发动判定与处理信息登记：若卡组存在符合条件的检索对象则允许发动，并预先告知系统本效果将从卡组把1张卡加入手卡。
 function c31383545.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否满足检索条件
+	-- 发动时检测：己方卡组中是否存在至少1张满足c31383545.filter的卡。
 	if chk==0 then return Duel.IsExistingMatchingCard(c31383545.filter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置检索操作信息
+	-- 登记操作信息：本次效果属于回手牌/检索，将处理1张卡，来源为tp的卡组；因具体卡片在效果处理时才确定，所以目标暂设为nil。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 执行检索效果
+-- 效果处理：从卡组选择1张符合条件的「X-剑士」怪兽加入持有者手卡，并让对方确认加入手卡的卡。
 function c31383545.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示选择要加入手牌的卡
+	-- 给操作玩家弹出选择提示，提示文字为“请选择要加入手牌的卡”。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择满足条件的卡
+	-- 从己方卡组中选出1张满足c31383545.filter的卡，作为加入手牌的对象。
 	local g=Duel.SelectMatchingCard(tp,c31383545.filter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的卡加入手牌
+		-- 将选中的卡加入其持有者的手卡（nil表示加入持有者手卡），送入原因为效果。
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 确认对方查看加入手牌的卡
+		-- 将加入手卡的卡展示给对方玩家确认。
 		Duel.ConfirmCards(1-tp,g)
 	end
 end

@@ -5,7 +5,7 @@
 -- ②：场上有不死族怪兽存在的场合才能发动。在自己场上把1只「Δ衍生物」（不死族·暗·5星·攻/守0）特殊召唤。
 -- ③：这张卡在墓地存在的状态，怪兽从墓地加入手卡的场合才能发动。这张卡加入手卡。
 local s,id,o=GetID()
--- 创建并注册三个效果，分别对应发动、特殊召唤和加入手卡效果
+-- 初始化函数：创建并注册①（发动时从卡组堆墓不死族）、②（场上有不死族时特招Δ衍生物）、③（墓地存在时怪兽从墓地回手则自身加入手卡）三个效果。
 function s.initial_effect(c)
 	-- ①：作为这张卡的发动时的效果处理，可以从卡组把1只5星以上的不死族怪兽送去墓地。
 	local e1=Effect.CreateEffect(c)
@@ -41,73 +41,73 @@ function s.initial_effect(c)
 	e3:SetOperation(s.thop)
 	c:RegisterEffect(e3)
 end
--- 定义过滤函数，用于筛选5星以上且为不死族的可送去墓地的怪兽
+-- 过滤函数：判断卡是否满足“不死族、5星以上、可送去墓地”的条件，用于①效果选择送墓的卡。
 function s.tgfilter(c)
 	return c:IsRace(RACE_ZOMBIE) and c:IsLevelAbove(5) and c:IsAbleToGrave()
 end
--- 发动效果时，从卡组检索符合条件的怪兽并选择是否送去墓地
+-- ①效果的处理函数：从卡组挑选1只符合条件的不死族怪兽送去墓地；若卡组没有可选怪兽或玩家取消则不处理。
 function s.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取满足条件的卡组怪兽集合
+	-- 获取我方卡组中所有满足tgfilter条件（5星以上不死族且能送去墓地）的怪兽，作为可选集合。
 	local g=Duel.GetMatchingGroup(s.tgfilter,tp,LOCATION_DECK,0,nil)
-	-- 判断是否有满足条件的怪兽且玩家选择将怪兽送去墓地
+	-- 若存在可选怪兽且玩家确认要送墓，则继续执行选择；否则效果不处理。
 	if g:GetCount()>0 and Duel.SelectYesNo(tp,aux.Stringid(id,3)) then  --"是否把卡送去墓地？"
-		-- 提示玩家选择要送去墓地的卡
+		-- 发送选择提示，让玩家选择要送去墓地的卡。
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
 		local sg=g:Select(tp,1,1,nil)
-		-- 将选择的怪兽送去墓地
+		-- 将选择的怪兽以效果原因送去墓地。
 		Duel.SendtoGrave(sg,REASON_EFFECT)
 	end
 end
--- 判断场上有无不死族怪兽的条件函数
+-- ②效果的发动条件函数：检查双方场上是否存在表侧表示的不死族怪兽。
 function s.tkcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断场上是否存在不死族怪兽
+	-- 检查双方场上是否存在至少1张表侧表示的不死族怪兽。
 	return Duel.IsExistingMatchingCard(aux.AND(Card.IsFaceup,Card.IsRace),tp,LOCATION_MZONE,LOCATION_MZONE,1,nil,RACE_ZOMBIE)
 end
--- 特殊召唤效果的目标设定函数
+-- ②效果的发动目标函数：在发动时检查自己能否空出怪兽区并能否特殊召唤Δ衍生物。
 function s.tktg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断是否有足够的召唤区域
+	-- 检查自己场上是否有可用的主要怪兽区域空格。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 判断是否可以特殊召唤衍生物
+		-- 确认玩家可以特殊召唤「Δ衍生物」（不死族·暗·5星·攻/守0）到自己场上。
 		and Duel.IsPlayerCanSpecialSummonMonster(tp,id+o,0,TYPES_TOKEN_MONSTER,0,0,5,RACE_ZOMBIE,ATTRIBUTE_DARK,POS_FACEUP) end
-	-- 设置操作信息为召唤衍生物
+	-- 登记本次操作包含特殊召唤衍生物类别的信息。
 	Duel.SetOperationInfo(0,CATEGORY_TOKEN,nil,1,0,0)
-	-- 设置操作信息为特殊召唤衍生物
+	-- 登记本次操作包含特殊召唤类别的信息。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,0,0)
 end
--- 特殊召唤效果的执行函数
+-- ②效果的实际处理函数：在自己场上特殊召唤1只「Δ衍生物」。
 function s.tkop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 判断是否有足够的召唤区域
+	-- 效果处理时再次确认自己场上是否有空位，若无则处理失败。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0
-		-- 判断是否可以特殊召唤衍生物
+		-- 同时确认玩家仍能特殊召唤衍生物，否则不处理。
 		or not Duel.IsPlayerCanSpecialSummonMonster(tp,id+o,0,TYPES_TOKEN_MONSTER,0,0,5,RACE_ZOMBIE,ATTRIBUTE_DARK,POS_FACEUP) then return end
-	-- 创建衍生物
+	-- 生成1只「Δ衍生物」（不死族·暗·5星·攻/守0）。
 	local token=Duel.CreateToken(tp,id+o)
-	-- 将衍生物特殊召唤到场上
+	-- 将衍生物以表侧表示特殊召唤到自己场上。
 	Duel.SpecialSummon(token,0,tp,tp,false,false,POS_FACEUP)
 end
--- 触发效果的过滤函数，用于判断是否为从墓地加入手卡的怪兽
+-- ③效果的触发过滤函数：判断加入手卡的卡是否为怪兽且是从墓地加入手卡。
 function s.trigfilter(c)
 	return c:IsType(TYPE_MONSTER) and c:IsPreviousLocation(LOCATION_GRAVE)
 end
--- 判断是否有怪兽从墓地加入手卡
+-- ③效果的发动条件：本连锁触发事件中存在从墓地加入手卡的怪兽。
 function s.thcon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(s.trigfilter,1,nil)
 end
--- 加入手卡效果的目标设定函数
+-- ③效果的目标检查与登记：确认本卡能加入手卡并设置回手操作信息。
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsAbleToHand() end
-	-- 设置操作信息为将卡加入手卡
+	-- 登记本次操作包含将这张卡加入手卡的信息。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,e:GetHandler(),1,0,0)
 end
--- 加入手卡效果的执行函数
+-- ③效果的实际处理：将这张卡加入持有者手卡并向对方展示。
 function s.thop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 判断卡是否与效果相关且未受王家长眠之谷影响
+	-- 确认这张卡仍与该效果关联且不受“王家长眠之谷”等效果影响后，才处理回手。
 	if c:IsRelateToEffect(e) and aux.NecroValleyFilter()(c) then
-		-- 将卡加入手卡
+		-- 将这张卡加入持有者手卡。
 		Duel.SendtoHand(c,nil,REASON_EFFECT)
-		-- 向对方确认加入手卡的卡
+		-- 向对方玩家展示这张卡，确认其已加入手卡。
 		Duel.ConfirmCards(1-tp,c)
 	end
 end

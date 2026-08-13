@@ -17,7 +17,7 @@ function c3136426.initial_effect(c)
 	e2:SetValue(POS_FACEUP_DEFENSE)
 	c:RegisterEffect(e2)
 end
--- 检索满足等级4以上且表侧表示的怪兽
+-- 过滤条件：检查怪兽是否为等级4星以上且表侧表示，满足条件的怪兽才会受到变成守备表示的效果影响。
 function c3136426.target(e,c)
 	return c:IsLevelAbove(4) and c:IsFaceup()
 end

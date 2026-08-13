@@ -6,7 +6,7 @@
 -- ③：这张卡从场上送去墓地的场合才能发动。从手卡把1只「星杯」怪兽特殊召唤。
 function c31226177.initial_effect(c)
 	c:EnableReviveLimit()
-	-- 为卡片添加连接召唤手续，要求使用1到1个满足条件的怪兽作为连接素材
+	-- 为这张卡添加连接召唤手续：使用1只满足matfilter（衍生物以外的通常怪兽）作为连接素材。
 	aux.AddLinkProcedure(c,c31226177.matfilter,1,1)
 	-- ①：只要这张卡在怪兽区域存在，自己在通常召唤外加上只有1次，自己主要阶段可以把1只「星杯」怪兽召唤。
 	local e1=Effect.CreateEffect(c)
@@ -15,7 +15,7 @@ function c31226177.initial_effect(c)
 	e1:SetCode(EFFECT_EXTRA_SUMMON_COUNT)
 	e1:SetRange(LOCATION_MZONE)
 	e1:SetTargetRange(LOCATION_HAND+LOCATION_MZONE,0)
-	-- 设置效果目标为「星杯」卡
+	-- 设置可享受额外召唤次数的对象为持有「星杯」字段的卡（在手牌和主要怪兽区域中）。
 	e1:SetTarget(aux.TargetBoolFunction(Card.IsSetCard,0xfd))
 	c:RegisterEffect(e1)
 	-- ②：这张卡和这张卡所连接区的对方怪兽进行战斗的伤害步骤开始时才能发动。那只对方怪兽破坏。
@@ -39,54 +39,54 @@ function c31226177.initial_effect(c)
 	e3:SetOperation(c31226177.spop2)
 	c:RegisterEffect(e3)
 end
--- 连接素材过滤函数，要求是通常怪兽且不是衍生物
+-- 连接素材过滤函数：作为连接素材的怪兽必须为通常怪兽（以连接素材身份判定类型）且不是衍生物。
 function c31226177.matfilter(c)
 	return c:IsLinkType(TYPE_NORMAL) and not c:IsLinkType(TYPE_TOKEN)
 end
--- 战斗破坏效果的发动时点处理函数，检查是否满足发动条件
+-- 效果②的发动条件和对象判定：若这张卡存在战斗对象且该对象位于这张卡的连接区，则满足发动条件；同时将该战斗对象视为效果对象。
 function c31226177.destg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	local bc=c:GetBattleTarget()
 	if chk==0 then return bc and c:GetLinkedGroup():IsContains(bc) end
-	-- 设置连锁操作信息为破坏效果
+	-- 登记操作信息：本次连锁将破坏那只战斗对象（bc），破坏数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,bc,1,0,0)
 end
--- 战斗破坏效果的处理函数，执行破坏操作
+-- 效果②处理：获取战斗对象，若该对象仍与本次战斗关联（未离场、对象关系有效），则将其破坏。
 function c31226177.desop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local bc=c:GetBattleTarget()
 	if bc:IsRelateToBattle() then
-		-- 执行破坏操作，原因来自效果
+		-- 以效果原因将那只对方怪兽破坏。
 		Duel.Destroy(bc,REASON_EFFECT)
 	end
 end
--- 特殊召唤效果的发动条件函数，检查卡片是否从场上送去墓地
+-- 效果③的发动条件：这张卡的上一位置为场上，即确实是从场上送去墓地。
 function c31226177.spcon2(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsPreviousLocation(LOCATION_ONFIELD)
 end
--- 特殊召唤卡片的过滤函数，检查是否为「星杯」卡且可以特殊召唤
+-- 特殊召唤的候选过滤：手牌中的「星杯」怪兽，并且能够被玩家tp以效果e特殊召唤（同时检查召唤条件和苏生限制）。
 function c31226177.spfilter2(c,e,tp)
 	return c:IsSetCard(0xfd) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 特殊召唤效果的目标设定函数，检查是否有满足条件的卡可以特殊召唤
+-- 效果③的发动时点检测：自己主要怪兽区有空格，且手牌存在至少1只符合条件的「星杯」怪兽。
 function c31226177.sptg2(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查场上是否有足够的特殊召唤位置
+	-- 检查自己场上主要怪兽区域是否存在空格（若没有空格则不能发动）。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查手牌中是否存在满足条件的「星杯」怪兽
+		-- 检查手牌中是否存在至少1只满足spfilter2过滤条件的「星杯」怪兽。
 		and Duel.IsExistingMatchingCard(c31226177.spfilter2,tp,LOCATION_HAND,0,1,nil,e,tp) end
-	-- 设置连锁操作信息为特殊召唤效果
+	-- 登记操作信息：本次效果将进行特殊召唤，来源为手牌，预计特殊召唤1只（不取对象，因此targets为nil）。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_HAND)
 end
--- 特殊召唤效果的处理函数，选择并特殊召唤卡片
+-- 效果③处理流程：确认主怪兽区有空位后，提示玩家选择手牌中的「星杯」怪兽，并在选择后将其特殊召唤到自己场上。
 function c31226177.spop2(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查场上是否有足够的特殊召唤位置
+	-- 处理时再次确认自己主要怪兽区仍有空格，若无空位则直接终止处理（不满足特殊召唤条件）。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-	-- 提示玩家选择要特殊召唤的卡
+	-- 向玩家发送选择提示消息，提示内容为“请选择要特殊召唤的卡”（HINTMSG_SPSUMMON）。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 从手牌中选择满足条件的「星杯」怪兽
+	-- 从手牌中选择1张满足spfilter2过滤条件的「星杯」怪兽（必选1张），作为特殊召唤的对象。
 	local g=Duel.SelectMatchingCard(tp,c31226177.spfilter2,tp,LOCATION_HAND,0,1,1,nil,e,tp)
 	if g:GetCount()>0 then
-		-- 将选中的卡片特殊召唤到场上
+		-- 将选择的怪兽以表侧表示特殊召唤到自己场上（遵守召唤条件和苏生限制）。
 		Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
