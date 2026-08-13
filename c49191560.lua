@@ -15,41 +15,41 @@ function c49191560.initial_effect(c)
 	e1:SetOperation(c49191560.operation)
 	c:RegisterEffect(e1)
 end
--- 检索满足条件的卡片组：名字带有「魔导书」的魔法卡
+-- 过滤手卡中满足条件的卡片：卡名带有「魔导书」的魔法卡且能够被丢弃。
 function c49191560.cfilter(c)
 	return c:IsSetCard(0x106e) and c:IsType(TYPE_SPELL) and c:IsDiscardable()
 end
--- 检查玩家手牌是否存在满足条件的魔法卡并丢弃1张
+-- 代价函数：检查能否丢弃手卡中的「魔导书」魔法卡作为发动代价；满足时实际丢弃1张符合条件的卡。
 function c49191560.cost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断是否满足丢弃条件
+	-- 代价检测：若此时不是正式支付代价（chk==0），则检查手卡中是否存在至少1张符合条件的「魔导书」魔法卡。
 	if chk==0 then return Duel.IsExistingMatchingCard(c49191560.cfilter,tp,LOCATION_HAND,0,1,nil) end
-	-- 执行丢弃1张满足条件的手卡
+	-- 实际支付代价：从手卡挑选并丢弃1张符合条件的「魔导书」魔法卡，丢弃原因为效果代价。
 	Duel.DiscardHand(tp,c49191560.cfilter,1,1,REASON_DISCARD+REASON_COST)
 end
--- 检索满足条件的卡片组：魔法师族且能加入手牌的怪兽
+-- 过滤墓地中的目标：魔法师族怪兽且能够加入手卡。
 function c49191560.filter(c)
 	return c:IsRace(RACE_SPELLCASTER) and c:IsAbleToHand()
 end
--- 设置效果目标，选择自己墓地1只魔法师族怪兽
+-- 发动目标函数：选择自己墓地1只魔法师族怪兽作为对象，并设置将对象加入手牌的操作信息。
 function c49191560.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and c49191560.filter(chkc) end
-	-- 判断是否满足选择目标条件
+	-- 发动合法性检测：自己墓地是否存在至少1只满足条件且能成为对象的魔法师族怪兽。
 	if chk==0 then return Duel.IsExistingTarget(c49191560.filter,tp,LOCATION_GRAVE,0,1,nil) end
-	-- 向玩家提示“请选择要加入手牌的卡”
+	-- 发出选择提示：让玩家选择要加入手牌的卡片。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择满足条件的目标怪兽
+	-- 玩家从自己墓地选择1只满足条件的魔法师族怪兽，并将其设为效果对象（取对象）。
 	local g=Duel.SelectTarget(tp,c49191560.filter,tp,LOCATION_GRAVE,0,1,1,nil)
-	-- 设置效果处理信息，确定将目标怪兽加入手牌
+	-- 设置操作信息：本次处理将把1张对象卡加入手牌（CATEGORY_TOHAND）。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,1,0,0)
 end
--- 执行效果处理，将目标怪兽加入手牌并确认对方可见
+-- 效果处理函数：效果结算时，若对象仍然与效果有关联且仍为魔法师族怪兽，则将其加入手牌并向对方展示。
 function c49191560.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的效果目标
+	-- 取得连锁处理时的效果对象卡。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) and tc:IsRace(RACE_SPELLCASTER) then
-		-- 将目标怪兽以效果原因送入手牌
+		-- 将对象卡加入其持有者的手牌，原因为效果。
 		Duel.SendtoHand(tc,nil,REASON_EFFECT)
-		-- 向对方玩家确认目标怪兽的卡面
+		-- 将加入手牌的卡片展示给对方玩家确认。
 		Duel.ConfirmCards(1-tp,tc)
 	end
 end

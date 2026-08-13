@@ -12,29 +12,29 @@ function c49144107.initial_effect(c)
 	e1:SetOperation(c49144107.operation)
 	c:RegisterEffect(e1)
 end
--- 过滤函数，返回满足条件的场上表侧表示的通常怪兽（非衍生物）的数量
+-- 该过滤函数用于筛选出己方场上表侧表示且非衍生物的通常怪兽，作为伤害计算的数量依据。
 function c49144107.filter(c)
 	local tpe=c:GetType()
 	return c:IsFaceup() and bit.band(tpe,TYPE_NORMAL)~=0 and bit.band(tpe,TYPE_TOKEN)==0
 end
--- 效果处理时点，设置连锁对象玩家为对手，计算满足条件的怪兽数量并乘以1000作为伤害值，设置连锁操作信息为伤害效果
+-- 发动反转效果时，判定阶段直接允许发动；设置伤害对象为对方，并统计己方场上符合条件的通常怪兽数量乘以1000作为伤害值，写入连锁信息供处理时使用。
 function c49144107.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 将当前连锁的目标玩家设置为对手
+	-- 将当前连锁的对象玩家设置为对方（1-tp），即伤害的承受者。
 	Duel.SetTargetPlayer(1-tp)
-	-- 获取自己场上满足条件的通常怪兽数量，并乘以1000得到总伤害值
+	-- 统计己方场上表侧表示、非衍生物的通常怪兽数量，并乘以1000，得到本次效果的伤害值。
 	local dam=Duel.GetMatchingGroupCount(c49144107.filter,tp,LOCATION_MZONE,0,nil)*1000
-	-- 将当前连锁的目标参数设置为计算出的伤害值
+	-- 将计算出的伤害值dam设置为当前连锁的对象参数，便于后续处理时读取。
 	Duel.SetTargetParam(dam)
-	-- 设置当前处理的连锁的操作信息，包含伤害效果、目标玩家和伤害值
+	-- 登记操作信息：本次连锁包含造成伤害的效果，对象为对方玩家，伤害值为dam。
 	Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,1-tp,dam)
 end
--- 效果发动时点，获取连锁对象玩家和满足条件的怪兽数量，计算总伤害并造成伤害
+-- 效果处理时执行实际伤害：从连锁信息中取出对象玩家，重新统计当时己方场上符合条件的通常怪兽数量乘以1000，然后对该玩家造成效果伤害。
 function c49144107.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 从当前连锁中获取目标玩家
+	-- 取得当前连锁记录的对象玩家（即伤害对象）。
 	local p=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER)
-	-- 获取自己场上满足条件的通常怪兽数量，并乘以1000得到总伤害值
+	-- 重新统计己方场上表侧表示、非衍生物的通常怪兽数量并乘以1000，得到此时应造成的伤害值。
 	local dam=Duel.GetMatchingGroupCount(c49144107.filter,tp,LOCATION_MZONE,0,nil)*1000
-	-- 以效果原因对指定玩家造成相应伤害值
+	-- 对对象玩家p造成dam点效果伤害（伤害原因为效果）。
 	Duel.Damage(p,dam,REASON_EFFECT)
 end

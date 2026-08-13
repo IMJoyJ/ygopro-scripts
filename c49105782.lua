@@ -5,10 +5,10 @@
 -- ①：对方墓地没有怪兽存在的场合，这张卡的攻击力上升2400。
 -- ②：自己·对方回合，以对方墓地1只怪兽为对象才能发动。那只怪兽回到卡组。
 function c49105782.initial_effect(c)
-	-- 添加连接召唤手续，要求使用至少2只风属性的怪兽作为连接素材
+	-- 为这张卡添加连接召唤手续：需要至少2只风属性怪兽作为连接素材。
 	aux.AddLinkProcedure(c,aux.FilterBoolFunction(Card.IsLinkAttribute,ATTRIBUTE_WIND),2)
 	c:EnableReviveLimit()
-	-- 对方墓地没有怪兽存在的场合，这张卡的攻击力上升2400。
+	-- ①：对方墓地没有怪兽存在的场合，这张卡的攻击力上升2400。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
@@ -17,7 +17,7 @@ function c49105782.initial_effect(c)
 	e1:SetCondition(c49105782.atkcon)
 	e1:SetValue(2400)
 	c:RegisterEffect(e1)
-	-- 自己·对方回合，以对方墓地1只怪兽为对象才能发动。那只怪兽回到卡组。
+	-- ②：自己·对方回合，以对方墓地1只怪兽为对象才能发动。那只怪兽回到卡组。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(49105782,0))
 	e2:SetCategory(CATEGORY_TODECK)
@@ -30,33 +30,33 @@ function c49105782.initial_effect(c)
 	e2:SetOperation(c49105782.tdop)
 	c:RegisterEffect(e2)
 end
--- 判断对方墓地是否没有怪兽存在
+-- 效果①的适用条件判定：检查对方墓地是否存在怪兽。
 function c49105782.atkcon(e)
-	-- 检查对方墓地是否存在至少1只怪兽
+	-- 检查对方墓地（以效果持有者视角的对方区域）是否存在怪兽；若不存在则返回true，使攻击力上升条件成立。
 	return not Duel.IsExistingMatchingCard(Card.IsType,e:GetHandlerPlayer(),0,LOCATION_GRAVE,1,nil,TYPE_MONSTER)
 end
--- 过滤函数，用于筛选可以送回卡组的怪兽
+-- 效果②的取对象过滤：选择的对象必须是墓地中的怪兽，且可以返回卡组。
 function c49105782.tdfilter(c)
 	return c:IsType(TYPE_MONSTER) and c:IsAbleToDeck()
 end
--- 设置效果的发动条件和目标选择逻辑，允许选择对方墓地的一只怪兽作为对象
+-- 效果②的发动时目标处理：先确认可以选取对象，然后提示玩家选择，从对方墓地选择1只符合条件的怪兽作为对象，并登记回卡组的操作信息。
 function c49105782.tdtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(1-tp) and c49105782.tdfilter(chkc) end
-	-- 检查是否满足选择目标的条件，即对方墓地存在至少1只怪兽
+	-- 发动合法性检查：对方墓地是否存在1只满足过滤条件且能被选择为对象的怪兽，若存在则允许发动。
 	if chk==0 then return Duel.IsExistingTarget(c49105782.tdfilter,tp,0,LOCATION_GRAVE,1,nil) end
-	-- 向玩家提示选择要返回卡组的卡
+	-- 给当前玩家显示选择提示文字“请选择要返回卡组的卡”。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TODECK)  --"请选择要返回卡组的卡"
-	-- 选择对方墓地的一只怪兽作为效果的对象
+	-- 让当前玩家从对方墓地选择1只满足tdfilter条件的怪兽，并设为该连锁的对象。
 	local g=Duel.SelectTarget(tp,c49105782.tdfilter,tp,0,LOCATION_GRAVE,1,1,nil)
-	-- 设置效果处理时的操作信息，指定将选中的怪兽送回卡组
+	-- 登记本次效果处理信息：将对象g返回卡组，数量为1，用于连锁判定及相关效果检测。
 	Duel.SetOperationInfo(0,CATEGORY_TODECK,g,1,0,0)
 end
--- 设置效果的发动后处理逻辑，将目标怪兽送回卡组
+-- 效果②处理时：取得对象，若对象仍与效果关联，则将其返回持有者卡组并洗牌。
 function c49105782.tdop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁中被选择的目标怪兽
+	-- 取得效果②所选择的1只对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 将目标怪兽以洗牌方式送回卡组
+		-- 将对象怪兽返回持有者卡组并洗牌，处理原因为效果。
 		Duel.SendtoDeck(tc,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
 	end
 end

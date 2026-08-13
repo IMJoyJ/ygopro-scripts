@@ -5,7 +5,7 @@
 -- ②：这张卡有「No.65 裁断魔人」在作为超量素材的场合，得到以下效果。
 -- ●只要这张卡在怪兽区域存在，对方场上的怪兽不能把效果发动。
 function c49195710.initial_effect(c)
-	-- 为卡片添加XYZ召唤手续，要求使用暗属性怪兽作为素材，等级为3，数量为3。
+	-- 为这张卡设置XYZ召唤手续：需要3只暗属性3星怪兽作为超量素材。
 	aux.AddXyzProcedure(c,aux.FilterBoolFunction(Card.IsAttribute,ATTRIBUTE_DARK),3,3)
 	c:EnableReviveLimit()
 	-- ①：1回合1次，把这张卡1个超量素材取除，以对方场上1只表侧表示怪兽为对象才能发动。那只怪兽的攻击力·守备力下降1000。
@@ -28,34 +28,34 @@ function c49195710.initial_effect(c)
 	e2:SetCondition(c49195710.accon)
 	c:RegisterEffect(e2)
 end
--- 设置该卡的XYZ编号为65。
+-- 将该卡登记为No.65，用于No.卡相关规则判定（如No.卡互相战斗/效果的特殊限制）。
 aux.xyz_number[49195710]=65
--- 效果发动时支付1个超量素材作为代价。
+-- 效果发动代价的处理：检查这张卡有1个超量素材可移除；实际发动时移除这张卡的1个超量素材。
 function c49195710.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():CheckRemoveOverlayCard(tp,1,REASON_COST) end
 	e:GetHandler():RemoveOverlayCard(tp,1,1,REASON_COST)
 end
--- 定义目标过滤函数，用于筛选表侧表示的怪兽。
+-- 对象筛选函数：判断卡片是否为表侧表示。
 function c49195710.filter(c)
 	return c:IsFaceup()
 end
--- 设置效果的目标选择逻辑，选择对方场上一只表侧表示的怪兽。
+-- 效果发动时的取对象处理：验证指定对象是对方场上表侧表示怪兽；无指定对象时检查是否存在合法对象；然后提示玩家选择对方场上1只表侧表示怪兽，并将其设为效果对象。
 function c49195710.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(1-tp) and chkc:IsLocation(LOCATION_MZONE) and c49195710.filter(chkc) end
-	-- 检查是否存在符合条件的目标怪兽。
+	-- 发动合法性检查：确认对方场上至少存在1只表侧表示怪兽可作为对象。
 	if chk==0 then return Duel.IsExistingTarget(c49195710.filter,tp,0,LOCATION_MZONE,1,nil) end
-	-- 提示玩家选择一张表侧表示的卡。
+	-- 给操作玩家显示“请选择表侧表示的卡”的选卡提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
-	-- 从对方场上选择一只表侧表示的怪兽作为目标。
+	-- 让玩家从对方怪兽区域选择1只表侧表示怪兽作为效果对象，并将该对象登记到当前连锁。
 	Duel.SelectTarget(tp,c49195710.filter,tp,0,LOCATION_MZONE,1,1,nil)
 end
--- 效果处理函数，使目标怪兽攻击力和守备力各下降1000。
+-- 效果处理时：取得对象怪兽，若它仍表侧表示且与效果关联，则给它附加攻击力、守备力下降1000的效果（直到离场等标准重置）。
 function c49195710.operation(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取当前连锁效果的目标怪兽。
+	-- 取得当前连锁中登记的效果对象（即被选中的那只对方怪兽）。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsFaceup() and tc:IsRelateToEffect(e) then
-		-- 为目标怪兽添加攻击力下降1000的效果。
+		-- 那只怪兽的攻击力·守备力下降1000。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)
@@ -67,7 +67,7 @@ function c49195710.operation(e,tp,eg,ep,ev,re,r,rp)
 		tc:RegisterEffect(e2)
 	end
 end
--- 判断该卡是否含有编号为3790062（No.65 裁断魔人）的超量素材。
+-- ②效果的适用条件：检查这张卡的超量素材中是否存在「No.65 裁断魔人」（卡号3790062）；满足时对方怪兽不能发动效果。
 function c49195710.accon(e)
 	return e:GetHandler():GetOverlayGroup():IsExists(Card.IsCode,1,nil,3790062)
 end

@@ -28,27 +28,27 @@ function c49217579.initial_effect(c)
 	e3:SetType(EFFECT_TYPE_SINGLE)
 	e3:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
 	e3:SetCode(EFFECT_SPSUMMON_CONDITION)
-	-- 设置该效果为无效条件，使卡片无法通过通常方式特殊召唤。
+	-- 将该卡的特殊召唤条件值设为false，使其无法通过一般特殊召唤方式出场，只能依靠「黑炎之骑士」效果进行特殊召唤。
 	e3:SetValue(aux.FALSE)
 	c:RegisterEffect(e3)
 end
--- 判断当前是否处于伤害计算阶段且己方怪兽有战斗目标。
+-- 定义攻击力上升效果的适用条件：仅在伤害计算阶段且该卡此时有战斗对象时才适用。
 function c49217579.atkcon(e)
-	-- 当前阶段为伤害计算阶段并且存在战斗中的对方怪兽。
+	-- 判定当前阶段是否为伤害计算时，并且该卡存在战斗对象（即正在与对方怪兽战斗）。
 	return Duel.GetCurrentPhase()==PHASE_DAMAGE_CAL and e:GetHandler():GetBattleTarget()
 end
--- 返回当前进行战斗的对方怪兽的原本攻击力数值。
+-- 定义攻击力上升的具体数值：该卡当前战斗对象的原本攻击力数值。
 function c49217579.atkval(e,c)
 	return e:GetHandler():GetBattleTarget():GetBaseAttack()
 end
--- 判断该卡在战斗中是否参与过战斗组（即是否进行过战斗）。
+-- 定义②效果的触发条件：本回合该卡进行过战斗（战斗过的怪兽数量大于0）。
 function c49217579.rmcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():GetBattledGroupCount()>0
 end
--- 执行将自身从游戏中除外的操作。
+-- 定义②效果的处理流程：若该卡仍与效果保持关联，则将其除外。
 function c49217579.rmop(e,tp,eg,ep,ev,re,r,rp)
 	if e:GetHandler():IsRelateToEffect(e) then
-		-- 将目标卡片以正面表示形式除外，原因来自效果
+		-- 以表侧表示形式将该卡除外，除外原因为效果。
 		Duel.Remove(e:GetHandler(),POS_FACEUP,REASON_EFFECT)
 	end
 end

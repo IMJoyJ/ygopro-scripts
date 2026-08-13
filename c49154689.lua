@@ -3,7 +3,7 @@
 -- 这个卡名的卡在1回合只能发动1张。
 -- ①：把自己场上1只怪兽解放，以原本的种族·属性是和那只怪兽相同的对方墓地1只怪兽为对象才能发动。那只怪兽在自己场上特殊召唤。
 function c49154689.initial_effect(c)
-	-- 创建效果，设置为魔陷发动、自由时点、只能发动一次、取对象、有费用、有目标、有处理效果
+	-- 这个卡名的卡在1回合只能发动1张。①：把自己场上1只怪兽解放，以原本的种族·属性是和那只怪兽相同的对方墓地1只怪兽为对象才能发动。那只怪兽在自己场上特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -16,34 +16,34 @@ function c49154689.initial_effect(c)
 	e1:SetOperation(c49154689.activate)
 	c:RegisterEffect(e1)
 end
--- 检查场上是否有可解放的怪兽，且该怪兽的种族和属性在对方墓地存在相同种族和属性的怪兽可以特殊召唤
+-- 筛选可作为解放代价的怪兽：该怪兽必须是怪兽卡（原本类型含怪兽），将其解放后自己场上仍有可用怪兽区，且对方墓地存在与它原本种族、属性相同的可特殊召唤对象。
 function c49154689.cfilter(c,e,tp)
 	local race=c:GetOriginalRace()
 	local attr=c:GetOriginalAttribute()
 	return bit.band(c:GetOriginalType(),TYPE_MONSTER)~=0
-		-- 确保解放的怪兽在自己场上还有可用的怪兽区域
+		-- 确认解放该候选怪兽后，自己场上仍至少存在1个可用的怪兽区域，用于后续特殊召唤。
 		and Duel.GetMZoneCount(tp,c,tp)>0
-		-- 检查对方墓地是否存在与解放怪兽种族和属性相同的怪兽
+		-- 检查对方墓地是否存在至少1只满足spfilter的怪兽，即原本种族和属性与候选解放怪兽相同、且能成为对象并特殊召唤的怪兽。
 		and Duel.IsExistingMatchingCard(c49154689.spfilter,tp,0,LOCATION_GRAVE,1,nil,race,attr,e,tp)
 end
--- 判断目标怪兽是否满足种族和属性条件、可作为效果对象、且能特殊召唤
+-- 墓地怪兽的筛选条件：原本种族和属性与解放的怪兽一致，且能成为本效果的对象，并能够被效果特殊召唤到自己场上。
 function c49154689.spfilter(c,race,attr,e,tp)
 	return c:GetOriginalRace()==race and c:GetOriginalAttribute()==attr
 		and c:IsCanBeEffectTarget(e)
 		and c:IsCanBeSpecialSummoned(e,0,tp,false,false,POS_FACEUP,tp)
 end
--- 设置发动费用，检查并选择一个可解放的怪兽进行解放
+-- 发动代价处理：先标记代价已支付，然后选择自己场上1只满足条件的怪兽作为解放代价，记录该怪兽并将其解放。
 function c49154689.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	e:SetLabel(100)
-	-- 检查是否有符合条件的可解放怪兽
+	-- 代价检测阶段：检查自己场上是否存在至少1只满足条件的可解放怪兽，以判断能否发动。
 	if chk==0 then return Duel.CheckReleaseGroup(tp,c49154689.cfilter,1,nil,e,tp) end
-	-- 选择一个符合条件的可解放怪兽
+	-- 让玩家从自己场上选择1只满足条件的怪兽来解放，作为发动代价。
 	local sg=Duel.SelectReleaseGroup(tp,c49154689.cfilter,1,1,nil,e,tp)
 	e:SetLabelObject(sg:GetFirst())
-	-- 将选中的怪兽从场上解放作为发动费用
+	-- 将选择的怪兽作为代价解放送入墓地。
 	Duel.Release(sg,REASON_COST)
 end
--- 设置效果目标，选择对方墓地一张种族和属性与解放怪兽相同的怪兽
+-- 效果对象选择：获取解放的怪兽rc，在连锁选择对象时确认候选卡位于对方墓地、且原本种族/属性与rc一致并满足特殊召唤条件。
 function c49154689.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	local rc=e:GetLabelObject()
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(1-tp)
@@ -54,18 +54,18 @@ function c49154689.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 		return true
 	end
 	e:SetLabel(0)
-	-- 提示玩家选择要特殊召唤的卡
+	-- 显示选择要特殊召唤的卡的提示消息，引导玩家选择对象。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 选择符合条件的对方墓地怪兽作为特殊召唤对象
+	-- 从对方墓地选择1只满足条件的怪兽作为效果对象，并设定为当前连锁的对象。
 	local sg=Duel.SelectTarget(tp,c49154689.spfilter,tp,0,LOCATION_GRAVE,1,1,nil,rc:GetOriginalRace(),rc:GetOriginalAttribute(),e,tp)
-	-- 设置操作信息，确定特殊召唤的怪兽数量和目标
+	-- 登记本连锁的操作信息，分类为特殊召唤，使其他卡能正确响应。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,sg,1,0,0)
 end
--- 执行效果处理，将选中的怪兽特殊召唤到自己场上
+-- 效果处理：取得对象卡，确认其与效果仍有关联后，将其特殊召唤到自己场上。
 function c49154689.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的目标怪兽
+	-- 获取当前连锁的对象怪兽（即选择的墓地怪兽）。
 	local tc=Duel.GetFirstTarget()
 	if not tc:IsRelateToEffect(e) then return end
-	-- 将目标怪兽特殊召唤到自己场上
+	-- 将目标怪兽以表侧表示特殊召唤到自己场上。
 	Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP)
 end

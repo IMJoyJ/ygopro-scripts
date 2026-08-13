@@ -4,7 +4,7 @@
 -- ①：1回合1次，把这张卡1个超量素材取除，以自己场上1只机械族怪兽为对象才能发动。这个回合，那只怪兽以外的怪兽不能攻击，那只怪兽可以直接攻击。
 -- ②：这张卡被对方破坏送去墓地的场合才能发动。从卡组把1只机械族·4星怪兽加入手卡。
 function c49121795.initial_effect(c)
-	-- 为卡片添加XYZ召唤手续，使用满足种族为机械族条件的4星怪兽作为素材进行叠放，需要2只怪兽
+	-- 为这张卡添加XYZ召唤手续，素材要求为机械族4星怪兽2只。
 	aux.AddXyzProcedure(c,aux.FilterBoolFunction(Card.IsRace,RACE_MACHINE),4,2)
 	c:EnableReviveLimit()
 	-- ①：1回合1次，把这张卡1个超量素材取除，以自己场上1只机械族怪兽为对象才能发动。这个回合，那只怪兽以外的怪兽不能攻击，那只怪兽可以直接攻击。
@@ -31,36 +31,36 @@ function c49121795.initial_effect(c)
 	e2:SetOperation(c49121795.thop)
 	c:RegisterEffect(e2)
 end
--- 判断是否能进入战斗阶段，用于效果①的发动条件
+-- 效果①的发动条件判断：当前回合玩家能够进入战斗阶段。
 function c49121795.dacon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断是否能进入战斗阶段，用于效果①的发动条件
+	-- 返回当前回合玩家能否进入战斗阶段，作为效果①的发动条件。
 	return Duel.IsAbleToEnterBP()
 end
--- 支付效果①的代价，移除1个超量素材
+-- 效果①的发动代价（COST）：从这张卡上取除1个超量素材，取除时需先确认有素材可除。
 function c49121795.dacost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():CheckRemoveOverlayCard(tp,1,REASON_COST) end
 	e:GetHandler():RemoveOverlayCard(tp,1,1,REASON_COST)
 end
--- 过滤满足条件的机械族怪兽（表侧表示且未拥有直接攻击效果）
+-- 选择对象的过滤条件：自己场上表侧表示的机械族怪兽，且未被赋予直接攻击效果。
 function c49121795.dafilter(c)
 	return c:IsFaceup() and c:IsRace(RACE_MACHINE) and not c:IsHasEffect(EFFECT_DIRECT_ATTACK)
 end
--- 选择目标怪兽，要求为己方场上表侧表示的机械族怪兽
+-- 效果①的取对象处理：从自己场上选择1只符合条件的机械族怪兽作为对象。
 function c49121795.datg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and c49121795.dafilter(chkc) end
-	-- 检查是否存在满足条件的目标怪兽
+	-- 发动时检查自己场上是否存在至少1只符合条件的机械族怪兽。
 	if chk==0 then return Duel.IsExistingTarget(c49121795.dafilter,tp,LOCATION_MZONE,0,1,nil) end
-	-- 提示玩家选择表侧表示的卡
+	-- 向玩家发出选择表侧表示卡片的提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
-	-- 选择满足条件的1只己方场上的机械族怪兽作为对象
+	-- 让玩家从自己场上选择1只符合条件的机械族怪兽作为效果对象（该对象会被记录为连锁对象）。
 	Duel.SelectTarget(tp,c49121795.dafilter,tp,LOCATION_MZONE,0,1,1,nil)
 end
--- 处理效果①的发动效果，设置不能攻击的效果并赋予目标怪兽直接攻击效果
+-- 效果①处理时：给己方场上除对象怪兽以外的所有怪兽附加不能攻击效果；若对象仍相关，则给对象怪兽赋予直接攻击效果。
 function c49121795.daop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取当前连锁中选择的目标怪兽
+	-- 获取效果①选择的对象怪兽。
 	local tc=Duel.GetFirstTarget()
-	-- 创建一个影响全场怪兽的不能攻击效果，仅对目标怪兽以外的怪兽生效
+	-- 这个回合，那只怪兽以外的怪兽不能攻击。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_CANNOT_ATTACK)
@@ -68,10 +68,10 @@ function c49121795.daop(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetTarget(c49121795.ftarget)
 	e1:SetLabel(tc:GetFieldID())
 	e1:SetReset(RESET_PHASE+PHASE_END)
-	-- 将不能攻击效果注册到游戏环境
+	-- 将“对象以外怪兽不能攻击”的效果注册到己方场上，持续到结束阶段。
 	Duel.RegisterEffect(e1,tp)
 	if tc:IsRelateToEffect(e) then
-		-- 为被选中的怪兽添加直接攻击效果
+		-- 那只怪兽可以直接攻击。
 		local e2=Effect.CreateEffect(c)
 		e2:SetType(EFFECT_TYPE_SINGLE)
 		e2:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
@@ -80,36 +80,36 @@ function c49121795.daop(e,tp,eg,ep,ev,re,r,rp)
 		tc:RegisterEffect(e2)
 	end
 end
--- 判断目标怪兽是否与当前效果中指定的怪兽不同（用于设置不能攻击效果）
+-- 过滤函数：若怪兽的FieldID不是对象怪兽的FieldID，则受到不能攻击效果影响（即对象以外的怪兽不能攻击）。
 function c49121795.ftarget(e,c)
 	return e:GetLabel()~=c:GetFieldID()
 end
--- 判断该卡是否在对方破坏并送去墓地时触发效果②
+-- 效果②的诱发条件：这张卡原本控制者为己方、被对方破坏并送去墓地。
 function c49121795.thcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	return c:IsPreviousControler(tp) and rp==1-tp and c:IsReason(REASON_DESTROY)
 end
--- 过滤满足条件的机械族4星怪兽（可加入手牌）
+-- 效果②检索对象的过滤条件：机械族·4星怪兽且可以加入手卡。
 function c49121795.thfilter(c)
 	return c:IsRace(RACE_MACHINE) and c:IsLevel(4) and c:IsAbleToHand()
 end
--- 设置效果②的发动目标，检查是否有符合条件的怪兽可以检索
+-- 效果②的发动时处理：检查卡组中是否有符合条件的机械族·4星怪兽，并设定检索回手牌的操作信息。
 function c49121795.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查卡组中是否存在满足条件的怪兽
+	-- 发动时检查卡组中是否存在至少1张符合检索条件的机械族·4星怪兽。
 	if chk==0 then return Duel.IsExistingMatchingCard(c49121795.thfilter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置操作信息，表示将要从卡组检索1张机械族4星怪兽加入手牌
+	-- 设置本次效果的处理信息：从卡组将1张卡加入手牌（CATEGORY_TOHAND），供连锁判定使用。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 处理效果②的发动效果，从卡组选择1只机械族4星怪兽加入手牌并确认
+-- 效果②处理时：从卡组选择1只符合条件的机械族·4星怪兽加入手牌，并让对手确认。
 function c49121795.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要加入手牌的卡
+	-- 向玩家发出选择要加入手牌的卡片的提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 从卡组中选择满足条件的1张机械族4星怪兽
+	-- 让玩家从卡组中选取1张符合条件的机械族·4星怪兽。
 	local g=Duel.SelectMatchingCard(tp,c49121795.thfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的怪兽以效果原因送入手牌
+		-- 将选中的卡加入其持有者的手牌（此处即己方手牌），原因记为效果。
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 向对方确认被送入手牌的卡
+		-- 将加入手牌的卡展示给对方玩家确认。
 		Duel.ConfirmCards(1-tp,g)
 	end
 end
