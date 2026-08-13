@@ -25,52 +25,52 @@ function c47077318.initial_effect(c)
 	e2:SetOperation(c47077318.tdop)
 	c:RegisterEffect(e2)
 end
--- 规则层面：判断是否满足效果发动条件，即此卡因对方破坏而送入墓地且之前在自己控制下。
+-- 效果①的发动条件：这张卡在场上被对方破坏并送去墓地，且破坏前由自己控制。
 function c47077318.condition(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	return c:IsReason(REASON_DESTROY) and c:GetReasonPlayer()==1-tp
 		and c:IsPreviousControler(tp)
 end
--- 规则层面：检查玩家是否可以翻开卡组最上方一张牌。
+-- 效果①发动时的目标合法性检查：不取对象，仅需确认自己卡组顶端有1张卡可以送去墓地。
 function c47077318.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 规则层面：检查玩家是否可以翻开卡组最上方一张牌。
+	-- 检查自己是否能将卡组最上方1张卡送去墓地（即卡组不为空且没有不能从卡组把卡送去墓地的限制）。
 	if chk==0 then return Duel.IsPlayerCanDiscardDeck(tp,1) end
 end
--- 规则层面：执行效果处理，翻开卡组最上方的牌并根据种族决定去向。
+-- 效果①处理：确认并翻开卡组最上方1张卡，若为植物族怪兽则将其送去墓地，否则放回卡组最下面。
 function c47077318.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 规则层面：检查玩家是否可以翻开卡组最上方一张牌。
+	-- 效果处理前再次确认：若此时不能将卡组最上方1张卡送去墓地，则效果处理终止。
 	if not Duel.IsPlayerCanDiscardDeck(tp,1) then return end
-	-- 规则层面：确认玩家卡组最上方的一张牌。
+	-- 向双方玩家确认卡组最上方1张卡（翻开给双方确认）。
 	Duel.ConfirmDecktop(tp,1)
-	-- 规则层面：获取玩家卡组最上方的一张牌组成的Group。
+	-- 获取卡组最上方1张卡作为对象组，用于后续判断与处理。
 	local g=Duel.GetDecktopGroup(tp,1)
 	local tc=g:GetFirst()
 	if tc:IsRace(RACE_PLANT) then
-		-- 规则层面：禁止接下来的操作自动洗切卡组。
+		-- 禁止后续自动洗牌检查，因为将卡送去墓地或放回卡组底部时不需要洗切卡组。
 		Duel.DisableShuffleCheck()
-		-- 规则层面：将翻开的牌送去墓地。
+		-- 将翻开的卡从卡组送去墓地，原因为“效果”和“翻开卡组”（森罗相关的翻开处理）。
 		Duel.SendtoGrave(g,REASON_EFFECT+REASON_REVEAL)
 	else
-		-- 规则层面：将翻开的牌移回卡组底部。
+		-- 若翻开卡不是植物族怪兽，则将其放回卡组最下面。
 		Duel.MoveSequence(tc,SEQ_DECKBOTTOM)
 	end
 end
--- 规则层面：判断是否满足效果发动条件，即此卡从卡组被翻开送入墓地。
+-- 效果②的触发条件：这张卡之前位于卡组，且因效果被翻开（REASON_REVEAL）送去墓地。
 function c47077318.tdcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	return c:IsPreviousLocation(LOCATION_DECK) and c:IsReason(REASON_REVEAL)
 end
--- 规则层面：过滤出场上正面表示且为植物族的怪兽。
+-- 筛选出我方场上表侧表示存在的植物族怪兽。
 function c47077318.filter(c)
 	return c:IsFaceup() and c:IsRace(RACE_PLANT)
 end
--- 规则层面：为所有符合条件的场上植物族怪兽增加300攻击力和守备力。
+-- 效果②处理：我方场上全部表侧表示植物族怪兽的攻击力·守备力各上升300。
 function c47077318.tdop(e,tp,eg,ep,ev,re,r,rp)
-	-- 规则层面：获取场上所有正面表示且为植物族的怪兽组成的Group。
+	-- 获取我方场上全部表侧表示植物族怪兽的集合。
 	local g=Duel.GetMatchingGroup(c47077318.filter,tp,LOCATION_MZONE,0,nil)
 	local tc=g:GetFirst()
 	while tc do
-		-- 规则层面：给目标怪兽增加300攻击力。
+		-- 自己场上的全部植物族怪兽的攻击力·守备力上升300（此处为攻击力上升部分）。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)

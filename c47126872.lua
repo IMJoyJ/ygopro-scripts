@@ -24,63 +24,63 @@ function c47126872.initial_effect(c)
 	e2:SetLabelObject(e1)
 	c:RegisterEffect(e2)
 end
--- 用于筛选场上正面表示且可以被除外的卡片。
+-- 筛选对方场上表侧表示且能够被除外的卡。
 function c47126872.filter(c)
 	return c:IsFaceup() and c:IsAbleToRemove()
 end
--- 选择对方场上正面表示的1张可除外的卡作为效果对象。
+-- 第一个效果的发动条件与取对象处理：确认可以发动后，选择对方场上表侧表示且可除外的1张卡作为对象，并设置除外相关的操作信息。
 function c47126872.rmtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(1-tp) and chkc:IsOnField() and c47126872.filter(chkc) end
 	if chk==0 then return true end
 	e:SetLabelObject(nil)
-	-- 提示玩家选择要除外的卡。
+	-- 显示选择提示，要求当前玩家选择要除外的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
-	-- 从对方场上选择1张正面表示的卡作为目标。
+	-- 从对方场上选择1张表侧表示且可除外的卡作为效果对象。
 	local g=Duel.SelectTarget(tp,c47126872.filter,tp,0,LOCATION_ONFIELD,1,1,nil)
-	-- 设置效果处理信息，表明将要除外这些卡。
+	-- 设置本次连锁的操作信息，标明将除外选择的卡，供相关效果检测使用。
 	Duel.SetOperationInfo(0,CATEGORY_REMOVE,g,g:GetCount(),0,0)
 end
--- 执行除外操作，并记录被除外的卡片。
+-- 第一个效果处理：将对象卡以表侧表示除外；若除外成功且对象不是衍生物、时空警察仍与效果关联，则记录该卡并为其注册标记，用于之后离场时将其盖放。
 function c47126872.rmop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的效果对象卡片。
+	-- 获取第一个效果发动时选择的对象卡。
 	local tc=Duel.GetFirstTarget()
 	if tc and tc:IsFaceup() and tc:IsRelateToEffect(e) then
-		-- 将目标卡片以正面表示形式从游戏中除外，且该卡片不是衍生物，同时自身仍在场上。
+		-- 将对象卡以表侧表示除外；若除外成功且该卡不是衍生物、时空警察仍与效果关联，则继续执行记录操作。
 		if Duel.Remove(tc,POS_FACEUP,REASON_EFFECT)~=0 and not tc:IsType(TYPE_TOKEN) and e:GetHandler():IsRelateToEffect(e) then
 			e:SetLabelObject(tc)
 			tc:RegisterFlagEffect(47126872,RESET_EVENT+RESETS_STANDARD,0,1)
 		end
 	end
 end
--- 判断是否曾有卡片被除外，用于触发盖放效果。
+-- 第二效果的发动条件：被第一效果除外的卡依然存在且带有标记（未被重置）。
 function c47126872.setcon(e,tp,eg,ep,ev,re,r,rp)
 	local tc=e:GetLabelObject():GetLabelObject()
 	return tc and tc:GetFlagEffect(47126872)~=0
 end
--- 设置盖放效果的目标和处理分类。
+-- 第二效果发动时：取出被第一效果除外的卡，将其设为连锁对象；若该卡是怪兽则将效果分类设为特殊召唤+里侧守备盖放怪兽，否则设为盖放魔陷。
 function c47126872.settg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
 	local tc=e:GetLabelObject():GetLabelObject()
-	-- 设定当前连锁的处理对象为之前被除外的卡片。
+	-- 将被除外的卡登记为当前连锁的处理对象，便于效果处理时获取。
 	Duel.SetTargetCard(tc)
 	if tc:IsType(TYPE_MONSTER) then
 		e:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_MSET)
-		-- 设置效果处理信息，表明将要特殊召唤或盖放该卡。
+		-- 设置操作信息：将那张怪兽特殊召唤到对方场上。
 		Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,tc,1,0,0)
 	else
 		e:SetCategory(CATEGORY_SSET)
 	end
 end
--- 执行盖放操作，根据卡片类型决定是特殊召唤还是盖放。
+-- 第二效果处理：若对象仍与效果关联，则怪兽以里侧守备表示特殊召唤到对方场上，魔法陷阱卡以里侧表示盖放到对方场上。
 function c47126872.setop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的效果对象卡片。
+	-- 获取第二效果连锁中登记的对象卡（即被第一效果除外的卡）。
 	local tc=Duel.GetFirstTarget()
 	if not tc:IsRelateToEffect(e) then return end
 	if tc:IsType(TYPE_MONSTER) then
-		-- 将目标卡片以里侧守备表示特殊召唤到对方场上。
+		-- 将那张怪兽以里侧守备表示特殊召唤到对方场上。
 		Duel.SpecialSummon(tc,0,tp,1-tp,false,false,POS_FACEDOWN_DEFENSE)
 	else
-		-- 将目标卡片以盖放形式放置到对方场上。
+		-- 将那张卡以里侧表示盖放到对方场上（魔法陷阱区）。
 		Duel.SSet(tp,tc,1-tp)
 	end
 end

@@ -8,7 +8,7 @@ function c47084486.initial_effect(c)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_SPSUMMON_CONDITION)
-	-- 使该卡无法被特殊召唤
+	-- 设置该特殊召唤条件的判定值恒为false，使此卡永远无法通过任何方式特殊召唤。
 	e1:SetValue(aux.FALSE)
 	c:RegisterEffect(e1)
 	-- ①：只要这张卡在怪兽区域存在，双方不能把怪兽特殊召唤。
