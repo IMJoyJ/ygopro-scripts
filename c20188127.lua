@@ -12,30 +12,30 @@ function c20188127.initial_effect(c)
 	e1:SetOperation(c20188127.activate)
 	c:RegisterEffect(e1)
 end
--- 检索满足条件的卡片组，筛选出可加入手牌的装备魔法卡
+-- 定义筛选函数：用于判断一张卡是否为装备魔法卡，且该卡能够被加入手卡。
 function c20188127.tgfilter(c)
 	return c:IsType(TYPE_EQUIP) and c:IsAbleToHand()
 end
--- 选择1张装备魔法卡加入手牌
+-- 效果的目标设定函数：在发动时检查墓地是否存在符合条件的装备魔法卡，若存在则让玩家选择其中1张作为对象，并登记回手牌的操作信息。
 function c20188127.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and c20188127.tgfilter(chkc) end
-	-- 判断是否满足发动条件，检查自己墓地是否存在装备魔法卡
+	-- 发动合法性检查：确认自己墓地存在至少1张满足条件的装备魔法卡，否则效果不能发动。
 	if chk==0 then return Duel.IsExistingTarget(c20188127.tgfilter,tp,LOCATION_GRAVE,0,1,nil) end
-	-- 向玩家提示“请选择要加入手牌的卡”
+	-- 向玩家显示“请选择要加入手牌的卡”的提示信息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择目标：从自己墓地选择1张装备魔法卡作为目标
+	-- 让玩家从自己墓地选择1张满足条件的装备魔法卡，并将其登记为该效果的对象。
 	local sg=Duel.SelectTarget(tp,c20188127.tgfilter,tp,LOCATION_GRAVE,0,1,1,nil)
-	-- 设置操作信息：将选择的装备魔法卡加入手牌
+	-- 将“回手牌”的操作信息写入当前连锁，指定对象为已选卡片，数量为其张数，供其他卡/效果进行连锁判定。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,sg,sg:GetCount(),0,0)
 end
--- 将装备魔法卡加入手牌并使其本回合不能发动
+-- 效果处理函数：将对象卡加入手卡、展示给对手，并对其附加本回合不能发动效果的封印。
 function c20188127.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的目标卡
+	-- 取得当前连锁中已选择的对象卡。
 	local tc=Duel.GetFirstTarget()
 	if tc and tc:IsRelateToEffect(e) then
-		-- 将目标卡加入手牌
+		-- 将对象装备魔法卡送去其持有者的手卡。
 		Duel.SendtoHand(tc,nil,REASON_EFFECT)
-		-- 向对方确认目标卡
+		-- 将加入手卡的卡片展示给对手玩家确认。
 		Duel.ConfirmCards(1-tp,tc)
 		-- 这张装备魔法卡本回合不能发动。
 		local e1=Effect.CreateEffect(e:GetHandler())

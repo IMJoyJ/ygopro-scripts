@@ -7,7 +7,7 @@ function c20065549.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- 为场上所有表侧表示的效果怪兽以外的怪兽设置魔法效果免疫效果
+	-- 场上所有表侧表示的效果怪兽以外的怪兽不受魔法效果的影响。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD)
 	e2:SetCode(EFFECT_IMMUNE_EFFECT)
@@ -17,11 +17,11 @@ function c20065549.initial_effect(c)
 	e2:SetValue(c20065549.efilter)
 	c:RegisterEffect(e2)
 end
--- 目标怪兽不是效果怪兽时生效
+-- 匹配场上非效果怪兽作为不受魔法效果影响的适用对象。
 function c20065549.etarget(e,c)
 	return not c:IsType(TYPE_EFFECT)
 end
--- 免疫的魔法卡效果为魔法卡类型
+-- 判断效果来源是否为魔法效果（仅当来源是魔法卡时给予免疫）。
 function c20065549.efilter(e,re)
 	return re:IsActiveType(TYPE_SPELL)
 end

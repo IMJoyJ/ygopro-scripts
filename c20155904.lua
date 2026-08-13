@@ -28,63 +28,63 @@ function c20155904.initial_effect(c)
 	e2:SetOperation(c20155904.disop)
 	c:RegisterEffect(e2)
 end
--- 规则层面：判断破坏原因是否为战斗或效果破坏
+-- 判断这张卡被破坏的原因是否为战斗破坏或效果破坏，满足①效果的发动条件。
 function c20155904.tdcon(e,tp,eg,ep,ev,re,r,rp)
 	return bit.band(r,REASON_EFFECT+REASON_BATTLE)~=0
 end
--- 规则层面：定义可用于选择的墓地「十二兽」卡的过滤条件
+-- 定义①效果可选择的对象：自己墓地中满足「十二兽」字段、卡名不是「十二兽 鸡拳」、且可以返回卡组的卡。
 function c20155904.tdfilter(c)
 	return c:IsSetCard(0xf1) and not c:IsCode(20155904) and c:IsAbleToDeck()
 end
--- 规则层面：设置选择目标卡的条件并执行选择操作
+-- ①效果的发动时点处理：从自己墓地选择1张符合条件的「十二兽」卡作为对象，并设置回卡组的操作信息。
 function c20155904.tdtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(tp) and chkc:IsLocation(LOCATION_GRAVE) and c20155904.tdfilter(chkc) end
-	-- 规则层面：检查是否存在满足条件的目标卡
+	-- 发动合法性检查：确认自己墓地存在至少1张符合条件的「十二兽」卡（除自身）可作为对象。
 	if chk==0 then return Duel.IsExistingTarget(c20155904.tdfilter,tp,LOCATION_GRAVE,0,1,nil) end
-	-- 规则层面：向玩家提示选择要返回卡组的卡
+	-- 弹出选择卡片的提示消息，提示玩家选择要返回卡组的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TODECK)  --"请选择要返回卡组的卡"
-	-- 规则层面：执行选择目标卡的操作
+	-- 让玩家从自己墓地选择1张符合条件的「十二兽」卡作为效果对象，并登记为当前连锁的对象。
 	local g=Duel.SelectTarget(tp,c20155904.tdfilter,tp,LOCATION_GRAVE,0,1,1,nil)
-	-- 规则层面：设置效果处理信息，指定将要返回卡组的卡
+	-- 设置本次连锁的操作信息，将对象卡标记为回卡组（CATEGORY_TODECK），用于后续效果处理及相关判定。
 	Duel.SetOperationInfo(0,CATEGORY_TODECK,g,1,0,0)
 end
--- 规则层面：执行将目标卡返回卡组的操作
+-- ①效果的处理：取得对象卡，若其仍与效果关联，则将其返回持有者卡组并洗牌。
 function c20155904.tdop(e,tp,eg,ep,ev,re,r,rp)
-	-- 规则层面：获取当前连锁的效果对象卡
+	-- 取得当前连锁的第一个对象卡，即玩家选择的那张墓地「十二兽」卡。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 规则层面：将目标卡送回卡组并洗牌
+		-- 以效果原因将对象卡送回持有者卡组，并洗切卡组。
 		Duel.SendtoDeck(tc,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
 	end
 end
--- 规则层面：判断是否满足无效对方怪兽效果发动的条件
+-- ②效果的发动条件：持有这张卡的超量怪兽原本种族为兽战士族、不处于战斗破坏状态，且对方怪兽效果发动以这张卡为对象、该发动可被无效。
 function c20155904.discon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	return c:GetOriginalRace()==RACE_BEASTWARRIOR
 		and not c:IsStatus(STATUS_BATTLE_DESTROYED) and ep==1-tp
-		-- 规则层面：判断连锁效果是否为怪兽类型且可被无效
+		-- 进一步确认对方发动的效果为怪兽效果，且该连锁的发动可以被无效。
 		and re:IsActiveType(TYPE_MONSTER) and Duel.IsChainNegatable(ev)
 		and re:IsHasProperty(EFFECT_FLAG_CARD_TARGET)
-		-- 规则层面：获取连锁效果的目标卡组信息
+		-- 获取对方发动效果时选择的对象卡组，确保该效果确实拥有对象（非空）。
 		and Duel.GetChainInfo(ev,CHAININFO_TARGET_CARDS)
-		-- 规则层面：判断当前卡是否为连锁效果的目标之一
+		-- 确认对方效果的对象列表中包含这张卡，即这张卡是对方怪兽效果的对象。
 		and Duel.GetChainInfo(ev,CHAININFO_TARGET_CARDS):IsContains(c)
 end
--- 规则层面：设置消耗超量素材作为发动代价
+-- ②效果的发动代价：取除这张卡（作为超量素材的这张卡）的1个超量素材；先检查是否可取除，再实际取除。
 function c20155904.discost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():CheckRemoveOverlayCard(tp,1,REASON_COST) end
 	e:GetHandler():RemoveOverlayCard(tp,1,1,REASON_COST)
 end
--- 规则层面：设置无效对方效果发动的处理信息
+-- ②效果的目标处理：发动时无需选择对象，设置无效发动的操作信息，并向对方玩家宣告效果发动。
 function c20155904.distg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 规则层面：向对方提示发动了该效果
+	-- 向对方玩家提示“我方发动了该效果”，显示效果描述。
 	Duel.Hint(HINT_OPSELECTED,1-tp,e:GetDescription())
-	-- 规则层面：设置效果处理信息，指定将要无效的效果
+	-- 设置本次连锁的操作信息，将对方发动的效果标记为需要无效化（CATEGORY_NEGATE）。
 	Duel.SetOperationInfo(0,CATEGORY_NEGATE,eg,1,0,0)
 end
--- 规则层面：执行使对方效果发动无效的操作
+-- ②效果的处理：无效对方发动的那个效果。
 function c20155904.disop(e,tp,eg,ep,ev,re,r,rp)
-	-- 规则层面：使当前连锁效果无效
+	-- 实际执行无效对方那个怪兽效果的发动。
 	Duel.NegateActivation(ev)
 end

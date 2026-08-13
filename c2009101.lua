@@ -23,41 +23,41 @@ function c2009101.initial_effect(c)
 	e2:SetOperation(c2009101.operation)
 	c:RegisterEffect(e2)
 end
--- 定义过滤函数，用于判断场上是否存在满足条件的「黑羽」怪兽（非盖尔本人且表侧表示）。
+-- 筛选符合条件的「黑羽」怪兽：必须表侧表示、属于「黑羽」字段，且不能是「黑羽-疾风之盖尔」自身，用于①效果的自定义特殊召唤条件。
 function c2009101.filter(c)
 	return c:IsFaceup() and c:IsSetCard(0x33) and not c:IsCode(2009101)
 end
--- 判断特殊召唤条件是否满足，即玩家场上存在空位且有至少一只非盖尔的「黑羽」怪兽。
+-- ①效果的特殊召唤规则条件：当这张卡在手牌时，若其控制者场上有空余的主要怪兽区域，并且场上存在满足filter的「黑羽」怪兽，则可以从手卡特殊召唤；c为nil时视为规则询问的默认允许。
 function c2009101.spcon(e,c)
 	if c==nil then return true end
-	-- 检查玩家场上是否有足够的主怪兽区域用于特殊召唤。
+	-- 检查这张卡的控制者场上是否还有可用的主要怪兽区域，确保能从手卡特殊召唤到场上。
 	return Duel.GetLocationCount(c:GetControler(),LOCATION_MZONE)>0 and
-		-- 确认玩家场上是否存在至少一只满足过滤条件的「黑羽」怪兽。
+		-- 检查这张卡的控制者场上是否存在至少1只满足filter（表侧表示且非自身的「黑羽」怪兽）的怪兽，满足①效果的自定义特召前提。
 		Duel.IsExistingMatchingCard(c2009101.filter,c:GetControler(),LOCATION_MZONE,0,1,nil)
 end
--- 定义效果目标选择函数，用于选择对方场上的表侧表示怪兽作为对象。
+-- ②效果的发动目标选择处理：只能以对方场上1只表侧表示怪兽为对象，包括对象合法性判断和选择卡片的操作。
 function c2009101.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(1-tp) and chkc:IsFaceup() end
-	-- 检查是否满足发动条件，即对方场上是否存在至少一只表侧表示的怪兽。
+	-- 效果发动时的合法性检查：确认对方场上是否存在至少1只表侧表示怪兽可以作为②效果的对象。
 	if chk==0 then return Duel.IsExistingTarget(Card.IsFaceup,tp,0,LOCATION_MZONE,1,nil) end
-	-- 向玩家发送提示信息，提示其选择对方场上的表侧表示怪兽。
+	-- 向操作玩家显示“请选择表侧表示的卡”的选择提示，用于引导选择对象。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
-	-- 执行选择对方场上表侧表示怪兽的操作。
+	-- 让操作者从对方场上选择1张表侧表示怪兽，并将其登记为当前连锁的效果对象。
 	Duel.SelectTarget(tp,Card.IsFaceup,tp,0,LOCATION_MZONE,1,1,nil)
 end
--- 定义效果发动时的处理函数，将目标怪兽的攻守值减半。
+-- ②效果处理：取得对象怪兽后，若对象仍在场上且表侧表示、与效果关联，则将其攻击力和守备力各变为当前值的一半（向上取整），并注册暂时变更效果。
 function c2009101.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁中被选择的目标怪兽。
+	-- 取得发动②效果时选择的对象怪兽（这里只取第一个对象，也是唯一对象）。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsFaceup() and tc:IsRelateToEffect(e) then
-		-- 那只对方怪兽的攻击力·守备力变成一半。
+		-- 那只对方怪兽的攻击力变成一半（对应原文“攻击力·守备力变成一半”中的攻击力部分）。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_SET_ATTACK_FINAL)
 		e1:SetReset(RESET_EVENT+RESETS_STANDARD)
 		e1:SetValue(math.ceil(tc:GetAttack()/2))
 		tc:RegisterEffect(e1)
-		-- 那只对方怪兽的攻击力·守备力变成一半。
+		-- 那只对方怪兽的守备力变成一半（对应原文“攻击力·守备力变成一半”中的守备力部分）。
 		local e2=Effect.CreateEffect(e:GetHandler())
 		e2:SetType(EFFECT_TYPE_SINGLE)
 		e2:SetCode(EFFECT_SET_DEFENSE_FINAL)
