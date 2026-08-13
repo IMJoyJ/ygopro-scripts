@@ -13,26 +13,26 @@ function c2158562.initial_effect(c)
 	e1:SetOperation(c2158562.desop)
 	c:RegisterEffect(e1)
 end
--- 效果发动条件：这张卡是上级召唤成功时才能发动
+-- 效果发动条件：这张卡的召唤类型为上级召唤（即上级召唤成功时），才满足发动条件。
 function c2158562.descon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsSummonType(SUMMON_TYPE_ADVANCE)
 end
--- 过滤函数：筛选场上表侧表示的魔法卡
+-- 筛选条件：场上表侧表示的魔法卡，用于确定要被破坏的卡片。
 function c2158562.filter(c)
 	return c:IsFaceup() and c:IsType(TYPE_SPELL)
 end
--- 效果处理目标设定：检索满足条件的魔法卡并设置为破坏对象
+-- 效果发动时的目标处理：该效果不取对象，取得场上所有表侧表示的魔法卡作为破坏对象，并设置对应的破坏操作信息。
 function c2158562.destg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 检索满足条件的场上魔法卡组
+	-- 获取以当前玩家视角看到的场上（双方场上）所有满足条件的表侧表示魔法卡。
 	local g=Duel.GetMatchingGroup(c2158562.filter,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,nil)
-	-- 设置连锁操作信息为破坏效果，目标为检索到的魔法卡
+	-- 设置操作信息：本次效果将破坏上述所有卡片，数量为g:GetCount()，用于给其他卡片（如星尘龙）进行连锁判定。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,g:GetCount(),0,0)
 end
--- 效果处理执行：将满足条件的魔法卡全部破坏
+-- 效果处理时的操作：再次获取场上所有表侧表示的魔法卡，并将其全部破坏。
 function c2158562.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 检索满足条件的场上魔法卡组
+	-- 效果处理时重新获取场上所有表侧表示的魔法卡，防止发动时和處理时场上的卡发生变化。
 	local g=Duel.GetMatchingGroup(c2158562.filter,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,nil)
-	-- 将目标魔法卡以效果原因破坏
+	-- 以效果（REASON_EFFECT）为原因，将获取到的那些魔法卡全部破坏。
 	Duel.Destroy(g,REASON_EFFECT)
 end
