@@ -12,16 +12,16 @@ function c11548522.initial_effect(c)
 	e1:SetOperation(c11548522.operation)
 	c:RegisterEffect(e1)
 end
--- 效果处理时的目标设定函数
+-- 发动时判定：在检查阶段直接允许发动；随后登记将这张卡返回卡组的操作信息。
 function c11548522.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置将自身送入卡组的操作信息
+	-- 登记本次效果处理将把这张卡返回卡组（CATEGORY_TODECK），对象为效果持有者，数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_TODECK,e:GetHandler(),1,0,0)
 end
--- 效果处理时的发动函数
+-- 效果处理时：若这张卡仍与此效果关联，则将其返回持有者卡组并洗牌。
 function c11548522.operation(e,tp,eg,ep,ev,re,r,rp)
 	if e:GetHandler():IsRelateToEffect(e) then
-		-- 将自身以效果原因送入卡组并洗牌
+		-- 以效果原因将这张卡返回持有者卡组，并置于卡组中洗牌（SEQ_DECKSHUFFLE）。
 		Duel.SendtoDeck(e:GetHandler(),nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
 	end
 end

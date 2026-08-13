@@ -6,7 +6,7 @@
 -- ②：连接召唤的这张卡不受其他卡的效果影响。
 -- ③：把自己场上1只「刚鬼」连接怪兽解放，以最多有那个连接标记数量的场上的卡为对象才能发动。那些卡破坏。
 function c11516241.initial_effect(c)
-	-- 添加连接召唤手续，要求使用至少2个满足条件的战士族连接怪兽作为素材
+	-- 为这张卡添加连接召唤手续：使用2只以上的战士族怪兽作为连接素材。
 	aux.AddLinkProcedure(c,aux.FilterBoolFunction(Card.IsLinkRace,RACE_WARRIOR),2)
 	c:EnableReviveLimit()
 	-- ①：这张卡的攻击力上升这张卡以外的自己场上的连接怪兽的连接标记合计×200。
@@ -25,7 +25,7 @@ function c11516241.initial_effect(c)
 	e2:SetCondition(c11516241.imcon)
 	e2:SetValue(c11516241.efilter)
 	c:RegisterEffect(e2)
-	-- ③：把自己场上1只「刚鬼」连接怪兽解放，以最多有那个连接标记数量的场上的卡为对象才能发动。那些卡破坏。
+	-- 这个卡名的③的效果1回合只能使用1次。③：把自己场上1只「刚鬼」连接怪兽解放，以最多有那个连接标记数量的场上的卡为对象才能发动。那些卡破坏。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(11516241,0))
 	e3:SetCategory(CATEGORY_DESTROY)
@@ -38,58 +38,58 @@ function c11516241.initial_effect(c)
 	e3:SetOperation(c11516241.desop)
 	c:RegisterEffect(e3)
 end
--- 用于筛选场上正面表示的连接怪兽
+-- 定义①效果攻击力上升的过滤条件：自己场上表侧表示且为连接怪兽。
 function c11516241.atkfilter(c)
 	return c:IsFaceup() and c:IsType(TYPE_LINK)
 end
--- 计算攻击力上升值，通过获取场上所有正面表示的连接怪兽的连接标记总和乘以200
+-- 计算这张卡攻击力上升的数值：获取自己场上除这张卡以外的连接怪兽，返回这些怪兽的连接标记合计×200。
 function c11516241.atkval(e,c)
 	local tp=e:GetHandlerPlayer()
-	-- 获取场上所有正面表示的连接怪兽组成的卡片组
+	-- 获取自己场上除这张卡以外满足条件的连接怪兽的集合，用于计算攻击力上升值。
 	local g=Duel.GetMatchingGroup(c11516241.atkfilter,tp,LOCATION_MZONE,0,e:GetHandler())
 	return g:GetSum(Card.GetLink)*200
 end
--- 判断是否为连接召唤
+-- 定义②效果的条件：这张卡是连接召唤出场的场合，才适用免疫效果。
 function c11516241.imcon(e)
 	return e:GetHandler():IsSummonType(SUMMON_TYPE_LINK)
 end
--- 用于过滤效果是否对自己无效
+-- 定义②效果的免疫过滤：只免疫来自这张卡以外的卡的效果（效果所有者不是这张卡）。
 function c11516241.efilter(e,te)
 	return te:GetOwner()~=e:GetOwner()
 end
--- 筛选满足条件的「刚鬼」连接怪兽，确保其能作为解放对象并场上有其他卡可作为目标
+-- 定义③效果的费用选择过滤：选择自己场上1只「刚鬼」连接怪兽解放，并且要求解放后场上存在可以成为对象的卡。
 function c11516241.rfilter(c,tp)
-	-- 筛选满足条件的「刚鬼」连接怪兽，确保其为连接怪兽且场上存在可作为目标的卡
+	-- 判断卡是否满足：是「刚鬼」连接怪兽，并且场上存在1张除这张卡以外可以成为效果对象的卡。
 	return c:IsSetCard(0xfc) and c:IsType(TYPE_LINK) and Duel.IsExistingTarget(aux.TRUE,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,c)
 end
--- 设置效果发动时的解放费用，检查是否有满足条件的卡可解放
+-- ③效果的发动代价：选择并解放自己场上1只「刚鬼」连接怪兽，把该怪兽的连接标记数量记录到效果标签，作为可破坏对象数量上限。
 function c11516241.descost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否满足解放条件，即场上是否存在满足条件的「刚鬼」连接怪兽
+	-- 在代价确认时，检查自己场上是否存在1只可作为代价解放的「刚鬼」连接怪兽，且存在可成为对象的卡。
 	if chk==0 then return Duel.CheckReleaseGroup(tp,c11516241.rfilter,1,nil,tp) end
-	-- 提示玩家选择要解放的卡
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_RELEASE)
-	-- 选择满足条件的1张「刚鬼」连接怪兽进行解放
+	-- 弹出选择提示，让玩家选择要解放的卡。
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_RELEASE)  --"请选择要解放的卡"
+	-- 从自己场上选择1只满足条件的「刚鬼」连接怪兽作为解放代价。
 	local g=Duel.SelectReleaseGroup(tp,c11516241.rfilter,1,1,nil,tp)
 	e:SetLabel(g:GetFirst():GetLink())
-	-- 执行解放操作，将选中的卡从场上解放
+	-- 将选择的怪兽解放，作为效果发动代价（REASON_COST）。
 	Duel.Release(g,REASON_COST)
 end
--- 设置效果的目标选择函数，用于选择要破坏的卡
+-- ③效果的目标选择和发动处理：以解放怪兽连接标记数量为上限，选择场上1到该数量的卡为对象，设置破坏信息。
 function c11516241.destg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsOnField() end
 	if chk==0 then return true end
 	local ct=e:GetLabel()
-	-- 选择最多等于解放卡连接标记数量的场上卡作为目标
+	-- 选择场上1至ct张卡为对象（ct为解放怪兽的连接标记数量）。
 	local g=Duel.SelectTarget(tp,aux.TRUE,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,ct,nil)
-	-- 设置操作信息，确定要破坏的卡
+	-- 设置本次连锁的破坏信息，用于能力发动时的检测和记录。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,g:GetCount(),0,0)
 end
--- 设置效果的破坏操作函数
+-- ③效果的解决：取得连锁对象中仍与效果关联的卡，将其破坏。
 function c11516241.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁中指定的目标卡组，并筛选出与当前效果相关的卡
+	-- 从当前连锁信息中取得对象卡组，并筛选出仍与效果相关的卡。
 	local tg=Duel.GetChainInfo(0,CHAININFO_TARGET_CARDS):Filter(Card.IsRelateToEffect,nil,e)
 	if tg:GetCount()>0 then
-		-- 将目标卡组中的卡破坏
+		-- 将筛选出的对象卡破坏（REASON_EFFECT）。
 		Duel.Destroy(tg,REASON_EFFECT)
 	end
 end

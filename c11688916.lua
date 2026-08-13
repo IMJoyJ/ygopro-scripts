@@ -8,9 +8,9 @@
 -- ②：只要自己的灵摆区域有灵摆刻度是奇数和偶数的「七音服」卡各存在，自己发动的「七音服」卡的效果不会被无效化。
 -- ③：自己把「七音服」怪兽连接召唤的场合才能发动。从自己的额外卡组（表侧）·墓地把1张「七音服」卡加入手卡。
 local s,id,o=GetID()
--- 初始化卡片效果，注册所有效果
+-- 注册该卡的全部效果：灵摆区效果（怪兽灵摆召唤时回手自身灵摆区的七音服卡）、怪兽①检索效果（召唤/特殊召唤各1次）、②七音服效果免疫无效、③连接召唤后从额外表侧·墓地回收七音服卡。
 function s.initial_effect(c)
-	-- 为卡片添加灵摆属性，使其可以灵摆召唤
+	-- 为该卡附加灵摆怪兽属性，使其具备灵摆召唤、灵摆卡发动等基础功能。
 	aux.EnablePendulumAttribute(c)
 	-- ①：自己把怪兽灵摆召唤时，以自己的灵摆区域1张「七音服」卡为对象才能发动。那张卡回到手卡。
 	local e1=Effect.CreateEffect(c)
@@ -60,117 +60,117 @@ function s.initial_effect(c)
 	e5:SetOperation(s.thop3)
 	c:RegisterEffect(e5)
 end
--- 过滤函数：判断是否为灵摆召唤的怪兽
+-- 判断怪兽是否由tp玩家进行的灵摆召唤，用于筛选特殊召唤成功的怪兽。
 function s.cfilter(c,tp)
 	return c:IsSummonType(SUMMON_TYPE_PENDULUM) and c:IsSummonPlayer(tp)
 end
--- 效果条件：判断是否有灵摆召唤的怪兽
+-- 灵摆效果的发动条件：本次特殊召唤成功的怪兽中存在由tp玩家灵摆召唤的怪兽。
 function s.thcon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(s.cfilter,1,nil,tp)
 end
--- 过滤函数：判断是否为「七音服」且可送回手牌的灵摆卡
+-- 选择对象的过滤条件：自己灵摆区域的表侧表示「七音服」卡，且能够加入手卡。
 function s.rthfilter(c)
 	return c:IsFaceupEx() and c:IsSetCard(0x162) and c:IsAbleToHand()
 end
--- 效果目标选择：选择灵摆区域的「七音服」卡作为目标
+-- 灵摆效果发动时的取对象处理：指定自己灵摆区域1张符合条件的「七音服」卡为对象，并设置回手卡的操作信息。
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_PZONE) and chkc:IsControler(tp) and s.rthfilter(chkc) end
-	-- 检查阶段：确认是否存在符合条件的灵摆卡
+	-- 检查是否存在合法对象：自己灵摆区域是否有至少1张满足条件的「七音服」卡，没有则不能发动。
 	if chk==0 then return Duel.IsExistingTarget(s.rthfilter,tp,LOCATION_PZONE,0,1,nil) end
-	-- 提示信息：提示玩家选择要加入手牌的卡
+	-- 提示玩家选择要加入手卡的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择目标：从灵摆区域选择一张符合条件的卡
+	-- 玩家选择1张自己灵摆区域符合条件的「七音服」卡作为效果对象。
 	local g=Duel.SelectTarget(tp,s.rthfilter,tp,LOCATION_PZONE,0,1,1,nil)
-	-- 设置操作信息：将目标卡加入手牌
+	-- 设置操作信息：将对象卡回手卡，数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,1,0,0)
 end
--- 效果处理：将目标卡送回手牌
+-- 灵摆效果处理：取得对象卡，若仍与当前连锁相关则将其送回持有者手卡。
 function s.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取目标卡：获取当前连锁中的目标卡
+	-- 获取效果处理时连锁的对象卡。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToChain() then
-		-- 将目标卡送回手牌：执行送回手牌的操作
+		-- 将对象卡以效果原因送回持有者手卡。
 		Duel.SendtoHand(tc,nil,REASON_EFFECT)
 	end
 end
--- 过滤函数：判断是否为「七音服」且可送回手牌的卡
+-- 检索过滤条件：卡名不是「七音服·普莉莫娅」，属于「七音服」系列且能加入手卡的卡。
 function s.thfilter(c)
 	return not c:IsCode(id) and c:IsSetCard(0x162) and c:IsAbleToHand()
 end
--- 效果目标选择：从卡组选择一张「七音服」卡
+-- 怪兽①的发动目标检查：卡组存在符合条件的「七音服」卡，并设置操作信息为从卡组加入手卡。
 function s.thtg2(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查阶段：确认卡组是否存在符合条件的卡
+	-- 检查卡组是否存在满足检索条件的「七音服」卡，若不存在则不能发动。
 	if chk==0 then return Duel.IsExistingMatchingCard(s.thfilter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置操作信息：将目标卡加入手牌
+	-- 设置操作信息：从卡组将1张卡加入手卡（检索）。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 效果处理：从卡组检索并送回手牌
+-- 怪兽①效果处理：从卡组选择1张符合条件的「七音服」卡加入手卡，并让对方确认。
 function s.thop2(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示信息：提示玩家选择要加入手牌的卡
+	-- 提示玩家选择要加入手卡的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择卡牌：从卡组选择一张符合条件的卡
+	-- 从卡组选择1张符合条件的「七音服」卡（不取对象）。
 	local g=Duel.SelectMatchingCard(tp,s.thfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if #g>0 then
-		-- 将卡送回手牌：执行送回手牌的操作
+		-- 将选中的卡加入持有者手卡。
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 确认卡牌：向对方玩家展示所选卡牌
+		-- 让对方确认加入手卡的卡。
 		Duel.ConfirmCards(1-tp,g)
 	end
 end
--- 过滤函数：判断是否为「七音服」灵摆卡
+-- 过滤条件：表侧表示、属于「七音服」系列且原种类包含灵摆怪兽。
 function s.scfilter(c)
 	return c:IsFaceup() and c:IsSetCard(0x162) and c:GetOriginalType()&TYPE_PENDULUM~=0
 end
--- 过滤函数：判断灵摆刻度是否为奇数或偶数
+-- 判断卡的当前灵摆刻度是否为指定奇偶性（odevity=1为奇数，0为偶数）。
 function s.chkfilter(c,odevity)
 	return c:GetCurrentScale()%2==odevity
 end
--- 条件函数：判断是否存在奇数和偶数刻度的灵摆卡
+-- 检查组中是否同时存在灵摆刻度为奇数和偶数的「七音服」卡。
 function s.chkcon(g)
 	return g:IsExists(s.chkfilter,1,nil,1) and g:IsExists(s.chkfilter,1,nil,0)
 end
--- 效果条件：判断是否满足灵摆刻度条件
+-- ②效果的条件：自己灵摆区域同时存在刻度为奇数和偶数的「七音服」卡。
 function s.effcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取灵摆区域的卡组
+	-- 获取自己灵摆区域中所有满足条件的「七音服」卡。
 	local g=Duel.GetMatchingGroup(s.scfilter,e:GetHandlerPlayer(),LOCATION_PZONE,0,nil)
 	return s.chkcon(g)
 end
--- 效果过滤函数：判断是否为「七音服」卡的效果
+-- ②效果的值函数：若当前连锁的效果由自己发动且其持有者为「七音服」卡，则保护该效果不被无效化。
 function s.effectfilter(e,ct)
 	local p=e:GetHandler():GetControler()
-	-- 获取连锁信息：获取触发效果和玩家信息
+	-- 获取当前连锁的效果和发动玩家，用于判断该效果是否是自己发动的「七音服」卡的效果。
 	local te,tp=Duel.GetChainInfo(ct,CHAININFO_TRIGGERING_EFFECT,CHAININFO_TRIGGERING_PLAYER)
 	return p==tp and te:GetHandler():IsSetCard(0x162)
 end
--- 过滤函数：判断是否为「七音服」连接召唤的怪兽
+-- 判断怪兽是否为由tp玩家进行的表侧表示「七音服」怪兽的连接召唤。
 function s.cfilter2(c,tp)
 	return c:IsFaceup() and c:IsSummonType(SUMMON_TYPE_LINK) and c:IsSummonPlayer(tp) and c:IsSetCard(0x162)
 end
--- 效果条件：判断是否有「七音服」连接召唤的怪兽
+-- ③效果的发动条件：本次特殊召唤成功的怪兽中存在由tp玩家进行的「七音服」怪兽连接召唤。
 function s.thcon3(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(s.cfilter2,1,nil,tp)
 end
--- 过滤函数：判断是否为「七音服」且可送回手牌的卡
+-- 回收过滤条件：表侧表示的「七音服」卡且能加入手卡。
 function s.thfilter2(c)
 	return c:IsFaceupEx() and c:IsSetCard(0x162) and c:IsAbleToHand()
 end
--- 效果目标选择：从额外卡组和墓地选择一张「七音服」卡
+-- ③效果的目标检查：自己的额外卡组表侧或墓地存在符合条件的「七音服」卡，并设置操作信息为回手卡。
 function s.thtg3(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查阶段：确认额外卡组和墓地是否存在符合条件的卡
+	-- 检查额外卡组表侧或墓地是否存在符合条件的「七音服」卡，若不存在则不能发动。
 	if chk==0 then return Duel.IsExistingMatchingCard(s.thfilter2,tp,LOCATION_EXTRA+LOCATION_GRAVE,0,1,nil) end
-	-- 设置操作信息：将目标卡加入手牌
+	-- 设置操作信息：从额外卡组表侧或墓地加入手卡。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_EXTRA+LOCATION_GRAVE)
 end
--- 效果处理：从额外卡组和墓地检索并送回手牌
+-- ③效果处理：从额外卡组表侧或墓地选择1张符合条件的「七音服」卡加入手卡（墓地选择需受王家长眠之谷影响），并让对方确认。
 function s.thop3(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示信息：提示玩家选择要加入手牌的卡
+	-- 提示玩家选择要加入手卡的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择卡牌：从额外卡组和墓地选择一张符合条件的卡
+	-- 从自己的额外卡组表侧或墓地选择1张符合条件的「七音服」卡，过滤时应用王家长眠之谷的限制。
 	local g=Duel.SelectMatchingCard(tp,aux.NecroValleyFilter(s.thfilter2),tp,LOCATION_EXTRA+LOCATION_GRAVE,0,1,1,nil)
 	if #g>0 then
-		-- 将卡送回手牌：执行送回手牌的操作
+		-- 将选中的卡加入持有者手卡。
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 确认卡牌：向对方玩家展示所选卡牌
+		-- 让对方确认加入手卡的卡。
 		Duel.ConfirmCards(1-tp,g)
 	end
 end

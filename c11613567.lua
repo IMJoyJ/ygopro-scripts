@@ -21,40 +21,40 @@ function c11613567.initial_effect(c)
 	e2:SetOperation(c11613567.operation)
 	c:RegisterEffect(e2)
 end
--- 检索满足条件的卡片组，用于判断己方场上是否存在名字带有「黑羽」且表侧表示的怪兽。
+-- 判定卡片是否为表侧表示且拥有「黑羽」字段。
 function c11613567.ntfilter(c)
 	return c:IsFaceup() and c:IsSetCard(0x33)
 end
--- 判断该卡是否满足不需解放的召唤条件，包括等级、场上空位及己方是否存在符合条件的怪兽。
+-- 召唤规则效果的发动条件：若c为nil（规则询问是否允许通常召唤）返回true；否则需满足不解放召唤、此卡等级5以上、我方主要怪兽区有空位、且我方场上有符合条件的黑羽怪兽。
 function c11613567.ntcon(e,c,minc)
 	if c==nil then return true end
-	-- 判断该卡等级是否大于等于5且己方场上存在空位。
+	-- 检查是否允许无解放召唤：要求解放数minc为0，此卡等级不低于5，且我方主要怪兽区有空闲区域。
 	return minc==0 and c:IsLevelAbove(5) and Duel.GetLocationCount(c:GetControler(),LOCATION_MZONE)>0
-		-- 判断己方场上是否存在至少1只名字带有「黑羽」且表侧表示的怪兽。
+		-- 检查我方场上是否存在1张表侧表示且带有「黑羽」字段的怪兽。
 		and Duel.IsExistingMatchingCard(c11613567.ntfilter,c:GetControler(),LOCATION_MZONE,0,1,nil)
 end
--- 检索满足条件的卡片组，用于判断对方场上是否存在可以改变表示形式的怪兽。
+-- 判定该怪兽是否能够被改变表示形式。
 function c11613567.filter(c)
 	return c:IsCanChangePosition()
 end
--- 设置效果的目标选择函数，用于选择对方场上的怪兽作为目标。
+-- 诱发效果的目标处理：先检查是否指定对象；再判断对方场上是否存在可选目标；有则提示玩家选择，并将选中的对方怪兽设为效果对象，同时登记操作信息为改变表示形式。
 function c11613567.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(1-tp) and c11613567.filter(chkc) end
-	-- 检查是否满足发动条件，即对方场上是否存在至少1只可以改变表示形式的怪兽。
+	-- 发动时合法性检查：确认对方场上存在至少1只可以改变表示形式并能成为此效果对象的怪兽。
 	if chk==0 then return Duel.IsExistingTarget(c11613567.filter,tp,0,LOCATION_MZONE,1,nil) end
-	-- 向玩家发送提示信息，提示选择要改变表示形式的怪兽。
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_POSCHANGE)
-	-- 选择对方场上1只可以改变表示形式的怪兽作为目标。
+	-- 向玩家显示选择提示，提示内容为“请选择要改变表示形式的怪兽”。
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_POSCHANGE)  --"请选择要改变表示形式的怪兽"
+	-- 从对方场上选择1只满足filter条件的怪兽作为效果对象，并自动将其记录为当前连锁的对象。
 	local g=Duel.SelectTarget(tp,c11613567.filter,tp,0,LOCATION_MZONE,1,1,nil)
-	-- 设置连锁的操作信息，指定本次效果将改变目标怪兽的表示形式。
+	-- 将本次操作登记为改变表示形式（CATEGORY_POSITION），对象为已选怪兽g，数量为1，用于连锁判定等后续处理。
 	Duel.SetOperationInfo(0,CATEGORY_POSITION,g,1,0,0)
 end
--- 设置效果的处理函数，用于执行改变目标怪兽表示形式的操作。
+-- 效果处理时，取出效果对象；若对象仍与该效果关联，则按规则改变其表示形式。
 function c11613567.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁中被选择的目标怪兽。
+	-- 取得当前连锁中此效果选择的对象（怪兽）。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 将目标怪兽改变为表侧守备表示
+		-- 改变对象怪兽的表示形式：若其为表侧攻击表示则变为表侧守备表示，其余表示形式均变为表侧攻击表示。
 		Duel.ChangePosition(tc,POS_FACEUP_DEFENSE,POS_FACEUP_ATTACK,POS_FACEUP_ATTACK,POS_FACEUP_ATTACK)
 	end
 end
