@@ -15,37 +15,37 @@ function c51814159.initial_effect(c)
 	e1:SetOperation(c51814159.thop)
 	c:RegisterEffect(e1)
 end
--- 检查玩家场上是否存在至少1只可解放的「急袭猛禽」怪兽，并选择其中1只进行解放。
+-- 代价函数：检测并执行将我方场上1只「急袭猛禽」怪兽解放作为发动COST的操作。
 function c51814159.thcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断是否满足条件：玩家场上是否存在至少1只可解放的「急袭猛禽」怪兽。
+	-- cost检测：确认自己场上存在至少1只可解放的「急袭猛禽」怪兽，若没有则不能发动。
 	if chk==0 then return Duel.CheckReleaseGroup(tp,Card.IsSetCard,1,nil,0xba) end
-	-- 从玩家场上选择1只满足条件的「急袭猛禽」怪兽作为解放对象。
+	-- 让玩家从自己场上选择1只「急袭猛禽」怪兽用于解放。
 	local g=Duel.SelectReleaseGroup(tp,Card.IsSetCard,1,1,nil,0xba)
-	-- 以REASON_COST原因将所选怪兽进行解放。
+	-- 将选中的怪兽以代价（REASON_COST）解放。
 	Duel.Release(g,REASON_COST)
 end
--- 过滤函数：判断卡片是否为「升阶魔法」魔法卡且能加入手牌。
+-- 对象筛选：墓地中满足「升阶魔法」字段、魔法卡类型、且可加入手卡的卡。
 function c51814159.thfilter(c)
 	return c:IsSetCard(0x95) and c:IsType(TYPE_SPELL) and c:IsAbleToHand()
 end
--- 设置效果目标：选择玩家墓地中的1张「升阶魔法」魔法卡作为对象。
+-- 目标函数：以自己墓地1张满足条件的「升阶魔法」魔法卡为对象；选择后设置加入手卡的操作信息。
 function c51814159.thtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and c51814159.thfilter(chkc) end
-	-- 判断是否满足条件：玩家墓地中是否存在至少1张「升阶魔法」魔法卡。
+	-- 目标检测：确认自己墓地存在至少1张满足条件的「升阶魔法」魔法卡可作为对象，否则不能发动。
 	if chk==0 then return Duel.IsExistingTarget(c51814159.thfilter,tp,LOCATION_GRAVE,0,1,nil) end
-	-- 提示玩家选择要加入手牌的卡。
+	-- 显示选择提示：「请选择要加入手牌的卡」。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 从玩家墓地中选择1张「升阶魔法」魔法卡作为效果对象。
+	-- 选择自己墓地1张符合条件的「升阶魔法」魔法卡，并将其设为效果对象。
 	local g=Duel.SelectTarget(tp,c51814159.thfilter,tp,LOCATION_GRAVE,0,1,1,nil)
-	-- 设置操作信息：将所选卡加入手牌。
+	-- 设置操作信息：将选择的卡加入手牌（CATEGORY_TOHAND），数量1。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,1,0,0)
 end
--- 效果处理函数：将目标卡加入手牌，并设置后续限制效果。
+-- 效果处理：将对象卡加入手牌；然后给自己附加『不用「升阶魔法」效果不能超量召唤』的限制直到回合结束。
 function c51814159.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的效果对象卡。
+	-- 获取效果处理时对象卡（即目标墓地「升阶魔法」魔法卡）。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 将目标卡以REASON_EFFECT原因送入手牌。
+		-- 将对象卡以效果原因加入持有者手牌。
 		Duel.SendtoHand(tc,nil,REASON_EFFECT)
 	end
 	-- 这个效果的发动后，直到回合结束时自己不用「升阶魔法」魔法卡的效果不能把怪兽超量召唤。
@@ -56,10 +56,10 @@ function c51814159.thop(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetTargetRange(1,0)
 	e1:SetTarget(c51814159.splimit)
 	e1:SetReset(RESET_PHASE+PHASE_END)
-	-- 将限制效果注册给玩家，使其在回合结束前无法使用「升阶魔法」魔法卡的效果进行超量召唤。
+	-- 将「不能用非升阶魔法效果超量召唤」的永续效果注册到该玩家，直到回合结束。
 	Duel.RegisterEffect(e1,tp)
 end
--- 限制函数：判断是否为超量召唤且召唤所用的卡不是「升阶魔法」魔法卡。
+-- 限制条件：进行超量召唤时，若发动特殊召唤的效果卡不是「升阶魔法」字段，则不能进行该超量召唤。
 function c51814159.splimit(e,c,sump,sumtype,sumpos,targetp,se)
 	return bit.band(sumtype,SUMMON_TYPE_XYZ)==SUMMON_TYPE_XYZ and not se:GetHandler():IsSetCard(0x95)
 end

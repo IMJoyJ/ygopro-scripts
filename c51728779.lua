@@ -31,86 +31,86 @@ function c51728779.initial_effect(c)
 	e2:SetOperation(c51728779.cpop)
 	c:RegisterEffect(e2)
 end
--- 过滤函数，用于判断手牌中是否包含「堕天使」卡且可被丢弃
+-- 定义①丢弃cost的过滤器：手牌中满足「堕天使」字段且可以丢弃的卡。
 function c51728779.cfilter(c)
 	return c:IsSetCard(0xef) and c:IsDiscardable()
 end
--- 检查是否满足①效果的发动条件：手牌中存在「堕天使」卡且可被丢弃
+-- ①的cost检查：确认这张卡自身可以丢弃，并且手牌中存在其他「堕天使」卡可供丢弃。
 function c51728779.thcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsDiscardable()
-		-- 检查是否满足①效果的发动条件：手牌中存在「堕天使」卡且可被丢弃
+		-- 检查手牌中是否存在至少1张除自身以外的可丢弃「堕天使」卡，作为①的发动条件。
 		and Duel.IsExistingMatchingCard(c51728779.cfilter,tp,LOCATION_HAND,0,1,e:GetHandler()) end
-	-- 提示玩家选择要丢弃的手牌
+	-- 向玩家显示“请选择要丢弃的手牌”的提示，用于选择丢弃cost的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DISCARD)  --"请选择要丢弃的手牌"
-	-- 选择满足条件的「堕天使」卡加入丢弃组
+	-- 从手牌选择1张「堕天使」卡（不包括这张卡自身），作为①的丢弃cost。
 	local g=Duel.SelectMatchingCard(tp,c51728779.cfilter,tp,LOCATION_HAND,0,1,1,e:GetHandler())
 	g:AddCard(e:GetHandler())
-	-- 将选中的卡送去墓地作为①效果的代价
+	-- 将选中的手牌和这张卡自身以丢弃·代价（REASON_DISCARD+REASON_COST）送入墓地。
 	Duel.SendtoGrave(g,REASON_DISCARD+REASON_COST)
 end
--- 过滤函数，用于判断墓地中是否包含可加入手牌的「堕天使」卡
+-- 定义①回手牌对象的过滤器：自己墓地中满足「堕天使」字段且可以加入手牌的卡。
 function c51728779.thfilter(c)
 	return c:IsSetCard(0xef) and c:IsAbleToHand()
 end
--- 设置①效果的目标选择函数，用于选择墓地中的「堕天使」卡
+-- ①的发动目标处理：从自己墓地选择1张「堕天使」卡作为对象，并设置回手牌的操作信息。
 function c51728779.thtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(tp) and chkc:IsLocation(LOCATION_GRAVE) and c51728779.thfilter(chkc) end
-	-- 检查是否满足①效果的目标选择条件：墓地存在「堕天使」卡
+	-- 检查自己墓地是否存在至少1张符合条件的「堕天使」卡可以作为①的对象。
 	if chk==0 then return Duel.IsExistingTarget(c51728779.thfilter,tp,LOCATION_GRAVE,0,1,nil) end
-	-- 提示玩家选择要加入手牌的卡
+	-- 向玩家显示“请选择要加入手牌的卡”的提示，用于选择①的对象。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择目标墓地中的「堕天使」卡
+	-- 从自己墓地选择1张「堕天使」卡，并将其登记为当前连锁的效果对象。
 	local g=Duel.SelectTarget(tp,c51728779.thfilter,tp,LOCATION_GRAVE,0,1,1,nil)
-	-- 设置①效果的操作信息，指定将卡送入手牌
+	-- 设置连锁的操作信息：本次效果将把对象卡加入手牌（CATEGORY_TOHAND），数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,1,0,0)
 end
--- ①效果的处理函数，将选中的卡送入手牌
+-- ①的效果处理：将作为对象的墓地「堕天使」卡加入其持有者的手牌。
 function c51728779.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的目标卡
+	-- 取得当前连锁中登记的效果对象卡。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 将目标卡送入手牌
+		-- 将效果对象卡送去其持有者的手卡（REASON_EFFECT）。
 		Duel.SendtoHand(tc,nil,REASON_EFFECT)
 	end
 end
--- ②效果的发动代价函数，检查并支付1000基本分
+-- ②的cost处理：支付1000基本分作为发动代价。
 function c51728779.cpcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查玩家是否能支付1000基本分
+	-- 检查玩家是否能支付1000LP作为②的发动cost。
 	if chk==0 then return Duel.CheckLPCost(tp,1000) end
-	-- 支付1000基本分作为②效果的代价
+	-- 实际支付1000LP。
 	Duel.PayLPCost(tp,1000)
 end
--- 过滤函数，用于判断墓地中是否存在可发动效果的「堕天使」魔法·陷阱卡
+-- 定义②可复制对象的过滤器：自己墓地中满足「堕天使」字段、是魔法·陷阱卡、可以回卡组且拥有可发动效果的卡。
 function c51728779.cpfilter(c)
 	return c:IsSetCard(0xef) and c:IsType(TYPE_SPELL+TYPE_TRAP) and c:IsAbleToDeck() and c:CheckActivateEffect(false,true,false)~=nil
 end
--- 设置②效果的目标选择函数，用于选择墓地中的「堕天使」魔法·陷阱卡
+-- ②的发动目标处理：选择墓地1张「堕天使」魔法·陷阱卡，复制其效果参数并将该卡登记为对象，同时设置回卡组的操作信息。
 function c51728779.cptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then
 		local te=e:GetLabelObject()
 		local tg=te:GetTarget()
 		return tg and tg(e,tp,eg,ep,ev,re,r,rp,0,chkc)
 	end
-	-- 检查是否满足②效果的目标选择条件：墓地存在「堕天使」魔法·陷阱卡
+	-- 检查自己墓地是否存在至少1张符合条件的「堕天使」魔法·陷阱卡可以作为②的对象。
 	if chk==0 then return Duel.IsExistingTarget(c51728779.cpfilter,tp,LOCATION_GRAVE,0,1,nil) end
-	-- 提示玩家选择要发动效果的卡
+	-- 向玩家显示“请选择效果的对象”的提示，用于选择②的对象。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)  --"请选择效果的对象"
-	-- 选择目标墓地中的「堕天使」魔法·陷阱卡
+	-- 从自己墓地选择1张「堕天使」魔法·陷阱卡，并暂时登记为效果对象。
 	local g=Duel.SelectTarget(tp,c51728779.cpfilter,tp,LOCATION_GRAVE,0,1,1,nil)
 	local te,ceg,cep,cev,cre,cr,crp=g:GetFirst():CheckActivateEffect(false,true,true)
-	-- 清除当前连锁的目标卡
+	-- 清除自动登记的目标，因为后续需要用复制效果的目标逻辑重新建立关联。
 	Duel.ClearTargetCard()
 	g:GetFirst():CreateEffectRelation(e)
 	local tg=te:GetTarget()
 	if tg then tg(e,tp,ceg,cep,cev,cre,cr,crp,1) end
 	te:SetLabelObject(e:GetLabelObject())
 	e:SetLabelObject(te)
-	-- 清除当前处理的连锁操作信息
+	-- 清除连锁0的操作信息，避免复制出的魔法·陷阱卡效果被错误响应或干扰。
 	Duel.ClearOperationInfo(0)
-	-- 设置②效果的操作信息，指定将卡送回卡组
+	-- 设置连锁的操作信息：本次效果最终会将对象卡送回卡组（CATEGORY_TODECK），数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_TODECK,g,1,0,0)
 end
--- ②效果的处理函数，发动选中卡的效果并将其送回卡组
+-- ②的效果处理：适用被选择的魔法·陷阱卡的效果，然后将被复制的那张卡洗回持有者卡组。
 function c51728779.cpop(e,tp,eg,ep,ev,re,r,rp)
 	local te=e:GetLabelObject()
 	if not te then return end
@@ -118,8 +118,8 @@ function c51728779.cpop(e,tp,eg,ep,ev,re,r,rp)
 	e:SetLabelObject(te:GetLabelObject())
 	local op=te:GetOperation()
 	if op then op(e,tp,eg,ep,ev,re,r,rp) end
-	-- 中断当前效果，使后续处理视为不同时处理
+	-- 中断当前效果链，使后续回卡组的处理与复制效果的处理视为不同时处理，避免错误时点。
 	Duel.BreakEffect()
-	-- 将发动效果的卡送回卡组并洗牌
+	-- 将用于复制的墓地魔法·陷阱卡以效果原因洗回持有者的卡组（弹回卡组并洗切）。
 	Duel.SendtoDeck(te:GetHandler(),nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
 end

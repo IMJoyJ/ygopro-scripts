@@ -5,7 +5,7 @@
 -- ②：1回合1次，自己主要阶段1把这张卡以外的自己场上1只「月光」怪兽解放才能发动。这个回合，对方怪兽各有1次不会被战斗破坏，这张卡可以向全部对方怪兽各作2次攻击。
 -- ③：这张卡的攻击宣言时发动。给与对方100伤害。
 function c51777272.initial_effect(c)
-	-- 添加融合召唤手续，使用2个满足「月光」字段的怪兽作为融合素材
+	-- 为这张卡添加融合召唤手续，指定以2只「月光」怪兽作为融合素材。
 	aux.AddFusionProcFunRep(c,aux.FilterBoolFunction(Card.IsFusionSetCard,0xdf),2,true)
 	c:EnableReviveLimit()
 	-- ①：这张卡不会被战斗破坏。
@@ -34,34 +34,34 @@ function c51777272.initial_effect(c)
 	e3:SetOperation(c51777272.damop)
 	c:RegisterEffect(e3)
 end
--- 判断是否能进入战斗阶段
+-- 效果②的发动条件函数：判断当前是否满足发动条件，即处于自己主要阶段1且可以进入战斗阶段。
 function c51777272.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查回合玩家能否进入战斗阶段
+	-- 返回当前回合玩家是否能够进入战斗阶段，用于限制效果只能在主要阶段1发动。
 	return Duel.IsAbleToEnterBP()
 end
--- 支付效果代价，解放1只「月光」怪兽
+-- 效果②发动代价：从自己场上选择并解放1张这张卡以外的「月光」怪兽，作为发动效果的代价。
 function c51777272.cost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查场上是否存在满足条件的可解放怪兽
+	-- 代价检测阶段（chk==0）检查自己场上是否存在除本卡以外、可解放的1只「月光」怪兽。
 	if chk==0 then return Duel.CheckReleaseGroup(tp,Card.IsSetCard,1,e:GetHandler(),0xdf) end
-	-- 选择1只满足条件的可解放怪兽
+	-- 让发动玩家从自己场上选择1只除本卡以外的「月光」怪兽作为解放对象。
 	local g=Duel.SelectReleaseGroup(tp,Card.IsSetCard,1,1,e:GetHandler(),0xdf)
-	-- 以代价原因解放选中的怪兽
+	-- 将选择的那只「月光」怪兽解放，作为效果②的发动代价。
 	Duel.Release(g,REASON_COST)
 end
--- 设置效果处理，使对方怪兽在本回合内各有一次不会被战斗破坏，并使这张卡可以向全部对方怪兽各作2次攻击
+-- 效果②处理：为对方场上所有怪兽附加本回合战斗破坏无效1次的效果，并为本卡附加本回合可向对方全部怪兽各作2次攻击的效果。
 function c51777272.operation(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 为对方场上所有怪兽设置效果，使其在本回合内各有一次不会被战斗破坏
+	-- ②中『这个回合，对方怪兽各有1次不会被战斗破坏』的对应处理：为对方怪兽附加本回合1次不会被战斗破坏的效果。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_INDESTRUCTABLE_COUNT)
 	e1:SetTargetRange(0,LOCATION_MZONE)
 	e1:SetValue(c51777272.indct)
 	e1:SetReset(RESET_PHASE+PHASE_END)
-	-- 将效果注册到全局环境
+	-- 将上述对方怪兽1回合1次不会被战斗破坏的领域效果注册到场上，持续至结束阶段。
 	Duel.RegisterEffect(e1,tp)
 	if c:IsRelateToEffect(e) then
-		-- 使这张卡在本回合内可以向全部对方怪兽各作2次攻击
+		-- ②中『这张卡可以向全部对方怪兽各作2次攻击』的对应处理：为本卡附加本回合可向对方全部怪兽各作2次攻击的效果。
 		local e2=Effect.CreateEffect(c)
 		e2:SetType(EFFECT_TYPE_SINGLE)
 		e2:SetCode(EFFECT_ATTACK_ALL)
@@ -70,26 +70,26 @@ function c51777272.operation(e,tp,eg,ep,ev,re,r,rp)
 		c:RegisterEffect(e2)
 	end
 end
--- 判断是否为战斗破坏，若是则返回1，否则返回0
+-- 该函数作为EFFECT_INDESTRUCTABLE_COUNT的Value，当对方怪兽将要被战斗破坏时返回1，使其本回合首次战斗破坏无效；非战斗破坏返回0。
 function c51777272.indct(e,re,r,rp)
 	if bit.band(r,REASON_BATTLE)~=0 then
 		return 1
 	else return 0 end
 end
--- 设置伤害效果的目标玩家和伤害值
+-- 效果③的发动条件与伤害设定：必发效果，发动成立后设置对象玩家为对方、伤害参数为100，并声明造成100点伤害的操作信息。
 function c51777272.damtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置连锁处理中目标玩家为对方
+	-- 将当前连锁的对象玩家设置为对方玩家，即伤害的承受者。
 	Duel.SetTargetPlayer(1-tp)
-	-- 设置连锁处理中目标参数为100
+	-- 将当前连锁的对象参数（伤害数值）设置为100。
 	Duel.SetTargetParam(100)
-	-- 设置连锁操作信息为造成100点伤害
+	-- 设置效果处理信息，声明本效果将对对方造成100点伤害，以便其他卡响应时点。
 	Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,1-tp,100)
 end
--- 执行伤害效果，对指定玩家造成100点伤害
+-- 效果③伤害处理：从连锁信息中取得对象玩家和伤害数值，实际给予对方玩家效果伤害。
 function c51777272.damop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁中的目标玩家和伤害值
+	-- 从当前连锁信息中取出对象玩家和伤害参数，分别存入p和d。
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 以效果原因对指定玩家造成指定伤害
+	-- 对玩家p造成d点效果伤害，即给予对方100点效果伤害。
 	Duel.Damage(p,d,REASON_EFFECT)
 end
