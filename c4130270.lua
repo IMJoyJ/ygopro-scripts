@@ -9,7 +9,7 @@ function c4130270.initial_effect(c)
 	e1:SetRange(LOCATION_MZONE)
 	e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
 	e1:SetTargetRange(1,1)
-	-- 设置效果目标为场上存在的卡
+	-- 设置效果的目标判定函数：仅当卡片位于场上（LOCATION_ONFIELD）时，才会受到“不能回到卡组”的效果限制。
 	e1:SetTarget(aux.TargetBoolFunction(Card.IsLocation,LOCATION_ONFIELD))
 	c:RegisterEffect(e1)
 end

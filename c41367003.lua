@@ -3,7 +3,7 @@
 -- 「抽卡肌肉」在1回合只能发动1张。
 -- ①：以自己场上1只守备力1000以下的表侧守备表示怪兽为对象才能发动。自己从卡组抽1张。那只怪兽在这个回合不会被战斗破坏。
 function c41367003.initial_effect(c)
-	-- 「抽卡肌肉」在1回合只能发动1张。
+	-- 「抽卡肌肉」在1回合只能发动1张。①：以自己场上1只守备力1000以下的表侧守备表示怪兽为对象才能发动。自己从卡组抽1张。那只怪兽在这个回合不会被战斗破坏。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_DRAW)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -14,31 +14,31 @@ function c41367003.initial_effect(c)
 	e1:SetOperation(c41367003.activate)
 	c:RegisterEffect(e1)
 end
--- 筛选场上表侧守备表示且守备力不超过1000的怪兽
+-- 筛选可作为对象的怪兽：必须是表侧守备表示且守备力1000以下的怪兽。
 function c41367003.filter(c,e,tp)
 	return c:IsPosition(POS_FACEUP_DEFENSE) and c:IsDefenseBelow(1000)
 end
--- 判断是否可以发动此效果，包括玩家能否抽卡和场上是否存在符合条件的怪兽
+-- 目标处理函数：若chkc存在，则校验其是否仍为自己场上表侧守备表示且守备力1000以下的怪兽；若chk==0，则进行发动合法性检查。
 function c41367003.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and c41367003.filter(chkc,e,tp) end
-	-- 判断玩家是否可以抽卡
+	-- 发动合法性检查：确认玩家tp可以抽1张卡。
 	if chk==0 then return Duel.IsPlayerCanDraw(tp,1)
-		-- 判断场上是否存在符合条件的怪兽作为对象
+		-- 同时确认自己场上存在至少1只满足条件的怪兽，可作为此效果的对象。
 		and Duel.IsExistingTarget(c41367003.filter,tp,LOCATION_MZONE,0,1,nil,e,tp) end
-	-- 提示玩家选择表侧守备表示的怪兽
+	-- 显示选择提示消息，要求玩家选择表侧守备表示的怪兽。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUPDEFENSE)  --"请选择表侧守备表示的怪兽"
-	-- 选择符合条件的怪兽作为效果对象
+	-- 让玩家tp从自己主要怪兽区域选择1只符合条件的表侧守备表示怪兽，并将其设为效果对象。
 	Duel.SelectTarget(tp,c41367003.filter,tp,LOCATION_MZONE,0,1,1,nil,e,tp)
-	-- 设置效果处理信息，表明将要进行抽卡操作
+	-- 设置操作信息：声明本连锁将进行抽卡（CATEGORY_DRAW），预定向玩家tp抽1张卡。
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,1)
 end
--- 处理效果的发动，包括抽卡和给对象怪兽添加不被战斗破坏的效果
+-- 效果处理：抽1张卡，若抽卡成功且对象怪兽仍与此效果关联，则给该对象附加“不会被战斗破坏”的效果，持续到回合结束。
 function c41367003.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前效果选择的怪兽对象
+	-- 获取效果发动时选择的对象怪兽。
 	local tc=Duel.GetFirstTarget()
-	-- 判断抽卡是否成功且对象怪兽仍然在场上
+	-- 执行抽卡1张（REASON_EFFECT），若实际抽卡数不为0且对象怪兽仍与此效果关联，则继续执行后续赋予抗性效果。
 	if Duel.Draw(tp,1,REASON_EFFECT)~=0 and tc:IsRelateToEffect(e) then
-		-- 那只怪兽在这个回合不会被战斗破坏。
+		-- 对应效果原文：那只怪兽在这个回合不会被战斗破坏。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_INDESTRUCTABLE_BATTLE)

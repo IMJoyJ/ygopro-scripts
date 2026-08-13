@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：对方对怪兽的特殊召唤成功的场合才能发动。自己场上的攻击表示的「超重武者」怪兽全部变成守备表示，那个守备力直到回合结束时上升500。
 function c41307269.initial_effect(c)
-	-- ①：对方对怪兽的特殊召唤成功的场合才能发动。
+	-- ①：对方对怪兽的特殊召唤成功的场合才能发动。自己场上的攻击表示的「超重武者」怪兽全部变成守备表示，那个守备力直到回合结束时上升500。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(41307269,0))  --"表示形式变化"
 	e1:SetCategory(CATEGORY_POSITION)
@@ -14,38 +14,38 @@ function c41307269.initial_effect(c)
 	e1:SetOperation(c41307269.operation)
 	c:RegisterEffect(e1)
 end
--- 检查召唤玩家是否为对方
+-- 判断怪兽是否由对方玩家特殊召唤，用于筛选特殊召唤成功事件中的怪兽。
 function c41307269.cfilter(c,tp)
 	return c:IsSummonPlayer(1-tp)
 end
--- 判断是否有对方怪兽特殊召唤成功
+-- 发动条件：对方对怪兽的特殊召唤成功，即特殊召唤的怪兽中存在由对方玩家特殊召唤的怪兽。
 function c41307269.condition(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c41307269.cfilter,1,nil,tp)
 end
--- 筛选自己场上攻击表示的「超重武者」怪兽
+-- 过滤函数：筛选自己场上表侧攻击表示、属于「超重武者」字段且可以改变表示形式的怪兽。
 function c41307269.filter(c)
 	return c:IsPosition(POS_FACEUP_ATTACK) and c:IsSetCard(0x9a) and c:IsCanChangePosition()
 end
--- 设置效果处理时的目标怪兽组并设置效果分类为表示形式变化
+-- 效果发动时的目标处理：确认存在符合条件的怪兽，并取得全部符合条件的怪兽组，登记为改变表示形式的操作信息。
 function c41307269.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断是否满足发动条件
+	-- 发动合法性检查：自己场上是否存在至少1只表侧攻击表示且属于「超重武者」字段并能改变表示形式的怪兽。
 	if chk==0 then return Duel.IsExistingMatchingCard(c41307269.filter,tp,LOCATION_MZONE,0,1,nil) end
-	-- 获取满足条件的怪兽组
+	-- 获取自己场上所有符合条件的「超重武者」怪兽（表侧攻击表示且可改变表示形式）组成怪兽组。
 	local g=Duel.GetMatchingGroup(c41307269.filter,tp,LOCATION_MZONE,0,nil)
-	-- 设置连锁操作信息
+	-- 设置操作信息：本次效果将改变这些怪兽的表示形式，数量为怪兽组内怪兽数，供连锁检测使用。
 	Duel.SetOperationInfo(0,CATEGORY_POSITION,g,g:GetCount(),0,0)
 end
--- 自己场上的攻击表示的「超重武者」怪兽全部变成守备表示，那个守备力直到回合结束时上升500。
+-- 效果处理：将自己场上所有符合条件的攻击表示「超重武者」怪兽变成守备表示，并对实际改变了表示形式的怪兽赋予守备力上升500直到回合结束。
 function c41307269.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取满足条件的怪兽组
+	-- 效果处理时再次获取符合条件的怪兽组（因为处理时场上情况可能变化）。
 	local g=Duel.GetMatchingGroup(c41307269.filter,tp,LOCATION_MZONE,0,nil)
-	-- 将怪兽全部变为守备表示
+	-- 将攻击表示的怪兽全部变为守备表示（表侧攻击表示变为表侧守备表示，里侧攻击表示变为里侧守备表示）。
 	Duel.ChangePosition(g,POS_FACEUP_DEFENSE,POS_FACEDOWN_DEFENSE,0,0)
-	-- 获取实际操作的怪兽组
+	-- 获取刚刚实际被改变表示形式的怪兽组，即成功变成守备表示的怪兽。
 	local og=Duel.GetOperatedGroup()
 	local tc=og:GetFirst()
 	while tc do
-		-- 为怪兽增加500守备力直至回合结束
+		-- 那个守备力直到回合结束时上升500。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_DEFENSE)
