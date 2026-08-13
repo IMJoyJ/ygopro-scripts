@@ -4,7 +4,7 @@
 -- ①：「黑羽」怪兽为素材作同调召唤的这张卡当作调整使用。
 -- ②：这张卡1回合最多2次不会被战斗破坏。
 function c17994645.initial_effect(c)
-	-- 添加同调召唤手续，要求1只调整作素材，1只调整以外的怪兽作素材
+	-- 设定这张卡的同调召唤手续：同调素材为调整＋调整以外的怪兽1只。
 	aux.AddSynchroProcedure(c,nil,aux.NonTuner(nil),1,1)
 	c:EnableReviveLimit()
 	-- ①：「黑羽」怪兽为素材作同调召唤的这张卡当作调整使用。
@@ -15,7 +15,7 @@ function c17994645.initial_effect(c)
 	e1:SetCondition(c17994645.tncon)
 	e1:SetOperation(c17994645.tnop)
 	c:RegisterEffect(e1)
-	-- ①：「黑羽」怪兽为素材作同调召唤的这张卡当作调整使用。
+	-- 「黑羽」怪兽为素材作同调召唤的
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_SINGLE)
 	e2:SetCode(EFFECT_MATERIAL_CHECK)
@@ -33,7 +33,7 @@ function c17994645.initial_effect(c)
 	c:RegisterEffect(e3)
 end
 c17994645.treat_itself_tuner=true
--- 检查出场使用的素材中是否存在「黑羽」卡，是则标记为1，否则为0
+-- 检查这张卡的同调召唤素材中是否存在「黑羽」怪兽，将结果记录到e1的Label中，用于后续判断是否满足①效果的条件。
 function c17994645.valcheck(e,c)
 	local g=c:GetMaterial()
 	if g:IsExists(Card.IsSetCard,1,nil,0x33) then
@@ -42,14 +42,14 @@ function c17994645.valcheck(e,c)
 		e:GetLabelObject():SetLabel(0)
 	end
 end
--- 判断是否为同调召唤且标记为1（即使用了黑羽卡作为素材）
+-- 判断这张卡是否是以「黑羽」怪兽为素材进行的同调召唤，以此作为①效果能否发动的条件。
 function c17994645.tncon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsSummonType(SUMMON_TYPE_SYNCHRO) and e:GetLabel()==1
 end
--- 若满足条件，则为自身添加调整属性
+-- 给这张卡赋予“当作调整使用”的永续效果，实现①效果的后半部分。
 function c17994645.tnop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- ①：「黑羽」怪兽为素材作同调召唤的这张卡当作调整使用。
+	-- 当作调整使用。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
@@ -58,7 +58,7 @@ function c17994645.tnop(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetReset(RESET_EVENT+RESETS_STANDARD)
 	c:RegisterEffect(e1)
 end
--- 判断破坏原因是否为战斗
+-- 判断破坏原因是否为战斗破坏，只有战斗破坏时才计入“1回合最多2次不会被战斗破坏”的适用次数。
 function c17994645.valcon(e,re,r,rp)
 	return bit.band(r,REASON_BATTLE)~=0
 end

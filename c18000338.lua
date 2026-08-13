@@ -15,10 +15,10 @@ function c18000338.initial_effect(c)
 	e2:SetCode(EFFECT_UPDATE_DEFENSE)
 	c:RegisterEffect(e2)
 end
--- 判断当前是否处于伤害步骤或伤害计算阶段，并确保此卡与敌方怪兽战斗且敌方怪兽在额外怪兽区域
+-- 判定效果适用条件：当前处于伤害步骤或伤害计算时，这张卡与战斗相关，且战斗对象位于额外怪兽区域（格序号≥5），满足条件时攻击力·守备力提升效果生效。
 function c18000338.condition(e)
 	local c=e:GetHandler()
-	-- 获取当前游戏阶段
+	-- 获取当前游戏阶段，用于判断是否处于伤害步骤或伤害计算时。
 	local ph=Duel.GetCurrentPhase()
 	local bc=c:GetBattleTarget()
 	return (ph==PHASE_DAMAGE or ph==PHASE_DAMAGE_CAL)

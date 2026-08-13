@@ -13,7 +13,7 @@ function c17985575.initial_effect(c)
 	e1:SetValue(1)
 	c:RegisterEffect(e1)
 end
--- 设置效果目标为场上的龙族怪兽
+-- 目标判定函数：当目标卡是龙族怪兽时返回true，使该效果只保护场上的龙族怪兽不被选为效果对象。
 function c17985575.etarget(e,c)
 	return c:IsRace(RACE_DRAGON)
 end

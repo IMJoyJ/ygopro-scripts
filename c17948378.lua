@@ -2,15 +2,15 @@
 -- 效果：
 -- ①：这张卡战斗破坏对方怪兽的回合的结束阶段，把自己场上1只「朱罗纪」怪兽解放才能发动。自己抽2张。
 function c17948378.initial_effect(c)
-	-- ①：这张卡战斗破坏对方怪兽的回合的结束阶段，把自己场上1只「朱罗纪」怪兽解放才能发动。自己抽2张。
+	-- 这张卡战斗破坏对方怪兽的回合的结束阶段
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_CONTINUOUS)
 	e1:SetCode(EVENT_BATTLE_DESTROYING)
-	-- 检测本次战斗是否为该卡与对方怪兽的战斗破坏
+	-- 设置e1的发动条件为aux.bdocon，即此卡只有与对方怪兽战斗并战斗破坏对方怪兽时才触发
 	e1:SetCondition(aux.bdocon)
 	e1:SetOperation(c17948378.regop)
 	c:RegisterEffect(e1)
-	-- ①：这张卡战斗破坏对方怪兽的回合的结束阶段，把自己场上1只「朱罗纪」怪兽解放才能发动。自己抽2张。
+	-- 把自己场上1只「朱罗纪」怪兽解放才能发动。自己抽2张。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(17948378,0))  --"抽卡"
 	e2:SetCategory(CATEGORY_DRAW)
@@ -25,38 +25,38 @@ function c17948378.initial_effect(c)
 	e2:SetOperation(c17948378.drop)
 	c:RegisterEffect(e2)
 end
--- 在战斗破坏对方怪兽时，为该卡注册一个标记，用于在结束阶段判断是否满足发动条件
+-- 战斗破坏对方怪兽时，给自身注册一个flag标记，标记持续到结束阶段后重置，用于记录本回合曾战斗破坏过对方怪兽
 function c17948378.regop(e,tp,eg,ep,ev,re,r,rp)
 	e:GetHandler():RegisterFlagEffect(17948378,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END,0,1)
 end
--- 判断该卡是否在战斗破坏对方怪兽的回合中被标记过，以确认是否可以发动效果
+-- 抽卡效果的发动条件：检查自身存在本回合战斗破坏对方怪兽的flag标记（即满足“这张卡战斗破坏对方怪兽的回合的结束阶段”）
 function c17948378.drcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():GetFlagEffect(17948378)~=0
 end
--- 检查玩家是否可以解放1只「朱罗纪」怪兽作为效果的代价
+-- 抽卡效果的发动代价：解放自己场上1只「朱罗纪」怪兽
 function c17948378.drcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查玩家是否可以解放1只「朱罗纪」怪兽作为效果的代价
+	-- 效果发动时（chk==0）检查自己场上是否存在至少1只满足「朱罗纪」字段且可解放的怪兽
 	if chk==0 then return Duel.CheckReleaseGroup(tp,Card.IsSetCard,1,nil,0x22) end
-	-- 让玩家从场上选择1只「朱罗纪」怪兽进行解放
+	-- 选择自己场上1只满足「朱罗纪」字段的怪兽作为解放对象
 	local g=Duel.SelectReleaseGroup(tp,Card.IsSetCard,1,1,nil,0x22)
-	-- 将选中的「朱罗纪」怪兽从场上解放，作为效果的代价
+	-- 将选择的怪兽解放，作为发动代价（REASON_COST）
 	Duel.Release(g,REASON_COST)
 end
--- 设置效果的目标为发动者本人，并设定抽卡数量为2
+-- 抽卡效果的发动时目标设定：确认可以抽2张卡，并指定抽卡玩家、抽卡数量及操作信息
 function c17948378.drtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查玩家是否可以抽2张卡
+	-- 效果发动时（chk==0）确认玩家tp是否可以抽2张卡
 	if chk==0 then return Duel.IsPlayerCanDraw(tp,2) end
-	-- 设置效果的目标玩家为当前处理效果的玩家
+	-- 将本次效果的对象玩家设置为发动玩家tp
 	Duel.SetTargetPlayer(tp)
-	-- 设置效果的目标参数为2（表示抽2张卡）
+	-- 将本次效果的对象参数设置为2，即抽卡数量
 	Duel.SetTargetParam(2)
-	-- 设置效果的操作信息为抽卡效果，目标玩家为当前玩家，抽卡数量为2
+	-- 向系统登记操作信息：本次效果分类为抽卡（CATEGORY_DRAW），预计影响玩家tp，处理时抽2张卡
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,2)
 end
--- 执行抽卡效果，使目标玩家抽2张卡
+-- 效果处理时，根据连锁中保存的目标玩家和抽卡数量执行抽卡
 function c17948378.drop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的效果目标玩家和目标参数（抽卡数量）
+	-- 从当前连锁中取出之前设置的目标玩家p和抽卡参数d
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 使目标玩家按照目标参数（抽卡数量）抽卡
+	-- 让玩家p抽d张卡（d=2），抽卡原因记为效果（REASON_EFFECT）
 	Duel.Draw(p,d,REASON_EFFECT)
 end
