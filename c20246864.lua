@@ -5,7 +5,7 @@
 -- ②：1回合1次，自己主要阶段才能发动。这张卡的等级上升1星。
 -- ③：用这张卡为同调素材把风属性同调怪兽同调召唤的场合，那只同调怪兽不会被战斗破坏。
 function c20246864.initial_effect(c)
-	-- ①：自己场上的怪兽只有「风魔女」怪兽的场合才能发动。这张卡从手卡特殊召唤。
+	-- 这个卡名的①的效果1回合只能使用1次。①：自己场上的怪兽只有「风魔女」怪兽的场合才能发动。这张卡从手卡特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(20246864,0))
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -34,42 +34,42 @@ function c20246864.initial_effect(c)
 	e3:SetOperation(c20246864.efop)
 	c:RegisterEffect(e3)
 end
--- 过滤函数，用于判断场上是否存在「风魔女」怪兽
+-- 过滤函数：判定怪兽是否为表侧表示且属于「风魔女」（0xf0）字段的怪兽。
 function c20246864.cfilter(c)
 	return c:IsFaceup() and c:IsSetCard(0xf0)
 end
--- 效果条件函数，判断自己场上是否只有「风魔女」怪兽
+-- ①效果的发动条件：自己场上存在怪兽，且自己场上的全部怪兽都是表侧表示的「风魔女」怪兽。
 function c20246864.spcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取自己场上的所有怪兽
+	-- 取得自己场上所有怪兽的集合。
 	local g=Duel.GetFieldGroup(tp,LOCATION_MZONE,0)
-	-- 判断自己场上的怪兽数量大于0且等于「风魔女」怪兽数量
+	-- 判断自己场上怪兽数量大于0，且场上怪兽数量等于满足「风魔女」条件的怪兽数量，即自己场上的怪兽只有「风魔女」怪兽。
 	return #g>0 and #g==Duel.GetMatchingGroupCount(c20246864.cfilter,tp,LOCATION_MZONE,0,nil)
 end
--- 效果目标函数，判断是否满足特殊召唤条件
+-- ①效果发动时的目标判定：检查自己场上是否有空余的主要怪兽区域，以及这张卡自身能否被特殊召唤。
 function c20246864.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断自己场上是否有足够的怪兽区域
+	-- 检查自己场上是否有空余的主要怪兽区域（Duel.GetLocationCount>0）。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置效果处理时的操作信息，确定将要特殊召唤的卡片
+	-- 设置连锁处理信息：本效果将特殊召唤这张卡（数量1），供后续效果联动判断。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 效果处理函数，执行特殊召唤操作
+-- ①效果处理：若这张卡仍与效果关联，则将其特殊召唤到自己场上。
 function c20246864.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) then
-		-- 将卡片特殊召唤到场上
+		-- 将这张卡以表侧表示特殊召唤到自己场上。
 		Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
--- 等级提升效果的目标函数，判断是否满足等级提升条件
+-- ②效果发动时的目标判定：确认这张卡当前等级不低于1星（保证可以执行上升1星的操作）。
 function c20246864.lvtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsLevelAbove(1) end
 end
--- 等级提升效果的处理函数，为自身等级加1
+-- ②效果处理：若这张卡仍与效果关联且表侧表示，则为它注册一个等级上升1星的持续效果。
 function c20246864.lvop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) and c:IsFaceup() then
-		-- 为自身等级加1的效果
+		-- 这张卡的等级上升1星。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_LEVEL)
@@ -78,15 +78,15 @@ function c20246864.lvop(e,tp,eg,ep,ev,re,r,rp)
 		c:RegisterEffect(e1)
 	end
 end
--- 判断是否因同调召唤而成为素材且素材为风属性
+-- ③效果的触发条件：这张卡作为同调素材被使用，且因同调召唤出的怪兽是风属性。
 function c20246864.efcon(e,tp,eg,ep,ev,re,r,rp)
 	return r==REASON_SYNCHRO and e:GetHandler():GetReasonCard():IsAttribute(ATTRIBUTE_WIND)
 end
--- 效果处理函数，使同调召唤的风属性怪兽不会被战斗破坏
+-- ③效果处理：为同调召唤出的那只风属性同调怪兽赋予“不会被战斗破坏”的效果。
 function c20246864.efop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local rc=c:GetReasonCard()
-	-- 使同调召唤的风属性怪兽不会被战斗破坏的效果
+	-- ③：用这张卡为同调素材把风属性同调怪兽同调召唤的场合，那只同调怪兽不会被战斗破坏。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(20246864,2))  --"「风魔女-冻铃」效果适用中"
 	e1:SetType(EFFECT_TYPE_SINGLE)

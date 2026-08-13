@@ -7,7 +7,7 @@
 -- ①：这张卡反转的场合，以场上盖放的1张卡为对象才能发动。那张卡破坏。
 -- ②：这张卡特殊召唤成功的场合才能发动。这张卡变成里侧守备表示。
 function c20281581.initial_effect(c)
-	-- 为灵摆怪兽添加灵摆怪兽属性（灵摆召唤，灵摆卡的发动）
+	-- 为这张卡添加灵摆怪兽属性，使其能作为灵摆卡发动并支持灵摆召唤。
 	aux.EnablePendulumAttribute(c)
 	-- ①：另一边的自己的灵摆区域没有卡存在的场合这张卡破坏。
 	local e1=Effect.CreateEffect(c)
@@ -46,48 +46,48 @@ function c20281581.initial_effect(c)
 	e4:SetOperation(c20281581.posop)
 	c:RegisterEffect(e4)
 end
--- 判断另一边的自己的灵摆区域是否没有卡存在
+-- 定义效果e1的自毁条件：检查自己的灵摆区域中是否存在除自身以外的其他卡；若不存在则满足自毁条件。
 function c20281581.descon(e)
-	-- 另一边的自己的灵摆区域没有卡存在时，该卡破坏
+	-- 若自己的灵摆区域不存在除本卡以外的其他卡则返回真，用于判定“另一边的自己的灵摆区域没有卡存在”的自毁条件。
 	return not Duel.IsExistingMatchingCard(nil,e:GetHandlerPlayer(),LOCATION_PZONE,0,1,e:GetHandler())
 end
--- 过滤函数，用于判断目标卡是否为里侧表示
+-- 定义目标筛选函数：选择场上里侧表示（盖放）的卡。
 function c20281581.filter(c)
 	return c:IsFacedown()
 end
--- 设置反转效果的发动条件和目标选择逻辑
+-- 反转效果的发动条件和目标选择处理：确认存在可选择的里侧表示卡，让玩家选择1张场上盖放的卡作为对象，并设置破坏的操作信息。
 function c20281581.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsOnField() and c20281581.filter(chkc) end
-	-- 检查是否存在满足条件的目标卡
+	-- 效果发动合法性检查：在发动时确认场上是否有至少1张里侧表示且能成为对象的卡。
 	if chk==0 then return Duel.IsExistingTarget(c20281581.filter,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,nil) end
-	-- 提示玩家选择要破坏的卡
+	-- 向操作玩家显示“请选择要破坏的卡”的选择提示消息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 选择场上一张里侧表示的卡作为目标
+	-- 让玩家从双方场上选择1张里侧表示卡并将其登记为当前连锁的效果对象。
 	local g=Duel.SelectTarget(tp,c20281581.filter,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,1,nil)
-	-- 设置效果处理信息，确定要破坏的卡
+	-- 设置当前连锁的操作信息：将对象卡g标记为将被破坏的1张卡，供相关效果（如星尘龙）进行连锁检测。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,1,0,0)
 end
--- 执行反转效果的破坏操作
+-- 效果处理时，取得之前选择的对象卡；若该卡仍与效果关联，则将其破坏。
 function c20281581.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁效果的目标卡
+	-- 获取当前效果登记的（唯一）对象卡，即玩家选择的里侧表示卡。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 将目标卡破坏
+		-- 以效果原因将对象卡破坏。
 		Duel.Destroy(tc,REASON_EFFECT)
 	end
 end
--- 设置特殊召唤成功后的效果发动条件
+-- 特殊召唤成功后的诱发效果的目标/发动条件：确认这张卡可以变为里侧表示，并设置表示形式变更的操作信息。
 function c20281581.postg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	if chk==0 then return c:IsCanTurnSet() end
-	-- 设置效果处理信息，确定要改变表示形式的卡
+	-- 设置操作信息：标记这张卡将被改变表示形式（变为里侧守备表示）。
 	Duel.SetOperationInfo(0,CATEGORY_POSITION,c,1,0,0)
 end
--- 执行特殊召唤成功后的表示形式改变操作
+-- 效果处理时，若这张卡仍与效果关联且为表侧表示，则将其变成里侧守备表示。
 function c20281581.posop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) and c:IsFaceup() then
-		-- 将自身变为里侧守备表示
+		-- 将这张卡从当前表示形式直接变成里侧守备表示。
 		Duel.ChangePosition(c,POS_FACEDOWN_DEFENSE)
 	end
 end

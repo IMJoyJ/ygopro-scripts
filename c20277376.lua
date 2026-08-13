@@ -2,7 +2,7 @@
 -- 效果：
 -- 1回合1次，丢弃1张手卡才能发动。选择自己墓地1只龙族怪兽加入手卡。
 function c20277376.initial_effect(c)
-	-- 1回合1次，丢弃1张手卡才能发动。选择自己墓地1只龙族怪兽加入手卡。
+	-- ①：1回合1次，丢弃1张手卡，以自己墓地1只龙族怪兽为对象才能发动。那只龙族怪兽加入手卡。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(20277376,0))  --"加入手卡"
 	e1:SetCategory(CATEGORY_TOHAND)
@@ -15,37 +15,37 @@ function c20277376.initial_effect(c)
 	e1:SetOperation(c20277376.thop)
 	c:RegisterEffect(e1)
 end
--- 检查是否满足丢弃手卡的条件并执行丢弃操作
+-- 代价处理函数：确认手牌有可丢弃的卡作为发动代价，并在发动时丢弃1张手卡。
 function c20277376.thcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断是否满足丢弃手卡的条件
+	-- 发动合法性检查：确认自己手牌中存在至少1张可以丢弃的卡，满足代价要求。
 	if chk==0 then return Duel.IsExistingMatchingCard(Card.IsDiscardable,tp,LOCATION_HAND,0,1,e:GetHandler()) end
-	-- 执行丢弃1张手卡的操作
+	-- 执行丢弃代价：从手牌中选1张卡丢弃，丢弃原因记为代价丢弃。
 	Duel.DiscardHand(tp,Card.IsDiscardable,1,1,REASON_COST+REASON_DISCARD)
 end
--- 定义过滤函数，用于筛选龙族且能加入手卡的墓地怪兽
+-- 对象筛选条件：卡片必须是龙族怪兽，并且能够加入手卡。
 function c20277376.filter(c)
 	return c:IsRace(RACE_DRAGON) and c:IsAbleToHand()
 end
--- 设置效果的目标选择逻辑，包括目标位置、条件和选择数量
+-- 目标选择处理：从自己墓地选择1只符合条件的龙族怪兽作为对象，并设定回手牌的操作信息。
 function c20277376.thtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and c20277376.filter(chkc) end
-	-- 判断是否满足选择墓地龙族怪兽的条件
+	-- 目标合法性检查：确认自己墓地存在至少1只符合条件的龙族怪兽可以作为效果对象。
 	if chk==0 then return Duel.IsExistingTarget(c20277376.filter,tp,LOCATION_GRAVE,0,1,nil) end
-	-- 向玩家发送提示信息，提示选择要加入手牌的卡
+	-- 显示选择提示：提示玩家选择要加入手牌的卡片。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择满足条件的墓地龙族怪兽作为效果目标
+	-- 让玩家从自己墓地选择1只符合条件的龙族怪兽，并将其设为效果对象。
 	local g=Duel.SelectTarget(tp,c20277376.filter,tp,LOCATION_GRAVE,0,1,1,nil)
-	-- 设置效果处理时的操作信息，包括效果分类和目标数量
+	-- 设置操作信息：声明该效果将把对象卡加入手牌，供后续连锁检测使用。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,1,0,0)
 end
--- 定义效果发动后的处理逻辑，包括将目标怪兽加入手牌并确认其存在
+-- 效果处理函数：将对象龙族怪兽加入手牌，并向对方展示。
 function c20277376.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁效果的目标怪兽
+	-- 获取效果发动时选择的那张对象怪兽卡。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) and tc:IsRace(RACE_DRAGON) then
-		-- 将目标怪兽以效果原因送入手牌
+		-- 将对象卡送去其持有者的手卡，使其加入手牌。
 		Duel.SendtoHand(tc,nil,REASON_EFFECT)
-		-- 向对方确认目标怪兽的存在
+		-- 向对方玩家展示加入手牌的卡片，以确认检索结果。
 		Duel.ConfirmCards(1-tp,tc)
 	end
 end

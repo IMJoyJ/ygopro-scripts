@@ -33,92 +33,92 @@ function c20216608.initial_effect(c)
 	e3:SetOperation(c20216608.drop2)
 	c:RegisterEffect(e3)
 end
--- 判断是否为自己的抽卡阶段且抽卡原因为规则抽卡
+-- ①效果的发动条件：检测是否为自己在抽卡阶段的通常抽卡（ep==tp且r==REASON_RULE），即仅规则抽卡时触发。
 function c20216608.drcon(e,tp,eg,ep,ev,re,r,rp)
 	return ep==tp and r==REASON_RULE
 end
--- 设置效果标签为100，表示已支付费用
+-- ①效果的发动代价：将效果Label设为100作为已支付代价标记，返回true表示可以发动（实际无消耗）。
 function c20216608.drcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	e:SetLabel(100)
 	return true
 end
--- 过滤手牌中未公开且可送回卡组的卡片
+-- 过滤函数：筛选出非公开状态且可以返回卡组的卡（即刚抽到的那1张未公开手卡）。
 function c20216608.tdfilter(c)
 	return not c:IsPublic() and c:IsAbleToDeck()
 end
--- 设置效果目标为符合条件的卡片，并确认对方观看，然后将目标卡送回卡组底端并抽一张卡
+-- ①效果的发动时选发处理：从抽到的卡中筛选可回卡组的非公开卡；满足条件时，若多于1张则选择1张给对方确认，随后洗切手卡、将选择的卡设为对象，并登记回卡组底和抽1张的操作信息。
 function c20216608.drtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local tg=eg:Filter(c20216608.tdfilter,1,nil)
-	-- 检查是否满足发动条件：标签为100、有可选目标、且自己可以抽卡
+	-- 发动时点合法性检查：确认已支付代价（Label==100）、存在可回卡组的非公开手卡，且自己可以抽1张卡。
 	if chk==0 then return e:GetLabel()==100 and #tg>0 and Duel.IsPlayerCanDraw(tp,1) end
 	e:SetLabel(0)
 	local tc=tg:GetFirst()
 	if #tg>1 then
-		-- 提示玩家选择一张给对方确认的卡
+		-- 显示选择提示，让玩家选择要展示给对方确认的那1张卡。
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_CONFIRM)  --"请选择给对方确认的卡"
 		tc=tg:Select(tp,1,1,nil):GetFirst()
 	end
-	-- 向对方玩家确认目标卡片
+	-- 将选择的卡展示给对方玩家确认。
 	Duel.ConfirmCards(1-tp,tc)
-	-- 洗切自己的手牌
+	-- 洗切自己的手卡，避免因展示卡而暴露手牌顺序。
 	Duel.ShuffleHand(tp)
-	-- 设置当前效果的目标卡片
+	-- 将选择的卡设为当前连锁的（广义）对象，供效果处理时关联。
 	Duel.SetTargetCard(tc)
-	-- 设置操作信息：将目标卡送回卡组
+	-- 登记操作信息：对象卡将被返回卡组（实际为卡组最底端）。
 	Duel.SetOperationInfo(0,CATEGORY_TODECK,tc,1,0,0)
-	-- 设置操作信息：自己抽一张卡
+	-- 登记操作信息：自己将抽1张卡。
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,1)
 end
--- 执行效果：将目标卡送回卡组底端并抽一张卡
+-- ①效果处理：获取目标卡，若目标卡仍与效果关联且成功返回卡组最底端并位于卡组中，则自己抽1张卡。
 function c20216608.drop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前效果的目标卡片
+	-- 获取当前连锁中已关联的目标卡（即被确认并选择的那张手卡）。
 	local tc=Duel.GetFirstTarget()
-	-- 检查目标卡是否有效且已送回卡组底端
+	-- 条件判断：目标卡仍与效果关联、成功送入卡组最底端（返回值>0）且目标卡仍在卡组中，才继续执行抽卡。
 	if tc and tc:IsRelateToEffect(e) and Duel.SendtoDeck(tc,nil,SEQ_DECKBOTTOM,REASON_EFFECT)>0 and tc:IsLocation(LOCATION_DECK) then
-		-- 自己从卡组抽一张卡
+		-- 自己抽1张卡（作为效果处理的结果）。
 		Duel.Draw(tp,1,REASON_EFFECT)
 	end
 end
--- 判断是否为自己的抽卡阶段且抽卡原因为效果抽卡
+-- ②效果的发动条件：检测是否为自己因效果抽卡（ep==tp且r==REASON_EFFECT）。
 function c20216608.drcon2(e,tp,eg,ep,ev,re,r,rp)
 	return ep==tp and r==REASON_EFFECT
 end
--- 设置效果目标为符合条件的卡片，并确认对方观看，然后将此卡送去墓地、目标卡送回卡组底端并抽一张卡
+-- ②效果的发动时选发处理：从抽到的卡中筛选可回卡组的非公开卡；满足条件时，选择1张给对方确认，洗切手卡、将该卡设为对象，并登记本卡送墓、目标卡回卡组底、自己抽1张的操作信息。
 function c20216608.drtg2(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	local tg=eg:Filter(c20216608.tdfilter,1,nil)
-	-- 检查是否满足发动条件：标签为100、此卡可送去墓地、有可选目标、且自己可以抽卡
+	-- 发动时点合法性检查：确认已支付代价（Label==100）、本卡可送墓地、存在可回卡组的非公开手卡，且自己可以抽1张卡。
 	if chk==0 then return e:GetLabel()==100 and c:IsAbleToGrave() and #tg>0 and Duel.IsPlayerCanDraw(tp,1) end
 	e:SetLabel(0)
 	local tc=tg:GetFirst()
 	if #tg>1 then
-		-- 提示玩家选择一张给对方确认的卡
+		-- 显示选择提示，让玩家选择要展示给对方确认的那1张卡。
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_CONFIRM)  --"请选择给对方确认的卡"
 		tc=tg:Select(tp,1,1,nil):GetFirst()
 	end
-	-- 向对方玩家确认目标卡片
+	-- 将选择的卡展示给对方玩家确认。
 	Duel.ConfirmCards(1-tp,tc)
-	-- 洗切自己的手牌
+	-- 洗切自己的手卡，避免因展示卡而暴露手牌顺序。
 	Duel.ShuffleHand(tp)
-	-- 设置当前效果的目标卡片
+	-- 将选择的卡设为当前连锁的（广义）对象，供效果处理时关联。
 	Duel.SetTargetCard(tc)
-	-- 设置操作信息：将此卡送去墓地
+	-- 登记操作信息：本卡（这张卡）将被送去墓地。
 	Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,c,1,0,0)
-	-- 设置操作信息：将目标卡送回卡组
+	-- 登记操作信息：对象卡将被返回卡组（实际为卡组最底端）。
 	Duel.SetOperationInfo(0,CATEGORY_TODECK,tc,1,0,0)
-	-- 设置操作信息：自己抽一张卡
+	-- 登记操作信息：自己将抽1张卡。
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,1)
 end
--- 执行效果：将此卡送去墓地、目标卡送回卡组底端并抽一张卡
+-- ②效果处理：先将本卡送去墓地，若本卡仍与效果关联且送墓成功并在墓地，则获取目标卡，若目标卡仍与效果关联且成功返回卡组最底端并位于卡组中，则自己抽1张卡。
 function c20216608.drop2(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 检查此卡是否有效且已送去墓地
+	-- 若本卡已与效果失去联系、送墓失败或不在墓地，则中止本次处理。
 	if not c:IsRelateToEffect(e) or Duel.SendtoGrave(c,REASON_EFFECT)<=0 or not c:IsLocation(LOCATION_GRAVE) then return end
-	-- 获取当前效果的目标卡片
+	-- 获取当前连锁中已关联的目标卡（即被确认并选择的那张手卡）。
 	local tc=Duel.GetFirstTarget()
-	-- 检查目标卡是否有效且已送回卡组底端
+	-- 条件判断：目标卡仍与效果关联、成功送入卡组最底端（返回值>0）且目标卡仍在卡组中，才继续执行抽卡。
 	if tc and tc:IsRelateToEffect(e) and Duel.SendtoDeck(tc,nil,SEQ_DECKBOTTOM,REASON_EFFECT)>0 and tc:IsLocation(LOCATION_DECK) then
-		-- 自己从卡组抽一张卡
+		-- 自己抽1张卡（作为效果处理的结果）。
 		Duel.Draw(tp,1,REASON_EFFECT)
 	end
 end

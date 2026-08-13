@@ -29,35 +29,35 @@ function c20292186.initial_effect(c)
 	e3:SetOperation(c20292186.dop)
 	c:RegisterEffect(e3)
 end
--- 判断卡片是否在对方回合被破坏送入墓地且处于魔陷区背面表示状态
+-- 判断②效果的发动条件：这张卡此前位于魔法与陷阱区域且为里侧表示，之前控制者为自己，且因破坏被送去墓地，并且当前为对方回合。
 function c20292186.spcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	return c:IsPreviousLocation(LOCATION_SZONE) and c:IsPreviousPosition(POS_FACEDOWN)
 		and c:IsPreviousControler(tp)
-		-- 判断卡片是否因破坏而送入墓地且当前回合不是持有者回合
+		-- 继续判断条件：此卡被破坏，且当前回合玩家不是此卡原控制者（即对方回合）。
 		and c:IsReason(REASON_DESTROY) and Duel.GetTurnPlayer()~=tp
 end
--- 设置效果处理时将要特殊召唤的卡片信息
+-- ②效果发动时的目标处理：无取对象，直接允许发动，并登记特殊召唤的操作信息。
 function c20292186.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置特殊召唤的卡片为自身，数量为1
+	-- 登记操作信息：本次效果处理中会将这张卡自身特殊召唤，数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 执行特殊召唤操作，将自身以正面表示方式特殊召唤到场上
+-- ②效果处理时：若这张卡仍与效果关联，则将其特殊召唤。
 function c20292186.spop(e,tp,eg,ep,ev,re,r,rp)
 	if e:GetHandler():IsRelateToEffect(e) then
-		-- 将自身以正面表示方式特殊召唤到持有者场上
+		-- 将这张卡以表侧表示特殊召唤到自己的场上，不检查召唤条件与苏生限制。
 		Duel.SpecialSummon(e:GetHandler(),0,tp,tp,false,false,POS_FACEUP)
 	end
 end
--- 判断当前回合是否为非持有者回合
+-- ③效果的发动条件：当前为对方回合。
 function c20292186.dcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 当前回合不是持有者回合
+	-- 判断当前回合玩家不是这张卡的控制者（即对方回合），满足③效果的条件。
 	return Duel.GetTurnPlayer()~=tp
 end
--- 创建一个影响对方的永续效果，禁止对方从额外卡组特殊召唤怪兽
+-- ③效果处理时：为对方玩家施加一个直到结束阶段的限制效果，使其不能从额外卡组特殊召唤怪兽。
 function c20292186.dop(e,tp,eg,ep,ev,re,r,rp)
-	-- 对方不能从额外卡组把怪兽特殊召唤
+	-- 这个回合，对方不能从额外卡组把怪兽特殊召唤。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
@@ -65,10 +65,10 @@ function c20292186.dop(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetReset(RESET_PHASE+PHASE_END)
 	e1:SetTargetRange(0,1)
 	e1:SetTarget(c20292186.sumlimit)
-	-- 将效果注册给指定玩家
+	-- 将该限制效果注册到决斗中，影响对方玩家，直到结束阶段重置。
 	Duel.RegisterEffect(e1,tp)
 end
--- 限制目标怪兽必须来自额外卡组
+-- 限制效果的判定条件：只有从额外卡组进行的特殊召唤会被禁止。
 function c20292186.sumlimit(e,c,sump,sumtype,sumpos,targetp,se)
 	return c:IsLocation(LOCATION_EXTRA)
 end

@@ -7,7 +7,7 @@
 -- ③：这张卡被送去墓地的场合，以自己墓地1张「影依」魔法·陷阱卡为对象才能发动。那张卡加入手卡。
 function c20366274.initial_effect(c)
 	c:EnableReviveLimit()
-	-- 设置该卡为影依融合怪兽，需要光属性的融合素材
+	-- 为这张卡注册影依融合召唤手续，指定融合素材为「影依」怪兽＋光属性怪兽。
 	aux.AddFusionProcShaddoll(c,ATTRIBUTE_LIGHT)
 	-- 这张卡用融合召唤才能从额外卡组特殊召唤。
 	local e2=Effect.CreateEffect(c)
@@ -48,74 +48,74 @@ function c20366274.initial_effect(c)
 	e5:SetOperation(c20366274.thop)
 	c:RegisterEffect(e5)
 end
--- 限制该卡只能通过融合召唤从额外卡组特殊召唤
+-- 判定特殊召唤的类型是否为融合召唤，只有融合召唤才满足这张卡的特殊召唤条件。
 function c20366274.splimit(e,se,sp,st)
 	return bit.band(st,SUMMON_TYPE_FUSION)==SUMMON_TYPE_FUSION
 end
--- 过滤函数，用于筛选卡组中可送去墓地的影依卡
+-- 筛选存在于卡组中的「影依」卡且可以被送去墓地的卡，作为效果处理时可选的送墓对象。
 function c20366274.tgfilter(c)
 	return c:IsSetCard(0x9d) and c:IsAbleToGrave()
 end
--- 判断是否满足①效果的发动条件，即卡组中是否存在至少一张影依卡
+-- 效果发动前的合法性检查：确认卡组中存在符合条件的「影依」卡，并设置本次连锁的送墓操作信息。
 function c20366274.tgtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断是否满足①效果的发动条件，即卡组中是否存在至少一张影依卡
+	-- 发动时判断卡组中是否存在至少1张符合条件的「影依」卡，若不存在则效果不能发动。
 	if chk==0 then return Duel.IsExistingMatchingCard(c20366274.tgfilter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置连锁操作信息，表示将要从卡组送去墓地一张卡
+	-- 设置本次效果的操作信息，声明效果处理时将从卡组把1张卡送去墓地。
 	Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,nil,1,tp,LOCATION_DECK)
 end
--- 执行①效果的处理，选择并把一张影依卡送去墓地
+-- 效果处理时，从卡组选择1张符合条件的「影依」卡送去墓地。
 function c20366274.tgop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要送去墓地的卡
+	-- 显示“请选择要送去墓地的卡”的选择提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
-	-- 从卡组中选择一张影依卡
+	-- 让玩家从自己的卡组中选出1张符合过滤条件的「影依」卡。
 	local g=Duel.SelectMatchingCard(tp,c20366274.tgfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的卡送去墓地
+		-- 将选出的「影依」卡以效果原因送入墓地。
 		Duel.SendtoGrave(g,REASON_EFFECT)
 	end
 end
--- 判断②效果是否可以发动，即战斗中的对方怪兽是否为特殊召唤
+-- ②效果发动条件：这张卡与特殊召唤的怪兽进行战斗的伤害步骤开始时，且战斗对象为特殊召唤怪兽。
 function c20366274.descon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local bc=c:GetBattleTarget()
 	return bc and bc:IsSummonType(SUMMON_TYPE_SPECIAL)
 end
--- 设置②效果的处理信息，表示将要破坏对方怪兽
+-- ②效果发动时无需取对象，设置操作信息：将本次战斗对象破坏。
 function c20366274.destg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置②效果的处理信息，表示将要破坏对方怪兽
+	-- 设置操作信息，声明将破坏那只战斗对象怪兽，数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,e:GetHandler():GetBattleTarget(),1,0,0)
 end
--- 执行②效果的处理，破坏对方怪兽
+-- 效果处理：若战斗对象仍存活且与本次战斗相关，则将其破坏。
 function c20366274.desop(e,tp,eg,ep,ev,re,r,rp)
 	local bc=e:GetHandler():GetBattleTarget()
 	if bc:IsRelateToBattle() then
-		-- 破坏对方怪兽
+		-- 将那只特殊召唤的怪兽以效果原因破坏。
 		Duel.Destroy(bc,REASON_EFFECT)
 	end
 end
--- 过滤函数，用于筛选墓地中可加入手牌的影依魔法·陷阱卡
+-- 筛选自己墓地里「影依」魔法·陷阱卡且能够加入手卡的卡，作为③效果的对象候选。
 function c20366274.thfilter(c)
 	return c:IsSetCard(0x9d) and c:IsType(TYPE_SPELL+TYPE_TRAP) and c:IsAbleToHand()
 end
--- 设置③效果的处理信息，表示将要从墓地选择一张影依魔法·陷阱卡加入手牌
+-- ③效果的目标选择：从自己墓地选择1张符合条件的「影依」魔法·陷阱卡作为对象，并设置回手牌操作信息。
 function c20366274.thtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and c20366274.thfilter(chkc) end
-	-- 判断是否满足③效果的发动条件，即墓地中是否存在至少一张影依魔法·陷阱卡
+	-- 发动时检查自己墓地中是否存在1张可成为效果对象的「影依」魔法·陷阱卡，且为取对象效果。
 	if chk==0 then return Duel.IsExistingTarget(c20366274.thfilter,tp,LOCATION_GRAVE,0,1,nil) end
-	-- 提示玩家选择要加入手牌的卡
+	-- 显示“请选择要加入手牌的卡”的选择提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 从墓地中选择一张影依魔法·陷阱卡
+	-- 让玩家从自己墓地选择1张符合条件的「影依」魔法·陷阱卡，并将它设为效果的对象。
 	local g=Duel.SelectTarget(tp,c20366274.thfilter,tp,LOCATION_GRAVE,0,1,1,nil)
-	-- 设置连锁操作信息，表示将要将一张卡加入手牌
+	-- 设置操作信息，声明将选择的卡加入手牌。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,1,0,0)
 end
--- 执行③效果的处理，将选中的卡加入手牌
+-- 效果处理：获取该效果选择的取对象卡，若仍与效果相关则将其加入手牌。
 function c20366274.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的目标卡
+	-- 获取这次效果发动时选中的对象卡。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 将目标卡加入手牌
+		-- 将对象卡以效果原因加入其持有者的手牌。
 		Duel.SendtoHand(tc,nil,REASON_EFFECT)
 	end
 end
