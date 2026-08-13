@@ -25,7 +25,7 @@ function c40663548.initial_effect(c)
 	e2:SetRange(LOCATION_MZONE)
 	e2:SetTargetRange(LOCATION_MZONE,0)
 	e2:SetCondition(c40663548.bdcon)
-	-- 设置效果目标为场上所有植物族怪兽
+	-- 设置该效果的适用对象为自己的植物族怪兽，即只有植物族怪兽才能享受此战斗伤害减免效果。
 	e2:SetTarget(aux.TargetBoolFunction(Card.IsRace,RACE_PLANT))
 	e2:SetValue(1)
 	c:RegisterEffect(e2)
@@ -43,70 +43,70 @@ function c40663548.initial_effect(c)
 	e3:SetOperation(c40663548.rmop)
 	c:RegisterEffect(e3)
 end
--- 过滤函数，用于判断是否为植物族且之前控制过该玩家的怪兽
+-- 过滤函数：判断被战斗破坏的怪兽是植物族，且其之前控制者是发动玩家自己，用于①的触发条件。
 function c40663548.cfilter(c,tp)
 	return c:IsRace(RACE_PLANT) and c:IsPreviousControler(tp)
 end
--- 判断是否有满足条件的植物族怪兽被战斗破坏
+-- ①的触发条件：本次被战斗破坏的怪兽组中存在至少1只满足自己植物族怪兽条件的怪兽。
 function c40663548.spcon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c40663548.cfilter,1,nil,tp)
 end
--- 设置特殊召唤和回复LP的处理信息
+-- ①发动合法性检查：自己主要怪兽区有空位，且这张卡在手牌可以被玩家tp特殊召唤。
 function c40663548.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断场上是否有足够的怪兽区域进行特殊召唤
+	-- 检查自己场上是否存在空余的主要怪兽区域，用于后续特殊召唤。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置特殊召唤的处理信息
+	-- 设置操作信息，登记本次效果将特殊召唤这张卡，供其他卡/时点检测。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
-	-- 设置回复LP的处理信息
+	-- 设置操作信息，登记本次效果将让自己回复500基本分。
 	Duel.SetOperationInfo(0,CATEGORY_RECOVER,nil,0,tp,500)
 end
--- 执行特殊召唤和回复LP的操作
+-- ①效果处理：先将这张卡特殊召唤，若特殊召唤成功则再回复500LP。
 function c40663548.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 判断卡片是否能被特殊召唤并执行特殊召唤
+	-- 判断这张卡仍与效果关联且特殊召唤成功，即成功以表侧表示特殊召唤到场上。
 	if c:IsRelateToEffect(e) and Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)~=0 then
-		-- 中断当前效果处理，使后续效果视为不同时处理
+		-- 中断当前效果处理，使特殊召唤和回复LP作为不同时点处理，避免错过时点。
 		Duel.BreakEffect()
-		-- 使玩家回复500基本分
+		-- 让tp玩家回复500基本分，回复原因视为效果（若被‘回复变成伤害’等效果替代则实际回复值为0）。
 		Duel.Recover(tp,500,REASON_EFFECT)
 	end
 end
--- 判断玩家基本分是否高于对方
+-- ②的永续效果条件：自己的基本分高于对方。
 function c40663548.bdcon(e)
 	local tp=e:GetHandlerPlayer()
-	-- 判断玩家基本分是否高于对方
+	-- 比较双方LP，返回自己LP是否大于对方LP。
 	return Duel.GetLP(tp)>Duel.GetLP(1-tp)
 end
--- 判断是否为玩家自身回复基本分
+-- ③的触发条件：本次回复基本分的玩家是自己。
 function c40663548.rmcon(e,tp,eg,ep,ev,re,r,rp)
 	return ep==tp
 end
--- 过滤函数，用于判断是否为正面表示的芳香族怪兽
+-- 过滤函数：判断怪兽为表侧表示且卡名含有「芳香」字段，用于统计自己场上的芳香怪兽数量。
 function c40663548.ctfilter(c)
 	return c:IsFaceup() and c:IsSetCard(0xc9)
 end
--- 设置除外对方墓地卡片的目标选择和处理信息
+-- ③的发动与目标选择：若指定对象则要求是对方墓地可除外的卡；发动时无需其他条件，计算自己场上芳香怪兽数量，并选择对方墓地1至该数量张可除外的卡作为对象。
 function c40663548.rmtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(1-tp) and chkc:IsAbleToRemove() end
 	if chk==0 then return true end
-	-- 计算玩家场上正面表示的芳香族怪兽数量
+	-- 获取自己场上的表侧表示「芳香」怪兽数量，作为③可除外对方墓地卡的数量上限。
 	local ct=Duel.GetMatchingGroupCount(c40663548.ctfilter,tp,LOCATION_MZONE,0,nil)
 	if ct>0 then
-		-- 提示玩家选择要除外的卡片
+		-- 向玩家显示选择卡片的提示，提示内容为“请选择要除外的卡”。
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
-		-- 选择对方墓地的卡片作为除外对象
+		-- 让玩家从对方墓地选择1到ct张可除外的卡作为效果对象。
 		local g=Duel.SelectTarget(tp,Card.IsAbleToRemove,tp,0,LOCATION_GRAVE,1,ct,nil)
-		-- 设置除外卡片的处理信息
+		-- 设置操作信息，登记本次效果将除外选择的对象卡。
 		Duel.SetOperationInfo(0,CATEGORY_REMOVE,g,g:GetCount(),0,0)
 	end
 end
--- 执行除外卡片的操作
+-- ③效果处理：将仍与效果关联的对象卡全部除外。
 function c40663548.rmop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁中被选择的卡片并过滤出与效果相关的卡片
+	-- 获取发动时选择的对象卡组，并筛选出仍然与效果关联的卡（未离场或未被无效）。
 	local g=Duel.GetChainInfo(0,CHAININFO_TARGET_CARDS):Filter(Card.IsRelateToEffect,nil,e)
 	if g:GetCount()>0 then
-		-- 将卡片除外
+		-- 将筛选出的卡以表侧表示从墓地除外。
 		Duel.Remove(g,POS_FACEUP,REASON_EFFECT)
 	end
 end

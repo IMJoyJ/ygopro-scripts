@@ -12,38 +12,38 @@ function c4072687.initial_effect(c)
 	e1:SetOperation(c4072687.activate)
 	c:RegisterEffect(e1)
 end
--- 检查怪兽是否为表侧表示且种族为魔法师族
+-- 过滤条件：卡为表侧表示且种族为魔法师族怪兽，用于检查自己场上是否存在满足发动条件的魔法师族怪兽。
 function c4072687.cfilter(c)
 	return c:IsFaceup() and c:IsRace(RACE_SPELLCASTER)
 end
--- 判断自己场上是否存在魔法师族怪兽
+-- 发动条件判定：自己场上存在至少1张表侧表示的魔法师族怪兽时才能发动。
 function c4072687.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查自己场上是否存在至少1只魔法师族怪兽
+	-- 检查自己主要怪兽区是否存在1张以上表侧表示且种族为魔法师族的怪兽。
 	return Duel.IsExistingMatchingCard(c4072687.cfilter,tp,LOCATION_MZONE,0,1,nil)
 end
--- 过滤手卡中可以特殊召唤的「占卜魔女」怪兽
+-- 过滤条件：手牌中属于「占卜魔女」（0x12e）系列且能够被玩家tp以效果e特殊召唤的怪兽。
 function c4072687.filter(c,e,tp)
 	return c:IsSetCard(0x12e) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 判断是否满足发动条件，包括场上有空位和手卡有符合条件的怪兽
+-- 发动时合法判定：chk==0时，要求自己主要怪兽区有空位，且手牌存在可特殊召唤的「占卜魔女」怪兽；满足则发动有效。
 function c4072687.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查自己场上是否有空位
+	-- 效果发动时检查自己主要怪兽区是否还有空格。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查手卡中是否存在符合条件的「占卜魔女」怪兽
+		-- 且手牌中存在至少1只符合特殊召唤条件的「占卜魔女」怪兽。
 		and Duel.IsExistingMatchingCard(c4072687.filter,tp,LOCATION_HAND,0,1,nil,e,tp) end
-	-- 设置发动时的操作信息，表示将要特殊召唤1只怪兽
+	-- 登记本次效果将进行从手牌特殊召唤1只怪兽的操作信息，供后续连锁/时点判断使用。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_HAND)
 end
--- 执行效果的处理流程，包括检查空位、提示选择、选择怪兽并特殊召唤
+-- 效果处理：若自己主要怪兽区仍有空位，则从手牌选择1只「占卜魔女」怪兽，以表侧表示特殊召唤到自己场上。
 function c4072687.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 如果自己场上没有空位则不执行效果
+	-- 处理前再次确认自己主要怪兽区有空位，防止处理时无空位而失败。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-	-- 提示玩家选择要特殊召唤的怪兽
+	-- 显示“请选择要特殊召唤的卡”的选择提示，引导玩家选择手牌中的「占卜魔女」怪兽。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 从手卡中选择1只符合条件的怪兽
+	-- 从手牌中选出1只满足特殊召唤条件的「占卜魔女」怪兽。
 	local g=Duel.SelectMatchingCard(tp,c4072687.filter,tp,LOCATION_HAND,0,1,1,nil,e,tp)
 	if g:GetCount()>0 then
-		-- 将选中的怪兽特殊召唤到场上
+		-- 将选择的怪兽以表侧表示特殊召唤到自己场上。
 		Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
 	end
 end

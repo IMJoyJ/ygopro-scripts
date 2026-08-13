@@ -21,34 +21,34 @@ function c40659562.initial_effect(c)
 	e2:SetOperation(c40659562.thop)
 	c:RegisterEffect(e2)
 end
--- 检查是否可以将此卡变为里侧表示且此卡在本回合未使用过该效果
+-- 起动效果的发动条件检测：检查这张卡当前能否变成里侧表示，且本回合尚未使用过该效果；若满足，则注册FlagEffect标记本回合已使用过此效果。
 function c40659562.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	if chk==0 then return c:IsCanTurnSet() and c:GetFlagEffect(40659562)==0 end
 	c:RegisterFlagEffect(40659562,RESET_EVENT+RESETS_STANDARD-RESET_TURN_SET+RESET_PHASE+PHASE_END,0,1)
-	-- 设置连锁操作信息为改变表示形式效果
+	-- 向系统登记本次操作信息：将这张卡的表示形式变更归类为改变表示形式效果（CATEGORY_POSITION），并指定对象为这张卡。
 	Duel.SetOperationInfo(0,CATEGORY_POSITION,c,1,0,0)
 end
--- 将此卡变为里侧守备表示
+-- 效果处理时的操作：若这张卡仍与效果相关且为表侧表示，则将其变成里侧守备表示。
 function c40659562.operation(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) and c:IsFaceup() then
-		-- 将目标怪兽变为里侧守备表示
+		-- 将这张卡的表示形式变更为里侧守备表示（POS_FACEDOWN_DEFENSE）。
 		Duel.ChangePosition(c,POS_FACEDOWN_DEFENSE)
 	end
 end
--- 设置连锁操作信息为将对方场上怪兽送入手牌
+-- 反转召唤成功时的诱发效果发动检测：无特殊条件，恒可通过；随后获取对方场上所有能加入手卡的怪兽，并登记回手牌的操作信息。
 function c40659562.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 获取对方场上所有可以送入手牌的怪兽
+	-- 获取对方场上（LOCATION_MZONE）全部满足“可以加入手卡”条件的怪兽，作为可能回手牌的对象。
 	local g=Duel.GetMatchingGroup(Card.IsAbleToHand,tp,0,LOCATION_MZONE,nil)
-	-- 设置连锁操作信息为将对方场上怪兽送入手牌
+	-- 向系统登记本次效果处理会将上述怪兽送回手牌（CATEGORY_TOHAND），数量为获取到的怪兽数量。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,g:GetCount(),0,0)
 end
--- 将对方场上所有可以送入手牌的怪兽送入手牌
+-- 反转召唤成功时效果的实际处理：重新获取当前对方场上的全部可加入手卡的怪兽，并将它们全部送去持有者手卡。
 function c40659562.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取对方场上所有可以送入手牌的怪兽
+	-- 获取对方场上所有可以加入手卡的怪兽，用于实际处理（避免使用发动时保存的旧对象，以场上现状为准）。
 	local g=Duel.GetMatchingGroup(Card.IsAbleToHand,tp,0,LOCATION_MZONE,nil)
-	-- 将怪兽送入手牌，原因来自效果
+	-- 将这些怪兽以效果原因（REASON_EFFECT）送回持有者的手卡。
 	Duel.SendtoHand(g,nil,REASON_EFFECT)
 end
