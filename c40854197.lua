@@ -4,14 +4,14 @@
 -- 这张卡不能作融合召唤以外的特殊召唤。这张卡的攻击力上升场上表侧表示存在的「元素英雄 绝对零度侠」以外的水属性怪兽数量×500的数值。这张卡从场上离开时，对方场上存在的怪兽全部破坏。
 function c40854197.initial_effect(c)
 	c:EnableReviveLimit()
-	-- 添加融合召唤手续，使用1只名字带有「英雄」的怪兽和1只水属性怪兽作为融合素材
+	-- 为这张卡添加融合召唤手续：以「英雄」字段怪兽和水属性怪兽各1只作为融合素材。
 	aux.AddFusionProcFun2(c,aux.FilterBoolFunction(Card.IsFusionSetCard,0x8),aux.FilterBoolFunction(Card.IsFusionAttribute,ATTRIBUTE_WATER),true)
 	-- 这张卡不能作融合召唤以外的特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
 	e1:SetCode(EFFECT_SPSUMMON_CONDITION)
-	-- 设置该效果为禁止通过其他方式特殊召唤（仅限融合召唤）
+	-- 设置特殊召唤条件为仅允许融合召唤（召唤类型必须为融合召唤）。
 	e1:SetValue(aux.fuslimit)
 	c:RegisterEffect(e1)
 	-- 这张卡从场上离开时，对方场上存在的怪兽全部破坏。
@@ -34,31 +34,31 @@ function c40854197.initial_effect(c)
 	c:RegisterEffect(e5)
 end
 c40854197.material_setcode=0x8
--- 定义用于计算攻击力提升的过滤函数，筛选场上正面表示的、非此卡本身的水属性怪兽
+-- 定义攻击力上升的筛选条件：场上表侧表示、不是「元素英雄 绝对零度侠」自身、且属性为水属性的怪兽。
 function c40854197.atkfilter(c)
 	return c:IsFaceup() and not c:IsCode(40854197) and c:IsAttribute(ATTRIBUTE_WATER)
 end
--- 计算满足条件的水属性怪兽数量，并乘以500作为攻击力提升值
+-- 计算攻击力上升值：统计双方场上满足条件的表侧水属性怪兽数量，每只上升500攻击力。
 function c40854197.atkup(e,c)
-	-- 获取满足过滤条件的水属性怪兽数量并乘以500
+	-- 返回满足条件的怪兽数量×500，作为这张卡的攻击力上升数值。
 	return Duel.GetMatchingGroupCount(c40854197.atkfilter,0,LOCATION_MZONE,LOCATION_MZONE,nil)*500
 end
--- 判断此卡离开场上的条件：必须是正面表示从场上离开
+-- 离场效果发动条件：这张卡在离场前处于表侧表示，且离开前的所在位置为场上。
 function c40854197.descon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsPreviousPosition(POS_FACEUP) and e:GetHandler():IsPreviousLocation(LOCATION_ONFIELD)
 end
--- 设置连锁处理时的破坏效果目标，将对方场上所有怪兽设为破坏对象
+-- 该效果发动时不取对象，仅登记破坏对方场上全部怪兽的操作信息；若为效果发动时点检查则直接通过。
 function c40854197.destg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 获取对方场上所有怪兽作为破坏目标
+	-- 获取对方场上当前存在的全部怪兽（作为效果处理时可能被破坏的全部对象）。
 	local g=Duel.GetMatchingGroup(aux.TRUE,tp,0,LOCATION_MZONE,nil)
-	-- 设置操作信息，指定破坏效果的处理对象为对方场上所有怪兽
+	-- 将本次破坏的操作信息登记为破坏对方场上全部怪兽，数量为对方场上怪兽总数，以便相关效果联动。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,g:GetCount(),0,0)
 end
--- 执行破坏效果，将对方场上所有怪兽破坏
+-- 效果处理时实际执行：再次获取对方场上当前存在的全部怪兽，并将其全部破坏。
 function c40854197.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取对方场上所有怪兽作为破坏目标
+	-- 获取对方场上当前存在的全部怪兽。
 	local g=Duel.GetMatchingGroup(aux.TRUE,tp,0,LOCATION_MZONE,nil)
-	-- 执行破坏操作，将目标怪兽以效果原因破坏
+	-- 以效果为原因将这些怪兽全部破坏。
 	Duel.Destroy(g,REASON_EFFECT)
 end
