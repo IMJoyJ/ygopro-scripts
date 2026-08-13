@@ -12,40 +12,40 @@ function c16272453.initial_effect(c)
 	e1:SetOperation(c16272453.activate)
 	c:RegisterEffect(e1)
 end
--- 过滤出场上的表侧表示的「忍法」卡
+-- 筛选条件：该卡为表侧表示且字段为「忍法」（0x61），用于检索场上符合条件的表侧忍法卡。
 function c16272453.cfilter(c)
 	return c:IsFaceup() and c:IsSetCard(0x61)
 end
--- 检查自己场上是否存在名字带有「忍法」的卡
+-- 发动条件函数：检查我方场上是否存在表侧表示且字段为「忍法」的卡，以满足“自己场上有名字带有「忍法」的卡存在的场合才能发动”。
 function c16272453.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查自己场上是否存在名字带有「忍法」的卡
+	-- 检查我方场上（LOCATION_ONFIELD）是否存在至少1张满足cfilter（表侧且字段「忍法」）的卡。
 	return Duel.IsExistingMatchingCard(c16272453.cfilter,tp,LOCATION_ONFIELD,0,1,nil)
 end
--- 过滤出场上的表侧表示的「忍法」卡
+-- 筛选条件：该卡为表侧表示且字段为「忍法」（0x61），用于后续处理时取得将被破坏的忍法卡。
 function c16272453.dfilter(c)
 	return c:IsFaceup() and c:IsSetCard(0x61)
 end
--- 设置连锁处理时的抽卡和破坏效果信息
+-- 发动时的目标/操作登记函数：检查是否可以抽卡，获取将破坏的忍法卡集合，并登记破坏与抽卡的操作信息。
 function c16272453.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断是否可以抽2张卡
+	-- 发动合法性检查：在chk==0时，确认玩家tp是否可以进行2张抽卡，若不能则效果不能发动。
 	if chk==0 then return Duel.IsPlayerCanDraw(tp,2) end
-	-- 获取自己场上所有名字带有「忍法」的卡
+	-- 取得我方场上除本卡（e:GetHandler()）以外所有表侧且字段为「忍法」的卡，作为本次破坏的对象集合。
 	local g=Duel.GetMatchingGroup(c16272453.dfilter,tp,LOCATION_ONFIELD,0,e:GetHandler())
-	-- 设置破坏效果的目标卡组
+	-- 登记破坏操作信息，targets为g（获取到的忍法卡），count为g中卡片数量，用于后续时点判定及防止“不能破坏”等互动。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,g:GetCount(),0,0)
-	-- 设置抽卡效果的目标和数量
+	-- 登记抽卡操作信息，预计当前玩家tp抽2张卡，category为CATEGORY_DRAW。
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,2)
 end
--- 执行效果处理，先破坏再抽卡
+-- 效果处理函数：实际破坏场上的忍法卡；若破坏成功，则中断效果后抽2张卡。
 function c16272453.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取自己场上所有名字带有「忍法」的卡（排除此卡）
+	-- 效果处理阶段重新取得当前场上我方除本卡以外的表侧「忍法」卡（通过aux.ExceptThisCard排除效果发动者自身），供破坏使用。
 	local g=Duel.GetMatchingGroup(c16272453.dfilter,tp,LOCATION_ONFIELD,0,aux.ExceptThisCard(e))
-	-- 将满足条件的卡全部破坏
+	-- 以效果原因（REASON_EFFECT）将g中的忍法卡破坏，返回值ct为实际被破坏的数量。
 	local ct=Duel.Destroy(g,REASON_EFFECT)
 	if ct>0 then
-		-- 中断当前效果处理，使后续效果视为错时点处理
+		-- 中断当前效果链，使破坏与后续抽卡视为两个独立处理，以产生错时点，避免两张处理同时进行影响时点判断。
 		Duel.BreakEffect()
-		-- 让玩家从卡组抽2张卡
+		-- 以效果原因（REASON_EFFECT）让玩家tp从卡组抽2张卡。
 		Duel.Draw(tp,2,REASON_EFFECT)
 	end
 end

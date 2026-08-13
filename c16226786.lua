@@ -24,51 +24,51 @@ function c16226786.initial_effect(c)
 	e2:SetOperation(c16226786.thop)
 	c:RegisterEffect(e2)
 end
--- 选择对方场上1只怪兽作为破坏对象
+-- ①效果的取对象处理：确认对象必须存在于对方怪兽区且由对方控制，选择对方场上1只怪兽作为对象，并设置破坏该对象的操作信息。
 function c16226786.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(1-tp) end
 	if chk==0 then return true end
-	-- 提示玩家选择要破坏的卡
+	-- 向玩家显示“请选择要破坏的卡”的提示信息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 选择满足条件的对方场上怪兽
+	-- 选择对方场上1只怪兽作为本次效果的对象。
 	local g=Duel.SelectTarget(tp,aux.TRUE,tp,0,LOCATION_MZONE,1,1,nil)
-	-- 设置连锁操作信息为破坏效果
+	-- 将破坏类别和所选对象写入操作信息，供效果处理及时点检测使用。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,g:GetCount(),0,0)
 end
--- 执行破坏效果
+-- ①效果处理阶段：取得对象并确认其仍与效果关联且仍由对方控制后，将其破坏。
 function c16226786.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁的破坏对象
+	-- 取出效果处理时记录的对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if tc and tc:IsRelateToEffect(e) and tc:IsControler(1-tp) then
-		-- 将对象怪兽破坏
+		-- 以效果原因将对象怪兽破坏送去墓地。
 		Duel.Destroy(tc,REASON_EFFECT)
 	end
 end
--- 判断此卡是否从手卡送去墓地
+-- ②效果的发动条件：这张卡从手卡被送去墓地。
 function c16226786.thcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsPreviousLocation(LOCATION_HAND)
 end
--- 过滤墓地中的反转怪兽（排除自身）
+-- ②效果的筛选条件：选择自己墓地中「深渊的暗杀者」以外的反转怪兽，且该怪兽可以被加入手卡。
 function c16226786.thfilter(c)
 	return c:IsType(TYPE_FLIP) and c:IsAbleToHand() and not c:IsCode(16226786)
 end
--- 选择墓地中的反转怪兽作为加入手牌的对象
+-- ②效果的取对象处理：选择自己墓地1只符合条件的反转怪兽作为对象，并设置加入手卡的操作信息。
 function c16226786.thtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and c16226786.thfilter(chkc) end
 	if chk==0 then return true end
-	-- 提示玩家选择要加入手牌的卡
+	-- 向玩家显示“请选择要加入手牌的卡”的提示信息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择满足条件的墓地反转怪兽
+	-- 选择自己墓地1只符合条件的反转怪兽作为本次效果的对象。
 	local g=Duel.SelectTarget(tp,c16226786.thfilter,tp,LOCATION_GRAVE,0,1,1,nil)
-	-- 设置连锁操作信息为回手牌效果
+	-- 将回手牌类别和所选对象写入操作信息，供效果处理及时点检测使用。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,g:GetCount(),0,0)
 end
--- 执行回手牌效果
+-- ②效果处理阶段：取得对象并确认其仍与效果关联后，将其加入手卡。
 function c16226786.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁的回手牌对象
+	-- 取出效果处理时记录的对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if tc and tc:IsRelateToEffect(e) then
-		-- 将对象怪兽加入手牌
+		-- 以效果原因将对象怪兽送回持有者手卡。
 		Duel.SendtoHand(tc,nil,REASON_EFFECT)
 	end
 end

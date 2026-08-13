@@ -4,7 +4,7 @@
 -- ①：以自己场上1只念动力族怪兽为对象，支付那个等级×200基本分才能发动。比那只怪兽等级高并持有相同属性的1只机械族怪兽从卡组加入手卡。
 -- ②：把这个回合没有送去墓地的这张卡从墓地除外，以自己的除外状态的念动力族怪兽和机械族怪兽各1只为对象才能发动。那之内的1只回到卡组最下面，另1只加入手卡。
 local s,id,o=GetID()
--- 注册两个效果：①起动效果（支付LP检索机械族怪兽）和②发动效果（从墓地除外自身，选择除外的念动力族和机械族怪兽各1只，1只回到卡组底端，另1只加入手卡）
+-- 创建并注册两个效果：e1对应①的魔法卡发动效果（取对象、检索机械族），e2对应②的墓地起动效果（除外自身、回收除外区怪兽）
 function s.initial_effect(c)
 	-- ①：以自己场上1只念动力族怪兽为对象，支付那个等级×200基本分才能发动。比那只怪兽等级高并持有相同属性的1只机械族怪兽从卡组加入手卡。
 	local e1=Effect.CreateEffect(c)
@@ -25,117 +25,117 @@ function s.initial_effect(c)
 	e2:SetRange(LOCATION_GRAVE)
 	e2:SetProperty(EFFECT_FLAG_CARD_TARGET)
 	e2:SetCountLimit(1,id+o)
-	-- 效果发动条件：这张卡在本回合没有送去墓地
+	-- 设置②效果只能在这张卡不是本回合被送去墓地的情况下发动，满足“这个回合没有送去墓地”的发动条件
 	e2:SetCondition(aux.exccon)
-	-- 效果发动费用：将这张卡从墓地除外
+	-- 设置②效果的发动代价为把墓地的这张卡除外（aux.bfgcost为通用的将自身除外作为cost的函数）
 	e2:SetCost(aux.bfgcost)
 	e2:SetTarget(s.tdtg)
 	e2:SetOperation(s.tdop)
 	c:RegisterEffect(e2)
 end
--- ①效果的发动费用处理：设置标签为100，表示可以发动
+-- ①效果的cost函数，这里仅作标记（e:SetLabel(100)），实际LP支付延迟到target函数选择对象后再进行
 function s.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	e:SetLabel(100)
 	if chk==0 then return true end
 end
--- ①效果的对象过滤器：对象必须是表侧表示的念动力族怪兽，且满足支付LP和检索机械族怪兽的条件
+-- 定义对象过滤函数：筛选自己场上表侧表示、念动力族、且玩家能支付其等级×200LP、并且卡组存在可检索的机械族怪兽的怪兽
 function s.cfilter(c,tp)
-	-- ①效果的对象必须是表侧表示的念动力族怪兽
+	-- 检查候选对象是否为表侧表示、念动力族，且玩家能够支付该怪兽等级×200的基本分
 	return c:IsFaceup() and c:IsRace(RACE_PSYCHO) and Duel.CheckLPCost(tp,c:GetLevel()*200)
-		-- ①效果的对象必须满足能检索比其等级高且属性相同的机械族怪兽的条件
+		-- 同时检查卡组中是否存在满足检索条件的机械族怪兽（等级高于该对象、属性相同、可加入手卡），确保效果不是空发
 		and Duel.IsExistingMatchingCard(s.thfilter,tp,LOCATION_DECK,0,1,nil,c:GetLevel(),c:GetAttribute())
 end
--- ①效果的检索过滤器：机械族怪兽，属性相同，等级高于目标怪兽，且能加入手牌
+-- 定义检索过滤条件：机械族怪兽，与对象属性相同（属性标志按位与非0），等级高于对象等级，且可以加入手卡
 function s.thfilter(c,lv,att)
 	return c:IsRace(RACE_MACHINE) and bit.band(c:GetAttribute(),att)~=0 and c:GetLevel()>lv and c:IsAbleToHand()
 end
--- ①效果的发动处理：选择对象怪兽，支付其等级×200LP，检索满足条件的机械族怪兽加入手牌
+-- ①效果的目标选择函数：核对对象合法性，选择自己场上1只念动力族怪兽，支付对应LP，并登记检索操作信息
 function s.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and s.cfilter(chkc,tp) end
 	if chk==0 then
 		if e:GetLabel()~=100 then return false end
 		e:SetLabel(0)
-		-- ①效果的发动条件：场上存在满足条件的念动力族怪兽作为对象
+		-- 检查自己场上是否存在满足s.cfilter条件的念动力族怪兽可以作为效果对象
 		return Duel.IsExistingTarget(s.cfilter,tp,LOCATION_MZONE,0,1,nil,tp)
 	end
 	e:SetLabel(0)
-	-- ①效果的发动提示：提示玩家选择效果对象
+	-- 向玩家显示“请选择效果的对象”的选卡提示
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)  --"请选择效果的对象"
-	-- ①效果的对象选择：选择1只满足条件的念动力族怪兽作为对象
+	-- 让玩家从自己场上选择1只满足条件的念动力族怪兽作为效果对象（同时登记为连锁对象）
 	local g=Duel.SelectTarget(tp,s.cfilter,tp,LOCATION_MZONE,0,1,1,nil,tp)
 	local tc=g:GetFirst()
-	-- ①效果的发动费用：支付对象怪兽等级×200LP
+	-- 支付所选怪兽等级×200的基本分，作为效果的发动代价
 	Duel.PayLPCost(tp,tc:GetLevel()*200)
-	-- ①效果的发动信息设置：设置将要检索的机械族怪兽数量和位置
+	-- 登记操作信息：本次效果将把1张卡从卡组加入手卡（用于效果发动后的时点检测）
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- ①效果的发动处理：检索满足条件的机械族怪兽加入手牌并确认
+-- ①效果处理函数：若对象仍然相关且表侧，则从卡组选择符合条件的机械族怪兽加入手卡，并让对方确认
 function s.activate(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- ①效果的发动处理：获取选择的对象怪兽
+	-- 取得效果处理时保存的对象（被选择的念动力族怪兽）
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) and tc:IsFaceup() then
-		-- ①效果的发动提示：提示玩家选择要加入手牌的机械族怪兽
+		-- 向玩家显示“请选择要加入手牌的卡”的选卡提示
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-		-- ①效果的发动处理：选择满足条件的机械族怪兽
+		-- 从卡组中选择1只满足s.thfilter条件的机械族怪兽（等级高于对象、属性相同、可加入手卡）
 		local g=Duel.SelectMatchingCard(tp,s.thfilter,tp,LOCATION_DECK,0,1,1,nil,tc:GetLevel(),tc:GetAttribute())
 		if g:GetCount()>0 then
-			-- ①效果的发动处理：将机械族怪兽加入手牌
+			-- 将选出的机械族怪兽加入手卡，原因为效果
 			Duel.SendtoHand(g,nil,REASON_EFFECT)
-			-- ①效果的发动处理：确认玩家手牌
+			-- 让对方玩家确认加入手卡的那张机械族怪兽
 			Duel.ConfirmCards(1-tp,g)
 		end
 	end
 end
--- ②效果的对象过滤器：除外状态的念动力族或机械族怪兽，且能成为效果对象
+-- 定义②效果对象的过滤条件：除外区表侧表示的怪兽，可作为效果对象，能回卡组或加入手卡，且种族为机械族或念动力族
 function s.tdfilter(c,e,tp)
 	return c:IsFaceup() and c:IsType(TYPE_MONSTER) and c:IsCanBeEffectTarget(e)
 		and (c:IsAbleToDeck() or c:IsAbleToHand(e,0,tp))
 		and c:IsRace(RACE_MACHINE+RACE_PSYCHO)
 end
--- ②效果的组合筛选器：选择的2张卡中必须有1张能回到卡组底端，1张能加入手牌，且分别属于念动力族和机械族
+-- 定义②效果选择2张对象时的组合过滤：需包含机械族和念动力族各至少1只，且至少1张能回卡组、至少1张能加入手卡
 function s.fselect(g,e,tp)
 	return g:IsExists(Card.IsAbleToDeck,1,nil) and g:IsExists(Card.IsAbleToHand,1,nil)
 		and g:IsExists(Card.IsRace,1,nil,RACE_MACHINE) and g:IsExists(Card.IsRace,1,nil,RACE_PSYCHO)
 end
--- ②效果的发动处理：选择2张满足条件的除外怪兽，设置为效果对象
+-- ②效果的目标选择函数：从除外区筛选符合条件的2张怪兽作为对象，登记回卡组和加入手卡各1张的操作信息
 function s.tdtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	-- ②效果的发动处理：获取所有满足条件的除外怪兽
+	-- 取得自己除外区中所有满足s.tdfilter条件的怪兽组（机械族或念动力族、可作为对象）
 	local dg=Duel.GetMatchingGroup(s.tdfilter,tp,LOCATION_REMOVED,0,nil,e,tp)
 	if chkc then return false end
 	if chk==0 then return dg:CheckSubGroup(s.fselect,2,2,e,tp) end
-	-- ②效果的发动提示：提示玩家选择要操作的卡
+	-- 向玩家显示“请选择要操作的卡”的选卡提示
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_OPERATECARD)  --"请选择要操作的卡"
 	local g=dg:SelectSubGroup(tp,s.fselect,false,2,2,e,tp)
-	-- ②效果的发动处理：设置效果对象卡组
+	-- 将选中的2张除外怪兽设置为当前连锁的对象，供处理时使用
 	Duel.SetTargetCard(g)
-	-- ②效果的发动信息设置：设置将要返回卡组底端的卡数量和位置
+	-- 登记操作信息：效果将把对象中的1张卡返回卡组
 	Duel.SetOperationInfo(0,CATEGORY_TODECK,g,1,0,0)
-	-- ②效果的发动信息设置：设置将要加入手牌的卡数量和位置
+	-- 登记操作信息：效果将把对象中的1张卡加入手卡
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,1,0,0)
 end
--- ②效果的返回卡组底端的过滤器：能回到卡组底端的怪兽
+-- 定义效果处理时选择“回卡组”的卡的过滤条件：能够返回卡组
 function s.thfilter2(c,e,tp)
 	return c:IsAbleToDeck()
 end
--- ②效果的发动处理：选择1张卡返回卡组底端，其余卡加入手牌
+-- ②效果处理函数：从对象中选择1张能回卡组的卡放到卡组最下面，另一张加入手卡，并让对方确认
 function s.tdop(e,tp,eg,ep,ev,re,r,rp)
-	-- ②效果的发动处理：获取当前连锁效果的对象卡组
+	-- 取得当前连锁的对象组，并过滤出仍然与效果相关的卡（RelateToEffect）
 	local tg=Duel.GetChainInfo(0,CHAININFO_TARGET_CARDS):Filter(Card.IsRelateToEffect,nil,e)
 	if tg:GetCount()>0 then
-		-- ②效果的发动提示：提示玩家选择要返回卡组的卡
+		-- 向玩家显示“请选择要返回卡组的卡”的选卡提示
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TODECK)  --"请选择要返回卡组的卡"
 		local sg=tg:FilterSelect(tp,s.thfilter2,1,1,nil,e,tp)
 		if sg:GetCount()>0 then
-			-- ②效果的发动处理：显示选择的卡被选为对象
+			-- 为选择要回卡组的卡显示取对象动画，并记录该卡被选择
 			Duel.HintSelection(sg)
-			-- ②效果的发动处理：将卡放回卡组底端
+			-- 将选中的1张卡放置到其持有者卡组的最下面
 			aux.PlaceCardsOnDeckBottom(tp,sg)
 			tg:Sub(sg)
 			if sg:GetFirst():IsLocation(LOCATION_DECK+LOCATION_EXTRA) and tg:GetCount()>0 and tg:GetFirst():IsAbleToHand() then
-				-- ②效果的发动处理：将剩余卡加入手牌
+				-- 将剩余的那张对象卡加入手卡，原因为效果
 				Duel.SendtoHand(tg,nil,REASON_EFFECT)
-				-- ②效果的发动处理：确认玩家手牌
+				-- 让对方玩家确认加入手卡的那张卡
 				Duel.ConfirmCards(1-tp,tg)
 			end
 		end

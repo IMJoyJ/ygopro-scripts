@@ -29,56 +29,56 @@ function c16279989.initial_effect(c)
 	e3:SetOperation(c16279989.thop)
 	c:RegisterEffect(e3)
 end
--- 过滤函数，用于判断场上是否存在名字带有「鬼计」的表侧表示怪兽。
+-- 判断怪兽是否为表侧表示且名字带有「鬼计」字段，用于确认场上是否存在可满足召唤条件的鬼计怪兽。
 function c16279989.sfilter(c)
 	return c:IsFaceup() and c:IsSetCard(0x8d)
 end
--- 召唤条件函数，判断自己场上是否不存在名字带有「鬼计」的怪兽。
+-- 不存在表侧表示且名字带有「鬼计」的怪兽时，此卡的召唤限制效果适用，即不能表侧表示召唤。
 function c16279989.sumcon(e)
-	-- 判断自己场上是否不存在名字带有「鬼计」的怪兽。
+	-- 以效果控制者为视角检查自己主要怪兽区是否存在至少1只表侧表示且名字带有「鬼计」的怪兽；若不存在则返回true，使禁止召唤效果生效。
 	return not Duel.IsExistingMatchingCard(c16279989.sfilter,e:GetHandlerPlayer(),LOCATION_MZONE,0,1,nil)
 end
--- 设置里侧守备表示效果的发动条件和处理函数。
+-- 起动效果的发动条件与操作登记：确认此卡可以变成里侧守备表示且本回合尚未使用过该效果；通过后登记1回合1次的标志，并设置将改变表示形式的操作信息。
 function c16279989.postg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	if chk==0 then return c:IsCanTurnSet() and c:GetFlagEffect(16279989)==0 end
 	c:RegisterFlagEffect(16279989,RESET_EVENT+RESETS_STANDARD-RESET_TURN_SET+RESET_PHASE+PHASE_END,0,1)
-	-- 设置连锁操作信息，表示将要改变这张卡的表示形式。
+	-- 登记操作信息：本次连锁将把此卡（1张怪兽）改变表示形式，用于相关规则检测。
 	Duel.SetOperationInfo(0,CATEGORY_POSITION,c,1,0,0)
 end
--- 里侧守备表示效果的处理函数，将卡变为里侧守备表示。
+-- 效果处理：若此卡仍与效果关联且处于表侧表示，则将其变成里侧守备表示。
 function c16279989.posop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) and c:IsFaceup() then
-		-- 将目标怪兽变为里侧守备表示。
+		-- 将此卡直接变更为里侧守备表示。
 		Duel.ChangePosition(c,POS_FACEDOWN_DEFENSE)
 	end
 end
--- 战斗伤害效果的发动条件，判断造成战斗伤害的玩家是否为对方。
+-- 战斗伤害判定：只有对方基本分受到此卡造成的战斗伤害时，检索效果才满足发动条件。
 function c16279989.thcon(e,tp,eg,ep,ev,re,r,rp)
 	return ep~=tp
 end
--- 过滤函数，用于检索卡组中名字带有「鬼计」的魔法或陷阱卡。
+-- 检索候选卡筛选：卡组中1张名字带有「鬼计」的魔法·陷阱卡，且该卡能够加入手卡。
 function c16279989.filter(c)
 	return c:IsSetCard(0x8d) and c:IsType(TYPE_SPELL+TYPE_TRAP) and c:IsAbleToHand()
 end
--- 检索效果的发动条件和处理函数。
+-- 发动合法性检查及操作登记：确认卡组存在至少1张符合条件的「鬼计」魔法·陷阱卡，并登记将1张卡加入手卡的操作信息。
 function c16279989.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查卡组中是否存在至少1张满足条件的魔法或陷阱卡。
+	-- 在发动时点检查卡组是否存在至少1张符合条件的「鬼计」魔法·陷阱卡；若不存在则不能发动。
 	if chk==0 then return Duel.IsExistingMatchingCard(c16279989.filter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置连锁操作信息，表示将要将卡从卡组加入手牌。
+	-- 登记操作信息：效果处理时从卡组将1张卡加入手卡（因对象在处理时才选择，此处目标暂为nil）。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 检索效果的处理函数，选择并加入手牌，然后确认对方看到该卡。
+-- 效果处理：提示玩家从卡组选择符合条件的「鬼计」魔法·陷阱卡加入手卡，并向对方展示所选的卡。
 function c16279989.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 向玩家提示“请选择要加入手牌的卡”。
+	-- 向玩家显示选择提示，提示其选择要加入手卡的卡（HINTMSG_ATOHAND）。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 从卡组中选择1张满足条件的魔法或陷阱卡。
+	-- 从己方卡组中选择1张满足filter条件的卡（即符合条件的「鬼计」魔法·陷阱卡）。
 	local g=Duel.SelectMatchingCard(tp,c16279989.filter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的卡以效果原因送入手牌。
+		-- 将选中的卡以效果原因加入其持有者的手卡。
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 向对方确认所选的卡。
+		-- 将加入手卡的卡展示给对方玩家确认。
 		Duel.ConfirmCards(1-tp,g)
 	end
 end

@@ -5,7 +5,7 @@
 -- ②：1回合1次，自己对「调皮宝贝」融合怪兽的融合召唤成功的场合才能发动。自己场上的全部怪兽的攻击力上升500。
 -- ③：1回合1次，自己对「调皮宝贝」连接怪兽的连接召唤成功的场合才能发动。对方场上的全部怪兽的攻击力下降500。
 function c16269385.initial_effect(c)
-	-- ①：作为这张卡的发动时的效果处理，可以从卡组把1只「调皮宝贝」怪兽加入手卡。
+	-- 这个卡名的卡在1回合只能发动1张。①：作为这张卡的发动时的效果处理，可以从卡组把1只「调皮宝贝」怪兽加入手卡。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -40,46 +40,46 @@ function c16269385.initial_effect(c)
 	e3:SetOperation(c16269385.atkop2)
 	c:RegisterEffect(e3)
 end
--- 检索满足条件的「调皮宝贝」怪兽卡片组
+-- 定义检索筛选函数：卡片必须是怪兽卡，且属于「调皮宝贝」系列字段，并且能够加入手卡，才能作为①效果从卡组检索的对象。
 function c16269385.thfilter(c)
 	return c:IsType(TYPE_MONSTER) and c:IsSetCard(0x120) and c:IsAbleToHand()
 end
--- 发动时的效果处理，从卡组检索1只「调皮宝贝」怪兽加入手牌
+-- ①效果的发动时处理：从卡组中筛选出符合条件的「调皮宝贝」怪兽；若存在且玩家选择发动检索，则提示选卡，将选中的1张加入手卡，并向对方展示。
 function c16269385.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取满足条件的「调皮宝贝」怪兽卡片组
+	-- 从卡组中获取所有满足thfilter筛选条件的「调皮宝贝」怪兽，作为本次检索的候选卡组。
 	local g=Duel.GetMatchingGroup(c16269385.thfilter,tp,LOCATION_DECK,0,nil)
-	-- 判断是否满足检索条件并询问玩家是否发动
+	-- 若候选卡组不为空，且玩家选择“是”（即决定进行检索），则继续执行后面的选卡和加入手卡操作。
 	if g:GetCount()>0 and Duel.SelectYesNo(tp,aux.Stringid(16269385,0)) then  --"是否把「调皮宝贝」怪兽加入手卡？"
-		-- 提示玩家选择要加入手牌的卡
+		-- 向玩家发送“请选择要加入手牌的卡”的选择提示，用于后续从候选卡组中选择1张卡。
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
 		local sg=g:Select(tp,1,1,nil)
-		-- 将选择的卡片送入手牌
+		-- 将选中的「调皮宝贝」怪兽以效果原因送入其持有者的手卡。
 		Duel.SendtoHand(sg,nil,REASON_EFFECT)
-		-- 向对方确认送入手牌的卡片
+		-- 将加入手卡的卡片展示给对方玩家确认，确保信息公开。
 		Duel.ConfirmCards(1-tp,sg)
 	end
 end
--- 判断是否为「调皮宝贝」怪兽且满足召唤类型条件
+-- 定义特殊召唤成功怪兽的筛选条件：该怪兽必须是表侧表示、属于「调皮宝贝」系列、召唤类型为指定类型（融合或连接），并且其召唤玩家是tp。
 function c16269385.cfilter(c,tp,sumt)
 	return c:IsFaceup() and c:IsSetCard(0x120) and c:IsSummonType(sumt) and c:IsSummonPlayer(tp)
 end
--- 判断是否有「调皮宝贝」融合怪兽特殊召唤成功
+-- ②效果的触发条件：本次特殊召唤成功的怪兽组中，存在至少1只由tp以融合召唤方式特殊召唤的表侧表示「调皮宝贝」怪兽。
 function c16269385.atkcon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c16269385.cfilter,1,nil,tp,SUMMON_TYPE_FUSION)
 end
--- 准备发动效果，检查自己场上是否有表侧表示怪兽
+-- ②效果的发动目标检查：己方场上必须存在至少1只表侧表示怪兽，才能发动该效果（用于后续给己方全部怪兽上升攻击力）。
 function c16269385.atktg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查自己场上是否有表侧表示怪兽
+	-- 检查己方场上是否存在至少1只表侧表示怪兽，若不存在则效果不能发动。
 	if chk==0 then return Duel.IsExistingMatchingCard(Card.IsFaceup,tp,LOCATION_MZONE,0,1,nil) end
 end
--- 将自己场上所有表侧表示怪兽的攻击力上升500
+-- ②效果处理：获取己方场上的全部表侧表示怪兽，为每一只怪兽临时赋予攻击力上升500的效果。
 function c16269385.atkop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取自己场上所有表侧表示怪兽
+	-- 获取己方场上的全部表侧表示怪兽，作为攻击力上升的对象集合。
 	local g=Duel.GetMatchingGroup(Card.IsFaceup,tp,LOCATION_MZONE,0,nil)
-	-- 遍历自己场上所有表侧表示怪兽
+	-- 遍历上一步获取的己方表侧表示怪兽组，依次对每只怪兽施加攻击力上升效果。
 	for tc in aux.Next(g) do
-		-- 给目标怪兽增加500攻击力
+		-- 自己场上的全部怪兽的攻击力上升500。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)
@@ -88,23 +88,23 @@ function c16269385.atkop(e,tp,eg,ep,ev,re,r,rp)
 		tc:RegisterEffect(e1)
 	end
 end
--- 判断是否有「调皮宝贝」连接怪兽特殊召唤成功
+-- ③效果的触发条件：本次特殊召唤成功的怪兽组中，存在至少1只由tp以连接召唤方式特殊召唤的表侧表示「调皮宝贝」怪兽。
 function c16269385.atkcon2(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c16269385.cfilter,1,nil,tp,SUMMON_TYPE_LINK)
 end
--- 准备发动效果，检查对方场上是否有表侧表示怪兽
+-- ③效果的发动目标检查：对方场上必须存在至少1只表侧表示怪兽，才能发动该效果（用于后续给对方场上全部怪兽下降攻击力）。
 function c16269385.atktg2(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查对方场上是否有表侧表示怪兽
+	-- 检查对方场上是否存在至少1只表侧表示怪兽，若不存在则效果不能发动。
 	if chk==0 then return Duel.IsExistingMatchingCard(Card.IsFaceup,tp,0,LOCATION_MZONE,1,nil) end
 end
--- 将对方场上所有表侧表示怪兽的攻击力下降500
+-- ③效果处理：获取对方场上的全部表侧表示怪兽，为每一只怪兽临时赋予攻击力下降500的效果。
 function c16269385.atkop2(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取对方场上所有表侧表示怪兽
+	-- 获取对方场上的全部表侧表示怪兽，作为攻击力下降的对象集合。
 	local g=Duel.GetMatchingGroup(Card.IsFaceup,tp,0,LOCATION_MZONE,nil)
-	-- 遍历对方场上所有表侧表示怪兽
+	-- 遍历上一步获取的对方表侧表示怪兽组，依次对每只怪兽施加攻击力下降效果。
 	for tc in aux.Next(g) do
-		-- 给目标怪兽减少500攻击力
+		-- 对方场上的全部怪兽的攻击力下降500。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)

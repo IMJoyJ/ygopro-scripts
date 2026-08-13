@@ -13,25 +13,25 @@ function c16222645.initial_effect(c)
 	e1:SetOperation(c16222645.desop)
 	c:RegisterEffect(e1)
 end
--- 检查攻击目标是否为里侧守备表示的怪兽：获取攻击目标，判断当前卡是攻击者且目标存在、里侧表示且守备表示。
+-- 定义效果发动条件：攻击者为这张卡且攻击对象是里侧守备表示的怪兽时才满足触发条件。
 function c16222645.descon(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前战斗中的攻击目标怪兽。
+	-- 获取当前战斗的攻击对象怪兽并存入局部变量d。
 	local d=Duel.GetAttackTarget()
-	-- 判断当前卡是攻击者且攻击目标存在、为里侧守备表示。
+	-- 判定攻击者是否为效果持有者自身，且攻击对象存在、是里侧守备表示。
 	return e:GetHandler()==Duel.GetAttacker() and d and d:IsFacedown() and d:IsDefensePos()
 end
--- 设置破坏效果的操作信息，指定目标为攻击目标怪兽，数量为1。
+-- 定义效果发动时的目标处理：该效果为必发，无需取对象，直接设置破坏攻击对象的操作信息。
 function c16222645.destg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置CATEGORY_DESTROY分类的操作信息，目标为攻击目标怪兽，数量1，目标玩家0，位置0。
+	-- 设置操作信息：本次连锁将以效果破坏攻击对象1只怪兽，破坏分类为CATEGORY_DESTROY，不取对象。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,Duel.GetAttackTarget(),1,0,0)
 end
--- 执行破坏操作：获取攻击目标，若其仍与战斗关联则以效果原因破坏。
+-- 定义效果处理函数：在效果结算时，若攻击对象仍与本次战斗关联，则将其破坏。
 function c16222645.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 再次获取攻击目标怪兽（用于效果处理阶段）。
+	-- 在效果处理时再次获取攻击对象怪兽。
 	local d=Duel.GetAttackTarget()
 	if d:IsRelateToBattle() then
-		-- 以REASON_EFFECT原因破坏攻击目标怪兽。
+		-- 以效果破坏该攻击对象怪兽。
 		Duel.Destroy(d,REASON_EFFECT)
 	end
 end
