@@ -39,52 +39,52 @@ function c22082163.initial_effect(c)
 	e5:SetRange(LOCATION_SZONE)
 	c:RegisterEffect(e5)
 end
--- 检索满足条件的卡片组，即名字带有「亚马逊」且能特殊召唤的怪兽。
+-- 选择墓地中满足“名字带有「亚马逊」且可以攻击表示特殊召唤”的怪兽作为候选对象的过滤条件。
 function c22082163.filter(c,e,tp)
 	return c:IsSetCard(0x4) and c:IsCanBeSpecialSummoned(e,0,tp,false,false,POS_FACEUP_ATTACK)
 end
--- 判断是否满足发动条件，即场上存在满足条件的怪兽且有空位。
+-- 发动时确认我方怪兽区有空位且墓地存在可特殊召唤的亚马逊怪兽；若满足则选择1只墓地怪兽作为对象。
 function c22082163.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and c22082163.filter(chkc,e,tp) end
-	-- 判断场上是否存在满足条件的怪兽。
+	-- 检查我方主要怪兽区是否存在可用的空格。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 判断场上是否存在满足条件的怪兽。
+		-- 检查墓地是否存在至少1只满足条件且能成为效果对象的亚马逊怪兽。
 		and Duel.IsExistingTarget(c22082163.filter,tp,LOCATION_GRAVE,0,1,nil,e,tp) end
-	-- 提示玩家选择要特殊召唤的卡。
+	-- 向玩家显示“请选择要特殊召唤的卡”的选择提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 选择满足条件的怪兽作为目标。
+	-- 从自己墓地选择1只名字带有「亚马逊」的怪兽作为效果对象，并将其登记为当前连锁的对象。
 	local g=Duel.SelectTarget(tp,c22082163.filter,tp,LOCATION_GRAVE,0,1,1,nil,e,tp)
-	-- 设置操作信息，确定特殊召唤的怪兽。
+	-- 设置本次效果处理中包含特殊召唤1只怪兽的操作信息。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,1,0,0)
 end
--- 执行特殊召唤操作，将目标怪兽特殊召唤到场上。
+-- 效果处理时，若这张卡与对象卡仍与效果关联，则将对象怪兽表侧攻击表示特殊召唤，并设为这张卡的永续对象。
 function c22082163.operation(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取当前连锁的目标怪兽。
+	-- 获取效果发动时选择的对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if c:IsRelateToEffect(e) and tc:IsRelateToEffect(e)
-		-- 将目标怪兽特殊召唤到场上。
+		-- 将对象怪兽以表侧攻击表示进行特殊召唤（作为特殊召唤流程的步骤）。
 		and Duel.SpecialSummonStep(tc,0,tp,tp,false,false,POS_FACEUP_ATTACK) then
 		c:SetCardTarget(tc)
 	end
-	-- 完成特殊召唤流程。
+	-- 完成整个特殊召唤流程，正式结算特殊召唤。
 	Duel.SpecialSummonComplete()
 end
--- 当此卡离开场时，破坏目标怪兽。
+-- 这张卡离场时，若其永续对象怪兽仍在场上，则将该怪兽破坏。
 function c22082163.desop(e,tp,eg,ep,ev,re,r,rp)
 	local tc=e:GetHandler():GetFirstCardTarget()
 	if tc and tc:IsLocation(LOCATION_MZONE) then
-		-- 破坏目标怪兽。
+		-- 以效果原因破坏这张卡的永续对象怪兽。
 		Duel.Destroy(tc,REASON_EFFECT)
 	end
 end
--- 当目标怪兽被破坏时，破坏此卡。
+-- 当这张卡的永续对象怪兽因被破坏而离场时，触发条件成立。
 function c22082163.descon2(e,tp,eg,ep,ev,re,r,rp)
 	local tc=e:GetHandler():GetFirstCardTarget()
 	return tc and eg:IsContains(tc) and tc:IsReason(REASON_DESTROY)
 end
--- 当此卡被破坏时，破坏此卡。
+-- 当对象怪兽被破坏时，将这张卡自身破坏。
 function c22082163.desop2(e,tp,eg,ep,ev,re,r,rp)
-	-- 破坏此卡。
+	-- 以效果原因破坏这张卡（亚马逊的意志）。
 	Duel.Destroy(e:GetHandler(),REASON_EFFECT)
 end

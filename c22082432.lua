@@ -4,11 +4,11 @@
 -- ①：把基本分支付一半，把自己场上1只怪兽解放才能发动。自己的手卡·除外状态的1只「太阳神之翼神龙」无视召唤条件特殊召唤。这个效果特殊召唤的怪兽的攻击力·守备力变成4000，不能攻击，下个回合的结束阶段回到手卡。
 -- ②：这张卡从场上送去墓地的场合发动。选自己场上1只「太阳神之翼神龙」，那只怪兽以外的场上的怪兽全部送去墓地。
 local s,id,o=GetID()
--- 初始化效果，注册两个效果：①效果和②效果
+-- 该函数为卡片初始化效果注册：①效果为可发动的魔法卡效果，②效果为从场上送去墓地时触发的必发效果。
 function s.initial_effect(c)
-	-- 记录该卡拥有「太阳神之翼神龙」的卡名
+	-- 登记此卡上记载的卡名「太阳神之翼神龙」（卡号10000010），用于相关规则判定。
 	aux.AddCodeList(c,10000010)
-	-- ①：把基本分支付一半，把自己场上1只怪兽解放才能发动。自己的手卡·除外状态的1只「太阳神之翼神龙」无视召唤条件特殊召唤。这个效果特殊召唤的怪兽的攻击力·守备力变成4000，不能攻击，下个回合的结束阶段回到手卡。
+	-- ①效果：把基本分支付一半，把自己场上1只怪兽解放才能发动。自己的手卡·除外状态的1只「太阳神之翼神龙」无视召唤条件特殊召唤。这个效果特殊召唤的怪兽的攻击力·守备力变成4000，不能攻击，下个回合的结束阶段回到手卡。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -19,7 +19,7 @@ function s.initial_effect(c)
 	e1:SetTarget(s.target)
 	e1:SetOperation(s.activate)
 	c:RegisterEffect(e1)
-	-- ②：这张卡从场上送去墓地的场合发动。选自己场上1只「太阳神之翼神龙」，那只怪兽以外的场上的怪兽全部送去墓地。
+	-- ②效果：这张卡从场上送去墓地的场合发动。选自己场上1只「太阳神之翼神龙」，那只怪兽以外的场上的怪兽全部送去墓地。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(id,1))
 	e2:SetCategory(CATEGORY_TOGRAVE)
@@ -31,57 +31,57 @@ function s.initial_effect(c)
 	e2:SetOperation(s.tgop)
 	c:RegisterEffect(e2)
 end
--- 检查场上是否有可解放的怪兽
+-- 解放过滤函数：检查怪兽被解放后自己场上是否仍有空位，且该怪兽是自己的表侧或里侧表示怪兽（可解放）。
 function s.cfilter(c,tp)
-	-- 检查场上是否有可解放的怪兽
+	-- 满足被解放后主怪兽区仍有空余格子，并且该怪兽是自己控制或是表侧表示，才可作为解放候选。
 	return Duel.GetMZoneCount(tp,c)>0 and (c:IsControler(tp) or c:IsFaceup())
 end
--- 支付一半LP并选择1只怪兽进行解放
+-- ①效果的发动代价：支付一半基本分，并从自己场上解放1只满足条件的怪兽；chk=0时只检查能否支付代价。
 function s.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	e:SetLabel(1)
-	-- 检查是否满足解放条件
+	-- 在代价检查阶段，确认自己场上是否存在1只可解放且解放后不占满怪兽区的怪兽。
 	if chk==0 then return Duel.CheckReleaseGroup(tp,s.cfilter,1,nil,tp) end
-	-- 支付一半LP
+	-- 支付当前LP一半的数值作为发动代价。
 	Duel.PayLPCost(tp,math.floor(Duel.GetLP(tp)/2))
-	-- 选择1只怪兽进行解放
+	-- 从自己场上选择1只符合解放条件的怪兽作为解放对象。
 	local rg=Duel.SelectReleaseGroup(tp,s.cfilter,1,1,nil,tp)
-	-- 执行解放操作
+	-- 将选择的怪兽解放，解放原因为代价（REASON_COST）。
 	Duel.Release(rg,REASON_COST)
 end
--- 筛选可特殊召唤的「太阳神之翼神龙」
+-- 特殊召唤候选过滤：选择手卡或除外状态的表侧表示的「太阳神之翼神龙」，且允许无视召唤条件进行特殊召唤。
 function s.spfilter(c,e,tp)
 	return c:IsFaceupEx() and c:IsCode(10000010) and c:IsCanBeSpecialSummoned(e,0,tp,true,false)
 end
--- 设置①效果的发动条件和目标
+-- ①效果的发动目标判断与操作信息设定：确认存在可特殊召唤的「太阳神之翼神龙」且自己有怪兽区空位；同时标记本次特殊召唤的操作信息。
 function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then
 		if e:GetLabel()==1 then
 			e:SetLabel(0)
-			-- 检查是否有满足条件的「太阳神之翼神龙」
+			-- 检查手卡或除外状态是否存在1只满足特殊召唤条件的「太阳神之翼神龙」。
 			return Duel.IsExistingMatchingCard(s.spfilter,tp,LOCATION_HAND+LOCATION_REMOVED,0,1,nil,e,tp)
 		else
-			-- 检查场上是否有空怪兽区
+			-- 检查自己场上是否有可用的怪兽区空格。
 			return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-				-- 检查是否有满足条件的「太阳神之翼神龙」
+				-- 同时确认手卡或除外状态存在可特殊召唤的「太阳神之翼神龙」。
 				and Duel.IsExistingMatchingCard(s.spfilter,tp,LOCATION_HAND+LOCATION_REMOVED,0,1,nil,e,tp)
 		end
 	end
 	e:SetLabel(0)
-	-- 设置操作信息，表示将特殊召唤1只「太阳神之翼神龙」
+	-- 设定效果处理时要从手卡或除外区特殊召唤1只怪兽的操作信息。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_HAND+LOCATION_REMOVED)
 end
--- 执行①效果的处理，特殊召唤「太阳神之翼神龙」并设置其属性
+-- ①效果处理：特殊召唤手卡/除外状态的「太阳神之翼神龙」，并对其附加攻击力·守备力变为4000、不能攻击、下个结束阶段回手卡的效果。
 function s.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查场上是否有空怪兽区
+	-- 效果处理前再次确认自己场上仍有怪兽区空格，否则直接结束处理。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-	-- 提示玩家选择要特殊召唤的卡
+	-- 弹出提示，让玩家选择要特殊召唤的卡片。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 选择1只「太阳神之翼神龙」进行特殊召唤
+	-- 从自己的手卡或除外区选择1只符合条件的「太阳神之翼神龙」。
 	local g=Duel.SelectMatchingCard(tp,s.spfilter,tp,LOCATION_HAND+LOCATION_REMOVED,0,1,1,nil,e,tp)
 	local tc=g:GetFirst()
-	-- 执行特殊召唤操作
+	-- 将选择的「太阳神之翼神龙」无视召唤条件以表侧攻击表示特殊召唤，并确认召唤成功。
 	if tc and Duel.SpecialSummon(tc,0,tp,tp,true,false,POS_FACEUP)~=0 then
-		-- 设置特殊召唤怪兽的攻击力为4000并设置守备力为4000，设置不能攻击，下个回合结束时回到手卡
+		-- 该效果特殊召唤的怪兽的攻击力·守备力变成4000，并为其打上标记以便下个回合结束阶段回到手卡。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_SET_ATTACK)
@@ -92,72 +92,72 @@ function s.activate(e,tp,eg,ep,ev,re,r,rp)
 		e2:SetCode(EFFECT_SET_DEFENSE)
 		tc:RegisterEffect(e2,true)
 		tc:RegisterFlagEffect(id,RESET_EVENT+RESETS_STANDARD,0,1)
-		-- 设置特殊召唤怪兽不能攻击
+		-- 该效果特殊召唤的怪兽不能攻击。
 		local e3=Effect.CreateEffect(e:GetHandler())
 		e3:SetType(EFFECT_TYPE_SINGLE)
 		e3:SetCode(EFFECT_CANNOT_ATTACK)
 		e3:SetProperty(EFFECT_FLAG_IGNORE_IMMUNE)
 		e3:SetReset(RESET_EVENT+RESETS_STANDARD)
 		tc:RegisterEffect(e3,true)
-		-- 设置特殊召唤怪兽在下个回合结束时回到手卡
+		-- 设置下个回合结束阶段将该怪兽回到手卡的持续效果；同时包含②效果的后半部分：选自己场上1只「太阳神之翼神龙」，那只怪兽以外的场上的怪兽全部送去墓地。
 		local e4=Effect.CreateEffect(e:GetHandler())
 		e4:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 		e4:SetCode(EVENT_PHASE+PHASE_END)
 		e4:SetCountLimit(1)
 		e4:SetProperty(EFFECT_FLAG_IGNORE_IMMUNE)
-		-- 设置下个回合的回合数
+		-- 记录下个回合的回合数，用于结束阶段判定回到手卡的时机。
 		e4:SetLabel(Duel.GetTurnCount()+1)
 		e4:SetLabelObject(tc)
 		e4:SetCondition(s.thcon)
 		e4:SetOperation(s.thop)
-		-- 注册效果，用于在下个回合结束时将怪兽送回手卡
+		-- 在场地区域注册该持续效果，使其在每个结束阶段检查是否回手。
 		Duel.RegisterEffect(e4,tp)
 	end
 end
--- 判断是否为下个回合结束阶段
+-- 回手效果的条件：该怪兽仍带有特殊召唤标记，且当前回合数等于预设的下个结束阶段对应回合数；若标记消失则取消该效果。
 function s.thcon(e,tp,eg,ep,ev,re,r,rp)
 	local tc=e:GetLabelObject()
 	if tc:GetFlagEffect(id)~=0 then
-		-- 判断是否为下个回合
+		-- 判断当前回合是否为预先记录的下个回合，以此决定是否到结束阶段回手。
 		return Duel.GetTurnCount()==e:GetLabel()
 	else
 		e:Reset()
 		return false
 	end
 end
--- 将怪兽送回手卡
+-- 回手处理：将特殊召唤的「太阳神之翼神龙」返回持有者手卡。
 function s.thop(e,tp,eg,ep,ev,re,r,rp)
 	local tc=e:GetLabelObject()
-	-- 将怪兽送回手卡
+	-- 以效果原因将标记的怪兽送回持有者手卡。
 	Duel.SendtoHand(tc,nil,REASON_EFFECT)
 end
--- 判断该卡是否从场上送去墓地
+-- ②效果的发动条件：这张卡从场上（而非其他区域）被送去墓地。
 function s.tgcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsPreviousLocation(LOCATION_ONFIELD)
 end
--- 筛选场上「太阳神之翼神龙」
+-- ②效果选择对象的过滤：自己场上表侧表示的「太阳神之翼神龙」。
 function s.ccfilter(c)
 	return c:IsFaceup() and c:IsCode(10000010)
 end
--- 设置②效果的目标
+-- ②效果的发动目标检查：满足发动条件后，设定把场上怪兽送去墓地的操作信息。
 function s.tgtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置操作信息，表示将场上所有怪兽送去墓地
+	-- 设定本次效果将场上（双方怪兽区）1只以上的怪兽送去墓地的操作信息，用于连锁判定和效果检测。
 	Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,nil,1,PLAYER_ALL,LOCATION_MZONE)
 end
--- 执行②效果的处理，选择1只「太阳神之翼神龙」并将其以外的怪兽送去墓地
+-- ②效果处理：选自己场上1只「太阳神之翼神龙」，将该怪兽以外的场上怪兽全部送去墓地。
 function s.tgop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择效果的对象
+	-- 弹出提示，让玩家选择自己场上1只「太阳神之翼神龙」作为对象。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)  --"请选择效果的对象"
-	-- 选择1只「太阳神之翼神龙」
+	-- 选择自己场上1只表侧表示的「太阳神之翼神龙」。
 	local g=Duel.SelectMatchingCard(tp,s.ccfilter,tp,LOCATION_MZONE,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 显示选择对象的动画
+		-- 为选中的「太阳神之翼神龙」显示选择动画并记录其为对象。
 		Duel.HintSelection(g)
-		-- 获取场上所有怪兽
+		-- 取得场上除该「太阳神之翼神龙」以外的所有怪兽。
 		local sg=Duel.GetMatchingGroup(aux.TRUE,tp,LOCATION_MZONE,LOCATION_MZONE,g)
 		if sg:GetCount()>0 then
-			-- 将场上所有怪兽送去墓地
+			-- 将选出的其他怪兽全部以效果原因送去墓地。
 			Duel.SendtoGrave(sg,REASON_EFFECT)
 		end
 	end

@@ -12,37 +12,37 @@ function c22020907.initial_effect(c)
 	e1:SetOperation(c22020907.operation)
 	c:RegisterEffect(e1)
 end
--- 检查目标怪兽是否因战斗破坏被送入墓地且之前属于玩家控制
+-- 判断怪兽是否因战斗被破坏、目前位于墓地且原控制者为自己，用于筛选我方被战破的怪兽。
 function c22020907.cfilter(c,tp)
 	return c:IsReason(REASON_BATTLE) and c:IsLocation(LOCATION_GRAVE) and c:IsPreviousControler(tp)
 end
--- 判断是否有满足条件的怪兽被战斗破坏送入墓地
+-- 检查本次战斗破坏的怪兽群中是否存在至少1只满足条件的我方怪兽，作为效果发动的触发条件。
 function c22020907.condition(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c22020907.cfilter,1,nil,tp)
 end
--- 筛选4星以下且为「元素英雄」的怪兽，且可以被特殊召唤
+-- 特殊召唤候选条件：等级4以下、属于「元素英雄」字段、且可以被特殊召唤。
 function c22020907.spfilter(c,e,tp)
 	return c:IsLevelBelow(4) and c:IsSetCard(0x3008) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 判断是否满足发动条件，包括场上是否有空位以及手卡/卡组是否存在符合条件的怪兽
+-- 效果发动时进行合法性检查：确认自己怪兽区有空位，且手卡或卡组存在符合条件的「元素英雄」怪兽；若通过则设置特殊召唤的操作信息。
 function c22020907.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查玩家场上是否有空位可用于特殊召唤
+	-- 效果发动时确认自己场上是否有可用的怪兽区域（用于特殊召唤）。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查手卡或卡组中是否存在满足条件的怪兽
+		-- 同时确认手卡或卡组中是否存在1只满足特殊召唤条件的「元素英雄」怪兽。
 		and Duel.IsExistingMatchingCard(c22020907.spfilter,tp,LOCATION_HAND+LOCATION_DECK,0,1,nil,e,tp) end
-	-- 设置连锁处理信息，表明将要特殊召唤怪兽
+	-- 设置本次连锁的特殊召唤操作信息：从手卡·卡组特殊召唤1只怪兽。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_HAND+LOCATION_DECK)
 end
--- 执行效果处理，包括检查场上空位、选择怪兽并进行特殊召唤
+-- 效果处理时：选择1只符合条件的「元素英雄」怪兽从手卡·卡组特殊召唤。
 function c22020907.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 若场上无空位则直接返回不执行效果
+	-- 效果处理时若自己场上没有可用怪兽区域则终止处理。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-	-- 向玩家发送提示信息，提示其选择要特殊召唤的怪兽
+	-- 弹出选择提示，要求玩家选择要特殊召唤的卡片。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 让玩家从手卡或卡组中选择一只符合条件的怪兽
+	-- 让玩家从手卡·卡组中选择1只满足条件的「元素英雄」怪兽。
 	local g=Duel.SelectMatchingCard(tp,c22020907.spfilter,tp,LOCATION_HAND+LOCATION_DECK,0,1,1,nil,e,tp)
 	if g:GetCount()~=0 then
-		-- 将选中的怪兽正面表示特殊召唤到场上
+		-- 将选择的怪兽以表侧表示特殊召唤到自己的怪兽区域。
 		Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
