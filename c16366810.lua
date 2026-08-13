@@ -3,7 +3,7 @@
 -- 这张卡不能解放，也不能作为融合·同调·超量召唤的素材。场上的这张卡被破坏时，这张卡的控制者选择自己墓地1只怪兽回到卡组。「黄尘妖」在自己场上只能有1只表侧表示存在。
 function c16366810.initial_effect(c)
 	c:SetUniqueOnField(1,0,16366810)
-	-- 这张卡不能解放，也不能作为融合·同调·超量召唤的素材。
+	-- 这张卡不能解放（作为上级召唤的祭品）
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
@@ -14,7 +14,7 @@ function c16366810.initial_effect(c)
 	local e2=e1:Clone()
 	e2:SetCode(EFFECT_UNRELEASABLE_NONSUM)
 	c:RegisterEffect(e2)
-	-- 这张卡不能解放，也不能作为融合·同调·超量召唤的素材。
+	-- 也不能作为融合·同调·超量召唤的素材（融合素材部分）
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_SINGLE)
 	e3:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
@@ -40,37 +40,37 @@ function c16366810.initial_effect(c)
 	e6:SetOperation(c16366810.retop)
 	c:RegisterEffect(e6)
 end
--- 规则层面：限制融合召唤时不能作为素材
+-- 判断融合召唤的素材种类，当这张卡被用作融合素材时返回 true，使其不能作为融合素材。
 function c16366810.fuslimit(e,c,sumtype)
 	return sumtype==SUMMON_TYPE_FUSION
 end
--- 规则层面：破坏时触发效果的条件判断
+-- 发动条件：这张卡因被破坏而离开场上，且破坏前位于场上。
 function c16366810.retcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	return c:IsReason(REASON_DESTROY) and c:IsPreviousLocation(LOCATION_ONFIELD)
 end
--- 规则层面：筛选墓地中的怪兽卡片
+-- 选择对象条件：对象必须是墓地中的怪兽，并且可以被送回卡组。
 function c16366810.filter(c)
 	return c:IsType(TYPE_MONSTER) and c:IsAbleToDeck()
 end
--- 规则层面：选择目标怪兽并设置操作信息
+-- 取对象处理：以这张卡破坏前的控制者为准，选择其墓地1只符合条件的怪兽为对象，并设置回卡组的操作信息。
 function c16366810.rettg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	local prec=e:GetHandler():GetPreviousControler()
 	if chkc then return chkc:IsControler(prec) and chkc:IsLocation(LOCATION_GRAVE) and c16366810.filter(chkc) end
 	if chk==0 then return true end
-	-- 规则层面：提示玩家选择要返回卡组的卡
+	-- 向玩家显示选择提示文字「请选择要返回卡组的卡」。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TODECK)  --"请选择要返回卡组的卡"
-	-- 规则层面：从墓地选择1只怪兽作为目标
+	-- 让这张卡破坏前的控制者从自己的墓地选择1只满足 c16366810.filter 的怪兽作为效果对象。
 	local g=Duel.SelectTarget(prec,c16366810.filter,prec,LOCATION_GRAVE,0,1,1,nil)
-	-- 规则层面：设置连锁操作信息，指定将怪兽送回卡组
+	-- 设置本次连锁的操作信息为回卡组，对象为已选择的卡，数量为其数量，便于其他效果进行检测。
 	Duel.SetOperationInfo(0,CATEGORY_TODECK,g,g:GetCount(),0,0)
 end
--- 规则层面：执行将目标怪兽送回卡组的操作
+-- 效果处理：若对象卡仍与效果关联，将该卡送回持有者卡组并洗牌。
 function c16366810.retop(e,tp,eg,ep,ev,re,r,rp)
-	-- 规则层面：获取当前连锁处理的目标卡片
+	-- 取得本次效果处理时选择的对象卡。
 	local tc=Duel.GetFirstTarget()
 	if tc and tc:IsRelateToEffect(e) then
-		-- 规则层面：将目标怪兽送回卡组并洗牌
+		-- 将对象卡以效果原因送回其持有者卡组，并执行洗牌。
 		Duel.SendtoDeck(tc,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
 	end
 end
