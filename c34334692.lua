@@ -9,9 +9,9 @@ function c34334692.initial_effect(c)
 	e1:SetValue(c34334692.rlevel)
 	c:RegisterEffect(e1)
 end
--- 设置效果值为rlevel函数，用于计算仪式召唤时的等级
+-- 定义该卡作为仪式祭品时的等级计算规则：当祭品对象为暗属性仪式怪兽时，返回由自身等级和仪式怪兽等级组成的复合值，使该卡可满足该仪式召唤所需的祭品等级；否则只按自身原本等级计算。
 function c34334692.rlevel(e,c)
-	-- 获取当前卡片在系统安全阈值内的等级数值
+	-- 获取效果持有者（此卡）的等级，并经过系统安全上限限制，作为仪式祭品的基础等级。
 	local lv=aux.GetCappedLevel(e:GetHandler())
 	if c:IsAttribute(ATTRIBUTE_DARK) then
 		local clv=c:GetLevel()

@@ -37,20 +37,20 @@ function c34471458.initial_effect(c)
 	e4:SetOperation(c34471458.spop)
 	c:RegisterEffect(e4)
 end
--- 设置卡片攻击力为等级乘以200
+-- 返回这张卡当前等级乘以200，作为①效果中攻击力/守备力的数值。
 function c34471458.value(e,c)
 	return c:GetLevel()*200
 end
--- 判断是否为自己的准备阶段
+-- lvcon条件：当前回合玩家是这张卡的控制者时，条件成立（用于己方准备阶段）。
 function c34471458.lvcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断当前回合玩家是否为效果发动者
+	-- 判断当前回合玩家是否等于效果发动者tp，确保只在己方准备阶段发动。
 	return Duel.GetTurnPlayer()==tp
 end
--- 将卡片等级提升1星（最多至12星）
+-- lvop操作：若此卡仍表侧、与效果关联且等级未超过12，则给它注册一个等级+1的效果。
 function c34471458.lvop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsFacedown() or not c:IsRelateToEffect(e) or c:IsLevelAbove(12) then return end
-	-- 设置卡片等级增加1
+	-- 这张卡的等级上升1星（最多到12星）。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_UPDATE_LEVEL)
@@ -58,34 +58,34 @@ function c34471458.lvop(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_DISABLE)
 	c:RegisterEffect(e1)
 end
--- 判断卡片因效果离开场上的条件
+-- spcon条件：这张卡因效果离开场上，且离场前是表侧表示。
 function c34471458.spcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	return c:IsReason(REASON_EFFECT) and c:IsPreviousPosition(POS_FACEUP)
 end
--- 过滤满足「命运女郎」卡组且可特殊召唤的怪兽
+-- spfilter筛选：卡名属于「命运女郎」字段且能够被特殊召唤。
 function c34471458.spfilter(c,e,tp)
 	return c:IsSetCard(0x31) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 判断是否满足特殊召唤的条件（场地有空位且卡组有符合条件的怪兽）
+-- sptg目标：发动时检查是否有空位且卡组存在符合条件的「命运女郎」怪兽，满足则发动并设置特殊召唤操作信息。
 function c34471458.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断场上是否有空位
+	-- 发动时确认自己场上有可用的怪兽区域空格。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 判断卡组中是否存在符合条件的怪兽
+		-- 并且卡组中存在至少1只满足spfilter条件的「命运女郎」怪兽。
 		and Duel.IsExistingMatchingCard(c34471458.spfilter,tp,LOCATION_DECK,0,1,nil,e,tp) end
-	-- 设置特殊召唤的操作信息
+	-- 把本次连锁处理信息设为：从卡组特殊召唤1只怪兽。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_DECK)
 end
--- 执行特殊召唤操作
+-- spop操作：处理时若仍有空位，则选择并特殊召唤1只「命运女郎」怪兽。
 function c34471458.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断场上是否有空位
+	-- 若特殊召唤处理时已经没有可用怪兽区空格，则效果不处理。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-	-- 提示玩家选择要特殊召唤的卡
+	-- 显示“请选择要特殊召唤的卡”的提示，让玩家选择。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 选择满足条件的1只怪兽
+	-- 从卡组选择1张满足spfilter条件的「命运女郎」怪兽。
 	local g=Duel.SelectMatchingCard(tp,c34471458.spfilter,tp,LOCATION_DECK,0,1,1,nil,e,tp)
 	if g:GetCount()>0 then
-		-- 将选中的怪兽特殊召唤到场上
+		-- 将选择的怪兽以表侧表示特殊召唤到己方场上。
 		Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
