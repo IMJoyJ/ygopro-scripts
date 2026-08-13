@@ -30,27 +30,27 @@ function c2102065.initial_effect(c)
 	e3:SetOperation(c2102065.atkop2)
 	c:RegisterEffect(e3)
 end
--- 检索满足条件的水属性且攻击力大于0的墓地怪兽
+-- 过滤自己墓地中攻击力大于0的水属性怪兽，作为效果①选择对象的候选集。
 function c2102065.atkfilter1(c)
 	return c:IsAttribute(ATTRIBUTE_WATER) and c:GetAttack()>0
 end
--- 选择满足条件的墓地水属性怪兽作为对象
+-- 效果①的取对象处理：在指定对象时验证对象位于自己墓地且为攻击力大于0的水属性怪兽；在发动条件检查时确认墓地存在满足条件的怪兽；提示玩家选择对象并从自己墓地选择1只作为对象。
 function c2102065.atktg1(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and c2102065.atkfilter1(chkc) end
-	-- 判断是否满足选择对象的条件
+	-- 效果①发动条件检查：确认自己墓地存在至少1只攻击力大于0的水属性怪兽，才允许发动。
 	if chk==0 then return Duel.IsExistingTarget(c2102065.atkfilter1,tp,LOCATION_GRAVE,0,1,nil) end
-	-- 提示玩家选择效果的对象
+	-- 提示玩家正在为效果①选择对象，并显示“请选择效果的对象”的提示信息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)  --"请选择效果的对象"
-	-- 选择满足条件的墓地水属性怪兽作为对象
+	-- 让玩家从自己墓地选择1只攻击力大于0的水属性怪兽，并将其登记为效果①的取对象。
 	Duel.SelectTarget(tp,c2102065.atkfilter1,tp,LOCATION_GRAVE,0,1,1,nil)
 end
--- 将自身攻击力提升为选择的墓地水属性怪兽的攻击力数值
+-- 效果①处理：取得效果持有者与对象卡，若对象仍与效果关联且这张卡表侧表示，则使这张卡的攻击力上升对象当前攻击力的数值，直到回合结束时。
 function c2102065.atkop1(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取当前连锁选择的对象卡
+	-- 取得效果①发动时选择的对象卡。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) and c:IsFaceup() and c:IsRelateToEffect(e) then
-		-- 创建一个攻击力提升效果，提升值为对象怪兽的攻击力
+		-- 这张卡的攻击力直到回合结束时上升作为对象的怪兽的攻击力数值。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)
@@ -59,26 +59,26 @@ function c2102065.atkop1(e,tp,eg,ep,ev,re,r,rp)
 		c:RegisterEffect(e1)
 	end
 end
--- 检索满足条件的场上表侧表示的水属性怪兽
+-- 过滤自己场上表侧表示的水属性怪兽，作为效果②选择对象的候选集。
 function c2102065.atkfilter2(c)
 	return c:IsFaceup() and c:IsAttribute(ATTRIBUTE_WATER)
 end
--- 选择满足条件的场上水属性怪兽作为对象
+-- 效果②的取对象处理：在指定对象时验证对象位于自己场上且为表侧表示的水属性怪兽；在发动条件检查时确认场上存在满足条件的怪兽；提示玩家选择对象并从自己场上选择1只作为对象。
 function c2102065.atktg2(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and c2102065.atkfilter2(chkc) end
-	-- 判断是否满足选择对象的条件
+	-- 效果②发动条件检查：确认自己场上存在至少1只表侧表示的水属性怪兽，才允许发动。
 	if chk==0 then return Duel.IsExistingTarget(c2102065.atkfilter2,tp,LOCATION_MZONE,0,1,nil) end
-	-- 提示玩家选择效果的对象
+	-- 提示玩家正在为效果②选择对象，并显示“请选择表侧表示的卡”的提示信息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
-	-- 选择满足条件的场上水属性怪兽作为对象
+	-- 让玩家从自己场上选择1只表侧表示的水属性怪兽，并将其登记为效果②的取对象。
 	Duel.SelectTarget(tp,c2102065.atkfilter2,tp,LOCATION_MZONE,0,1,1,nil)
 end
--- 将选择的场上水属性怪兽的攻击力提升1000
+-- 效果②处理：取得对象卡，若对象仍表侧表示且与效果关联，则使对象怪兽的攻击力上升1000，直到回合结束时。
 function c2102065.atkop2(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁选择的对象卡
+	-- 取得效果②发动时选择的对象卡。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsFaceup() and tc:IsRelateToEffect(e) then
-		-- 创建一个攻击力提升效果，提升值为1000
+		-- 那只怪兽的攻击力直到回合结束时上升1000。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)

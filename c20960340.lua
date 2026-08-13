@@ -23,36 +23,36 @@ function c20960340.initial_effect(c)
 	e2:SetOperation(c20960340.damop)
 	c:RegisterEffect(e2)
 end
--- 判断攻击方是否为对方，且攻击目标为空，且攻击怪兽的攻击力不低于自身基本分。
+-- 效果发动条件：对方怪兽进行直接攻击宣言，且那只攻击怪兽的攻击力在我方当前基本分以上，满足条件才可发动。
 function c20960340.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断攻击方是否为对方，且攻击目标为空。
+	-- 判断攻击者为对方怪兽，且攻击对象为空，即为直接攻击。
 	return Duel.GetAttacker():IsControler(1-tp) and Duel.GetAttackTarget()==nil
-		-- 判断攻击怪兽的攻击力不低于自身基本分。
+		-- 判断发动攻击的怪兽攻击力不小于我方当前基本分。
 		and Duel.GetAttacker():IsAttackAbove(Duel.GetLP(tp))
 end
--- 设置特殊召唤的条件，包括场地空位和是否可以特殊召唤该怪兽。
+-- 发动时目标处理：以我方当前基本分作为预定特召怪兽的攻击力，并检查主要怪兽区是否有空位以及能否将本卡作为效果陷阱怪兽特殊召唤，满足则登记特殊召唤操作信息。
 function c20960340.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 获取自身基本分作为攻击力。
+	-- 获取我方当前基本分，作为之后特殊召唤怪兽的攻击力数值。
 	local atk=Duel.GetLP(tp)
 	if chk==0 then return e:IsCostChecked()
-		-- 判断场上是否有足够的怪兽区域。
+		-- 检查我方主要怪兽区是否存在可用空位。
 		and Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 判断是否可以特殊召唤该怪兽。
+		-- 检查我方能否以表侧攻击表示特殊召唤一只战士族·光·4星·攻击力为atk、守备力为0的效果陷阱怪兽（即本卡）。
 		and Duel.IsPlayerCanSpecialSummonMonster(tp,20960340,0,TYPES_EFFECT_TRAP_MONSTER,atk,0,4,RACE_WARRIOR,ATTRIBUTE_LIGHT,POS_FACEUP_ATTACK) end
-	-- 设置操作信息为特殊召唤。
+	-- 设置操作信息：本效果包含将自身特殊召唤，数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 执行效果的发动，将自身特殊召唤为效果怪兽并设置攻击力。
+-- 效果处理：把本卡变成陷阱怪兽并特殊召唤，设定其攻击力为当前基本分；特招成功后将攻击对象转移为本卡。
 function c20960340.activate(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取自身基本分作为攻击力。
+	-- 获取当前基本分，作为本卡特殊召唤后的攻击力。
 	local atk=Duel.GetLP(tp)
-	-- 检查是否可以特殊召唤该怪兽。
+	-- 若此时仍不能将本卡作为效果陷阱怪兽特殊召唤，则直接不再处理。
 	if not Duel.IsPlayerCanSpecialSummonMonster(tp,20960340,0,TYPES_EFFECT_TRAP_MONSTER,atk,0,4,RACE_WARRIOR,ATTRIBUTE_LIGHT,POS_FACEUP_ATTACK) then return end
 	c:AddMonsterAttribute(TYPE_TRAP+TYPE_EFFECT)
-	-- 开始特殊召唤步骤。
+	-- 将本卡以表侧攻击表示特殊召唤，召唤手续为自身效果，不检查召唤条件但保留苏生限制。
 	if Duel.SpecialSummonStep(c,SUMMON_VALUE_SELF,tp,tp,true,false,POS_FACEUP_ATTACK) then
-		-- 设置自身攻击力为基本分。
+		-- 变成和自己基本分数值相同攻击力的效果怪兽
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_SET_ATTACK)
@@ -61,37 +61,37 @@ function c20960340.activate(e,tp,eg,ep,ev,re,r,rp)
 		e1:SetReset(RESET_EVENT+RESETS_STANDARD)
 		c:RegisterEffect(e1)
 	end
-	-- 完成特殊召唤。
+	-- 若特殊召唤整体成功数量为0，则中止后续转移攻击对象的处理。
 	if Duel.SpecialSummonComplete()==0 then return end
-	-- 获取攻击怪兽。
+	-- 获取发动直接攻击的那只攻击怪兽。
 	local at=Duel.GetAttacker()
 	if at and at:IsAttackable() and at:IsFaceup() and not at:IsImmuneToEffect(e) and not at:IsStatus(STATUS_ATTACK_CANCELED) then
-		-- 中断当前效果。
+		-- 中断当前效果处理，使后续攻击对象转移作为另行处理，避免时点被占用。
 		Duel.BreakEffect()
-		-- 将攻击对象转移为自身。
+		-- 将攻击对象变更为特殊召唤成功后的这张卡。
 		Duel.ChangeAttackTarget(c)
 	end
 end
--- 判断该卡是否被战斗破坏且为特殊召唤。
+-- ②效果发动条件：本卡是通过自身效果特殊召唤的，并且在该次战斗伤害计算后被战斗破坏，满足才可发动。
 function c20960340.damcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	return c:IsStatus(STATUS_BATTLE_DESTROYED) and c:GetSummonType()==SUMMON_TYPE_SPECIAL+SUMMON_VALUE_SELF
 end
--- 设置伤害效果的目标和伤害值。
+-- ②效果发动时目标处理：记录对方玩家为对象玩家，伤害数值为本卡当前攻击力。
 function c20960340.damtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
 	local dam=e:GetHandler():GetAttack()
-	-- 设置伤害对象为对方。
+	-- 设置效果的对象玩家为对方玩家。
 	Duel.SetTargetPlayer(1-tp)
-	-- 设置伤害值为自身攻击力。
+	-- 设置效果参数为将要造成的伤害数值（本卡当前攻击力）。
 	Duel.SetTargetParam(dam)
-	-- 设置操作信息为造成伤害。
+	-- 设置操作信息：本效果将造成伤害，对象为对方玩家，伤害值为dam。
 	Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,1-tp,dam)
 end
--- 执行伤害效果，对对方造成自身攻击力的伤害。
+-- ②效果处理：对记录的对象玩家造成本卡当前攻击力数值的伤害。
 function c20960340.damop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁中的目标玩家。
+	-- 从当前连锁信息中取出之前设定的对象玩家。
 	local p=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER)
-	-- 对目标玩家造成伤害。
+	-- 以效果原因对对象玩家造成本卡当前攻击力数值的伤害。
 	Duel.Damage(p,e:GetHandler():GetAttack(),REASON_EFFECT)
 end
