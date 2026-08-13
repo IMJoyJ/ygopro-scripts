@@ -11,12 +11,12 @@ function c28725004.initial_effect(c)
 	e1:SetOperation(c28725004.operation)
 	c:RegisterEffect(e1)
 end
--- 判断该卡在位置变化前是否为攻击表示且当前位置是否为守备表示
+-- 触发条件判定：效果对象（此卡）在表示形式变更前是攻击表示，且变更后为守备表示时才满足发动条件。
 function c28725004.condition(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsPreviousPosition(POS_ATTACK) and e:GetHandler():IsPosition(POS_DEFENSE)
 end
--- 将控制者卡组进行洗切
+-- 效果处理：当条件满足时，执行洗切自己卡组的操作。
 function c28725004.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 洗切当前玩家的卡组
+	-- 洗切玩家tp的卡组，即发动者自己的卡组。
 	Duel.ShuffleDeck(tp)
 end
