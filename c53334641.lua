@@ -39,67 +39,67 @@ function c53334641.initial_effect(c)
 	e3:SetOperation(c53334641.mtop)
 	c:RegisterEffect(e3)
 end
--- 判断是否为「鬼计」超量怪兽且不是此卡本身，用于XYZ召唤条件过滤。
+-- 作为额外超量召唤手续的判定条件：目标须为表侧表示、持有「鬼计」字段的超量怪兽，且卡名不是「鬼计惰天使」。
 function c53334641.ovfilter(c)
 	return c:IsFaceup() and c:IsSetCard(0x8d) and c:IsType(TYPE_XYZ) and not c:IsCode(53334641)
 end
--- 当此卡的叠放数量达到10时，令当前玩家以指定理由胜利。
+-- 检测此卡的超量素材数量，若等于10则使控制者决斗胜利。
 function c53334641.winop(e,tp,eg,ep,ev,re,r,rp)
 	local WIN_REASON_GHOSTRICK_SPOILEDANGEL=0x1b
 	if e:GetHandler():GetOverlayCount()==10 then
-		-- 令当前玩家以指定理由决斗胜利。
+		-- 宣告tp玩家以鬼计惰天使的特殊胜利条件获得决斗胜利。
 		Duel.Win(tp,WIN_REASON_GHOSTRICK_SPOILEDANGEL)
 	end
 end
--- 支付1个超量素材作为代价，用于发动效果①。
+-- 效果①的发动代价：从这张卡上取除1个超量素材。
 function c53334641.thcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():CheckRemoveOverlayCard(tp,1,REASON_COST) end
 	e:GetHandler():RemoveOverlayCard(tp,1,1,REASON_COST)
 end
--- 过滤满足「鬼计」魔法或陷阱卡条件的卡，用于检索。
+-- 检索过滤条件：持有「鬼计」字段的魔法·陷阱卡，且能够加入手牌。
 function c53334641.thfilter(c)
 	return c:IsSetCard(0x8d) and c:IsType(TYPE_SPELL+TYPE_TRAP) and c:IsAbleToHand()
 end
--- 设置连锁操作信息，表示将从卡组检索一张「鬼计」魔法或陷阱卡。
+-- 效果①的发动目标条件：卡组中存在符合条件的「鬼计」魔法·陷阱卡，并设置将1张卡从卡组加入手牌的操作信息。
 function c53334641.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否在卡组中存在至少1张满足条件的「鬼计」魔法或陷阱卡。
+	-- 发动时检查卡组中是否存在至少1张满足thfilter的「鬼计」魔法·陷阱卡。
 	if chk==0 then return Duel.IsExistingMatchingCard(c53334641.thfilter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置连锁操作信息，表示将从卡组检索一张「鬼计」魔法或陷阱卡。
+	-- 设置连锁操作信息：本次处理将把1张卡从卡组加入手牌，用于相关效果检测。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 执行效果①的处理，选择并加入手牌。
+-- 效果①处理：从卡组选择1张符合条件的「鬼计」魔法·陷阱卡加入手牌，并展示给对方确认。
 function c53334641.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要加入手牌的卡。
+	-- 显示选择提示，要求玩家选择要加入手牌的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 从卡组中选择满足条件的一张卡。
+	-- 从卡组筛选并选择1张满足thfilter的「鬼计」魔法·陷阱卡。
 	local g=Duel.SelectMatchingCard(tp,c53334641.thfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的卡送入手牌。
+		-- 将选中的卡以效果原因加入持有者的手牌。
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 向对方确认送入手牌的卡。
+		-- 让对手确认加入手牌的那张卡。
 		Duel.ConfirmCards(1-tp,g)
 	end
 end
--- 过滤满足「鬼计」且可作为叠放素材的卡，用于效果②。
+-- 效果②可选素材过滤条件：手牌中持有「鬼计」字段且可以作为超量素材叠放的卡。
 function c53334641.mtfilter(c)
 	return c:IsSetCard(0x8d) and c:IsCanOverlay()
 end
--- 设置效果②的目标判定条件，检查是否在手牌中存在满足条件的卡。
+-- 效果②发动条件：此卡为超量怪兽，且手牌中存在可选的「鬼计」卡。
 function c53334641.mttg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsType(TYPE_XYZ)
-		-- 检查是否在手牌中存在至少1张满足条件的「鬼计」卡。
+		-- 检查手牌中是否存在至少1张满足mtfilter的「鬼计」卡。
 		and Duel.IsExistingMatchingCard(c53334641.mtfilter,tp,LOCATION_HAND,0,1,nil) end
 end
--- 执行效果②的处理，选择并叠放至此卡。
+-- 效果②处理：从手牌选择1张「鬼计」卡叠放在此卡下方作为超量素材。
 function c53334641.mtop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if not c:IsRelateToEffect(e) then return end
-	-- 提示玩家选择要作为超量素材的卡。
+	-- 显示选择提示，要求玩家选择要作为超量素材的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_XMATERIAL)  --"请选择要作为超量素材的卡"
-	-- 从手牌中选择满足条件的一张卡。
+	-- 从手牌筛选并选择1张满足mtfilter的「鬼计」卡。
 	local g=Duel.SelectMatchingCard(tp,c53334641.mtfilter,tp,LOCATION_HAND,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的卡叠放于此卡上。
+		-- 将选中的卡叠放在此卡下方，作为其超量素材。
 		Duel.Overlay(c,g)
 	end
 end

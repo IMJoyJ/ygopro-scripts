@@ -3,9 +3,9 @@
 -- 这个卡名的效果1回合只能使用1次。
 -- ①：这张卡在手卡·墓地存在，场上的连接怪兽所连接区有怪兽召唤·特殊召唤的场合才能发动。这张卡特殊召唤。这个效果特殊召唤的这张卡从场上离开的场合除外。
 function c53309998.initial_effect(c)
-	-- 为卡片注册一个监听送入墓地事件的单次持续效果，用于记录卡片是否已从场上离开并进入墓地的状态
+	-- 为卡片注册“已在墓地”的标记检测效果，用于记录此卡在墓地的状态，以正确判断本卡在手卡·墓地存在时的发动条件。
 	local e0=aux.AddThisCardInGraveAlreadyCheck(c)
-	-- ①：这张卡在手卡·墓地存在，场上的连接怪兽所连接区有怪兽召唤·特殊召唤的场合才能发动。这张卡特殊召唤。这个效果特殊召唤的这张卡从场上离开的场合除外。
+	-- 这个卡名的效果1回合只能使用1次。①：这张卡在手卡·墓地存在，场上的连接怪兽所连接区有怪兽召唤·特殊召唤的场合才能发动。这张卡特殊召唤。这个效果特殊召唤的这张卡从场上离开的场合除外。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(53309998,0))
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -23,7 +23,7 @@ function c53309998.initial_effect(c)
 	e2:SetCode(EVENT_SPSUMMON_SUCCESS)
 	c:RegisterEffect(e2)
 end
--- 用于判断怪兽是否在连接区域中，通过序列号和区域位图进行匹配，并排除特定效果来源的怪兽
+-- 过滤函数：根据怪兽当前或变化前的位置计算其所在区域，检查该区域是否为连接怪兽所连接的区域（通过zone位图判断），并且该怪兽的召唤/特殊召唤不是由本卡效果自身触发，用于筛选eg中满足发动条件的召唤/特殊召唤怪兽。
 function c53309998.cfilter(c,zone,se)
 	local seq=c:GetSequence()
 	if c:IsLocation(LOCATION_MZONE) then
@@ -34,25 +34,25 @@ function c53309998.cfilter(c,zone,se)
 	end
 	return bit.extract(zone,seq)~=0 and (se==nil or c:GetReasonEffect()~=se)
 end
--- 条件函数：检查是否有满足条件的怪兽被召唤或特殊召唤，且其所在区域与连接区重叠
+-- 发动条件判定：获取本次召唤/特殊召唤成功的怪兽集合eg，检查是否存在至少1只被召唤/特殊召唤到连接区且诱发原因不是本卡效果的怪兽；若存在，则满足“场上的连接怪兽所连接区有怪兽召唤·特殊召唤”的发动条件。
 function c53309998.spcon(e,tp,eg,ep,ev,re,r,rp)
 	local se=e:GetLabelObject():GetLabelObject()
-	-- 获取双方玩家的连接区域位图并合并为一个32位整数用于后续判断
+	-- 获取双方场上所有连接怪兽所连接区的位图：低16位表示玩家0的连接区，高16位表示玩家1的连接区，供后续判断被召唤怪兽是否落在这些区域。
 	local zone=Duel.GetLinkedZone(0)+(Duel.GetLinkedZone(1)<<0x10)
 	return eg:IsExists(c53309998.cfilter,1,nil,zone,se)
 end
--- 目标设置函数：检查是否可以将卡片特殊召唤到场上
+-- 特殊召唤的目标/发动合法性判定：效果发动时确认自己场上是否有可用的主要怪兽区，且此卡能够被特殊召唤（满足苏生限制和特殊召唤手续）。
 function c53309998.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查场上是否有足够的空位用于特殊召唤
+	-- 检查条件：己方主要怪兽区存在空格，且此卡可以被特殊召唤；满足则效果可以发动。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置连锁操作信息，表明此效果会将卡片特殊召唤到场上
+	-- 向系统登记本效果将执行特殊召唤操作：对象为效果持有者自身，数量为1，用于连锁和效果发动时的信息记录。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 效果处理函数：执行特殊召唤操作，并为特殊召唤的卡片添加离开场上的除外效果
+-- 效果处理：确认此卡仍与效果关联后将其特殊召唤；若特殊召唤成功，则给此卡附加一个不可无效的“离场时除外”的持续效果。
 function c53309998.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 判断卡片是否仍然在场上且可以被特殊召唤
+	-- 确认此卡仍然与当前效果存在关联（未被无效或移动），然后以表侧表示特殊召唤此卡；只有召唤成功时才继续赋予离场除外效果。
 	if c:IsRelateToEffect(e) and Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)~=0 then
 		-- 这个效果特殊召唤的这张卡从场上离开的场合除外。
 		local e1=Effect.CreateEffect(c)

@@ -4,7 +4,7 @@
 -- ①：这张卡的攻击力上升这张卡所连接区的怪兽数量×500。
 -- ②：只要这张卡所连接区有怪兽存在，这张卡不会被战斗以及对方的效果破坏。
 function c53413628.initial_effect(c)
-	-- 为卡片添加连接召唤手续，要求使用2只满足效果怪兽类型的连接素材
+	-- 为「码语者」添加连接召唤手续：以2只效果怪兽作为连接素材。
 	aux.AddLinkProcedure(c,aux.FilterBoolFunction(Card.IsLinkType,TYPE_EFFECT),2,2)
 	c:EnableReviveLimit()
 	-- ①：这张卡的攻击力上升这张卡所连接区的怪兽数量×500。
@@ -15,7 +15,7 @@ function c53413628.initial_effect(c)
 	e1:SetRange(LOCATION_MZONE)
 	e1:SetValue(c53413628.atkval)
 	c:RegisterEffect(e1)
-	-- ②：只要这张卡所连接区有怪兽存在，这张卡不会被战斗以及对方的效果破坏。
+	-- ②：只要这张卡所连接区有怪兽存在，这张卡不会被战斗破坏。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_SINGLE)
 	e2:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
@@ -26,15 +26,15 @@ function c53413628.initial_effect(c)
 	c:RegisterEffect(e2)
 	local e3=e2:Clone()
 	e3:SetCode(EFFECT_INDESTRUCTABLE_EFFECT)
-	-- 设置效果值为过滤函数aux.indoval，用于判断是否不会被对方效果破坏
+	-- 设置效果破坏免疫的判定：仅当破坏效果来自对方玩家时适用，即「不会被对方的效果破坏」。
 	e3:SetValue(aux.indoval)
 	c:RegisterEffect(e3)
 end
--- 计算并返回当前卡片所连接区怪兽数量乘以500作为攻击力提升值
+-- 攻击力上升值的计算函数：返回这张卡所连接区的怪兽数量×500。
 function c53413628.atkval(e,c)
 	return c:GetLinkedGroupCount()*500
 end
--- 判断当前卡片所连接区是否存在怪兽，用于决定是否触发不被战斗破坏的效果
+-- ②效果的发动条件：这张卡所连接区有怪兽存在时返回true。
 function c53413628.indcon(e)
 	return e:GetHandler():GetLinkedGroupCount()>0
 end
