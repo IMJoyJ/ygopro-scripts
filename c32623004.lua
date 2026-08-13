@@ -28,24 +28,24 @@ function c32623004.initial_effect(c)
 	e2:SetValue(LOCATION_REMOVED)
 	c:RegisterEffect(e2)
 end
--- 效果发动的条件：对方发动的怪兽卡效果，且该效果的发动者为「企鹅」卡组的怪兽。
+-- ②效果的发动条件：确认当前连锁中发动的效果是怪兽效果，且该效果的发动者为「企鹅」怪兽。
 function c32623004.spcon(e,tp,eg,ep,ev,re,r,rp)
 	return re:IsActiveType(TYPE_MONSTER) and re:GetHandler():IsSetCard(0x5a)
 end
--- 效果的发动目标设定：确定将自身特殊召唤。
+-- ②效果的发动目标处理：无选择对象，chk==0时直接判定为可发动，并登记将自身特殊召唤的操作信息。
 function c32623004.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置连锁处理信息，表明此效果会将自身特殊召唤。
+	-- 登记本次处理包含特殊召唤：将效果持有者（墓地中的这张卡）特殊召唤，数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 效果的发动处理：若自身存在于场上，则进行特殊召唤。
+-- ②效果的结算：若这张卡仍与效果保持关联（未因故离场或效果被无效），则将其以表侧表示特殊召唤到自己场上。
 function c32623004.spop(e,tp,eg,ep,ev,re,r,rp)
 	if e:GetHandler():IsRelateToEffect(e) then
-		-- 将自身以正面表示特殊召唤到自己场上。
+		-- 将这张卡以表侧表示特殊召唤到自己场上，不检查召唤条件、不限制苏生限制。
 		Duel.SpecialSummon(e:GetHandler(),0,tp,tp,false,false,POS_FACEUP)
 	end
 end
--- 效果适用对象的判定：被效果送入墓地且其效果的发动者为「企鹅」卡组的怪兽。
+-- ①效果的适用对象判断：这张卡因「企鹅」卡的效果从场上将被回到手卡时，其去向被重定向为除外区。
 function c32623004.rmtg(e,c)
 	return c:IsReason(REASON_EFFECT) and c:GetReasonEffect():GetHandler():IsSetCard(0x5a)
 end

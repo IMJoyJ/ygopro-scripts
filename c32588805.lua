@@ -32,57 +32,57 @@ function c32588805.initial_effect(c)
 	e3:SetValue(1)
 	c:RegisterEffect(e3)
 end
--- 规则层面：判断上级召唤成功且自己场上没有魔法·陷阱卡存在
+-- 判断①效果能否发动的条件：这张卡是否以表侧上级召唤方式成功召唤成功，且我方场上不存在魔法·陷阱卡（需同时满足）。
 function c32588805.setcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsSummonType(SUMMON_TYPE_ADVANCE)
-		-- 规则层面：自己场上没有魔法·陷阱卡存在
+		-- 条件后半部分：我方场上（己方区域）不存在任何魔法·陷阱卡（包含表侧和里侧）。
 		and not Duel.IsExistingMatchingCard(Card.IsType,tp,LOCATION_ONFIELD,0,1,nil,TYPE_SPELL+TYPE_TRAP)
 end
--- 规则层面：过滤函数，用于筛选可以盖放的永续魔法或永续陷阱卡
+-- 定义检索永续魔法/陷阱的备用过滤器：用于确认卡组中是否存在可盖放到魔陷区的永续类型卡（包含魔法或陷阱），以便作为①效果的对象。
 function c32588805.setfilter1(c)
 	return c:IsType(TYPE_CONTINUOUS) and c:IsSSetable()
 end
--- 规则层面：设置效果目标，检查是否有足够的魔法与陷阱区域空位及卡组中存在可盖放的卡
+-- ①效果的发动目标判定：若在发动时确认我方魔陷区有空位且卡组中存在至少1张符合条件的永续卡，则允许发动。
 function c32588805.settg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 规则层面：检查自己魔法与陷阱区域是否有空位
+	-- 检查我方魔法与陷阱区域是否有可用的空格（若有返回true，否则false）。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_SZONE)>0
-		-- 规则层面：检查卡组中是否存在满足条件的永续魔法或永续陷阱卡
+		-- 检查卡组中是否存在至少1张满足setfilter1（即永续魔法/陷阱且可盖放）的卡。
 		and Duel.IsExistingMatchingCard(c32588805.setfilter1,tp,LOCATION_DECK,0,1,nil) end
 end
--- 规则层面：过滤函数，根据指定类型筛选可盖放的卡
+-- 定义按宣言种类精确匹配的过滤器：卡的完整类型（魔法/陷阱+永续）与宣言的typ一致，且该卡可以被盖放到魔陷区。
 function c32588805.setfilter2(c,typ)
 	return c:GetType()==typ and c:IsSSetable()
 end
--- 规则层面：处理效果发动，选择对方宣言的卡种类并从卡组选择对应类型的卡进行盖放
+-- ①效果的结算处理：先由对方宣言永续魔法或永续陷阱，然后我方从卡组选择宣言种类的1张卡，将其盖放到我方魔法与陷阱区域。
 function c32588805.setop(e,tp,eg,ep,ev,re,r,rp)
-	-- 规则层面：检查是否还有魔法与陷阱区域的空位
+	-- 效果处理时再次确认魔陷区仍有空位；若无空位则整个效果不处理。
 	if Duel.GetLocationCount(tp,LOCATION_SZONE)<=0 then return end
-	-- 规则层面：提示对方选择卡的种类（永续魔法或永续陷阱）
+	-- 向对方（1-tp）发送选择提示，弹出“请选择一个选项”的消息，用于之后让对方宣言种类。
 	Duel.Hint(HINT_SELECTMSG,1-tp,HINTMSG_OPTION)  --"请选择一个选项"
-	-- 规则层面：让对方选择卡的种类（选项0为永续魔法，选项1为永续陷阱）
+	-- 由对方选择宣言的种类：71对应永续魔法，72对应永续陷阱，返回选择结果op（0或1）。
 	local op=Duel.SelectOption(1-tp,71,72)
-	-- 规则层面：提示玩家选择要盖放的卡
+	-- 向自己（tp）发送选择提示，弹出“请选择要盖放的卡”的消息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SET)  --"请选择要盖放的卡"
 	local g=nil
-	-- 规则层面：根据对方选择的种类，从卡组中选择对应类型的卡
+	-- 若对方宣言了永续魔法（op==0），则从自己的卡组选择1张永续魔法卡（类型为魔法+永续且可盖放）作为要盖放的卡。
 	if op==0 then g=Duel.SelectMatchingCard(tp,c32588805.setfilter2,tp,LOCATION_DECK,0,1,1,nil,TYPE_SPELL+TYPE_CONTINUOUS)
-	-- 规则层面：根据对方选择的种类，从卡组中选择对应类型的卡
+	-- 否则（op==1）表示对方宣言永续陷阱，从卡组选择1张永续陷阱卡（类型为陷阱+永续且可盖放）作为要盖放的卡。
 	else g=Duel.SelectMatchingCard(tp,c32588805.setfilter2,tp,LOCATION_DECK,0,1,1,nil,TYPE_TRAP+TYPE_CONTINUOUS) end
 	if g:GetCount()>0 then
-		-- 规则层面：将选中的卡在自己的魔法与陷阱区域盖放
+		-- 将玩家选择出的那张卡以里侧表示放置到自己的魔法与陷阱区域（完成盖放操作）。
 		Duel.SSet(tp,g:GetFirst())
 	end
 end
--- 规则层面：过滤函数，用于统计自己场上表侧表示的魔法与陷阱卡
+-- 定义统计自己场上表侧表示的魔法·陷阱卡的过滤器：卡的类型为魔法或陷阱且为表侧表示。
 function c32588805.atkfilter(c)
 	return c:IsType(TYPE_SPELL+TYPE_TRAP) and c:IsFaceup()
 end
--- 规则层面：计算攻击力提升值，为场上表侧表示的魔法与陷阱卡数量乘以300
+-- 定义②效果的攻击力变化值计算：统计自己场上表侧的魔法·陷阱卡数量，每张使攻击力上升300。
 function c32588805.atkval(e,c)
-	-- 规则层面：返回场上表侧表示的魔法与陷阱卡数量乘以300作为攻击力提升值
+	-- 返回自己场上表侧魔法陷阱卡数量×300，作为此卡的攻击力上升值。
 	return Duel.GetMatchingGroupCount(c32588805.atkfilter,e:GetHandlerPlayer(),LOCATION_ONFIELD,0,nil)*300
 end
--- 规则层面：目标过滤函数，用于判断是否为自己的魔法与陷阱区域中表侧表示的卡
+-- 定义③效果的受保护对象判定：只保护位于通常魔法与陷阱区域（序号<5，不包括场地格）且表侧表示的卡不被效果破坏。
 function c32588805.indtg(e,c)
 	return c:GetSequence()<5 and c:IsFaceup()
 end

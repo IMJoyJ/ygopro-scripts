@@ -21,43 +21,43 @@ function c32663969.initial_effect(c)
 	e2:SetOperation(c32663969.desop)
 	c:RegisterEffect(e2)
 end
--- 过滤函数，用于判断是否为对方场上被战斗破坏送入墓地的怪兽
+-- 筛选被战斗破坏后进入墓地、且此前由对方控制的怪兽。
 function c32663969.cfilter(c,tp)
 	return c:IsLocation(LOCATION_GRAVE) and c:IsReason(REASON_BATTLE) and c:IsPreviousControler(tp)
 end
--- 效果发动条件，检查是否有对方场上被战斗破坏送入墓地的怪兽
+-- 触发条件：本组怪兽中存在至少1只“对方场上被战斗破坏送去墓地”的怪兽。
 function c32663969.descon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c32663969.cfilter,1,nil,1-tp)
 end
--- 效果发动时的费用，选择1只己方场上的怪兽送去墓地
+-- 发动代价：将自己场上1只怪兽送去墓地。
 function c32663969.descost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否己方场上存在至少1只可以作为费用送去墓地的怪兽
+	-- 检测己方场上是否存在至少1只可作为代价送去墓地的怪兽。
 	if chk==0 then return Duel.IsExistingMatchingCard(Card.IsAbleToGraveAsCost,tp,LOCATION_MZONE,0,1,nil) end
-	-- 提示玩家选择要送去墓地的怪兽
+	-- 弹出选择提示，要求选择要送去墓地的怪兽。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
-	-- 选择1只己方场上的怪兽作为费用送去墓地
+	-- 从己方场上选择1只怪兽作为代价。
 	local g=Duel.SelectMatchingCard(tp,Card.IsAbleToGraveAsCost,tp,LOCATION_MZONE,0,1,1,nil)
-	-- 将选中的怪兽送去墓地作为发动费用
+	-- 将选择的代价怪兽送去墓地。
 	Duel.SendtoGrave(g,REASON_COST)
 end
--- 效果发动时的目标选择，选择对方场上的1只怪兽作为破坏对象
+-- 设定目标：选择对方场上1只怪兽作为对象，并登记破坏该卡的操作信息。
 function c32663969.destg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(1-tp) end
-	-- 检查是否对方场上存在至少1只可以被破坏的怪兽
+	-- 确认对方场上是否存在至少1只可作为效果对象的怪兽。
 	if chk==0 then return Duel.IsExistingTarget(aux.TRUE,tp,0,LOCATION_MZONE,1,nil) end
-	-- 提示玩家选择要破坏的怪兽
+	-- 弹出选择提示，要求选择要破坏的怪兽。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 选择对方场上的1只怪兽作为破坏对象
+	-- 从对方场上选择1只怪兽作为效果对象。
 	local g=Duel.SelectTarget(tp,aux.TRUE,tp,0,LOCATION_MZONE,1,1,nil)
-	-- 设置效果操作信息，确定破坏的怪兽数量和类型
+	-- 登记本次效果将破坏1只怪兽。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,1,0,0)
 end
--- 效果发动的处理流程，对选中的对方怪兽进行破坏
+-- 效果处理：破坏所选择的对方怪兽。
 function c32663969.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前效果选择的目标怪兽
+	-- 取出效果对象。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 将目标怪兽以效果原因进行破坏
+		-- 以效果原因将对象怪兽破坏。
 		Duel.Destroy(tc,REASON_EFFECT)
 	end
 end
