@@ -7,7 +7,7 @@ function c44182827.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- 作为仪式召唤的祭品的怪兽卡不去墓地，回到持有者的卡组。
+	-- 作为仪式召唤的祭品的怪兽卡不去墓地，回到持有者的卡组。之后卡组洗切。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD)
 	e2:SetProperty(EFFECT_FLAG_SET_AVAILABLE+EFFECT_FLAG_IGNORE_RANGE+EFFECT_FLAG_IGNORE_IMMUNE)
@@ -17,7 +17,7 @@ function c44182827.initial_effect(c)
 	e2:SetValue(LOCATION_DECKSHF)
 	c:RegisterEffect(e2)
 end
--- 检索满足仪式召唤、解放、效果或素材条件的怪兽
+-- 判断怪兽卡是否因作为仪式召唤的祭品而离场（Reason包含解放、仪式召唤、效果、素材标志），若是则触发重定向到卡组并洗切的效果。
 function c44182827.rmtarget(e,c)
 	return c:GetReason()==REASON_RELEASE+REASON_RITUAL+REASON_EFFECT+REASON_MATERIAL
 end

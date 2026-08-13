@@ -32,76 +32,76 @@ function c44311445.initial_effect(c)
 	e2:SetOperation(c44311445.spop)
 	c:RegisterEffect(e2)
 end
--- 过滤满足条件的怪兽，用于XYZ召唤时判断是否可以作为超量素材的「魔偶甜点」怪兽（等级4以下且表侧表示）
+-- 定义叠放素材的额外条件：表侧表示、阶级4以下且属于「魔偶甜点」超量怪兽，用于实现这张卡也能在自己场上的4阶以下的「魔偶甜点」超量怪兽上面重叠来超量召唤。
 function c44311445.ovfilter(c)
 	return c:IsFaceup() and c:IsRankBelow(4) and c:IsSetCard(0x71)
 end
--- 过滤满足条件的「魔偶甜点」卡，用于选择返回卡组的卡
+-- 定义效果①的对象过滤条件：自己墓地中属于「魔偶甜点」且能够返回卡组的卡。
 function c44311445.tdfilter(c)
 	return c:IsSetCard(0x71) and c:IsAbleToDeck()
 end
--- 设置效果目标，选择墓地中的「魔偶甜点」卡作为目标
+-- 效果①发动时的目标处理：确认可以选择自己墓地1张「魔偶甜点」卡为对象，选择对象后将该卡设定为连锁对象，并登记本次操作信息为返回卡组。
 function c44311445.tdtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(tp) and chkc:IsLocation(LOCATION_GRAVE) and c44311445.tdfilter(chkc) end
-	-- 检查是否有满足条件的墓地「魔偶甜点」卡作为目标
+	-- 发动合法性检查：自己墓地是否存在至少1张满足「魔偶甜点」且能返回卡组的卡可以作为对象。
 	if chk==0 then return Duel.IsExistingTarget(c44311445.tdfilter,tp,LOCATION_GRAVE,0,1,nil) end
-	-- 提示玩家选择要返回卡组的卡
+	-- 向玩家显示“请选择要返回卡组的卡”的提示，用于选择卡片的界面交互。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TODECK)  --"请选择要返回卡组的卡"
-	-- 选择墓地中的「魔偶甜点」卡作为目标
+	-- 让玩家从自己墓地选择1张符合条件的「魔偶甜点」卡作为效果①的对象，并将该卡登记为当前连锁的对象。
 	local g=Duel.SelectTarget(tp,c44311445.tdfilter,tp,LOCATION_GRAVE,0,1,1,nil)
-	-- 设置效果操作信息，确定将目标卡返回卡组
+	-- 登记操作信息：本次效果将把1张卡返回卡组，指定对象为已选中的那张卡，供连锁中的其他卡进行检测。
 	Duel.SetOperationInfo(0,CATEGORY_TODECK,g,1,0,0)
 end
--- 处理效果的发动，将目标卡返回卡组
+-- 效果①的解决处理：取得对象卡，若对象仍与该效果关联，则将其洗回持有者卡组。
 function c44311445.tdop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前效果的目标卡
+	-- 取得效果①发动时所选择的1张对象卡。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 将目标卡返回卡组并洗牌
+		-- 将对象卡返回其持有者卡组并洗牌，返回原因是效果。
 		Duel.SendtoDeck(tc,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
 	end
 end
--- 过滤满足条件的卡，用于判断是否为从墓地回到卡组的「魔偶甜点」卡
+-- 定义②触发事件的过滤条件：该卡是「魔偶甜点」卡、当前在卡组、先前控制者是效果发动者、先前位置是墓地，用于判断自己墓地的「魔偶甜点」卡回到卡组。
 function c44311445.cfilter(c,tp)
 	return c:IsSetCard(0x71) and c:IsLocation(LOCATION_DECK)
 		and c:IsPreviousControler(tp) and c:IsPreviousLocation(LOCATION_GRAVE)
 end
--- 判断是否满足触发效果的条件，即本卡有「魔偶甜点·布丁公主」作为超量素材且有「魔偶甜点」卡从墓地回到卡组
+-- ②效果的诱发条件：这张卡的超量素材中存在「魔偶甜点·布丁公主」，并且本次事件中有满足条件的自己墓地的「魔偶甜点」卡回到了卡组。
 function c44311445.spcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():GetOverlayGroup():IsExists(Card.IsCode,1,nil,74641045) and eg:IsExists(c44311445.cfilter,1,nil,tp)
 end
--- 设置效果发动的费用，移除本卡的一个超量素材
+-- ②效果的发动代价：从这张卡上取除1个超量素材；检查时确认是否可以取除，实际处理时执行取除。
 function c44311445.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	if chk==0 then return c:CheckRemoveOverlayCard(tp,1,REASON_COST) end
 	c:RemoveOverlayCard(tp,1,1,REASON_COST)
 end
--- 过滤满足条件的「魔偶甜点」怪兽，用于特殊召唤
+-- 定义从卡组特殊召唤的过滤条件：属于「魔偶甜点」且能够以表侧攻击表示或里侧守备表示被特殊召唤。
 function c44311445.spfilter(c,e,tp)
 	return c:IsSetCard(0x71) and c:IsCanBeSpecialSummoned(e,0,tp,false,false,POS_FACEUP_ATTACK+POS_FACEDOWN_DEFENSE)
 end
--- 设置特殊召唤效果的目标，检查是否有满足条件的「魔偶甜点」怪兽可特殊召唤
+-- ②效果的发动条件与目标设定：确认我方主要怪兽区有空位，且卡组中存在至少1只符合条件的「魔偶甜点」怪兽，并将操作信息登记为从卡组特殊召唤1只。
 function c44311445.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查场上是否有足够的位置进行特殊召唤
+	-- 发动合法性检查：我方主要怪兽区是否有空位，用于后续特殊召唤或盖放怪兽。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查卡组中是否有满足条件的「魔偶甜点」怪兽
+		-- 发动合法性检查：卡组中是否存在至少1只能以表侧攻击表示或里侧守备表示特殊召唤的「魔偶甜点」怪兽。
 		and Duel.IsExistingMatchingCard(c44311445.spfilter,tp,LOCATION_DECK,0,1,nil,e,tp) end
-	-- 设置效果操作信息，确定将从卡组特殊召唤怪兽
+	-- 登记操作信息：本次效果将从卡组特殊召唤1只「魔偶甜点」怪兽，处理时才确定具体卡片，因此targets设为nil。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_DECK)
 end
--- 处理效果的发动，从卡组特殊召唤怪兽
+-- ②效果的解决处理：若我方主要怪兽区仍有空位，则从卡组选择1只符合条件的「魔偶甜点」怪兽，以表侧攻击表示或里侧守备表示特殊召唤；若为里侧守备表示特殊召唤成功，则让对方确认该卡。
 function c44311445.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查场上是否有足够的位置进行特殊召唤
+	-- 处理时再次确认我方主要怪兽区是否有空位，若无空位则本效果不处理。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-	-- 提示玩家选择要特殊召唤的卡
+	-- 向玩家显示“请选择要特殊召唤的卡”的提示，用于选择卡片的界面交互。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 选择卡组中满足条件的「魔偶甜点」怪兽作为特殊召唤目标
+	-- 从卡组选择1只符合条件的「魔偶甜点」怪兽，用于本次特殊召唤。
 	local g=Duel.SelectMatchingCard(tp,c44311445.spfilter,tp,LOCATION_DECK,0,1,1,nil,e,tp)
 	local tc=g:GetFirst()
 	if tc then
-		-- 执行特殊召唤操作，并确认对方是否能看到里侧表示的怪兽
+		-- 将选择的怪兽以表侧攻击表示或里侧守备表示特殊召唤；若特殊召唤成功且该怪兽处于里侧表示，则执行后续的确认操作。
 		if Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP_ATTACK+POS_FACEDOWN_DEFENSE)~=0 and tc:IsFacedown() then
-			-- 确认对方能看到特殊召唤的里侧表示怪兽
+			-- 让对方玩家确认里侧守备表示特殊召唤出来的「魔偶甜点」怪兽。
 			Duel.ConfirmCards(1-tp,tc)
 		end
 	end
