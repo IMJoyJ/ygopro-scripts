@@ -12,7 +12,7 @@ function c28859794.initial_effect(c)
 	e1:SetValue(c28859794.valcon)
 	c:RegisterEffect(e1)
 end
--- 只有在战斗破坏的情况下才生效
+-- 此判定函数用于确认怪兽即将受到的破坏是否为战斗破坏。它检查破坏原因r中是否包含REASON_BATTLE标志，若包含则返回true，从而让EFFECT_INDESTRUCTABLE_COUNT效果消耗一次免疫次数并保护该怪兽不被这次战斗破坏。
 function c28859794.valcon(e,re,r,rp)
 	return bit.band(r,REASON_BATTLE)~=0
 end

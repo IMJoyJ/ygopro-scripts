@@ -5,7 +5,7 @@
 -- 【怪兽效果】
 -- ①：这张卡召唤·特殊召唤成功时，以场上1只怪兽为对象才能发动。那只怪兽除外。
 function c28865322.initial_effect(c)
-	-- 为灵摆怪兽添加灵摆怪兽属性（灵摆召唤，灵摆卡的发动）
+	-- 使该卡注册为灵摆怪兽，获得灵摆召唤及灵摆卡发动相关属性。
 	aux.EnablePendulumAttribute(c)
 	-- ①：1回合1次，把自己墓地1只「魔装战士」怪兽除外，以场上1张卡为对象才能发动。那张卡破坏。
 	local e2=Effect.CreateEffect(c)
@@ -18,7 +18,7 @@ function c28865322.initial_effect(c)
 	e2:SetTarget(c28865322.destg)
 	e2:SetOperation(c28865322.desop)
 	c:RegisterEffect(e2)
-	-- ①：这张卡召唤·特殊召唤成功时，以场上1只怪兽为对象才能发动。那只怪兽除外。
+	-- 【怪兽效果】①：这张卡召唤·特殊召唤成功时，以场上1只怪兽为对象才能发动。那只怪兽除外。
 	local e3=Effect.CreateEffect(c)
 	e3:SetCategory(CATEGORY_REMOVE)
 	e3:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
@@ -31,60 +31,60 @@ function c28865322.initial_effect(c)
 	e4:SetCode(EVENT_SPSUMMON_SUCCESS)
 	c:RegisterEffect(e4)
 end
--- 过滤函数，用于检查是否满足除外条件（魔装战士卡牌、怪兽类型、可除外）
+-- 定义代价过滤条件：卡名属于「魔装战士」字段的怪兽，且可作为代价从墓地除外。
 function c28865322.cfilter(c)
 	return c:IsSetCard(0xca) and c:IsType(TYPE_MONSTER) and c:IsAbleToRemoveAsCost()
 end
--- 效果发动时的费用支付处理，检查并选择1张墓地的魔装战士怪兽除外作为费用
+-- 代价处理函数：确认墓地存在符合条件的「魔装战士」怪兽后，选择1张将其表侧表示除外作为发动代价。
 function c28865322.descost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查场上是否存在满足条件的卡片（用于费用支付阶段）
+	-- 代价确认阶段：检查自己墓地是否存在至少1张满足条件且可作为代价除外的「魔装战士」怪兽。
 	if chk==0 then return Duel.IsExistingMatchingCard(c28865322.cfilter,tp,LOCATION_GRAVE,0,1,nil) end
-	-- 提示玩家选择要除外的卡
+	-- 弹出选择提示，告知玩家要选择除外的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
-	-- 选择满足条件的1张墓地魔装战士怪兽
+	-- 从自己墓地选择1张符合条件的「魔装战士」怪兽，作为本次发动的除外代价。
 	local g=Duel.SelectMatchingCard(tp,c28865322.cfilter,tp,LOCATION_GRAVE,0,1,1,nil)
-	-- 将选中的卡以除外形式移除（作为费用）
+	-- 将选中的卡以表侧表示除外，该除外行为作为效果发动的代价。
 	Duel.Remove(g,POS_FACEUP,REASON_COST)
 end
--- 设置灵摆效果的目标选择处理，选择场上任意1张卡作为破坏对象
+-- 破坏效果的目标选择函数：选择场上1张卡作为对象，并登记破坏操作信息。
 function c28865322.destg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsOnField() end
-	-- 检查场上是否存在满足条件的卡片（用于效果发动阶段）
+	-- 发动确认阶段：检查场上是否存在至少1张可以成为效果对象的卡（任意卡）。
 	if chk==0 then return Duel.IsExistingTarget(aux.TRUE,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,nil) end
-	-- 提示玩家选择要破坏的卡
+	-- 弹出选择提示，告知玩家要选择破坏的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 选择场上任意1张卡作为破坏对象
+	-- 选择场上1张卡作为效果对象，并将其登记为当前连锁的指定对象。
 	local g=Duel.SelectTarget(tp,aux.TRUE,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,1,nil)
-	-- 设置效果操作信息，确定破坏效果的处理对象
+	-- 登记操作信息，宣告将对1张对象卡进行破坏，供连锁判定使用。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,1,0,0)
 end
--- 执行灵摆效果的破坏操作，将目标卡破坏
+-- 破坏效果处理函数：取得对象卡，若对象仍与该效果关联，则将其破坏。
 function c28865322.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁效果的目标卡
+	-- 取得当前连锁处理中第一张被设定的效果对象卡。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 将目标卡以破坏形式处理
+		-- 以效果原因将对象卡破坏。
 		Duel.Destroy(tc,REASON_EFFECT)
 	end
 end
--- 设置召唤/特殊召唤成功时的效果目标选择处理，选择场上1只怪兽除外
+-- 除外效果的目标选择函数：选择场上1只怪兽作为对象，并登记除外操作信息。
 function c28865322.remtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsAbleToRemove() end
-	-- 检查场上是否存在满足条件的怪兽（用于效果发动阶段）
+	-- 发动确认阶段：检查场上是否存在至少1只可以被除外的怪兽。
 	if chk==0 then return Duel.IsExistingTarget(Card.IsAbleToRemove,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil) end
-	-- 提示玩家选择要除外的卡
+	-- 弹出选择提示，告知玩家要选择除外的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
-	-- 选择场上1只怪兽作为除外对象
+	-- 选择场上1只可以被除外的怪兽作为效果对象，并登记为当前连锁的指定对象。
 	local g=Duel.SelectTarget(tp,Card.IsAbleToRemove,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,nil)
-	-- 设置效果操作信息，确定除外效果的处理对象
+	-- 登记操作信息，宣告将对1只对象怪兽进行除外，供连锁判定使用。
 	Duel.SetOperationInfo(0,CATEGORY_REMOVE,g,1,0,0)
 end
--- 执行召唤/特殊召唤成功时的效果，将目标怪兽除外
+-- 除外效果处理函数：取得对象卡，若对象仍与该效果关联，则将其除外。
 function c28865322.remop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁效果的目标卡
+	-- 取得当前连锁处理中第一张被设定的效果对象卡。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 将目标卡以除外形式处理
+		-- 以效果原因将对象卡表侧表示除外。
 		Duel.Remove(tc,POS_FACEUP,REASON_EFFECT)
 	end
 end

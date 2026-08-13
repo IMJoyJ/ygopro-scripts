@@ -11,18 +11,18 @@ function c28877100.initial_effect(c)
 	e1:SetOperation(c28877100.activate)
 	c:RegisterEffect(e1)
 end
--- 过滤函数，用于检查场上是否存在表侧表示且名字带有「剑斗兽」的怪兽
+-- 筛选表侧表示且卡名属于「剑斗兽」的怪兽，用于判断场上是否存在满足发动条件的剑斗兽。
 function c28877100.filter(c)
 	return c:IsFaceup() and c:IsSetCard(0x1019)
 end
--- 条件函数，判断是否满足发动条件：自己场上存在名字带有「剑斗兽」的怪兽
+-- 发动条件判定：自己场上存在至少1只表侧表示且名字带有「剑斗兽」的怪兽时条件成立，允许发动。
 function c28877100.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查以自己为玩家，在自己的主要怪兽区是否存在至少1张满足filter条件的卡
+	-- 检查自己场上是否存在满足筛选条件的「剑斗兽」怪兽（至少1只）。
 	return Duel.IsExistingMatchingCard(c28877100.filter,tp,LOCATION_MZONE,0,1,nil)
 end
--- 发动效果函数，设置永续效果使自己控制的怪兽不会被战斗破坏且自己受到的战斗伤害为0，并将此卡送回卡组底端
+-- 效果处理：给己方玩家附加战斗伤害为0的防护效果，给自己场上怪兽附加不会被战斗破坏的效果，然后将这张卡送回卡组最下面。
 function c28877100.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 这回合内自己控制的怪兽不会被战斗破坏
+	-- 自己受到的战斗伤害为0。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_AVOID_BATTLE_DAMAGE)
@@ -30,20 +30,20 @@ function c28877100.activate(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetTargetRange(1,0)
 	e1:SetValue(1)
 	e1:SetReset(RESET_PHASE+PHASE_END)
-	-- 将效果e1注册给玩家tp，使其生效
+	-- 将战斗伤害为0的效果注册生效，作用于己方玩家。
 	Duel.RegisterEffect(e1,tp)
-	-- 这回合内自己控制的怪兽不会被战斗破坏且自己受到的战斗伤害为0
+	-- 自己控制的怪兽不会被战斗破坏；这张卡回到自己卡组最下面。
 	local e2=Effect.CreateEffect(e:GetHandler())
 	e2:SetType(EFFECT_TYPE_FIELD)
 	e2:SetCode(EFFECT_INDESTRUCTABLE_BATTLE)
 	e2:SetTargetRange(LOCATION_MZONE,0)
 	e2:SetReset(RESET_PHASE+PHASE_END)
 	e2:SetValue(1)
-	-- 将效果e2注册给玩家tp，使其生效
+	-- 将‘怪兽不会被战斗破坏’的效果注册生效，作用于己方场上所有怪兽。
 	Duel.RegisterEffect(e2,tp)
 	if e:GetHandler():IsRelateToEffect(e) then
 		e:GetHandler():CancelToGrave()
-		-- 将此卡以效果为原因送回自己卡组底端
+		-- 将发动后的这张卡以效果形式送回持有者卡组最下面。
 		Duel.SendtoDeck(e:GetHandler(),nil,SEQ_DECKBOTTOM,REASON_EFFECT)
 	end
 end

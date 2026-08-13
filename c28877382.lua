@@ -4,7 +4,7 @@
 -- ①：这张卡召唤·特殊召唤的场合或者被效果破坏的场合才能发动。从卡组把「终刻龙机5-阿玛尔忒」以外的1只「终刻」怪兽加入手卡。
 -- ②：自己·对方回合，这张卡有装备卡装备的场合才能发动。把持有和这张卡的等级相同数值的阶级的1只机械族·风属性超量怪兽当作超量召唤从额外卡组特殊召唤，把这张卡以及这张卡的装备卡全部作为那超量素材。
 local s,id,o=GetID()
--- 创建并注册该卡的3个效果，分别对应①②效果的三种触发条件（通常召唤、特殊召唤、被破坏）和②效果（超量召唤）
+-- 定义并注册卡片的①、②两个效果：①为召唤·特殊召唤成功或被效果破坏时从卡组检索「终刻」怪兽；②为有装备卡时在双方回合从额外卡组当作超量召唤特殊召唤机械族·风属性超量怪兽，并将这张卡和装备卡全部作为超量素材。
 function s.initial_effect(c)
 	-- ①：这张卡召唤·特殊召唤的场合或者被效果破坏的场合才能发动。从卡组把「终刻龙机5-阿玛尔忒」以外的1只「终刻」怪兽加入手卡。
 	local e1=Effect.CreateEffect(c)
@@ -38,78 +38,78 @@ function s.initial_effect(c)
 	e4:SetOperation(s.xyzop)
 	c:RegisterEffect(e4)
 end
--- 判断被破坏的原因是否为效果破坏
+-- 效果①的破坏条件：判断这张卡被破坏的原因是否为效果（REASON_EFFECT），即仅限‘被效果破坏’的场合。
 function s.thcon(e,tp,eg,ep,ev,re,r,rp,chk)
 	return e:GetHandler():IsReason(REASON_EFFECT)
 end
--- 筛选满足条件的「终刻」怪兽（非本卡、可加入手牌）
+-- 检索过滤条件：选择卡名不是「终刻龙机5-阿玛尔忒」、属于「终刻」字段、是怪兽卡且能加入手卡的卡。
 function s.thfilter(c)
 	return not c:IsCode(id) and c:IsSetCard(0x1d2) and c:IsType(TYPE_MONSTER) and c:IsAbleToHand()
 end
--- 设置检索并加入手牌的效果处理信息
+-- 效果①的发动目标判定：在合法性检查（chk==0）时确认卡组中存在符合条件的检索对象；之后设置从卡组将1张卡加入手卡的操作信息，并向对方提示发动了效果①。
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否满足检索条件（卡组存在符合条件的怪兽）
+	-- 发动检查：确认己方卡组中存在至少1张符合条件的「终刻」怪兽可供检索。
 	if chk==0 then return Duel.IsExistingMatchingCard(s.thfilter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置操作信息：将1张卡从卡组加入手牌
+	-- 设置操作信息：本次效果将卡组中的1张卡加入手卡（CATEGORY_TOHAND），来源为卡组（LOCATION_DECK）。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
-	-- 提示对方玩家该效果已被发动
+	-- 向对方玩家（1-tp）提示本方发动了效果①，展示效果描述。
 	Duel.Hint(HINT_OPSELECTED,1-tp,e:GetDescription())
 end
--- 处理效果发动后的操作：选择并加入手牌
+-- 效果①的操作处理：从卡组选择1张符合条件的「终刻」怪兽加入手卡，并向对方展示确认。
 function s.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要加入手牌的卡
+	-- 提示己方玩家选择要加入手牌的卡（显示‘请选择要加入手牌的卡’）。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择满足条件的1张卡加入手牌
+	-- 己方从卡组中选择1张满足s.thfilter条件的「终刻」怪兽。
 	local g=Duel.SelectMatchingCard(tp,s.thfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if #g>0 then
-		-- 将选中的卡加入手牌
+		-- 将选中的卡以效果原因（REASON_EFFECT）加入其持有者的手卡。
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 确认对方玩家看到加入手牌的卡
+		-- 将加入手卡的卡展示给对方玩家（1-tp）确认。
 		Duel.ConfirmCards(1-tp,g)
 	end
 end
--- 判断是否满足超量召唤条件（装备卡存在且均可叠放）
+-- 效果②的发动条件：这张卡装备有装备卡，且这些装备卡都能作为超量素材叠放（不存在不能叠放的装备卡）。
 function s.xyzcon(e,tp,eg,ep,ev,re,r,rp)
 	local g=e:GetHandler():GetEquipGroup()
-	-- 装备卡存在且均可叠放
+	-- 返回是否有装备卡（装备组数量>0），且不存在不能作为超量素材叠放的装备卡。
 	return g:GetCount()>0 and not g:IsExists(aux.NOT(Card.IsCanOverlay),1,nil)
 end
--- 筛选满足条件的机械族·风属性超量怪兽（等级匹配、可特殊召唤）
+-- 额外卡组超量召唤候选的过滤：机械族、风属性、阶级等于这张卡的等级、是超量怪兽（且是怪兽卡），并且可以当作超量召唤特殊召唤，还有足够可用怪兽区域。
 function s.spfilter(c,e,tp,lv)
 	return c:IsRace(RACE_MACHINE) and c:IsAttribute(ATTRIBUTE_WIND) and c:IsRank(lv) and c:IsAllTypes(TYPE_XYZ+TYPE_MONSTER)
-		-- 检查是否满足特殊召唤条件（可特殊召唤、有召唤空位）
+		-- 确认候选怪兽可以以超量召唤方式（SUMMON_TYPE_XYZ）被特殊召唤，且从额外卡组特殊召唤后有可用的怪兽区域。
 		and c:IsCanBeSpecialSummoned(e,SUMMON_TYPE_XYZ,tp,false,false) and Duel.GetLocationCountFromEx(tp,tp,nil,c)>0
 end
--- 设置超量召唤效果的处理信息
+-- 效果②的发动目标判定：确认这张卡本身能作为超量素材、没有必须作为超量素材的限制影响、额外卡组存在符合条件的超量怪兽；满足后设置特殊召唤操作信息并提示对方。
 function s.xyztg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	if chk==0 then return c:IsCanOverlay()
-		-- 检查是否满足必须成为超量素材的条件
+		-- 确认满足‘必须作为超量素材’（EFFECT_MUST_BE_XMATERIAL）的合法性检查，没有影响本次素材选择的限制。
 		and aux.MustMaterialCheck(nil,tp,EFFECT_MUST_BE_XMATERIAL)
-		-- 检查是否满足特殊召唤条件（额外卡组存在符合条件的怪兽）
+		-- 确认额外卡组中存在至少1只满足s.spfilter条件的超量怪兽（机械族·风属性·阶级等于本卡等级）。
 		and Duel.IsExistingMatchingCard(s.spfilter,tp,LOCATION_EXTRA,0,1,nil,e,tp,c:GetLevel()) end
-	-- 设置操作信息：将1只怪兽从额外卡组特殊召唤
+	-- 设置操作信息：本次效果从额外卡组特殊召唤1只超量怪兽（CATEGORY_SPECIAL_SUMMON）。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_EXTRA)
-	-- 提示对方玩家该效果已被发动
+	-- 向对方玩家（1-tp）提示本方发动了效果②，展示效果描述。
 	Duel.Hint(HINT_OPSELECTED,1-tp,e:GetDescription())
 end
--- 处理超量召唤效果：选择并特殊召唤，然后叠放装备卡
+-- 效果②的操作处理：选择额外卡组1只符合条件的超量怪兽进行超量召唤；成功后把这张卡及其全部装备卡叠放到该怪兽下方作为超量素材。
 function s.xyzop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if not c:IsRelateToChain() or c:IsFacedown() then return end
-	-- 检查是否满足必须成为超量素材的条件
+	-- 效果处理时再次进行‘必须作为超量素材’的合法性检查，若检查不通过则终止处理。
 	if not aux.MustMaterialCheck(nil,tp,EFFECT_MUST_BE_XMATERIAL) then return end
-	-- 提示玩家选择要特殊召唤的卡
+	-- 提示己方玩家选择要特殊召唤的卡（显示‘请选择要特殊召唤的卡’）。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 选择满足条件的1只怪兽特殊召唤
+	-- 己方从额外卡组选择1只满足s.spfilter条件的超量怪兽。
 	local sg=Duel.SelectMatchingCard(tp,s.spfilter,tp,LOCATION_EXTRA,0,1,1,nil,e,tp,c:GetLevel())
 	local sc=sg:GetFirst()
-	-- 执行特殊召唤操作
+	-- 若选中的卡存在且以超量召唤形式（SUMMON_TYPE_XYZ）特殊召唤成功（返回值≠0），则继续执行叠放处理。
 	if sc and Duel.SpecialSummon(sc,SUMMON_TYPE_XYZ,tp,tp,false,false,POS_FACEUP)~=0 then
 		sc:CompleteProcedure()
 		local g=c:GetEquipGroup()
 		g:AddCard(c)
-		-- 将装备卡叠放至特殊召唤的怪兽上
+		-- 将这张卡及其全部装备卡（g）叠放在超量召唤成功的怪兽sc下方，作为超量素材。
 		Duel.Overlay(sc,g)
 	end
 end

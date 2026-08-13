@@ -25,33 +25,33 @@ function c28884172.initial_effect(c)
 	e2:SetOperation(c28884172.atkop)
 	c:RegisterEffect(e2)
 end
--- 检索满足条件的墓地「我我我」怪兽（排除自己）
+-- 定义特殊召唤的过滤函数：从自己墓地中选出「我我我」字段、卡名不是「我我我术士」、且可以被当前效果特殊召唤的怪兽。
 function c28884172.spfilter(c,e,tp)
 	return c:IsSetCard(0x54) and not c:IsCode(28884172) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 判断是否满足特殊召唤的条件（包括场上是否有空位和墓地是否有符合条件的怪兽）
+-- 效果①的发动条件与取对象处理：若在连锁处理中确认对象，则判断该对象位于自己墓地且满足过滤条件；发动时需确认自己有可用怪兽区且墓地存在符合条件的对象。
 function c28884172.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(tp) and chkc:IsLocation(LOCATION_GRAVE) and c28884172.spfilter(chkc,e,tp) end
-	-- 判断场上是否有空位
+	-- 检查自己场上主要怪兽区是否有空位，判断能否进行特殊召唤。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 判断墓地是否有符合条件的怪兽
+		-- 检查自己墓地是否存在至少1张符合条件的「我我我」怪兽可供选择为对象。
 		and Duel.IsExistingTarget(c28884172.spfilter,tp,LOCATION_GRAVE,0,1,nil,e,tp) end
-	-- 提示玩家选择要特殊召唤的卡
+	-- 向玩家显示选择提示，要求选择要特殊召唤的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 选择目标怪兽
+	-- 让玩家从自己墓地的符合条件的「我我我」怪兽中选择1张，并将其登记为当前连锁的对象。
 	local g=Duel.SelectTarget(tp,c28884172.spfilter,tp,LOCATION_GRAVE,0,1,1,nil,e,tp)
-	-- 设置操作信息，确定特殊召唤的卡
+	-- 设置操作信息：本次效果处理将进行特殊召唤，预定处理1张对象卡。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,1,0,0)
 end
--- 执行特殊召唤操作，并设置不能特殊召唤的效果
+-- 效果①的解决处理：将选择的对象怪兽特殊召唤，然后对自己附加「不是『我我我』怪兽不能特殊召唤」的自肃效果。
 function c28884172.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取目标怪兽
+	-- 获取效果处理时记录的连锁对象卡（即先前选择的墓地怪兽）。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 将目标怪兽特殊召唤到场上
+		-- 将那只怪兽以表侧表示特殊召唤到自己场上。
 		Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP)
 	end
-	-- 设置不能特殊召唤的效果，限制玩家不能特殊召唤非「我我我」怪兽
+	-- 这个效果的发动后，直到回合结束时自己不是「我我我」怪兽不能特殊召唤。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
@@ -59,39 +59,39 @@ function c28884172.spop(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetTargetRange(1,0)
 	e1:SetTarget(c28884172.splimit)
 	e1:SetReset(RESET_PHASE+PHASE_END)
-	-- 注册不能特殊召唤的效果
+	-- 将自肃效果注册到场上，使己方玩家在结束阶段前不能特殊召唤非「我我我」怪兽。
 	Duel.RegisterEffect(e1,tp)
 end
--- 设置不能特殊召唤的限制条件（非「我我我」怪兽不能特殊召唤）
+-- 自肃效果的判定函数：不是「我我我」字段的怪兽不能被特殊召唤。
 function c28884172.splimit(e,c)
 	return not c:IsSetCard(0x54)
 end
--- 判断是否满足效果发动条件（超量素材被取除送去墓地且为超量怪兽效果发动）
+-- 效果②的发动条件：这张卡作为超量素材，因超量怪兽的效果发动而被取除并送去墓地。
 function c28884172.atkcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	return c:IsReason(REASON_COST) and re:IsActivated() and re:IsActiveType(TYPE_XYZ)
 		and c:IsPreviousLocation(LOCATION_OVERLAY)
 end
--- 判断目标是否为表侧表示的超量怪兽
+-- 效果②的对象过滤函数：选择自己场上表侧表示的超量怪兽。
 function c28884172.atkfilter(c)
 	return c:IsFaceup() and c:IsType(TYPE_XYZ)
 end
--- 判断是否满足攻击力上升的条件（场上存在表侧表示的超量怪兽）
+-- 效果②的取对象处理：确认对象为表侧表示的超量怪兽，并在发动时选择自己场上1只符合条件的目标。
 function c28884172.atktg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and c28884172.atkfilter(chkc) end
-	-- 判断场上是否存在表侧表示的超量怪兽
+	-- 效果②发动合法性检查：自己场上是否存在至少1只表侧表示的超量怪兽可以作为对象。
 	if chk==0 then return Duel.IsExistingTarget(c28884172.atkfilter,tp,LOCATION_MZONE,0,1,nil) end
-	-- 提示玩家选择表侧表示的超量怪兽
+	-- 向玩家显示选择提示，要求选择表侧表示的超量怪兽。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
-	-- 选择目标超量怪兽
+	-- 让玩家从自己场上表侧表示的超量怪兽中选择1只，并登记为当前连锁的对象。
 	Duel.SelectTarget(tp,c28884172.atkfilter,tp,LOCATION_MZONE,0,1,1,nil)
 end
--- 执行攻击力上升效果
+-- 效果②的解决处理：被选择的超量怪兽攻击力直到回合结束时上升500。
 function c28884172.atkop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取目标超量怪兽
+	-- 获取效果②选择的对象超量怪兽。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsFaceup() and tc:IsRelateToEffect(e) then
-		-- 给目标超量怪兽的攻击力加上500
+		-- 那只怪兽的攻击力直到回合结束时上升500。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)

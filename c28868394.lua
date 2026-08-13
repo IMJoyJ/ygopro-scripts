@@ -33,79 +33,79 @@ function c28868394.initial_effect(c)
 	e3:SetRange(LOCATION_GRAVE)
 	e3:SetCountLimit(1,28868394)
 	e3:SetCondition(c28868394.setcon)
-	-- 将此卡除外作为费用
+	-- 设置③效果的发动代价为把墓地中的这张卡除外（aux.bfgcost实现除外自身作为代价）。
 	e3:SetCost(aux.bfgcost)
 	e3:SetTarget(c28868394.settg)
 	e3:SetOperation(c28868394.setop)
 	c:RegisterEffect(e3)
 end
--- 过滤函数：检查场上是否有盖放的陷阱卡可以作为费用送去墓地
+-- 定义①效果的代价筛选条件：里侧表示的陷阱卡且可以作为代价送去墓地。
 function c28868394.costfilter(c)
 	return c:IsFacedown() and c:IsType(TYPE_TRAP) and c:IsAbleToGraveAsCost()
 end
--- 效果处理：选择场上1张盖放的陷阱卡送去墓地
+-- ①效果的代价处理函数：发动前检查是否存在符合条件的里侧陷阱卡；实际发动时选择1张并送去墓地作为代价。
 function c28868394.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否满足条件：场上存在至少1张盖放的陷阱卡
+	-- 代价检测阶段确认自己魔陷区是否存在至少1张满足costfilter的里侧陷阱卡，以判定代价是否可支付。
 	if chk==0 then return Duel.IsExistingMatchingCard(c28868394.costfilter,tp,LOCATION_SZONE,0,1,nil) end
-	-- 提示玩家选择要送去墓地的卡
+	-- 弹出选择提示，提示玩家选择要送去墓地的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
-	-- 选择场上1张盖放的陷阱卡
+	-- 从自己魔陷区选择1张满足costfilter的里侧陷阱卡作为代价。
 	local g=Duel.SelectMatchingCard(tp,c28868394.costfilter,tp,LOCATION_SZONE,0,1,1,nil)
-	-- 将选中的卡送去墓地作为费用
+	-- 将选择的卡送去墓地，作为发动代价（REASON_COST）。
 	Duel.SendtoGrave(g,REASON_COST)
 end
--- 效果处理：检查是否可以特殊召唤此卡
+-- ①效果的发动目标/条件判定函数：确认场上怪兽区有空位且此卡可以特殊召唤，并设置操作信息。
 function c28868394.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
-	-- 检查是否满足条件：场上存在空位且此卡可以特殊召唤
+	-- 发动时检查自己的主要怪兽区有空位，且这张卡可以以表侧表示特殊召唤。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0 and c:IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置操作信息：准备特殊召唤此卡
+	-- 将本次操作信息登记为特殊召唤此卡（CATEGORY_SPECIAL_SUMMON），供连锁与相关效果检测。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,c,1,0,0)
 end
--- 效果处理：执行特殊召唤
+-- ①效果处理函数：如果此卡仍与效果关联，则将其从手卡特殊召唤到场上。
 function c28868394.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) then
-		-- 将此卡特殊召唤到场上
+		-- 执行特殊召唤，将这张卡以表侧表示特殊召唤到自己的怪兽区。
 		Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
--- 效果过滤函数：判断效果是否影响「洞」或「落穴」陷阱卡
+-- ②效果的免疫判定函数：仅当发动效果的卡是「洞」或「落穴」系列的通常陷阱卡时，此卡不受其效果影响。
 function c28868394.efilter(e,te)
 	local c=te:GetHandler()
 	return c:GetType()==TYPE_TRAP and c:IsSetCard(0x4c,0x89)
 end
--- 过滤函数：检查场上是否有非额外区域的卡
+-- ③效果的发动条件过滤函数：判断魔陷区卡片是否位于非场地格（sequence<5），用于检测自己的魔法与陷阱区域是否有卡。
 function c28868394.confilter(c)
 	return c:GetSequence()<5
 end
--- 效果处理：检查魔法与陷阱区域是否为空
+-- ③效果的发动条件：自己的魔法与陷阱区域没有卡存在。
 function c28868394.setcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查场上魔法与陷阱区域是否为空
+	-- 统计自己魔陷区中满足confilter的卡数为0，若为0则条件成立。
 	return Duel.GetMatchingGroupCount(c28868394.confilter,tp,LOCATION_SZONE,0,nil)==0
 end
--- 过滤函数：检查墓地中的陷阱卡是否为「洞」或「落穴」
+-- ③效果选择对象的筛选条件：墓地中满足「洞」或「落穴」系列、通常陷阱类型，且可以盖放到魔陷区的卡。
 function c28868394.setfilter(c)
 	return c:GetType()==TYPE_TRAP and c:IsSetCard(0x4c,0x89) and c:IsSSetable()
 end
--- 效果处理：选择墓地中的「洞」或「落穴」陷阱卡
+-- ③效果的发动目标判定与选择函数：检查墓地是否存在符合条件的「洞」/「落穴」通常陷阱卡作为对象；进行对象选择并设置操作信息。
 function c28868394.settg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and c28868394.setfilter(chkc) end
-	-- 检查是否满足条件：墓地存在至少1张「洞」或「落穴」陷阱卡
+	-- 发动时检查自己墓地是否存在1张满足setfilter且除自身外的卡可以作为效果对象。
 	if chk==0 then return Duel.IsExistingTarget(c28868394.setfilter,tp,LOCATION_GRAVE,0,1,e:GetHandler()) end
-	-- 提示玩家选择要盖放的卡
+	-- 弹出选择提示，提示玩家选择要盖放的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SET)  --"请选择要盖放的卡"
-	-- 选择墓地中的「洞」或「落穴」陷阱卡
+	-- 从自己墓地选择1张满足setfilter的「洞」/「落穴」通常陷阱卡作为效果对象，并建立对象关联。
 	local g=Duel.SelectTarget(tp,c28868394.setfilter,tp,LOCATION_GRAVE,0,1,1,nil)
-	-- 设置操作信息：准备将卡盖放
+	-- 登记操作信息：该对象将离开墓地（CATEGORY_LEAVE_GRAVE），用于王家长眠之谷等相关检测。
 	Duel.SetOperationInfo(0,CATEGORY_LEAVE_GRAVE,g,1,0,0)
 end
--- 效果处理：执行盖放操作
+-- ③效果处理函数：取得对象卡，若仍与效果关联，则将其盖放到自己场上。
 function c28868394.setop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁中的目标卡
+	-- 取得发动时选择的对象卡（唯一对象）。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 将目标卡盖放到场上
+		-- 将对象卡盖放到自己魔法与陷阱区域。
 		Duel.SSet(tp,tc)
 	end
 end
