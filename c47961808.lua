@@ -12,7 +12,7 @@ function c47961808.initial_effect(c)
 	e1:SetTarget(c47961808.sumlimit)
 	c:RegisterEffect(e1)
 end
--- 检索满足条件的卡片组，判断怪兽属性是否为炎属性
+-- 作为该永续效果的限制条件：判定被特殊召唤的怪兽属性，若其属性不是炎属性，则返回 true，即禁止该特殊召唤。
 function c47961808.sumlimit(e,c,sump,sumtype,sumpos,targetp)
 	return c:GetAttribute()~=ATTRIBUTE_FIRE
 end

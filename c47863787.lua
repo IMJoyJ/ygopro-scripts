@@ -8,7 +8,7 @@ function c47863787.initial_effect(c)
 	e1:SetCode(EFFECT_MONSTER_SSET)
 	e1:SetValue(TYPE_SPELL)
 	c:RegisterEffect(e1)
-	-- 魔法与陷阱卡区域盖放的这张卡在对方回合被破坏送去墓地时，这张卡特殊召唤。此外，名字带有「古遗物」的卡被破坏送去自己墓地时才能发动。这张卡从手卡特殊召唤。
+	-- 魔法与陷阱卡区域盖放的这张卡在对方回合被破坏送去墓地时，这张卡特殊召唤。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(47863787,0))  --"特殊召唤"
 	e2:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -30,40 +30,40 @@ function c47863787.initial_effect(c)
 	e3:SetOperation(c47863787.spop)
 	c:RegisterEffect(e3)
 end
--- 规则层面：判断此卡是否在对方回合被破坏送入墓地，且之前处于魔陷区背面表示，且为我方控制。
+-- 判定满足特殊召唤的条件：此卡在被破坏前位于魔法与陷阱区域且为里侧表示、原控制者为效果发动者，并且是被破坏送去墓地且在对方回合。
 function c47863787.spcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	return c:IsPreviousLocation(LOCATION_SZONE) and c:IsPreviousPosition(POS_FACEDOWN)
 		and c:IsPreviousControler(tp)
-		-- 规则层面：判断此卡是否因破坏而进入墓地，且当前回合不是我方回合。
+		-- 进一步确认这张卡是因为破坏而被送去墓地，且当前回合为对方回合（满足“对方回合被破坏”的条件）。
 		and c:IsReason(REASON_DESTROY) and Duel.GetTurnPlayer()~=tp
 end
--- 规则层面：设置效果处理时的特殊召唤操作信息。
+-- 发动时确认：必发效果无需额外条件即返回true，并设置特殊召唤的操作信息。
 function c47863787.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 规则层面：设置特殊召唤的操作信息，指定目标为自身。
+	-- 登记本次连锁将进行特殊召唤的操作信息，用于后续时点检测。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 规则层面：执行特殊召唤操作，将此卡以正面表示形式特殊召唤到场上。
+-- 效果处理：若此卡仍与效果关联，则将其以表侧表示特殊召唤。
 function c47863787.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if not c:IsRelateToEffect(e) then return end
-	-- 规则层面：将此卡以正面表示形式特殊召唤到我方场上。
+	-- 执行特殊召唤：将此卡以表侧表示特殊召唤到其持有者的场上。
 	Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 end
--- 规则层面：定义过滤器函数，用于判断是否为我方控制的、带有「古遗物」字段且因破坏送入墓地的卡。
+-- 筛选条件：该卡的控制者为发动玩家、属于「古遗物」系列、并且是被破坏送去墓地。
 function c47863787.cfilter(c,tp)
 	return c:IsControler(tp) and c:IsSetCard(0x97) and c:IsReason(REASON_DESTROY)
 end
--- 规则层面：判断是否有满足条件的「古遗物」卡被破坏送入墓地。
+-- 触发条件：本次送去墓地的卡组中存在至少1张满足“古遗物”且被破坏送去自己墓地的卡。
 function c47863787.spcon2(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c47863787.cfilter,1,nil,tp)
 end
--- 规则层面：检查手牌是否可以特殊召唤，包括场地空位和召唤条件。
+-- 发动时确认：自己的主要怪兽区域有空位，且手牌的这张卡可以特殊召唤。
 function c47863787.sptg2(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 规则层面：检查我方场上是否有足够的怪兽区域用于特殊召唤。
+	-- 检查自己场上是否有可用的主要怪兽区域空格。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 规则层面：设置特殊召唤的操作信息，指定目标为自身。
+	-- 登记本次连锁将进行特殊召唤的操作信息，用于后续时点检测。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
