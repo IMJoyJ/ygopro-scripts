@@ -2,7 +2,7 @@
 -- 效果：
 -- 自己的准备阶段时，给与对方基本分对方场上存在的怪兽数×300分数值的伤害。
 function c46128076.initial_effect(c)
-	-- 创建效果，设置为场地区域触发的诱发必发效果，用于在准备阶段发动
+	-- 自己的准备阶段时，给与对方基本分对方场上存在的怪兽数×300分数值的伤害。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(46128076,0))  --"伤害"
 	e1:SetCategory(CATEGORY_DAMAGE)
@@ -16,27 +16,27 @@ function c46128076.initial_effect(c)
 	e1:SetOperation(c46128076.operation)
 	c:RegisterEffect(e1)
 end
--- 判断是否为当前回合玩家触发效果
+-- 效果发动条件判定函数：仅在效果持有者自己的回合（即自己的准备阶段）时才允许发动。
 function c46128076.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 只有当当前玩家等于回合玩家时效果才能发动
+	-- 判定当前回合玩家是否为效果发动者自己，确保满足“自己的准备阶段”这一条件。
 	return tp==Duel.GetTurnPlayer()
 end
--- 设置效果的目标处理函数，计算对方场上怪兽数量并设定伤害目标
+-- 效果发动时的目标设定与合法性检查：效果必定可发动，计算对方场上怪兽数量，将伤害对象设置为对方玩家，并写入预期的伤害操作信息。
 function c46128076.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 获取己方场上怪兽数量用于计算伤害值
+	-- 统计对方场上主要怪兽区域的怪兽数量，作为后续伤害数值的计算基准。
 	local ct=Duel.GetFieldGroupCount(tp,0,LOCATION_MZONE)
-	-- 设定连锁处理对象为对方玩家
+	-- 将当前连锁处理的对象玩家设置为对方玩家（1-tp），使后续伤害效果指向对方。
 	Duel.SetTargetPlayer(1-tp)
-	-- 设置操作信息，指定将对对方造成伤害，伤害值为场上怪兽数×300
+	-- 设置操作信息：声明本效果属于伤害效果，目标玩家为对方，预计造成的伤害值为对方场上怪兽数×300。
 	Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,1-tp,ct*300)
 end
--- 设置效果的发动处理函数，执行实际的伤害效果
+-- 效果处理函数：从连锁信息中取出目标玩家，按处理时对方场上实际存在的怪兽数计算伤害并给予伤害。
 function c46128076.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁中设定的目标玩家
+	-- 从当前连锁信息中取得此前记录的对象玩家，即承受这次伤害的对方玩家。
 	local p=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER)
-	-- 再次获取己方场上怪兽数量用于计算伤害值
+	-- 效果处理时再次统计对方场上存在的怪兽数量，以最新的怪兽数作为伤害计算依据。
 	local ct=Duel.GetFieldGroupCount(tp,0,LOCATION_MZONE)
-	-- 对目标玩家造成伤害，伤害值为场上怪兽数×300
+	-- 以卡牌效果为原因，对目标玩家造成对方场上怪兽数×300点的伤害。
 	Duel.Damage(p,ct*300,REASON_EFFECT)
 end

@@ -12,7 +12,7 @@ function c46145256.initial_effect(c)
 	e1:SetTarget(c46145256.sumlimit)
 	c:RegisterEffect(e1)
 end
--- 判断参与特殊召唤的怪兽是否为光属性，若不是则禁止其特殊召唤
+-- 作为效果的目标判定函数：当任意怪兽将要被特殊召唤时，检查其属性，若该怪兽的属性不是光属性（GetAttribute() != ATTRIBUTE_LIGHT），则返回 true，使本次特殊召唤被禁止。
 function c46145256.sumlimit(e,c,sump,sumtype,sumpos,targetp)
 	return c:GetAttribute()~=ATTRIBUTE_LIGHT
 end

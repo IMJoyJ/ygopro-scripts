@@ -4,7 +4,7 @@
 -- ①：把手卡1只仪式怪兽给对方观看才能发动。这张卡从手卡特殊召唤。
 -- ②：这张卡特殊召唤成功的场合才能发动。从卡组把1张「书灵师」魔法卡加入手卡。
 local s,id,o=GetID()
--- 创建两个效果，分别对应①和②效果
+-- 创建并注册两个效果：①起动效果从手卡特殊召唤自身；②特殊召唤成功时从卡组检索「书灵师」魔法卡。
 function s.initial_effect(c)
 	-- ①：把手卡1只仪式怪兽给对方观看才能发动。这张卡从手卡特殊召唤。
 	local e1=Effect.CreateEffect(c)
@@ -29,62 +29,62 @@ function s.initial_effect(c)
 	e2:SetOperation(s.d2hop)
 	c:RegisterEffect(e2)
 end
--- 检索满足条件的仪式怪兽（未公开）
+-- 筛选可作为①效果展示代价的卡：必须是手卡中的仪式怪兽，且当前不是公开状态。
 function s.spcostfilter(c)
 	return c:IsType(TYPE_RITUAL) and c:IsType(TYPE_MONSTER) and not c:IsPublic()
 end
--- 检查是否满足①效果的发动条件并处理cost，选择一张手牌中的仪式怪兽给对方确认并洗切手牌
+-- ①效果的发动代价处理：从手卡选择1只仪式怪兽给对方观看，然后洗切手卡。
 function s.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
-	-- 检查是否存在满足条件的仪式怪兽
+	-- 代价检查阶段判断手卡是否存在1只符合条件的仪式怪兽。
 	if chk==0 then return Duel.IsExistingMatchingCard(s.spcostfilter,tp,LOCATION_HAND,0,1,c) end
-	-- 提示玩家选择要给对方确认的卡
+	-- 弹出“请选择给对方确认的卡”的选择提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_CONFIRM)  --"请选择给对方确认的卡"
-	-- 选择一张手牌中的仪式怪兽
+	-- 由自己从手卡选择1张符合条件的仪式怪兽（不选择自身）作为展示对象。
 	local g=Duel.SelectMatchingCard(tp,s.spcostfilter,tp,LOCATION_HAND,0,1,1,c)
-	-- 向对方确认所选的卡
+	-- 将选择的卡展示给对方玩家确认。
 	Duel.ConfirmCards(1-tp,g)
-	-- 将自己的手牌洗切
+	-- 展示后洗切自己的手卡。
 	Duel.ShuffleHand(tp)
 end
--- 设置①效果的发动条件，判断是否能特殊召唤
+-- ①效果的发动条件判断：自己主要怪兽区有空位，且这张卡可以从手卡特殊召唤。
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
-	-- 判断场上是否有足够的位置进行特殊召唤
+	-- 检查自己主要怪兽区是否存在可用的空格。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and c:IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置操作信息，表示将要特殊召唤这张卡
+	-- 设置操作信息，标明本次效果将要把这张卡特殊召唤。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,c,1,0,0)
 end
--- 处理①效果的发动，将自己特殊召唤到场上
+-- ①效果处理时，若这张卡仍与效果关联，则将其特殊召唤。
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) then
-		-- 将自己以正面表示的形式特殊召唤到场上
+		-- 将这张卡以表侧表示特殊召唤到自己的主要怪兽区。
 		Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
--- 检索满足条件的「书灵师」魔法卡
+-- 筛选卡组中符合条件的「书灵师」魔法卡：属于「书灵师」字段、是魔法卡且能够加入手卡。
 function s.d2hfilter(c)
 	return c:IsSetCard(0x17c) and c:IsType(TYPE_SPELL) and c:IsAbleToHand()
 end
--- 设置②效果的发动条件，判断是否能从卡组检索魔法卡
+-- ②效果的发动条件判断：卡组中存在符合条件的「书灵师」魔法卡；同时设置从卡组加入手卡的操作信息。
 function s.d2htg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查卡组中是否存在满足条件的魔法卡
+	-- 发动时检查卡组是否存在至少1张符合条件的「书灵师」魔法卡。
 	if chk==0 then return Duel.IsExistingMatchingCard(s.d2hfilter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置操作信息，表示将要将一张魔法卡加入手牌
+	-- 设置操作信息，表示此效果将从卡组把1张卡加入手卡。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 处理②效果的发动，从卡组选择一张「书灵师」魔法卡加入手牌并确认给对方
+-- ②效果处理时，从卡组选择1张「书灵师」魔法卡加入手卡，并让对方确认。
 function s.d2hop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要加入手牌的卡
+	-- 弹出“请选择要加入手牌的卡”的选择提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 从卡组中选择一张满足条件的魔法卡
+	-- 从卡组选择1张符合条件的「书灵师」魔法卡。
 	local g=Duel.SelectMatchingCard(tp,s.d2hfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if #g>0 then
-		-- 将选中的魔法卡送入手牌
+		-- 将选择的卡加入其持有者的手卡。
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 向对方确认所选的卡
+		-- 将加入手卡的卡展示给对方玩家确认。
 		Duel.ConfirmCards(1-tp,g)
 	end
 end

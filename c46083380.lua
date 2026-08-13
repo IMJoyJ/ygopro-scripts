@@ -17,8 +17,8 @@ function c46083380.initial_effect(c)
 	e2:SetCondition(c46083380.atcon)
 	c:RegisterEffect(e2)
 end
--- 检查对方场上怪兽数量是否大于等于3
+-- 攻击禁止效果的条件函数：仅在对方场上怪兽数量达到3只或以上时，该效果才适用。
 function c46083380.atcon(e)
-	-- 获取当前卡片控制者在对方场上的怪兽数量
+	-- 统计效果控制者对方怪兽区的怪兽数量，判断是否大于等于3，作为是否禁止攻击宣言的判定条件。
 	return Duel.GetFieldGroupCount(e:GetHandlerPlayer(),0,LOCATION_MZONE)>=3
 end
