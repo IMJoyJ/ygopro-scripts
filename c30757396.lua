@@ -3,10 +3,10 @@
 -- 调整＋调整以外的怪兽1只以上
 -- 对方的准备阶段时，可以给与对方基本分对方场上存在的卡每1张300分伤害。此外，对方把魔法·陷阱卡盖放时，给与对方基本分300分伤害。
 function c30757396.initial_effect(c)
-	-- 添加同调召唤手续，要求1只调整和1只调整以外的怪兽
+	-- 为这张卡添加同调召唤手续：调整怪兽（不限）+调整以外的怪兽1只以上
 	aux.AddSynchroProcedure(c,nil,aux.NonTuner(nil),1)
 	c:EnableReviveLimit()
-	-- 对方的准备阶段时，可以给与对方基本分对方场上存在的卡每1张300分伤害
+	-- 对方的准备阶段时，可以给与对方基本分对方场上存在的卡每1张300分伤害。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(30757396,0))  --"给与对方伤害"
 	e1:SetCategory(CATEGORY_DAMAGE)
@@ -19,7 +19,7 @@ function c30757396.initial_effect(c)
 	e1:SetTarget(c30757396.damtg)
 	e1:SetOperation(c30757396.damop)
 	c:RegisterEffect(e1)
-	-- 对方把魔法·陷阱卡盖放时，给与对方基本分300分伤害
+	-- 此外，对方把魔法·陷阱卡盖放时，给与对方基本分300分伤害。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(30757396,0))  --"给与对方伤害"
 	e2:SetCategory(CATEGORY_DAMAGE)
@@ -32,48 +32,48 @@ function c30757396.initial_effect(c)
 	e2:SetOperation(c30757396.damop2)
 	c:RegisterEffect(e2)
 end
--- 判断是否为对方的准备阶段
+-- 定义第一个效果（对方准备阶段伤害）的发动条件函数
 function c30757396.damcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 确保当前回合玩家不是对方
+	-- 效果发动条件：当前不是这张卡的控制者的回合，即对方的准备阶段
 	return tp~=Duel.GetTurnPlayer()
 end
--- 计算对方场上存在的卡的数量并设置伤害值
+-- 定义第一个效果（对方准备阶段伤害）的目标函数，设置伤害对象与伤害信息
 function c30757396.damtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 获取对方场上存在的卡的数量
+	-- 统计对方场上存在的卡片数量，作为伤害计算依据
 	local ct=Duel.GetFieldGroupCount(tp,0,LOCATION_ONFIELD)
 	if chk==0 then return ct>0 end
-	-- 设置连锁的目标玩家为对方
+	-- 将效果对象玩家设为对方
 	Duel.SetTargetPlayer(1-tp)
-	-- 设置连锁的操作信息为对对方造成伤害
+	-- 登记效果处理时将给对方造成 ct×300 点伤害
 	Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,1-tp,ct*300)
 end
--- 执行对对方造成伤害的操作
+-- 定义第一个效果（对方准备阶段伤害）的处理函数，实际造成伤害
 function c30757396.damop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁的目标玩家
+	-- 获取连锁中记录的对象玩家（伤害对象）
 	local p=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER)
-	-- 获取对方场上存在的卡的数量
+	-- 效果处理时重新统计对方场上卡片数量
 	local ct=Duel.GetFieldGroupCount(tp,0,LOCATION_ONFIELD)
-	-- 对目标玩家造成伤害
+	-- 给对象玩家造成 ct×300 点效果伤害
 	Duel.Damage(p,ct*300,REASON_EFFECT)
 end
--- 判断是否有对方的魔法·陷阱卡被盖放
+-- 定义第二个效果（对方盖放魔陷时伤害）的发动条件函数
 function c30757396.damcon2(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(Card.IsControler,1,nil,1-tp)
 end
--- 设置连锁的操作信息为对对方造成300点伤害
+-- 定义第二个效果（对方盖放魔陷时伤害）的目标函数，设置对象玩家和伤害参数
 function c30757396.damtg2(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置连锁的目标玩家为对方
+	-- 将效果对象玩家设为对方
 	Duel.SetTargetPlayer(1-tp)
-	-- 设置连锁的目标参数为300
+	-- 设置伤害参数为300
 	Duel.SetTargetParam(300)
-	-- 设置连锁的操作信息为对对方造成伤害
+	-- 登记效果处理时将给对方造成300点伤害
 	Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,1-tp,300)
 end
--- 执行对对方造成伤害的操作
+-- 定义第二个效果（对方盖放魔陷时伤害）的处理函数，实际造成伤害
 function c30757396.damop2(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁的目标玩家和目标参数
+	-- 获取连锁中记录的对象玩家和伤害参数
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 对目标玩家造成指定伤害
+	-- 给对象玩家造成 d 点效果伤害
 	Duel.Damage(p,d,REASON_EFFECT)
 end

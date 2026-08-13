@@ -13,21 +13,21 @@ function c30707994.initial_effect(c)
 	e1:SetOperation(c30707994.operation)
 	c:RegisterEffect(e1)
 end
--- 效果适用条件：此卡为上级召唤成功
+-- 检查这张卡是否为上级召唤（祭品召唤）成功。
 function c30707994.condition(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsSummonType(SUMMON_TYPE_ADVANCE)
 end
--- 效果处理目标：丢1个骰子
+-- 效果发动时无需选择对象，直接允许发动，并设置进行掷骰子的操作信息。
 function c30707994.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置连锁操作信息为丢骰子效果
+	-- 向系统登记本次效果包含掷骰子（CATEGORY_DICE）操作，由玩家tp掷1个骰子。
 	Duel.SetOperationInfo(0,CATEGORY_DICE,nil,0,tp,1)
 end
--- 效果处理流程：丢骰子并根据结果提升攻击力
+-- 效果处理时，若此卡仍与效果关联且表侧表示，则投掷1个骰子，并以点数×200赋予攻击力上升效果。
 function c30707994.operation(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) and c:IsFaceup() then
-		-- 进行一次骰子投掷
+		-- 让玩家tp投掷1个六面骰子，返回的点数存入dice。
 		local dice=Duel.TossDice(tp,1)
 		-- 只要这张卡在场上表侧表示存在，这张卡的攻击力上升丢出骰子数×200的攻击力。
 		local e1=Effect.CreateEffect(c)

@@ -4,10 +4,10 @@
 -- 自己对「海晶少女 海天使」1回合只能有1次连接召唤。
 -- ①：这张卡连接召唤成功的场合才能发动。从卡组把1张「海晶少女」魔法卡加入手卡。
 function c30691817.initial_effect(c)
-	-- 为卡片添加连接召唤手续，要求使用1到1个满足条件的怪兽作为连接素材
+	-- 为这张卡添加连接召唤手续，素材为1只等级4以下且作为连接素材时视为「海晶少女」的怪兽。
 	aux.AddLinkProcedure(c,c30691817.mfilter,1,1)
 	c:EnableReviveLimit()
-	-- ①：这张卡连接召唤成功的场合才能发动。
+	-- 自己对「海晶少女 海天使」1回合只能有1次连接召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_CONTINUOUS)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
@@ -15,7 +15,7 @@ function c30691817.initial_effect(c)
 	e1:SetCondition(c30691817.condition)
 	e1:SetOperation(c30691817.regop)
 	c:RegisterEffect(e1)
-	-- 从卡组把1张「海晶少女」魔法卡加入手卡。
+	-- ①：这张卡连接召唤成功的场合才能发动。从卡组把1张「海晶少女」魔法卡加入手卡。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(30691817,0))
 	e2:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
@@ -28,17 +28,17 @@ function c30691817.initial_effect(c)
 	e2:SetOperation(c30691817.thop)
 	c:RegisterEffect(e2)
 end
--- 过滤函数，用于筛选4星以下且属于海晶少女卡组的怪兽
+-- 连接素材过滤函数：筛选等级4以下、并且作为连接素材时视为「海晶少女」的怪兽。
 function c30691817.mfilter(c)
 	return c:IsLevelBelow(4) and c:IsLinkSetCard(0x12b)
 end
--- 判断是否为连接召唤 summoned
+-- 判断这张卡是否以连接召唤（SUMMON_TYPE_LINK）的方式特殊召唤成功。
 function c30691817.condition(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsSummonType(SUMMON_TYPE_LINK)
 end
--- 创建一个影响对方玩家的永续效果，禁止对方特殊召唤海晶少女海天使
+-- 在这张卡连接召唤成功时，为控制者注册一个直到结束阶段有效的自肃效果，限制本回合不能再进行「海晶少女 海天使」的连接召唤。
 function c30691817.regop(e,tp,eg,ep,ev,re,r,rp)
-	-- 禁止对方特殊召唤海晶少女海天使的连接召唤
+	-- 自己对「海晶少女 海天使」1回合只能有1次连接召唤。①：这张卡连接召唤成功的场合才能发动。从卡组把1张「海晶少女」魔法卡加入手卡。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
@@ -46,34 +46,34 @@ function c30691817.regop(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetTargetRange(1,0)
 	e1:SetReset(RESET_PHASE+PHASE_END)
 	e1:SetTarget(c30691817.splimit)
-	-- 将效果注册给指定玩家
+	-- 将生成的场地效果注册给当前玩家tp，使其实际生效。
 	Duel.RegisterEffect(e1,tp)
 end
--- 限制效果的目标为海晶少女海天使且召唤类型为连接召唤
+-- 自肃限制的判定函数：仅当特殊召唤的怪兽是「海晶少女 海天使」（卡号30691817）且召唤方式为连接召唤时，该特殊召唤被禁止。
 function c30691817.splimit(e,c,sump,sumtype,sumpos,targetp,se)
 	return c:IsCode(30691817) and bit.band(sumtype,SUMMON_TYPE_LINK)==SUMMON_TYPE_LINK
 end
--- 过滤函数，用于筛选海晶少女卡组的魔法卡并能加入手牌
+-- 检索过滤函数：从卡组中筛选1张卡名含有「海晶少女」的魔法卡，且该卡能够加入手牌。
 function c30691817.thfilter(c)
 	return c:IsSetCard(0x12b) and c:IsType(TYPE_SPELL) and c:IsAbleToHand()
 end
--- 设置连锁处理信息，确定要处理的卡为1张来自卡组的魔法卡
+-- 效果发动目标的处理函数：在发动时检查卡组是否存在符合条件的「海晶少女」魔法卡，若存在则设置操作信息，表明本效果将把1张卡从卡组加入手牌。
 function c30691817.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查场上是否存在满足条件的魔法卡
+	-- 合法性检查：若卡组中不存在至少1张符合条件的「海晶少女」魔法卡，则效果不能发动。
 	if chk==0 then return Duel.IsExistingMatchingCard(c30691817.thfilter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置连锁处理信息，确定要处理的卡为1张来自卡组的魔法卡
+	-- 设置连锁操作信息：声明本效果会将1张卡从卡组加入手牌，供系统进行发动检测与连锁判定。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 处理效果，选择并把魔法卡加入手牌
+-- 效果处理函数：玩家从卡组选择1张符合条件的「海晶少女」魔法卡加入手牌，并让对方确认检索的卡片。
 function c30691817.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要加入手牌的卡
+	-- 给玩家tp显示选择提示消息，提示内容为“请选择要加入手牌的卡”，用于选择卡片的UI提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 从卡组中选择1张满足条件的魔法卡
+	-- 让玩家tp从自己的卡组中选择1张满足thfilter条件的「海晶少女」魔法卡。
 	local g=Duel.SelectMatchingCard(tp,c30691817.thfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的魔法卡送入手牌
+		-- 将选择的卡加入其持有者的手卡（nil表示返回持有者），原因记为效果处理。
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 确认对方查看了送入手牌的卡
+		-- 将检索加入手牌的卡展示给对方玩家确认，确保信息公开。
 		Duel.ConfirmCards(1-tp,g)
 	end
 end

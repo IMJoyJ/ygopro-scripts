@@ -5,7 +5,7 @@
 -- ②：把手卡·墓地的这张卡除外才能发动。从自己的卡组·墓地把1张「阿拉弥赛亚之仪」加入手卡。
 -- ③：自己场上有「勇者衍生物」存在的场合才能发动。把有「勇者衍生物」的衍生物名记述的1张场地魔法卡从卡组到自己场上表侧表示放置。
 function c30680659.initial_effect(c)
-	-- 记录该卡具有「勇者衍生物」的卡名信息
+	-- 将卡名「勇者衍生物」（3285552）登记为此卡效果文本中记述的卡名，用于后续「有勇者衍生物名记述的卡」的检索。
 	aux.AddCodeList(c,3285552)
 	-- ①：自己场上有「勇者衍生物」存在的场合才能发动。这张卡从手卡特殊召唤。
 	local e1=Effect.CreateEffect(c)
@@ -40,87 +40,87 @@ function c30680659.initial_effect(c)
 	e3:SetOperation(c30680659.sop)
 	c:RegisterEffect(e3)
 end
--- 过滤函数，用于检测场上是否存在正面表示的「勇者衍生物」
+-- 判断卡片是否为卡号3285552（勇者衍生物）且处于表侧表示，用于确认场上存在勇者衍生物。
 function c30680659.cfilter(c)
 	return c:IsCode(3285552) and c:IsFaceup()
 end
--- 判断条件函数，用于判断是否满足发动效果的条件（场上有「勇者衍生物」）
+-- 检查己方场上是否存在至少1张表侧表示的勇者衍生物，作为效果的发动条件。
 function c30680659.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 检测场上是否存在至少1张正面表示的「勇者衍生物」
+	-- 从己方场上所有区域中检索是否存在至少1张满足cfilter的卡（勇者衍生物且表侧表示）。
 	return Duel.IsExistingMatchingCard(c30680659.cfilter,tp,LOCATION_ONFIELD,0,1,nil)
 end
--- 设置特殊召唤效果的目标函数，检查是否满足特殊召唤的条件
+-- 特殊召唤的发动目标：确认己方主要怪兽区有空位，且这张卡自身可以被效果特殊召唤（满足召唤条件和苏生限制）。
 function c30680659.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查场上是否有足够的怪兽区域进行特殊召唤
+	-- 确认己方主要怪兽区可用空格数大于0。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置特殊召唤效果的操作信息
+	-- 设置本次连锁的特殊召唤操作信息，指定特殊召唤对象为这张卡本身，供其他效果检测该效果包含特殊召唤。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 特殊召唤效果的处理函数，将卡片特殊召唤到场上
+-- 效果处理：若这张卡仍与发动的效果保持关联，则将其特殊召唤。
 function c30680659.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) then
-		-- 执行将卡片特殊召唤到场上的操作
+		-- 在检查召唤条件与苏生限制的前提下，以表侧表示将这张卡特殊召唤到己方场上。
 		Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
--- 检索或回收效果的费用支付函数，将自身从手牌或墓地除外
+-- 代价处理：确认这张卡可以从手卡·墓地除外作为代价，然后将其以表侧表示除外来支付发动代价。
 function c30680659.thcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsAbleToRemoveAsCost() end
-	-- 将自身从手牌或墓地除外作为费用
+	-- 将这张卡从手卡·墓地以表侧表示除外（REASON_COST），作为②效果的发动代价。
 	Duel.Remove(e:GetHandler(),POS_FACEUP,REASON_COST)
 end
--- 过滤函数，用于检索「阿拉弥赛亚之仪」
+-- 检索过滤器：目标是卡号为3285551（阿拉弥赛亚之仪）且能够加入手卡的卡。
 function c30680659.thfilter(c)
 	return c:IsCode(3285551) and c:IsAbleToHand()
 end
--- 设置检索或回收效果的目标函数，检查是否满足检索条件
+-- ②的发动目标：确认卡组·墓地存在至少1张阿拉弥赛亚之仪，并设置操作信息为将1张卡加入手卡。
 function c30680659.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检测卡组或墓地是否存在至少1张「阿拉弥赛亚之仪」
+	-- 检查己方卡组·墓地中是否存在至少1张符合条件的阿拉弥赛亚之仪。
 	if chk==0 then return Duel.IsExistingMatchingCard(c30680659.thfilter,tp,LOCATION_DECK+LOCATION_GRAVE,0,1,nil) end
-	-- 设置检索或回收效果的操作信息
+	-- 设置操作信息：本次效果处理要把1张卡加入手卡，目标来源为卡组·墓地。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK+LOCATION_GRAVE)
 end
--- 检索或回收效果的处理函数，选择并加入手牌
+-- 效果处理：让玩家从卡组·墓地选择1张阿拉弥赛亚之仪加入手卡，并向对方展示。
 function c30680659.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要加入手牌的卡
+	-- 给出选择提示文本“请选择要加入手牌的卡”。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 从卡组或墓地选择1张「阿拉弥赛亚之仪」
+	-- 从己方卡组·墓地选择1张满足thfilter的卡，并过滤掉会受王家长眠之谷影响而无法移动的卡。
 	local g=Duel.SelectMatchingCard(tp,aux.NecroValleyFilter(c30680659.thfilter),tp,LOCATION_DECK+LOCATION_GRAVE,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的卡加入手牌
+		-- 将选中的卡以效果理由加入其持有者的手卡。
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 确认对方查看加入手牌的卡
+		-- 向对方玩家展示刚刚加入手卡的卡片，以确认检索结果。
 		Duel.ConfirmCards(1-tp,g)
 	end
 end
--- 过滤函数，用于筛选带有「勇者衍生物」衍生物名记述的场地魔法卡
+-- 场地魔法卡的过滤器：效果文本中记述有勇者衍生物、类型为场地魔法、不在禁止名单中，且满足场上同名卡放置限制。
 function c30680659.stfilter(c,tp)
-	-- 判断卡片是否带有「勇者衍生物」衍生物名记述且为场地魔法卡
+	-- 具体条件：卡名记述了勇者衍生物(3285552)、是场地魔法、未被禁止、并且可以在己方场上再放置一张。
 	return aux.IsCodeListed(c,3285552) and c:IsType(TYPE_FIELD) and not c:IsForbidden() and c:CheckUniqueOnField(tp)
 end
--- 设置场地魔法卡放置效果的目标函数，检查是否满足放置条件
+-- ③的发动目标：确认卡组中存在至少1张符合条件的场地魔法卡。
 function c30680659.stg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检测卡组是否存在至少1张符合条件的场地魔法卡
+	-- 检查卡组是否存在至少1张满足stfilter的场地魔法卡。
 	if chk==0 then return Duel.IsExistingMatchingCard(c30680659.stfilter,tp,LOCATION_DECK,0,1,nil,tp) end
 end
--- 场地魔法卡放置效果的处理函数，选择并放置到场上
+-- 效果处理：从卡组选择1张符合条件的场地魔法卡；若场地区已有卡则先规则送墓，再把新场地表侧放置到场地区。
 function c30680659.sop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要放置到场上的卡
+	-- 给出选择提示文本“请选择要放置到场上的卡”。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOFIELD)  --"请选择要放置到场上的卡"
-	-- 从卡组选择1张符合条件的场地魔法卡
+	-- 从卡组选择1张符合条件的场地魔法卡并取得该卡。
 	local tc=Duel.SelectMatchingCard(tp,c30680659.stfilter,tp,LOCATION_DECK,0,1,1,nil,tp):GetFirst()
 	if tc then
-		-- 获取玩家场上已存在的场地魔法卡
+		-- 获取己方场地区域（魔法陷阱区第6格，seq=5）当前的卡片，用于处理旧场地替换。
 		local fc=Duel.GetFieldCard(tp,LOCATION_SZONE,5)
 		if fc then
-			-- 将已存在的场地魔法卡送入墓地
+			-- 如果场地区域已有卡片，以规则理由将其送去墓地。
 			Duel.SendtoGrave(fc,REASON_RULE)
-			-- 中断当前效果，使后续处理视为错时点
+			-- Duel.BreakEffect：中断当前效果处理，使后续放置新场地不与旧场地送墓视为同时处理，避免造成时点问题。
 			Duel.BreakEffect()
 		end
-		-- 将选中的场地魔法卡放置到场上
+		-- 将选中的场地魔法卡以表侧表示移动到己方场地区域，并立即适用其效果。
 		Duel.MoveToField(tc,tp,tp,LOCATION_FZONE,POS_FACEUP,true)
 	end
 end

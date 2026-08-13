@@ -22,29 +22,29 @@ function c30794966.initial_effect(c)
 	e2:SetOperation(c30794966.desrepop)
 	c:RegisterEffect(e2)
 end
--- 过滤函数：返回满足龙族、可除外作为费用、并且是光属性或通常怪兽的卡片。
+-- 筛选可作为除外素材的卡：种族为龙族、可以作为代价除外，且满足光属性或通常怪兽之一。
 function c30794966.rfilter(c)
 	return c:IsRace(RACE_DRAGON) and c:IsAbleToRemoveAsCost()
 		and (c:IsAttribute(ATTRIBUTE_LIGHT) or c:IsType(TYPE_NORMAL))
 end
--- 特殊召唤条件判断：检查玩家场上是否有足够的怪兽区域，并且墓地中有满足条件的2张卡片组合。
+-- 特殊召唤手续的条件判定：无具体卡片时返回true；否则要求我方主要怪兽区有空位，并且墓地中存在2张能分别满足光属性龙族与通常龙族条件的素材组合。
 function c30794966.hspcon(e,c)
 	if c==nil then return true end
 	local tp=c:GetControler()
-	-- 获取满足条件的墓地卡片组。
+	-- 获取我方墓地中所有满足rfilter过滤条件（龙族且可除外，光属性或通常）的卡，作为候选组。
 	local g=Duel.GetMatchingGroup(c30794966.rfilter,tp,LOCATION_GRAVE,0,nil)
-	-- 检查玩家场上是否有足够的怪兽区域。
+	-- 检查我方主要怪兽区是否存在可用的空格。
 	return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查墓地卡片组中是否存在满足条件的2张卡片组合（一张光属性，一张通常怪兽）。
+		-- 检查候选组中能否选出2张卡，使其中一张为光属性龙族、另一张为龙族通常怪兽，即两只素材各满足对应条件。
 		and g:CheckSubGroup(aux.gffcheck,2,2,Card.IsAttribute,ATTRIBUTE_LIGHT,Card.IsType,TYPE_NORMAL)
 end
--- 特殊召唤目标选择：从墓地选择满足条件的2张卡片。
+-- 特殊召唤手续的目标选择阶段：从墓地候选卡中选择2张（光属性龙族和通常龙族各1只）作为除外素材；选择成功后保存该组并返回true，否则返回false。
 function c30794966.hsptg(e,tp,eg,ep,ev,re,r,rp,chk,c)
-	-- 获取满足条件的墓地卡片组。
+	-- 获取我方墓地中可作为特殊召唤除外素材的龙族候选卡组。
 	local g=Duel.GetMatchingGroup(c30794966.rfilter,tp,LOCATION_GRAVE,0,nil)
-	-- 提示玩家选择要除外的卡片。
+	-- 发送选择提示消息，引导玩家选择要除外的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
-	-- 从满足条件的卡片组中选择2张符合条件的卡片组合。
+	-- 玩家从候选组中选择2张卡，要求其中1张为光属性龙族、1张为龙族通常怪兽，作为从手卡特殊召唤的代价。
 	local sg=g:SelectSubGroup(tp,aux.gffcheck,true,2,2,Card.IsAttribute,ATTRIBUTE_LIGHT,Card.IsType,TYPE_NORMAL)
 	if sg then
 		sg:KeepAlive()
@@ -52,36 +52,36 @@ function c30794966.hsptg(e,tp,eg,ep,ev,re,r,rp,chk,c)
 		return true
 	else return false end
 end
--- 特殊召唤操作：将选中的卡片从游戏中除外。
+-- 特殊召唤手续的处理阶段：取出之前保存的素材组，将选中的卡除外，然后释放组对象。
 function c30794966.hspop(e,tp,eg,ep,ev,re,r,rp,c)
 	local g=e:GetLabelObject()
-	-- 将选中的卡片从游戏中除外。
+	-- 将选定的两张素材卡以表侧表示从游戏中除外，作为这次特殊召唤手续的代价。
 	Duel.Remove(g,POS_FACEUP,REASON_SPSUMMON)
 	g:DeleteGroup()
 end
--- 代替破坏的过滤函数：返回场上表侧表示、名字带有「圣刻」且未被预定破坏的怪兽。
+-- 筛选可代替破坏的解放对象：必须为表侧表示、卡名带有「圣刻」、且不是已经确定要被破坏的那张卡（从而排除自身）。
 function c30794966.repfilter(c)
 	return c:IsFaceup() and c:IsSetCard(0x69) and not c:IsStatus(STATUS_DESTROY_CONFIRMED)
 end
--- 代替破坏的目标判断：检查是否可以解放满足条件的怪兽。
+-- 代替破坏效果的发动条件：本卡不是因代替破坏而触发，并且自己场上存在1只可解放的、满足repfilter条件的其他「圣刻」怪兽。
 function c30794966.desreptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	if chk==0 then return not c:IsReason(REASON_REPLACE)
-		-- 检查玩家场上是否存在满足条件的可解放怪兽。
+		-- 检查自己场上是否存在1只可解放的、满足repfilter条件的「圣刻」怪兽（排除作为本卡的c）。
 		and Duel.CheckReleaseGroupEx(tp,c30794966.repfilter,1,REASON_EFFECT,false,c) end
-	-- 询问玩家是否发动代替破坏效果。
+	-- 让玩家选择是否发动代替破坏效果。
 	if Duel.SelectEffectYesNo(tp,c,96) then
-		-- 提示玩家选择要代替破坏的怪兽。
+		-- 提示玩家选择用于代替破坏而解放的「圣刻」怪兽。
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESREPLACE)  --"请选择要代替破坏的卡"
-		-- 从满足条件的怪兽中选择1只进行解放。
+		-- 玩家从自己场上选择1只满足条件且可解放的「圣刻」怪兽（排除自身），作为代替破坏的解放对象。
 		local g=Duel.SelectReleaseGroupEx(tp,c30794966.repfilter,1,1,REASON_EFFECT,false,c)
 		e:SetLabelObject(g:GetFirst())
 		return true
 	else return false end
 end
--- 代替破坏操作：将选中的怪兽解放。
+-- 代替破坏效果的处理：取出之前选择的怪兽并将其解放，以此代替这张卡被破坏。
 function c30794966.desrepop(e,tp,eg,ep,ev,re,r,rp)
 	local tc=e:GetLabelObject()
-	-- 将选中的怪兽进行解放。
+	-- 将选择的怪兽解放，作为代替破坏的代价，使本卡免于被破坏。
 	Duel.Release(tc,REASON_EFFECT)
 end
