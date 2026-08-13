@@ -5,9 +5,9 @@
 -- ②：通常召唤的这张卡不受特殊召唤的怪兽发动的效果影响。
 -- ③：自己结束阶段才能发动。这张卡的攻击力上升700。
 local s,id,o=GetID()
--- 初始化效果函数，创建并注册所有效果
+-- 该函数为卡片注册全部效果：e1/e2为“把1只怪兽解放作上级召唤”的召唤规则效果（包含放置规则）；e3/e4实现①召唤·特殊召唤时回收墓地兽族·兽战士族·鸟兽族怪兽并下降700攻击；e5实现②通常召唤时不受特殊召唤怪兽发动的效果影响；e6实现③自己结束阶段攻击力上升700。
 function s.initial_effect(c)
-	-- 把1只怪兽解放作上级召唤
+	-- 这张卡可以把1只怪兽解放作上级召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(id,0))  --"把1只怪兽解放作上级召唤"
 	e1:SetType(EFFECT_TYPE_SINGLE)
@@ -20,7 +20,7 @@ function s.initial_effect(c)
 	local e2=e1:Clone()
 	e2:SetCode(EFFECT_SET_PROC)
 	c:RegisterEffect(e2)
-	-- 这张卡召唤·特殊召唤的场合，以自己墓地1只兽族·兽战士族·鸟兽族怪兽为对象才能发动。那只怪兽加入手卡，这张卡的攻击力下降700。
+	-- ①：这张卡召唤·特殊召唤的场合，以自己墓地1只兽族·兽战士族·鸟兽族怪兽为对象才能发动。那只怪兽加入手卡，这张卡的攻击力下降700。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(id,1))
 	e3:SetCategory(CATEGORY_TOHAND)
@@ -33,7 +33,7 @@ function s.initial_effect(c)
 	local e4=e3:Clone()
 	e4:SetCode(EVENT_SPSUMMON_SUCCESS)
 	c:RegisterEffect(e4)
-	-- 通常召唤的这张卡不受特殊召唤的怪兽发动的效果影响。
+	-- ②：通常召唤的这张卡不受特殊召唤的怪兽发动的效果影响。
 	local e5=Effect.CreateEffect(c)
 	e5:SetType(EFFECT_TYPE_SINGLE)
 	e5:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
@@ -41,7 +41,7 @@ function s.initial_effect(c)
 	e5:SetCode(EFFECT_IMMUNE_EFFECT)
 	e5:SetValue(s.immval)
 	c:RegisterEffect(e5)
-	-- 自己结束阶段才能发动。这张卡的攻击力上升700。
+	-- ③：自己结束阶段才能发动。这张卡的攻击力上升700。
 	local e6=Effect.CreateEffect(c)
 	e6:SetDescription(aux.Stringid(id,3))
 	e6:SetCategory(CATEGORY_ATKCHANGE)
@@ -52,30 +52,30 @@ function s.initial_effect(c)
 	e6:SetOperation(s.atkop)
 	c:RegisterEffect(e6)
 end
--- 判断是否满足上级召唤的条件，包括等级、祭品数量和场地检查
+-- 上级召唤规则效果的发动条件：c为nil时表示召唤动作本身可用；否则要求这张卡等级在9以上、需要解放的数量不超过1，且场上存在1只可解放的怪兽，以满足“把1只怪兽解放作上级召唤”。
 function s.otcon(e,c,minc)
 	if c==nil then return true end
-	-- 满足等级9以上、祭品数量不超过1、且能进行祭品选择
+	-- 判断是否满足上级召唤条件：这张卡等级≥9、所需解放数≤1、且场上存在1只可作为祭品的怪兽。
 	return c:IsLevelAbove(9) and minc<=1 and Duel.CheckTribute(c,1)
 end
--- 选择并释放1只祭品怪兽
+-- 上级召唤规则的操作：让玩家选择1只解放的怪兽，将其设为召唤素材并解放，从而完成这次上级召唤。
 function s.otop(e,tp,eg,ep,ev,re,r,rp,c)
-	-- 选择用于上级召唤的祭品
+	-- 让这张卡的控制者选择用于上级召唤的1只祭品怪兽。
 	local g=Duel.SelectTribute(tp,c,1,1)
 	c:SetMaterial(g)
-	-- 以上级召唤和素材原因解放祭品
+	-- 将选中的祭品怪兽以“上级召唤的解放”原因解放，作为召唤素材。
 	Duel.Release(g,REASON_SUMMON+REASON_MATERIAL)
 end
--- 判断是否为当前回合玩家
+-- ③效果的发劯条件：仅在自己的结束阶段（当前回合玩家＝这张卡的控制者）才能发动。
 function s.atkcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 当前玩家为回合玩家
+	-- 返回当前回合玩家是否等于这张卡的控制者，即是否为自己回合的结束阶段。
 	return tp==Duel.GetTurnPlayer()
 end
--- 处理攻击力上升效果
+-- ③效果处理：若这张卡仍与效果相关且表侧表示，则让它攻击力上升700。
 function s.atkop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) and c:IsFaceup() then
-		-- 使该卡攻击力上升700
+		-- 这张卡的攻击力上升700。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)
@@ -84,27 +84,27 @@ function s.atkop(e,tp,eg,ep,ev,re,r,rp)
 		c:RegisterEffect(e1)
 	end
 end
--- 设置效果目标，选择墓地中的兽族·兽战士族·鸟兽族怪兽
+-- ①效果的目标选择与操作信息设置：选择自己墓地1只符合条件的兽族·兽战士族·鸟兽族怪兽作为对象，并将回手牌信息写入连锁。
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and s.thfilter(chkc) end
-	-- 检查是否存在符合条件的墓地怪兽
+	-- 发动确认：检查自己墓地是否存在至少1只符合条件的兽族·兽战士族·鸟兽族怪兽可以作为对象。
 	if chk==0 then return Duel.IsExistingTarget(s.thfilter,tp,LOCATION_GRAVE,0,1,nil) end
-	-- 提示玩家选择要加入手牌的卡
+	-- 弹出“请选择要加入手牌的卡”的选择提示，引导玩家选择对象。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择目标怪兽
+	-- 从自己墓地选择1只符合条件的兽族·兽战士族·鸟兽族怪兽作为本效果的对象。
 	local g=Duel.SelectTarget(tp,s.thfilter,tp,LOCATION_GRAVE,0,1,1,nil)
-	-- 设置操作信息，准备将目标怪兽送入手牌
+	-- 设置本连锁的操作信息为“将对象卡加入手牌”，数量为选中的卡数，用于后续效果检测。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,#g,0,0)
 end
--- 处理效果发动，将目标怪兽送入手牌并降低自身攻击力
+-- ①效果处理：将对象怪兽加入手牌，并使这张卡的攻击力下降700。
 function s.thop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取当前连锁效果的目标怪兽
+	-- 取得发动时选择的对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToChain() then
-		-- 将目标怪兽送入手牌
+		-- 将对象怪兽加入其持有者的手牌（即本方手牌）。
 		Duel.SendtoHand(tc,tp,REASON_EFFECT)
-		-- 使该卡攻击力下降700
+		-- 这张卡的攻击力下降700。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)
@@ -113,11 +113,11 @@ function s.thop(e,tp,eg,ep,ev,re,r,rp)
 		c:RegisterEffect(e1)
 	end
 end
--- 筛选墓地中的兽族·兽战士族·鸟兽族怪兽
+-- 过滤函数：判断墓地卡片是否为兽族·兽战士族·鸟兽族怪兽，且可以被加入手牌。
 function s.thfilter(c)
 	return c:IsRace(RACE_BEAST+RACE_BEASTWARRIOR+RACE_WINDBEAST) and c:IsAbleToHand()
 end
--- 判断效果是否被免疫，用于免疫特殊召唤怪兽的效果
+-- ②免疫的判定逻辑：只有“特殊召唤的怪兽所发动的、在怪兽区发动的怪兽效果”才会对这张“通常召唤”的卡无效；其他效果不影响它。
 function s.immval(e,te)
 	local tc=te:GetOwner()
 	local c=e:GetHandler()
