@@ -2,7 +2,7 @@
 -- 效果：
 -- 这张卡被同调怪兽的同调召唤使用送去墓地的场合，可以从自己卡组把1张「爆裂模式」加入手卡。
 function c40048324.initial_effect(c)
-	-- 记录该卡具有「爆裂模式」这张卡的编号，用于后续效果判断
+	-- 将本卡登记为关联「爆裂模式」（卡号80280737）的卡，用于记录效果文本中提到的卡名。
 	aux.AddCodeList(c,80280737)
 	-- 这张卡被同调怪兽的同调召唤使用送去墓地的场合，可以从自己卡组把1张「爆裂模式」加入手卡。
 	local e1=Effect.CreateEffect(c)
@@ -16,31 +16,31 @@ function c40048324.initial_effect(c)
 	e1:SetOperation(c40048324.operation)
 	c:RegisterEffect(e1)
 end
--- 判断触发条件：该卡在墓地且是因同调召唤被送入墓地
+-- 发动条件判定：本卡被送去墓地且是作为同调召唤素材而被送去墓地，且当前位于墓地时，满足场合型触发条件。
 function c40048324.condition(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsLocation(LOCATION_GRAVE) and r==REASON_SYNCHRO
 end
--- 过滤函数：用于筛选卡组中编号为80280737（爆裂模式）且能加入手牌的卡
+-- 检索过滤条件：卡组中存在卡号为80280737的「爆裂模式」，且该卡可以被加入手卡。
 function c40048324.filter(c)
 	return c:IsCode(80280737) and c:IsAbleToHand()
 end
--- 设置效果目标：检查卡组中是否存在满足条件的卡并设置操作信息
+-- 发动时进行合法性检查并登记操作信息：卡组有可加入手卡的「爆裂模式」时可发动；登记本次效果将处理从卡组把1张卡加入手卡。
 function c40048324.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 条件判断：检查卡组中是否存在至少1张满足条件的卡
+	-- 检查卡组中是否存在至少1张满足条件的「爆裂模式」，若不存在则效果不能发动。
 	if chk==0 then return Duel.IsExistingMatchingCard(c40048324.filter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置操作信息：设定将要处理的卡为1张加入手牌的卡，来自卡组
+	-- 登记操作信息，标明本连锁后续将处理从卡组把1张卡加入手牌（CATEGORY_TOHAND），供其他卡效果参照。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 效果处理函数：执行检索并加入手牌的操作
+-- 效果处理：从卡组找出符合条件的「爆裂模式」加入手卡，并向对方展示该卡；由于不取对象，处理时直接取得第一张符合条件的卡。
 function c40048324.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要加入手牌的卡
+	-- 显示选择提示消息“请选择要加入手牌的卡”，用于检索选牌时的界面提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 获取满足条件的第一张卡
+	-- 从卡组获取第一张满足条件的「爆裂模式」（不取对象，因此直接获取第一张符合条件的卡）。
 	local tc=Duel.GetFirstMatchingCard(c40048324.filter,tp,LOCATION_DECK,0,nil)
 	if tc then
-		-- 将选中的卡以效果原因送入手牌
+		-- 将“爆裂模式”以效果原因加入其持有者的手卡。
 		Duel.SendtoHand(tc,nil,REASON_EFFECT)
-		-- 向对方确认该卡被送入手牌
+		-- 向对方玩家展示加入手卡的这张卡，使对方确认检索到的卡片。
 		Duel.ConfirmCards(1-tp,tc)
 	end
 end

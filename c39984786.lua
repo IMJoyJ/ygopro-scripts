@@ -9,7 +9,7 @@ function c39984786.initial_effect(c)
 	e1:SetValue(c39984786.valcheck)
 	c:RegisterEffect(e1)
 end
--- 检查上级召唤时是否使用了爬虫类族怪兽作为素材，若使用则为该怪兽标记flag，并注册结束阶段特殊召唤效果
+-- 检查上级召唤使用的素材，若素材中有爬虫类族怪兽，则给这些素材标记flag并持续到结束阶段，同时为本卡注册在结束阶段发动的特殊召唤效果
 function c39984786.valcheck(e,c)
 	local g=c:GetMaterial()
 	local tc=g:GetFirst()
@@ -22,7 +22,7 @@ function c39984786.valcheck(e,c)
 		tc=g:GetNext()
 	end
 	if sp then
-		-- 把1只为这张卡的上级召唤而解放的怪兽在那个回合的结束阶段时从墓地往自己场上特殊召唤
+		-- 把1只为这张卡的上级召唤而解放的怪兽在那个回合的结束阶段时从墓地往自己场上特殊召唤。
 		local e1=Effect.CreateEffect(c)
 		e1:SetDescription(aux.Stringid(39984786,0))  --"特殊召唤"
 		e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -37,29 +37,29 @@ function c39984786.valcheck(e,c)
 		c:RegisterEffect(e1)
 	end
 end
--- 判断目标怪兽是否为上级召唤时使用的爬虫类族怪兽且可特殊召唤
+-- 筛选满足条件的对象：拥有解放标记的爬虫类素材、能成为效果对象、在墓地且可以被特殊召唤
 function c39984786.filter(c,e,tp)
 	return c:GetFlagEffect(39984786)~=0 and c:IsCanBeEffectTarget(e) and c:IsLocation(LOCATION_GRAVE) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 选择并设置要特殊召唤的爬虫类族怪兽作为目标
+-- 发动时从这张卡的解放素材中选择1只符合条件的爬虫类怪兽作为对象，并设置特殊召唤的操作信息
 function c39984786.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return e:GetHandler():GetMaterial():IsContains(chkc) and c39984786.filter(chkc,e,tp) end
 	if chk==0 then return true end
-	-- 向玩家提示“请选择要特殊召唤的卡”
+	-- 提示玩家选择要特殊召唤的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
 	local mg=e:GetHandler():GetMaterial()
 	local g=mg:FilterSelect(tp,c39984786.filter,1,1,nil,e,tp)
-	-- 将选中的怪兽设置为效果处理的目标
+	-- 将选择的卡设置为当前连锁的效果对象
 	Duel.SetTargetCard(g)
-	-- 设置本次连锁的操作信息为特殊召唤
+	-- 设置本次效果处理的信息：将1只对象怪兽特殊召唤
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,1,0,0)
 end
--- 执行特殊召唤处理，将符合条件的怪兽从墓地特殊召唤到场上
+-- 效果处理时，若对象仍与效果关联，则将其特殊召唤
 function c39984786.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前效果处理的目标怪兽
+	-- 取得效果处理时的对象卡
 	local tc=Duel.GetFirstTarget()
 	if tc and tc:IsRelateToEffect(e) then
-		-- 将目标怪兽以正面表示形式特殊召唤到场上
+		-- 将对象卡以表侧表示特殊召唤到自己场上
 		Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
