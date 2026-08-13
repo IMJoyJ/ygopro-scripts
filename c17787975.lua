@@ -33,74 +33,74 @@ function c17787975.initial_effect(c)
 	e4:SetOperation(c17787975.desop)
 	c:RegisterEffect(e4)
 end
--- 筛选场上表侧攻击表示的怪兽
+-- 过滤函数：判断怪兽是否为表侧攻击表示。
 function c17787975.filter(c)
 	return c:IsPosition(POS_FACEUP_ATTACK)
 end
--- 选择场上表侧攻击表示的怪兽作为对象
+-- 发动时的目标处理：选择自己场上1只表侧攻击表示怪兽作为对象。
 function c17787975.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and c17787975.filter(chkc) end
-	-- 判断是否满足选择对象的条件
+	-- 发动合法性检查：自己场上是否存在1只表侧攻击表示怪兽可以成为对象。
 	if chk==0 then return Duel.IsExistingTarget(c17787975.filter,tp,LOCATION_MZONE,0,1,nil) end
-	-- 提示玩家选择表侧攻击表示的怪兽
+	-- 弹出选择提示，让玩家从表侧表示的怪兽中选择。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
-	-- 选择场上表侧攻击表示的怪兽作为对象
+	-- 选择自己场上1只表侧攻击表示怪兽，并将其设为这张卡的效果对象。
 	Duel.SelectTarget(tp,c17787975.filter,tp,LOCATION_MZONE,0,1,1,nil)
 end
--- 将选择的怪兽设置为本卡的对象
+-- 发动处理：若这张卡和对象怪兽仍关联且对象怪兽表侧表示，则建立这张卡对对象怪兽的持续对象关系。
 function c17787975.tgop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取当前连锁的对象怪兽
+	-- 获取这张卡发动时选择的对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if c:IsRelateToEffect(e) and tc:IsFaceup() and tc:IsRelateToEffect(e) then
 		c:SetCardTarget(tc)
 	end
 end
--- 判断是否处于战斗步骤
+-- 伤害效果的发动条件：当前阶段为战斗步骤。
 function c17787975.damcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 当前阶段为战斗步骤
+	-- 判定当前是否处于战斗步骤。
 	return Duel.GetCurrentPhase()==PHASE_BATTLE_STEP
 end
--- 判断是否满足发动①效果的条件
+-- 伤害效果发动条件及合法目标检查：对象怪兽正被攻击、攻击怪兽是对方怪兽且攻击力高于对象怪兽、本回合此卡还未发动过该效果。
 function c17787975.damtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	local tc=c:GetFirstCardTarget()
-	-- 获取当前攻击怪兽
+	-- 获取当前攻击的怪兽。
 	local at=Duel.GetAttacker()
-	-- 判断是否满足发动①效果的条件
+	-- 检查战斗的攻击目标是否就是这张卡持续对象的那只怪兽。
 	if chk==0 then return tc and Duel.GetAttackTarget()==tc
 		and at and at:IsControler(1-tp) and at:GetAttack()>tc:GetAttack()
 		and c:GetFlagEffect(17787975)==0 end
 	local dam=math.abs(at:GetAttack()-tc:GetAttack())
-	-- 设置伤害对象为对方玩家
+	-- 设置受到伤害的玩家为对方玩家。
 	Duel.SetTargetPlayer(1-tp)
-	-- 设置伤害值为攻击力差
+	-- 设置伤害数值为攻击怪兽与对象怪兽的攻击力差值。
 	Duel.SetTargetParam(dam)
-	-- 设置操作信息为造成伤害
+	-- 登记操作信息，表明将要对对方造成伤害。
 	Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,1-tp,dam)
 	c:RegisterFlagEffect(17787975,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_DAMAGE,0,1)
 end
--- 执行①效果的伤害处理
+-- 伤害效果处理：若攻击怪兽仍关联本次战斗，则根据连锁信息中保存的玩家和攻击力差值给予伤害。
 function c17787975.damop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local tc=c:GetFirstCardTarget()
 	if not tc then return false end
-	-- 获取当前攻击怪兽
+	-- 获取当前攻击的怪兽。
 	local at=Duel.GetAttacker()
 	if at:IsRelateToBattle() then
-		-- 获取连锁的目标玩家
+		-- 获取连锁中登记的对象玩家（对方）。
 		local p=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER)
-		-- 对目标玩家造成伤害
+		-- 给予对方攻击怪兽与对象怪兽攻击力差值的伤害。
 		Duel.Damage(p,math.abs(at:GetAttack()-tc:GetAttack()),REASON_EFFECT)
 	end
 end
--- 判断对象怪兽是否离开场上的条件
+-- 持续效果条件：这张卡的持续对象怪兽从场上离开。
 function c17787975.descon(e,tp,eg,ep,ev,re,r,rp)
 	local tc=e:GetHandler():GetFirstCardTarget()
 	return tc and eg:IsContains(tc)
 end
--- 执行②效果的破坏处理
+-- 持续效果处理：将此卡破坏。
 function c17787975.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 将本卡破坏
+	-- 将此卡破坏。
 	Duel.Destroy(e:GetHandler(),REASON_EFFECT)
 end

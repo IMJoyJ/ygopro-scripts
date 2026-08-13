@@ -10,7 +10,7 @@ function c17679043.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_DIRECT_ATTACK)
 	c:RegisterEffect(e1)
-	-- ②：这张卡给与对方战斗伤害时，以对方场上1只6星以下的怪兽为对象才能发动。那只怪兽的控制权直到结束阶段得到。这个效果得到控制权的怪兽的效果无效化，不能攻击宣言。
+	-- 这个卡名的②的效果1回合只能使用1次。②：这张卡给与对方战斗伤害时，以对方场上1只6星以下的怪兽为对象才能发动。那只怪兽的控制权直到结束阶段得到。这个效果得到控制权的怪兽的效果无效化，不能攻击宣言。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(17679043,0))
 	e2:SetCategory(CATEGORY_CONTROL)
@@ -33,44 +33,44 @@ function c17679043.initial_effect(c)
 	e3:SetOperation(c17679043.desop)
 	c:RegisterEffect(e3)
 end
--- 效果发动条件：造成战斗伤害的玩家不是自己
+-- 发动条件判断：企鹅鱼雷造成战斗伤害的玩家必须是对方（即ep为对方，而不是自己）。
 function c17679043.ctrcon(e,tp,eg,ep,ev,re,r,rp)
 	return ep~=tp
 end
--- 筛选条件：对方场上满足等级不超过6且可以改变控制权的怪兽
+-- 对象筛选条件：对方的表侧表示怪兽，等级6以下，且控制权可以被改变。
 function c17679043.ctrfilter(c)
 	return c:IsFaceup() and c:IsLevelBelow(6) and c:IsControlerCanBeChanged()
 end
--- 选择对象：选择对方场上满足条件的1只怪兽作为目标
+-- 效果发动时的取对象处理：从对方场上选择1只符合条件的6星以下表侧表示怪兽，并登记改变控制权的操作信息。
 function c17679043.ctrtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(1-tp) and chkc:IsLocation(LOCATION_MZONE) and c17679043.ctrfilter(chkc) end
-	-- 确认是否有满足条件的怪兽可选
+	-- 发动时检查对方场上是否存在至少1只符合条件的可选取对象怪兽。
 	if chk==0 then return Duel.IsExistingTarget(c17679043.ctrfilter,tp,0,LOCATION_MZONE,1,nil) end
-	-- 提示选择改变控制权的怪兽
+	-- 弹出“请选择要改变控制权的怪兽”的选择提示信息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_CONTROL)  --"请选择要改变控制权的怪兽"
-	-- 选择目标怪兽
+	-- 让玩家从对方场上选择1只符合条件的怪兽作为效果对象（取对象）。
 	local g=Duel.SelectTarget(tp,c17679043.ctrfilter,tp,0,LOCATION_MZONE,1,1,nil)
-	-- 设置操作信息：将目标怪兽的控制权变更作为效果处理内容
+	-- 登记本次操作为改变1只怪兽的控制权，供连锁处理和相关判定使用。
 	Duel.SetOperationInfo(0,CATEGORY_CONTROL,g,1,0,0)
 end
--- 效果处理：将目标怪兽的控制权交给玩家，使其效果无效化并禁止攻击宣言
+-- 效果处理：获得对象怪兽的控制权直到结束阶段；若对象为表侧表示则将其效果无效化，并使其不能攻击宣言。
 function c17679043.ctrop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取当前连锁效果的目标怪兽
+	-- 获取效果发动时选择的对方场上那只对象怪兽。
 	local tc=Duel.GetFirstTarget()
-	-- 判断目标怪兽是否仍然在场且控制权变更成功
+	-- 确认对象怪兽仍与效果处理相关且成功获得其控制权直到结束阶段。
 	if tc:IsRelateToEffect(e) and Duel.GetControl(tc,tp,PHASE_END,1)~=0 then
 		if tc:IsFaceup() then
-			-- 使目标怪兽相关的连锁无效化
+			-- 使与该对象怪兽相关的连锁效果无效化，并在其变里侧时重置。
 			Duel.NegateRelatedChain(tc,RESET_TURN_SET)
-			-- 使目标怪兽的效果无效
+			-- 这个效果得到控制权的怪兽的效果无效化。
 			local e1=Effect.CreateEffect(c)
 			e1:SetType(EFFECT_TYPE_SINGLE)
 			e1:SetCode(EFFECT_DISABLE)
 			e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
 			e1:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END)
 			tc:RegisterEffect(e1)
-			-- 使目标怪兽的效果无效化
+			-- 这个效果得到控制权的怪兽的效果无效化。
 			local e2=Effect.CreateEffect(c)
 			e2:SetType(EFFECT_TYPE_SINGLE)
 			e2:SetCode(EFFECT_DISABLE_EFFECT)
@@ -79,7 +79,7 @@ function c17679043.ctrop(e,tp,eg,ep,ev,re,r,rp)
 			e2:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END)
 			tc:RegisterEffect(e2)
 		end
-		-- 使目标怪兽不能攻击宣言
+		-- 不能攻击宣言。
 		local e3=Effect.CreateEffect(c)
 		e3:SetType(EFFECT_TYPE_SINGLE)
 		e3:SetCode(EFFECT_CANNOT_ATTACK_ANNOUNCE)
@@ -88,22 +88,22 @@ function c17679043.ctrop(e,tp,eg,ep,ev,re,r,rp)
 		tc:RegisterEffect(e3)
 	end
 end
--- 效果发动条件：本次战斗攻击的怪兽是自己且自己参与了战斗
+-- ③效果的发动条件：本次攻击的怪兽是企鹅鱼雷自身，且它仍与战斗关联（即伤害步骤结束时触发）。
 function c17679043.descon(e,tp,eg,ep,ev,re,r,rp)
-	-- 确认本次战斗攻击的怪兽是自己且自己参与了战斗
+	-- 判断当前攻击怪兽为企鹅鱼雷自身，且自身仍与本次战斗关联。
 	return Duel.GetAttacker()==e:GetHandler() and e:GetHandler():IsRelateToBattle()
 end
--- 设置操作信息：将自己破坏作为效果处理内容
+-- ③效果的目标处理：无需选择对象，必定发动，并登记破坏自身的操作信息。
 function c17679043.destg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置操作信息：将自己破坏作为效果处理内容
+	-- 登记将企鹅鱼雷自身破坏的操作信息。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,e:GetHandler(),1,0,0)
 end
--- 效果处理：将自己破坏
+-- ③效果处理：若企鹅鱼雷仍与本次战斗关联，则将其破坏。
 function c17679043.desop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToBattle() then
-		-- 将自己破坏
+		-- 以效果原因将企鹅鱼雷自身破坏。
 		Duel.Destroy(c,REASON_EFFECT)
 	end
 end
