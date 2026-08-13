@@ -29,59 +29,59 @@ function c35283277.initial_effect(c)
 	e3:SetOperation(c35283277.eqop)
 	c:RegisterEffect(e3)
 end
--- 检索满足条件的魔法与陷阱区域的怪兽卡，用于特殊召唤
+-- 判断魔法与陷阱区域的表侧表示怪兽是否满足特殊召唤条件：须表侧表示、位于主要魔陷区（非场地格）且可被特殊召唤。
 function c35283277.spfilter(c,e,tp)
 	return c:IsFaceup() and c:GetSequence()<5 and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 判断是否满足特殊召唤的条件，包括是否有足够的怪兽区域和是否存在符合条件的目标怪兽
+-- ①效果的目标选择与发动条件：校验目标位于魔陷区且满足spfilter；发动时还需确认主怪兽区有空位且存在可选目标。
 function c35283277.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_SZONE) and c35283277.spfilter(chkc,e,tp) end
-	-- 判断目标玩家是否有足够的怪兽区域用于特殊召唤
+	-- 自己主要怪兽区域必须存在可用的空格才能发动①效果。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 判断目标玩家的魔法与陷阱区域是否存在符合条件的怪兽卡
+		-- 存在至少1张位于双方魔法与陷阱区域的表侧表示怪兽满足特殊召唤条件，可作为①效果的对象。
 		and Duel.IsExistingTarget(c35283277.spfilter,tp,LOCATION_SZONE,LOCATION_SZONE,1,nil,e,tp) end
-	-- 提示玩家选择要特殊召唤的卡
+	-- 向操作玩家显示选择提示，要求选择要特殊召唤的卡片。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 选择目标怪兽卡用于特殊召唤
+	-- 玩家从符合条件的卡中选择1张作为①效果的对象，并登记为该连锁的对象。
 	local g=Duel.SelectTarget(tp,c35283277.spfilter,tp,LOCATION_SZONE,LOCATION_SZONE,1,1,nil,e,tp)
-	-- 设置连锁操作信息，确定特殊召唤的卡
+	-- 记录本连锁将进行特殊召唤处理，目标为已选卡片。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,1,0,0)
 end
--- 处理特殊召唤效果，将目标怪兽特殊召唤到场上
+-- ①效果处理：若对象卡仍与效果关联，则将其表侧表示特殊召唤到自己场上。
 function c35283277.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的目标怪兽卡
+	-- 获取①效果发动时选择的对象卡。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 将目标怪兽卡特殊召唤到场上
+		-- 将对象卡以表侧表示特殊召唤到己方主要怪兽区。
 		Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
--- 检索满足条件的场上怪兽卡，用于装备
+-- 判断自己场上的表侧表示怪兽能否作为装备卡：须表侧表示、作为装备时满足唯一性限制且未被禁止。
 function c35283277.eqfilter(c,tp)
 	return c:IsFaceup() and c:CheckUniqueOnField(tp,LOCATION_SZONE) and not c:IsForbidden()
 end
--- 判断是否满足装备的条件，包括是否有足够的魔法与陷阱区域和是否存在符合条件的目标怪兽
+-- ②效果的目标选择与发动条件：目标须是自己场上表侧表示怪兽且不是本卡，并确认魔陷区有空位且存在可选目标。
 function c35283277.eqtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	local c=e:GetHandler()
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and c35283277.eqfilter(chkc,tp) and chkc~=c end
-	-- 判断目标玩家是否有足够的魔法与陷阱区域用于装备
+	-- 自己的魔法与陷阱区域必须存在可用的空格才能发动②效果。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_SZONE)>0
-		-- 判断目标玩家场上是否存在符合条件的怪兽卡
+		-- 存在至少1张自己场上除本卡以外的表侧表示怪兽满足条件，可作为②效果的装备对象。
 		and Duel.IsExistingTarget(c35283277.eqfilter,tp,LOCATION_MZONE,0,1,c,tp) end
-	-- 提示玩家选择要装备的卡
+	-- 向操作玩家显示选择提示，要求选择要装备的怪兽卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_EQUIP)  --"请选择要装备的卡"
-	-- 选择目标怪兽卡用于装备
+	-- 玩家从符合条件的怪兽中选择1张作为②效果的对象（不能选择本卡）。
 	local g=Duel.SelectTarget(tp,c35283277.eqfilter,tp,LOCATION_MZONE,0,1,1,c,tp)
 end
--- 处理装备效果，将目标怪兽装备给自身并设置攻击力加成
+-- ②效果处理：将目标怪兽装备给本卡，若成功则附加装备限制和攻击力上升500的效果。
 function c35283277.eqop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取当前连锁的目标怪兽卡
+	-- 获取②效果发动时选择的装备对象卡。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) and tc:IsFaceup() then
-		-- 尝试将目标怪兽装备给自身，若失败则返回
+		-- 尝试将对象怪兽作为装备卡装备给本卡（保持其当前表示形式）；装备失败则效果处理终止。
 		if not Duel.Equip(tp,tc,c,false) then return end
-		-- 设置装备对象限制，确保只能装备给自身
+		-- 那只表侧表示怪兽当作装备卡使用给这张卡装备。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetProperty(EFFECT_FLAG_OWNER_RELATE)
@@ -90,7 +90,7 @@ function c35283277.eqop(e,tp,eg,ep,ev,re,r,rp)
 		e1:SetReset(RESET_EVENT+RESETS_STANDARD)
 		e1:SetValue(c35283277.eqlimit)
 		tc:RegisterEffect(e1)
-		-- 设置装备卡的攻击力加成效果，使攻击力上升500
+		-- 攻击力上升500。
 		local e2=Effect.CreateEffect(c)
 		e2:SetType(EFFECT_TYPE_EQUIP)
 		e2:SetCode(EFFECT_UPDATE_ATTACK)
@@ -99,7 +99,7 @@ function c35283277.eqop(e,tp,eg,ep,ev,re,r,rp)
 		tc:RegisterEffect(e2)
 	end
 end
--- 装备对象限制的判断函数，确保只能装备给自身
+-- 装备限制函数：仅允许该装备卡装备给本卡（埃卡）。
 function c35283277.eqlimit(e,c)
 	return c==e:GetLabelObject()
 end

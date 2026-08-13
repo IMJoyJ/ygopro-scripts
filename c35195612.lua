@@ -11,24 +11,24 @@ function c35195612.initial_effect(c)
 	e1:SetOperation(c35195612.operation)
 	c:RegisterEffect(e1)
 end
--- 过滤函数，用于筛选满足条件的怪兽卡（地属性且能送去墓地）
+-- 筛选卡组中满足条件（怪兽族、地属性、可送入墓地）的卡作为可选的送墓对象。
 function c35195612.tgfilter(c)
 	return c:IsType(TYPE_MONSTER) and c:IsAttribute(ATTRIBUTE_EARTH) and c:IsAbleToGrave()
 end
--- 效果处理时的处理目标函数，设置将要处理的卡为1张卡，来自卡组
+-- 反转效果发动时的条件判断：只要不在处理阶段就允许发动，并在发动时登记从卡组将1张卡送去墓地的操作信息。
 function c35195612.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置连锁操作信息为送去墓地效果，目标为1张卡，来自卡组
+	-- 登记本次连锁处理时将执行“从卡组把1张卡送去墓地”这一操作，用于效果发动检测。
 	Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,nil,1,tp,LOCATION_DECK)
 end
--- 效果处理函数，执行将符合条件的卡从卡组送去墓地的操作
+-- 反转效果的实际处理：由玩家从卡组选择1只地属性怪兽，并将其送去墓地。
 function c35195612.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要送去墓地的卡
+	-- 向当前玩家显示“请选择要送去墓地的卡”的提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
-	-- 从卡组中选择1张满足条件的卡
+	-- 让当前玩家从自己的卡组中选出1张满足筛选条件、且可以送去墓地的地属性怪兽。
 	local g=Duel.SelectMatchingCard(tp,c35195612.tgfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的卡以效果原因送去墓地
+		-- 将选中的那张卡以效果原因送去墓地。
 		Duel.SendtoGrave(g,REASON_EFFECT)
 	end
 end
