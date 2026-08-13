@@ -11,7 +11,7 @@ function c45869829.initial_effect(c)
 	e1:SetTarget(c45869829.target)
 	e1:SetOperation(c45869829.activate)
 	c:RegisterEffect(e1)
-	-- 场上的这张卡被对方破坏送去墓地的场合，可以从卡组把「速攻魔力增幅器」以外的1张速攻魔法卡加入手卡。
+	-- 此外，场上的这张卡被对方破坏送去墓地的场合，可以从卡组把「速攻魔力增幅器」以外的1张速攻魔法卡加入手卡。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(45869829,0))  --"检索"
 	e2:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
@@ -23,57 +23,57 @@ function c45869829.initial_effect(c)
 	e2:SetOperation(c45869829.thop)
 	c:RegisterEffect(e2)
 end
--- 过滤函数，用于判断是否为速攻魔法卡且不是自身且可以送入卡组。
+-- 过滤条件：必须是速攻魔法卡、卡名不是「速攻魔力增幅器」、且可以被送回卡组。
 function c45869829.filter(c)
 	return c:IsType(TYPE_QUICKPLAY) and not c:IsCode(45869829) and c:IsAbleToDeck()
 end
--- 设置效果目标，选择满足条件的墓地速攻魔法卡作为对象。
+-- 发动时的目标选择处理：从自己墓地选择1张符合条件的速攻魔法卡作为对象，并设置将卡返回卡组的操作信息。
 function c45869829.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and c45869829.filter(chkc) end
-	-- 检查是否满足选择目标的条件，即是否存在满足条件的墓地速攻魔法卡。
+	-- 合法性检查：若在效果发动前的检查阶段，确认自己墓地是否存在至少1张符合条件的速攻魔法卡可以作为对象。
 	if chk==0 then return Duel.IsExistingTarget(c45869829.filter,tp,LOCATION_GRAVE,0,1,nil) end
-	-- 提示玩家选择要返回卡组的卡。
+	-- 向操作玩家显示选择提示，要求选择要返回卡组的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TODECK)  --"请选择要返回卡组的卡"
-	-- 选择满足条件的墓地速攻魔法卡作为目标。
+	-- 让玩家从自己墓地选择1张符合条件的速攻魔法卡，并将其设为这次连锁的对象。
 	local g=Duel.SelectTarget(tp,c45869829.filter,tp,LOCATION_GRAVE,0,1,1,nil)
-	-- 设置效果操作信息，指定将目标卡送入卡组。
+	-- 设置操作信息：本连锁效果处理时会将1张卡返回卡组，对象为已选择的卡。
 	Duel.SetOperationInfo(0,CATEGORY_TODECK,g,1,0,0)
 end
--- 效果处理函数，将选定的卡送入卡组。
+-- 效果处理：将发动时选择的对象卡返回持有者卡组并洗牌。
 function c45869829.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁效果的目标卡。
+	-- 取得效果处理时该连锁对应的对象卡。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 将目标卡以效果原因送入卡组并洗牌。
+		-- 以效果原因将对象卡送去持有者卡组并洗牌（SEQ_DECKSHUFFLE 表示返回卡组后洗牌）。
 		Duel.SendtoDeck(tc,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
 	end
 end
--- 触发条件判断，确认该卡是被对方破坏送入墓地的。
+-- 第二效果的发动条件：这张卡被对方破坏并送去墓地，且破坏前是在自己场上由自己控制。
 function c45869829.thcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	return rp==1-tp and c:IsReason(REASON_DESTROY) and c:IsPreviousLocation(LOCATION_ONFIELD) and c:IsPreviousControler(tp)
 end
--- 过滤函数，用于判断是否为速攻魔法卡且不是自身且可以加入手牌。
+-- 检索过滤条件：必须是速攻魔法卡、卡名不是「速攻魔力增幅器」、且可以加入手卡。
 function c45869829.thfilter(c)
 	return c:IsType(TYPE_QUICKPLAY) and not c:IsCode(45869829) and c:IsAbleToHand()
 end
--- 设置检索效果的目标，检查卡组中是否存在满足条件的速攻魔法卡。
+-- 检索效果的目标处理：检查卡组是否存在符合条件的速攻魔法卡，并设置从卡组加入手卡的操作信息。
 function c45869829.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否满足检索目标的条件，即是否存在满足条件的卡组速攻魔法卡。
+	-- 合法性检查：确认卡组是否存在至少1张符合条件的速攻魔法卡。
 	if chk==0 then return Duel.IsExistingMatchingCard(c45869829.thfilter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置效果操作信息，指定将一张卡加入手牌。
+	-- 设置操作信息：本次效果处理时会从卡组把1张卡加入手卡（具体卡在效果处理时选择）。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 检索效果处理函数，从卡组选择一张速攻魔法卡加入手牌。
+-- 检索效果处理：从卡组选择1张符合条件的速攻魔法卡加入手卡，并让对方确认。
 function c45869829.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要加入手牌的卡。
+	-- 向操作玩家显示选择提示，要求选择要加入手卡的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 从卡组中选择一张满足条件的速攻魔法卡。
+	-- 让玩家从卡组选择1张符合条件的速攻魔法卡。
 	local g=Duel.SelectMatchingCard(tp,c45869829.thfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的卡以效果原因加入手牌。
+		-- 将选择的卡加入其持有者的手卡。
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 向对方确认加入手牌的卡。
+		-- 让对方玩家确认加入手卡的卡。
 		Duel.ConfirmCards(1-tp,g)
 	end
 end

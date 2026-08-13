@@ -57,61 +57,61 @@ function c45796834.initial_effect(c)
 	e5:SetCode(EFFECT_CHANGE_BATTLE_DAMAGE)
 	e5:SetLabel(5)
 	e5:SetCondition(c45796834.eqcon)
-	-- 设置战斗伤害变为2倍
+	-- 设置该效果为“此卡给与对方的战斗伤害变成2倍”的伤害变更值。
 	e5:SetValue(aux.ChangeBattleDamage(1,DOUBLE_DAMAGE))
 	c:RegisterEffect(e5)
 end
--- 判断装备卡数量是否满足效果条件，并检查是否处于战斗阶段或满足其他特殊条件
+-- 公共条件函数：先检查装备卡数量是否达到本效果标签lab；lab为2或4时额外要求处于战斗阶段；lab为3时额外要求是对方发动的以此卡为对象的取对象效果且该连锁可被无效；其余情况仅需装备数达标。
 function c45796834.eqcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local lab=e:GetLabel()
 	if c:GetEquipCount()<lab then return false end
 	if (lab==2 or lab==4) then
-		-- 判断当前是否处于战斗阶段
+		-- 返回当前是否处于战斗阶段（从战斗阶段开始到战斗阶段结束）。
 		return Duel.GetCurrentPhase()>=PHASE_BATTLE_START and Duel.GetCurrentPhase()<=PHASE_BATTLE
 	elseif lab==3 then
 		if rp==tp or c:IsStatus(STATUS_BATTLE_DESTROYED) or not re:IsHasProperty(EFFECT_FLAG_CARD_TARGET) then
 			return false
 		end
-		-- 获取连锁效果的目标卡片组
+		-- 获取当前连锁ev中取对象效果的对象卡组，用于判断本卡是否为对象。
 		local g=Duel.GetChainInfo(ev,CHAININFO_TARGET_CARDS)
-		-- 判断目标卡片组是否包含自身且该连锁效果可被无效
+		-- 当对象卡组包含本卡且该连锁效果能够被无效时返回真，作为3号效果的发动条件。
 		return g and g:IsContains(c) and Duel.IsChainDisablable(ev)
 	else
 		return true
 	end
 end
--- 返回装备卡数量乘以1000作为攻击力加成
+-- 返回这张卡的装备卡数量×1000，作为攻击力上升数值。
 function c45796834.atkval(e,c)
 	return c:GetEquipCount()*1000
 end
--- 返回效果类型为怪兽卡，用于限制对方不能发动怪兽效果
+-- 作为EFFECT_CANNOT_ACTIVATE的判定值：对方发动的效果是怪兽效果时返回真，从而禁止其在战斗阶段发动怪兽效果。
 function c45796834.actlimit(e,re,rp)
 	return re:IsActiveType(TYPE_MONSTER)
 end
--- 过滤函数，用于选择场上可送入墓地的装备卡作为发动代价
+-- 筛选可作为代价的装备卡：是装备卡，且（表侧表示或正装备于怪兽）且可以作为代价送去墓地。
 function c45796834.negfilter(c)
 	return (c:IsFaceup() or c:GetEquipTarget()) and c:IsType(TYPE_EQUIP) and c:IsAbleToGraveAsCost()
 end
--- 发动效果时选择一张场上装备卡送入墓地作为代价
+-- 代价函数：在合法性检查时确认存在至少1张符合条件的装备卡；发动时从自己魔陷区选择1张装备卡送去墓地。
 function c45796834.negcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查场上是否存在可送入墓地的装备卡
+	-- 在代价检查阶段（chk==0）判断是否存在至少1张符合条件的装备卡，作为能否发动的前提。
 	if chk==0 then return Duel.IsExistingMatchingCard(c45796834.negfilter,tp,LOCATION_SZONE,0,1,nil) end
-	-- 提示玩家选择要送入墓地的装备卡
+	-- 向玩家显示“请选择要送去墓地的卡”的提示信息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
-	-- 选择一张场上装备卡作为发动代价
+	-- 从自己魔陷区选择1张满足negfilter条件的装备卡，作为本次代价支付的卡。
 	local g=Duel.SelectMatchingCard(tp,c45796834.negfilter,tp,LOCATION_SZONE,0,1,1,nil)
-	-- 将选中的装备卡送入墓地
+	-- 将选择的装备卡以“代价（REASON_COST）”原因送去墓地，完成代价支付。
 	Duel.SendtoGrave(g,REASON_COST)
 end
--- 设置连锁操作信息，表示将使效果无效
+-- 目标函数：本效果不取对象，允许发动；并设置操作信息，声明将对目标连锁进行无效处理。
 function c45796834.negtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置连锁操作信息，表示将使效果无效
+	-- 设置操作信息：本次连锁处理将对eg对应的效果进行无效化，类别为CATEGORY_DISABLE。
 	Duel.SetOperationInfo(0,CATEGORY_DISABLE,eg,1,0,0)
 end
--- 使连锁效果无效
+-- 效果处理函数：发动成功后实际执行无效操作，使对方发动的对应效果无效。
 function c45796834.negop(e,tp,eg,ep,ev,re,r,rp)
-	-- 使连锁效果无效
+	-- 使连锁ev的效果无效化。
 	Duel.NegateEffect(ev)
 end
