@@ -30,24 +30,24 @@ function c14005031.initial_effect(c)
 	e3:SetOperation(c14005031.desop)
 	c:RegisterEffect(e3)
 end
--- 检索满足条件的风属性超量怪兽（无超量素材）
+-- 筛选条件：对象必须是表侧表示的风属性超量怪兽，且没有超量素材。
 function c14005031.filter(c)
 	return c:IsFaceup() and c:IsType(TYPE_XYZ) and c:GetOverlayCount()==0 and c:IsAttribute(ATTRIBUTE_WIND)
 end
--- 处理效果选择对象的函数
+-- 发动时选择自己场上1只符合筛选条件的表侧表示风属性·无超量素材的超量怪兽作为对象。
 function c14005031.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(tp) and chkc:IsLocation(LOCATION_MZONE) and c14005031.filter(chkc) end
-	-- 判断是否满足选择对象的条件
+	-- 发动时确认自己场上是否存在至少1只符合条件的超量怪兽作为对象。
 	if chk==0 then return Duel.IsExistingTarget(c14005031.filter,tp,LOCATION_MZONE,0,1,nil) end
-	-- 提示玩家选择效果对象
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)
-	-- 选择满足条件的怪兽作为对象
+	-- 向玩家显示“请选择效果的对象”的提示信息。
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)  --"请选择效果的对象"
+	-- 从自己场上选择1只符合条件的超量怪兽作为效果的对象，并建立对象联系。
 	Duel.SelectTarget(tp,c14005031.filter,tp,LOCATION_MZONE,0,1,1,nil)
 end
--- 处理效果发动时的函数
+-- 发动成功时，若这张卡和对象仍与效果关联，则将对象设为这张卡的永续对象，并注册结束阶段将其作为超量素材的效果。
 function c14005031.activate(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取当前连锁效果的对象怪兽
+	-- 获取这次发动时选择的对象的卡。
 	local tc=Duel.GetFirstTarget()
 	if c:IsRelateToEffect(e) and tc:IsRelateToEffect(e) then
 		c:SetCardTarget(tc)
@@ -63,30 +63,30 @@ function c14005031.activate(e,tp,eg,ep,ev,re,r,rp)
 		c:RegisterEffect(e1)
 	end
 end
--- 判断目标怪兽是否为效果怪兽
+-- 判定该怪兽是否为效果怪兽（包含原本种类为效果怪兽的怪兽），用于无效化。
 function c14005031.disable(e,c)
 	return c:IsType(TYPE_EFFECT) or bit.band(c:GetOriginalType(),TYPE_EFFECT)==TYPE_EFFECT
 end
--- 判断是否满足效果无效化的条件
+-- 无效化效果生效的条件：这张卡存在通过①效果建立持续对象的目标怪兽。
 function c14005031.discon(e)
 	return e:GetHandler():GetFirstCardTarget()~=nil
 end
--- 判断是否满足破坏条件
+-- 持续对象的目标怪兽离场时，满足破坏这张卡的条件。
 function c14005031.descon(e,tp,eg,ep,ev,re,r,rp)
 	local tc=e:GetHandler():GetFirstCardTarget()
 	return tc and eg:IsContains(tc)
 end
--- 处理破坏效果
+-- 对象怪兽离场时，将这张卡破坏。
 function c14005031.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 将自身破坏
+	-- 以效果原因破坏这张卡（这张卡自身）。因为指定了REASON_EFFECT，所以这是效果破坏。
 	Duel.Destroy(e:GetHandler(),REASON_EFFECT)
 end
--- 处理将自身作为超量素材的函数
+-- 结束阶段时，获取该效果的持续对象怪兽，将这张卡作为超量素材叠放在其下方。
 function c14005031.matop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local tc=c:GetFirstCardTarget()
 	if tc then
-		-- 将自身叠放至对象怪兽下方作为超量素材
+		-- 把这张卡叠放在对象超量怪兽的下面作为超量素材。
 		Duel.Overlay(tc,Group.FromCards(c))
 	end
 end

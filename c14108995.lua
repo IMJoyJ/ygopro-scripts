@@ -13,7 +13,7 @@ function c14108995.initial_effect(c)
 	e2:SetType(EFFECT_TYPE_FIELD)
 	e2:SetRange(LOCATION_SZONE)
 	e2:SetTargetRange(LOCATION_MZONE,0)
-	-- 检索满足地属性条件的怪兽组
+	-- 限制该效果只作用于自己场上的地属性怪兽，即仅地属性怪兽会被附加「春化精」字段。
 	e2:SetTarget(aux.TargetBoolFunction(Card.IsAttribute,ATTRIBUTE_EARTH))
 	e2:SetCode(EFFECT_ADD_SETCODE)
 	e2:SetValue(0x182)
