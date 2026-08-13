@@ -32,61 +32,61 @@ function c22829942.initial_effect(c)
 	e3:SetOperation(c22829942.thop2)
 	c:RegisterEffect(e3)
 end
--- 支付1张手卡丢弃的代价
+-- 效果①的代价处理函数：发动前检查手牌是否有可丢弃的卡，发动时丢弃1张手卡作为代价。
 function c22829942.thcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否满足支付1张手卡丢弃的条件
+	-- 代价检测：确认自己手牌中是否存在至少1张可以丢弃的卡。
 	if chk==0 then return Duel.IsExistingMatchingCard(Card.IsDiscardable,tp,LOCATION_HAND,0,1,nil) end
-	-- 执行1张手卡丢弃的操作
+	-- 执行代价：从手牌选择1张可以丢弃的卡，以代价+丢弃的理由送入墓地。
 	Duel.DiscardHand(tp,Card.IsDiscardable,1,1,REASON_COST+REASON_DISCARD)
 end
--- 检索过滤器：卡片编号为24094653且能加入手牌
+-- 检索过滤器：卡名必须为「融合」（卡号24094653），且能够加入手卡。
 function c22829942.thfilter(c)
 	return c:IsCode(24094653) and c:IsAbleToHand()
 end
--- 效果发动时的处理：确认卡组或墓地是否存在满足条件的卡片
+-- 效果①的发动目标函数：检查卡组·墓地中是否存在符合条件的「融合」，并设置效果处理时将那张卡加入手卡的操作信息。
 function c22829942.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查卡组或墓地是否存在满足条件的卡片
+	-- 发动条件检测：确认自己卡组·墓地中是否存在至少1张符合条件的「融合」。
 	if chk==0 then return Duel.IsExistingMatchingCard(c22829942.thfilter,tp,LOCATION_DECK+LOCATION_GRAVE,0,1,nil) end
-	-- 设置连锁操作信息：将1张卡从卡组或墓地加入手牌
+	-- 设定操作信息：本次效果将把1张「融合」从自己卡组·墓地加入手卡（具体卡在效果处理时选择）。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK+LOCATION_GRAVE)
 end
--- 效果处理：选择并把符合条件的卡加入手牌
+-- 效果①的处理函数：从自己的卡组·墓地选1张符合条件的「融合」加入手卡，并让对方确认。
 function c22829942.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要加入手牌的卡
+	-- 弹出选择提示，提示玩家选择要加入手卡的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择满足条件的卡组或墓地的卡
+	-- 从自己卡组·墓地中选出1张符合条件的「融合」（自动过滤因王家长眠之谷等效果不能移动的卡）。
 	local g=Duel.SelectMatchingCard(tp,aux.NecroValleyFilter(c22829942.thfilter),tp,LOCATION_DECK+LOCATION_GRAVE,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的卡加入手牌
+		-- 将选中的「融合」加入持有者的手卡。
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 向对方确认加入手牌的卡
+		-- 让对方确认加入手卡的卡片，以符合游戏规则中的公开确认要求。
 		Duel.ConfirmCards(1-tp,g)
 	end
 end
--- 效果2的过滤器：卡片为融合召唤使用的素材怪兽且在本回合被加入墓地
+-- 墓地检索过滤器：该怪兽必须是在本回合作为融合素材使用而送入墓地的怪兽，并且能够加入手卡。
 function c22829942.thfilter2(c,id)
 	return c:GetReason()&(REASON_FUSION+REASON_MATERIAL)==(REASON_FUSION+REASON_MATERIAL) and c:IsType(TYPE_MONSTER) and c:GetTurnID()==id and c:IsAbleToHand()
 end
--- 效果2发动时的处理：选择并确定目标
+-- 效果②的发动目标函数：在结束阶段，从自己墓地选择1只本回合作为融合素材使用过的怪兽作为对象，并设置加入手卡的操作信息。
 function c22829942.thtg2(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	-- 获取当前回合数
+	-- 获取当前回合编号，用于判断怪兽是否在本回合进入墓地。
 	local tid=Duel.GetTurnCount()
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and c22829942.thfilter2(chkc,tid) end
-	-- 检查是否存在满足条件的墓地怪兽
+	-- 发动条件检测：确认自己墓地存在至少1只符合条件的融合素材怪兽。
 	if chk==0 then return Duel.IsExistingTarget(c22829942.thfilter2,tp,LOCATION_GRAVE,0,1,nil,tid) end
-	-- 提示玩家选择要加入手牌的卡
+	-- 弹出选择提示，提示玩家选择要加入手卡的怪兽。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择满足条件的墓地怪兽
+	-- 从自己墓地选择1只本回合用作融合素材的怪兽作为效果对象。
 	local g=Duel.SelectTarget(tp,c22829942.thfilter2,tp,LOCATION_GRAVE,0,1,1,nil,tid)
-	-- 设置连锁操作信息：将1只怪兽从墓地加入手牌
+	-- 设定操作信息：将选中的目标怪兽加入手卡。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,1,0,0)
 end
--- 效果2处理：将目标怪兽加入手牌
+-- 效果②的处理函数：将效果对象怪兽加入手卡。
 function c22829942.thop2(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的目标怪兽
+	-- 取出效果发动时选择的目标怪兽。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 将目标怪兽加入手牌
+		-- 将该目标怪兽加入其持有者的手卡。
 		Duel.SendtoHand(tc,nil,REASON_EFFECT)
 	end
 end

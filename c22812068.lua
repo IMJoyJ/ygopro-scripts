@@ -11,13 +11,13 @@ function c22812068.initial_effect(c)
 	e1:SetCondition(c22812068.spcon)
 	c:RegisterEffect(e1)
 end
--- 判断特殊召唤条件是否满足
+-- 这是特殊召唤规则的条件判断函数：在满足“自己场上无怪兽、对方场上有怪兽、自己场上有空位”时，允许这张卡从手卡进行规则特殊召唤；c为nil时表示先返回true以允许后续检查具体卡片。
 function c22812068.spcon(e,c)
 	if c==nil then return true end
-	-- 检查自己场上是否有怪兽
+	-- 检查自己场上主要怪兽区不存在怪兽，即满足“自己场上没有怪兽”。
 	return Duel.GetFieldGroupCount(c:GetControler(),LOCATION_MZONE,0)==0
-		-- 检查对方场上是否有怪兽
+		-- 检查对方场上主要怪兽区存在怪兽，即满足“对方场上有怪兽”。
 		and	Duel.GetFieldGroupCount(c:GetControler(),0,LOCATION_MZONE)>0
-		-- 检查自己场上是否有可用区域
+		-- 检查自己场上存在可用的主要怪兽区空格，确保特殊召唤能够成功。
 		and Duel.GetLocationCount(c:GetControler(),LOCATION_MZONE)>0
 end
