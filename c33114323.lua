@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：只要装备怪兽在自己场上存在，对方不能把装备怪兽以外的双方的场上·墓地·除外状态的怪兽作为效果的对象。
 function c33114323.initial_effect(c)
-	-- ①：只要装备怪兽在自己场上存在，对方不能把装备怪兽以外的双方的场上·墓地·除外状态的怪兽作为效果的对象。
+	-- 装备怪兽——此段进行装备魔法的发动与装备处理，使该怪兽成为装备怪兽。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_EQUIP)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -20,10 +20,10 @@ function c33114323.initial_effect(c)
 	e2:SetTargetRange(0x34,0x34)
 	e2:SetCondition(c33114323.effcon)
 	e2:SetTarget(c33114323.efftg)
-	-- 设置效果值为aux.tgoval函数，用于过滤不会成为对方效果对象的卡片
+	-- 设置该效果的Value为aux.tgoval，用于判定对方发动效果时不能选择这些怪兽作为对象，从而实现保护。
 	e2:SetValue(aux.tgoval)
 	c:RegisterEffect(e2)
-	-- ①：只要装备怪兽在自己场上存在，对方不能把装备怪兽以外的双方的场上·墓地·除外状态的怪兽作为效果的对象。
+	-- 装备怪兽——限制本卡作为装备卡只能装备给怪兽，确保形成装备怪兽状态。
 	local e3=Effect.CreateEffect(c)
 	e3:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
 	e3:SetType(EFFECT_TYPE_SINGLE)
@@ -31,34 +31,34 @@ function c33114323.initial_effect(c)
 	e3:SetValue(1)
 	c:RegisterEffect(e3)
 end
--- 选择装备怪兽的目标，要求是己方场上的表侧表示怪兽
+-- 装备魔法发动时的目标处理：确认存在可装备的表侧表示怪兽，提示并选择1只表侧表示怪兽作为装备对象，同时登记装备操作信息。
 function c33114323.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsFaceup() end
-	-- 判断是否满足选择装备怪兽的条件，即己方场上是否存在表侧表示的怪兽
+	-- 发动合法性检查：若场上不存在至少1只表侧表示怪兽可被选择为装备对象，则不能发动。
 	if chk==0 then return Duel.IsExistingTarget(Card.IsFaceup,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil) end
-	-- 向玩家提示选择要装备的卡
+	-- 向发动玩家显示“请选择要装备的卡”的选择提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_EQUIP)  --"请选择要装备的卡"
-	-- 选择一个己方场上的表侧表示怪兽作为装备对象
+	-- 从双方怪兽区域选择1只表侧表示怪兽作为装备对象，并将其设置为本次连锁的取对象目标。
 	Duel.SelectTarget(tp,Card.IsFaceup,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,nil)
-	-- 设置本次连锁操作的信息为装备效果
+	-- 登记本次连锁的操作信息为CATEGORY_EQUIP，指明要装备的卡为本装备魔法卡。
 	Duel.SetOperationInfo(0,CATEGORY_EQUIP,e:GetHandler(),1,0,0)
 end
--- 装备效果的处理函数，将装备卡装备给选中的怪兽
+-- 装备魔法发动后的处理：确认装备卡和目标卡仍与本次连锁相关且目标仍表侧表示后，将本卡装备给目标怪兽。
 function c33114323.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁中被选择的目标怪兽
+	-- 获取发动时选择的装备对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if e:GetHandler():IsRelateToEffect(e) and tc:IsRelateToEffect(e) and tc:IsFaceup() then
-		-- 将装备卡装备给目标怪兽
+		-- 将本卡作为装备魔法卡装备给对象怪兽，完成装备。
 		Duel.Equip(tp,e:GetHandler(),tc)
 	end
 end
--- 判断装备卡是否处于有效状态且其装备对象存在且为同一玩家
+-- 永续效果的条件判定：此卡处于装备状态，且装备卡控制者与装备怪兽控制者相同，即“装备怪兽在自己场上存在”。
 function c33114323.effcon(e)
 	local c=e:GetHandler()
 	local tc=c:GetEquipTarget()
 	return tc and c:GetControler()==tc:GetControler()
 end
--- 判断目标怪兽是否不是装备怪兽，且为怪兽卡，且处于表侧表示或不在除外区
+-- 筛选受保护的对象：排除装备怪兽本身，筛选出双方场上·墓地·除外状态的怪兽（除外状态仅表侧除外；场上/墓地不问表侧里侧）。
 function c33114323.efftg(e,c)
 	return c~=e:GetHandler():GetEquipTarget() and c:IsType(TYPE_MONSTER) and (c:IsFaceup() or not c:IsLocation(LOCATION_REMOVED))
 end

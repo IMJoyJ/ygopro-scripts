@@ -21,31 +21,31 @@ function c33245030.initial_effect(c)
 	e2:SetValue(1)
 	c:RegisterEffect(e2)
 end
--- 判断攻击方是否为对方
+-- 判定发动条件：对方怪兽进行攻击宣言。
 function c33245030.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 攻击怪兽的控制者是否为对方
+	-- 确认攻击宣言的怪兽是对方怪兽（控制者为1-tp）。
 	return Duel.GetAttacker():IsControler(1-tp)
 end
--- 支付将此卡送去墓地的代价
+-- 设置发动代价：检查手卡的这张卡能否作为代价送去墓地，若能则执行代价。
 function c33245030.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsAbleToGraveAsCost() end
-	-- 将此卡从手牌送去墓地作为代价
+	-- 把这张卡从手卡送去墓地作为发动代价。
 	Duel.SendtoGrave(e:GetHandler(),REASON_COST)
 end
--- 设置效果目标，确认攻击怪兽是否为攻击表示且可改变表示形式
+-- 效果发动时的目标检测：确认攻击怪兽处于攻击表示且能够变更表示形式。
 function c33245030.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then
-		-- 获取当前攻击怪兽
+		-- 获取当前攻击宣言的怪兽。
 		local at=Duel.GetAttacker()
 		return at:IsAttackPos() and at:IsCanChangePosition()
 	end
 end
--- 处理效果发动时的怪兽表示形式改变
+-- 效果处理：将那只攻击怪兽变为表侧守备表示（若其仍与本次战斗相关）。
 function c33245030.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前攻击怪兽
+	-- 获取当前攻击宣言的怪兽。
 	local at=Duel.GetAttacker()
 	if at:IsAttackPos() and at:IsRelateToBattle() then
-		-- 将攻击怪兽变为守备表示
+		-- 将该攻击怪兽的表示形式变更为表侧守备表示。
 		Duel.ChangePosition(at,POS_FACEUP_DEFENSE)
 	end
 end
