@@ -19,15 +19,15 @@ function c41098335.initial_effect(c)
 	e2:SetOperation(c41098335.retop)
 	c:RegisterEffect(e2)
 end
--- 判断效果是否因战斗破坏怪兽而触发，需满足怪兽表侧表示且与本次战斗相关。
+-- 攻击力上升效果的发动条件：这张卡表侧表示，并且与本次战斗相关联（即战斗破坏对方怪兽的这张卡仍在场上且参与了战斗）。
 function c41098335.atkcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsFaceup() and e:GetHandler():IsRelateToBattle()
 end
--- 若满足条件则为该怪兽增加300点攻击力。
+-- 处理战斗破坏时：若这张卡仍与发动时的效果关联且表侧表示，则给它赋予一个攻击力上升300的效果。
 function c41098335.atkop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) and c:IsFaceup() then
-		-- 为该怪兽增加300点攻击力并设置重置条件。
+		-- 这张卡的攻击力上升300。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)
@@ -36,10 +36,10 @@ function c41098335.atkop(e,tp,eg,ep,ev,re,r,rp)
 		c:RegisterEffect(e1)
 	end
 end
--- 判断是否为己方回合结束阶段且该怪兽本回合未进行过攻击。
+-- 回合结束时：若当前回合玩家为此卡控制者且此卡本回合没有攻击过，则将之前通过战斗破坏效果提升的攻击力数值重置为0。
 function c41098335.retop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 若满足条件则重置该怪兽因未攻击而增加的攻击力。
+	-- 判断是否为“自己回合且此卡没有进行攻击”：当前回合玩家等于此卡控制者，且此卡本回合攻击次数为0。
 	if Duel.GetTurnPlayer()==tp and c:GetAttackedCount()==0 then
 		c:ResetEffect(RESET_DISABLE,RESET_EVENT)
 	end

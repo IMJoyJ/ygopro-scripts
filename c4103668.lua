@@ -7,7 +7,7 @@
 -- ③：这张卡从墓地的特殊召唤成功的场合才能发动。选对方场上1张魔法·陷阱卡破坏。
 function c4103668.initial_effect(c)
 	c:SetUniqueOnField(1,0,4103668)
-	-- 为卡片添加同调召唤手续，要求1只调整，1只调整以外的怪兽
+	-- 为「翼之魔妖-天狗」添加同调召唤手续：调整 + 调整以外的怪兽1只以上（素材数量为1）。
 	aux.AddSynchroProcedure(c,nil,aux.NonTuner(nil),1)
 	c:EnableReviveLimit()
 	-- ③：这张卡从墓地的特殊召唤成功的场合才能发动。选对方场上1张魔法·陷阱卡破坏。
@@ -36,67 +36,67 @@ function c4103668.initial_effect(c)
 	e2:SetOperation(c4103668.spop)
 	c:RegisterEffect(e2)
 end
--- 判断此卡是否从墓地特殊召唤成功
+-- ③效果的发动条件：这张卡特殊召唤成功时，其之前所在的位置为墓地（即从墓地特殊召唤成功）。
 function c4103668.condition(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsPreviousLocation(LOCATION_GRAVE)
 end
--- 检索满足条件的魔法·陷阱卡组，用于破坏效果
+-- ③效果的发动时点判定：取得对方场上全部魔法·陷阱卡，若存在任意1张则效果可以发动，并设置破坏1张魔法·陷阱卡的操作信息。
 function c4103668.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 获取场上所有魔法·陷阱卡
+	-- 检索对方场上的所有魔法·陷阱卡（用于判断是否存在可破坏的对象）。
 	local g=Duel.GetMatchingGroup(Card.IsType,tp,0,LOCATION_ONFIELD,nil,TYPE_SPELL+TYPE_TRAP)
 	if chk==0 then return #g>0 end
-	-- 设置连锁操作信息，指定要破坏的卡
+	-- 设置本次效果的处理信息：将破坏1张魔法·陷阱卡，对象候选为对方场上所有魔法·陷阱卡。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,1,0,0)
 end
--- 选择并破坏对方场上的魔法·陷阱卡
+-- ③效果处理：从对方场上选择1张魔法·陷阱卡并破坏。
 function c4103668.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要破坏的卡
+	-- 提示当前玩家选择要破坏的卡（弹出“请选择要破坏的卡”的选择消息）。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 选择满足条件的魔法·陷阱卡
+	-- 由当前玩家从对方场上选择1张魔法·陷阱卡。
 	local g=Duel.SelectMatchingCard(tp,Card.IsType,tp,0,LOCATION_ONFIELD,1,1,nil,TYPE_SPELL+TYPE_TRAP)
 	if g:GetCount()>0 then
-		-- 显示被选为对象的卡
+		-- 为被选择的卡显示“成为对象”的动画效果，并记录该卡被选择为对象。
 		Duel.HintSelection(g)
-		-- 将选中的卡破坏
+		-- 以效果原因将所选的那张魔法·陷阱卡破坏。
 		Duel.Destroy(g,REASON_EFFECT)
 	end
 end
--- 过滤满足条件的被破坏的同调怪兽：原等级为9星，且被战斗或对方效果破坏
+-- ②效果的触发对象判定：被破坏的怪兽必须是表侧表示、原本控制者为发动玩家、曾是同调怪兽、原本等级为9，并且破坏原因是战斗或对方发动的效果。
 function c4103668.spfilter(c,tp)
 	return c:IsPreviousPosition(POS_FACEUP) and c:IsPreviousControler(tp) and c:GetPreviousTypeOnField()&TYPE_SYNCHRO~=0
 		and c:GetOriginalLevel()==9 and (c:IsReason(REASON_BATTLE) or c:IsReason(REASON_EFFECT) and c:GetReasonPlayer()==1-tp)
 end
--- 判断是否有满足条件的被破坏的同调怪兽
+-- ②效果的发动条件：被破坏的怪兽集合中不包含这张卡自身，且其中存在满足上述spfilter条件的怪兽。
 function c4103668.spcon(e,tp,eg,ep,ev,re,r,rp)
 	return not eg:IsContains(e:GetHandler()) and eg:IsExists(c4103668.spfilter,1,nil,tp)
 end
--- 过滤满足条件的不死族怪兽：可除外且种族为不死族
+-- 除外用怪兽的过滤条件：可以被除外，且种族为不死族（用于从自己墓地除外1只其他不死族怪兽）。
 function c4103668.rmfilter(c)
 	return c:IsAbleToRemove() and c:IsRace(RACE_ZOMBIE)
 end
--- 设置特殊召唤的条件：有空场且此卡可特殊召唤，且墓地有不死族怪兽
+-- ②效果的发动条件：我方主要怪兽区有空位、这张卡能够被特殊召唤、且墓地存在1只其他不死族怪兽可以除外；满足则返回true。
 function c4103668.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
-	-- 检查是否有足够的场空位
+	-- 检查我方主要怪兽区是否有可用的空格（用于特殊召唤这张卡）。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
-		-- 检查墓地是否有满足条件的不死族怪兽
+		-- 并且墓地存在1只除这张卡以外的不死族怪兽满足可除外的条件。
 		and Duel.IsExistingMatchingCard(c4103668.rmfilter,tp,LOCATION_GRAVE,0,1,c) end
-	-- 设置连锁操作信息，指定要特殊召唤的卡
+	-- 设置操作信息：本次效果将特殊召唤这张卡（1张）。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,c,1,0,0)
-	-- 设置连锁操作信息，指定要除外的卡
+	-- 设置操作信息：本次效果将从我方墓地除外1张卡（具体对象在效果处理时选择）。
 	Duel.SetOperationInfo(0,CATEGORY_REMOVE,nil,1,tp,LOCATION_GRAVE)
 end
--- 选择并除外墓地的不死族怪兽，然后特殊召唤此卡
+-- ②效果处理：从自己墓地选择1只其他不死族怪兽除外；若除外成功且这张卡仍与效果关联，则将其特殊召唤。
 function c4103668.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 提示玩家选择要除外的卡
+	-- 提示当前玩家选择要除外的卡（弹出“请选择要除外的卡”的选择消息）。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
-	-- 选择满足条件的不死族怪兽除外
+	-- 由当前玩家从自己墓地选择1只除这张卡以外的不死族怪兽（额外检查王家长眠之谷的影响）。
 	local g=Duel.SelectMatchingCard(tp,aux.NecroValleyFilter(c4103668.rmfilter),tp,LOCATION_GRAVE,0,1,1,c)
-	-- 判断是否满足特殊召唤条件：除外成功且此卡仍在场上
+	-- 如果成功选择并除外了那只不死族怪兽，且这张卡仍与所发动的效果保持关联，则继续执行特殊召唤。
 	if #g>0 and Duel.Remove(g,POS_FACEUP,REASON_EFFECT)>0 and c:IsRelateToEffect(e) then
-		-- 将此卡特殊召唤到场上
+		-- 将这张卡以表侧表示特殊召唤到当前玩家场上。
 		Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 	end
 end

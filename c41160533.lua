@@ -26,18 +26,18 @@ function c41160533.initial_effect(c)
 	e3:SetOperation(c41160533.damop)
 	c:RegisterEffect(e3)
 end
--- 过滤函数，返回场上表侧表示的植物族怪兽数量
+-- 筛选出表侧表示的植物族怪兽。
 function c41160533.mfilter(c)
 	return c:IsFaceup() and c:IsRace(RACE_PLANT)
 end
--- 当战斗阶段开始时，若对方场上存在植物族怪兽，则为自身增加相应数量的攻击次数
+-- 战斗阶段开始时处理：若是这张卡的控制者的回合，统计对方场上表侧植物族怪兽数量，若存在则给这张卡赋予额外攻击次数效果。
 function c41160533.maop(e,tp,eg,ep,ev,re,r,rp)
-	-- 若当前回合玩家不是自身，则不执行后续操作
+	-- 若不是这张卡的控制者的回合，则直接结束处理，不发动额外攻击效果。
 	if Duel.GetTurnPlayer()~=tp then return end
-	-- 统计对方场上表侧表示的植物族怪兽数量
+	-- 统计对方场上表侧表示植物族怪兽的数量。
 	local ct=Duel.GetMatchingGroupCount(c41160533.mfilter,tp,0,LOCATION_MZONE,nil)
 	if ct~=0 then
-		-- 为自身增加与植物族怪兽数量相等的攻击次数
+		-- 这个回合这张卡可以在通常攻击外加上那些植物族怪兽数量的攻击。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_EXTRA_ATTACK)
@@ -46,24 +46,24 @@ function c41160533.maop(e,tp,eg,ep,ev,re,r,rp)
 		e:GetHandler():RegisterEffect(e1)
 	end
 end
--- 判断战斗破坏的怪兽是否为植物族
+-- 战斗破坏植物族怪兽是伤害效果的发动条件。
 function c41160533.damcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():GetBattleTarget():IsRace(RACE_PLANT)
 end
--- 设置伤害效果的目标玩家和伤害值
+-- 伤害效果的发动时点处理：设置伤害对象为对方玩家、伤害数值为300，并登记效果处理信息。
 function c41160533.damtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置连锁处理的目标玩家为对方
+	-- 将本次伤害的对象玩家设置为对方。
 	Duel.SetTargetPlayer(1-tp)
-	-- 设置连锁处理的目标参数为300
+	-- 将本次效果的伤害数值参数设为300。
 	Duel.SetTargetParam(300)
-	-- 设置连锁操作信息为对对方造成300点伤害
+	-- 登记伤害类效果处理信息，对象为对手，数值为300。
 	Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,1-tp,300)
 end
--- 执行对对方造成300点伤害的操作
+-- 伤害效果处理：取出目标玩家和伤害数值，给予其效果伤害。
 function c41160533.damop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁处理的目标玩家和伤害值
+	-- 从连锁信息中取出之前设置的目标玩家和伤害参数。
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 对目标玩家造成指定伤害
+	-- 对目标玩家造成对应数值的效果伤害。
 	Duel.Damage(p,d,REASON_EFFECT)
 end

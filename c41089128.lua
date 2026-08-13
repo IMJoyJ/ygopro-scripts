@@ -9,7 +9,7 @@ function c41089128.initial_effect(c)
 	e1:SetValue(c41089128.condition)
 	c:RegisterEffect(e1)
 end
--- 检查触发效果的怪兽是否为炎属性
+-- 作为EFFECT_DOUBLE_TRIBUTE的判定函数，检查用于祭品召唤的怪兽c是否为炎属性；若为炎属性则返回true，使本卡可以作为2只祭品使用。
 function c41089128.condition(e,c)
 	return c:IsAttribute(ATTRIBUTE_FIRE)
 end

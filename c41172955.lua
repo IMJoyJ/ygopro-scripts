@@ -16,25 +16,25 @@ function c41172955.initial_effect(c)
 	e2:SetCode(EVENT_SPSUMMON_SUCCESS)
 	c:RegisterEffect(e2)
 end
--- 过滤函数，用于筛选卡组中满足条件的「红色零件」卡片
+-- 定义筛选条件：卡组中卡号86445415（红色零件）且能够加入手卡的卡。
 function c41172955.filter(c)
 	return c:IsCode(86445415) and c:IsAbleToHand()
 end
--- 效果的处理目标函数，检查卡组中是否存在满足条件的「红色零件」并设置操作信息
+-- 目标函数：在发动时检查是否满足条件，并设置本次效果的处理信息。
 function c41172955.tg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断是否满足发动条件，即卡组中是否存在至少1张「红色零件」
+	-- 发动判定：在时点检查（chk==0）时，确认卡组是否存在至少1张符合条件的「红色零件」。
 	if chk==0 then return Duel.IsExistingMatchingCard(c41172955.filter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置连锁操作信息，表示将从卡组检索1张「红色零件」加入手牌
+	-- 设置操作信息：本次效果处理为从卡组将1张卡加入手卡，供连锁/检测等系统使用。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 效果的处理函数，执行将「红色零件」从卡组加入手牌的操作
+-- 效果处理函数：从卡组找到符合条件的「红色零件」并加入手卡，同时向对方确认。
 function c41172955.op(e,tp,eg,ep,ev,re,r,rp)
-	-- 从卡组中检索满足条件的第一张「红色零件」卡片
+	-- 从卡组取得第一张符合筛选条件的卡片。
 	local tc=Duel.GetFirstMatchingCard(c41172955.filter,tp,LOCATION_DECK,0,nil)
 	if tc then
-		-- 将检索到的「红色零件」送入手牌
+		-- 将该卡加入其持有者的手卡，移动原因是效果处理。
 		Duel.SendtoHand(tc,nil,REASON_EFFECT)
-		-- 向对方确认被送入手牌的「红色零件」卡片
+		-- 向对手玩家展示被加入手卡的卡片，确认检索结果。
 		Duel.ConfirmCards(1-tp,tc)
 	end
 end
