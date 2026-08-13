@@ -13,33 +13,33 @@ function c20797524.initial_effect(c)
 	e1:SetOperation(c20797524.operation)
 	c:RegisterEffect(e1)
 end
--- 检查此卡是否因战斗破坏而送入墓地
+-- 发动条件判定：当此卡被战斗破坏后处于墓地，且破坏原因为战斗时，才满足“被战斗破坏送去墓地时”的触发条件。
 function c20797524.condition(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsLocation(LOCATION_GRAVE) and e:GetHandler():IsReason(REASON_BATTLE)
 end
--- 过滤函数，用于筛选「二轮车人」怪兽
+-- 筛选出卡名是「二轮车人」（83392426），并且能够被当前效果特殊召唤的卡（不检查召唤条件与苏生限制）。
 function c20797524.filter(c,e,tp)
 	return c:IsCode(83392426) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 设置效果的发动条件，判断是否满足特殊召唤的条件
+-- 效果发动前检查：我方主要怪兽区有空位，并且手卡或卡组中存在符合条件的「二轮车人」；同时向系统登记本次特殊召唤的操作信息。
 function c20797524.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断场上是否有足够的怪兽区域
+	-- 效果发动时（chk==0）先确认我方场上是否存在可用的主要怪兽区格子，若无空格则不能发动。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 判断手牌或卡组中是否存在「二轮车人」怪兽
+		-- 继续确认我方手卡或卡组中至少存在1只满足特殊召唤条件的「二轮车人」，满足条件则效果可以发动。
 		and Duel.IsExistingMatchingCard(c20797524.filter,tp,LOCATION_HAND+LOCATION_DECK,0,1,nil,e,tp) end
-	-- 设置连锁处理信息，指定将要特殊召唤的卡
+	-- 登记操作信息：本次效果将在处理时进行特殊召唤，预定从手卡/卡组特殊召唤1只怪兽，操作者为发动方。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_HAND+LOCATION_DECK)
 end
--- 效果发动时执行的操作，包括选择并特殊召唤「二轮车人」
+-- 效果处理时的实际操作：若场上仍有空格，则提示玩家选择1只「二轮车人」，从手卡或卡组选出后以表侧表示特殊召唤到自己场上。
 function c20797524.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 再次确认场上是否有足够的怪兽区域
+	-- 效果处理时再次检查我方主要怪兽区是否有空格；若已无空格则本次特殊召唤不处理。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-	-- 提示玩家选择要特殊召唤的卡
+	-- 向发动者显示“请选择要特殊召唤的卡”的选卡提示，供后续选择框使用。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 从手牌或卡组中选择一只「二轮车人」怪兽
+	-- 让发动者从自己的手卡/卡组中选出1张满足条件的「二轮车人」作为特殊召唤的对象。
 	local g=Duel.SelectMatchingCard(tp,c20797524.filter,tp,LOCATION_HAND+LOCATION_DECK,0,1,1,nil,e,tp)
 	if g:GetCount()>0 then
-		-- 将选中的怪兽特殊召唤到场上
+		-- 将选中的「二轮车人」以表侧表示特殊召唤到我方场上，不检查其召唤条件与苏生限制。
 		Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
 	end
 end

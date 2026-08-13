@@ -8,7 +8,7 @@ function c20920083.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- ①：自己场上有表侧守备表示怪兽2只以上存在的场合，自己场上的守备表示怪兽不会成为对方的效果的对象，不会被对方的效果破坏。
+	-- ①：自己场上有表侧守备表示怪兽2只以上存在的场合，自己场上的守备表示怪兽不会被对方的效果破坏。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD)
 	e2:SetCode(EFFECT_INDESTRUCTABLE_EFFECT)
@@ -17,10 +17,10 @@ function c20920083.initial_effect(c)
 	e2:SetTargetRange(LOCATION_MZONE,0)
 	e2:SetCondition(c20920083.con)
 	e2:SetTarget(c20920083.tg)
-	-- 设置效果值为aux.indoval函数，用于过滤不会被对方效果破坏的怪兽
+	-- 设置免疫效果破坏的判定值：仅当破坏效果来自对方玩家时，我方守备表示怪兽才不会因此被效果破坏。
 	e2:SetValue(aux.indoval)
 	c:RegisterEffect(e2)
-	-- ①：自己场上有表侧守备表示怪兽2只以上存在的场合，自己场上的守备表示怪兽不会成为对方的效果的对象，不会被对方的效果破坏。
+	-- ①：自己场上有表侧守备表示怪兽2只以上存在的场合，自己场上的守备表示怪兽不会成为对方的效果的对象。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_FIELD)
 	e3:SetCode(EFFECT_CANNOT_BE_EFFECT_TARGET)
@@ -29,7 +29,7 @@ function c20920083.initial_effect(c)
 	e3:SetTargetRange(LOCATION_MZONE,0)
 	e3:SetCondition(c20920083.con)
 	e3:SetTarget(c20920083.tg)
-	-- 设置效果值为aux.tgoval函数，用于过滤不会成为对方效果对象的怪兽
+	-- 设置不能成为效果对象的判定值：仅当效果来自对方玩家时，我方守备表示怪兽才不能成为该效果的对象。
 	e3:SetValue(aux.tgoval)
 	c:RegisterEffect(e3)
 	-- ②：这张卡被效果破坏的场合，可以作为代替把其他的自己的魔法与陷阱区域1张卡破坏。
@@ -42,47 +42,47 @@ function c20920083.initial_effect(c)
 	e4:SetOperation(c20920083.desrepop)
 	c:RegisterEffect(e4)
 end
--- 过滤函数，用于判断是否为表侧守备表示的怪兽
+-- 过滤条件：该怪兽为表侧表示且为表侧守备表示。
 function c20920083.cfilter(c)
 	return c:IsFaceup() and c:IsPosition(POS_FACEUP_DEFENSE)
 end
--- 条件函数，用于判断自己场上是否存在至少2只表侧守备表示的怪兽
+-- 效果满足条件：自己场上有表侧守备表示怪兽2只以上存在。
 function c20920083.con(e)
-	-- 检查以自己为玩家，在自己场上是否存在至少2只满足cfilter条件的怪兽
+	-- 检查自己怪兽区是否存在至少2只满足cfilter的表侧守备表示怪兽，作为效果成立的发动条件。
 	return Duel.IsExistingMatchingCard(c20920083.cfilter,e:GetHandlerPlayer(),LOCATION_MZONE,0,2,nil)
 end
--- 目标函数，用于判断目标怪兽是否为守备表示
+-- 效果适用对象：只对守备表示怪兽生效。
 function c20920083.tg(e,c)
 	return c:IsDefensePos()
 end
--- 代替破坏的过滤函数，用于判断魔法与陷阱区域的卡是否可以被破坏
+-- 代替破坏对象过滤：自己的魔法与陷阱区域（不含场地魔法格）中可被效果破坏、且未处于破坏确定状态的卡。
 function c20920083.repfilter(c,e)
 	return c:GetSequence()<5 and c:IsDestructable(e)
 		and not c:IsStatus(STATUS_DESTROY_CONFIRMED+STATUS_BATTLE_DESTROYED)
 end
--- 代替破坏的触发函数，用于判断是否满足代替破坏的条件
+-- ②的代替破坏触发判定：这张卡被效果破坏时，确认其不是在代替破坏处理中、在场上表侧表示，且存在其他可作为代替破坏对象的魔陷卡。
 function c20920083.desreptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	if chk==0 then return not c:IsReason(REASON_REPLACE) and c:IsOnField() and c:IsFaceup()
-		-- 检查自己魔法与陷阱区域是否存在至少1张可被破坏的卡
+		-- 并且场上存在至少1张满足repfilter的其他魔法与陷阱区域卡可用作代替破坏对象。
 		and Duel.IsExistingMatchingCard(c20920083.repfilter,tp,LOCATION_SZONE,0,1,c,e) end
-	-- 询问玩家是否发动代替破坏效果
+	-- 询问玩家是否发动代替破坏效果。
 	if Duel.SelectEffectYesNo(tp,c,96) then
-		-- 提示玩家选择要代替破坏的卡
+		-- 显示“请选择要代替破坏的卡”的选择提示。
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESREPLACE)  --"请选择要代替破坏的卡"
-		-- 选择满足条件的1张魔法与陷阱区域的卡作为代替破坏的对象
+		-- 从自己的魔法与陷阱区域选择1张满足repfilter的卡作为代替破坏对象。
 		local g=Duel.SelectMatchingCard(tp,c20920083.repfilter,tp,LOCATION_SZONE,0,1,1,c,e)
 		e:SetLabelObject(g:GetFirst())
-		-- 显示选中的卡被选为对象的动画效果
+		-- 展示被选为代替破坏对象的卡，并将其记录为广义的选中对象。
 		Duel.HintSelection(g)
 		g:GetFirst():SetStatus(STATUS_DESTROY_CONFIRMED,true)
 		return true
 	else return false end
 end
--- 代替破坏的效果执行函数，用于执行实际的破坏操作
+-- 代替破坏的后续处理：清除被选卡上的破坏确定状态，然后将其破坏以代替本卡的破坏。
 function c20920083.desrepop(e,tp,eg,ep,ev,re,r,rp)
 	local tc=e:GetLabelObject()
 	tc:SetStatus(STATUS_DESTROY_CONFIRMED,false)
-	-- 以效果破坏的原因将选中的卡破坏
+	-- 以“效果破坏+代替破坏”的理由将被选的卡破坏，从而代替这张卡被效果破坏。
 	Duel.Destroy(tc,REASON_EFFECT+REASON_REPLACE)
 end

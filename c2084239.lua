@@ -17,7 +17,7 @@ function c2084239.initial_effect(c)
 	e2:SetValue(1200)
 	c:RegisterEffect(e2)
 end
--- 设置目标为满足等级2以下、水属性、水族种族的怪兽
+-- 作为攻击力上升效果的适用对象筛选条件，判定场上怪兽是否满足水族、水属性且等级2以下，只有满足条件的怪兽才会获得攻击力上升。注意：该函数用于e2的SetTarget，但此处的Target是永续效果的影响对象过滤器，而非发动时的取对象。
 function c2084239.tg(e,c)
 	return c:IsLevelBelow(2) and c:IsAttribute(ATTRIBUTE_WATER) and c:IsRace(RACE_AQUA)
 end

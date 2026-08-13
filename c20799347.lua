@@ -13,7 +13,7 @@ function c20799347.initial_effect(c)
 	e1:SetCondition(c20799347.ntcon)
 	e1:SetValue(1)
 	c:RegisterEffect(e1)
-	-- ②：这张卡在墓地存在的场合，从手卡丢弃1只念动力族·幻龙族怪兽才能发动。这张卡当作调整使用特殊召唤。这个效果特殊召唤的这张卡从场上离开的场合除外。这个回合，自己若非等级或者阶级是3以上的怪兽则不能特殊召唤。
+	-- 这个卡名的②的效果1回合只能使用1次。②：这张卡在墓地存在的场合，从手卡丢弃1只念动力族·幻龙族怪兽才能发动。这张卡当作调整使用特殊召唤。这个效果特殊召唤的这张卡从场上离开的场合除外。这个回合，自己若非等级或者阶级是3以上的怪兽则不能特殊召唤。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(20799347,1))
 	e2:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -26,44 +26,44 @@ function c20799347.initial_effect(c)
 	c:RegisterEffect(e2)
 end
 c20799347.treat_itself_tuner=true
--- 过滤函数，用于判断场上是否存在非念动力族或非幻龙族的怪兽。
+-- 筛选条件：检查怪兽是否为里侧表示或种族不是念动力族·幻龙族，用于判断场上是否满足“只有念动力族·幻龙族怪兽”。
 function c20799347.cfilter(c)
 	return c:IsFacedown() or not c:IsRace(RACE_PSYCHO+RACE_WYRM)
 end
--- 召唤条件函数，判断是否满足不用解放作召唤的条件。
+-- 无解放召唤条件：要求怪兽等级5以上、主要怪兽区有空位，且自己场上没有怪兽或所有表侧怪兽均为念动力族·幻龙族，从而允许不解放召唤。
 function c20799347.ntcon(e,c,minc)
 	if c==nil then return true end
 	local tp=c:GetControler()
-	-- 满足召唤条件：召唤时不需要解放，等级大于等于5，且场上存在空位。
+	-- 要求此次召唤解放数为0、怪兽等级不低于5，且自己场上存在可用的主要怪兽区域。
 	return minc==0 and c:IsLevelAbove(5) and Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 满足召唤条件：场上没有怪兽或只有念动力族/幻龙族怪兽。
+		-- 要求自己场上没有怪兽，或不存在里侧表示/非念动力族·幻龙族的怪兽，即满足“自己场上怪兽不存在或只有念动力族·幻龙族怪兽”。
 		and (Duel.GetFieldGroupCount(tp,LOCATION_MZONE,0)==0 or not Duel.IsExistingMatchingCard(c20799347.cfilter,tp,LOCATION_MZONE,0,1,nil))
 end
--- 丢弃费用过滤函数，用于筛选手牌中可丢弃的念动力族或幻龙族怪兽。
+-- 代价筛选：手卡中为念动力族·幻龙族且可以丢弃的怪兽，作为发动②的代价。
 function c20799347.costfilter(c)
 	return c:IsRace(RACE_PSYCHO+RACE_WYRM) and c:IsDiscardable()
 end
--- 特殊召唤的丢弃费用处理函数，从手牌中丢弃1只符合条件的怪兽。
+-- ②的代价：从手卡丢弃1只念动力族·幻龙族怪兽；chk==0时检查可行性，执行时丢弃1张。
 function c20799347.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否满足丢弃费用条件，即手牌中存在符合条件的怪兽。
+	-- 效果发动合法检查：确认手卡中存在1只可丢弃的念动力族·幻龙族怪兽，否则不能发动。
 	if chk==0 then return Duel.IsExistingMatchingCard(c20799347.costfilter,tp,LOCATION_HAND,0,1,nil) end
-	-- 执行丢弃操作，从手牌中丢弃1只符合条件的怪兽。
+	-- 实际执行代价：从手卡选择并丢弃1只念动力族·幻龙族怪兽，丢弃原因标记为发动代价（COST）并包含丢弃原因。
 	Duel.DiscardHand(tp,c20799347.costfilter,1,1,REASON_COST+REASON_DISCARD)
 end
--- 特殊召唤目标设定函数，判断是否可以将此卡特殊召唤。
+-- 特殊召唤目标判定：不取对象；检查自己主要怪兽区有空格且该卡能够被特殊召唤。
 function c20799347.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查场上是否有空位，用于判断是否可以特殊召唤。
+	-- 检查自己场上主要怪兽区是否存在可用空格，以能够特殊召唤这张卡。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置操作信息，表示将特殊召唤此卡。
+	-- 登记操作信息：本次效果将特殊召唤这张卡自身，数量为1，供后续连锁判定使用。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 特殊召唤效果处理函数，执行特殊召唤并附加调整属性和除外效果。
+-- 效果处理：这张卡仍与效果关联时将其表侧特殊召唤；召唤成功则附加“当作调整使用”和“离场时除外”效果；最后为本回合附加“不能特殊召唤等级/阶级3以下怪兽”的自肃效果。
 function c20799347.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 判断此卡是否可以特殊召唤，若可以则执行特殊召唤。
+	-- 确认这张卡未被无效且仍关联本效果，然后以表侧表示将其特殊召唤；只有特殊召唤成功才继续附加后续效果。
 	if c:IsRelateToEffect(e) and Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)>0 then
-		-- 将此卡添加调整属性，使其具有调整的种类。
+		-- “这张卡当作调整使用特殊召唤。”——从特殊召唤成功开始，这张卡视为调整怪兽。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_ADD_TYPE)
@@ -71,7 +71,7 @@ function c20799347.spop(e,tp,eg,ep,ev,re,r,rp)
 		e1:SetValue(TYPE_TUNER)
 		e1:SetReset(RESET_EVENT+RESETS_STANDARD)
 		c:RegisterEffect(e1,true)
-		-- 设置此卡离场时被除外的效果。
+		-- “这个效果特殊召唤的这张卡从场上离开的场合除外。”——设置离场时不去墓地而是除外。
 		local e2=Effect.CreateEffect(c)
 		e2:SetType(EFFECT_TYPE_SINGLE)
 		e2:SetCode(EFFECT_LEAVE_FIELD_REDIRECT)
@@ -80,7 +80,7 @@ function c20799347.spop(e,tp,eg,ep,ev,re,r,rp)
 		e2:SetValue(LOCATION_REMOVED)
 		c:RegisterEffect(e2,true)
 	end
-	-- 设置本回合不能特殊召唤等级或阶级低于3的怪兽的效果。
+	-- “这个回合，自己若非等级或者阶级是3以上的怪兽则不能特殊召唤。”——设置本回合的召唤限制：只能特殊召唤等级或阶级3以上的怪兽。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_FIELD)
 	e3:SetCode(EFFECT_CANNOT_SPECIAL_SUMMON)
@@ -88,10 +88,10 @@ function c20799347.spop(e,tp,eg,ep,ev,re,r,rp)
 	e3:SetTargetRange(1,0)
 	e3:SetTarget(c20799347.splimit)
 	e3:SetReset(RESET_PHASE+PHASE_END)
-	-- 注册本回合不能特殊召唤等级或阶级低于3的怪兽的效果。
+	-- 将自肃效果注册给当前玩家，效果持续到结束阶段。
 	Duel.RegisterEffect(e3,tp)
 end
--- 限制特殊召唤的函数，判断怪兽是否等级或阶级低于3。
+-- 限制判定：被特殊召唤的怪兽的等级和阶级均低于3时禁止特殊召唤；等级或阶级在3以上则允许。
 function c20799347.splimit(e,c,sump,sumtype,sumpos,targetp,se)
 	return not (c:IsLevelAbove(3) or c:IsRankAbove(3))
 end
