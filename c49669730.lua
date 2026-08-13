@@ -19,36 +19,36 @@ function c49669730.initial_effect(c)
 	e1:SetOperation(c49669730.operation)
 	c:RegisterEffect(e1)
 end
--- 检查玩家场上是否没有怪兽存在
+-- 效果发动条件检测：自己场上没有怪兽存在时才能发动。
 function c49669730.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断玩家场上怪兽区是否为空
+	-- 统计自己场上主要怪兽区的卡数量，判断是否为0。
 	return Duel.GetFieldGroupCount(tp,LOCATION_MZONE,0)==0
 end
--- 定义可用于特殊召唤的水属性4星以下怪兽的过滤条件
+-- 筛选可特殊召唤的手牌怪兽：必须为水属性、等级4以下，并且满足特殊召唤的规则限制。
 function c49669730.filter(c,e,sp)
 	return c:IsAttribute(ATTRIBUTE_WATER) and c:IsLevelBelow(4) and c:IsCanBeSpecialSummoned(e,0,sp,false,false)
 end
--- 设置效果发动时的目标选择逻辑，检查手牌中是否存在符合条件的怪兽
+-- 效果发动时的目标选择与合法性判断：确认主怪兽区有空位且手牌存在符合条件的怪兽，并设置操作信息。
 function c49669730.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断玩家场上是否有可用空间
+	-- 检查自己场上主要怪兽区是否有空闲区域。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查手牌中是否存在满足条件的水属性4星以下怪兽
+		-- 检查手牌中是否存在至少1张满足水属性、4星以下且可特殊召唤的怪兽。
 		and Duel.IsExistingMatchingCard(c49669730.filter,tp,LOCATION_HAND,0,1,nil,e,tp) end
-	-- 设置连锁处理信息，表明将要特殊召唤1只怪兽
+	-- 设置本次效果的操作信息：效果处理时将从手牌特殊召唤1只怪兽，用于连锁判定与后续检测。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_HAND)
 end
--- 执行效果的处理流程，包括检查场地限制、选择目标怪兽并进行特殊召唤
+-- 效果处理时的实际操作：再次确认条件成立后，从手牌选择1只符合条件的怪兽特殊召唤。
 function c49669730.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 如果场上没有可用空间则不执行特殊召唤
+	-- 处理时再次检查主怪兽区是否有空位，若无空位则终止处理。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-	-- 如果场上已有怪兽存在则不执行特殊召唤
+	-- 处理时再次确认自己场上没有怪兽，若已有怪兽则终止处理。
 	if Duel.GetFieldGroupCount(tp,LOCATION_MZONE,0)>0 then return end
-	-- 向玩家发送提示信息，要求选择要特殊召唤的卡
+	-- 向玩家展示选择提示，要求选择要特殊召唤的怪兽。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 从手牌中选择满足条件的1只怪兽作为目标
+	-- 从手牌中选出1张满足水属性、4星以下且可特殊召唤的怪兽。
 	local g=Duel.SelectMatchingCard(tp,c49669730.filter,tp,LOCATION_HAND,0,1,1,nil,e,tp)
 	if g:GetCount()>0 then
-		-- 将选中的怪兽以正面表示形式特殊召唤到场上
+		-- 将选中的怪兽以表侧表示特殊召唤到自己的场上。
 		Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
 	end
 end

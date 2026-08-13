@@ -46,43 +46,43 @@ function c49430782.initial_effect(c)
 	c:RegisterEffect(e4)
 	if c49430782.counter==nil then
 		c49430782.counter=0
-		-- 记录场上送去墓地的真龙卡种类数量，用于效果①的抽卡次数计算
+		-- ①：自己主要阶段才能发动。自己抽出这个回合从场上送去墓地的「真龙」卡种类（怪兽·魔法·陷阱）的数量。
 		local ge1=Effect.CreateEffect(c)
 		ge1:SetType(EFFECT_TYPE_CONTINUOUS+EFFECT_TYPE_FIELD)
 		ge1:SetCode(EVENT_TO_GRAVE)
 		ge1:SetOperation(c49430782.checkop)
-		-- 注册场上的送去墓地事件监听器，用于统计真龙卡种类数量
+		-- 将监测卡牌被送去墓地的全局持续效果注册到游戏中，用于统计本回合从场上送去墓地的「真龙」卡种类。
 		Duel.RegisterEffect(ge1,0)
-		-- 注册回合开始时清空计数器的效果
+		-- ①：自己主要阶段才能发动。自己抽出这个回合从场上送去墓地的「真龙」卡种类（怪兽·魔法·陷阱）的数量。
 		local ge2=Effect.CreateEffect(c)
 		ge2:SetType(EFFECT_TYPE_CONTINUOUS+EFFECT_TYPE_FIELD)
 		ge2:SetCode(EVENT_PHASE_START+PHASE_DRAW)
 		ge2:SetOperation(c49430782.clearop)
-		-- 注册回合开始时清空计数器的效果
+		-- 注册在抽卡阶段开始时将真龙卡种类计数器清零的全局效果，使统计仅限当前回合。
 		Duel.RegisterEffect(ge2,0)
 	end
 end
--- 统计场上送去墓地的真龙卡种类并记录到counter变量中
+-- 当有卡被送去墓地时，检测其是否为从场上送去的「真龙」卡；若是，则根据其种类（怪兽/魔法/陷阱）进行去重计数，记录本回合的真龙卡种类。
 function c49430782.checkop(e,tp,eg,ep,ev,re,r,rp)
 	local tc=eg:GetFirst()
 	while tc do
 		if tc:IsPreviousLocation(LOCATION_ONFIELD) and tc:IsSetCard(0xf9) then
 			local typ=bit.band(tc:GetOriginalType(),0x7)
-			-- 判断是否为怪兽类型且未使用过效果①
+			-- 判断该「真龙」卡是否为怪兽种类，且本回合尚未记录过怪兽种类，避免重复计数。
 			if (typ==TYPE_MONSTER and Duel.GetFlagEffect(0,49430782)==0)
-				-- 判断是否为魔法类型且未使用过效果②
+				-- 判断该「真龙」卡是否为魔法种类，且本回合尚未记录过魔法种类，避免重复计数。
 				or (typ==TYPE_SPELL and Duel.GetFlagEffect(0,49430783)==0)
-				-- 判断是否为陷阱类型且未使用过效果③
+				-- 判断该「真龙」卡是否为陷阱种类，且本回合尚未记录过陷阱种类；满足任一条件则进入计数分支。
 				or (typ==TYPE_TRAP and Duel.GetFlagEffect(0,49430784)==0) then
 				c49430782.counter=c49430782.counter+1
 				if typ==TYPE_MONSTER then
-					-- 注册效果①的使用标识，防止重复使用
+					-- 为本回合标记已记录过“怪兽”种类，该标记在结束阶段复位，确保同一回合内同类卡只计数一次。
 					Duel.RegisterFlagEffect(0,49430782,RESET_PHASE+PHASE_END,0,1)
 				elseif typ==TYPE_SPELL then
-					-- 注册效果②的使用标识，防止重复使用
+					-- 为本回合标记已记录过“魔法”种类，该标记在结束阶段复位，确保同一回合内同类卡只计数一次。
 					Duel.RegisterFlagEffect(0,49430783,RESET_PHASE+PHASE_END,0,1)
 				else
-					-- 注册效果③的使用标识，防止重复使用
+					-- 为本回合标记已记录过“陷阱”种类，该标记在结束阶段复位，确保同一回合内同类卡只计数一次。
 					Duel.RegisterFlagEffect(0,49430784,RESET_PHASE+PHASE_END,0,1)
 				end
 			end
@@ -90,75 +90,75 @@ function c49430782.checkop(e,tp,eg,ep,ev,re,r,rp)
 		tc=eg:GetNext()
 	end
 end
--- 回合开始时清空counter计数器
+-- 在抽卡阶段开始时将真龙卡种类计数器重置为0，使该统计仅适用于本回合。
 function c49430782.clearop(e,tp,eg,ep,ev,re,r,rp)
 	c49430782.counter=0
 end
--- 判断是否可以发动效果①（即是否有真龙卡送去墓地）
+-- 效果①的发动条件：本回合至少有1种「真龙」卡（怪兽/魔法/陷阱）从场上送去墓地。
 function c49430782.drcon(e,tp,eg,ep,ev,re,r,rp)
 	return c49430782.counter>0
 end
--- 设置效果①的目标为抽卡，并检查是否可以抽卡
+-- 效果①的发动处理：检查当前玩家能否抽对应数量的卡，若可以则向对方显示效果发动提示，并将抽卡数量信息写入连锁操作信息。
 function c49430782.drtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否可以抽卡
+	-- 发动时确认自己可以抽取对应数量的卡，若不能抽卡则不能发动。
 	if chk==0 then return Duel.IsPlayerCanDraw(tp,c49430782.counter) end
-	-- 提示对方玩家选择了效果①
+	-- 向对方玩家提示“已选择发动该效果”，并显示抽卡效果的描述信息。
 	Duel.Hint(HINT_OPSELECTED,1-tp,e:GetDescription())
-	-- 设置操作信息为抽卡效果
+	-- 将本连锁的效果信息设置为“玩家tp抽取counter张卡”，供后续效果检测使用。
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,c49430782.counter)
 end
--- 执行效果①的抽卡操作
+-- 效果①处理时，自己抽取当前计数器数值的卡牌数量。
 function c49430782.drop(e,tp,eg,ep,ev,re,r,rp)
-	-- 实际进行抽卡
+	-- 让当前玩家以效果原因抽取counter张卡。
 	Duel.Draw(tp,c49430782.counter,REASON_EFFECT)
 end
--- 定义用于上级召唤的真龙怪兽过滤函数
+-- 筛选满足条件的卡：必须是「真龙」怪兽，且当前可进行上级召唤（以1只以上怪兽为祭品，并且不占用通常召唤次数）。
 function c49430782.sumfilter(c)
 	return c:IsSetCard(0xf9) and c:IsSummonable(true,nil,1)
 end
--- 设置效果②的目标为上级召唤，并检查是否有符合条件的怪兽
+-- 效果②发动时确认手牌中存在可以上级召唤的「真龙」怪兽，进行提示并设置连锁信息。
 function c49430782.sumtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否有符合条件的真龙怪兽可以召唤
+	-- 发动时确认自己手牌中至少存在1张可上级召唤的「真龙」怪兽。
 	if chk==0 then return Duel.IsExistingMatchingCard(c49430782.sumfilter,tp,LOCATION_HAND,0,1,nil) end
-	-- 提示对方玩家选择了效果②
+	-- 向对方玩家提示已选择发动“上级召唤”效果。
 	Duel.Hint(HINT_OPSELECTED,1-tp,e:GetDescription())
-	-- 设置操作信息为上级召唤效果
+	-- 将本连锁的效果信息设置为“进行1只怪兽的上级召唤”。
 	Duel.SetOperationInfo(0,CATEGORY_SUMMON,nil,1,0,0)
 end
--- 执行效果②的上级召唤操作
+-- 效果②处理时，从手牌选择1只「真龙」怪兽，以解放1只以上怪兽的形式进行表侧上级召唤（不占用通常召唤次数）。
 function c49430782.sumop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示选择要召唤的卡
+	-- 提示玩家选择要上级召唤的卡牌。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SUMMON)  --"请选择要召唤的卡"
-	-- 选择符合条件的真龙怪兽进行召唤
+	-- 从手牌中选择1张满足条件的「真龙」怪兽作为要上级召唤的卡。
 	local g=Duel.SelectMatchingCard(tp,c49430782.sumfilter,tp,LOCATION_HAND,0,1,1,nil)
 	local tc=g:GetFirst()
 	if tc then
-		-- 实际进行上级召唤
+		-- 将选择的「真龙」怪兽以解放1只以上怪兽的方式进行表侧上级召唤，且不消耗本回合的通常召唤次数。
 		Duel.Summon(tp,tc,true,nil,1)
 	end
 end
--- 判断此卡是否从魔法与陷阱区域送去墓地
+-- 效果③的发动条件：这张卡从魔法与陷阱区域被送去墓地。
 function c49430782.descon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsPreviousLocation(LOCATION_SZONE)
 end
--- 设置效果③的目标为破坏，并检查是否有符合条件的魔法或陷阱卡
+-- 效果③发动时，选择场上1张魔法·陷阱卡作为对象，并设置破坏的操作信息。
 function c49430782.destg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsOnField() and chkc:IsType(TYPE_SPELL+TYPE_TRAP) end
-	-- 检查是否有符合条件的魔法或陷阱卡可以破坏
+	-- 发动时确认场上存在至少1张可作为对象的魔法·陷阱卡。
 	if chk==0 then return Duel.IsExistingTarget(Card.IsType,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,nil,TYPE_SPELL+TYPE_TRAP) end
-	-- 提示选择要破坏的卡
+	-- 提示玩家选择要破坏的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 选择符合条件的魔法或陷阱卡进行破坏
+	-- 从双方场上选择1张魔法·陷阱卡作为效果对象并锁定为目标。
 	local g=Duel.SelectTarget(tp,Card.IsType,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,1,nil,TYPE_SPELL+TYPE_TRAP)
-	-- 设置操作信息为破坏效果
+	-- 将本连锁的效果信息设置为“破坏所选择的目标卡”。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,1,0,0)
 end
--- 执行效果③的破坏操作
+-- 效果③处理时，若对象卡仍与该效果相关，则将其破坏。
 function c49430782.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的目标卡
+	-- 获取效果发动时选择的第1张对象卡。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 实际进行破坏
+		-- 将对象卡以效果原因破坏。
 		Duel.Destroy(tc,REASON_EFFECT)
 	end
 end

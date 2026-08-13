@@ -10,7 +10,7 @@ function c49441499.initial_effect(c)
 	e1:SetRange(LOCATION_MZONE)
 	e1:SetValue(c49441499.efilter)
 	c:RegisterEffect(e1)
-	-- 自己回合的准备阶段时，可以把表侧表示的这张卡送到墓地，从手卡·卡组特殊召唤1只「究极昆虫 LV3」。（召唤·特殊召唤·反转的回合不能使用此效果）
+	-- 自己回合的准备阶段时，可以把表侧表示的这张卡送到墓地，从手卡·卡组特殊召唤1只「究极昆虫 LV3」。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(49441499,0))  --"特殊召唤"
 	e2:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -36,49 +36,49 @@ function c49441499.initial_effect(c)
 	c:RegisterEffect(e5)
 end
 c49441499.lvup={34088136}
--- 规则层面：使魔法卡的效果无法影响这张卡。
+-- 免疫过滤函数：判断尝试适用的效果是否为魔法卡效果；若为魔法卡效果则本卡不受其影响。
 function c49441499.efilter(e,te)
 	return te:IsActiveType(TYPE_SPELL)
 end
--- 规则层面：在通常召唤或特殊召唤成功时，为这张卡登记一个标记，用于限制其在该回合发动效果。
+-- 给本卡注册一个标识（flag），记录其在本回合进行过召唤/特殊召唤/反转，用于禁止本回合升级效果的发动；该标识会在离场、暂时除外或结束时重置。
 function c49441499.regop(e,tp,eg,ep,ev,re,r,rp)
 	e:GetHandler():RegisterFlagEffect(49441499,RESET_EVENT+0x1ec0000+RESET_PHASE+PHASE_END,0,1)
 end
--- 规则层面：判断是否为当前回合玩家，并且该卡未在本回合发动过效果。
+-- 升级效果的发动条件：必须是自己的准备阶段，且本卡身上没有“召唤/特殊召唤/反转”的标记（即本回合未曾被召唤·特殊召唤·反转过）。
 function c49441499.spcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 规则层面：判断是否为当前回合玩家并且该卡未在本回合发动过效果。
+	-- 判断当前为回合玩家的准备阶段，且此卡没有本回合因召唤/特殊召唤/反转产生的禁用标记。
 	return tp==Duel.GetTurnPlayer() and e:GetHandler():GetFlagEffect(49441499)==0
 end
--- 规则层面：支付将此卡送入墓地作为代价。
+-- 升级效果的COST：将这张表侧表示的此卡送去墓地作为发动代价；检查其是否能作为代价送墓。
 function c49441499.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsAbleToGraveAsCost() end
-	-- 规则层面：将此卡送入墓地。
+	-- 实际执行COST：把此卡（自身）送入墓地，理由为代价。
 	Duel.SendtoGrave(e:GetHandler(),REASON_COST)
 end
--- 规则层面：过滤满足条件的「究极昆虫 LV3」卡片。
+-- 特殊召唤对象过滤：选择卡名为「究极昆虫 LV3」（34088136）且能够特殊召唤的卡（不检查召唤条件/苏生限制）。
 function c49441499.spfilter(c,e,tp)
 	return c:IsCode(34088136) and c:IsCanBeSpecialSummoned(e,0,tp,true,true)
 end
--- 规则层面：设置特殊召唤效果的目标和条件。
+-- 升级效果发动时检查：自己主要怪兽区有空位（或此卡COST送墓后空出），且手卡·卡组存在符合条件的「究极昆虫 LV3」。
 function c49441499.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 规则层面：检查场上是否有足够的召唤位置。
+	-- 判断己方场上是否有足够怪兽区空位；由于COST会送墓此卡腾出1格，因此当前可用区域为0时也判定可以发动（>-1即>=0）。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>-1
-		-- 规则层面：检查手牌或卡组中是否存在满足条件的「究极昆虫 LV3」。
+		-- 检查手卡·卡组中是否存在至少1只符合条件的『究极昆虫 LV3』。
 		and Duel.IsExistingMatchingCard(c49441499.spfilter,tp,LOCATION_HAND+LOCATION_DECK,0,1,nil,e,tp) end
-	-- 规则层面：设置连锁操作信息，表明将要特殊召唤一张卡。
+	-- 向系统登记本效果将进行特殊召唤操作：从手卡·卡组特殊召唤1只怪兽。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_HAND+LOCATION_DECK)
 end
--- 规则层面：执行特殊召唤操作。
+-- 效果处理：确认有可用怪兽区后，提示玩家从手卡·卡组选择1只『究极昆虫 LV3』，以表侧表示特殊召唤，并完成LV怪物的升级手续。
 function c49441499.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 规则层面：检查场上是否有足够的召唤位置。
+	-- 若当前主要怪兽区没有可用位置，则不进行后续特殊召唤。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-	-- 规则层面：提示玩家选择要特殊召唤的卡。
+	-- 弹出“请选择要特殊召唤的卡”的选择提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 规则层面：选择满足条件的一张「究极昆虫 LV3」。
+	-- 从自己的手卡·卡组选择1张符合条件的『究极昆虫 LV3』。
 	local g=Duel.SelectMatchingCard(tp,c49441499.spfilter,tp,LOCATION_HAND+LOCATION_DECK,0,1,1,nil,e,tp)
 	local tc=g:GetFirst()
 	if tc then
-		-- 规则层面：将选中的卡以特定方式特殊召唤到场上。
+		-- 将选择的『究极昆虫 LV3』以表侧表示特殊召唤（使用LV升级特殊召唤方式，无视召唤条件/苏生限制）。
 		Duel.SpecialSummon(tc,SUMMON_VALUE_LV,tp,tp,true,true,POS_FACEUP)
 		tc:CompleteProcedure()
 	end

@@ -12,27 +12,27 @@ function c49587034.initial_effect(c)
 	e1:SetOperation(c49587034.activate)
 	c:RegisterEffect(e1)
 end
--- 检查对方手卡是否存在可除外的卡片，并设置操作信息为除外对方手卡的卡片。
+-- 发动前判定：检查对方手牌是否存在可被里侧除外（POS_FACEDOWN）的卡作为发动条件；若存在则登记本次除外1张对方手牌的操作信息，但具体哪张在效果处理时随机决定。
 function c49587034.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断对方手卡是否存在至少1张可以除外的卡片。
+	-- 发动条件判定（chk==0）：从对方手牌中检索是否存在至少1张能够被里侧表示除外的卡，存在则返回true，否则不能发动。
 	if chk==0 then return Duel.IsExistingMatchingCard(Card.IsAbleToRemove,tp,0,LOCATION_HAND,1,nil,tp,POS_FACEDOWN) end
-	-- 设置连锁处理信息，表示将要除外对方手卡的1张卡片。
+	-- 登记操作信息：将本连锁的处理数据设为除外对方1张手牌（因为具体卡片要随机不确定，targets设nil；对方玩家为1-tp，位置为手牌）。
 	Duel.SetOperationInfo(0,CATEGORY_REMOVE,nil,1,1-tp,LOCATION_HAND)
 end
--- 检索对方手卡随机1张卡并除外，若成功则注册一个准备阶段触发的效果用于在第4回合将该卡送回手卡。
+-- 效果处理：随机从对方手牌选1张里侧表示除外；若除外成功且该效果确实是魔法卡发动效果，则给那张被除外的卡注册一个准备阶段触发效果，用于在对方第4个准备阶段把卡送回手牌；同时登记标志效果和引用用于后续计数/清除。
 function c49587034.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取对方手卡的所有卡片组成一个组。
+	-- 获取对方手牌的所有卡（以1-tp为视角看自己手牌，即发动者的对手的手牌）。
 	local g=Duel.GetFieldGroup(1-tp,LOCATION_HAND,0)
 	local rs=g:RandomSelect(1-tp,1)
 	local card=rs:GetFirst()
 	if card==nil then return end
-	-- 执行将选定的卡片以里侧表示除外，并确认此效果为发动效果。
+	-- 将随机选中的手牌里侧表示除外；如果除外成功，并且当前效果确实是魔法的发动效果，才继续设置归还效果。
 	if Duel.Remove(card,POS_FACEDOWN,REASON_EFFECT)>0 and e:IsHasType(EFFECT_TYPE_ACTIVATE) then
-		-- 获取当前游戏阶段。
+		-- 获取当前阶段并保存到局部变量ph（该变量在本段后续逻辑中未直接使用）。
 		local ph=Duel.GetCurrentPhase()
-		-- 获取当前回合玩家。
+		-- 获取当前回合玩家并保存到局部变量cp（该变量在本段后续逻辑中未直接使用）。
 		local cp=Duel.GetTurnPlayer()
-		-- ①：对方手卡随机选1张里侧表示除外。这张卡的发动后，用对方回合计算的第4回合的对方准备阶段，那张卡回到对方手卡。
+		-- 这张卡的发动后，用对方回合计算的第4回合的对方准备阶段，那张卡回到对方手卡。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 		e1:SetRange(LOCATION_REMOVED)
@@ -47,17 +47,17 @@ function c49587034.activate(e,tp,eg,ep,ev,re,r,rp)
 		c49587034[e:GetHandler()]=e1
 	end
 end
--- 判断是否为当前玩家的准备阶段。
+-- 归还延迟效果的条件：当前回合玩家为效果所属者（被除外卡的持有者/控制者，即发动者的对手）时，才允许在对方准备阶段进行计数或归还处理。
 function c49587034.thcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断当前回合玩家是否等于效果持有者。
+	-- 判断当前回合玩家是否等于tp，是则条件成立（确保只在对方回合的准备阶段触发）。
 	return Duel.GetTurnPlayer()==tp
 end
--- 处理准备阶段触发的效果，记录回合计数器，当达到第4回合时将卡片送回手卡。
+-- 归还效果的结算：读取当前计数并同步到光之封札剑的回合计数器；若计数已为4，则将除外的那张卡返回持有者手牌并清除标志效果；否则将计数加1，等待下一个对方准备阶段。
 function c49587034.thop(e,tp,eg,ep,ev,re,r,rp)
 	local ct=e:GetLabel()
 	e:GetOwner():SetTurnCounter(ct)
 	if ct==4 then
-		-- 将该卡片以效果原因送回对方手卡。
+		-- 将被除外的卡加入其持有者的手牌（player参数为nil表示回到原持有者手牌），原因设为效果处理。
 		Duel.SendtoHand(e:GetHandler(),nil,REASON_EFFECT)
 		e:GetOwner():ResetFlagEffect(1082946)
 	else
