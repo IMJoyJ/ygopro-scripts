@@ -13,30 +13,30 @@ function c27132350.initial_effect(c)
 	e1:SetOperation(c27132350.operation)
 	c:RegisterEffect(e1)
 end
--- 检查是否满足除外2张手卡的费用条件
+-- 定义反转效果的费用处理：先确认手牌中有至少2张可除外的卡，再随机选2张除外作为发动代价。
 function c27132350.cost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断是否满足除外2张手卡的费用条件
+	-- 代价检测阶段（chk==0）判断自己手牌是否存在至少2张可以除外作为代价的卡，用于决定效果能否发动。
 	if chk==0 then return Duel.IsExistingMatchingCard(Card.IsAbleToRemoveAsCost,tp,LOCATION_HAND,0,2,nil) end
-	-- 获取满足除外条件的手卡组
+	-- 获取自己手牌中所有可作为代价除外的卡，组成一个卡片集合供随机选取。
 	local g=Duel.GetMatchingGroup(Card.IsAbleToRemoveAsCost,tp,LOCATION_HAND,0,nil)
 	local rg=g:RandomSelect(tp,2)
-	-- 将满足条件的手卡中随机选择2张除外
+	-- 将随机选出的2张手牌以表侧表示除外，作为效果发动所支付的代价。
 	Duel.Remove(rg,POS_FACEUP,REASON_COST)
 end
--- 设置连锁目标玩家为对方玩家
+-- 定义效果发动时的目标设定部分：本效果不取对象，但需将对玩家指定为伤害对象，设置伤害值为800，并登记操作信息。
 function c27132350.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置连锁目标参数为800
+	-- 将当前连锁的对象玩家设置为对方玩家（1-tp），表示伤害由对方承受。
 	Duel.SetTargetPlayer(1-tp)
-	-- 设置连锁操作信息为对对方造成800伤害
+	-- 将当前连锁的参数设置为800，表示造成的伤害数值为800。
 	Duel.SetTargetParam(800)
-	-- 设置连锁操作信息为对对方造成800伤害
+	-- 登记本次操作信息：对对方玩家造成800点伤害（CATEGORY_DAMAGE），供其他卡片效果连锁时检测。
 	Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,1-tp,800)
 end
--- 处理连锁效果，对对方造成800伤害
+-- 定义效果实际处理阶段：读取之前保存的玩家与伤害参数，并对该玩家造成效果伤害。
 function c27132350.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁的目标玩家和参数
+	-- 从当前连锁信息中取出对象玩家和伤害参数，分别赋值给p与d。
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 对目标玩家造成指定数值的伤害
+	-- 以效果原因对玩家p造成d点伤害，即对对方造成800点伤害。
 	Duel.Damage(p,d,REASON_EFFECT)
 end
