@@ -5,10 +5,10 @@
 -- ①：把这张卡2个超量素材取除才能发动。从卡组把1只「异热同心武器」怪兽或者「异热同心从者」怪兽特殊召唤。这个效果的发动后，直到回合结束时自己不是超量怪兽不能从额外卡组特殊召唤，不用「No.」怪兽不能攻击。
 -- ②：除「异热同心从者-希望贤者」外的自己场上的原本属性是光属性的「霍普」超量怪兽被战斗·效果破坏的场合，可以作为代替把场上·墓地的这张卡除外。
 function c31123642.initial_effect(c)
-	-- 为卡片添加等级为4、需要2只怪兽进行超量召唤的手续
+	-- 为这张卡添加XYZ召唤手续：以任意2只4星怪兽为素材进行XYZ召唤。
 	aux.AddXyzProcedure(c,nil,4,2)
 	c:EnableReviveLimit()
-	-- ①：把这张卡2个超量素材取除才能发动。从卡组把1只「异热同心武器」怪兽或者「异热同心从者」怪兽特殊召唤。这个效果的发动后，直到回合结束时自己不是超量怪兽不能从额外卡组特殊召唤，不用「No.」怪兽不能攻击。
+	-- 这个卡名的①的效果1回合只能使用1次。①：把这张卡2个超量素材取除才能发动。从卡组把1只「异热同心武器」怪兽或者「异热同心从者」怪兽特殊召唤。这个效果的发动后，直到回合结束时自己不是超量怪兽不能从额外卡组特殊召唤，不用「No.」怪兽不能攻击。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(31123642,0))
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -29,38 +29,38 @@ function c31123642.initial_effect(c)
 	e2:SetOperation(c31123642.repop)
 	c:RegisterEffect(e2)
 end
--- 支付效果的代价，将自身2个超量素材移除
+-- 代价判定与执行：确认可以取除这张卡的2个超量素材作为发动代价，并实际取除2个超量素材。
 function c31123642.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():CheckRemoveOverlayCard(tp,2,REASON_COST) end
 	e:GetHandler():RemoveOverlayCard(tp,2,2,REASON_COST)
 end
--- 过滤满足条件的怪兽：属于「异热同心武器」或「异热同心从者」卡组且可以特殊召唤
+-- 特殊召唤候选的筛选条件：卡名属于「异热同心武器」或「异热同心从者」，且可被当前效果特殊召唤。
 function c31123642.spfilter(c,e,tp)
 	return c:IsSetCard(0x107e,0x207e) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 判断是否满足特殊召唤的发动条件：场上存在空位且卡组存在满足条件的怪兽
+-- 发动条件检查：自己主要怪兽区有空位，且卡组中存在至少1只符合条件且可特殊召唤的怪兽。
 function c31123642.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断场上是否存在空位
+	-- 检查自己的主要怪兽区域是否有可用空格。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 判断卡组中是否存在满足条件的怪兽
+		-- 检查卡组中是否存在至少1只满足条件且可特殊召唤的怪兽。
 		and Duel.IsExistingMatchingCard(c31123642.spfilter,tp,LOCATION_DECK,0,1,nil,e,tp) end
-	-- 设置连锁操作信息，提示将要特殊召唤1只怪兽
+	-- 设置操作信息：本次效果将从卡组特殊召唤1只怪兽，供连锁处理和相关检测使用。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_DECK)
 end
--- 执行特殊召唤操作：选择满足条件的怪兽并特殊召唤到场上，并设置后续效果限制
+-- 效果处理：若主要怪兽区有空位，则从卡组选择1张符合条件的怪兽特殊召唤；随后给自己附加两个自肃效果：本回合不能从额外卡组特殊召唤非超量怪兽，且不用「No.」怪兽不能攻击。
 function c31123642.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断场上是否存在空位
+	-- 特殊召唤处理前再次确认主要怪兽区仍有可用空格。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)>0 then
-		-- 提示玩家选择要特殊召唤的怪兽
+		-- 提示玩家选择要特殊召唤的卡。
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-		-- 选择满足条件的怪兽
+		-- 从卡组中选择1张符合条件的「异热同心武器」或「异热同心从者」怪兽。
 		local g=Duel.SelectMatchingCard(tp,c31123642.spfilter,tp,LOCATION_DECK,0,1,1,nil,e,tp)
 		if g:GetCount()>0 then
-			-- 将选中的怪兽特殊召唤到场上
+			-- 将选择的怪兽表侧攻击表示特殊召唤到自己场上。
 			Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
 		end
 	end
-	-- 设置直到回合结束时自己不能从额外卡组特殊召唤非超量怪兽的效果
+	-- 这个效果的发动后，直到回合结束时自己不是超量怪兽不能从额外卡组特殊召唤。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_CANNOT_SPECIAL_SUMMON)
@@ -68,45 +68,45 @@ function c31123642.spop(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetTargetRange(1,0)
 	e1:SetTarget(c31123642.splimit)
 	e1:SetReset(RESET_PHASE+PHASE_END)
-	-- 将效果注册到玩家环境中
+	-- 将不能从额外卡组特殊召唤非超量怪兽的自肃效果注册给当前玩家。
 	Duel.RegisterEffect(e1,tp)
-	-- 设置直到回合结束时自己场上的非「No.」怪兽不能攻击的效果
+	-- 这个效果的发动后，直到回合结束时自己不是超量怪兽不能从额外卡组特殊召唤，不用「No.」怪兽不能攻击。②：除「异热同心从者-希望贤者」外的自己场上的原本属性是光属性的「霍普」超量怪兽被战斗·效果破坏的场合，可以作为代替把场上·墓地的这张卡除外。
 	local e2=Effect.CreateEffect(e:GetHandler())
 	e2:SetType(EFFECT_TYPE_FIELD)
 	e2:SetCode(EFFECT_CANNOT_ATTACK)
 	e2:SetTargetRange(LOCATION_MZONE,0)
 	e2:SetTarget(c31123642.atklimit)
 	e2:SetReset(RESET_PHASE+PHASE_END)
-	-- 将效果注册到玩家环境中
+	-- 将不用「No.」怪兽不能攻击的自肃效果注册给当前玩家。
 	Duel.RegisterEffect(e2,tp)
 end
--- 限制不能从额外卡组特殊召唤非超量怪兽
+-- 额外卡组特殊召唤限制的判定：只有从额外卡组特殊召唤超量怪兽才被允许。
 function c31123642.splimit(e,c)
 	return not c:IsType(TYPE_XYZ) and c:IsLocation(LOCATION_EXTRA)
 end
--- 限制不能攻击非「No.」怪兽
+-- 攻击限制的判定：不是「No.」怪兽则不能攻击。
 function c31123642.atklimit(e,c)
 	return not c:IsSetCard(0x48)
 end
--- 过滤满足条件的怪兽：场上正面表示、属于「霍普」卡组、超量怪兽、光属性、不是希望贤者、被战斗或效果破坏
+-- 代替破坏目标的筛选条件：被保护对象是自己场上表侧表示、原本属性为光属性、卡名包含「霍普」的超量怪兽，且不是这张卡本身，并且是因战斗或效果将要被破坏（而非已被代替破坏）。
 function c31123642.repfilter(c,tp)
 	return c:IsFaceup() and c:IsSetCard(0x7f) and c:IsType(TYPE_XYZ) and c:GetOriginalAttribute()==ATTRIBUTE_LIGHT and not c:IsCode(31123642)
 		and c:IsLocation(LOCATION_MZONE) and c:IsControler(tp) and c:IsReason(REASON_EFFECT+REASON_BATTLE) and not c:IsReason(REASON_REPLACE)
 end
--- 判断是否满足代替破坏的发动条件：自身可以除外且有满足条件的怪兽被破坏
+-- 代替破坏效果的发动条件：这张卡可以除外且未被预定破坏，同时本次破坏的怪兽中存在满足条件的「霍普」怪兽；满足时可选发。
 function c31123642.reptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	if chk==0 then return c:IsAbleToRemove() and not c:IsStatus(STATUS_DESTROY_CONFIRMED)
 		and eg:IsExists(c31123642.repfilter,1,nil,tp) end
-	-- 询问玩家是否发动代替破坏效果
+	-- 询问发动方是否要使用这张卡作为代替破坏而除外。
 	return Duel.SelectEffectYesNo(tp,c,96)
 end
--- 设置代替破坏的效果值为满足条件的怪兽
+-- 返回某只被破坏的怪兽是否满足被这张卡代替破坏的条件。
 function c31123642.repval(e,c)
 	return c31123642.repfilter(c,e:GetHandlerPlayer())
 end
--- 执行代替破坏效果：将自身除外
+-- 代替破坏处理：将这张卡从场上或墓地除外，代替符合条件的怪兽被破坏。
 function c31123642.repop(e,tp,eg,ep,ev,re,r,rp)
-	-- 将自身从场上除外
+	-- 将这张卡以表侧表示除外，完成代替破坏。
 	Duel.Remove(e:GetHandler(),POS_FACEUP,REASON_EFFECT)
 end
