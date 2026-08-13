@@ -19,28 +19,28 @@ function c50604950.initial_effect(c)
 	e2:SetOperation(c50604950.operation)
 	c:RegisterEffect(e2)
 end
--- 判断当前是否处于伤害步骤，若在伤害步骤则根据是否为攻击怪兽或被攻击怪兽来决定攻击力变化值
+-- 攻击力变化数值的判定函数：根据当前阶段和该卡在战斗中的身份（攻击方或被攻击方）返回攻击力的增减值，不在伤害步骤内则返回0。
 function c50604950.atkval(e,c)
-	-- 获取当前游戏阶段
+	-- 获取当前游戏阶段，用于判断是否处于伤害步骤（含伤害计算时）。
 	local ph=Duel.GetCurrentPhase()
 	if ph~=PHASE_DAMAGE and ph~=PHASE_DAMAGE_CAL then return 0 end
-	-- 如果该卡是攻击怪兽且存在攻击目标，则攻击力上升300
+	-- 若这张卡是攻击怪兽且场上存在攻击目标，即这张卡正向对方怪兽攻击的场合，则攻击力上升300。
 	if c==Duel.GetAttacker() and Duel.GetAttackTarget() then return 300 end
-	-- 如果该卡是攻击目标，则攻击力下降500
+	-- 若这张卡是攻击目标，即这张卡正被对方怪兽攻击的场合，则攻击力下降500。
 	if c==Duel.GetAttackTarget() then return -500 end
 	return 0
 end
--- 检查玩家是否可以解放1只名字带有「剑士」的怪兽作为发动代价
+-- 发动代价函数：判断并执行解放自己场上这张卡以外的1只名字带有「剑士」的怪兽作为发动代价。
 function c50604950.cost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查场上是否存在满足条件的可解放怪兽
+	-- 发动代价确认：检查自己场上是否存在1只满足条件（名字带有「剑士」且不是这张卡）的可解放怪兽。
 	if chk==0 then return Duel.CheckReleaseGroup(tp,Card.IsSetCard,1,e:GetHandler(),0xd) end
-	-- 选择1只满足条件的可解放怪兽
+	-- 从自己场上选择1只满足条件的名字带有「剑士」的怪兽（这张卡以外）作为解放对象。
 	local g=Duel.SelectReleaseGroup(tp,Card.IsSetCard,1,1,e:GetHandler(),0xd)
-	-- 将选中的怪兽以代價方式解放
+	-- 将选择的怪兽解放，作为发动代价（REASON_COST）。
 	Duel.Release(g,REASON_COST)
 end
--- 无效此次攻击
+-- 效果处理函数：本次攻击无效化。
 function c50604950.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 使当前攻击无效
+	-- 无效此次攻击。
 	Duel.NegateAttack()
 end

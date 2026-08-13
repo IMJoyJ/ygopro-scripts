@@ -14,26 +14,26 @@ function c50613779.initial_effect(c)
 	e1:SetOperation(c50613779.spop)
 	c:RegisterEffect(e1)
 end
--- 效果发动的条件：造成伤害的玩家是自己，并且伤害是由效果造成的。
+-- 发动条件判定：我方受到效果伤害时才能发动，即受到伤害的玩家是自己且伤害原因为效果伤害。
 function c50613779.spcon(e,tp,eg,ep,ev,re,r,rp)
 	return ep==tp and bit.band(r,REASON_EFFECT)~=0
 end
--- 效果的发动准备阶段：检查自己场上是否有足够的怪兽区域，以及此卡是否可以被特殊召唤。
+-- 发动合法性检查：确认我方主要怪兽区有空位，且这张卡自身可以被特殊召唤，以此判断效果能否发动。
 function c50613779.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查自己场上是否有足够的怪兽区域用于特殊召唤。
+	-- 非效果处理时（chk==0）的发动条件判断：确认我方主要怪兽区存在可用空格。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置连锁处理信息：将此卡特殊召唤到场上。
+	-- 向连锁系统登记本次效果的特殊召唤信息：表示效果处理时会将这张卡从手卡特殊召唤。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
-	-- 设置连锁处理信息：使自己回复受到的伤害数值。
+	-- 向连锁系统登记本次效果的回复信息：表示效果处理时我方将回复与该次伤害数值等量的基本分。
 	Duel.SetOperationInfo(0,CATEGORY_RECOVER,nil,0,tp,ev)
 end
--- 效果处理阶段：如果此卡还在场上且成功特殊召唤，则回复对应数值的LP。
+-- 效果处理：先尝试将这张卡从手卡特殊召唤；若特殊召唤成功，则我方回复与受到的伤害数值等量的基本分。
 function c50613779.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 检查此卡是否与当前效果有关联，并尝试将其特殊召唤到场上。
+	-- 特殊召唤处理：确认这张卡仍与本次效果有关联，并尝试将其从手卡以表侧表示特殊召唤到我方怪兽区；特殊召唤成功后才继续执行回复。
 	if c:IsRelateToEffect(e) and Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)~=0 then
-		-- 使自己回复由伤害效果造成的LP数值。
+		-- 回复处理：我方回复与受到的伤害值等量的基本分，该回复视为由卡的效果造成。
 		Duel.Recover(tp,ev,REASON_EFFECT)
 	end
 end
