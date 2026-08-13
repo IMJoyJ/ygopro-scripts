@@ -13,20 +13,20 @@ function c28143906.initial_effect(c)
 	e1:SetOperation(c28143906.retop)
 	c:RegisterEffect(e1)
 end
--- 效果发动的发动条件为：这张卡是从手卡送去墓地的
+-- 触发条件判定：这张卡被送去墓地前所在的位置是手牌，即效果只在这个场合发动。
 function c28143906.retcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsPreviousLocation(LOCATION_HAND)
 end
--- 效果的处理目标设定为：将自身送回卡组
+-- 效果发动时的目标处理：无取对象，直接允许发动，并设置本次操作将包含回卡组的效果信息。
 function c28143906.rettg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置连锁处理信息，表明该效果属于回卡组类别
+	-- 登记操作信息：将这张卡自身确定为回卡组处理的对象，数量为1，回持有者卡组（位置不确定，由后续处理决定）。
 	Duel.SetOperationInfo(0,CATEGORY_TODECK,e:GetHandler(),1,0,0)
 end
--- 效果的处理执行函数，将符合条件的卡片送回卡组并洗切
+-- 效果处理时的操作：若这张卡仍与当前效果保持关联，则将其送回卡组并按规则洗切。
 function c28143906.retop(e,tp,eg,ep,ev,re,r,rp)
 	if e:GetHandler():IsRelateToEffect(e) then
-		-- 将自身以效果原因送回卡组底部并洗牌
+		-- 将这张卡送去其持有者的卡组，并指定为洗牌（洗切）处理，原因是效果所致。
 		Duel.SendtoDeck(e:GetHandler(),nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
 	end
 end

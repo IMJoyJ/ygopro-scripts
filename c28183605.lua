@@ -22,42 +22,42 @@ function c28183605.initial_effect(c)
 	e2:SetOperation(c28183605.eqop)
 	c:RegisterEffect(e2)
 end
--- 过滤函数：筛选场上正面表示的「龙骑兵团」怪兽
+-- 定义攻击力上升效果的数量统计过滤条件：场上表侧表示的「龙骑兵团」卡。
 function c28183605.atkfilter(c)
 	return c:IsFaceup() and c:IsSetCard(0x29)
 end
--- 计算效果：计算场上「龙骑兵团」怪兽数量并乘以200作为攻击力加成
+-- 计算这张卡攻击力上升的数值，为自己场上表侧表示的「龙骑兵团」卡数量×200。
 function c28183605.atkval(e,c)
-	-- 返回场上「龙骑兵团」怪兽数量乘以200的值
+	-- 返回自己场上表侧表示「龙骑兵团」卡的数量乘以200，作为攻击力上升数值。
 	return Duel.GetMatchingGroupCount(c28183605.atkfilter,c:GetControler(),LOCATION_ONFIELD,0,nil)*200
 end
--- 过滤函数：筛选墓地里等级3以下、龙族、且未被禁止的「龙骑兵团」怪兽
+-- 定义效果对象过滤条件：自己墓地1只龙族·3星以下且持有「龙骑兵团」字段、未被禁止的怪兽（作为装备对象）。
 function c28183605.filter(c)
 	return c:IsLevelBelow(3) and c:IsSetCard(0x29) and c:IsRace(RACE_DRAGON) and not c:IsForbidden()
 end
--- 处理函数：判断是否满足装备条件，包括魔陷区是否有空位和墓地是否存在符合条件的怪兽
+-- 发动条件的判定与选择对象：取自己墓地1只满足条件的龙族「龙骑兵团」怪兽为对象；同时确认魔陷区有空位。
 function c28183605.eqtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and c28183605.filter(chkc) end
-	-- 判断魔陷区是否有空位
+	-- 效果发动时点检查：自己魔陷区是否有空位（用于放置装备卡）。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_SZONE)>0
-		-- 判断墓地是否存在符合条件的怪兽
+		-- 且自己墓地存在至少1只满足filter条件、可作为效果对象的龙族「龙骑兵团」怪兽。
 		and Duel.IsExistingTarget(c28183605.filter,tp,LOCATION_GRAVE,0,1,nil) end
-	-- 提示玩家选择要装备的卡
+	-- 向操作玩家显示选择装备卡的提示消息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_EQUIP)  --"请选择要装备的卡"
-	-- 选择目标：从自己墓地选择一只符合条件的怪兽
+	-- 让玩家从自己墓地的满足条件的怪兽中选择1只作为效果对象，并设定为连锁对象。
 	local g=Duel.SelectTarget(tp,c28183605.filter,tp,LOCATION_GRAVE,0,1,1,nil)
-	-- 设置连锁操作信息：标记将要从墓地离开的卡
+	-- 设置本次连锁的操作信息：涉及墓地卡移动（从墓地离开），用于应对“王家长眠之谷”等效果。
 	Duel.SetOperationInfo(0,CATEGORY_LEAVE_GRAVE,g,1,0,0)
 end
--- 装备处理函数：将选中的怪兽装备给自身，并设置装备限制
+-- 效果处理时：将对象怪兽作为装备卡装备给这张卡；若装备成功，给装备怪兽附加“只能装备给这张卡的持有者”的装备限制效果。
 function c28183605.eqop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取当前连锁的目标卡
+	-- 取得效果发动时选择的装备对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) and tc:IsRace(RACE_DRAGON) then
-		-- 尝试将目标怪兽装备给自身，若失败则返回
+		-- 尝试把对象怪兽作为装备卡装备给这张卡，若失败则结束处理（例如装备区已满或不允许装备时）。
 		if not Duel.Equip(tp,tc,c,false) then return end
-		-- ①：这张卡召唤成功时，以自己墓地1只龙族·3星以下的「龙骑兵团」怪兽为对象才能发动。那只龙族怪兽当作装备卡使用给这张卡装备。
+		-- 那只龙族怪兽当作装备卡使用给这张卡装备。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetProperty(EFFECT_FLAG_OWNER_RELATE)
@@ -67,7 +67,7 @@ function c28183605.eqop(e,tp,eg,ep,ev,re,r,rp)
 		tc:RegisterEffect(e1)
 	end
 end
--- 装备限制函数：确保只有装备者能装备该卡
+-- 判断装备对象是否只能装备给这张卡：限制条件为装备卡的持有者（原效果发动者）与这张卡相同。
 function c28183605.eqlimit(e,c)
 	return e:GetOwner()==c
 end
