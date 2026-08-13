@@ -32,52 +32,52 @@ function c24382602.initial_effect(c)
 	e4:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
 	e4:SetType(EFFECT_TYPE_IGNITION)
 	e4:SetRange(LOCATION_GRAVE)
-	-- 将此卡除外作为cost
+	-- 设置③效果的发动代价：把墓地的这张卡除外（使用 aux.bfgcost 作为费用函数）。
 	e4:SetCost(aux.bfgcost)
 	e4:SetTarget(c24382602.thtg)
 	e4:SetOperation(c24382602.thop)
 	c:RegisterEffect(e4)
 end
--- 过滤满足调整、光属性、1星条件的卡
+-- ①效果的额外召唤对象过滤条件：目标怪兽必须是光属性、1星且为调整怪兽。
 function c24382602.extg(e,c)
 	return c:IsType(TYPE_TUNER) and c:IsAttribute(ATTRIBUTE_LIGHT) and c:IsLevel(1)
 end
--- 过滤表侧表示的怪兽
+-- ②效果的取对象过滤器：选择自己场上的表侧表示怪兽。
 function c24382602.tgfilter(c)
 	return c:IsFaceup()
 end
--- 过滤通常怪兽且能送去墓地的卡
+-- ②效果的送墓过滤器：从手卡·卡组选择通常怪兽（通常怪兽且能够送去墓地）。
 function c24382602.filter(c)
 	return c:IsType(TYPE_NORMAL) and c:IsType(TYPE_MONSTER) and c:IsAbleToGrave()
 end
--- 设置效果发动时的取对象和过滤条件
+-- ②效果的发动条件判定与取对象：检查是否存在1只表侧表示怪兽可作为对象，且手卡·卡组中有通常怪兽可送去墓地；在取对象阶段（chkc）校验所选择对象是否合法。
 function c24382602.atktg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and c24382602.tgfilter(chkc) end
-	-- 检查场上是否存在表侧表示的怪兽
+	-- 发动时（chk==0）检查自己场上是否存在1只表侧表示怪兽可以作为效果对象。
 	if chk==0 then return Duel.IsExistingTarget(c24382602.tgfilter,tp,LOCATION_MZONE,0,1,nil)
-		-- 检查手卡或卡组是否存在通常怪兽
+		-- 并检查手卡·卡组中是否存在1只满足条件的通常怪兽可以送去墓地。
 		and Duel.IsExistingMatchingCard(c24382602.filter,tp,LOCATION_DECK+LOCATION_HAND,0,1,nil) end
-	-- 提示选择表侧表示的怪兽
+	-- 提示玩家选择表侧表示的怪兽（HINTMSG_FACEUP）。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
-	-- 选择目标怪兽
+	-- 选择1只自己场上的表侧表示怪兽作为效果对象，并记录为连锁对象。
 	Duel.SelectTarget(tp,c24382602.tgfilter,tp,LOCATION_MZONE,0,1,1,nil)
-	-- 设置效果处理时要送去墓地的卡
+	-- 设置操作信息：效果处理时会从手卡·卡组将1只怪兽送去墓地（CATEGORY_TOGRAVE）。
 	Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,nil,1,tp,LOCATION_HAND+LOCATION_DECK)
 end
--- 处理效果的发动和结算
+-- ②效果处理：从手卡·卡组选择1只通常怪兽送去墓地，若成功且对象仍表侧表示，则令对象怪兽攻击力·守备力直到回合结束时上升那只怪兽等级×100。
 function c24382602.atkop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前效果的目标怪兽
+	-- 取得②效果发动时选择的对象怪兽。
 	local tc=Duel.GetFirstTarget()
-	-- 提示选择要送去墓地的卡
+	-- 提示玩家选择要送去墓地的通常怪兽（HINTMSG_TOGRAVE）。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
-	-- 选择要送去墓地的通常怪兽
+	-- 从手卡·卡组选择1只满足条件的通常怪兽作为送去墓地的卡。
 	local g=Duel.SelectMatchingCard(tp,c24382602.filter,tp,LOCATION_DECK+LOCATION_HAND,0,1,1,nil)
 	if g:GetCount()>0 then
 		local gc=g:GetFirst()
 		local lv=gc:GetLevel()
-		-- 判断是否成功将卡送去墓地且目标怪兽仍然有效
+		-- 确认通常怪兽已成功被效果送去墓地并仍存在于墓地，且对象怪兽仍与效果关联、处于表侧表示时，才继续处理能力值上升。
 		if Duel.SendtoGrave(gc,REASON_EFFECT)~=0 and gc:IsLocation(LOCATION_GRAVE) and tc:IsRelateToEffect(e) and tc:IsFaceup() then
-			-- 使目标怪兽的攻击力上升其等级×100
+			-- 作为对象的怪兽的攻击力·守备力直到回合结束时上升送去墓地的怪兽的等级×100。
 			local e1=Effect.CreateEffect(e:GetHandler())
 			e1:SetType(EFFECT_TYPE_SINGLE)
 			e1:SetCode(EFFECT_UPDATE_ATTACK)
@@ -90,27 +90,27 @@ function c24382602.atkop(e,tp,eg,ep,ev,re,r,rp)
 		end
 	end
 end
--- 过滤「毁灭之爆裂疾风弹」且能加入手牌的卡
+-- ③效果的检索过滤器：卡组中卡号为17655904的「毁灭之爆裂疾风弹」，且能够加入手卡。
 function c24382602.thfilter(c)
 	return c:IsCode(17655904) and c:IsAbleToHand()
 end
--- 设置检索效果的过滤条件
+-- ③效果的发动条件与操作信息：检查卡组中是否存在「毁灭之爆裂疾风弹」，并设置效果处理时回手牌的操作信息。
 function c24382602.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查卡组是否存在「毁灭之爆裂疾风弹」
+	-- 发动时（chk==0）检查卡组中是否存在1张「毁灭之爆裂疾风弹」且能够加入手卡。
 	if chk==0 then return Duel.IsExistingMatchingCard(c24382602.thfilter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置效果处理时要加入手牌的卡
+	-- 设置操作信息：效果处理时从卡组将1张卡加入手卡（CATEGORY_TOHAND），数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 处理检索效果的发动和结算
+-- ③效果处理：从卡组选择1张「毁灭之爆裂疾风弹」加入手卡，并向对方玩家确认。
 function c24382602.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示选择要加入手牌的卡
+	-- 提示玩家选择要加入手牌的卡（HINTMSG_ATOHAND）。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择要加入手牌的「毁灭之爆裂疾风弹」
+	-- 从卡组选择1张「毁灭之爆裂疾风弹」。
 	local g=Duel.SelectMatchingCard(tp,c24382602.thfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将卡加入手牌
+		-- 将选择的卡以效果原因加入持有者手卡。
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 确认对方查看加入手牌的卡
+		-- 向对方玩家展示加入手卡的卡。
 		Duel.ConfirmCards(1-tp,g)
 	end
 end

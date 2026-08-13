@@ -35,33 +35,33 @@ function c24521754.initial_effect(c)
 	e4:SetOperation(c24521754.seqop)
 	c:RegisterEffect(e4)
 end
--- 判断此卡是否在中央怪兽区域（序号为2）以外的位置
+-- 判断这张卡召唤·特殊召唤成功时是否不在中央主要怪兽区（序号不为2），满足条件则触发①的破坏效果。
 function c24521754.descon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():GetSequence()~=2
 end
--- 将此卡因效果破坏
+-- 将这张卡以效果原因破坏，实现①中召唤·特殊召唤到中央以外时破坏的处理。
 function c24521754.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 将此卡因效果破坏
+	-- 以REASON_EFFECT为原因将这张卡自身破坏，作为①的自坏效果。
 	Duel.Destroy(e:GetHandler(),REASON_EFFECT)
 end
--- 判断此卡是否在中央怪兽区域（序号为2）
+-- 判断这张卡是否位于中央主要怪兽区（序号为2），作为②攻击力提升的条件。
 function c24521754.atkcon(e)
 	return e:GetHandler():GetSequence()==2
 end
--- 判断此卡是否在主要怪兽区域（序号小于5）
+-- 判断这张卡是否位于自己的主要怪兽区（序号0-4，不含额外怪兽区），作为③可发动的条件之一。
 function c24521754.seqcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():GetSequence()<5
 end
--- 选择目标怪兽区域并计算要移动到的区域序号，然后检索该区域中所有卡并设置破坏目标
+-- ③的发动时处理：选择己方1个未使用的主要怪兽区作为移动目标并保存，同时计算原位置与目标位置之间各纵列上除自身外的卡以及中间列对应的额外怪兽区的卡，统一设为破坏对象并写入操作信息。
 function c24521754.seqtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
-	-- 检查是否有可用的怪兽区域
+	-- 发动合法性检查：确认己方主要怪兽区存在至少1个空格，即可选择移动目的地。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE,PLAYER_NONE,0)>0 end
-	-- 提示玩家选择要移动到的位置
+	-- 显示“请选择要移动到的位置”提示信息，引导玩家选择目标格子。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOZONE)  --"请选择要移动到的位置"
-	-- 选择一个可用的怪兽区域
+	-- 让玩家自己从己方主要怪兽区选择1个未使用空格，返回其位置位标记，用于确定移动目标。
 	local fd=Duel.SelectDisableField(tp,1,LOCATION_MZONE,0,0)
-	-- 提示玩家选择的区域
+	-- 将玩家选中的目标区域以高亮或提示形式展示给双方。
 	Duel.Hint(HINT_ZONE,tp,fd)
 	local seq=math.log(fd,2)
 	e:SetLabel(seq)
@@ -71,19 +71,19 @@ function c24521754.seqtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local g=nil
 	local exg=nil
 	for i=pseq,seq do
-		-- 获取指定区域中所有场上卡
+		-- 检索纵列seq上除该卡以外的所有场上卡牌（含怪兽与魔陷，包含双方场上），用于确定将被破坏的对象。
 		g=Duel.GetMatchingGroup(c24521754.seqfilter,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,c,tp,i)
 		dg:Merge(g)
 		if i==1 or i==3 then
-			-- 获取指定区域中所有额外怪兽区卡
+			-- 检索中间纵列对应的额外怪兽区上存在的卡（如额外怪兽区的连接怪兽），将这些额外区的卡也纳入破坏对象。
 			exg=Duel.GetMatchingGroup(c24521754.exfilter,tp,LOCATION_MZONE,LOCATION_MZONE,c,tp,i)
 			dg:Merge(exg)
 		end
 	end
-	-- 设置连锁操作信息，确定要破坏的卡
+	-- 将已收集的破坏对象组dg及其数量登记到当前连锁的操作信息中，使其他卡能正确响应这次破坏。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,dg,dg:GetCount(),0,0)
 end
--- 判断指定区域中场上卡的序号是否匹配
+-- 过滤函数：判断卡c是否位于指定纵列seq；若属于对方控制，则按镜像位置4-seq判断，以实现同列判定。
 function c24521754.seqfilter(c,tp,seq)
 	if c:IsControler(tp) then
 		return c:GetSequence()==seq
@@ -91,7 +91,7 @@ function c24521754.seqfilter(c,tp,seq)
 		return c:GetSequence()==4-seq
 	end
 end
--- 判断指定区域中额外怪兽区卡的序号是否匹配
+-- 过滤函数：将中间纵列1/3映射到额外怪兽区5/6，判断卡c是否在同列的额外怪兽区上；对方控制时按镜像位置11-seq判断。
 function c24521754.exfilter(c,tp,seq)
 	if seq==1 then seq=5 end
 	if seq==3 then seq=6 end
@@ -101,15 +101,15 @@ function c24521754.exfilter(c,tp,seq)
 		return c:GetSequence()==11-seq
 	end
 end
--- 处理效果发动，移动此卡位置并破坏指定区域中的卡
+-- ③的处理：先检查该卡仍能移动、目标区可用，然后将其移动到指定区域；若移动成功，再获取原位置与目标位置之间各纵列（含中间列对应的额外怪兽区）上除该卡以外的所有卡，并在此之后进行破坏。
 function c24521754.seqop(e,tp,eg,ep,ev,re,r,rp)
 	local seq=e:GetLabel()
 	local c=e:GetHandler()
-	-- 检查此卡是否仍然有效并可被移动
+	-- 效果处理时的合法性检查：若该卡已与效果失去联系、免疫此效果、控制权转移或目标区域不可用，则本次效果不处理。
 	if not c:IsRelateToEffect(e) or c:IsImmuneToEffect(e) or not c:IsControler(tp) or not Duel.CheckLocation(tp,LOCATION_MZONE,seq) then return end
 	local pseq=c:GetSequence()
 	if pseq>4 then return end
-	-- 将此卡移动到指定区域
+	-- 将这张卡的场上序号改为目标格子，即执行移动到指定主要怪兽区的操作。
 	Duel.MoveSequence(c,seq)
 	if c:GetSequence()==seq then
 		if pseq>seq then pseq,seq=seq,pseq end
@@ -117,19 +117,19 @@ function c24521754.seqop(e,tp,eg,ep,ev,re,r,rp)
 		local g=nil
 		local exg=nil
 		for i=pseq,seq do
-			-- 获取指定区域中所有场上卡
+			-- 移动成功后，再次获得原位置与目标位置之间每个纵列上除该卡以外的所有场上卡，作为实际破坏对象。
 			g=Duel.GetMatchingGroup(c24521754.seqfilter,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,c,tp,i)
 			dg:Merge(g)
 			if i==1 or i==3 then
-				-- 获取指定区域中所有额外怪兽区卡
+				-- 移动成功后，将中间纵列对应的额外怪兽区上的卡也加入破坏对象集合。
 				exg=Duel.GetMatchingGroup(c24521754.exfilter,tp,LOCATION_MZONE,LOCATION_MZONE,c,tp,i)
 				dg:Merge(exg)
 			end
 		end
 		if dg:GetCount()>0 then
-			-- 中断当前效果处理，使后续处理视为错时点
+			-- 中断当前效果链，使后续的破坏处理成为一个独立时点，对应“那之后”的语义，同时避免与移动产生同时时点。
 			Duel.BreakEffect()
-			-- 将目标卡因效果破坏
+			-- 以效果原因把收集到的对象全部破坏，完成③的“相同纵列存在的除这张卡以外的卡全部破坏”处理。
 			Duel.Destroy(dg,REASON_EFFECT)
 		end
 	end
