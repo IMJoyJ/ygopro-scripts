@@ -12,30 +12,30 @@ function c44095762.initial_effect(c)
 	e1:SetOperation(c44095762.activate)
 	c:RegisterEffect(e1)
 end
--- 判断是否为对方的攻击宣言时发动
+-- 效果发动条件：必须是对方的回合（即当前回合玩家不是效果发动者）才能发动，对应“对方怪兽的攻击宣言时”。
 function c44095762.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 确保当前玩家不是回合玩家
+	-- 判断当前回合玩家不是效果发动者，即满足“对方回合”的条件。
 	return tp~=Duel.GetTurnPlayer()
 end
--- 定义过滤函数，用于筛选攻击表示的怪兽
+-- 过滤函数：筛选出场上攻击表示的怪兽。
 function c44095762.filter(c)
 	return c:IsAttackPos()
 end
--- 设置连锁处理的目标，确定要破坏的攻击表示怪兽
+-- 效果发动时的目标筛选与操作信息登记：合法时收集对方场上全部攻击表示怪兽并登记为破坏对象。
 function c44095762.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否存在满足条件的攻击表示怪兽
+	-- 若为发动合法性检查（chk==0），则确认对方场上是否存在至少1只攻击表示怪兽，否则不能发动。
 	if chk==0 then return Duel.IsExistingMatchingCard(c44095762.filter,tp,0,LOCATION_MZONE,1,nil) end
-	-- 获取对方场上所有攻击表示的怪兽
+	-- 获取对方场上所有攻击表示的怪兽作为将要破坏的群体。
 	local g=Duel.GetMatchingGroup(c44095762.filter,tp,0,LOCATION_MZONE,nil)
-	-- 设置操作信息，标记将要破坏的怪兽数量
+	-- 向游戏系统登记本次效果将破坏这些怪兽的信息（用于连锁判定、星尘龙等响应）。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,g:GetCount(),0,0)
 end
--- 执行破坏效果，将符合条件的怪兽全部破坏
+-- 效果处理：破坏对方场上全部攻击表示怪兽。
 function c44095762.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 再次获取对方场上所有攻击表示的怪兽
+	-- 效果处理时重新获取对方场上当前存在的全部攻击表示怪兽。
 	local g=Duel.GetMatchingGroup(c44095762.filter,tp,0,LOCATION_MZONE,nil)
 	if g:GetCount()>0 then
-		-- 以效果原因破坏指定怪兽
+		-- 将这些怪兽以效果原因破坏。
 		Duel.Destroy(g,REASON_EFFECT)
 	end
 end
