@@ -10,7 +10,7 @@ function c21159309.initial_effect(c)
 	e2:SetValue(c21159309.synlimit)
 	c:RegisterEffect(e2)
 end
--- 检查作为同调素材的怪兽是否不属于「救世」系列，如果是则返回true，表示不能被用作同调素材
+-- 判定作为同调素材的怪兽：若该素材不是「救世」怪兽，则禁止将其作为同调素材（返回 true 使限制生效）。
 function c21159309.synlimit(e,c)
 	if not c then return false end
 	return not c:IsSetCard(0x3f)

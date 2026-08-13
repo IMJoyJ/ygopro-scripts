@@ -5,10 +5,10 @@
 -- ①：特殊召唤的对方怪兽的攻击宣言时，让自己场上1只「幻变骚灵」怪兽回到持有者手卡才能发动。那次攻击无效。
 -- ②：这张卡被解放送去墓地的场合才能发动。这张卡特殊召唤。
 function c21187631.initial_effect(c)
-	-- 添加同调召唤手续，要求1只调整和1只调整以外的怪兽
+	-- 为这张卡添加同调召唤手续：素材为调整＋调整以外的怪兽1只以上，须通过同调召唤出场。
 	aux.AddSynchroProcedure(c,nil,aux.NonTuner(nil),1)
 	c:EnableReviveLimit()
-	-- ①：特殊召唤的对方怪兽的攻击宣言时，让自己场上1只「幻变骚灵」怪兽回到持有者手卡才能发动。那次攻击无效。
+	-- 这个卡名的①②的效果1回合各能使用1次。①：特殊召唤的对方怪兽的攻击宣言时，让自己场上1只「幻变骚灵」怪兽回到持有者手卡才能发动。那次攻击无效。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(21187631,0))
 	e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
@@ -32,49 +32,49 @@ function c21187631.initial_effect(c)
 	e2:SetOperation(c21187631.spop)
 	c:RegisterEffect(e2)
 end
--- 攻击宣言时的触发条件：攻击怪兽是对方特殊召唤的
+-- 效果①的发动条件：攻击宣言的怪兽为对方控制，且是特殊召唤的怪兽。
 function c21187631.atkcon(e,tp,eg,ep,ev,re,r,rp)
 	local tc=eg:GetFirst()
 	return tc:IsControler(1-tp) and tc:IsSummonType(SUMMON_TYPE_SPECIAL)
 end
--- 过滤满足条件的「幻变骚灵」怪兽（正面表示且能送入手牌）
+-- 代价过滤条件：自己场上的表侧表示「幻变骚灵」怪兽，且可以作为代价返回手卡。
 function c21187631.cfilter(c)
 	return c:IsFaceup() and c:IsSetCard(0x103) and c:IsAbleToHandAsCost()
 end
--- 支付代价：选择1只场上正面表示的「幻变骚灵」怪兽送入手牌
+-- 效果①的代价处理：选择自己场上1只表侧表示的「幻变骚灵」怪兽返回持有者手卡才能发动。
 function c21187631.atkcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查场上是否存在满足条件的「幻变骚灵」怪兽
+	-- 代价检查：确认自己场上是否存在满足条件的「幻变骚灵」怪兽。
 	if chk==0 then return Duel.IsExistingMatchingCard(c21187631.cfilter,tp,LOCATION_MZONE,0,1,nil) end
-	-- 提示玩家选择要送入手牌的卡
+	-- 弹出卡片选择提示，提示玩家选择要返回手卡的「幻变骚灵」怪兽。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_RTOHAND)  --"请选择要返回手牌的卡"
-	-- 选择满足条件的「幻变骚灵」怪兽
+	-- 选择自己场上1只满足条件的「幻变骚灵」怪兽作为发动代价。
 	local g=Duel.SelectMatchingCard(tp,c21187631.cfilter,tp,LOCATION_MZONE,0,1,1,nil)
-	-- 将选中的怪兽送入手牌作为代价
+	-- 将选择的「幻变骚灵」怪兽返回持有者手卡（作为代价）。
 	Duel.SendtoHand(g,nil,REASON_COST)
 end
--- 效果处理：无效此次攻击
+-- 效果①的发动处理：无效对方的攻击宣言。
 function c21187631.atkop(e,tp,eg,ep,ev,re,r,rp)
-	-- 无效此次攻击
+	-- 无效当前那次攻击宣言。
 	Duel.NegateAttack()
 end
--- 特殊召唤的触发条件：此卡因解放而送去墓地
+-- 效果②的发动条件：这张卡由于被解放而送去墓地。
 function c21187631.spcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsReason(REASON_RELEASE)
 end
--- 特殊召唤的发动准备：检查是否能特殊召唤此卡
+-- 效果②发动条件检查：自己场上有空余的怪兽区域，且这张卡可以被特殊召唤。
 function c21187631.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查场上是否有足够的召唤位置
+	-- 检查自己场上是否有空余的怪兽区域。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置操作信息：准备特殊召唤此卡
+	-- 设置操作信息：本效果将特殊召唤这张卡（用于连锁检测，如星尘龙等）。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 效果处理：将此卡特殊召唤
+-- 效果②处理：这张卡被解放送去墓地后，若卡片仍与效果关联且不受王家长眠之谷影响，将其表侧表示特殊召唤。
 function c21187631.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 检查此卡是否还在场上且未受王家长眠之谷影响
+	-- 确认这张卡仍与效果关联且不受王家长眠之谷影响，满足条件才进行特殊召唤。
 	if c:IsRelateToEffect(e) and aux.NecroValleyFilter()(c) then
-		-- 将此卡特殊召唤到场上
+		-- 将这张卡以表侧表示特殊召唤到自己场上。
 		Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
