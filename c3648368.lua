@@ -2,7 +2,7 @@
 -- 效果：
 -- 丢弃1张手卡发动。对方场上里侧守备表示存在的1只怪兽变成表侧攻击表示。这个时候，反转效果怪兽的效果不发动。这个效果1回合只能使用1次。
 function c3648368.initial_effect(c)
-	-- 创建效果，设置效果描述为“改变表示形式”，分类为改变表示形式，类型为起动效果，取对象，生效位置为主怪兽区，限制每回合只能使用1次，设置费用函数为cost，目标函数为target，处理函数为operation
+	-- 丢弃1张手卡发动。对方场上里侧守备表示存在的1只怪兽变成表侧攻击表示。这个时候，反转效果怪兽的效果不发动。这个效果1回合只能使用1次。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(3648368,0))  --"改变表示形式"
 	e1:SetCategory(CATEGORY_POSITION)
@@ -15,35 +15,35 @@ function c3648368.initial_effect(c)
 	e1:SetOperation(c3648368.operation)
 	c:RegisterEffect(e1)
 end
--- 费用函数，检查是否可以丢弃1张手卡作为费用
+-- 定义发动代价函数：效果发动前需要丢弃1张手卡，先检查手牌是否有可丢弃的卡，然后实际丢弃1张手卡作为代价。
 function c3648368.cost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查玩家手牌中是否存在至少1张可丢弃的卡
+	-- 代价检测阶段：确认自己手牌中存在至少1张可以丢弃的手卡，否则无法发动。
 	if chk==0 then return Duel.IsExistingMatchingCard(Card.IsDiscardable,tp,LOCATION_HAND,0,1,nil) end
-	-- 执行丢弃1张手卡的操作，丢弃原因包括费用和丢弃
+	-- 实际支付代价：从手牌选择1张可以丢弃的手卡丢弃，丢弃原因同时标记为“代价”和“丢弃”。
 	Duel.DiscardHand(tp,Card.IsDiscardable,1,1,REASON_COST+REASON_DISCARD,nil)
 end
--- 过滤函数，判断目标怪兽是否为里侧表示且为守备表示
+-- 定义对象筛选条件：选择对方场上里侧表示且守备表示的怪兽。
 function c3648368.filter(c)
 	return c:IsFacedown() and c:IsDefensePos()
 end
--- 目标选择函数，检查对方场上是否存在里侧守备表示的怪兽，选择目标怪兽并设置操作信息
+-- 定义效果发动时的目标选择：检查并选择对方场上1只里侧守备表示怪兽作为效果对象，并设置改变表示形式的操作信息。
 function c3648368.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(1-tp) and c3648368.filter(chkc) end
-	-- 检查对方场上是否存在至少1只里侧守备表示的怪兽
+	-- 目标检测阶段：确认对方场上存在至少1只满足条件且可成为对象的里侧守备表示怪兽。
 	if chk==0 then return Duel.IsExistingTarget(c3648368.filter,tp,0,LOCATION_MZONE,1,nil) end
-	-- 提示玩家选择对方场上的里侧守备表示怪兽
+	-- 向玩家显示“请选择里侧守备表示的怪兽”的选择提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEDOWNDEFENSE)  --"请选择里侧守备表示的怪兽"
-	-- 选择对方场上1只里侧守备表示的怪兽作为目标
+	-- 让玩家选择对方场上1只里侧守备表示怪兽，并将其登记为这个效果的对象。
 	local g=Duel.SelectTarget(tp,c3648368.filter,tp,0,LOCATION_MZONE,1,1,nil)
-	-- 设置操作信息，表示将要改变目标怪兽的表示形式
+	-- 设置操作信息：声明本连锁将处理“改变表示形式”，对象为已选择的那1只怪兽。
 	Duel.SetOperationInfo(0,CATEGORY_POSITION,g,1,0,0)
 end
--- 效果处理函数，获取目标怪兽并将其变为表侧攻击表示，且不触发反转效果
+-- 定义效果处理函数：效果处理时取得对象，若对象仍与效果相关且仍为里侧守备表示，则将其变为表侧攻击表示，且不触发反转效果。
 function c3648368.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的目标怪兽
+	-- 取得这个效果发动时所选择的对象卡。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) and c3648368.filter(tc) then
-		-- 将目标怪兽变为表侧攻击表示，且不触发反转效果
+		-- 将对象怪兽从里侧守备表示变为表侧攻击表示，并指定不触发反转效果怪兽的反转效果。
 		Duel.ChangePosition(tc,0,0,0,POS_FACEUP_ATTACK,true)
 	end
 end

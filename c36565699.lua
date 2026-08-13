@@ -13,29 +13,29 @@ function c36565699.initial_effect(c)
 	e1:SetOperation(c36565699.activate)
 	c:RegisterEffect(e1)
 end
--- 检查此卡是否从除外区被特殊召唤
+-- 确认这张卡在特殊召唤成功之前位于除外区（即这是从除外区特殊召唤成功的场合）。
 function c36565699.condition(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsPreviousLocation(LOCATION_REMOVED)
 end
--- 设置连锁操作信息，表示将要除外1张对方卡组最上方的卡
+-- 效果发动时无需额外条件（chk==0直接通过），并设置效果处理时将涉及从卡组除外的操作信息。
 function c36565699.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置当前处理的连锁的操作信息为除外效果
+	-- 向系统登记本次连锁操作包含“除外1张卡组卡”的类别，数量为1，区域为对方卡组。
 	Duel.SetOperationInfo(0,CATEGORY_REMOVE,nil,1,0,LOCATION_DECK)
 end
--- 翻开对方卡组最上方3张卡，选择1张除外，其余返回卡组
+-- 效果结算：依次确认并获取对方卡组最上方3张卡，若存在则提示自己选择其中1张除外，然后洗切对方卡组。
 function c36565699.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 确认对方卡组最上方3张卡
+	-- 把对方卡组最上方3张卡向双方确认（翻开）。
 	Duel.ConfirmDecktop(1-tp,3)
-	-- 获取对方卡组最上方3张卡组成的组
+	-- 以组对象形式获取对方卡组最上方3张卡。
 	local g=Duel.GetDecktopGroup(1-tp,3)
 	if g:GetCount()>0 then
-		-- 提示玩家选择要除外的卡
+		-- 显示“请选择要除外的卡”的选择提示，供接下来从候选卡中选择1张。
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
 		local sg=g:FilterSelect(tp,Card.IsAbleToRemove,1,1,nil)
-		-- 将选中的卡除外
+		-- 将选中的卡以表侧表示除外，除外原因记为“效果”。
 		Duel.Remove(sg,POS_FACEUP,REASON_EFFECT)
-		-- 将对方卡组洗牌
+		-- 效果处理完成后洗切对方卡组。
 		Duel.ShuffleDeck(1-tp)
 	end
 end

@@ -18,18 +18,18 @@ function c36527535.initial_effect(c)
 	e2:SetValue(c36527535.dtcon)
 	c:RegisterEffect(e2)
 end
--- 当满足条件时，允许从手卡特殊召唤此卡，条件为己方场上无怪兽、对方场上有机场怪兽且有可用召唤区域。
+-- 特殊召唤规则的条件判断：若c为nil表示询问能否规则特殊召唤，则返回true；否则需满足自己场上无怪兽、对方场上有怪兽且自己有可用怪兽区。
 function c36527535.sprcon(e,c)
 	if c==nil then return true end
 	local tp=c:GetControler()
-	-- 判断己方场上是否没有怪兽。
+	-- 自己的主要怪兽区没有怪兽。
 	return Duel.GetFieldGroupCount(tp,LOCATION_MZONE,0)==0
-		-- 判断对方场上是否有怪兽。
+		-- 对方场上有怪兽存在。
 		and Duel.GetFieldGroupCount(tp,0,LOCATION_MZONE)>0
-		-- 判断己方场上是否有可用召唤区域。
+		-- 自己的主要怪兽区有空位可供特殊召唤。
 		and Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 end
--- 判断此卡是否为「娱乐伙伴」卡组的怪兽。
+-- 判断被解放的怪兽是否为「娱乐伙伴」系列卡，若是则该卡可作为2只数量解放。
 function c36527535.dtcon(e,c)
 	return c:IsSetCard(0x9f)
 end

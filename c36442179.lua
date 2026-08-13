@@ -14,23 +14,23 @@ function c36442179.initial_effect(c)
 	e1:SetOperation(c36442179.operation)
 	c:RegisterEffect(e1)
 end
--- 检索满足条件的卡片组：表侧表示的同调怪兽
+-- 过滤函数：判定卡片是否为表侧表示的同调怪兽，用于选择对象。
 function c36442179.filter(c)
 	return c:IsFaceup() and c:IsType(TYPE_SYNCHRO)
 end
--- 选择对方场上的1只表侧表示的同调怪兽作为对象
+-- 效果发动时的取对象处理：检查对象合法性，并让玩家选择场上的1只表侧表示同调怪兽作为对象。
 function c36442179.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(1-tp) and chkc:IsLocation(LOCATION_MZONE) and c36442179.filter(chkc) end
-	-- 确认是否满足选择对象的条件
+	-- 发动合法性检查：场上存在至少1只符合条件的同调怪兽时才能发动。
 	if chk==0 then return Duel.IsExistingTarget(c36442179.filter,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil) end
-	-- 向玩家提示“请选择表侧表示的卡”
+	-- 显示选择卡片的提示消息“请选择表侧表示的卡”。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
-	-- 选择满足条件的1只怪兽作为对象
+	-- 让玩家从场上表侧表示的同调怪兽中选择1只作为效果对象。
 	Duel.SelectTarget(tp,c36442179.filter,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,nil)
 end
--- 将自身攻击力变成与对象怪兽的攻击力相同
+-- 效果处理：若自身与对象怪兽都仍关联且表侧表示存在，则给自身附加攻击力变为对象怪兽当前攻击力直到回合结束的效果。
 function c36442179.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁中的目标怪兽
+	-- 获取效果处理时需要参照的对象怪兽卡。
 	local tc=Duel.GetFirstTarget()
 	local c=e:GetHandler()
 	if c:IsFaceup() and c:IsRelateToEffect(e) and tc and tc:IsFaceup() and tc:IsRelateToEffect(e) then

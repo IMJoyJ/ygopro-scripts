@@ -36,59 +36,59 @@ function c36553319.initial_effect(c)
 	e3:SetOperation(c36553319.rmop)
 	c:RegisterEffect(e3)
 end
--- 用于判断场上是否存在非「彼岸」怪兽或里侧表示的怪兽
+-- 过滤条件：判断怪兽是否为里侧表示或不属于「彼岸」系列，用于识别“彼岸怪兽以外的怪兽”（里侧怪兽无法确认也视为非彼岸）。
 function c36553319.sdfilter(c)
 	return c:IsFacedown() or not c:IsSetCard(0xb1)
 end
--- 当场上存在非「彼岸」怪兽或里侧表示的怪兽时，该卡自我破坏
+-- 自爆效果的发动条件：检查自己怪兽区是否存在里侧表示或非「彼岸」系列的怪兽，若存在则满足②的破坏条件。
 function c36553319.sdcon(e)
-	-- 检查场上是否存在非「彼岸」怪兽或里侧表示的怪兽
+	-- 检测自己场上是否有里侧表示或非「彼岸」系列的怪兽，存在则条件成立。
 	return Duel.IsExistingMatchingCard(c36553319.sdfilter,e:GetHandlerPlayer(),LOCATION_MZONE,0,1,nil)
 end
--- 用于判断场上是否存在魔法·陷阱卡
+-- 过滤函数：判断卡片是否为魔法·陷阱卡，用于检查场上是否存在魔法·陷阱卡。
 function c36553319.filter(c)
 	return c:IsType(TYPE_SPELL+TYPE_TRAP)
 end
--- 当自己场上没有魔法·陷阱卡存在时，该效果可以发动
+-- ①的发动条件：自己场上没有魔法·陷阱卡存在时才能从手卡特殊召唤，因此检查场上不存在魔法·陷阱卡。
 function c36553319.sscon(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查自己场上是否存在魔法·陷阱卡
+	-- 若自己场上不存在任何魔法·陷阱卡，则返回 true，满足①的发动条件。
 	return not Duel.IsExistingMatchingCard(c36553319.filter,tp,LOCATION_ONFIELD,0,1,nil)
 end
--- 设置特殊召唤的处理条件
+-- ①的发动时合法性检查：确认自己主要怪兽区有空位，且此卡能够被特殊召唤。
 function c36553319.sstg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否有足够的怪兽区域
+	-- 检查自己主要怪兽区是否有可用空格。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置特殊召唤的处理信息
+	-- 将本次操作信息登记为特殊召唤，以便后续时点或相关效果进行检测。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 执行特殊召唤操作
+-- ①的效果处理：若此卡仍与效果关联，则将其从手卡特殊召唤到自己场上。
 function c36553319.ssop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if not c:IsRelateToEffect(e) then return end
-	-- 将该卡特殊召唤到场上
+	-- 以表侧表示将此卡特殊召唤到自己的主要怪兽区（不检查召唤条件与苏生限制）。
 	Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 end
--- 设置除外效果的处理条件
+-- ③的发动目标处理：从双方场上选择1只可以除外的怪兽作为对象，并设置除外操作信息。
 function c36553319.rmtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsAbleToRemove() end
-	-- 检查场上是否存在可除外的怪兽
+	-- 发动时确认场上是否存在至少1只可以被除外的怪兽，作为取对象的前提条件。
 	if chk==0 then return Duel.IsExistingTarget(Card.IsAbleToRemove,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil) end
-	-- 提示玩家选择要除外的怪兽
+	-- 向操作玩家显示“请选择要除外的卡”的选择提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
-	-- 选择场上一只可除外的怪兽作为对象
+	-- 让玩家从双方场上选择1只可以除外的怪兽，并将其设为效果的对象。
 	local g=Duel.SelectTarget(tp,Card.IsAbleToRemove,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,nil)
-	-- 设置除外的处理信息
+	-- 将操作信息登记为除外所选择的对象（1张卡）。
 	Duel.SetOperationInfo(0,CATEGORY_REMOVE,g,1,0,0)
 end
--- 执行除外操作并设置返回效果
+-- ③的效果处理：将对象怪兽暂时除外，并在结束阶段将其返回场上，同时注册返回用效果。
 function c36553319.rmop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的目标怪兽
+	-- 获取效果处理时选择的对象怪兽。
 	local tc=Duel.GetFirstTarget()
-	-- 确认目标怪兽有效且成功除外
+	-- 若对象仍与效果关联，则将其以效果原因暂时除外；成功后才继续设置结束阶段返回处理。
 	if tc:IsRelateToEffect(e) and Duel.Remove(tc,0,REASON_EFFECT+REASON_TEMPORARY)~=0 then
 		tc:RegisterFlagEffect(36553319,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END,0,1)
-		-- 设置结束阶段返回场上的效果
+		-- 那只怪兽直到结束阶段除外。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 		e1:SetCode(EVENT_PHASE+PHASE_END)
@@ -97,16 +97,16 @@ function c36553319.rmop(e,tp,eg,ep,ev,re,r,rp)
 		e1:SetCountLimit(1)
 		e1:SetCondition(c36553319.retcon)
 		e1:SetOperation(c36553319.retop)
-		-- 将返回场上的效果注册到游戏环境
+		-- 将结束阶段返回效果注册到场上（由tp方控制），使被暂时除外的对象在结束阶段时返回。
 		Duel.RegisterEffect(e1,tp)
 	end
 end
--- 判断目标怪兽是否具有返回场上的标记
+-- 返回条件：检查被暂时除外的对象是否仍带有标记，确认其未被其他效果移动或重置，若仍存在则执行返回。
 function c36553319.retcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetLabelObject():GetFlagEffect(36553319)~=0
 end
--- 将目标怪兽返回到场上
+-- 结束阶段处理：将被暂时除外的对象怪兽返回场上。
 function c36553319.retop(e,tp,eg,ep,ev,re,r,rp)
-	-- 将目标怪兽返回到场上
+	-- 将对象怪兽以离场前的表示形式返回场上。
 	Duel.ReturnToField(e:GetLabelObject())
 end

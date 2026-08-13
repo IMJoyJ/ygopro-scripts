@@ -11,37 +11,37 @@ function c36468556.initial_effect(c)
 	e1:SetOperation(c36468556.activate)
 	c:RegisterEffect(e1)
 end
--- 效果怪兽或里侧守备表示怪兽过滤函数
+-- 筛选条件：表侧表示的效果怪兽或里侧表示怪兽，用于检查发动时场上是否存在满足条件的怪兽。
 function c36468556.tgfilter(c)
 	return (c:IsFaceup() and c:IsType(TYPE_EFFECT)) or c:IsFacedown()
 end
--- 效果怪兽过滤函数
+-- 筛选条件：表侧表示的效果怪兽，用于统计场上效果怪兽数量。
 function c36468556.filter(c)
 	return c:IsFaceup() and c:IsType(TYPE_EFFECT)
 end
--- 发动时点处理函数，检查是否满足发动条件并设置伤害值
+-- 发动时的目标处理：确认满足发动条件，计算并保存伤害值，设定对象玩家和伤害参数，并登记伤害操作信息。
 function c36468556.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查场上是否存在效果怪兽或里侧守备表示怪兽
+	-- 发动合法性检查（chk==0）：判断场上是否存在至少1只表侧效果怪兽或里侧守备表示怪兽，若不存在则不能发动。
 	if chk==0 then return Duel.IsExistingMatchingCard(c36468556.tgfilter,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil) end
-	-- 计算场上的效果怪兽数量并乘以500作为伤害值
+	-- 计算伤害值：当前场上表侧表示的效果怪兽数量 × 500。
 	local dam=Duel.GetMatchingGroupCount(c36468556.filter,tp,LOCATION_MZONE,LOCATION_MZONE,nil)*500
-	-- 设置连锁对象玩家为对方
+	-- 将本连锁效果的对象玩家设为对方（1-tp），即伤害的承受者。
 	Duel.SetTargetPlayer(1-tp)
-	-- 设置连锁对象参数为伤害值
+	-- 将计算好的伤害值保存为连锁对象参数，供效果处理阶段使用。
 	Duel.SetTargetParam(dam)
-	-- 若伤害值大于0，则设置连锁操作信息为伤害效果
+	-- 当伤害值大于0时，登记伤害效果的操作信息：目标为对方、伤害值为dam；用于连锁检测与卡牌效果判定。
 	if dam>0 then Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,1-tp,dam) end
 end
--- 发动效果处理函数，将里侧守备表示怪兽变为表侧守备表示并造成伤害
+-- 效果处理时的操作：将场上所有里侧守备表示怪兽变为表侧守备表示且不触发反转效果，然后按处理时的场上表侧效果怪兽数量对对方造成伤害。
 function c36468556.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取场上的里侧守备表示怪兽组
+	-- 获取场上所有里侧表示怪兽（即里侧守备表示怪兽）作为要翻面的对象。
 	local g=Duel.GetMatchingGroup(Card.IsFacedown,tp,LOCATION_MZONE,LOCATION_MZONE,nil)
-	-- 将里侧守备表示怪兽全部变为表侧守备表示，且反转效果不发动
+	-- 将上述里侧怪兽全部变成表侧守备表示；最后参数true表示不触发反转怪兽的效果。
 	Duel.ChangePosition(g,0x1,0x1,0x4,0x4,true)
-	-- 获取连锁对象玩家
+	-- 从连锁信息中取出此前设定的对象玩家（对方），作为伤害的对象。
 	local p=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER)
-	-- 再次计算场上的效果怪兽数量并乘以500作为伤害值
+	-- 翻面后重新计算当前场上表侧效果怪兽数量 ×500，作为实际伤害值。
 	local dam=Duel.GetMatchingGroupCount(c36468556.filter,tp,LOCATION_MZONE,LOCATION_MZONE,nil)*500
-	-- 对对方造成计算出的伤害值
+	-- 以效果原因给对方玩家造成dam点伤害。
 	Duel.Damage(p,dam,REASON_EFFECT)
 end
