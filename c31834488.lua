@@ -14,39 +14,39 @@ function c31834488.initial_effect(c)
 	e1:SetOperation(c31834488.posop)
 	c:RegisterEffect(e1)
 end
--- 检查是否满足丢弃手卡的代价条件
+-- 代价函数整体，用于处理发动时必须丢弃1张手卡：先检查手牌有可丢弃的卡，再执行丢弃。
 function c31834488.poscost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断玩家手牌中是否存在可丢弃的卡片
+	-- 效果发动合法性检查：检查自己的手牌中是否存在至少1张可丢弃的手卡（排除发动中的这张卡）。
 	if chk==0 then return Duel.IsExistingMatchingCard(Card.IsDiscardable,tp,LOCATION_HAND,0,1,e:GetHandler()) end
-	-- 执行丢弃1张手卡的操作
+	-- 实际支付代价：从手牌选择1张可丢弃的卡，以COST+丢弃的理由送去墓地。
 	Duel.DiscardHand(tp,Card.IsDiscardable,1,1,REASON_COST+REASON_DISCARD)
 end
--- 定义选择目标怪兽的过滤条件（必须为表侧表示且可以变为里侧守备表示）
+-- 对象选择过滤条件：怪兽必须是表侧表示且可以变成里侧守备表示。
 function c31834488.posfilter(c)
 	return c:IsFaceup() and c:IsCanTurnSet()
 end
--- 设置效果的目标选择逻辑，选择2只符合条件的场上怪兽
+-- 目标函数整体：选择场上2只符合条件的表侧表示怪兽作为效果对象，并登记改变表示形式的操作信息。
 function c31834488.postg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and c31834488.posfilter(chkc) end
-	-- 判断场上是否存在2只符合条件的怪兽作为目标
+	-- 合法性检查：确认双方怪兽区存在至少2只可作为对象的表侧表示怪兽（且能变为里侧守备）。
 	if chk==0 then return Duel.IsExistingTarget(c31834488.posfilter,tp,LOCATION_MZONE,LOCATION_MZONE,2,nil) end
-	-- 向玩家发送提示信息，提示选择要改变表示形式的怪兽
+	-- 显示选择提示，让玩家选择要改变表示形式的怪兽。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_POSCHANGE)  --"请选择要改变表示形式的怪兽"
-	-- 选择2只符合条件的场上怪兽作为效果对象
+	-- 玩家从双方怪兽区选择2只符合条件的表侧表示怪兽，并登记为效果对象。
 	local g=Duel.SelectTarget(tp,c31834488.posfilter,tp,LOCATION_MZONE,LOCATION_MZONE,2,2,nil)
-	-- 设置连锁操作信息，指定将要改变表示形式的怪兽数量为2
+	-- 登记操作信息：本次连锁将执行变更2只对象怪兽表示形式的效果。
 	Duel.SetOperationInfo(0,CATEGORY_POSITION,g,2,0,0)
 end
--- 定义过滤函数，用于筛选与当前效果相关的怪兽（位于怪兽区且存在）
+-- 效果处理时的对象筛选：选出仍然与该效果相关且还在怪兽区的对象卡（排除中途离场等失效的卡）。
 function c31834488.filter(c,e)
 	return c:IsRelateToEffect(e) and c:IsLocation(LOCATION_MZONE)
 end
--- 执行效果处理，将目标怪兽变为里侧守备表示
+-- 效果处理函数：取出连锁的对象卡，筛选出有效目标后统一变更表示形式。
 function c31834488.posop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁中已选定的目标卡片组，并筛选出与效果相关的怪兽
+	-- 获取本连锁发动时选择的对象卡组，并过滤出仍然有效且位于怪兽区的对象。
 	local g=Duel.GetChainInfo(0,CHAININFO_TARGET_CARDS):Filter(c31834488.filter,nil,e)
 	if g:GetCount()>0 then
-		-- 将符合条件的怪兽变为里侧守备表示
+		-- 将筛选后的对象怪兽全部变成里侧守备表示。
 		Duel.ChangePosition(g,POS_FACEDOWN_DEFENSE)
 	end
 end

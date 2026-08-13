@@ -22,24 +22,24 @@ function c31944175.initial_effect(c)
 	e2:SetValue(-500)
 	c:RegisterEffect(e2)
 end
--- 定义用于筛选手卡中电子界族怪兽的过滤函数
+-- 过滤函数：判断手卡中的卡是否为电子界族怪兽，并且可作为丢弃代价被丢弃，用于筛选①效果中满足条件的电子界族怪兽。
 function c31944175.cfilter(c)
 	return c:IsType(TYPE_MONSTER) and c:IsRace(RACE_CYBERSE) and c:IsDiscardable()
 end
--- 判断特殊召唤条件是否满足，包括场上是否有空位、自己场上是否无怪兽、手卡是否有电子界族怪兽
+-- 特殊召唤规则效果的发动条件：若c为nil（规则询问阶段）直接返回true以允许进入选择；否则需确认控制者tp有可用的主要怪兽区空位、自己场上没有怪兽，且手卡中存在除自身外可丢弃的电子界族怪兽。
 function c31944175.spcon(e,c)
 	if c==nil then return true end
 	local tp=c:GetControler()
-	-- 检查玩家场上主怪兽区是否有空位且自己场上没有怪兽
+	-- 判定控制者tp有可用的主要怪兽区空位，并且自己场上没有怪兽，满足①效果中“自己场上没有怪兽存在的场合”的前提。
 	return Duel.GetLocationCount(tp,LOCATION_MZONE)>0 and Duel.GetFieldGroupCount(tp,LOCATION_MZONE,0)==0
-		-- 检查手卡是否存在至少1张满足条件的电子界族怪兽
+		-- 继续判定手卡中存在至少1张（除这张卡自身外）满足丢弃条件的电子界族怪兽，作为①效果要丢弃的候选。
 		and Duel.IsExistingMatchingCard(c31944175.cfilter,tp,LOCATION_HAND,0,1,c)
 end
--- 设置特殊召唤时的选择目标，提示玩家选择要丢弃的电子界族怪兽
+-- 特殊召唤规则的目标选择处理：筛选出可丢弃的电子界族怪兽候选组，让控制者从中选择1张；选择成功则将该对象存入e的LabelObject并返回true，未选择则返回false。
 function c31944175.sptg(e,tp,eg,ep,ev,re,r,rp,chk,c)
-	-- 获取满足条件的电子界族怪兽组
+	-- 获取控制者tp手卡中满足丢弃条件的电子界族怪兽候选组，并排除这张卡自身。
 	local g=Duel.GetMatchingGroup(c31944175.cfilter,tp,LOCATION_HAND,0,c)
-	-- 向玩家发送提示信息，提示选择要丢弃的手牌
+	-- 向控制者tp显示“请选择要丢弃的手牌”的选择提示消息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DISCARD)  --"请选择要丢弃的手牌"
 	local tc=g:SelectUnselect(nil,tp,false,true,1,1)
 	if tc then
@@ -47,9 +47,9 @@ function c31944175.sptg(e,tp,eg,ep,ev,re,r,rp,chk,c)
 		return true
 	else return false end
 end
--- 执行特殊召唤后的处理，将选定的怪兽送去墓地
+-- 特殊召唤规则的实际处理：取出目标选择阶段保存的怪兽，将其作为特殊召唤手续丢弃送入墓地，随后由引擎完成这张卡从手卡的特殊召唤。
 function c31944175.spop(e,tp,eg,ep,ev,re,r,rp,c)
 	local g=e:GetLabelObject()
-	-- 将目标怪兽以特殊召唤和丢弃的原因送去墓地
+	-- 将选择的那1张电子界族怪兽从手卡以“特殊召唤手续+丢弃”为原因送入墓地，作为①效果特殊召唤的代价。
 	Duel.SendtoGrave(g,REASON_SPSUMMON+REASON_DISCARD)
 end

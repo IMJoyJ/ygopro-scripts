@@ -9,18 +9,18 @@ function c31849106.initial_effect(c)
 	e1:SetOperation(c31849106.activate)
 	c:RegisterEffect(e1)
 end
--- 将效果应用于场上，使符合条件的怪兽在送去墓地时改为除外。
+-- 发动后，为当前回合玩家注册一个持续到结束阶段的领域效果：将符合“原始类型为怪兽且不是作为超量素材、也不是被当作魔法陷阱卡使用”的卡改为除外而不是送去墓地；该效果带有SET_AVAILABLE、IGNORE_RANGE、IGNORE_IMMUNE，即里侧表示的卡也适用、全场所有区域生效且不受效果免疫影响。
 function c31849106.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 将效果应用于场上，使符合条件的怪兽在送去墓地时改为除外。
+	-- 这个回合，被送去墓地的怪兽不去墓地而除外。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetProperty(EFFECT_FLAG_SET_AVAILABLE+EFFECT_FLAG_IGNORE_RANGE+EFFECT_FLAG_IGNORE_IMMUNE)
 	e1:SetCode(EFFECT_TO_GRAVE_REDIRECT)
-	-- 设置效果的目标为符合“次元的裂痕”除外条件的怪兽。
+	-- 设置重定向效果的过滤目标：只有通过aux.DimensionalFissureTarget判断为“原本是怪兽且不是作为超量素材送去墓地、也不是被当作魔法陷阱卡使用的卡”才会被改为除外。
 	e1:SetTarget(aux.DimensionalFissureTarget)
 	e1:SetTargetRange(LOCATION_DECK,LOCATION_DECK)
 	e1:SetValue(LOCATION_REMOVED)
 	e1:SetReset(RESET_PHASE+PHASE_END)
-	-- 将该效果注册到玩家的场上，使其生效至结束阶段。
+	-- 将领域效果e1注册到发动玩家tp的一方，使其作为全场效果生效，并在本回合结束阶段自动重置失效。
 	Duel.RegisterEffect(e1,tp)
 end

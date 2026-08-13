@@ -22,49 +22,49 @@ function c31975743.initial_effect(c)
 	e2:SetOperation(c31975743.operation)
 	c:RegisterEffect(e2)
 end
--- 效果发动的条件：怪兽卡必须处于攻击表示
+-- 判断这张卡是否以表侧攻击表示存在于怪兽区，作为该起动效果的发动条件。
 function c31975743.condition(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsAttackPos()
 end
--- 费用支付时的过滤函数：检查手牌中是否存在怪兽卡且能作为墓地费用
+-- 筛选可作为发动COST的手卡怪兽：必须是怪兽且能够作为COST被送去墓地。
 function c31975743.cfilter(c)
 	return c:IsType(TYPE_MONSTER) and c:IsAbleToGraveAsCost()
 end
--- 效果的费用支付流程：检索手牌中满足条件的怪兽卡并将其送入墓地
+-- 支付COST：从手卡选择1只符合条件的怪兽，将其作为COST送入墓地。
 function c31975743.cost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否满足费用支付条件：确认手牌中存在至少一张符合条件的怪兽卡
+	-- 在发动时检查COST是否满足：手卡中是否存在至少1只可作为COST送去墓地的怪兽。
 	if chk==0 then return Duel.IsExistingMatchingCard(c31975743.cfilter,tp,LOCATION_HAND,0,1,nil) end
-	-- 向玩家提示选择要送入墓地的卡
+	-- 提示玩家选择要送去墓地的卡片。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
-	-- 选择满足条件的1张手牌怪兽卡
+	-- 让玩家从手卡选择1只满足COST条件的怪兽。
 	local g=Duel.SelectMatchingCard(tp,c31975743.cfilter,tp,LOCATION_HAND,0,1,1,nil)
-	-- 将选中的卡送入墓地作为费用
+	-- 将选择的怪兽作为COST送进墓地。
 	Duel.SendtoGrave(g,REASON_COST)
 end
--- 目标选择时的过滤函数：检查对方场上是否存在表侧守备表示的怪兽且能改变控制权
+-- 筛选效果对象：对方场上的表侧守备表示怪兽，并且其控制权能够被改变。
 function c31975743.filter(c)
 	return c:IsPosition(POS_FACEUP_DEFENSE) and c:IsControlerCanBeChanged()
 end
--- 效果的目标选择流程：选择对方场上满足条件的1只怪兽作为目标
+-- 设定效果对象：选择对方场上1只表侧守备表示且控制权可变更的怪兽，并登记获得控制权的操作信息。
 function c31975743.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(1-tp) and c31975743.filter(chkc) end
-	-- 检查是否满足目标选择条件：确认对方场上存在至少1只符合条件的怪兽
+	-- 检查是否存在满足条件的对象（对方场上表侧守备表示且可被改变控制权的怪兽）。
 	if chk==0 then return Duel.IsExistingTarget(c31975743.filter,tp,0,LOCATION_MZONE,1,nil) end
-	-- 向玩家提示选择要改变控制权的怪兽
+	-- 提示玩家选择要改变控制权的怪兽。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_CONTROL)  --"请选择要改变控制权的怪兽"
-	-- 选择满足条件的1只对方场上的怪兽作为目标
+	-- 选择对方场上1只符合条件的怪兽作为效果对象。
 	local g=Duel.SelectTarget(tp,c31975743.filter,tp,0,LOCATION_MZONE,1,1,nil)
-	-- 设置效果处理信息：记录本次效果将改变目标怪兽的控制权
+	-- 登记操作信息：本连锁将处理获得1只怪兽控制权的效果。
 	Duel.SetOperationInfo(0,CATEGORY_CONTROL,g,1,0,0)
 end
--- 效果的处理流程：获得目标怪兽的控制权并设置其在本回合不能改变表示形式
+-- 效果处理：取得对象怪兽的控制权直到结束阶段；若成功，再给那只怪兽附加不能变更表示形式的效果。
 function c31975743.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁效果的目标怪兽
+	-- 取得当前连锁处理中的对象怪兽（选择的对方怪兽）。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 尝试获得目标怪兽的控制权，直到结束阶段
+		-- 尝试将那只怪兽的控制权移转给自己，持续到结束阶段；成功时返回非0值。
 		if Duel.GetControl(tc,tp,PHASE_END,1)~=0 then
-			-- 为获得控制权的怪兽设置效果：本回合不能改变表示形式
+			-- 这个效果得到控制权的怪兽在这个回合不能把表示形式变更。
 			local e1=Effect.CreateEffect(e:GetHandler())
 			e1:SetType(EFFECT_TYPE_SINGLE)
 			e1:SetCode(EFFECT_CANNOT_CHANGE_POSITION)
