@@ -11,12 +11,12 @@ function c47480070.initial_effect(c)
 	e1:SetValue(c47480070.val)
 	c:RegisterEffect(e1)
 end
--- 计算满足条件的怪兽数量并乘以100作为攻击力加成
+-- 计算这张卡攻击力的上升数值：统计自己场上表侧表示且名含「亚马逊」的怪兽卡数量，每张提供100点攻击力。
 function c47480070.val(e,c)
-	-- 检索满足过滤条件的怪兽数量，并乘以100作为攻击力提升值
+	-- 返回自己场上满足条件的「亚马逊」怪兽数量乘以100，作为这张卡的攻击力上升值。
 	return Duel.GetMatchingGroupCount(c47480070.filter,c:GetControler(),LOCATION_MZONE,0,nil)*100
 end
--- 过滤条件：怪兽必须是表侧表示且卡名含有「亚马逊」
+-- 过滤条件：卡片为表侧表示，且属于「亚马逊」系列（SetCard 0x4）。
 function c47480070.filter(c)
 	return c:IsFaceup() and c:IsSetCard(0x4)
 end

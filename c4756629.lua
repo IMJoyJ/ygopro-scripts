@@ -35,86 +35,86 @@ function c4756629.initial_effect(c)
 	e3:SetOperation(c4756629.decop)
 	c:RegisterEffect(e3)
 end
--- 过滤函数，用于判断是否满足除外条件（名字带有「入魔」的怪兽且能除外，并且自己墓地存在可加入手卡的「入魔」怪兽）
+-- 定义除外代价的筛选：该「入魔」怪兽可从墓地除外，且墓地另有「入魔」怪兽能成为①效果的对象（排除自身）。
 function c4756629.rmfilter(c,tp)
 	return c:IsSetCard(0xa) and c:IsType(TYPE_MONSTER) and c:IsAbleToRemoveAsCost()
-		-- 检查自己墓地是否存在满足filter条件的「入魔」怪兽
+		-- 确认除外该卡后，墓地仍有1只其他「入魔」怪兽可作为①效果加入手卡的对象。
 		and Duel.IsExistingTarget(c4756629.filter,tp,LOCATION_GRAVE,0,1,c)
 end
--- 过滤函数，用于判断是否满足加入手卡条件（名字带有「入魔」的怪兽且能加入手卡）
+-- 定义①效果对象的筛选：自己墓地的「入魔」怪兽且能够加入手卡。
 function c4756629.filter(c)
 	return c:IsSetCard(0xa) and c:IsType(TYPE_MONSTER) and c:IsAbleToHand()
 end
--- 效果发动时的费用支付处理，选择1只满足条件的「入魔」怪兽除外作为代价
+-- ①效果的代价：从自己墓地选择1只「入魔」怪兽除外（需墓地另有可取对象），使效果可以发动。
 function c4756629.thcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否有满足除外条件的「入魔」怪兽
+	-- 代价合法性检查：确认自己墓地存在可除外的「入魔」怪兽，且墓地另有可加入手卡的「入魔」怪兽。
 	if chk==0 then return Duel.IsExistingMatchingCard(c4756629.rmfilter,tp,LOCATION_GRAVE,0,1,nil,tp) end
-	-- 提示玩家选择要除外的卡
+	-- 提示玩家选择要除外的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
-	-- 选择满足除外条件的「入魔」怪兽
+	-- 让玩家从自己墓地选择1只满足 rmfilter 的「入魔」怪兽作为除外代价。
 	local g=Duel.SelectMatchingCard(tp,c4756629.rmfilter,tp,LOCATION_GRAVE,0,1,1,nil,tp)
-	-- 将选中的卡以除外形式移出游戏
+	-- 将选择的怪兽以表侧表示除外，作为发动代价。
 	Duel.Remove(g,POS_FACEUP,REASON_COST)
 end
--- 设置效果目标，选择1只满足条件的「入魔」怪兽作为效果对象
+-- ①效果的目标选择：从自己墓地选择1只「入魔」怪兽作为对象；若为发动时则选择目标，若为连锁判定则验证对象合法性。
 function c4756629.thtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(tp) and chkc:IsLocation(LOCATION_GRAVE) and c4756629.filter(chkc) end
 	if chk==0 then return true end
-	-- 提示玩家选择要返回手牌的卡
+	-- 提示玩家选择要返回手牌的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_RTOHAND)  --"请选择要返回手牌的卡"
-	-- 选择满足条件的「入魔」怪兽作为效果对象
+	-- 从自己墓地选择1只「入魔」怪兽作为效果对象，并登记为当前连锁的对象。
 	local g=Duel.SelectTarget(tp,c4756629.filter,tp,LOCATION_GRAVE,0,1,1,nil)
-	-- 设置连锁操作信息，指定效果将使目标怪兽加入手牌
+	-- 设置操作信息：此效果将把1张卡加入手牌。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,1,0,0)
 end
--- 效果处理函数，将目标怪兽加入手牌并确认对方可见
+-- ①效果处理：将对象怪兽加入持有者手牌并给对方确认；若本卡仍在场上且与效果关联，则给自己本卡标记（记录①已适用，供②使用）。
 function c4756629.thop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取当前效果的目标怪兽
+	-- 取得效果处理时选择的对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 将目标怪兽送入手牌
+		-- 将该对象怪兽加入其持有者的手牌。
 		Duel.SendtoHand(tc,nil,REASON_EFFECT)
-		-- 向对方玩家确认该怪兽已加入手牌
+		-- 让对方确认加入手牌的那张怪兽卡。
 		Duel.ConfirmCards(1-tp,tc)
 	end
 	if c:IsRelateToEffect(e) and c:IsFaceup() then
 		c:RegisterFlagEffect(4756629,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END,0,1)
 	end
 end
--- 判断是否满足②效果发动条件（即①效果已适用）
+-- ②效果的发动条件：这张卡已经适用过①效果（存在标记4756629）。
 function c4756629.sumcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():GetFlagEffect(4756629)~=0
 end
--- 过滤函数，用于判断是否满足召唤条件（名字带有「入魔」且可通常召唤）
+-- ②效果中可召唤的怪兽筛选：手牌或场上的「入魔」怪兽，且当前能进行通常召唤（无视次数限制）。
 function c4756629.sumfilter(c)
 	return c:IsSetCard(0xa) and c:IsSummonable(true,nil)
 end
--- 设置召唤效果的目标，检查是否有满足条件的「入魔」怪兽
+-- ②效果发动时确认存在可通常召唤的「入魔」怪兽，并设置操作信息。
 function c4756629.sumtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否存在满足召唤条件的「入魔」怪兽
+	-- 存在性检查：自己手牌/场上是否有可通常召唤的「入魔」怪兽。
 	if chk==0 then return Duel.IsExistingMatchingCard(c4756629.sumfilter,tp,LOCATION_HAND+LOCATION_MZONE,0,1,nil) end
-	-- 设置连锁操作信息，指定效果将召唤1只怪兽
+	-- 设置操作信息：此效果将进行1只怪兽的召唤。
 	Duel.SetOperationInfo(0,CATEGORY_SUMMON,nil,1,0,0)
 end
--- 效果处理函数，选择并召唤1只满足条件的「入魔」怪兽
+-- ②效果处理：选择1只「入魔」怪兽进行通常召唤，不消耗通常召唤次数。
 function c4756629.sumop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要召唤的卡
+	-- 提示玩家选择要召唤的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SUMMON)  --"请选择要召唤的卡"
-	-- 选择满足召唤条件的「入魔」怪兽
+	-- 从手牌/场上选择1只满足条件的「入魔」怪兽来进行通常召唤。
 	local g=Duel.SelectMatchingCard(tp,c4756629.sumfilter,tp,LOCATION_HAND+LOCATION_MZONE,0,1,1,nil)
 	local tc=g:GetFirst()
 	if tc then
-		-- 执行召唤操作
+		-- 将选择的怪兽进行通常召唤，ignore_count=true 表示不占用通常召唤次数。
 		Duel.Summon(tp,tc,true,nil)
 	end
 end
--- 当此卡被送去墓地时触发的效果处理，注册减少召唤所需解放数的效果
+-- ③效果处理：这张卡被送去墓地时，若本回合未适用过该效果，则给己方设置“入魔怪兽召唤所需解放减少1只”的持续效果，并记录标记防止重复处理。
 function c4756629.decop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 检查是否已注册过该效果（防止重复注册）
+	-- 检查己方是否已有③效果适用过的标记（4756630），若有则不再重复处理。
 	if Duel.GetFlagEffect(tp,4756630)~=0 then return end
-	-- 注册一个使「入魔」怪兽召唤时减少1点召唤所需解放数的效果
+	-- ③：这张卡被送去墓地的回合，「入魔」怪兽召唤的场合需要的解放可以减少1只。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_DECREASE_TRIBUTE)
@@ -124,9 +124,9 @@ function c4756629.decop(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetCountLimit(1)
 	e1:SetValue(0x1)
 	e1:SetReset(RESET_PHASE+PHASE_END)
-	-- 将效果e1注册到玩家tp的场上
+	-- 将减少祭品的效果注册到玩家场上，使其在该回合生效。
 	Duel.RegisterEffect(e1,tp)
-	-- 注册一个标记效果，用于触发条件判断
+	-- ③：这张卡被送去墓地的回合，「入魔」怪兽召唤的场合需要的解放可以减少1只。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD)
 	e2:SetCode(EFFECT_FLAG_EFFECT+4756631)
@@ -135,15 +135,15 @@ function c4756629.decop(e,tp,eg,ep,ev,re,r,rp)
 	e2:SetTargetRange(1,0)
 	e2:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END)
 	c:RegisterEffect(e2)
-	-- 为玩家tp注册标识效果，防止重复触发
+	-- 给玩家注册本回合③效果已适用过的标记（4756630），防止同回合重复触发。
 	Duel.RegisterFlagEffect(tp,4756630,RESET_PHASE+PHASE_END,0,1)
 end
--- 判断是否满足减少召唤所需解放数的触发条件
+-- ③效果中减少祭品效果的条件：己方存在标记4756631（即满足“这张卡被送去墓地的回合”的条件）。
 function c4756629.econ(e)
-	-- 检查玩家是否已注册过标记效果4756631
+	-- 检查玩家是否存在标记4756631，确认本回合满足条件。
 	return Duel.GetFlagEffect(e:GetHandlerPlayer(),4756631)~=0
 end
--- 过滤函数，用于判断是否为「入魔」怪兽
+-- 减少祭品效果适用的对象：卡名含有「入魔」的怪兽。
 function c4756629.rfilter(e,c)
 	return c:IsSetCard(0xa)
 end

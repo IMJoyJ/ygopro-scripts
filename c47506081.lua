@@ -3,7 +3,7 @@
 -- 3星怪兽×2
 -- 这张卡战斗破坏对方怪兽送去墓地时，可以把这张卡1个超量素材取除，给与对方基本分1000分伤害。
 function c47506081.initial_effect(c)
-	-- 为卡片添加等级为3、需要2只怪兽进行XYZ召唤的手续
+	-- 为这张卡添加XYZ召唤手续：可用任意2只3星怪兽叠放作为超量素材（不限制种族/属性）。
 	aux.AddXyzProcedure(c,nil,3,2)
 	c:EnableReviveLimit()
 	-- 这张卡战斗破坏对方怪兽送去墓地时，可以把这张卡1个超量素材取除，给与对方基本分1000分伤害。
@@ -18,31 +18,31 @@ function c47506081.initial_effect(c)
 	e1:SetOperation(c47506081.damop)
 	c:RegisterEffect(e1)
 end
--- 判断此卡是否参与了战斗且战斗破坏的怪兽在墓地且为怪兽类型
+-- 伤害效果的诱发条件：此卡仍与本次战斗关联（未离场或状态未重置），且被战斗破坏的对方怪兽被送去墓地，并且该怪兽是怪兽卡。
 function c47506081.damcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local bc=c:GetBattleTarget()
 	return c:IsRelateToBattle() and bc:IsLocation(LOCATION_GRAVE) and bc:IsType(TYPE_MONSTER)
 end
--- 检查并移除1个超量素材作为发动代价
+-- 发动效果的代价：检查自己能否从这张卡上取除1个超量素材作为代价；可以时实际取除1个超量素材。
 function c47506081.damcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():CheckRemoveOverlayCard(tp,1,REASON_COST) end
 	e:GetHandler():RemoveOverlayCard(tp,1,1,REASON_COST)
 end
--- 设置连锁的目标玩家为对方，目标参数为1000点伤害
+-- 效果发动时的目标设定：无条件可发动；将对象玩家设为对方，伤害值设为1000，并登记效果处理时将造成1000点伤害的操作信息。
 function c47506081.damtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置连锁操作信息的目标玩家为对方
+	-- 将当前连锁的对象玩家设置为对方玩家（1-tp），即伤害的承受者。
 	Duel.SetTargetPlayer(1-tp)
-	-- 设置连锁操作信息的目标参数为1000点伤害
+	-- 将当前连锁的对象参数设置为1000，即要造成的伤害数值。
 	Duel.SetTargetParam(1000)
-	-- 设置当前处理的连锁的操作信息为伤害效果，影响对方玩家，伤害值为1000
+	-- 登记当前连锁的操作信息：效果处理时会给予对方玩家1000点伤害（伤害分类为CATEGORY_DAMAGE）。
 	Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,1-tp,1000)
 end
--- 处理效果时获取目标玩家和伤害值并造成伤害
+-- 效果处理阶段：从连锁信息中取出对象玩家和伤害数值，实际给对方造成伤害。
 function c47506081.damop(e,tp,eg,ep,ev,re,r,rp)
-	-- 从当前连锁中获取目标玩家和伤害值
+	-- 获取当前连锁中记录的对象玩家和伤害参数，分别赋值给p和d。
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 对目标玩家造成指定数值的伤害，伤害原因为效果
+	-- 以效果原因（REASON_EFFECT）对玩家p造成d点伤害。
 	Duel.Damage(p,d,REASON_EFFECT)
 end

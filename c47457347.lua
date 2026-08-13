@@ -13,51 +13,51 @@ function c47457347.initial_effect(c)
 	e1:SetOperation(c47457347.activate)
 	c:RegisterEffect(e1)
 end
--- 过滤函数，用于判断除外区的怪兽是否满足被特殊召唤的条件
+-- 过滤函数：判定对象必须表侧表示、属于「召唤兽」字段，且能够被特殊召唤为表侧守备表示。
 function c47457347.filter(c,e,tp)
 	return c:IsFaceup() and c:IsSetCard(0xf4) and c:IsCanBeSpecialSummoned(e,0,tp,false,false,POS_FACEUP_DEFENSE)
 end
--- 处理效果的目标选择阶段，判断目标是否合法
+-- 目标合法性检查：对指定对象确认位于除外区、控制者为发动者且通过filter判定；发动条件为场上主要怪兽区有空位且存在至少1只满足条件的除外区的「召唤兽」怪兽。
 function c47457347.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_REMOVED) and chkc:IsControler(tp) and c47457347.filter(chkc,e,tp) end
-	-- 检查玩家场上是否有足够的怪兽区域来特殊召唤怪兽
+	-- 发动条件检查：主要怪兽区必须存在至少1个空位。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查玩家除外区是否存在满足条件的「召唤兽」怪兽
+		-- 发动条件检查：存在至少1只满足条件且可以成为对象的除外的自己的「召唤兽」怪兽。
 		and Duel.IsExistingTarget(c47457347.filter,tp,LOCATION_REMOVED,0,1,nil,e,tp) end
-	-- 获取玩家场上可用的怪兽区域数量
+	-- 取得发动者可用的主要怪兽区空格数。
 	local ft=Duel.GetLocationCount(tp,LOCATION_MZONE)
 	-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中。禁止双方同时特殊召唤2只以上怪兽
 	if Duel.IsPlayerAffectedByEffect(tp,59822133) then ft=1 end
-	-- 获取玩家除外区中所有满足条件的「召唤兽」怪兽组成的卡片组
+	-- 获取除外区所有满足条件的「召唤兽」怪兽，并进一步筛选出可成为效果对象的卡。
 	local g=Duel.GetMatchingGroup(c47457347.filter,tp,LOCATION_REMOVED,0,nil,e,tp):Filter(Card.IsCanBeEffectTarget,nil,e)
-	-- 向玩家发送提示信息，提示选择要特殊召唤的卡
+	-- 弹出选择提示，要求玩家选择要特殊召唤的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 从符合条件的卡片组中选择满足条件（同名卡最多1张）的子集
+	-- 让玩家从候选卡中任意选择1至空格数的卡片，且所选卡名互不相同（同名卡最多1张）。
 	local tg=g:SelectSubGroup(tp,aux.dncheck,false,1,ft)
-	-- 设置当前效果的目标卡片为所选的卡片组
+	-- 将选择的卡片设为效果对象。
 	Duel.SetTargetCard(tg)
-	-- 设置操作信息，表示本次连锁将处理特殊召唤效果
+	-- 登记特殊召唤的操作信息：对象为所选择的卡，数量为选择张数，以便后续处理和相关效果联动。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,tg,tg:GetCount(),0,0)
 end
--- 效果发动时的处理函数，用于执行特殊召唤操作
+-- 效果处理：根据可用怪兽区空格数与仍与效果关联的对象卡数量，将对象全部或部分表侧守备特殊召唤；若可特招数量不足，则把多余的对象卡送去墓地。
 function c47457347.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取玩家场上可用的怪兽区域数量
+	-- 取得发动者当前可用主要怪兽区空格数。
 	local ft=Duel.GetLocationCount(tp,LOCATION_MZONE)
-	-- 从当前连锁中获取已设定的目标卡片，并筛选出与该效果相关的卡片
+	-- 取得连锁上登记的对象卡，并筛选出与本次效果仍有关联的卡。
 	local g=Duel.GetChainInfo(0,CHAININFO_TARGET_CARDS):Filter(Card.IsRelateToEffect,nil,e)
 	-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中。禁止双方同时特殊召唤2只以上怪兽
 	if ft<=0 or g:GetCount()==0 or (g:GetCount()>1 and Duel.IsPlayerAffectedByEffect(tp,59822133)) then return end
 	if g:GetCount()<=ft then
-		-- 将满足条件的卡片组以守备表示的形式特殊召唤到场上
+		-- 将对象怪兽以表侧守备表示特殊召唤到发动者场上。
 		Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP_DEFENSE)
 	else
-		-- 向玩家发送提示信息，提示选择要特殊召唤的卡
+		-- 弹出选择提示，要求玩家选择要特殊召唤的卡。
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
 		local sg=g:Select(tp,ft,ft,nil)
-		-- 将选定的卡片以守备表示的形式特殊召唤到场上
+		-- 将选出的卡片以表侧守备表示特殊召唤到发动者场上。
 		Duel.SpecialSummon(sg,0,tp,tp,false,false,POS_FACEUP_DEFENSE)
 		g:Sub(sg)
-		-- 将未被特殊召唤的剩余卡片送入墓地
+		-- 因空格不足而未能特殊召唤的剩余对象卡，按规则送去墓地。
 		Duel.SendtoGrave(g,REASON_RULE)
 	end
 end

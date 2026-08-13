@@ -3,7 +3,7 @@
 -- 这张卡在墓地或者场上表侧表示存在的场合，当作通常怪兽使用。场上表侧表示存在的这张卡可以作当成通常召唤使用的再度召唤，这张卡变成当作效果怪兽使用并得到以下效果。
 -- ●只要这张卡在场上表侧表示存在，这张卡当作调整使用。
 function c47459126.initial_effect(c)
-	-- 为卡片添加二重怪兽属性
+	-- 为这张卡添加二重怪兽属性，使其成为二重怪兽，在场上或墓地当作通常怪兽使用，并支持通过再度召唤变为效果怪兽。
 	aux.EnableDualAttribute(c)
 	-- ●只要这张卡在场上表侧表示存在，这张卡当作调整使用。
 	local e1=Effect.CreateEffect(c)
@@ -11,7 +11,7 @@ function c47459126.initial_effect(c)
 	e1:SetCode(EFFECT_ADD_TYPE)
 	e1:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
 	e1:SetRange(LOCATION_MZONE)
-	-- 设置效果的发动条件为卡片处于再度召唤状态
+	-- 设置该效果的发动条件为二重怪兽处于再度召唤后的效果怪兽状态，即只有这张卡再度召唤成功后才适用当作调整的效果。
 	e1:SetCondition(aux.IsDualState)
 	e1:SetValue(TYPE_TUNER)
 	c:RegisterEffect(e1)
