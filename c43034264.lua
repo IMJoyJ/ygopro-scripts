@@ -15,7 +15,7 @@ function c43034264.initial_effect(c)
 	e2:SetRange(LOCATION_FZONE)
 	e2:SetCode(EFFECT_EXTRA_SUMMON_COUNT)
 	e2:SetTargetRange(LOCATION_HAND+LOCATION_MZONE,0)
-	-- 设置效果目标为满足条件的「机壳」怪兽
+	-- 设置该额外召唤次数的适用对象：只有卡名含有「机壳」字段的怪兽（0xaa）才能享受此额外召唤机会。
 	e2:SetTarget(aux.TargetBoolFunction(Card.IsSetCard,0xaa))
 	c:RegisterEffect(e2)
 	-- ②：只要这张卡在场地区域存在，「机壳」怪兽的召唤不会被无效化。
@@ -24,7 +24,7 @@ function c43034264.initial_effect(c)
 	e3:SetCode(EFFECT_CANNOT_DISABLE_SUMMON)
 	e3:SetRange(LOCATION_FZONE)
 	e3:SetProperty(EFFECT_FLAG_IGNORE_RANGE+EFFECT_FLAG_SET_AVAILABLE)
-	-- 设置效果目标为满足条件的「机壳」怪兽
+	-- 设置该召唤无效化免疫效果的适用对象：只有「机壳」字段的怪兽（0xaa）的召唤不会被无效化。
 	e3:SetTarget(aux.TargetBoolFunction(Card.IsSetCard,0xaa))
 	c:RegisterEffect(e3)
 end

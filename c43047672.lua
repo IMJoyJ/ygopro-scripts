@@ -5,7 +5,7 @@
 -- ②：1回合1次，把这张卡1个超量素材取除才能发动。除外的自己的「急袭猛禽」怪兽全部回到墓地。
 -- ③：这张卡的攻击破坏怪兽时，把自己墓地1只「急袭猛禽」超量怪兽除外才能发动。这张卡可以继续攻击。这个效果1回合可以使用最多2次。
 function c43047672.initial_effect(c)
-	-- 添加XYZ召唤手续，使用等级为12、数量为3的怪兽进行XYZ召唤
+	-- 为这张卡添加超量召唤规则：以3只等级12的怪兽作为超量素材进行超量召唤（素材无特殊限制）。
 	aux.AddXyzProcedure(c,nil,12,3)
 	c:EnableReviveLimit()
 	-- ①：有「急袭猛禽」超量怪兽在作为超量素材中的这张卡不受其他卡的效果影响。
@@ -39,68 +39,68 @@ function c43047672.initial_effect(c)
 	e3:SetOperation(c43047672.atop)
 	c:RegisterEffect(e3)
 end
--- 过滤函数，用于判断怪兽是否为「急袭猛禽」超量怪兽
+-- 筛选卡片是否满足“急袭猛禽”字段且为超量怪兽，用于判断超量素材中是否存在此类卡片。
 function c43047672.imfilter(c)
 	return c:IsSetCard(0xba) and c:IsType(TYPE_XYZ)
 end
--- 条件函数，判断是否有「急袭猛禽」超量怪兽作为超量素材
+-- 免疫效果的条件：这张卡的超量素材中存在至少1只「急袭猛禽」超量怪兽。
 function c43047672.imcon(e)
 	return e:GetHandler():GetOverlayGroup():IsExists(c43047672.imfilter,1,nil)
 end
--- 效果过滤函数，使该卡不受对方效果影响
+-- 判定要被免疫的效果是否由其他卡发动：若效果所有者不是本卡，则本卡不受该效果影响。
 function c43047672.efilter(e,te)
 	return te:GetOwner()~=e:GetOwner()
 end
--- 效果发动时的费用支付，将1个超量素材除外
+-- ②的发动代价——取除这张卡的1个超量素材：先检查能否取除，再实际取除1个素材。
 function c43047672.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():CheckRemoveOverlayCard(tp,1,REASON_COST) end
 	e:GetHandler():RemoveOverlayCard(tp,1,1,REASON_COST)
 end
--- 过滤函数，用于判断除外区的怪兽是否为「急袭猛禽」怪兽且为怪兽卡
+-- 筛选自己除外区中表侧表示且属于「急袭猛禽」字段的怪兽，用于②效果送回墓地。
 function c43047672.filter(c)
 	return c:IsFaceup() and c:IsSetCard(0xba) and c:IsType(TYPE_MONSTER)
 end
--- 设置效果发动时的操作信息，确定将要送去墓地的卡
+-- ②的发动目标处理：确认自己除外区存在符合条件的「急袭猛禽」怪兽；获取所有此类卡并设置操作信息，声明效果处理时将其送入墓地。
 function c43047672.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否满足发动条件，即除外区是否存在至少1张符合条件的卡
+	-- 效果发动条件检查：确认自己除外区存在至少1张符合条件的「急袭猛禽」怪兽。
 	if chk==0 then return Duel.IsExistingMatchingCard(c43047672.filter,tp,LOCATION_REMOVED,0,1,nil) end
-	-- 获取满足条件的除外区怪兽组
+	-- 获取自己除外区所有符合条件的「急袭猛禽」怪兽，作为操作信息的目标组。
 	local g=Duel.GetMatchingGroup(c43047672.filter,tp,LOCATION_REMOVED,0,nil)
-	-- 设置连锁操作信息，指定将要处理的卡为除外区的怪兽
+	-- 设置操作信息：声明本效果将把这些卡片送去墓地，并记录预计处理数量，供连锁判定等使用。
 	Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,g,g:GetCount(),0,0)
 end
--- 效果发动时的操作，将符合条件的除外区怪兽送去墓地
+-- ②效果处理：重新获取自己除外区所有符合条件的「急袭猛禽」怪兽，若存在则全部送往墓地，原因标记为效果+回归。
 function c43047672.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取满足条件的除外区怪兽组
+	-- 效果处理时重新取得自己除外区所有符合条件的「急袭猛禽」怪兽，确保使用最新状态。
 	local g=Duel.GetMatchingGroup(c43047672.filter,tp,LOCATION_REMOVED,0,nil)
 	if g:GetCount()>0 then
-		-- 将符合条件的怪兽以效果和回到墓地的原因送去墓地
+		-- 将取得的所有符合条件的「急袭猛禽」怪兽送入墓地，原因包含效果和回归。
 		Duel.SendtoGrave(g,REASON_EFFECT+REASON_RETURN)
 	end
 end
--- 触发效果的条件函数，判断是否为攻击怪兽并满足连锁攻击条件
+-- ③的发动条件：本卡作为攻击怪兽与对方怪兽战斗并将其破坏，且本卡能够继续发动追加攻击。
 function c43047672.atcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 判断是否为攻击怪兽并满足连锁攻击条件
+	-- 发动条件判断：攻击者是本卡、本卡在战斗破坏对方怪兽的事件中满足条件、且本卡当前可继续攻击。
 	return Duel.GetAttacker()==c and aux.bdocon(e,tp,eg,ep,ev,re,r,rp) and c:IsChainAttackable(0)
 end
--- 过滤函数，用于判断墓地的怪兽是否为「急袭猛禽」超量怪兽且可作为费用
+-- 筛选墓地中属于「急袭猛禽」字段的超量怪兽且能够作为除外代价的卡片。
 function c43047672.atfilter(c)
 	return c:IsSetCard(0xba) and c:IsType(TYPE_XYZ) and c:IsAbleToRemoveAsCost()
 end
--- 效果发动时的费用支付，选择1只墓地的「急袭猛禽」超量怪兽除外
+-- ③的发动代价——从自己墓地选择1只符合条件的「急袭猛禽」超量怪兽除外：先确认存在可选卡，再提示选择并表侧除外。
 function c43047672.atcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否满足发动条件，即墓地是否存在至少1张符合条件的卡
+	-- 代价检查：确认自己墓地存在至少1张符合条件的「急袭猛禽」超量怪兽。
 	if chk==0 then return Duel.IsExistingMatchingCard(c43047672.atfilter,tp,LOCATION_GRAVE,0,1,nil) end
-	-- 提示玩家选择要除外的卡
+	-- 向玩家显示“请选择要除外的卡”的选择提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
-	-- 选择满足条件的1只怪兽除外
+	-- 玩家从自己墓地选择1张符合条件的「急袭猛禽」超量怪兽作为代价。
 	local g=Duel.SelectMatchingCard(tp,c43047672.atfilter,tp,LOCATION_GRAVE,0,1,1,nil)
-	-- 将选中的怪兽以正面表示的形式除外
+	-- 将选择的卡片以表侧表示除外，作为③效果的发动代价。
 	Duel.Remove(g,POS_FACEUP,REASON_COST)
 end
--- 效果发动时的操作，使攻击卡可以再进行1次攻击
+-- ③效果处理：让这张卡获得一次追加攻击机会。
 function c43047672.atop(e,tp,eg,ep,ev,re,r,rp)
-	-- 使攻击卡可以再进行1次攻击
+	-- 使当前进行攻击的怪兽能够继续进行下一次攻击。
 	Duel.ChainAttack()
 end

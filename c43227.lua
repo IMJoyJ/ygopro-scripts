@@ -5,12 +5,12 @@
 -- ①：以自己墓地1张「融合」魔法卡为对象才能发动。那张卡回到卡组最下面。那之后，自己抽1张。
 -- ②：其他卡的效果发动时，从自己墓地把1张「融合」魔法卡除外，以场上1张卡为对象才能发动。那张卡破坏。
 local s,id,o=GetID()
--- 初始化效果函数，设置融合召唤条件并注册两个效果
+-- 初始化函数：为该卡添加融合召唤限制与融合召唤手续（额外卡组特殊召唤的怪兽＋手卡的怪兽），并注册①效果（回收融合魔法并抽卡）和②效果（除外融合魔法并破坏场上1张卡）。
 function s.initial_effect(c)
 	c:EnableReviveLimit()
-	-- 添加融合召唤手续，使用从额外卡组特殊召唤且在怪兽区的怪兽作为融合素材，另一个素材为手卡的怪兽
+	-- 为该卡添加融合召唤手续：以“从额外卡组特殊召唤的怪兽”1只和“手卡的怪兽”1只为融合素材。
 	aux.AddFusionProcFun2(c,s.matfilter,aux.FilterBoolFunction(Card.IsLocation,LOCATION_HAND),true)
-	-- 效果①：回收并抽卡
+	-- ①：以自己墓地1张「融合」魔法卡为对象才能发动。那张卡回到卡组最下面。那之后，自己抽1张。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(id,0))  --"回收并抽卡"
 	e1:SetCategory(CATEGORY_TODECK+CATEGORY_DRAW)
@@ -21,7 +21,7 @@ function s.initial_effect(c)
 	e1:SetTarget(s.drtg)
 	e1:SetOperation(s.drop)
 	c:RegisterEffect(e1)
-	-- 效果②：除外并破坏
+	-- ②：其他卡的效果发动时，从自己墓地把1张「融合」魔法卡除外，以场上1张卡为对象才能发动。那张卡破坏。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(id,1))  --"除外并破坏"
 	e2:SetCategory(CATEGORY_DESTROY)
@@ -36,78 +36,78 @@ function s.initial_effect(c)
 	e2:SetOperation(s.desop)
 	c:RegisterEffect(e2)
 end
--- 融合素材过滤器，筛选从额外卡组特殊召唤且在怪兽区的怪兽
+-- 融合素材过滤函数：素材必须是从额外卡组特殊召唤、且当前位于怪兽区域的怪兽。
 function s.matfilter(c)
 	return c:IsSummonLocation(LOCATION_EXTRA) and c:IsLocation(LOCATION_MZONE)
 end
--- 过滤器，筛选可返回卡组的「融合」魔法卡
+-- ①效果的过滤函数：自己墓地的卡名包含「融合」（0x46）的魔法卡，且能够返回卡组。
 function s.filter(c)
 	return c:IsSetCard(0x46) and c:IsType(TYPE_SPELL) and c:IsAbleToDeck()
 end
--- 效果①的发动条件判断函数，检查是否可以抽卡并存在目标卡
+-- ①效果的目标函数：检查对象是否为自己墓地符合条件的「融合」魔法卡；发动判定时需满足自己可抽1张卡且墓地存在可选目标。
 function s.drtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and s.filter(chkc) end
-	-- 检查玩家是否可以抽卡
+	-- 发动条件检查：控制者是否能够抽1张卡。
 	if chk==0 then return Duel.IsPlayerCanDraw(tp,1)
-		-- 检查玩家墓地是否存在满足条件的「融合」魔法卡
+		-- 发动条件检查：自己墓地是否存在1张符合条件的「融合」魔法卡可以作为对象。
 		and Duel.IsExistingTarget(s.filter,tp,LOCATION_GRAVE,0,1,nil) end
-	-- 提示玩家选择要返回卡组的卡
+	-- 发送选择提示，让玩家选择要返回卡组的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TODECK)  --"请选择要返回卡组的卡"
-	-- 选择目标卡
+	-- 从自己墓地选择1张符合条件的「融合」魔法卡作为效果对象。
 	local g=Duel.SelectTarget(tp,s.filter,tp,LOCATION_GRAVE,0,1,1,nil)
-	-- 设置操作信息，指定将卡送回卡组
+	-- 登记操作信息：将选中的对象卡返回卡组。
 	Duel.SetOperationInfo(0,CATEGORY_TODECK,g,1,0,0)
-	-- 设置操作信息，指定玩家抽卡
+	-- 登记操作信息：自己将抽1张卡。
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,1)
 end
--- 效果①的处理函数，将目标卡送回卡组最底端并抽一张卡
+-- ①效果处理：将对象卡送回持有者卡组最下面，那之后自己抽1张卡。
 function s.drop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取效果的目标卡
+	-- 获取①效果选择的对象卡。
 	local tc=Duel.GetFirstTarget()
-	-- 判断目标卡是否有效且已送回卡组
+	-- 确认对象卡仍与效果关联，并且成功将其送回卡组最下面后，才继续抽卡处理。
 	if tc:IsRelateToEffect(e) and Duel.SendtoDeck(tc,nil,SEQ_DECKBOTTOM,REASON_EFFECT)>0
 		and tc:IsLocation(LOCATION_DECK) then
-		-- 中断当前效果处理
+		-- 中断当前效果处理，使“回卡组”和“抽卡”视为不同时处理，防止错失时点。
 		Duel.BreakEffect()
-		-- 玩家抽一张卡
+		-- 让控制者抽1张卡。
 		Duel.Draw(tp,1,REASON_EFFECT)
 	end
 end
--- 效果②的发动条件，判断是否为其他卡的效果发动
+-- ②效果发动条件：连锁中其他卡的效果发动，且发动效果的卡不是本卡自身。
 function s.condition(e,tp,eg,ep,ev,re,r,rp)
 	return re:GetHandler()~=e:GetHandler()
 end
--- 除外费用过滤器，筛选可作为除外费用的「融合」魔法卡
+-- ②效果代价的过滤函数：墓地中卡名包含「融合」（0x46）的魔法卡，且能够除外作为代价。
 function s.cfilter(c)
 	return c:IsSetCard(0x46) and c:IsType(TYPE_SPELL) and c:IsAbleToRemoveAsCost()
 end
--- 效果②的发动费用处理函数，从墓地选择一张「融合」魔法卡除外
+-- ②效果发动代价：从自己墓地除外1张符合条件的「融合」魔法卡。
 function s.cost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查玩家墓地是否存在满足条件的「融合」魔法卡
+	-- 代价检查：自己墓地是否存在1张可以除外的「融合」魔法卡。
 	if chk==0 then return Duel.IsExistingMatchingCard(s.cfilter,tp,LOCATION_GRAVE,0,1,nil) end
-	-- 提示玩家选择要除外的卡
+	-- 发送选择提示，让玩家选择要除外的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
-	-- 选择除外的卡
+	-- 选择自己墓地1张符合条件的「融合」魔法卡作为除外代价。
 	local g=Duel.SelectMatchingCard(tp,s.cfilter,tp,LOCATION_GRAVE,0,1,1,nil)
-	-- 将选中的卡除外
+	-- 将选择的卡表侧除外，作为发动代价。
 	Duel.Remove(g,POS_FACEUP,REASON_COST)
 end
--- 效果②的目标选择函数，选择场上一张卡作为破坏对象
+-- ②效果的目标函数：对象必须是场上1张卡；发动判定时需确认场上存在可选对象。
 function s.destg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsOnField() end
-	-- 检查场上是否存在满足条件的卡
+	-- 发动条件检查：场上是否存在1张可以成为对象的卡。
 	if chk==0 then return Duel.IsExistingTarget(nil,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,nil) end
-	-- 提示玩家选择要破坏的卡
+	-- 发送选择提示，让玩家选择要破坏的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 选择破坏对象
+	-- 选择场上1张卡作为破坏对象。
 	local g=Duel.SelectTarget(tp,nil,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,1,nil)
-	-- 设置操作信息，指定破坏目标卡
+	-- 登记操作信息：将对象卡破坏。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,1,0,0)
 end
--- 效果②的处理函数，破坏目标卡
+-- ②效果处理：将选择的对象卡破坏。
 function s.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取效果的目标卡
+	-- 获取②效果选择的对象卡。
 	local tc=Duel.GetFirstTarget()
-	-- 判断目标卡是否有效并进行破坏
+	-- 若对象卡仍与效果关联，则将其破坏。
 	if tc:IsRelateToEffect(e) then Duel.Destroy(tc,REASON_EFFECT) end
 end
