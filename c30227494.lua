@@ -4,7 +4,7 @@
 -- ①：自己场上有「念力循轨人」以外的3星怪兽存在的场合，这张卡可以从手卡守备表示特殊召唤。
 -- ②：这张卡为同调素材的同调怪兽的攻击力上升600。
 function c30227494.initial_effect(c)
-	-- ①：自己场上有「念力循轨人」以外的3星怪兽存在的场合，这张卡可以从手卡守备表示特殊召唤。
+	-- 这个卡名的①的方法的特殊召唤1回合只能有1次。①：自己场上有「念力循轨人」以外的3星怪兽存在的场合，这张卡可以从手卡守备表示特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetProperty(EFFECT_FLAG_UNCOPYABLE+EFFECT_FLAG_SPSUM_PARAM)
@@ -23,28 +23,28 @@ function c30227494.initial_effect(c)
 	e2:SetOperation(c30227494.atkop)
 	c:RegisterEffect(e2)
 end
--- 过滤函数，用于判断场上是否存在满足条件的3星怪兽（不包括念力循轨人）
+-- 过滤条件：自己场上的表侧表示、等级3、且卡名不是「念力循轨人」的怪兽，用于判定①特殊召唤所需的存在条件。
 function c30227494.sprfilter(c)
 	return c:IsFaceup() and c:IsLevel(3) and not c:IsCode(30227494)
 end
--- 判断特殊召唤条件是否满足：场上存在3星怪兽且有空场
+-- ①特殊召唤的规则条件：仅在自身处于手牌且没有被其他效果无效时，若自己主怪兽区有空位，并且自己场上有表侧表示、等级3、卡名不是「念力循轨人」的怪兽存在，则允许从手卡进行规则特殊召唤；c==nil时视为规则召唤条件询问。
 function c30227494.sprcon(e,c)
 	if c==nil then return true end
 	local tp=c:GetControler()
-	-- 检查玩家是否有可用的怪兽区域
+	-- 检查自己场上是否有可用的主要怪兽区空位，以确定能否把这张卡从手卡特殊召唤到场上。
 	return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查场上是否存在满足条件的3星怪兽
+		-- 检查自己场上是否存在至少1张满足sprfilter的怪兽（表侧表示、等级3、卡名不是「念力循轨人」），满足①特殊召唤的条件。
 		and Duel.IsExistingMatchingCard(c30227494.sprfilter,tp,LOCATION_MZONE,0,1,nil)
 end
--- 判断是否因同调召唤而成为素材
+-- 诱发条件：这张卡被用作同调素材时（原因判定为REASON_SYNCHRO）触发②效果。
 function c30227494.atkcon(e,tp,eg,ep,ev,re,r,rp)
 	return r==REASON_SYNCHRO
 end
--- 将同调怪兽的攻击力上升600
+-- 效果处理：取得这张卡作为素材后同调召唤出的那只怪兽，给它赋予攻击力上升600的永续效果；该效果在该怪兽离场、被送去额外卡组/手卡/墓地等标准重置时机后消失。
 function c30227494.atkop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local rc=c:GetReasonCard()
-	-- 为同调怪兽增加攻击力效果
+	-- ②：这张卡为同调素材的同调怪兽的攻击力上升600。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_UPDATE_ATTACK)

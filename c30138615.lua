@@ -7,10 +7,10 @@
 -- ③：这张卡和怪兽进行战斗的场合，那2只不会被那次战斗破坏。
 -- ④：对方怪兽不能向其他怪兽攻击。
 local s,id,o=GetID()
--- 初始化卡片效果，启用融合召唤限制并添加融合召唤手续
+-- 为这张卡添加苏生限制和融合召唤手续，并注册全部效果：①在特殊召唤成功或战斗阶段结束时可将对方1只怪兽装备给自己；②攻击力上升效果装备的怪兽攻击力；③与怪兽战斗时双方不被战破；④对方怪兽只能攻击这张卡。
 function s.initial_effect(c)
 	c:EnableReviveLimit()
-	-- 添加融合召唤手续，使用2个满足条件的怪兽作为融合素材
+	-- 为这张卡添加融合召唤手续：用2只满足s.ffilter条件的怪兽（种族属于恶魔族/幻想魔族/魔法师族且种族互不相同）作为融合素材。
 	aux.AddFusionProcFunRep(c,s.ffilter,2,true)
 	-- ①：这张卡特殊召唤的场合或者这张卡进行战斗的战斗阶段结束时才能发动。对方场上1只怪兽当作装备魔法卡使用给这张卡装备。
 	local e1=Effect.CreateEffect(c)
@@ -55,54 +55,54 @@ function s.initial_effect(c)
 	e5:SetValue(s.atlimit)
 	c:RegisterEffect(e5)
 end
--- 判断是否可以装备怪兽，始终返回true
+-- 辅助判断函数：任何怪兽都可以被本卡当作装备卡使用（恒返回true）；实际进一步的筛选由s.eqfilter完成。
 function s.can_equip_monster(c)
 	return true
 end
--- 判断是否满足装备条件，当此卡参与过战斗时满足条件
+-- 战斗阶段结束时装备效果的发动条件：这张卡本回合进行过战斗（存在战斗过的怪兽）。
 function s.eqcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():GetBattledGroupCount()>0
 end
--- 融合召唤过滤函数，筛选种族为幻想魔族·魔法师族·恶魔族且不与已选种族重复的怪兽
+-- 融合素材筛选：怪兽必须是恶魔族/幻想魔族/魔法师族之一，且与已选素材种族不同（保证种族不同）。
 function s.ffilter(c,fc,sub,mg,sg)
 	return c:IsRace(RACE_ILLUSION+RACE_SPELLCASTER+RACE_FIEND) and (not sg or not sg:IsExists(Card.IsRace,1,c,c:GetRace()))
 end
--- 装备过滤函数，筛选可被控制并满足唯一性条件的怪兽
+-- 装备筛选：对方场上能变更控制权且（里侧表示可不检查限制，或不是禁止卡且不违反同名卡唯一限制）的怪兽可作为装备对象。
 function s.eqfilter(c,tp)
 	return c:IsAbleToChangeControler() and (c:IsFacedown() or not c:IsForbidden() and c:CheckUniqueOnField(tp))
 end
--- 装备效果的发动条件判断，检查是否有满足条件的怪兽和足够的装备区域
+-- 定义①效果的发动目标函数：进行发动合法性与后续处理信息的设定（具体检查见下）。
 function s.eqtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
-	-- 检查是否有满足条件的对方怪兽
+	-- 发动时（chk==0）检查对方场上是否存在至少1只满足s.eqfilter条件的怪兽。
 	if chk==0 then return Duel.IsExistingMatchingCard(s.eqfilter,tp,0,LOCATION_MZONE,1,nil,tp)
-		-- 检查是否有足够的装备区域
+		-- 并且自己魔陷区存在可用空位，以满足将选择的怪兽作为装备卡放置。
 		and Duel.GetLocationCount(tp,LOCATION_SZONE)>0 end
-	-- 设置连锁操作信息，提示将要装备一张对方怪兽
+	-- 设置效果处理时的操作信息：宣告将把对方场上1只怪兽当作装备卡使用（CATEGORY_EQUIP）。
 	Duel.SetOperationInfo(0,CATEGORY_EQUIP,nil,1,1-tp,LOCATION_MZONE)
 end
--- 装备效果的处理函数，选择并装备对方怪兽
+-- ①效果的发动处理：确认条件满足后，让玩家选择对方场上1只可装备怪兽，并将其装备给这张卡。
 function s.eqop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 检查装备条件是否满足，包括此卡是否在连锁中、是否表侧表示、是否有装备区域
+	-- 处理时确认这张卡仍与发动连锁相关、表侧表示且自己后场有空位，防止因卡离场或格子不足导致装备失败。
 	if c:IsRelateToChain() and c:IsFaceup() and Duel.GetLocationCount(tp,LOCATION_SZONE)>0 then
-		-- 提示玩家选择要装备的怪兽
+		-- 给操作玩家显示“请选择要装备的卡”的选择提示信息。
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_EQUIP)  --"请选择要装备的卡"
-		-- 选择满足条件的对方怪兽进行装备
+		-- 从对方场上选择1只满足s.eqfilter并可供装备的怪兽。
 		local g=Duel.SelectMatchingCard(tp,s.eqfilter,tp,0,LOCATION_MZONE,1,1,nil,tp)
 		if g:GetCount()>0 then
-			-- 显示被选中的怪兽作为装备对象
+			-- 将被选择的卡展示选中动画，并记录这些卡为效果对象（建立连锁关联）。
 			Duel.HintSelection(g)
 			local sc=g:GetFirst()
 			s.equip_monster(c,tp,sc)
 		end
 	end
 end
--- 装备怪兽的处理函数，执行装备并注册限制效果
+-- 实际装备操作：将选中的怪兽作为装备卡装备给本卡，并为其注册装备对象限制效果和本卡效果装备标记。
 function s.equip_monster(c,tp,tc)
-	-- 执行装备操作，若成功则继续注册限制效果
+	-- 如果存在目标怪兽且Duel.Equip成功将其作为装备卡装备给这张卡（保持原表示形式），则继续设置限制。
 	if tc and Duel.Equip(tp,tc,c,false) then
-		-- 注册装备限制效果，确保装备怪兽只能被此卡装备
+		-- 对方场上1只怪兽当作装备魔法卡使用给这张卡装备。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
@@ -113,11 +113,11 @@ function s.equip_monster(c,tp,tc)
 		tc:RegisterFlagEffect(id,RESET_EVENT+RESETS_STANDARD,0,0)
 	end
 end
--- 装备限制效果的判断函数，确保只能装备给此卡
+-- 装备限制判定：这张装备卡只能装备给e:GetOwner()（即本卡），防止被转移到其他怪兽身上。
 function s.eqlimit(e,c)
 	return e:GetOwner()==c
 end
--- 计算攻击力提升值，累加所有装备怪兽的攻击力
+-- ②效果攻击力上升值的计算：遍历本卡装备区的卡，只累计通过本卡效果装备的、表侧表示且拥有攻击力的怪兽卡（带FlagEffect标记）的攻击力。
 function s.atkval(e,c)
 	local atk=0
 	local g=c:GetEquipGroup()
@@ -130,12 +130,12 @@ function s.atkval(e,c)
 	end
 	return atk
 end
--- 战斗破坏无效效果的目标判定函数，判断是否为自身或战斗对象
+-- ③效果的对象判定：本卡与其战斗对象（BattleTarget）都不会被那次战斗破坏。
 function s.indtg(e,c)
 	local tc=e:GetHandler()
 	return c==tc or c==tc:GetBattleTarget()
 end
--- 攻击限制效果的目标判定函数，限制对方怪兽不能攻击其他怪兽
+-- ④效果的限制：对方怪兽选择攻击对象时，不能选择除这张卡以外的怪兽（即只能攻击这张卡）。
 function s.atlimit(e,c)
 	return c~=e:GetHandler()
 end

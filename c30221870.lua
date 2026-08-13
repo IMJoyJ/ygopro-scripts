@@ -49,57 +49,57 @@ function c30221870.initial_effect(c)
 	e4:SetOperation(c30221870.negop)
 	c:RegisterEffect(e4)
 end
--- 过滤满足条件的场上表侧表示的「机皇」怪兽（包括其怪兽区可用数量检查）
+-- 定义「机皇」怪兽作为COST的筛选条件：需表侧表示、属于「机皇」字段、可作为COST送去墓地，且该卡离场后我方仍有可用的怪兽区域。
 function c30221870.cfilter(c,tp)
-	-- 检查该怪兽是否为表侧表示、是否为「机皇」卡族、是否能作为墓地代价以及其所在区域是否可用
+	-- 筛选条件：表侧表示、属于「机皇」字段、可作为COST送去墓地，且该卡离场后我方存在可用怪兽区。
 	return c:IsFaceup() and c:IsSetCard(0x13) and c:IsAbleToGraveAsCost() and Duel.GetMZoneCount(tp,c)>0
 end
--- 检索满足条件的场上表侧表示的「机皇」怪兽并将其送去墓地作为特殊召唤的代价
+-- ①效果的COST处理：从自己场上选择1只符合条件的表侧表示「机皇」怪兽送去墓地，并确保特殊召唤所需空位。
 function c30221870.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否存在满足条件的场上表侧表示的「机皇」怪兽
+	-- COST合法性检查：确认自己场上是否存在至少1张满足条件的「机皇」怪兽可作为COST。
 	if chk==0 then return Duel.IsExistingMatchingCard(c30221870.cfilter,tp,LOCATION_MZONE,0,1,nil,tp) end
-	-- 向玩家提示选择要送去墓地的卡
+	-- 弹出选择提示，提示玩家选择要送去墓地的卡片。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
-	-- 选择满足条件的场上表侧表示的「机皇」怪兽
+	-- 让玩家从自己场上选择1只符合条件的「机皇」怪兽作为COST。
 	local g=Duel.SelectMatchingCard(tp,c30221870.cfilter,tp,LOCATION_MZONE,0,1,1,nil,tp)
-	-- 将所选怪兽送去墓地作为特殊召唤的代价
+	-- 将选择的卡作为COST送去墓地。
 	Duel.SendtoGrave(g,REASON_COST)
 end
--- 对方回合，把自己场上1只表侧表示的「机皇」怪兽送去墓地才能发动。这张卡从手卡特殊召唤。
+-- ①效果的发动条件：仅在对方回合才能发动。
 function c30221870.spcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断当前回合玩家是否为非自己
+	-- 判断当前回合玩家不是自己，即满足对方回合条件。
 	return Duel.GetTurnPlayer()~=tp
 end
--- ①：对方回合，把自己场上1只表侧表示的「机皇」怪兽送去墓地才能发动。这张卡从手卡特殊召唤。
+-- ①效果的目标设定：确认这张卡能够被特殊召唤，并登记特殊召唤的操作信息。
 function c30221870.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,true,false) end
-	-- 设置特殊召唤的处理信息
+	-- 将本次连锁的操作信息标记为“特殊召唤”这张卡1张，供后续效果检测与响应。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- ①：对方回合，把自己场上1只表侧表示的「机皇」怪兽送去墓地才能发动。这张卡从手卡特殊召唤。
+-- ①效果处理：将这张卡从手卡特殊召唤，并完成特殊召唤手续。
 function c30221870.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 将此卡特殊召唤到场上并完成召唤程序
+	-- 确认这张卡仍与效果关联后，以表侧表示特殊召唤这张卡；若成功则继续完成特殊召唤手续。
 	if c:IsRelateToEffect(e) and Duel.SpecialSummon(c,0,tp,tp,true,false,POS_FACEUP)~=0 then
 		c:CompleteProcedure()
 	end
 end
--- ②：这张卡特殊召唤成功的场合，以对方场上1只怪兽为对象才能发动。这个回合，那只怪兽不能攻击。
+-- ②效果的目标处理：选择对方场上1只表侧表示怪兽作为对象。
 function c30221870.atktg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(1-tp) and chkc:IsFaceup() end
-	-- 检查是否存在对方场上的表侧表示怪兽
+	-- 目标合法性检查：确认对方场上有表侧表示怪兽可以作为对象。
 	if chk==0 then return Duel.IsExistingTarget(Card.IsFaceup,tp,0,LOCATION_MZONE,1,nil) end
-	-- 向玩家提示选择对方场上的表侧表示怪兽
+	-- 弹出选择提示，提示玩家选择表侧表示的怪兽。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
-	-- 选择对方场上的表侧表示怪兽
+	-- 让玩家选择对方场上1只表侧表示怪兽作为效果对象，并登记为当前连锁的对象。
 	Duel.SelectTarget(tp,Card.IsFaceup,tp,0,LOCATION_MZONE,1,1,nil)
 end
--- ②：这张卡特殊召唤成功的场合，以对方场上1只怪兽为对象才能发动。这个回合，那只怪兽不能攻击。
+-- ②效果处理：为对象怪兽赋予“这个回合不能攻击”的永续效果。
 function c30221870.atkop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的目标怪兽
+	-- 取得这个效果选择的对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- ②：这张卡特殊召唤成功的场合，以对方场上1只怪兽为对象才能发动。这个回合，那只怪兽不能攻击。
+		-- 这个回合，那只怪兽不能攻击。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_CANNOT_ATTACK)
@@ -107,38 +107,38 @@ function c30221870.atkop(e,tp,eg,ep,ev,re,r,rp)
 		tc:RegisterEffect(e1)
 	end
 end
--- ③：要让场上的卡破坏的效果发动时，把这张卡解放才能发动。那个发动无效并破坏。
+-- ③效果的发动条件判断：排除此卡已战斗破坏、目标连锁不可被无效，以及被连锁效果属于魔法·陷阱卡的发动且带无效分类的情况。
 function c30221870.negcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断此卡是否处于战斗破坏状态或是否可以被无效
+	-- 如果这张卡已确定被战斗破坏，或当前连锁不能被无效，则③效果不能发动。
 	if e:GetHandler():IsStatus(STATUS_BATTLE_DESTROYED) or not Duel.IsChainNegatable(ev) then return false end
 	if re:IsHasCategory(CATEGORY_NEGATE)
-		-- 排除连锁中为永续魔法发动的无效效果
+		-- 如果被连锁效果的前一个连锁是魔法·陷阱卡的发动，且被连锁效果本身带无效分类，则③效果不能发动。
 		and Duel.GetChainInfo(ev-1,CHAININFO_TRIGGERING_EFFECT):IsHasType(EFFECT_TYPE_ACTIVATE) then return false end
-	-- 获取连锁中涉及破坏的处理信息
+	-- 获取该连锁中“破坏”相关的操作信息，用于确认该效果包含破坏场上卡片的操作。
 	local ex,tg,tc=Duel.GetOperationInfo(ev,CATEGORY_DESTROY)
 	return ex and tg~=nil and tc+tg:FilterCount(Card.IsOnField,nil)-tg:GetCount()>0
 end
--- ③：要让场上的卡破坏的效果发动时，把这张卡解放才能发动。那个发动无效并破坏。
+-- ③效果的COST处理：解放这张卡自身作为发动代价。
 function c30221870.negcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsReleasable() end
-	-- 将此卡解放作为无效发动的代价
+	-- 将这张卡自身解放作为COST。
 	Duel.Release(e:GetHandler(),REASON_COST)
 end
--- ③：要让场上的卡破坏的效果发动时，把这张卡解放才能发动。那个发动无效并破坏。
+-- ③效果的目标设定：登记无效并破坏当前连锁中的卡；若该卡可破坏且与效果关联，则一并登记破坏操作。
 function c30221870.negtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置无效发动的处理信息
+	-- 将操作信息登记为无效当前连锁中的卡。
 	Duel.SetOperationInfo(0,CATEGORY_NEGATE,eg,1,0,0)
 	if re:GetHandler():IsDestructable() and re:GetHandler():IsRelateToEffect(re) then
-		-- 设置破坏发动的处理信息
+		-- 将操作信息登记为破坏当前连锁中的卡。
 		Duel.SetOperationInfo(0,CATEGORY_DESTROY,eg,1,0,0)
 	end
 end
--- ③：要让场上的卡破坏的效果发动时，把这张卡解放才能发动。那个发动无效并破坏。
+-- ③效果处理：无效该效果的发动，并将对应的卡破坏。
 function c30221870.negop(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断是否成功无效发动并确认目标卡是否有效
+	-- 执行无效发动，并确认被无效的卡仍与效果关联，以决定是否进行后续破坏。
 	if Duel.NegateActivation(ev) and re:GetHandler():IsRelateToEffect(re) then
-		-- 破坏连锁中涉及的目标卡
+		-- 破坏被无效的卡。
 		Duel.Destroy(eg,REASON_EFFECT)
 	end
 end

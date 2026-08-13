@@ -12,21 +12,21 @@ function c30190809.initial_effect(c)
 	e1:SetOperation(c30190809.operation)
 	c:RegisterEffect(e1)
 end
--- 检查当前阶段是否为主要阶段一且该卡未获得直接攻击效果
+-- 发动条件判定：仅在主要阶段一且自身尚无直接攻击效果时才能发动本效果。
 function c30190809.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 当前阶段为主要阶段一且该卡未获得直接攻击效果
+	-- 返回布尔值：当前为主要阶段一，且这张卡尚未拥有直接攻击效果。
 	return Duel.GetCurrentPhase()==PHASE_MAIN1 and e:GetHandler():GetEffectCount(EFFECT_DIRECT_ATTACK)==0
 end
--- 支付800基本分
+-- 发动代价处理：需要支付800基本分作为发动本效果的费用。
 function c30190809.cost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查玩家是否能支付800基本分
+	-- 代价检查阶段：确认玩家能否支付800基本分；若不能则无法发动。
 	if chk==0 then return Duel.CheckLPCost(tp,800) end
-	-- 让玩家支付800基本分
+	-- 实际支付800基本分，从玩家LP中扣除。
 	Duel.PayLPCost(tp,800)
 end
--- 使本回合这张卡可以对对方进行直接攻击
+-- 效果处理：为这张卡赋予‘本回合可以直接攻击对方’的效果，该效果不可被无效，并在回合结束或离场等标准时机重置。
 function c30190809.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 使本回合这张卡可以对对方进行直接攻击
+	-- 本回合这张卡可以对对方进行直接攻击。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
 	e1:SetType(EFFECT_TYPE_SINGLE)
