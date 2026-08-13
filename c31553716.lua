@@ -16,16 +16,16 @@ function c31553716.initial_effect(c)
 	e2:SetCode(EFFECT_PIERCE)
 	c:RegisterEffect(e2)
 end
--- 效果条件函数，判断是否为攻击怪兽且参与了战斗
+-- ②效果的发动条件判断：由效果持有者自身发动，且仅当效果持有者就是本次战斗的攻击怪兽，并且仍与本次战斗相关（没有因离场等导致战斗关系失效）时才成立。
 function c31553716.poscon(e,tp,eg,ep,ev,re,r,rp)
-	-- 当前卡为攻击怪兽且与本次战斗相关
+	-- 判定效果持有者是否为当前攻击怪兽（Duel.GetAttacker）并且仍与本次战斗关联（IsRelateToBattle），两者均满足时条件通过。
 	return e:GetHandler()==Duel.GetAttacker() and e:GetHandler():IsRelateToBattle()
 end
--- 效果执行函数，若攻击表示则变为守备表示
+-- ②效果处理：在伤害步骤结束时，若效果持有者（本卡）仍为攻击表示，则将其变更为守备表示。
 function c31553716.posop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsAttackPos() then
-		-- 将目标怪兽变为表侧守备表示
+		-- 调用Duel.ChangePosition，将本卡的表示形式改为表侧守备表示。
 		Duel.ChangePosition(c,POS_FACEUP_DEFENSE)
 	end
 end

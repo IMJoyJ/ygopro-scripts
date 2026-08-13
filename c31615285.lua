@@ -18,12 +18,12 @@ function c31615285.initial_effect(c)
 	e2:SetCondition(c31615285.dscon)
 	c:RegisterEffect(e2)
 end
--- 过滤函数，检查场上是否存在满足条件的植物族怪兽（表侧表示）
+-- 过滤函数：判定卡片是否为表侧表示的植物族怪兽。
 function c31615285.filter(c)
 	return c:IsFaceup() and c:IsRace(RACE_PLANT)
 end
--- 条件函数，判断是否满足特殊召唤限制条件（场上存在其他植物族表侧表示怪兽）
+-- 条件函数：检查场上是否存在1只除自身以外的表侧表示植物族怪兽，以决定限制特殊召唤的效果是否适用。
 function c31615285.dscon(e)
-	-- 检索满足条件的卡片组，检查场上是否存在至少1张满足filter条件的怪兽
+	-- 检索双方怪兽区是否存在至少1张满足过滤条件（表侧植物族）且不包含效果持有者自身的卡片。
 	return Duel.IsExistingMatchingCard(c31615285.filter,0,LOCATION_MZONE,LOCATION_MZONE,1,e:GetHandler())
 end

@@ -25,50 +25,50 @@ function c3167573.initial_effect(c)
 	c:RegisterEffect(e2)
 	e1:SetLabelObject(e2)
 end
--- 条件过滤函数：检查加入手卡的卡是否为对方从卡组用非抽卡方式加入且为怪兽卡
+-- 筛选函数：判断加入手卡的卡是否为对方控制的怪兽、原所在位置为卡组、加入手卡的原因不是抽卡、不是以未确认状态加入手卡。
 function c3167573.cfilter(c,tp)
 	return c:IsControler(1-tp) and c:IsPreviousLocation(LOCATION_DECK) and not c:IsReason(REASON_DRAW)
 		and c:IsType(TYPE_MONSTER) and not c:IsStatus(STATUS_TO_HAND_WITHOUT_CONFIRM)
 end
--- 效果①的发动条件：确认是否有满足条件的卡加入手牌
+-- 发动条件：存在至少1张满足筛选条件的卡片，即对方用抽卡以外的方法从卡组把怪兽加入手卡。
 function c3167573.spcon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c3167573.cfilter,1,nil,tp)
 end
--- 效果①的发动时的处理目标设置：判断是否能特殊召唤此卡
+-- 发动目标判定：己方主要怪兽区有可用空格，且这张卡自身可以被特殊召唤。
 function c3167573.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断场上是否有足够空间进行特殊召唤
+	-- 检查己方主要怪兽区的可用空格数量是否大于0。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置操作信息：将此卡加入特殊召唤的处理列表
+	-- 设置操作信息，声明本次效果将进行特殊召唤。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 效果①的发动处理：将此卡特殊召唤到场上，并设置效果②的触发条件
+-- 效果处理：将这张卡从手卡特殊召唤，若特殊召唤成功，则根据当前回合归属设置自毁效果的触发时机。
 function c3167573.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if not c:IsRelateToEffect(e) then return end
-	-- 执行特殊召唤操作：将此卡特殊召唤到场上
+	-- 以表侧表示特殊召唤这张卡，并判断是否特殊召唤成功。
 	if Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)~=0 then
 		local e2=e:GetLabelObject()
-		-- 判断当前回合是否为召唤者回合
+		-- 判断当前回合玩家是否是自己，以决定自毁效果应推迟到哪个自己回合的结束阶段。
 		if Duel.GetTurnPlayer()==tp then
 			c:RegisterFlagEffect(3167573,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END+RESET_SELF_TURN,0,2)
-			-- 设置效果②的触发回合数：若为召唤者回合，则在两回合后触发
+			-- 在自己回合特殊召唤成功时，将自毁效果设定为当前回合数+2的结束阶段触发。
 			e2:SetLabel(Duel.GetTurnCount()+2)
 		else
 			c:RegisterFlagEffect(3167573,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END+RESET_SELF_TURN,0,1)
-			-- 设置效果②的触发回合数：若不为召唤者回合，则在下一回合后触发
+			-- 在对方回合特殊召唤成功时，将自毁效果设定为当前回合数+1的结束阶段触发。
 			e2:SetLabel(Duel.GetTurnCount()+1)
 		end
 	end
 end
--- 效果②的发动条件：判断是否已注册flag且当前回合数等于设定的触发回合数
+-- 自毁效果的发动条件：这张卡拥有自毁标记，且当前回合数等于预设的触发回合数。
 function c3167573.descon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断是否已注册flag且当前回合数等于设定的触发回合数
+	-- 确认存在自毁标记且当前回合数已达到预设的结束阶段回合数。
 	return e:GetHandler():GetFlagEffect(3167573)>0 and Duel.GetTurnCount()==e:GetLabel()
 end
--- 效果②的发动处理：将此卡破坏
+-- 自毁效果处理：清除预设标记，并破坏这张卡。
 function c3167573.desop(e,tp,eg,ep,ev,re,r,rp)
 	e:SetLabel(0)
-	-- 执行破坏操作：将此卡以效果原因破坏
+	-- 将这张卡以效果原因破坏。
 	Duel.Destroy(e:GetHandler(),REASON_EFFECT)
 end

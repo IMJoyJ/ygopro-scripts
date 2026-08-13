@@ -12,15 +12,15 @@ function c31557782.initial_effect(c)
 	e1:SetCondition(c31557782.spcon)
 	c:RegisterEffect(e1)
 end
--- 检索满足条件的卡片组：检查场上是否存在表侧表示的古代的齿车
+-- 过滤函数：用于筛选出场上表侧表示且卡名为「古代的齿车」（卡号31557782）的卡。
 function c31557782.filter(c)
 	return c:IsFaceup() and c:IsCode(31557782)
 end
--- 特殊召唤的条件函数：判断是否满足特殊召唤的条件
+-- 特殊召唤手续的条件：在己方场上存在表侧表示「古代的齿车」且己方主要怪兽区有空位时，允许这张卡从手卡以攻击表示特殊召唤。
 function c31557782.spcon(e,c)
 	if c==nil then return true end
-	-- 判断玩家场上是否有足够的怪兽区域
+	-- 检查己方主要怪兽区是否有至少1个空位，保证可以放置特殊召唤的怪兽。
 	return Duel.GetLocationCount(c:GetControler(),LOCATION_MZONE)>0
-		-- 判断玩家场上是否存在至少1张表侧表示的古代的齿车
+		-- 检查己方场上是否存在1张表侧表示的「古代的齿车」（卡号31557782），以满足效果原文中“自己场上有「古代的齿车」表侧表示存在时”这一条件。
 		and Duel.IsExistingMatchingCard(c31557782.filter,c:GetControler(),LOCATION_ONFIELD,0,1,nil)
 end
