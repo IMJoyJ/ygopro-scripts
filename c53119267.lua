@@ -16,14 +16,14 @@ function c53119267.initial_effect(c)
 	e2:SetOperation(c53119267.damop)
 	c:RegisterEffect(e2)
 end
--- 过滤满足条件的卡片组，即丢弃到墓地且来自对方手牌的怪兽
+-- 过滤出此前在对方手牌、由对方控制、且因丢弃原因被送去墓地的卡，以判定哪些卡属于“对方的手卡丢弃去墓地”。
 function c53119267.filter(c,tp)
 	return c:IsPreviousLocation(LOCATION_HAND) and c:IsControler(1-tp) and c:IsPreviousControler(1-tp)
 		and c:IsReason(REASON_DISCARD)
 end
--- 计算符合条件的卡片数量并给予对方基本分伤害
+-- 统计本次送去墓地的卡中满足“对方手卡丢弃”条件的数量，作为后续伤害计算的基础。
 function c53119267.damop(e,tp,eg,ep,ev,re,r,rp)
 	local ct=eg:FilterCount(c53119267.filter,nil,tp)
-	-- 以效果原因对对方造成相当于丢弃卡数乘以500的基本分伤害
+	-- 给与对方玩家（1-tp）500点乘以丢弃张数的效果伤害。
 	Duel.Damage(1-tp,ct*500,REASON_EFFECT)
 end
