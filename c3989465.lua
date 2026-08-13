@@ -3,7 +3,7 @@
 -- 3星怪兽×2
 -- 这张卡进行战斗的伤害步骤时只有1次，把这张卡1个超量素材取除才能发动。这张卡的攻击力直到结束阶段时上升500。
 function c3989465.initial_effect(c)
-	-- 添加XYZ召唤手续，使用等级为3的怪兽叠放2只以上
+	-- 为这张卡添加XYZ召唤手续：使用任意2只3星怪兽叠放来XYZ召唤这张卡。
 	aux.AddXyzProcedure(c,nil,3,2)
 	c:EnableReviveLimit()
 	-- 这张卡进行战斗的伤害步骤时只有1次，把这张卡1个超量素材取除才能发动。这张卡的攻击力直到结束阶段时上升500。
@@ -20,23 +20,23 @@ function c3989465.initial_effect(c)
 	e1:SetOperation(c3989465.operation)
 	c:RegisterEffect(e1)
 end
--- 判断是否处于伤害步骤且该卡为攻击怪或被攻击怪且尚未计算战斗伤害
+-- 发动条件的判定：当前必须处于伤害步骤，且这张卡是进行战斗的攻击怪兽或攻击对象，并且尚未进行伤害计算。
 function c3989465.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前阶段
+	-- 获取当前游戏阶段并存入局部变量ph。
 	local ph=Duel.GetCurrentPhase()
 	local c=e:GetHandler()
-	-- 判断当前阶段为伤害步骤且该卡为攻击怪或被攻击怪
+	-- 检查当前阶段是否为伤害步骤，且这张卡是否为攻击怪兽或攻击对象。
 	return ph==PHASE_DAMAGE and (c==Duel.GetAttacker() or c==Duel.GetAttackTarget())
-		-- 判断尚未计算战斗伤害
+		-- 同时检查本次战斗尚未进行伤害计算，确保只能在伤害计算前发动。
 		and not Duel.IsDamageCalculated()
 end
--- 支付效果代价，移除1个超量素材并标记已使用过此效果
+-- 发动代价的判定与支付：先确认本伤害步骤内该效果尚未使用过，并且可以去除1个超量素材；满足后实际去除1个超量素材，并注册一个伤害步骤结束时重置的标志，限制“只有1次”。
 function c3989465.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():GetFlagEffect(3989465)==0 and e:GetHandler():CheckRemoveOverlayCard(tp,1,REASON_COST) end
 	e:GetHandler():RemoveOverlayCard(tp,1,1,REASON_COST)
 	e:GetHandler():RegisterFlagEffect(3989465,RESET_PHASE+PHASE_DAMAGE,0,1)
 end
--- 将该卡攻击力上升500点直到结束阶段
+-- 效果处理：若这张卡仍表侧表示且与发动时的效果关联，则给它附加一个攻击力上升500的效果，该效果持续到结束阶段时重置。
 function c3989465.operation(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsFaceup() and c:IsRelateToEffect(e) then
