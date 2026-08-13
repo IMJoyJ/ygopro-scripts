@@ -14,33 +14,33 @@ function c38973775.initial_effect(c)
 	e1:SetOperation(c38973775.operation)
 	c:RegisterEffect(e1)
 end
--- 检查是否可以解放这张卡作为发动代价
+-- 效果发动前的代价检查与执行：先确认自身是否满足可解放条件，若满足则把这张卡解放作为发动代价。
 function c38973775.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsReleasable() end
-	-- 将这张卡解放作为发动代价
+	-- 以规则代价解放这张卡（效果怪兽自身作为解放素材）。
 	Duel.Release(e:GetHandler(),REASON_COST)
 end
--- 过滤函数，用于筛选4星以下、名字带有「光子」且可以加入手牌的怪兽
+-- 定义检索对象必须满足的条件：等级4以下、持有「光子」字段且可以加入手卡。
 function c38973775.filter(c)
 	return c:IsLevelBelow(4) and c:IsSetCard(0x55) and c:IsAbleToHand()
 end
--- 检查是否满足发动条件并设置连锁操作信息
+-- 效果发动目标：确认卡组中存在符合条件的可检索怪兽，并设置操作信息为从卡组将1张怪兽加入手卡。
 function c38973775.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查卡组中是否存在满足条件的怪兽
+	-- 检查卡组中是否存在至少1张满足filter条件的卡，作为效果能否发动的判定。
 	if chk==0 then return Duel.IsExistingMatchingCard(c38973775.filter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置连锁操作信息，表示将从卡组检索怪兽加入手牌
+	-- 设置本次效果的操作信息：从卡组将1张卡加入手卡，供系统及连锁判定使用。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 执行效果处理，选择并把符合条件的怪兽加入手牌
+-- 效果处理：玩家从卡组选择1张满足条件的「光子」怪兽加入手卡，并向对手展示。
 function c38973775.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要加入手牌的卡
+	-- 给出选择提示，提示玩家正在选择要加入手牌的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 从卡组选择1只满足条件的怪兽
+	-- 让玩家从卡组中选出1张满足filter条件的卡。
 	local g=Duel.SelectMatchingCard(tp,c38973775.filter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的怪兽加入手牌
+		-- 将选中的卡以效果原因加入其持有者的手卡。
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 确认对方查看加入手牌的怪兽
+		-- 向对方玩家确认被加入手卡的卡片，以公开检索结果。
 		Duel.ConfirmCards(1-tp,g)
 	end
 end

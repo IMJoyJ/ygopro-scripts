@@ -30,54 +30,54 @@ function c38916526.initial_effect(c)
 	e2:SetOperation(c38916526.negop)
 	c:RegisterEffect(e2)
 end
--- 过滤函数，用于筛选场上正面表示的「空牙团」怪兽（不包括拉法尔自身）
+-- 筛选自己场上表侧表示、属于「空牙团」且不是本卡（空牙团的英雄 拉法尔）的怪兽，用于计算种类数量。
 function c38916526.ctfilter(c)
 	return c:IsFaceup() and c:IsSetCard(0x114) and not c:IsCode(38916526)
 end
--- 效果的发动时点处理函数，用于判断是否满足发动条件
+-- ①效果发动时的条件/对象判定：计算符合条件的「空牙团」怪兽种类数ct，确认卡组数量足够且翻开后至少有1张能加入手卡，满足则返回true并设定从卡组检索1张卡的效果信息。
 function c38916526.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then
-		-- 计算场上正面表示的「空牙团」怪兽种类数量
+		-- 取得自己场上符合条件的「空牙团」怪兽的不同卡名数量，作为要翻开的卡组张数。
 		local ct=Duel.GetMatchingGroup(c38916526.ctfilter,tp,LOCATION_MZONE,0,nil):GetClassCount(Card.GetCode)
-		-- 检查卡组是否足够翻开指定数量的卡
+		-- 若卡组剩余张数不足ct，则不能发动，返回false。
 		if Duel.GetFieldGroupCount(tp,LOCATION_DECK,0)<ct then return false end
-		-- 获取卡组最上方的指定数量的卡
+		-- 获取卡组最上方ct张卡作为将要翻开的卡组。
 		local g=Duel.GetDecktopGroup(tp,ct)
 		return g:FilterCount(Card.IsAbleToHand,nil)>0
 	end
-	-- 设置连锁操作信息，表示将要从卡组检索1张卡加入手牌
+	-- 设置操作信息：本次效果包含将1张卡从卡组加入手卡（CATEGORY_TOHAND），供连锁判定等使用。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,0,LOCATION_DECK)
 end
--- 效果的处理函数，执行检索并选择加入手牌的卡
+-- ①效果处理：重新计算种类数ct，确认并翻开卡组顶部ct张，从中选1张加入手牌，其余洗回卡组。
 function c38916526.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 计算场上正面表示的「空牙团」怪兽种类数量
+	-- 效果处理时重新取得当前符合条件的「空牙团」怪兽种类数，按最新数量翻卡。
 	local ct=Duel.GetMatchingGroup(c38916526.ctfilter,tp,LOCATION_MZONE,0,nil):GetClassCount(Card.GetCode)
-	-- 翻开卡组最上方的指定数量的卡
+	-- 向双方玩家公开（确认）卡组最上方ct张卡，即翻开。
 	Duel.ConfirmDecktop(tp,ct)
-	-- 获取卡组最上方的指定数量的卡
+	-- 取得已公开的卡组上方ct张卡作为选择对象。
 	local g=Duel.GetDecktopGroup(tp,ct)
 	if g:GetCount()>0 then
 		local tg=g:Filter(Card.IsAbleToHand,nil)
 		if tg:GetCount()>0 then
-			-- 提示玩家选择要加入手牌的卡
+			-- 显示选择提示，让发动者选择要加入手卡的卡。
 			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
 			local sg=tg:Select(tp,1,1,nil)
-			-- 将选中的卡加入手牌
+			-- 将选择的卡加入其持有者手牌，原因为效果。
 			Duel.SendtoHand(sg,nil,REASON_EFFECT)
-			-- 向对方确认加入手牌的卡
+			-- 向对方玩家展示被加入手牌的那张卡。
 			Duel.ConfirmCards(1-tp,sg)
 		end
-		-- 将卡组洗牌
+		-- 将剩余翻开的卡放回卡组并洗切。
 		Duel.ShuffleDeck(tp)
 	end
 end
--- 效果发动条件函数，判断是否满足无效对方怪兽效果的条件
+-- ②效果发动条件：本卡未被战斗破坏确定、对方发动怪兽效果、且该连锁可以被无效。
 function c38916526.negcon(e,tp,eg,ep,ev,re,r,rp)
 	return not e:GetHandler():IsStatus(STATUS_BATTLE_DESTROYED)
-		-- 判断对方发动的是否为怪兽效果且可以被无效
+		-- 判定效果发动者为对方、发动的是怪兽效果、且连锁可被无效，三者同时满足。
 		and ep~=tp and re:IsActiveType(TYPE_MONSTER) and Duel.IsChainNegatable(ev)
 end
--- 过滤函数，用于筛选可以作为代价丢弃的「空牙团」卡
+-- 用于选择丢弃代价的过滤器：手牌中的卡需为「空牙团」且可丢弃；墓地中的卡需本卡为「空牙团」且该卡可被除外作为代替代价（对应特殊卡片的替代cost）。
 function c38916526.cfilter(c,e,tp)
 	if c:IsLocation(LOCATION_HAND) then
 		return c:IsSetCard(0x114) and c:IsDiscardable()
@@ -85,33 +85,33 @@ function c38916526.cfilter(c,e,tp)
 		return e:GetHandler():IsSetCard(0x114) and c:IsAbleToRemoveAsCost() and c:IsHasEffect(53557529,tp)
 	end
 end
--- 效果的发动时点处理函数，用于支付代价
+-- ②效果cost：从手牌或墓地中选择1张满足条件的「空牙团」卡作为代价，手牌卡正常丢弃，若有特殊代替效果则除外。
 function c38916526.negcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否有满足条件的「空牙团」卡可以作为代价丢弃
+	-- cost检查：确认存在至少1张符合条件的卡（手牌/墓地），否则不能发动。
 	if chk==0 then return Duel.IsExistingMatchingCard(c38916526.cfilter,tp,LOCATION_HAND+LOCATION_GRAVE,0,1,nil,e,tp) end
-	-- 提示玩家选择要丢弃的手牌
+	-- 显示选择提示，让发动者选择要丢弃的手牌（或代替卡）。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DISCARD)  --"请选择要丢弃的手牌"
-	-- 选择满足条件的「空牙团」卡作为代价丢弃
+	-- 从手牌/墓地选择1张符合条件的卡作为本次发动的cost。
 	local g=Duel.SelectMatchingCard(tp,c38916526.cfilter,tp,LOCATION_HAND+LOCATION_GRAVE,0,1,1,nil,e,tp)
 	local tc=g:GetFirst()
 	local te=tc:IsHasEffect(53557529,tp)
 	if te then
 		te:UseCountLimit(tp)
-		-- 将选中的卡从游戏中除外（替换效果）
+		-- 若选择的卡带有特殊代替效果（卡号53557529），则将其除外作为cost，而不是丢弃。
 		Duel.Remove(tc,POS_FACEUP,REASON_EFFECT+REASON_REPLACE)
 	else
-		-- 将选中的卡送去墓地（普通丢弃）
+		-- 否则将选择的卡从手牌丢弃到墓地，作为cost。
 		Duel.SendtoGrave(tc,REASON_COST+REASON_DISCARD)
 	end
 end
--- 效果的发动时点处理函数，用于设置连锁操作信息
+-- ②效果的目标判定：不取对象，只需返回true，并设定无效对方发动的操作信息。
 function c38916526.negtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置连锁操作信息，表示将要使对方发动无效
+	-- 设置操作信息：本效果将无效连锁中的那个怪兽效果（eg为对方发动的效果）。
 	Duel.SetOperationInfo(0,CATEGORY_NEGATE,eg,1,0,0)
 end
--- 效果的处理函数，执行使对方发动无效的操作
+-- ②效果处理：执行无效发动的操作。
 function c38916526.negop(e,tp,eg,ep,ev,re,r,rp)
-	-- 使对方的发动无效
+	-- 将当前连锁编号ev对应的那个发动无效。
 	Duel.NegateActivation(ev)
 end

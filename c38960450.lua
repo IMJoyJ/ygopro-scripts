@@ -3,7 +3,7 @@
 -- 这个卡名的卡在1回合只能发动1张。
 -- ①：从卡组把1张装备魔法卡加入手卡。那之后，可以给可以把那张卡装备的自己场上1只怪兽装备。
 function c38960450.initial_effect(c)
-	-- 这个卡名的卡在1回合只能发动1张。
+	-- 这个卡名的卡在1回合只能发动1张。①：从卡组把1张装备魔法卡加入手卡。那之后，可以给可以把那张卡装备的自己场上1只怪兽装备。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -13,44 +13,44 @@ function c38960450.initial_effect(c)
 	e1:SetOperation(c38960450.activate)
 	c:RegisterEffect(e1)
 end
--- 过滤函数，用于筛选可以加入手牌的装备魔法卡。
+-- 定义检索过滤函数：筛选卡组中的装备魔法卡，且该卡能够被加入手卡。
 function c38960450.filter(c)
 	return c:IsType(TYPE_EQUIP) and c:IsAbleToHand()
 end
--- ①：从卡组把1张装备魔法卡加入手卡。
+-- 发动时的目标处理函数：进行发动合法性检查，并设置效果处理时的操作信息。
 function c38960450.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查自己卡组是否存在满足条件的装备魔法卡。
+	-- 检查卡组中是否存在至少1张满足过滤条件的装备魔法卡，作为效果发动的合法条件。
 	if chk==0 then return Duel.IsExistingMatchingCard(c38960450.filter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置连锁处理信息，表示将从卡组检索一张装备魔法卡加入手牌。
+	-- 设置本效果处理时将执行“从卡组把1张卡加入手卡”的操作信息，便于后续连锁和效果检测。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 过滤函数，用于筛选可以装备该装备卡的场上怪兽。
+-- 定义装备过滤函数：选择自己场上表侧表示的、且能够装备这张装备魔法卡的怪兽。
 function c38960450.eqfilter(c,tc)
 	return c:IsFaceup() and tc:CheckEquipTarget(c)
 end
--- ①：从卡组把1张装备魔法卡加入手卡。那之后，可以给可以把那张卡装备的自己场上1只怪兽装备。
+-- 效果处理函数：实际执行从卡组检索装备魔法卡，并选择是否将其装备给自己场上的合法怪兽。
 function c38960450.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择一张要加入手牌的装备魔法卡。
+	-- 给玩家弹出选择提示，提示文字为“请选择要加入手牌的卡”。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 从卡组中选择一张装备魔法卡加入手牌。
+	-- 从卡组中挑选1张满足过滤条件的装备魔法卡加入手卡（取自身卡组，不取对象）。
 	local g1=Duel.SelectMatchingCard(tp,c38960450.filter,tp,LOCATION_DECK,0,1,1,nil)
 	local tc=g1:GetFirst()
-	-- 确认装备魔法卡成功加入手牌后执行后续操作。
+	-- 确认检索到的卡确实成功加入手卡且仍位于手牌（避免被置换或干扰），才继续后续装备处理。
 	if tc and Duel.SendtoHand(tc,nil,REASON_EFFECT)~=0 and tc:IsLocation(LOCATION_HAND) then
-		-- 向对方玩家展示所选的装备魔法卡。
+		-- 将检索到的卡展示给对方玩家确认。
 		Duel.ConfirmCards(1-tp,g1)
-		-- 获取可以装备该装备卡的场上怪兽数组。
+		-- 获取自己场上所有能够装备这张检索到的装备魔法卡的表侧表示怪兽。
 		local g2=Duel.GetMatchingGroup(c38960450.eqfilter,tp,LOCATION_MZONE,0,nil,tc)
-		-- 检查装备卡是否满足场上唯一性、是否被禁止、场上是否有空魔陷区。
+		-- 检查该装备魔法卡是否满足场上唯一性、是否未被禁止，以及自己魔陷区是否有空位可以装备。
 		if tc:CheckUniqueOnField(tp) and not tc:IsForbidden() and Duel.GetLocationCount(tp,LOCATION_SZONE)>0
-			-- 判断是否选择将装备卡装备给怪兽。
+			-- 同时还需存在可装备的怪兽，且玩家选择“是”确认装备，才执行装备动作。
 			and g2:GetCount()>0 and Duel.SelectYesNo(tp,aux.Stringid(38960450,0)) then  --"是否给怪兽装备？"
-			-- 中断当前效果处理，使之后的效果视为不同时处理。
+			-- 中断当前效果链的时点，使“检索”与“装备”作为不同时处理，避免错过时点。
 			Duel.BreakEffect()
-			-- 提示玩家选择一张要装备的怪兽。
+			-- 给玩家弹出选择提示，提示文字为“请选择表侧表示的卡”。
 			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
 			local sg=g2:Select(tp,1,1,nil)
-			-- 将装备卡装备给指定的怪兽。
+			-- 将装备魔法卡装备给玩家选择的怪兽，完成装备处理。
 			Duel.Equip(tp,tc,sg:GetFirst())
 		end
 	end

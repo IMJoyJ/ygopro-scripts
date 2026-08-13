@@ -42,73 +42,73 @@ function c3891471.initial_effect(c)
 	e5:SetValue(TYPE_TUNER)
 	c:RegisterEffect(e5)
 end
--- 检索满足条件的念动力族怪兽，用于特殊召唤。
+-- 过滤函数：判断怪兽为念动力族，且能够由当前效果以表侧攻击表示特殊召唤。
 function c3891471.filter(c,e,tp)
 	return c:IsRace(RACE_PSYCHO) and c:IsCanBeSpecialSummoned(e,0,tp,false,false,POS_FACEUP_ATTACK)
 end
--- 设置选择目标的条件为己方墓地的念动力族怪兽。
+-- 发动时点检查：若指定对象则必须是己方墓地中满足特招条件的念动力族；若无对象则确认主怪兽区有空位且墓地存在至少1只可被选为对象的念动力族怪兽。
 function c3891471.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and c3891471.filter(chkc,e,tp) end
-	-- 判断场上是否有足够的特殊召唤区域。
+	-- 检查己方主要怪兽区是否存在可用空格。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 判断己方墓地是否存在满足条件的念动力族怪兽。
+		-- 检查墓地是否存在至少1只满足特招条件且能成为效果对象的念动力族怪兽。
 		and Duel.IsExistingTarget(c3891471.filter,tp,LOCATION_GRAVE,0,1,nil,e,tp) end
-	-- 提示玩家选择要特殊召唤的卡。
+	-- 弹出选择提示，提示玩家选择要特殊召唤的卡片。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 选择满足条件的1只念动力族怪兽作为特殊召唤目标。
+	-- 从己方墓地选择1只符合条件的念动力族怪兽作为效果对象。
 	local g=Duel.SelectTarget(tp,c3891471.filter,tp,LOCATION_GRAVE,0,1,1,nil,e,tp)
-	-- 设置特殊召唤操作信息。
+	-- 设置连锁处理信息：该效果包含特殊召唤，对象为所选择的怪兽，数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,1,0,0)
 end
--- 执行特殊召唤操作，将目标怪兽特殊召唤到场上。
+-- 效果处理：若此卡和对象仍与效果关联且对象仍是念动力族，则记录其等级，将对象以表侧攻击表示特殊召唤，成功后建立此卡与对象的联系并保存等级标记，最后完成特殊召唤处理。
 function c3891471.operation(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取当前效果的目标怪兽。
+	-- 取得当前连锁所选择的第1个对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if c:IsRelateToEffect(e) and tc:IsRelateToEffect(e) and tc:IsRace(RACE_PSYCHO) then
 		local lv=tc:GetLevel()
-		-- 尝试将目标怪兽特殊召唤到场上。
+		-- 使用分步特殊召唤处理，将目标怪兽以表侧攻击表示特殊召唤到己方场上。
 		if Duel.SpecialSummonStep(tc,0,tp,tp,false,false,POS_FACEUP_ATTACK) then
 			c:SetCardTarget(tc)
 			c:RegisterFlagEffect(3891471,RESET_EVENT+0x17a0000,0,1,lv)
 		end
-		-- 完成特殊召唤流程。
+		-- 完成整个特殊召唤处理，触发特殊召唤成功的时点。
 		Duel.SpecialSummonComplete()
 	end
 end
--- 当卡片离开场时，破坏目标怪兽。
+-- 离场时破坏对象怪兽的处理：当此卡离开场上时，取出其效果对象，若对象仍在怪兽区则将其破坏。
 function c3891471.desop(e,tp,eg,ep,ev,re,r,rp)
 	local tc=e:GetHandler():GetFirstCardTarget()
 	if tc and tc:IsLocation(LOCATION_MZONE) then
-		-- 将目标怪兽破坏。
+		-- 以效果原因破坏那只被特殊召唤的怪兽。
 		Duel.Destroy(tc,REASON_EFFECT)
 	end
 end
--- 判断目标怪兽是否从场上离开。
+-- 离场条件判断：取得此卡的效果对象，若当前离场事件中包含该对象怪兽，则条件成立。
 function c3891471.descon2(e,tp,eg,ep,ev,re,r,rp)
 	local tc=e:GetHandler():GetFirstCardTarget()
 	return tc and eg:IsContains(tc)
 end
--- 当目标怪兽离开场时，破坏此卡。
+-- 对象怪兽离场时破坏此卡的处理：当被特殊召唤的怪兽离开场上时，直接破坏这张卡。
 function c3891471.desop2(e,tp,eg,ep,ev,re,r,rp)
-	-- 将此卡破坏。
+	-- 以效果原因破坏“念力调整”自身。
 	Duel.Destroy(e:GetHandler(),REASON_EFFECT)
 end
--- 设置伤害效果的目标玩家和伤害值。
+-- 伤害效果的发动条件与信息设置：若此卡带有记录特殊召唤怪兽等级的标志，则将伤害对象设为自身，伤害数值设为等级×400，并设置操作信息为伤害效果。
 function c3891471.damtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():GetFlagEffect(3891471)~=0 end
-	-- 设置伤害效果的目标玩家。
+	-- 设置当前连锁的伤害对象玩家为此卡的控制者。
 	Duel.SetTargetPlayer(tp)
 	local lv=e:GetHandler():GetFlagEffectLabel(3891471)
-	-- 设置伤害值为怪兽等级乘以400。
+	-- 设置当前连锁的伤害数值参数为记录等级乘以400。
 	Duel.SetTargetParam(lv*400)
-	-- 设置伤害效果的操作信息。
+	-- 设置操作信息，标明该效果将造成伤害以及伤害对象与数值。
 	Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,tp,lv*400)
 end
--- 执行伤害效果，对目标玩家造成伤害。
+-- 伤害处理：从连锁信息取得对象玩家和伤害值，并对该玩家造成效果伤害。
 function c3891471.damop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁中设定的目标玩家和伤害值。
+	-- 取得当前连锁中记录的对象玩家和伤害参数。
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 对目标玩家造成指定伤害。
+	-- 对指定玩家造成对应数值的效果伤害。
 	Duel.Damage(p,d,REASON_EFFECT)
 end
