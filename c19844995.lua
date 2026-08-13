@@ -17,7 +17,7 @@ function c19844995.initial_effect(c)
 	e2:SetTarget(c19844995.sumlimit)
 	c:RegisterEffect(e2)
 end
--- 检查目标怪兽是否攻击力为1000以下
+-- 该函数作为效果e2的判定条件，用于检查将要被特殊召唤的怪兽攻击力是否在1000以下，若是则禁止这次特殊召唤。
 function c19844995.sumlimit(e,c,sump,sumtype,sumpos,targetp)
 	return c:IsAttackBelow(1000)
 end

@@ -17,7 +17,7 @@ function c19877898.initial_effect(c)
 end
 c19877898.lvup={34830502}
 c19877898.lvdn={49441499,34088136,34830502}
--- 判断该卡是否为通过「究极昆虫 LV5」的效果特殊召唤
+-- 判断此卡的召唤方式是否为通过「究极昆虫 LV5」的效果进行的特殊召唤（SUMMON_TYPE_SPECIAL+SUMMON_VALUE_LV），以此作为效果适用条件。
 function c19877898.con(e)
 	return e:GetHandler():GetSummonType()==SUMMON_TYPE_SPECIAL+SUMMON_VALUE_LV
 end

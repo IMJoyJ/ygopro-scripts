@@ -32,48 +32,48 @@ function c19814508.initial_effect(c)
 	e3:SetOperation(c19814508.atkop)
 	c:RegisterEffect(e3)
 end
--- 过滤函数，用于筛选满足条件的「超级运动员」怪兽（怪兽卡且可加入手牌）
+-- 定义检索筛选条件：判断卡是否为「超级运动员」怪兽且可以加入手卡，用于从卡组检索。
 function c19814508.filter(c)
 	return c:IsSetCard(0xb2) and c:IsType(TYPE_MONSTER) and c:IsAbleToHand()
 end
--- 判断是否满足发动条件：召唤的怪兽为「超级运动员」且为玩家控制
+-- ①效果的发动条件判定：检查这次召唤成功的怪兽是否为「超级运动员」且为己方控制，并存在可检索的「超级运动员」怪兽。
 function c19814508.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	local tc=eg:GetFirst()
 	if chk==0 then return tc:IsSetCard(0xb2) and tc:IsControler(tp)
-		-- 判断卡组中是否存在满足条件的「超级运动员」怪兽
+		-- 检查卡组中是否存在至少1张满足filter过滤条件的「超级运动员」怪兽。
 		and Duel.IsExistingMatchingCard(c19814508.filter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置连锁操作信息：将1张卡从卡组加入手牌
+	-- 设置本连锁的操作信息：将执行从卡组把1张卡加入手卡的效果，目标为tp的卡组。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 效果处理函数：提示玩家选择卡组中的「超级运动员」怪兽并加入手牌
+-- ①效果处理：从卡组选择1只「超级运动员」怪兽加入手卡，并向对方玩家展示。
 function c19814508.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要加入手牌的卡
+	-- 弹出选择卡片提示，要求己方玩家选择要加入手卡的卡片。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 从卡组中选择1张满足条件的「超级运动员」怪兽
+	-- 让己方玩家从卡组中选择1只满足filter条件的「超级运动员」怪兽。
 	local g=Duel.SelectMatchingCard(tp,c19814508.filter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的怪兽加入手牌
+		-- 将选中的卡以效果原因加入持有者手卡。
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 向对方确认加入手牌的卡
+		-- 将加入手卡的卡片展示给对方玩家确认。
 		Duel.ConfirmCards(1-tp,g)
 	end
 end
--- 过滤函数，用于筛选玩家控制且表侧表示的「超级运动员」怪兽
+-- 定义特殊召唤成功怪兽的筛选条件：表侧表示、持有「超级运动员」字段且为己方控制。
 function c19814508.cfilter(c,tp)
 	return c:IsFaceup() and c:IsSetCard(0xb2) and c:IsControler(tp)
 end
--- 判断是否有满足条件的「超级运动员」怪兽被特殊召唤
+-- ②效果的发动条件：这次特殊召唤成功的怪兽中存在满足cfilter条件的「超级运动员」怪兽。
 function c19814508.atkcon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c19814508.cfilter,1,nil,tp)
 end
--- 效果处理函数：使自己场上的所有表侧表示怪兽攻击力上升500
+-- ②效果处理：使己方场上所有表侧表示怪兽的攻击力上升500。
 function c19814508.atkop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取自己场上所有表侧表示的怪兽
+	-- 获取己方场上所有表侧表示怪兽的集合。
 	local g=Duel.GetMatchingGroup(Card.IsFaceup,tp,LOCATION_MZONE,0,nil)
 	local tc=g:GetFirst()
 	while tc do
-		-- 为每个怪兽添加攻击力增加500的效果
+		-- ②：自己场上的怪兽的攻击力上升500。
 		local e3=Effect.CreateEffect(c)
 		e3:SetType(EFFECT_TYPE_SINGLE)
 		e3:SetCode(EFFECT_UPDATE_ATTACK)

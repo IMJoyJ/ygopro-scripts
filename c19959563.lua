@@ -45,64 +45,64 @@ function c19959563.initial_effect(c)
 	e4:SetOperation(c19959563.ddop)
 	c:RegisterEffect(e4)
 end
--- 过滤函数，用于判断除外状态的「光道」怪兽
+-- 筛选出表侧表示、属于「光道」系列且为怪兽卡的卡，用于统计除外区「光道」怪兽的种类数量。
 function c19959563.spfilter(c)
 	return c:IsFaceup() and c:IsSetCard(0x38) and c:IsType(TYPE_MONSTER)
 end
--- 特殊召唤条件函数，检查除外状态的「光道」怪兽种类是否超过4种
+-- 判断能否从手牌进行本卡的特殊召唤：若c非空，需自己场上有空位，且除外区表侧「光道」怪兽的种类数大于4；c为空时返回true以回应规则查询。
 function c19959563.spcon(e,c)
 	if c==nil then return true end
-	-- 检查场上是否有足够的怪兽区域
+	-- 检查该玩家的主要怪兽区是否有空位；若无空位则不能特殊召唤。
 	if Duel.GetLocationCount(c:GetControler(),LOCATION_MZONE)<=0 then return false end
-	-- 获取玩家除外区域中所有「光道」怪兽的集合
+	-- 获取该玩家除外区中所有满足spfilter的「光道」怪兽。
 	local g=Duel.GetMatchingGroup(c19959563.spfilter,c:GetControler(),LOCATION_REMOVED,0,nil)
 	local ct=g:GetClassCount(Card.GetCode)
 	return ct>3
 end
--- 支付1000基本分的费用函数
+-- 效果的发动代价：检查并支付1000基本分。
 function c19959563.cost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否能支付1000基本分
+	-- 在代价检查阶段确认玩家tp能否支付1000基本分。
 	if chk==0 then return Duel.CheckLPCost(tp,1000) end
-	-- 支付1000基本分
+	-- 实际扣除玩家tp的1000基本分，完成代价支付。
 	Duel.PayLPCost(tp,1000)
 end
--- 过滤函数，用于判断哪些卡可以送回卡组
+-- 筛选可作为①效果对象的卡：位于墓地或表侧除外区，不是「光道」怪兽，且可以回到卡组。
 function c19959563.filter(c)
 	return (c:IsFaceup() or c:IsLocation(LOCATION_GRAVE)) and not (c:IsSetCard(0x38) and c:IsType(TYPE_MONSTER)) and c:IsAbleToDeck()
 end
--- 设置效果发动时的目标信息，准备将符合条件的卡送回卡组
+-- ①效果的目标处理：确认至少存在1张符合条件的卡，并取得全部符合条件的卡，登记为返回卡组的操作信息。
 function c19959563.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否存在满足条件的卡
+	-- 在目标合法性检查时，确认双方的墓地/表侧除外区存在至少1张符合条件的非「光道」怪兽且不包括本卡。
 	if chk==0 then return Duel.IsExistingMatchingCard(c19959563.filter,tp,LOCATION_GRAVE+LOCATION_REMOVED,LOCATION_GRAVE+LOCATION_REMOVED,1,e:GetHandler()) end
-	-- 获取所有满足条件的卡的集合
+	-- 取出双方墓地及表侧除外区中所有满足filter的卡。
 	local g=Duel.GetMatchingGroup(c19959563.filter,tp,LOCATION_GRAVE+LOCATION_REMOVED,LOCATION_GRAVE+LOCATION_REMOVED,nil)
-	-- 设置操作信息，指定将卡送回卡组
+	-- 将本次操作信息登记为把这些卡返回卡组，数量为g中卡数。
 	Duel.SetOperationInfo(0,CATEGORY_TODECK,g,g:GetCount(),0,LOCATION_GRAVE+LOCATION_REMOVED)
 end
--- 效果发动时执行的操作，将符合条件的卡送回卡组
+-- ①效果处理：若未因王家长眠之谷等效果被无效，则将满足条件的卡全部返回持有者卡组并洗牌。
 function c19959563.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取所有满足条件的卡的集合
+	-- 效果处理时再次取出双方墓地及表侧除外区中所有满足filter的卡。
 	local g=Duel.GetMatchingGroup(c19959563.filter,tp,LOCATION_GRAVE+LOCATION_REMOVED,LOCATION_GRAVE+LOCATION_REMOVED,nil)
-	-- 检查是否因王家长眠之谷而无效
+	-- 若王家长眠之谷效果检测成立，则本次效果被无效，不执行回卡组处理。
 	if aux.NecroValleyNegateCheck(g) then return end
-	-- 将卡送回卡组并洗牌
+	-- 将目标卡全部返回持有者卡组并洗牌，原因为效果。
 	Duel.SendtoDeck(g,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
 end
--- 连锁触发条件函数，判断是否为己方「光道」怪兽的效果发动
+-- ②效果的发动条件：检测到本回合有自己控制的「光道」怪兽效果发动，且该效果不是本卡自身的效果（满足时强制发动）。
 function c19959563.ddcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local rc=re:GetHandler()
 	return re:IsActiveType(TYPE_MONSTER) and rc~=c
 		and rc:IsSetCard(0x38) and rc:IsControler(tp)
 end
--- 设置效果发动时的目标信息，准备从卡组丢弃4张卡
+-- ②效果的无对象目标阶段：直接返回可发动，并登记将4张卡送去墓地的操作信息。
 function c19959563.ddtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置操作信息，指定将从卡组丢弃4张卡
+	-- 登记操作信息：把玩家tp卡组上方4张卡送去墓地。
 	Duel.SetOperationInfo(0,CATEGORY_DECKDES,nil,0,tp,4)
 end
--- 效果发动时执行的操作，从卡组丢弃4张卡
+-- ②效果的处理：从玩家tp卡组上方把4张卡送去墓地。
 function c19959563.ddop(e,tp,eg,ep,ev,re,r,rp)
-	-- 从玩家卡组最上方丢弃4张卡
+	-- 执行从玩家tp卡组最上方丢弃4张卡到墓地，原因为效果。
 	Duel.DiscardDeck(tp,4,REASON_EFFECT)
 end
