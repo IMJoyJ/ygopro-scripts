@@ -9,7 +9,7 @@ function c25163248.initial_effect(c)
 	e1:SetValue(c25163248.condition)
 	c:RegisterEffect(e1)
 end
--- 检查触发效果的怪兽是否为机械族
+-- 判断被解放的这张卡所用于上级召唤的怪兽是否为机械族，若是则允许这张卡作为2只数量解放。
 function c25163248.condition(e,c)
 	return c:IsRace(RACE_MACHINE)
 end

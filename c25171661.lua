@@ -11,8 +11,8 @@ function c25171661.initial_effect(c)
 	e1:SetCondition(c25171661.condition)
 	c:RegisterEffect(e1)
 end
--- 条件函数判断：当自己手卡数量为0时效果才生效
+-- 该函数为永续效果的条件函数，用于判断是否满足“自己手卡是0张”这一适用条件，只有条件为真时贯穿伤害效果才生效。
 function c25171661.condition(e)
-	-- 检索当前控制者手卡数量是否为0
+	-- 获取此效果持有者的控制者手牌数量（只计算自己的手牌区域，不包含对方），并判断该数量是否为0；为0时条件成立。
 	return Duel.GetFieldGroupCount(e:GetHandler():GetControler(),LOCATION_HAND,0)==0
 end

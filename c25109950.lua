@@ -12,20 +12,20 @@ function c25109950.initial_effect(c)
 	e1:SetOperation(c25109950.atkop)
 	c:RegisterEffect(e1)
 end
--- 检查并选择1张满足条件的怪兽进行解放作为代价。
+-- 发动前选定代价：从自己场上选择这张卡以外的1只怪兽解放，作为发动效果的代价。
 function c25109950.atkcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查玩家场上是否存在至少1张可解放的怪兽（不包括自身）。
+	-- 代价检查：在发动确认阶段，检测自己场上是否存在这张卡以外的1只可解放的怪兽，若不存在则不能发动。
 	if chk==0 then return Duel.CheckReleaseGroup(tp,nil,1,e:GetHandler()) end
-	-- 从玩家场上选择1张满足条件的怪兽进行解放。
+	-- 选择代价对象：从自己场上这张卡以外的可解放怪兽中，选择1只作为祭品。
 	local g=Duel.SelectReleaseGroup(tp,nil,1,1,e:GetHandler())
-	-- 将选中的怪兽进行解放，作为效果的代价。
+	-- 执行解放：将选择的怪兽作为代价解放，送入墓地。
 	Duel.Release(g,REASON_COST)
 end
--- 效果处理函数，用于提升攻击力。
+-- 效果处理：若这张卡仍在场上且表侧表示，并且与发动时的效果仍有关联，则赋予其攻击力上升700的效果，持续到回合结束。
 function c25109950.atkop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsFaceup() and c:IsRelateToEffect(e) then
-		-- 使这张卡的攻击力上升700，回合结束时消失。
+		-- 这张卡的攻击力在回合结束前加700。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)

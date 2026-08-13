@@ -11,7 +11,7 @@ function c25034083.initial_effect(c)
 	e1:SetValue(c25034083.atlimit)
 	c:RegisterEffect(e1)
 end
--- 限制对方怪兽选择攻击目标，只有卡号为25034083的表侧表示怪兽可以被选择为攻击对象
+-- 该函数作为效果值的判定条件：若对象怪兽不是「诱饵机人」且为表侧表示，则返回true，表示对方不能选择该怪兽作为攻击对象。
 function c25034083.atlimit(e,c)
 	return not c:IsCode(25034083) and c:IsFaceup()
 end

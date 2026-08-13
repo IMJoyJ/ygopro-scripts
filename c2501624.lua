@@ -5,11 +5,11 @@
 -- ②：这张卡召唤·特殊召唤的场合才能发动。从卡组把1张「光之黄金柜」加入手卡。
 -- ③：这张卡的攻击力上升有「光之黄金柜」的卡名记述的双方墓地的怪兽数量×300。
 local s,id,o=GetID()
--- 初始化卡片效果，注册特殊召唤、检索和攻击力提升效果
+-- 注册本卡全部效果：①特殊召唤规则效果（丢弃1手卡从手卡特殊召唤，并附加卡名改变），②召唤/特殊召唤成功时检索「光之黄金柜」，③攻击力上升效果
 function s.initial_effect(c)
-	-- 记录该卡效果文本上记载着「黑魔术少女」和「光之黄金柜」的卡名
+	-- 将「黑魔术少女」(38033121)和「光之黄金柜」(79791878)登记为本卡效果文本中记载的卡名
 	aux.AddCodeList(c,38033121,79791878)
-	-- ①：这张卡可以丢弃1张手卡，从手卡特殊召唤。这个方法特殊召唤的这张卡的卡名当作「黑魔术少女」使用。
+	-- 这个卡名的①的方法的特殊召唤1回合只能有1次。①：这张卡可以丢弃1张手卡，从手卡特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_SPSUMMON_PROC)
@@ -43,20 +43,20 @@ function s.initial_effect(c)
 	e4:SetValue(s.atkval)
 	c:RegisterEffect(e4)
 end
--- 判断特殊召唤条件是否满足：场上是否有空位且手牌中是否有可丢弃的卡
+-- 特殊召唤规则效果的发动条件：手牌特殊召唤时主怪兽区有空位，且手牌中除自身外有1张可丢弃的卡
 function s.spcon(e,c)
 	if c==nil then return true end
 	local tp=c:GetControler()
-	-- 判断场上是否有空位
+	-- 检查自己场上主要怪兽区域是否有空位，用于容纳从手卡特殊召唤的这张卡
 	return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 判断手牌中是否存在可丢弃的卡
+		-- 检查手牌中是否存在1张不包含这张卡自身、且可以作为特殊召唤COST丢弃的卡
 		and Duel.IsExistingMatchingCard(Card.IsDiscardable,tp,LOCATION_HAND,0,1,c,REASON_SPSUMMON)
 end
--- 设置特殊召唤的处理目标：选择要丢弃的手牌
+-- 特殊召唤规则效果的目标选择：从手牌候选卡中选出1张要丢弃的手牌并暂存，选择成功则效果可发动
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk,c)
-	-- 获取手牌中所有可丢弃的卡
+	-- 获取所有满足可丢弃条件（不包含这张卡自身）的手牌，作为丢弃COST的候选集合
 	local g=Duel.GetMatchingGroup(Card.IsDiscardable,tp,LOCATION_HAND,0,c,REASON_SPSUMMON)
-	-- 提示玩家选择要丢弃的手牌
+	-- 弹出手牌选择提示，要求玩家选择1张要丢弃的手牌
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DISCARD)  --"请选择要丢弃的手牌"
 	local tc=g:SelectUnselect(nil,tp,false,true,1,1)
 	if tc then
@@ -64,12 +64,12 @@ function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk,c)
 		return true
 	else return false end
 end
--- 执行特殊召唤的处理：将选中的卡送去墓地并变更此卡的卡号为「黑魔术少女」
+-- 特殊召唤处理：将选中的手牌丢弃，并把这张卡特殊召唤，然后给它附加卡名当作「黑魔术少女」的永续效果
 function s.spop(e,tp,eg,ep,ev,re,r,rp,c)
 	local g=e:GetLabelObject()
-	-- 将选中的卡以特殊召唤+丢弃的原因送去墓地
+	-- 将选择的那张手牌以特殊召唤手续+丢弃的理由送去墓地，即支付丢弃1张手牌的COST
 	Duel.SendtoGrave(g,REASON_SPSUMMON+REASON_DISCARD)
-	-- 将此卡的卡号更改为「黑魔术少女」
+	-- 这个方法特殊召唤的这张卡的卡名当作「黑魔术少女」使用。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_CHANGE_CODE)
@@ -78,37 +78,37 @@ function s.spop(e,tp,eg,ep,ev,re,r,rp,c)
 	e1:SetReset(RESET_EVENT+0xfe0000)
 	c:RegisterEffect(e1)
 end
--- 检索效果的过滤函数：判断卡是否为「光之黄金柜」且可加入手牌
+-- 定义检索过滤条件：卡号为79791878（「光之黄金柜」）且能够加入手牌
 function s.thfilter(c)
 	return c:IsCode(79791878) and c:IsAbleToHand()
 end
--- 设置检索效果的目标：确认卡组中是否存在「光之黄金柜」
+-- ②效果的发动条件与操作信息设置：卡组存在可加入手牌的「光之黄金柜」时才可发动，并登记回手牌/检索的操作信息
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查卡组中是否存在满足条件的「光之黄金柜」
+	-- 发动条件判定：卡组中是否存在至少1张「光之黄金柜」且能加入手牌
 	if chk==0 then return Duel.IsExistingMatchingCard(s.thfilter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置检索效果的操作信息：准备将1张「光之黄金柜」加入手牌
+	-- 设置本次效果处理包含将卡加入手牌的分类，目标位置为卡组，数量为1张
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 执行检索效果：从卡组选择1张「光之黄金柜」加入手牌并确认
+-- ②效果处理：从卡组搜索1张「光之黄金柜」加入手牌，并向对方确认
 function s.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要加入手牌的卡
+	-- 弹出卡组选择提示，要求玩家选择1张要加入手牌的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 从卡组中选择1张「光之黄金柜」
+	-- 让玩家从卡组中选择1张满足s.thfilter（「光之黄金柜」且可加入手牌）的卡
 	local g=Duel.SelectMatchingCard(tp,s.thfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的卡加入手牌
+		-- 将选中的「光之黄金柜」加入其持有者的手牌
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 向对方确认加入手牌的卡
+		-- 向对手展示加入手牌的那张卡，以确认检索结果
 		Duel.ConfirmCards(1-tp,g)
 	end
 end
--- 攻击力提升效果的过滤函数：判断墓地中的卡是否为怪兽且记载着「光之黄金柜」
+-- 定义攻击力上升效果的过滤函数：双方墓地中记载有「光之黄金柜」卡名的怪兽
 function s.atkfilter(c)
-	-- 判断墓地中的卡是否为怪兽且记载着「光之黄金柜」
+	-- 判断该卡是怪兽卡，且效果文本中记载了「光之黄金柜」(79791878)
 	return c:IsType(TYPE_MONSTER) and aux.IsCodeListed(c,79791878)
 end
--- 计算攻击力提升值：双方墓地怪兽数量×300
+-- 计算攻击力上升数值：双方墓地中记载「光之黄金柜」的怪兽数量×300
 function s.atkval(e,c)
-	-- 获取双方墓地中记载着「光之黄金柜」的怪兽数量并乘以300
+	-- 统计双方墓地中满足s.atkfilter的怪兽数量并乘以300，作为攻击力上升值
 	return Duel.GetMatchingGroupCount(s.atkfilter,c:GetControler(),LOCATION_GRAVE,LOCATION_GRAVE,nil)*300
 end
