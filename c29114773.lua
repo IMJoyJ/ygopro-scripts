@@ -3,7 +3,7 @@
 -- 这个卡名的卡在1回合只能发动1张。
 -- ①：从手卡把1张「疾行机人」卡送去墓地才能发动。从卡组把1只「疾行机人」怪兽加入手卡。
 function c29114773.initial_effect(c)
-	-- 这个卡名的卡在1回合只能发动1张。
+	-- 这个卡名的卡在1回合只能发动1张。①：从手卡把1张「疾行机人」卡送去墓地才能发动。从卡组把1只「疾行机人」怪兽加入手卡。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -14,42 +14,42 @@ function c29114773.initial_effect(c)
 	e1:SetOperation(c29114773.activate)
 	c:RegisterEffect(e1)
 end
--- 定义cost过滤函数，检查手卡中是否含有「疾行机人」卡且能作为cost送去墓地
+-- 定义cost过滤器：检查卡片是否为「疾行机人」系列卡，并且可以作为代价送去墓地。
 function c29114773.costfilter(c)
 	return c:IsSetCard(0x2016) and c:IsAbleToGraveAsCost()
 end
--- 处理发动时的cost，选择1张手卡中的「疾行机人」卡送去墓地
+-- cost函数：支付发动代价，从手卡选择1张「疾行机人」卡送去墓地。
 function c29114773.cost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断是否满足cost条件，检查手卡中是否存在至少1张「疾行机人」怪兽卡
+	-- 检查手卡是否存在至少1张满足costfilter条件、且不是效果发动者自身的「疾行机人」卡，以判定是否可以支付代价。
 	if chk==0 then return Duel.IsExistingMatchingCard(c29114773.costfilter,tp,LOCATION_HAND,0,1,e:GetHandler()) end
-	-- 提示玩家选择要送去墓地的卡
+	-- 向玩家发出选择提示，要求选择1张要送去墓地的卡片。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
-	-- 从手卡中选择1张「疾行机人」卡作为cost
+	-- 玩家从手卡选择1张满足costfilter的「疾行机人」卡（排除效果发动者自身）作为代价。
 	local g=Duel.SelectMatchingCard(tp,c29114773.costfilter,tp,LOCATION_HAND,0,1,1,e:GetHandler())
-	-- 将选中的卡送去墓地作为发动cost
+	-- 将选中的卡以代价（REASON_COST）送去墓地，完成cost支付。
 	Duel.SendtoGrave(g,REASON_COST)
 end
--- ①：从手卡把1张「疾行机人」卡送去墓地才能发动。从卡组把1只「疾行机人」怪兽加入手卡。
+-- 定义检索过滤器：检查卡片是否为「疾行机人」系列、怪兽卡，并且可以被加入手卡。
 function c29114773.filter(c)
 	return c:IsSetCard(0x2016) and c:IsType(TYPE_MONSTER) and c:IsAbleToHand()
 end
--- 定义target过滤函数，检查卡组中是否存在「疾行机人」怪兽卡
+-- target函数：发动时确认是否存在可检索的「疾行机人」怪兽，并设置本次效果处理的操作信息为从卡组加入手卡。
 function c29114773.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断是否满足发动条件，检查卡组中是否存在至少1张「疾行机人」怪兽卡
+	-- 检查卡组是否存在至少1张满足filter条件的「疾行机人」怪兽，以决定效果能否发动。
 	if chk==0 then return Duel.IsExistingMatchingCard(c29114773.filter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置连锁操作信息，表示将从卡组检索1只「疾行机人」怪兽加入手牌
+	-- 设置操作信息：本次效果将把1张卡从卡组加入手卡（处理时再选择具体卡片）。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 处理效果发动时的检索和加入手牌操作
+-- activate函数：效果处理时从卡组选择1只「疾行机人」怪兽加入手卡，并向对方展示。
 function c29114773.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要加入手牌的卡
+	-- 向玩家发出选择提示，要求选择1张要加入手卡的卡片。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 从卡组中选择1只「疾行机人」怪兽卡
+	-- 玩家从卡组选择1只满足filter条件的「疾行机人」怪兽。
 	local g=Duel.SelectMatchingCard(tp,c29114773.filter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的怪兽卡加入手牌
+		-- 将选中的「疾行机人」怪兽加入手卡（原因：效果）。
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 确认对方玩家看到被加入手牌的卡
+		-- 将加入手卡的那张卡展示给对方玩家确认。
 		Duel.ConfirmCards(1-tp,g)
 	end
 end

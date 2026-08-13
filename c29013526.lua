@@ -13,38 +13,38 @@ function c29013526.initial_effect(c)
 	e1:SetOperation(c29013526.spop)
 	c:RegisterEffect(e1)
 end
--- 检查并选择1只风属性怪兽进行解放作为祭品
+-- 作为发动代价，从自己场上选择并解放这张卡以外的1只风属性怪兽。
 function c29013526.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查场上是否存在至少1只风属性怪兽可被解放
+	-- 效果发动前检查自己场上是否存在至少1只除这张卡以外的风属性怪兽，可作为祭品解放。
 	if chk==0 then return Duel.CheckReleaseGroup(tp,Card.IsAttribute,1,e:GetHandler(),ATTRIBUTE_WIND) end
-	-- 选择1只风属性怪兽进行解放
+	-- 让玩家从自己场上选择1只除这张卡以外的风属性怪兽作为祭品。
 	local g=Duel.SelectReleaseGroup(tp,Card.IsAttribute,1,1,e:GetHandler(),ATTRIBUTE_WIND)
-	-- 将选中的怪兽解放作为祭品
+	-- 解放所选择的怪兽，作为效果发动的代价（cost）。
 	Duel.Release(g,REASON_COST)
 end
--- 定义风属性怪兽的过滤条件
+-- 定义可作为特殊召唤对象的怪兽条件：手牌中的风属性怪兽，且能够被当前效果特殊召唤。
 function c29013526.filter(c,e,tp)
 	return c:IsAttribute(ATTRIBUTE_WIND) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 检查手牌中是否存在可特殊召唤的风属性怪兽
+-- 发动目标选择：确认自己场上有可用怪兽区空格，且手牌中存在符合条件的风属性怪兽，才能发动。
 function c29013526.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查场上是否有足够的召唤区域
+	-- 检查自己场上是否有可用的怪兽区域空格。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查手牌中是否存在至少1张满足条件的风属性怪兽
+		-- 检查手牌中是否存在满足filter条件的风属性怪兽。
 		and Duel.IsExistingMatchingCard(c29013526.filter,tp,LOCATION_HAND,0,1,nil,e,tp) end
-	-- 设置连锁操作信息，表示将要特殊召唤怪兽
+	-- 设置本次连锁的操作信息：从手卡特殊召唤1只风属性怪兽。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_HAND)
 end
--- 处理特殊召唤效果，包括选择怪兽、特殊召唤并注册破坏效果
+-- 效果处理：若场上还有空格，则从手牌选择1只风属性怪兽特殊召唤，并为该怪兽附加‘猛吹之薇茵离场时破坏’的持续效果。
 function c29013526.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查场上是否有足够的召唤区域
+	-- 效果处理时再次确认自己场上仍有可用怪兽区空格，否则效果不处理。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-	-- 提示玩家选择要特殊召唤的怪兽
+	-- 给玩家显示选择提示，要求选择要特殊召唤的怪兽。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 选择手牌中满足条件的风属性怪兽
+	-- 从手牌中筛选出符合条件的1只风属性怪兽。
 	local g=Duel.SelectMatchingCard(tp,c29013526.filter,tp,LOCATION_HAND,0,1,1,nil,e,tp)
 	if g:GetCount()>0 then
-		-- 将选中的怪兽特殊召唤到场上
+		-- 将选择的怪兽以表侧攻击表示特殊召唤到自己场上。
 		Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
 		-- 这个效果特殊召唤的怪兽，在「猛吹之薇茵」从自己场上离开的场合破坏。
 		local e1=Effect.CreateEffect(e:GetHandler())
@@ -56,10 +56,10 @@ function c29013526.spop(e,tp,eg,ep,ev,re,r,rp)
 		g:GetFirst():RegisterEffect(e1)
 	end
 end
--- 当有怪兽离开场上的时候，检查是否为薇茵离开，若是则破坏特殊召唤的怪兽
+-- 持续效果的触发处理：当「猛吹之薇茵」离场时，破坏持有这个效果的怪兽。
 function c29013526.desop(e,tp,eg,ep,ev,re,r,rp)
 	if eg:IsExists(Card.IsCode,1,nil,29013526) then
-		-- 将特殊召唤的怪兽破坏
+		-- 将承载此效果的那只特殊召唤的怪兽破坏，破坏原因为效果。
 		Duel.Destroy(e:GetHandler(),REASON_EFFECT)
 	end
 end

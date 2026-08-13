@@ -4,7 +4,7 @@
 -- 「转生龙」的效果1回合只能使用1次。
 -- ①：场上的这张卡被对方的效果送去墓地的场合或者被战斗破坏送去墓地的场合，以「转生龙」以外的自己或者对方的墓地1只怪兽为对象才能发动。那只怪兽特殊召唤。
 function c29143726.initial_effect(c)
-	-- 为转生龙添加同调召唤手续，要求1只调整和1只调整以外的怪兽作为素材
+	-- 添加同调召唤手续：调整＋调整以外的怪兽1只以上
 	aux.AddSynchroProcedure(c,nil,aux.NonTuner(nil),1)
 	c:EnableReviveLimit()
 	-- ①：场上的这张卡被对方的效果送去墓地的场合或者被战斗破坏送去墓地的场合，以「转生龙」以外的自己或者对方的墓地1只怪兽为对象才能发动。那只怪兽特殊召唤。
@@ -24,39 +24,39 @@ function c29143726.initial_effect(c)
 	e2:SetCondition(c29143726.spcon2)
 	c:RegisterEffect(e2)
 end
--- 效果发动条件：对方的效果将转生龙送去墓地且转生龙在场上时被送去墓地
+-- 效果发动条件：这张卡被对方的效果从场上送去墓地（且之前由自己控制）
 function c29143726.spcon1(e,tp,eg,ep,ev,re,r,rp)
 	return rp==1-tp and bit.band(r,REASON_EFFECT)~=0 and e:GetHandler():IsPreviousControler(tp)
 		and e:GetHandler():IsPreviousLocation(LOCATION_ONFIELD)
 end
--- 效果发动条件：转生龙被战斗破坏送去墓地
+-- 效果发动条件：这张卡被战斗破坏并送去墓地（当前在墓地且原因为战斗）
 function c29143726.spcon2(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsLocation(LOCATION_GRAVE) and e:GetHandler():IsReason(REASON_BATTLE)
 end
--- 过滤满足条件的墓地怪兽，排除转生龙自身且可以特殊召唤
+-- 选择对象：墓地中除“转生龙”以外的、能够被特殊召唤的怪兽
 function c29143726.filter(c,e,tp)
 	return not c:IsCode(29143726) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 设置效果的发动条件，判断是否满足特殊召唤的条件
+-- 效果发动时的目标处理：确认可特殊召唤的怪兽区，从双方墓地选择1只“转生龙”以外的可特殊召唤怪兽为对象
 function c29143726.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and c29143726.filter(chkc,e,tp) end
-	-- 判断玩家场上是否有足够的怪兽区域
+	-- 检查自己场上是否有可用的怪兽区域
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 判断墓地中是否存在满足条件的怪兽
+		-- 确认双方墓地存在至少1只满足条件的可特殊召唤怪兽作为对象
 		and Duel.IsExistingTarget(c29143726.filter,tp,LOCATION_GRAVE,LOCATION_GRAVE,1,nil,e,tp) end
-	-- 向玩家提示选择要特殊召唤的卡
+	-- 向玩家显示选择特殊召唤对象的提示
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 选择满足条件的墓地怪兽作为效果对象
+	-- 选择1只墓地中的符合条件的怪兽作为效果对象
 	local g=Duel.SelectTarget(tp,c29143726.filter,tp,LOCATION_GRAVE,LOCATION_GRAVE,1,1,nil,e,tp)
-	-- 设置效果操作信息，确定特殊召唤的怪兽数量和目标
+	-- 登记操作信息：本次效果将特殊召唤1只怪兽
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,1,0,0)
 end
--- 执行效果操作，将选中的怪兽特殊召唤到场上
+-- 效果处理：取得对象，若对象仍与效果关联，则将其表侧表示特殊召唤到自己场上
 function c29143726.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁中被选择的目标怪兽
+	-- 取得本次效果的对象卡
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 将目标怪兽以正面表示形式特殊召唤到场上
+		-- 将对象怪兽以表侧表示特殊召唤到自己场上
 		Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
