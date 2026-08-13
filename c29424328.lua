@@ -16,7 +16,7 @@ function c29424328.initial_effect(c)
 	e2:SetCode(EFFECT_TRIBUTE_LIMIT)
 	e2:SetValue(c29424328.tlimit)
 	c:RegisterEffect(e2)
-	-- 这张卡只要在怪兽区域存在，不能用效果解放。
+	-- ①：这张卡只要在怪兽区域存在，不能用效果解放。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_SINGLE)
 	e3:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
@@ -24,7 +24,7 @@ function c29424328.initial_effect(c)
 	e3:SetCode(EFFECT_UNRELEASABLE_EFFECT)
 	e3:SetValue(1)
 	c:RegisterEffect(e3)
-	-- 对方抽卡阶段的抽卡前发动。把对方卡组最上面的卡确认，回到卡组最上面或者最下面。
+	-- ②：对方抽卡阶段的抽卡前发动。把对方卡组最上面的卡确认，回到卡组最上面或者最下面。
 	local e4=Effect.CreateEffect(c)
 	e4:SetDescription(aux.Stringid(29424328,0))  --"确认卡组"
 	e4:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_F)
@@ -34,26 +34,26 @@ function c29424328.initial_effect(c)
 	e4:SetOperation(c29424328.cfop)
 	c:RegisterEffect(e4)
 end
--- 当上级召唤时，若解放的怪兽不是暗属性，则不能特殊召唤。
+-- 判断作为解放的怪兽是否不是暗属性；若非暗属性，则不能作为这张卡上级召唤的解放。
 function c29424328.tlimit(e,c)
 	return not c:IsAttribute(ATTRIBUTE_DARK)
 end
--- 判断是否为对方回合且对方卡组有卡。
+-- 发动条件：当前回合玩家不是这张卡的控制者（即对方回合），且对方卡组至少有一张卡。
 function c29424328.cfcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 对方回合且对方卡组有卡时触发效果。
+	-- 返回布尔值：当前回合玩家不是这张卡的控制者（即对方回合），且对方卡组存在卡。
 	return tp~=Duel.GetTurnPlayer() and Duel.GetFieldGroupCount(1-tp,LOCATION_DECK,0)>0
 end
--- 执行抽卡阶段确认卡组并选择返回位置的操作。
+-- 效果处理：获取对方卡组最上方1张卡并让本卡控制者确认，然后控制者选择将其放回卡组最上面或最下面；若选择最下面则移动该卡到卡组底部。
 function c29424328.cfop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取对方卡组最上方的1张卡。
+	-- 获取对方（1-tp）卡组最上方的1张卡。
 	local g=Duel.GetDecktopGroup(1-tp,1)
-	-- 确认对方卡组最上方的卡。
+	-- 向这张卡的控制者展示（确认）对方卡组最上方的1张卡。
 	Duel.ConfirmCards(tp,g)
 	local tc=g:GetFirst()
-	-- 选择将卡放回卡组最上面或最下面。
+	-- 让控制者选择“回到卡组最上面”或“回到卡组最下面”，返回所选选项的序号。
 	local opt=Duel.SelectOption(tp,aux.Stringid(29424328,1),aux.Stringid(29424328,2))  --"返回卡组最上面/返回卡组最下面"
 	if opt==1 then
-		-- 将卡移动到卡组最下面。
+		-- 将那张卡移动到卡组最下面（对应选项为回到卡组最下面时）。
 		Duel.MoveSequence(tc,opt)
 	end
 end

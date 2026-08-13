@@ -35,54 +35,54 @@ function c29353756.initial_effect(c)
 	e3:SetOperation(c29353756.negop)
 	c:RegisterEffect(e3)
 end
--- 判断是否满足特殊召唤条件，即自己的LP比对方少2000以上且场上存在可用怪兽区域。
+-- 特殊召唤规则的条件判定：若c为nil则视为规则召唤本身可直接使用；否则需满足自己LP比对方少2000以上且主怪兽区有空位。
 function c29353756.spcon(e,c)
 	if c==nil then return true end
 	local tp=c:GetControler()
-	-- 判断自己的LP是否比对方少2000以上。
+	-- 判断自己基本分是否比对方少2000以上，即②的LP差距条件成立。
 	return Duel.GetLP(tp)<=Duel.GetLP(1-tp)-2000
-		-- 判断自己场上是否有可用的怪兽区域。
+		-- 同时要求自己场上有可用的主要怪兽区域，才能从手卡特殊召唤。
 		and Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 end
--- 判断装备效果是否可以发动，即确认此卡在场上的唯一性。
+-- 作为起动效果的发动条件：确认此卡在自己场上仍满足同名卡只能有1张表侧表示存在的唯一性限制。
 function c29353756.eqcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():CheckUniqueOnField(tp)
 end
--- 定义筛选「希望皇 霍普」怪兽的条件，即该怪兽必须表侧表示且属于「希望皇 霍普」卡组。
+-- 装备对象筛选条件：表侧表示且属于「希望皇」系列的怪兽。
 function c29353756.filter(c)
 	return c:IsFaceup() and c:IsSetCard(0x107f)
 end
--- 设置装备效果的目标选择逻辑，即选择自己场上的「希望皇 霍普」怪兽作为装备对象。
+-- 目标判定：若指定对象则验证其位于自己主怪兽区且满足筛选；若为发动确认，则需魔陷区有空位且场上存在可装备的「希望皇 霍普」怪兽。
 function c29353756.eqtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and c29353756.filter(chkc) end
-	-- 判断装备效果是否可以发动，即自己场上是否有可用的魔陷区域。
+	-- 发动时检查自己魔陷区是否还有空位，以容纳这张装备卡。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_SZONE)>0
-		-- 判断是否存在符合条件的「希望皇 霍普」怪兽作为装备对象。
+		-- 同时检查自己场上是否存在满足条件的「希望皇 霍普」怪兽可以作为装备对象。
 		and Duel.IsExistingTarget(c29353756.filter,tp,LOCATION_MZONE,0,1,nil) end
-	-- 提示玩家选择要装备的怪兽。
+	-- 提示玩家选择要装备的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_EQUIP)  --"请选择要装备的卡"
-	-- 选择符合条件的「希望皇 霍普」怪兽作为装备对象。
+	-- 让玩家选择自己场上1只满足条件的「希望皇 霍普」怪兽，并将其登记为该效果的对象。
 	Duel.SelectTarget(tp,c29353756.filter,tp,LOCATION_MZONE,0,1,1,nil)
 end
--- 执行装备操作，若条件不满足则将装备卡送入墓地。
+-- 效果处理：确认此卡仍与效果关联且非里侧，再检查装备条件，若满足则将自身装备给目标怪兽，否则送去墓地。
 function c29353756.eqop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if not c:IsRelateToEffect(e) or c:IsFacedown() then return end
-	-- 获取当前连锁中被选择的装备对象。
+	-- 取得效果发动时选择的对象怪兽。
 	local tc=Duel.GetFirstTarget()
-	-- 判断装备条件是否满足，包括魔陷区域是否足够、目标怪兽是否合法等。
+	-- 检查装备条件是否仍成立：魔陷区有空位、对象仍在己方场上且表侧、对象与效果关联、此卡仍满足唯一性；任一不满足则装备失败。
 	if Duel.GetLocationCount(tp,LOCATION_SZONE)<=0 or tc:IsControler(1-tp) or tc:IsFacedown() or not tc:IsRelateToEffect(e) or not c:CheckUniqueOnField(tp) then
-		-- 若装备条件不满足，则将装备卡送入墓地。
+		-- 因无法装备而将此卡送去墓地。
 		Duel.SendtoGrave(c,REASON_EFFECT)
 		return
 	end
 	c29353756.zw_equip_monster(c,tp,tc)
 end
--- 执行装备卡与目标怪兽的装备过程，并设置装备限制和攻击力加成效果。
+-- 将这张卡装备给目标「希望皇 霍普」怪兽，并为其追加攻击力上升2000的装备效果以及装备对象限制。
 function c29353756.zw_equip_monster(c,tp,tc)
-	-- 尝试将装备卡装备给目标怪兽，若失败则返回。
+	-- 尝试执行装备，若装备失败则直接结束处理。
 	if not Duel.Equip(tp,c,tc) then return end
-	-- 设置装备卡的装备对象限制，确保只能装备给特定怪兽。
+	-- 对应“给那只自己的「希望皇 霍普」怪兽装备”：设置此装备卡只能装备给被选择的那只对象怪兽。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_EQUIP_LIMIT)
@@ -91,7 +91,7 @@ function c29353756.zw_equip_monster(c,tp,tc)
 	e1:SetValue(c29353756.eqlimit)
 	e1:SetLabelObject(tc)
 	c:RegisterEffect(e1)
-	-- 设置装备卡的攻击力加成效果，使装备怪兽攻击力上升2000。
+	-- 对应“攻击力上升2000”：作为装备卡时，为装备怪兽提供2000攻击力加成。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_EQUIP)
 	e2:SetCode(EFFECT_UPDATE_ATTACK)
@@ -99,20 +99,20 @@ function c29353756.zw_equip_monster(c,tp,tc)
 	e2:SetReset(RESET_EVENT+RESETS_STANDARD)
 	c:RegisterEffect(e2)
 end
--- 定义装备对象限制的具体条件，即只能装备给被标记的怪兽。
+-- 装备限制判定：只有当初选择的那只「希望皇 霍普」怪兽才能装备此卡。
 function c29353756.eqlimit(e,c)
 	return c==e:GetLabelObject()
 end
--- 判断是否满足陷阱卡无效的条件，即装备卡已装备且对方发动陷阱卡。
+-- ④的发动条件：此卡装备中、对方发动陷阱卡、且该陷阱卡在对方场上发动。
 function c29353756.negcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断装备卡是否已装备且对方发动陷阱卡。
+	-- 确认此卡装备中、连锁来源为对方、且对方发动的卡位于魔陷区，即满足④的触发条件。
 	return e:GetHandler():GetEquipTarget() and rp==1-tp and Duel.GetChainInfo(ev,CHAININFO_TRIGGERING_LOCATION)==LOCATION_SZONE
 		and re:IsActiveType(TYPE_TRAP)
 end
--- 执行陷阱卡无效的操作，并提示发动了该卡。
+-- 效果处理：无效对方发动的陷阱卡的效果。
 function c29353756.negop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示发动了该卡。
+	-- 向双方展示此卡，宣告无效陷阱卡效果。
 	Duel.Hint(HINT_CARD,0,29353756)
-	-- 使对方发动的陷阱卡效果无效。
+	-- 使对方场上发动的陷阱卡所在连锁的效果无效。
 	Duel.NegateEffect(ev)
 end

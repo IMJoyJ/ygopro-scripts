@@ -28,30 +28,30 @@ function c29348048.initial_effect(c)
 	e2:SetOperation(c29348048.spop)
 	c:RegisterEffect(e2)
 end
--- 判断是否处于主要阶段1或主要阶段2
+-- ①效果的发动条件：当前处于双方的主要阶段1或主要阶段2才可发动。
 function c29348048.atkcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断是否处于主要阶段1或主要阶段2
+	-- 判定当前阶段为主要阶段1（M1）或主要阶段2（M2），满足①效果在主要阶段的发动时机。
 	return Duel.GetCurrentPhase()==PHASE_MAIN1 or Duel.GetCurrentPhase()==PHASE_MAIN2
 end
--- 检查是否满足解放不死族怪兽的条件并选择解放对象
+-- ①效果的发动代价：解放自己场上1只不死族怪兽；先检查可解放对象，再选择并解放。
 function c29348048.atkcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
-	-- 检查是否满足解放不死族怪兽的条件
+	-- 代价检查：确认自己场上存在1只不死族怪兽可以解放（且不能选择效果持有者自身）。
 	if chk==0 then return Duel.CheckReleaseGroup(tp,Card.IsRace,1,c,RACE_ZOMBIE) end
-	-- 提示玩家选择要解放的卡
+	-- 弹出“请选择要解放的卡”的选择提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_RELEASE)  --"请选择要解放的卡"
-	-- 选择1张场上存在的不死族怪兽进行解放
+	-- 选择自己场上1只不死族怪兽作为解放代价。
 	local g=Duel.SelectReleaseGroup(tp,Card.IsRace,1,1,c,RACE_ZOMBIE)
 	local tc=g:GetFirst()
 	e:SetLabelObject(tc)
-	-- 将选中的怪兽从场上解放
+	-- 将选择的不死族怪兽解放，作为效果的发动代价（REASON_COST）。
 	Duel.Release(g,REASON_COST)
 end
--- 将解放的怪兽原本攻击力数值加到自身攻击力上
+-- ①效果处理：这张卡仍表侧表示且与效果关联时，将解放怪兽的原本攻击力数值作为攻击力上升值赋予这张卡，持续到回合结束。
 function c29348048.atkop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsFaceup() and c:IsRelateToEffect(e) then
-		-- 将自身攻击力提升解放的怪兽的原本攻击力数值
+		-- 对应①效果的后半句：这张卡的攻击力直到回合结束时上升解放的怪兽的原本攻击力数值。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)
@@ -60,29 +60,29 @@ function c29348048.atkop(e,tp,eg,ep,ev,re,r,rp)
 		c:RegisterEffect(e1)
 	end
 end
--- 判断场上的「归魂复仇死者·屠魔侠」是否表侧表示存在
+-- ②效果的条件筛选：用于判断自己场上是否存在表侧表示的「归魂复仇死者·屠魔侠」（卡号4388680）。
 function c29348048.filter(c)
 	return c:IsCode(4388680) and c:IsFaceup()
 end
--- 判断场上的「归魂复仇死者·屠魔侠」是否表侧表示存在
+-- ②效果的发动条件：自己场上有「归魂复仇死者·屠魔侠」表侧表示存在。
 function c29348048.spcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断场上的「归魂复仇死者·屠魔侠」是否表侧表示存在
+	-- 检查自己场上是否存在至少1张表侧表示的「归魂复仇死者·屠魔侠」。
 	return Duel.IsExistingMatchingCard(c29348048.filter,tp,LOCATION_ONFIELD,0,1,nil)
 end
--- 判断是否满足特殊召唤条件
+-- ②效果发动时确认：自己的主要怪兽区有空位，且这张卡可以被特殊召唤。
 function c29348048.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断场上是否有足够的召唤区域
+	-- 检查自己的主要怪兽区是否有可用空位。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置特殊召唤的操作信息
+	-- 设置本次连锁将进行特殊召唤的操作信息（CATEGORY_SPECIAL_SUMMON），供规则检测时点。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 执行特殊召唤并设置效果
+-- ②效果处理：将这张卡特殊召唤；若成功，则给这张卡附加“从场上离开的场合除外”的效果。
 function c29348048.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 判断卡片是否可以特殊召唤并执行特殊召唤
+	-- 确认这张卡仍与效果关联且特殊召唤成功，成功则继续附加离场除外效果。
 	if c:IsRelateToEffect(e) and Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)~=0 then
-		-- 特殊召唤后，使该卡从场上离开时被除外
+		-- 对应②效果的后半部分：这个效果特殊召唤的这张卡从场上离开的场合除外。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_LEAVE_FIELD_REDIRECT)

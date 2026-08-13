@@ -5,9 +5,9 @@
 -- ②：对方怪兽的攻击宣言时，从自己墓地把1张「魔瞳」魔法卡除外才能发动。那次攻击无效。
 -- ③：自己的墓地·除外状态的「魔瞳」魔法卡是3种类以上的场合才能发动。对方场上的全部怪兽的攻击力变成0。
 local s,id,o=GetID()
--- 创建并注册该卡的4个效果，分别对应①②③效果的触发条件和处理方式
+-- 该函数注册了这张卡的全部效果：①效果在召唤成功与特殊召唤成功时各注册一个实例（e1/e2，共1回合1次）用于从卡组检索「魔瞳」魔法卡；②效果注册为场上表侧表示时对方攻击宣言可发动，支付除外墓地「魔瞳」魔法卡的代价来无效攻击；③效果注册为起动效果，在墓地·除外状态「魔瞳」魔法卡达3种类以上时可将对方全场怪兽攻击力变为0。
 function s.initial_effect(c)
-	-- ①：这张卡召唤·特殊召唤的场合才能发动。从卡组把1张「魔瞳」魔法卡加入手卡。
+	-- ①：这张卡召唤的场合才能发动。从卡组把1张「魔瞳」魔法卡加入手卡。（特殊召唤场合由e2复制此效果实现）
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(id,0))  --"检索"
 	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
@@ -43,85 +43,85 @@ function s.initial_effect(c)
 	e4:SetOperation(s.atkop)
 	c:RegisterEffect(e4)
 end
--- 检索满足条件的「魔瞳」魔法卡的过滤函数
+-- 检索过滤条件：从卡组中选出卡名视为「魔瞳」、类型为魔法卡且能够加入手卡的卡。
 function s.thfilter(c)
 	return c:IsSetCard(0x1bb) and c:IsType(TYPE_SPELL) and c:IsAbleToHand()
 end
--- 设置①效果的发动条件和处理信息
+-- ①效果的发动条件和目标设定：在发动合法性检查时确认卡组存在符合检索条件的卡；合法后向对方提示发动了该效果，并登记操作信息为从卡组将1张卡加入手卡的检索处理。
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否满足①效果的发动条件
+	-- 效果发动合法性检查：判断卡组中是否存在至少1张满足s.thfilter条件的「魔瞳」魔法卡。
 	if chk==0 then return Duel.IsExistingMatchingCard(s.thfilter,tp,LOCATION_DECK,0,1,nil) end
-	-- 向对方玩家提示发动了①效果
+	-- 向对方玩家展示本效果的描述，提示对方本方发动了「检索魔瞳魔法卡」的效果。
 	Duel.Hint(HINT_OPSELECTED,1-tp,e:GetDescription())
-	-- 设置①效果的处理信息
+	-- 登记连锁处理信息：本次效果将进行从卡组把1张卡加入手卡的操作，目标位置为卡组，数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- ①效果的处理函数，选择并检索满足条件的魔法卡
+-- ①效果的实际处理：玩家从卡组选择1张符合条件的「魔瞳」魔法卡加入手卡，并将该卡展示给对手确认。
 function s.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要加入手牌的卡
+	-- 弹出选择提示，让玩家从卡组中选择1张要加入手牌的卡片。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择满足条件的魔法卡
+	-- 执行选择：从自己的卡组中选出1张满足s.thfilter条件的「魔瞳」魔法卡。
 	local g=Duel.SelectMatchingCard(tp,s.thfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的卡加入手牌
+		-- 将选中的「魔瞳」魔法卡以效果原因加入其持有者的手卡。
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 向对方玩家确认加入手牌的卡
+		-- 把加入手卡的卡片展示给对手玩家确认。
 		Duel.ConfirmCards(1-tp,g)
 	end
 end
--- ②效果的发动条件函数，判断是否为对方攻击宣言
+-- ②效果的发动条件：当前进行攻击宣言的怪兽是对方场上的怪兽。
 function s.negcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断攻击方是否为对方
+	-- 判断攻击宣言怪兽的控制者是否是对方（1-tp），若是则满足条件。
 	return Duel.GetAttacker():IsControler(1-tp)
 end
--- ②效果的除外卡过滤函数
+-- 代价筛选条件：自己墓地中存在卡名视为「魔瞳」、类型为魔法卡且可以作为代价除外的卡。
 function s.cfilter(c)
 	return c:IsSetCard(0x1bb) and c:IsType(TYPE_SPELL) and c:IsAbleToRemoveAsCost()
 end
--- ②效果的发动处理函数，选择并除外一张「魔瞳」魔法卡
+-- ②效果的代价处理：从自己墓地选择1张「魔瞳」魔法卡除外，作为发动无效攻击效果的代价。
 function s.negcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否满足②效果的发动条件
+	-- 代价合法性检查：确认自己墓地是否存在至少1张满足s.cfilter条件的「魔瞳」魔法卡。
 	if chk==0 then return Duel.IsExistingMatchingCard(s.cfilter,tp,LOCATION_GRAVE,0,1,nil) end
-	-- 提示玩家选择要除外的卡
+	-- 提示玩家选择1张要作为代价除外的「魔瞳」魔法卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
-	-- 选择要除外的卡
+	-- 从自己墓地选择1张符合条件的「魔瞳」魔法卡作为代价。
 	local g=Duel.SelectMatchingCard(tp,s.cfilter,tp,LOCATION_GRAVE,0,1,1,nil)
-	-- 将选中的卡除外作为代价
+	-- 将选中的「魔瞳」魔法卡以表侧表示除外，作为发动代价（REASON_COST）。
 	Duel.Remove(g,POS_FACEUP,REASON_COST)
 end
--- ②效果的处理函数，无效此次攻击
+-- ②效果的处理：实际执行无效攻击，使对方怪兽的这次攻击无效化。
 function s.negop(e,tp,eg,ep,ev,re,r,rp)
-	-- 无效此次攻击
+	-- 调用Duel.NegateAttack无效当前攻击宣言。
 	Duel.NegateAttack()
 end
--- ③效果的卡种类统计过滤函数
+-- 条件统计用过滤：筛选自己墓地·除外状态中存在的「魔瞳」魔法卡（IsFaceupEx用于确认这些区域的表侧状态）。
 function s.cfilter2(c)
 	return c:IsFaceupEx() and c:IsSetCard(0x1bb) and c:IsType(TYPE_SPELL)
 end
--- ③效果的发动条件函数，统计墓地和除外状态的「魔瞳」魔法卡种类数
+-- ③效果的发动条件：自己墓地与除外状态中的「魔瞳」魔法卡种类数达到3种以上。
 function s.atkcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 统计墓地和除外状态的「魔瞳」魔法卡种类数是否不少于3种
+	-- 计算满足条件的「魔瞳」魔法卡按卡名区分的种类数量，判断是否不少于3种。
 	return Duel.GetMatchingGroup(s.cfilter2,tp,LOCATION_GRAVE+LOCATION_REMOVED,0,nil):GetClassCount(Card.GetCode)>=3
 end
--- ③效果的攻击力变更过滤函数
+-- ③效果的对象/处理过滤：选择对方场上的表侧表示怪兽；op为true时选择全部，为false时只选择攻击力大于0的怪兽。
 function s.atkfilter(c,op)
 	return c:IsFaceup() and (op or c:GetAttack()>0)
 end
--- ③效果的发动条件和处理信息设置
+-- ③效果发动时点：确认对方场上有至少1只攻击力大于0的表侧表示怪兽，并向对方提示发动了该效果；该效果不取对象。
 function s.atktg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否满足③效果的发动条件
+	-- ③效果发动合法性检查：对方场上是否存在至少1只攻击力大于0的表侧表示怪兽。
 	if chk==0 then return Duel.IsExistingMatchingCard(s.atkfilter,tp,0,LOCATION_MZONE,1,nil,false) end
-	-- 向对方玩家提示发动了③效果
+	-- 向对方玩家提示本方发动了「对方场上的全部怪兽攻击力变成0」的效果。
 	Duel.Hint(HINT_OPSELECTED,1-tp,e:GetDescription())
 end
--- ③效果的处理函数，将对方场上所有怪兽的攻击力设为0
+-- ③效果的处理：将对方场上全部表侧表示怪兽的攻击力最终值设置为0，并为每只怪兽赋予不可被无效的攻击力设定效果。
 function s.atkop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取对方场上所有满足条件的怪兽
+	-- 获取当前对方场上的全部表侧表示怪兽（不限制攻击力），作为攻击力变0的对象。
 	local g=Duel.GetMatchingGroup(s.atkfilter,tp,0,LOCATION_MZONE,nil,true)
-	-- 遍历所有满足条件的怪兽
+	-- 遍历对方场上的每一只表侧表示怪兽，逐一设置攻击力为0。
 	for tc in aux.Next(g) do
-		-- 为每个怪兽设置攻击力为0的效果
+		-- 对方场上的全部怪兽的攻击力变成0。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_SET_ATTACK_FINAL)

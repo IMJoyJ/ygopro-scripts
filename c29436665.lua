@@ -2,7 +2,7 @@
 -- 效果：
 -- 这张卡不能通常召唤。把自己场上存在的1只「黑魔术师」解放的场合才能特殊召唤。只要这张卡在场上表侧表示存在，每次自己或者对方把通常魔法卡发动，给与对方基本分1000分伤害。
 function c29436665.initial_effect(c)
-	-- 记录该卡具有「黑魔术师」这张卡的卡片密码
+	-- 将本卡效果中提到的『黑魔术师』的卡号(46986414)登记到代码列表，使本卡被视为记载了该卡名。
 	aux.AddCodeList(c,46986414)
 	c:EnableReviveLimit()
 	-- 这张卡不能通常召唤。
@@ -21,16 +21,16 @@ function c29436665.initial_effect(c)
 	e2:SetTarget(c29436665.sptg)
 	e2:SetOperation(c29436665.spop)
 	c:RegisterEffect(e2)
-	-- 只要这张卡在场上表侧表示存在，每次自己或者对方把通常魔法卡发动，给与对方基本分1000分伤害。
+	-- 只要这张卡在场上表侧表示存在，每次自己或者对方把通常魔法卡发动，
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_CONTINUOUS+EFFECT_TYPE_FIELD)
 	e3:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
 	e3:SetCode(EVENT_CHAINING)
 	e3:SetRange(LOCATION_MZONE)
-	-- 记录连锁发生时这张卡在场上存在
+	-- 设置连锁发生时的登记函数：记录本次连锁，用于判断该魔法卡发动时此卡在场上存在。
 	e3:SetOperation(aux.chainreg)
 	c:RegisterEffect(e3)
-	-- 每次自己或者对方把通常魔法卡发动，给与对方基本分1000分伤害。
+	-- 给与对方基本分1000分伤害。
 	local e4=Effect.CreateEffect(c)
 	e4:SetDescription(aux.Stringid(29436665,0))
 	e4:SetCategory(CATEGORY_DAMAGE)
@@ -41,24 +41,24 @@ function c29436665.initial_effect(c)
 	e4:SetOperation(c29436665.dmgop)
 	c:RegisterEffect(e4)
 end
--- 用于判断是否满足特殊召唤条件的过滤器函数，检查目标卡是否为「黑魔术师」且有可用怪兽区
+-- 定义解放素材的过滤条件：卡名必须是『黑魔术师』，解放后自己场上仍有可用怪兽区，且该素材可被解放（控制者为特殊召唤玩家或表侧表示）。
 function c29436665.rfilter(c,tp)
 	return c:IsCode(46986414)
-		-- 检查目标卡是否拥有可用的怪兽区
+		-- 补充过滤：该卡被解放后tp场上仍有空余怪兽区，并且该卡满足可解放条件（控制者为自己或表侧表示）。
 		and Duel.GetMZoneCount(tp,c)>0 and (c:IsControler(tp) or c:IsFaceup())
 end
--- 判断特殊召唤条件是否满足，检查是否有满足条件的「黑魔术师」可解放
+-- 特殊召唤条件检测：若c为空则返回true；否则检查tp是否存在至少1只符合rfilter的可解放『黑魔术师』。
 function c29436665.spcon(e,c)
 	if c==nil then return true end
 	local tp=c:GetControler()
-	-- 检查玩家场上是否存在至少1张满足rfilter条件的可解放卡
+	-- 检查tp是否存在至少1张满足rfilter条件的可解放卡，作为本次特殊召唤的解放素材。
 	return Duel.CheckReleaseGroupEx(tp,c29436665.rfilter,1,REASON_SPSUMMON,false,nil,tp)
 end
--- 设置特殊召唤的目标，选择要解放的「黑魔术师」
+-- 特殊召唤目标选择处理：从可解放的『黑魔术师』中让玩家选择1张，保存到e的LabelObject；选择成功则允许继续特殊召唤，否则失败。
 function c29436665.sptg(e,tp,eg,ep,ev,re,r,rp,chk,c)
-	-- 获取玩家可解放的「黑魔术师」卡片组
+	-- 获取tp当前可解放的卡组，并用rfilter过滤出符合条件的『黑魔术师』作为候选素材。
 	local g=Duel.GetReleaseGroup(tp,false,REASON_SPSUMMON):Filter(c29436665.rfilter,nil,tp)
-	-- 提示玩家选择要解放的卡
+	-- 向tp玩家显示解放素材选择提示，提示内容为“请选择要解放的卡”。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_RELEASE)  --"请选择要解放的卡"
 	local tc=g:SelectUnselect(nil,tp,false,true,1,1)
 	if tc then
@@ -66,18 +66,18 @@ function c29436665.sptg(e,tp,eg,ep,ev,re,r,rp,chk,c)
 		return true
 	else return false end
 end
--- 执行特殊召唤的操作，将选定的卡进行解放
+-- 特殊召唤操作函数：取出保存在e中的解放素材并解放，完成特殊召唤手续的代价处理。
 function c29436665.spop(e,tp,eg,ep,ev,re,r,rp,c)
 	local g=e:GetLabelObject()
-	-- 将目标卡进行解放操作
+	-- 将选中的『黑魔术师』解放，作为本次特殊召唤的代价（REASON_SPSUMMON）。
 	Duel.Release(g,REASON_SPSUMMON)
 end
--- 判断是否触发伤害效果，检查发动的是否为通常魔法卡且该卡在连锁中
+-- 伤害触发条件：当前连锁解决时的发动者是魔法卡且为魔法卡的发动动作，并且本卡在场上时已登记过该连锁（FLAG_ID_CHAINING）。
 function c29436665.dmgcon(e,tp,eg,ep,ev,re,r,rp)
 	return re:GetActiveType()==TYPE_SPELL and re:IsHasType(EFFECT_TYPE_ACTIVATE) and e:GetHandler():GetFlagEffect(FLAG_ID_CHAINING)>0
 end
--- 执行伤害效果，给与对方基本分1000分伤害
+-- 伤害效果处理函数：对对方玩家造成1000点伤害。
 function c29436665.dmgop(e,tp,eg,ep,ev,re,r,rp)
-	-- 给与对方基本分1000分伤害
+	-- 以效果原因（REASON_EFFECT）给予对方玩家(1-tp)1000点基本分伤害。
 	Duel.Damage(1-tp,1000,REASON_EFFECT)
 end

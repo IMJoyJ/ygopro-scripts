@@ -4,14 +4,14 @@
 -- 这只怪兽不能作融合召唤以外的特殊召唤。这张卡的属性也同时当作「风」「水」「炎」「地」使用。这张卡融合召唤成功时，从游戏中除外的全部卡回到持有者的卡组，并洗切卡组。对方场上每存在1只和这张卡相同属性的怪兽，这张卡攻击力上升300。
 function c29343734.initial_effect(c)
 	c:EnableReviveLimit()
-	-- 设置融合召唤所需的4张融合素材卡号
+	-- 为这张卡添加融合召唤手续，指定「元素英雄 羽翼侠」「元素英雄 爆热女郎」「元素英雄 黏土侠」「元素英雄 水泡侠」作为融合素材。
 	aux.AddFusionProcCode4(c,21844576,58932615,84327329,79979666,true,true)
 	-- 这只怪兽不能作融合召唤以外的特殊召唤。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_SINGLE)
 	e2:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
 	e2:SetCode(EFFECT_SPSUMMON_CONDITION)
-	-- 设置该怪兽只能通过融合召唤特殊召唤
+	-- 设置特殊召唤条件的判定函数，仅允许通过『融合召唤』这种方式进行特殊召唤，其他特殊召唤方式均不能适用。
 	e2:SetValue(aux.fuslimit)
 	c:RegisterEffect(e2)
 	-- 这张卡的属性也同时当作「风」「水」「炎」「地」使用。
@@ -42,31 +42,31 @@ function c29343734.initial_effect(c)
 	c:RegisterEffect(e5)
 end
 c29343734.material_setcode=0x8
--- 判断此卡是否为融合召唤成功
+-- 诱发效果的发动条件：此卡以融合召唤方式特殊召唤成功时满足条件。
 function c29343734.retcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsSummonType(SUMMON_TYPE_FUSION)
 end
--- 设置连锁处理时的操作信息，确定要将除外区的卡送回卡组
+-- 诱发效果的发动处理目标判定：在效果发动时，收集除外区所有可以回到卡组的卡，并将『回到卡组』的操作信息登记为这些卡，保证后续处理与连锁判定正确。
 function c29343734.rettg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 获取所有可以送回卡组的除外区卡片
+	-- 获取除外区中满足可回到卡组条件的所有卡，作为本效果处理时将被送回卡组的对象列表。
 	local g=Duel.GetMatchingGroup(Card.IsAbleToDeck,tp,LOCATION_REMOVED,LOCATION_REMOVED,nil)
-	-- 设置操作信息，指定要处理的卡数量和类型为回卡组
+	-- 将本次连锁的操作信息登记为『使这些卡回到卡组』，数量为对象卡数量，供效果处理及连锁判定使用。
 	Duel.SetOperationInfo(0,CATEGORY_TODECK,g,g:GetCount(),0,0)
 end
--- 执行将除外区的卡送回卡组并洗牌的操作
+-- 诱发效果的实际处理：将除外区的所有卡送回持有者的卡组，并洗切卡组。
 function c29343734.retop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取所有除外区的卡片用于送回卡组
+	-- 获取双方除外区的所有卡（不作额外过滤），作为本次要送回卡组的全部对象。
 	local g=Duel.GetMatchingGroup(nil,tp,LOCATION_REMOVED,LOCATION_REMOVED,nil)
-	-- 将指定卡片送回卡组并洗牌
+	-- 以效果原因将对象卡组全部送回其持有者的卡组，并以SEQ_DECKSHUFFLE方式洗切卡组。
 	Duel.SendtoDeck(g,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
 end
--- 判断目标怪兽是否为表侧表示且具有指定属性
+-- 定义攻击力判定用的过滤器：怪兽需表侧表示且属性等于永生侠的当前属性。
 function c29343734.atkfilter(c,att)
 	return c:IsFaceup() and c:IsAttribute(att)
 end
--- 计算对方场上与该卡属性相同的怪兽数量并乘以300作为攻击力加成
+-- 计算攻击力上升数值：统计对方场上满足相同属性条件的表侧表示怪兽的数量，每个300攻击力。
 function c29343734.val(e,c)
-	-- 获取对方场上与该卡属性相同的怪兽数量并乘以300
+	-- 取对方场上与自身属性相同的表侧表示怪兽数量，乘以300后作为攻击力上升值。
 	return Duel.GetMatchingGroupCount(c29343734.atkfilter,c:GetControler(),0,LOCATION_MZONE,nil,c:GetAttribute())*300
 end

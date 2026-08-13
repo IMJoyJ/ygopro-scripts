@@ -9,7 +9,7 @@ function c29330706.initial_effect(c)
 	e1:SetRange(LOCATION_MZONE)
 	e1:SetCode(EFFECT_INDESTRUCTABLE_EFFECT)
 	e1:SetTargetRange(LOCATION_SZONE,0)
-	-- 设置效果目标为场上所有表侧表示的装备卡
+	-- 设置该效果的保护对象筛选条件：仅自己魔陷区中的装备魔法卡（即表侧表示的装备卡）能受到此效果保护。
 	e1:SetTarget(aux.TargetBoolFunction(Card.IsType,TYPE_EQUIP))
 	e1:SetValue(1)
 	c:RegisterEffect(e1)
@@ -22,7 +22,7 @@ function c29330706.initial_effect(c)
 	e2:SetValue(c29330706.val)
 	c:RegisterEffect(e2)
 end
--- 返回当前装备卡数量乘以500的数值
+-- 计算①效果中攻击力的上升数值：这张卡当前装备的装备卡数量×500。
 function c29330706.val(e,c)
 	return c:GetEquipCount()*500
 end
