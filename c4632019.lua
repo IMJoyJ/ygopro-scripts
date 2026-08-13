@@ -22,17 +22,17 @@ function c4632019.initial_effect(c)
 	e2:SetOperation(c4632019.efop)
 	c:RegisterEffect(e2)
 end
--- 规则层面：将该卡的等级视为8星使用，用于同调召唤时的等级判定。
+-- 作为同调素材时，将这张卡的等级视为8星（通过特殊编码值向系统提供同调素材等级，高16位为8，低16位保留原等级）。
 function c4632019.synclv(e,c)
-	-- 规则层面：获取该卡当前等级（经过系统安全阈值处理）。
+	-- 获取这张卡当前的等级（限制在系统上限内），作为原等级部分用于与8星组合成同调素材等级。
 	local lv=aux.GetCappedLevel(e:GetHandler())
 	return (8<<16)+lv
 end
--- 规则层面：判断该卡是否因同调召唤而成为素材。
+-- 判定这张卡是否作为同调召唤的素材被使用（原因必须为REASON_SYNCHRO），是则触发后续给同调怪兽赋予效果的处理。
 function c4632019.efcon(e,tp,eg,ep,ev,re,r,rp)
 	return r==REASON_SYNCHRO
 end
--- 规则层面：根据同调怪兽的原本等级，为其附加攻击力上升、守备力上升或贯穿伤害效果，并确保其具有效果种类。
+-- 作为同调素材被使用后，取出对应的同调怪兽，根据其原本等级执行对应强化：8星以下攻击力/守备力上升800；9星以上获得贯穿伤害；若该怪兽不是效果怪兽则补加效果怪兽类型。
 function c4632019.efop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local rc=c:GetReasonCard()
@@ -65,7 +65,7 @@ function c4632019.efop(e,tp,eg,ep,ev,re,r,rp)
 	end
 	if reg then
 		if not rc:IsType(TYPE_EFFECT) then
-			-- 这张卡为同调素材的同调怪兽得到那自身原本等级的以下效果。
+			-- 得到那自身原本等级的以下效果（为让非效果怪兽的同调怪兽也能适用所得效果，补加效果怪兽类型）。
 			local e0=Effect.CreateEffect(c)
 			e0:SetType(EFFECT_TYPE_SINGLE)
 			e0:SetCode(EFFECT_ADD_TYPE)

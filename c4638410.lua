@@ -2,13 +2,13 @@
 -- 效果：
 -- 把自己场上存在的1只怪兽解放发动。只要这张卡在场上存在，场上表侧表示存在的原本持有者是自己的怪兽不受这张卡以外的陷阱卡的效果影响。
 function c4638410.initial_effect(c)
-	-- 把自己场上存在的1只怪兽解放发动
+	-- 把自己场上存在的1只怪兽解放发动。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetCost(c4638410.cost)
 	c:RegisterEffect(e1)
-	-- 只要这张卡在场上存在，场上表侧表示存在的原本持有者是自己的怪兽不受这张卡以外的陷阱卡的效果影响
+	-- 只要这张卡在场上存在，场上表侧表示存在的原本持有者是自己的怪兽不受这张卡以外的陷阱卡的效果影响。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD)
 	e2:SetCode(EFFECT_IMMUNE_EFFECT)
@@ -18,20 +18,20 @@ function c4638410.initial_effect(c)
 	e2:SetValue(c4638410.efilter)
 	c:RegisterEffect(e2)
 end
--- 检查并选择1张满足条件的己方怪兽进行解放作为发动代价
+-- 此函数的整体作用是处理发动代价：检查自己场上是否有可解放的怪兽，选择1只并将其解放作为发动代价。
 function c4638410.cost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检测是否满足解放条件
+	-- 在代价确认阶段，检查自己场上是否存在至少1只可解放的怪兽，以满足解放1只怪兽的发动代价。
 	if chk==0 then return Duel.CheckReleaseGroup(tp,nil,1,nil) end
-	-- 选择1张符合条件的己方怪兽
+	-- 从自己场上选择1只可解放的怪兽，用于解放作为发动代价。
 	local rg=Duel.SelectReleaseGroup(tp,nil,1,1,nil)
-	-- 将选中的怪兽以支付代价的方式进行解放
+	-- 将选择的怪兽解放，支付发动代价（REASON_COST）。
 	Duel.Release(rg,REASON_COST)
 end
--- 设定效果目标为原本持有者为自己场上的怪兽
+-- 作为免疫效果的适用对象判定：仅当怪兽的原本持有者是这张卡的控制者（自己）时，该怪兽才享受免疫保护。
 function c4638410.etarget(e,c)
 	return c:GetOwner()==e:GetHandlerPlayer()
 end
--- 设定效果值为排除自身外的陷阱卡效果
+-- 作为免疫效果的判定条件：被检测的效果来源卡片不是本卡（暴君的威压）时，且该效果为陷阱卡效果，则使其免疫生效。
 function c4638410.efilter(e,te)
 	return te:IsActiveType(TYPE_TRAP) and te:GetOwner()~=e:GetOwner()
 end

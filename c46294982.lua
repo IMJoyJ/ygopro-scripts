@@ -4,7 +4,7 @@
 -- ②：1回合1次，场地区域有「急流山的金宫」存在的场合，以场上1张卡为对象才能发动。那张卡破坏，这个回合，这张卡在同1次的战斗阶段中最多2次可以向怪兽攻击。
 -- ③：这张卡战斗破坏对方怪兽时，以自己场上1只表侧表示怪兽为对象才能发动。那只怪兽的攻击力上升400。
 function c46294982.initial_effect(c)
-	-- 记录该卡具有「急流山的金宫」这张卡的卡片密码
+	-- 记录这张卡上记载着「急流山的金宫」（卡号72283691），使相关判定能识别此卡名信息。
 	aux.AddCodeList(c,72283691)
 	-- ①：场地区域有「急流山的金宫」存在的场合，这张卡可以不用解放作召唤。
 	local e1=Effect.CreateEffect(c)
@@ -33,46 +33,46 @@ function c46294982.initial_effect(c)
 	e3:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e3:SetCode(EVENT_BATTLE_DESTROYING)
 	e3:SetProperty(EFFECT_FLAG_CARD_TARGET)
-	-- 设置效果触发条件为该怪兽与对方怪兽战斗且被战斗破坏
+	-- 设置③效果的发动条件：本卡在与对方怪兽的战斗中将其破坏（由aux.bdocon判定与战斗相关且攻击对象为对方怪兽）。
 	e3:SetCondition(aux.bdocon)
 	e3:SetTarget(c46294982.atktg)
 	e3:SetOperation(c46294982.atkop)
 	c:RegisterEffect(e3)
 end
--- 判断召唤条件是否满足：不需解放、等级不低于5、场地区域存在「急流山的金宫」、场上主怪兽区域有空位
+-- ①效果（无需解放召唤）的召唤规则条件函数：无卡时返回true供规则查询；否则须满足无解放、等级5以上、场地区有金宫且自己怪兽区有空位。
 function c46294982.ntcon(e,c,minc)
 	if c==nil then return true end
-	-- 判断召唤条件是否满足：不需解放、等级不低于5、场地区域存在「急流山的金宫」
+	-- 判定无解放召唤条件的前半部分：minc==0（不需要解放）、此卡等级不低于5、且当前场地区域存在「急流山的金宫」（任一方有效均可）。
 	return minc==0 and c:IsLevelAbove(5) and Duel.IsEnvironment(72283691,PLAYER_ALL,LOCATION_FZONE)
-		-- 判断召唤条件是否满足：场上主怪兽区域有空位
+		-- 并且自己的主要怪兽区还有空位，才能执行这次无需解放的召唤。
 		and Duel.GetLocationCount(c:GetControler(),LOCATION_MZONE)>0
 end
--- 判断效果发动条件是否满足：场地区域存在「急流山的金宫」
+-- ②效果的发动条件函数：只检查当前场地区域是否有「急流山的金宫」，有即可发动。
 function c46294982.descon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断效果发动条件是否满足：场地区域存在「急流山的金宫」
+	-- 检查当前场地区域（任一玩家的场地区）是否有「急流山的金宫」并生效。
 	return Duel.IsEnvironment(72283691,PLAYER_ALL,LOCATION_FZONE)
 end
--- 设置效果目标选择逻辑：选择场上任意一张卡作为破坏对象
+-- ②效果的取对象目标函数：从双方场上选择1张卡（不能选自身）作为破坏对象；存在可选目标时进行选择并设置破坏操作信息。
 function c46294982.destg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsOnField() end
 	local c=e:GetHandler()
-	-- 设置效果目标选择逻辑：选择场上任意一张卡作为破坏对象
+	-- 在效果发动合法性检查（chk==0）时，确认场上存在至少1张除自身以外的卡可以作为破坏对象。
 	if chk==0 then return Duel.IsExistingTarget(aux.TRUE,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,c) end
-	-- 提示玩家选择要破坏的卡
+	-- 给操作者发送选择提示，UI显示“请选择要破坏的卡”。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 选择场上任意一张卡作为破坏对象
+	-- 让操作者从双方场上选择1张卡（排除自身）作为对象，并设置为连锁对象。
 	local g=Duel.SelectTarget(tp,aux.TRUE,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,1,c)
-	-- 设置连锁操作信息为破坏效果
+	-- 设置本次连锁的操作信息：将对象组g作为破坏目标，数量为1，用于后续效果检测。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,1,0,0)
 end
--- 执行效果处理：若目标卡存在且被成功破坏，则使自身在本回合可额外攻击一次
+-- ②效果处理：若对象卡仍关联且被成功破坏、本卡也仍在场上，则给本卡附加本回合可在同一次战斗阶段中额外攻击1次的效果（即可攻击2次）。
 function c46294982.desop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取当前连锁中选择的目标卡
+	-- 获取②效果发动时选择的对象卡。
 	local tc=Duel.GetFirstTarget()
-	-- 判断目标卡是否仍然存在于场上、是否被成功破坏、自身是否仍在场
+	-- 判断并执行：对象卡仍与效果关联且被效果破坏成功，同时本卡仍与效果关联时，才进行后续额外攻击效果赋予。
 	if tc:IsRelateToEffect(e) and Duel.Destroy(tc,REASON_EFFECT)~=0 and c:IsRelateToEffect(e) then
-		-- 设置自身在本回合可额外攻击一次的效果
+		-- 这个回合，这张卡在同1次的战斗阶段中最多2次可以向怪兽攻击。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
@@ -82,22 +82,22 @@ function c46294982.desop(e,tp,eg,ep,ev,re,r,rp)
 		c:RegisterEffect(e1)
 	end
 end
--- 设置效果目标选择逻辑：选择自己场上一只表侧表示的怪兽
+-- ③效果的取对象目标函数：从自己场上选择1只表侧表示怪兽作为对象；存在可选目标时进行选择。
 function c46294982.atktg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsFaceup() and chkc:IsControler(tp) and chkc:IsLocation(LOCATION_MZONE) end
-	-- 设置效果目标选择逻辑：选择自己场上一只表侧表示的怪兽
+	-- 在效果发动合法性检查（chk==0）时，确认自己场上存在至少1只表侧表示怪兽可选作对象。
 	if chk==0 then return Duel.IsExistingTarget(Card.IsFaceup,tp,LOCATION_MZONE,0,1,nil) end
-	-- 提示玩家选择要提升攻击力的怪兽
+	-- 给操作者发送选择提示，UI显示“请选择表侧表示的卡”。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
-	-- 选择自己场上一只表侧表示的怪兽
+	-- 让操作者从自己场上的表侧表示怪兽中选择1只作为对象，并设置为连锁对象。
 	Duel.SelectTarget(tp,Card.IsFaceup,tp,LOCATION_MZONE,0,1,1,nil)
 end
--- 执行效果处理：使目标怪兽攻击力上升400
+-- ③效果处理：若对象怪兽仍表侧表示且与效果关联，则给对象怪兽附加攻击力上升400的效果。
 function c46294982.atkop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁中选择的目标卡
+	-- 获取③效果选择的对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsFaceup() and tc:IsRelateToEffect(e) then
-		-- 设置目标怪兽攻击力上升400的效果
+		-- 那只怪兽的攻击力上升400。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)

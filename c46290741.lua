@@ -5,7 +5,7 @@
 -- ②：这张卡特殊召唤成功的场合才能发动。从卡组选1张「潜海奇袭」在自己场上盖放。
 -- ③：1回合1次，只以自己场上的水属性怪兽1只为对象的魔法·陷阱·怪兽的效果由对方发动时才能发动。那个发动无效并破坏。
 function c46290741.initial_effect(c)
-	-- ①：这张卡在手卡·墓地存在的场合，把自己场上2只水属性怪兽解放才能发动。这张卡特殊召唤。
+	-- 这个卡名的①的效果1回合只能使用1次。①：这张卡在手卡·墓地存在的场合，把自己场上2只水属性怪兽解放才能发动。这张卡特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(46290741,0))
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -40,91 +40,91 @@ function c46290741.initial_effect(c)
 	e3:SetOperation(c46290741.disop)
 	c:RegisterEffect(e3)
 end
--- 用于筛选场上或手牌中我方的水属性怪兽
+-- 筛选可解放的水属性怪兽：水属性且（为自己控制或表侧表示）。
 function c46290741.rfilter(c,tp)
 	return c:IsAttribute(ATTRIBUTE_WATER) and (c:IsControler(tp) or c:IsFaceup())
 end
--- 检查是否满足解放2只水属性怪兽的条件，并选择符合条件的怪兽进行解放
+-- ①效果的代价处理：从可解放候选组中选出2只水属性怪兽，并消耗相应代替解放次数后解放。
 function c46290741.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 获取玩家可解放的怪兽组，仅包含水属性的怪兽
+	-- 获取玩家tp可解放的怪兽组，并过滤出满足rfilter条件的水属性怪兽。
 	local rg=Duel.GetReleaseGroup(tp):Filter(c46290741.rfilter,nil,tp)
-	-- 在不执行选择的情况下判断是否有满足条件的2只怪兽组合可以被解放
+	-- 检查是否存在2只可解放的候选怪兽，使解放后仍有足够怪兽区域来特殊召唤这张卡。
 	if chk==0 then return rg:CheckSubGroup(aux.mzctcheckrel,2,2,tp) end
-	-- 提示玩家选择要解放的怪兽
+	-- 向玩家显示选择要解放的卡片的提示信息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_RELEASE)  --"请选择要解放的卡"
-	-- 从符合条件的怪兽中选择恰好2只进行解放
+	-- 让玩家从候选组中选择2只满足条件的怪兽作为解放代价。
 	local g=rg:SelectSubGroup(tp,aux.mzctcheckrel,false,2,2,tp)
-	-- 使用代替解放次数的效果（如暗影敌托邦）
+	-- 若使用了暗影敌托邦等代替解放效果，则消耗对应的额外解放次数。
 	aux.UseExtraReleaseCount(g,tp)
-	-- 实际执行解放操作，将选中的怪兽从场上移除
+	-- 将选中的2只怪兽解放（REASON_COST）。
 	Duel.Release(g,REASON_COST)
 end
--- 判断该卡是否可以被特殊召唤
+-- ①效果的目标判定：确认这张卡可以特殊召唤；并设置特殊召唤的操作信息。
 function c46290741.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置特殊召唤的连锁信息
+	-- 设置操作信息：将这张卡特殊召唤（数量1）。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 执行特殊召唤操作
+-- ①效果处理：若这张卡仍与该效果关联，则将其表侧表示特殊召唤。
 function c46290741.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if not c:IsRelateToEffect(e) then return end
-	-- 将该卡以正面表示的形式特殊召唤到场上
+	-- 将这张卡以表侧表示特殊召唤到持有者场上。
 	Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 end
--- 用于筛选卡组中可盖放的「潜海奇袭」
+-- 过滤条件：卡名为「潜海奇袭」、属于魔法·陷阱卡且可以被盖放。
 function c46290741.filter(c)
 	return c:IsCode(19089195) and c:IsType(TYPE_SPELL+TYPE_TRAP) and c:IsSSetable()
 end
--- 判断是否满足发动效果的条件，即场上有空位且卡组中有「潜海奇袭」
+-- ②效果发动条件：自己魔法与陷阱区域有空位，且卡组中存在符合条件的「潜海奇袭」。
 function c46290741.settg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查场上是否有足够的魔法陷阱区域
+	-- 检查自己魔法与陷阱区域是否存在空位。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_SZONE)>0
-		-- 确认卡组中是否存在「潜海奇袭」
+		-- 检查卡组中是否存在至少1张满足条件的「潜海奇袭」。
 		and Duel.IsExistingMatchingCard(c46290741.filter,tp,LOCATION_DECK,0,1,nil) end
 end
--- 执行盖放操作
+-- ②效果处理：从卡组选择1张「潜海奇袭」盖放到自己魔法与陷阱区域。
 function c46290741.setop(e,tp,eg,ep,ev,re,r,rp)
-	-- 如果场上没有空位则不执行盖放
+	-- 处理时若魔法与陷阱区域没有空位，则终止处理。
 	if Duel.GetLocationCount(tp,LOCATION_SZONE)<=0 then return end
-	-- 提示玩家选择要盖放的卡
+	-- 显示选择要盖放的卡片的提示信息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SET)  --"请选择要盖放的卡"
-	-- 从卡组中选择一张「潜海奇袭」
+	-- 从卡组选择1张符合条件的「潜海奇袭」。
 	local g=Duel.SelectMatchingCard(tp,c46290741.filter,tp,LOCATION_DECK,0,1,1,nil)
 	local tc=g:GetFirst()
 	if tc then
-		-- 将选中的卡以盖放形式放置到场上
+		-- 将选择的「潜海奇袭」盖放到自己的魔法与陷阱区域。
 		Duel.SSet(tp,tc)
 	end
 end
--- 用于筛选自己场上的水属性怪兽
+-- 筛选条件：位于主要怪兽区域、水属性且控制者为tp的怪兽。
 function c46290741.tfilter(c,tp)
 	return c:IsLocation(LOCATION_MZONE) and c:IsAttribute(ATTRIBUTE_WATER) and c:IsControler(tp)
 end
--- 判断是否满足发动效果的条件，即对方发动的效果针对了我方的水属性怪兽且该连锁可被无效
+-- ③效果发动条件：对方发动以自己场上1只水属性怪兽为对象的魔法·陷阱·怪兽效果，且该连锁可被无效；此卡未被战斗破坏。
 function c46290741.discon(e,tp,eg,ep,ev,re,r,rp)
 	if rp==tp or e:GetHandler():IsStatus(STATUS_BATTLE_DESTROYED) then return false end
 	if not re:IsHasProperty(EFFECT_FLAG_CARD_TARGET) then return false end
-	-- 获取当前连锁的目标卡片组
+	-- 获取对方发动的那次连锁的对象卡组。
 	local tg=Duel.GetChainInfo(ev,CHAININFO_TARGET_CARDS)
-	-- 确认目标为1张卡且该卡为我方场上的水属性怪兽，同时该连锁可以被无效
+	-- 判断对象卡组仅有1张，且该卡为tp场上的水属性怪兽，且该连锁可以被无效。
 	return tg and tg:GetCount()==1 and tg:IsExists(c46290741.tfilter,1,nil,tp) and Duel.IsChainNegatable(ev)
 end
--- 设置连锁处理信息，包括使发动无效和破坏目标
+-- ③效果发动判定：确认可发动；设定无效对方连锁，若其效果卡片可破坏且仍关联则同时设定破坏。
 function c46290741.distg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置连锁处理信息，表示将使发动无效
+	-- 设置操作信息：将对方发动的效果无效。
 	Duel.SetOperationInfo(0,CATEGORY_NEGATE,eg,1,0,0)
 	if re:GetHandler():IsDestructable() and re:GetHandler():IsRelateToEffect(re) then
-		-- 设置连锁处理信息，表示将破坏目标卡
+		-- 设置操作信息：破坏对方发动效果的那张卡。
 		Duel.SetOperationInfo(0,CATEGORY_DESTROY,eg,1,0,0)
 	end
 end
--- 执行效果处理，使连锁无效并破坏目标卡
+-- ③效果处理：先无效对方连锁；若无效成功且效果卡仍关联，则将其破坏。
 function c46290741.disop(e,tp,eg,ep,ev,re,r,rp)
-	-- 如果连锁有效且目标卡存在则进行破坏
+	-- 如果无效对方连锁成功，并且其效果发动卡仍与该效果有关联，则执行破坏。
 	if Duel.NegateActivation(ev) and re:GetHandler():IsRelateToEffect(re) then
-		-- 破坏目标卡
+		-- 以效果破坏对方发动效果的那张卡。
 		Duel.Destroy(eg,REASON_EFFECT)
 	end
 end

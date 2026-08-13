@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：自己的主要怪兽区域没有怪兽存在的场合，以自己墓地1只4星「闪刀姬」怪兽为对象才能发动。那只怪兽加入手卡。自己墓地有魔法卡3张以上存在的场合，也能不加入手卡特殊召唤。
 function c46271408.initial_effect(c)
-	-- 创建效果对象并设置其分类、类型、时点、属性、发动条件、目标选择函数和处理函数
+	-- ①：自己的主要怪兽区域没有怪兽存在的场合，以自己墓地1只4星「闪刀姬」怪兽为对象才能发动。那只怪兽加入手卡。自己墓地有魔法卡3张以上存在的场合，也能不加入手卡特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SPECIAL_SUMMON+CATEGORY_GRAVE_ACTION+CATEGORY_GRAVE_SPSUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -13,51 +13,51 @@ function c46271408.initial_effect(c)
 	e1:SetOperation(c46271408.activate)
 	c:RegisterEffect(e1)
 end
--- 过滤函数，用于判断场上是否有怪兽存在
+-- 定义cfilter过滤函数：判断卡片是否处于主要怪兽区域（区域序号<5），用于后续检测自己主要怪兽区域是否存在怪兽。
 function c46271408.cfilter(c)
 	return c:GetSequence()<5
 end
--- 检索函数，用于筛选满足条件的4星闪刀姬怪兽（可加入手牌或特殊召唤）
+-- 定义thfilter过滤函数：筛选自己墓地中4星且属于「闪刀姬」系列的怪兽，并且该怪兽可以加入手卡，或在满足条件时可以被特殊召唤。
 function c46271408.thfilter(c,e,tp,spchk)
 	return c:IsSetCard(0x1115) and c:IsLevel(4) and (c:IsAbleToHand() or (spchk and c:IsCanBeSpecialSummoned(e,0,tp,false,false)))
 end
--- 效果发动条件：自己的主要怪兽区域没有怪兽存在
+-- 定义发动条件函数condition：检查自己主要怪兽区域没有怪兽存在，即不存在满足cfilter条件的卡。
 function c46271408.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 若自己场上没有怪兽，则效果可以发动
+	-- 返回不存在位于主要怪兽区域的卡（用cfilter过滤），从而满足“自己的主要怪兽区域没有怪兽存在”的发动条件。
 	return not Duel.IsExistingMatchingCard(c46271408.cfilter,tp,LOCATION_MZONE,0,1,nil)
 end
--- 目标选择函数，判断是否能选择满足条件的墓地怪兽作为对象
+-- 定义效果发动时的目标选择函数target：判断能否选择墓地符合条件的「闪刀姬」怪兽为对象，并让玩家选择1张对象。
 function c46271408.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	-- 判断自己场上是否有可用的怪兽区域
+	-- 计算spchk第一个条件：自己主要怪兽区域是否存在可用空格（有空格才能特殊召唤）。
 	local spchk=Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 判断自己墓地是否有3张以上魔法卡
+		-- 计算spchk第二个条件：自己墓地中魔法卡数量是否达到3张以上。
 		and Duel.GetMatchingGroupCount(Card.IsType,tp,LOCATION_GRAVE,0,nil,TYPE_SPELL)>=3
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and c46271408.thfilter(chkc,e,tp,spchk) end
-	-- 检查是否存在满足条件的目标怪兽
+	-- 在效果发动时（chk==0）检查墓地中是否存在至少1只满足thfilter条件的「闪刀姬」怪兽可以作为对象。
 	if chk==0 then return Duel.IsExistingTarget(c46271408.thfilter,tp,LOCATION_GRAVE,0,1,nil,e,tp,spchk) end
-	-- 提示玩家选择要加入手牌的卡
+	-- 向玩家发送选择提示，提示信息为“请选择要加入手牌的卡”（用于选择墓地的对象）。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择目标怪兽作为效果对象
+	-- 让玩家从自己墓地选择1只符合thfilter条件的4星「闪刀姬」怪兽作为效果对象，并登记为当前连锁的对象。
 	local g=Duel.SelectTarget(tp,c46271408.thfilter,tp,LOCATION_GRAVE,0,1,1,nil,e,tp,spchk)
 end
--- 效果处理函数，根据条件决定将怪兽加入手牌或特殊召唤
+-- 定义效果处理时的操作函数activate：根据墓地魔法卡数量、自己场上空位以及玩家的选择，决定将对象怪兽特殊召唤还是加入手卡。
 function c46271408.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁中的目标怪兽
+	-- 获取效果处理时连锁上的对象卡（之前选择的目标怪兽）。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 检查目标怪兽是否受王家长眠之谷保护
+		-- 进行王家长眠之谷的效果检查：若对象卡受其影响导致本应无效，则直接终止本次效果处理。
 		if aux.NecroValleyNegateCheck(tc) then return end
-		-- 判断自己墓地是否有3张以上魔法卡
+		-- 判断自己墓地中魔法卡数量是否达到3张以上（特殊召唤的追加条件之一）。
 		if Duel.GetMatchingGroupCount(Card.IsType,tp,LOCATION_GRAVE,0,nil,TYPE_SPELL)>=3
-			-- 判断自己场上是否有可用的怪兽区域
+			-- 判断自己主要怪兽区域是否有空位（特殊召唤的追加条件之一）。
 			and Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 			and tc:IsCanBeSpecialSummoned(e,0,tp,false,false)
-			-- 玩家选择是否特殊召唤（选项1190为回手，选项1152为特殊召唤）
+			-- 当墓地魔法卡≥3、有空格且对象可以特殊召唤时，弹出选项让玩家选择“加入手卡”或“特殊召唤”；若选择第二项（返回1）则执行特殊召唤。
 			and Duel.SelectOption(tp,1190,1152)==1 then
-			-- 将目标怪兽特殊召唤到场上
+			-- 将对象怪兽以表侧表示特殊召唤到自己场上（使用效果特殊召唤，不check苏生限制）。
 			Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP)
 		else
-			-- 将目标怪兽加入手牌
+			-- 将对象怪兽加入持有者的手卡（效果处理为加入手卡时的操作）。
 			Duel.SendtoHand(tc,nil,REASON_EFFECT)
 		end
 	end

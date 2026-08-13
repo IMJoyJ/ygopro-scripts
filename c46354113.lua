@@ -22,31 +22,31 @@ function c46354113.initial_effect(c)
 	c:RegisterEffect(e2)
 end
 c46354113.material_race=RACE_WARRIOR
--- 选择装备对象，从对方场上选择1只表侧表示怪兽作为目标。
+-- 发动时先检查被连锁选择的对象是否合法（须为场上表侧表示且不是这张卡自身）；若为发动前检查则返回true，随后提示并选择场上1只除自身以外的表侧表示怪兽作为对象。
 function c46354113.eqtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsFaceup() and chkc~=e:GetHandler() end
 	if chk==0 then return true end
-	-- 向玩家提示“请选择要装备的卡”的选择消息。
+	-- 给玩家显示“请选择要装备的卡”的选择提示信息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_EQUIP)  --"请选择要装备的卡"
-	-- 选择1只对方场上的表侧表示怪兽作为装备对象。
+	-- 从双方主要怪兽区选择1张表侧表示怪兽（不能选这张卡自身）作为效果对象，选定后与当前连锁建立关联。
 	Duel.SelectTarget(tp,Card.IsFaceup,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,e:GetHandler())
 end
--- 执行装备操作，将自身装备给目标怪兽并设置相关效果。
+-- 效果处理：若这张卡仍与效果相关且未被送去魔陷区或变成里侧，同时己方魔陷区有空位、对象怪兽仍表侧且与效果相关，则将这张卡装备给对象并赋予装备限制、额外攻击次数和贯穿伤害效果；否则这张卡因效果送去墓地。
 function c46354113.eqop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁中指定的目标怪兽。
+	-- 获得发动时选择的对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if not tc then return end
 	local c=e:GetHandler()
 	if not c:IsRelateToEffect(e) or c:IsLocation(LOCATION_SZONE) or c:IsFacedown() then return end
-	-- 判断装备是否可行，若场上没有空位或目标怪兽里侧表示或不关联效果则将自身送入墓地。
+	-- 检查己方魔陷区是否没有可用空格，或者对象怪兽已变成里侧/不再与效果关联，条件成立则无法进行装备。
 	if Duel.GetLocationCount(tp,LOCATION_SZONE)<=0 or tc:IsFacedown() or not tc:IsRelateToEffect(e) then
-		-- 将自身送入墓地。
+		-- 由于无法装备，将这张火箭赫谟炮以效果原因送去墓地。
 		Duel.SendtoGrave(c,REASON_EFFECT)
 		return
 	end
-	-- 将自身作为装备卡装备给目标怪兽。
+	-- 把这张卡作为装备卡装备给选定的对象怪兽。
 	Duel.Equip(tp,c,tc)
-	-- ②：用这张卡的效果把这张卡装备的怪兽在同1次的战斗阶段中可以作2次攻击，向守备表示怪兽攻击的场合，给与对方为攻击力超过那个守备力的数值的战斗伤害。
+	-- 这张卡当作装备卡使用给那只怪兽装备。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_EQUIP_LIMIT)
@@ -55,21 +55,21 @@ function c46354113.eqop(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetLabelObject(tc)
 	e1:SetReset(RESET_EVENT+RESETS_STANDARD)
 	c:RegisterEffect(e1)
-	-- 使装备的怪兽可以在同一次的战斗阶段中进行2次攻击。
+	-- ②：用这张卡的效果把这张卡装备的怪兽在同1次的战斗阶段中可以作2次攻击。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_EQUIP)
 	e2:SetCode(EFFECT_EXTRA_ATTACK)
 	e2:SetValue(1)
 	e2:SetReset(RESET_EVENT+RESETS_STANDARD)
 	c:RegisterEffect(e2)
-	-- 使装备的怪兽攻击守备表示怪兽时造成的战斗伤害无视对方守备力。
+	-- 向守备表示怪兽攻击的场合，给与对方为攻击力超过那个守备力的数值的战斗伤害。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_EQUIP)
 	e3:SetCode(EFFECT_PIERCE)
 	e3:SetReset(RESET_EVENT+RESETS_STANDARD)
 	c:RegisterEffect(e3)
 end
--- 限制只能装备给特定怪兽，防止被其他装备卡替换。
+-- 装备限制函数：判定将要装备的怪兽是否为效果发动时选定的对象，是则允许装备，从而确保这张卡只能装备给那只怪兽。
 function c46354113.eqlimit(e,c)
 	return c==e:GetLabelObject()
 end
