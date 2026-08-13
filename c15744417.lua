@@ -5,7 +5,7 @@
 -- ●3·4：自己从卡组抽2张。
 -- ●5·6：这个回合，这张卡可以直接攻击。
 function c15744417.initial_effect(c)
-	-- ①：1回合1次，自己主要阶段才能发动。掷3次骰子。这张卡的攻击力·守备力直到对方回合结束时上升出现的数目合计×100。那之后，出现的数目中的2个是相同的场合，那个相同数目的以下效果适用。出现的数目全部是相同的场合，以下效果全部适用。
+	-- ①：1回合1次，自己主要阶段才能发动。掷3次骰子。这张卡的攻击力·守备力直到对方回合结束时上升出现的数目合计×100。那之后，出现的数目中的2个是相同的场合，那个相同数目的以下效果适用。出现的数目全部是相同的场合，以下效果全部适用。●1·2：这张卡直到对方回合结束时不会被战斗·效果破坏。●3·4：自己从卡组抽2张。●5·6：这个回合，这张卡可以直接攻击。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(15744417,0))
 	e1:SetCategory(CATEGORY_DICE+CATEGORY_ATKCHANGE+CATEGORY_DRAW)
@@ -16,16 +16,16 @@ function c15744417.initial_effect(c)
 	e1:SetOperation(c15744417.operation)
 	c:RegisterEffect(e1)
 end
--- 设置连锁操作信息，声明将要进行3次骰子投掷
+-- 发动时的检查函数：仅在发动确认时返回true（无其他发动条件限制），并预先设置本次发动包含投掷3次骰子的操作信息。
 function c15744417.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置连锁操作信息，声明将要进行3次骰子投掷
+	-- 设置当前连锁的操作信息，声明此效果包含投掷3次骰子，供骰子相关卡（如“逆转的骰子”）等连锁判别使用。
 	Duel.SetOperationInfo(0,CATEGORY_DICE,nil,0,tp,3)
 end
--- 掷3次骰子并计算攻击力和守备力提升值，根据骰子结果触发后续效果
+-- 效果处理函数：掷3次骰子，将点数合计×100作为攻击力·守备力的上升值，并分别设置对应的永续效果；然后判断是否出现相同点数，若出现则按相同点数的对应条目（1·2、3·4、5·6）分别追加抗性、抽卡或直接攻击效果。
 function c15744417.operation(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 掷3次骰子并获取结果
+	-- 让当前玩家投掷3次骰子，依次获得3个点数d1、d2、d3。
 	local d1,d2,d3=Duel.TossDice(tp,3)
 	local atk=(d1+d2+d3)*100
 	-- 这张卡的攻击力·守备力直到对方回合结束时上升出现的数目合计×100。
@@ -53,7 +53,7 @@ function c15744417.operation(e,tp,eg,ep,ev,re,r,rp)
 		res56=true
 	end
 	if not res12 and not res34 and not res56 then return end
-	-- 中断当前效果处理，使后续效果视为错时处理
+	-- 中断当前效果处理，使后续的骰子追加效果与之前的攻守上升效果作为不同时点处理，避免错误连锁盾等错过时点。
 	Duel.BreakEffect()
 	if res12 then
 		-- ●1·2：这张卡直到对方回合结束时不会被战斗·效果破坏。
@@ -68,7 +68,7 @@ function c15744417.operation(e,tp,eg,ep,ev,re,r,rp)
 		c:RegisterEffect(e2)
 	end
 	if res34 then
-		-- 自己从卡组抽2张卡
+		-- 自己从卡组抽2张。
 		Duel.Draw(tp,2,REASON_EFFECT)
 	end
 	if res56 then

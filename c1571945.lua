@@ -12,27 +12,27 @@ function c1571945.initial_effect(c)
 	e1:SetOperation(c1571945.operation)
 	c:RegisterEffect(e1)
 end
--- 筛选守备表示的怪兽
+-- 过滤函数：判定怪兽是否为守备表示，用于选择对象时筛选符合条件的怪兽。
 function c1571945.filter(c)
 	return c:IsDefensePos()
 end
--- 选择1只场上守备表示的怪兽作为破坏对象
+-- 效果发动时的取对象处理：选择场上1只守备表示的怪兽作为对象，并设置破坏该对象的操作信息。
 function c1571945.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and c1571945.filter(chkc) end
 	if chk==0 then return true end
-	-- 提示玩家选择要破坏的卡
+	-- 向操作者显示“请选择要破坏的卡”的选择提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 选择1只场上守备表示的怪兽
+	-- 让玩家从双方场上的怪兽区域选择1只守备表示的怪兽作为效果对象。
 	local g=Duel.SelectTarget(tp,c1571945.filter,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,nil)
-	-- 设置破坏效果的操作信息
+	-- 设置本次连锁的破坏操作信息（对象为g，数量为g的数量），用于效果发动后的连锁判定等。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,g:GetCount(),0,0)
 end
--- 破坏选择的怪兽
+-- 效果处理时：取得对象怪兽，若该怪兽仍为守备表示且与效果存在关联，则将其破坏。
 function c1571945.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取被选择的怪兽
+	-- 取得效果发动时选择的对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if tc and tc:IsDefensePos() and tc:IsRelateToEffect(e) then
-		-- 将怪兽破坏
+		-- 以“效果”为破坏原因将对象怪兽破坏。
 		Duel.Destroy(tc,REASON_EFFECT)
 	end
 end
