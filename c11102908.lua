@@ -18,15 +18,15 @@ function c11102908.initial_effect(c)
 	e2:SetValue(-500)
 	c:RegisterEffect(e2)
 end
--- 效果适用的条件：在伤害计算阶段且攻击对象是六武众怪兽时生效
+-- 效果发动条件判断：当前阶段为伤害计算时，且被攻击的怪兽为名字带有「六武众」的怪兽时，该效果才适用。
 function c11102908.atkcon(e)
-	-- 获取当前正在被攻击的怪兽
+	-- 获取当前战斗阶段被攻击的怪兽对象。
 	local d=Duel.GetAttackTarget()
-	-- 判断当前阶段是否为伤害计算阶段且攻击目标存在且为六武众怪兽
+	-- 判断当前是否为伤害计算阶段、存在被攻击对象且该对象属于「六武众」字段，三者同时满足时条件成立。
 	return Duel.GetCurrentPhase()==PHASE_DAMAGE_CAL and d and d:IsSetCard(0x103d)
 end
--- 效果适用的目标：攻击怪兽
+-- 指定受到攻击力下降效果影响的怪兽对象。
 function c11102908.atktg(e,c)
-	-- 目标为当前攻击怪兽
+	-- 确定只有当前发动攻击的怪兽才会被选中作为攻击力下降的对象。
 	return c==Duel.GetAttacker()
 end
