@@ -10,11 +10,11 @@ function c43791861.initial_effect(c)
 	e1:SetValue(300)
 	c:RegisterEffect(e1)
 end
--- 判断是否处于伤害步骤或伤害计算步骤，并且当前卡是攻击怪兽且有攻击目标
+-- 定义效果适用条件：当前处于伤害步骤或伤害计算时，且此卡是攻击怪兽，并且存在攻击对象（即向对方怪兽攻击）。
 function c43791861.condtion(e)
-	-- 获取当前游戏阶段
+	-- 获取当前游戏阶段，用于判断是否处于伤害步骤或伤害计算时。
 	local ph=Duel.GetCurrentPhase()
 	return (ph==PHASE_DAMAGE or ph==PHASE_DAMAGE_CAL)
-		-- 判断攻击怪兽为当前卡且攻击目标不为空
+		-- 判定攻击方是否为此效果持有者（本卡），且存在攻击目标，确保效果仅在向对方怪兽攻击时适用。
 		and Duel.GetAttacker()==e:GetHandler() and Duel.GetAttackTarget()~=nil
 end

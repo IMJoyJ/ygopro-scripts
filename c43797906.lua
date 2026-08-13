@@ -13,32 +13,32 @@ function c43797906.initial_effect(c)
 	e1:SetOperation(c43797906.operation)
 	c:RegisterEffect(e1)
 end
--- 检查是否可以将此卡作为发动代价丢入墓地
+-- 代价函数：效果发动时先判定此卡能否作为代价从手卡丢弃去墓地；判定通过后，实际发动时执行丢弃动作。
 function c43797906.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	if chk==0 then return c:IsAbleToGraveAsCost() and c:IsDiscardable() end
-	-- 将此卡以效果和丢弃原因送入墓地
+	-- 将此卡从手卡以代价+丢弃的原因送去墓地。
 	Duel.SendtoGrave(c,REASON_COST+REASON_DISCARD)
 end
--- 过滤函数，用于检索卡组中编号为295517的「传说之都 亚特兰蒂斯」卡片
+-- 检索过滤条件：卡名原始卡号为295517（即「传说之都 亚特兰蒂斯」）且该卡能被加入手卡。
 function c43797906.filter(c)
 	return c:GetOriginalCode()==295517 and c:IsAbleToHand()
 end
--- 设置连锁处理信息，确定效果发动时会从卡组检索1张「传说之都 亚特兰蒂斯」加入手卡
+-- 目标判定函数：检查自己卡组是否存在符合条件的「传说之都 亚特兰蒂斯」，若存在则允许发动并登记检索加入手卡的操作信息。
 function c43797906.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检测卡组中是否存在满足条件的「传说之都 亚特兰蒂斯」
+	-- 合法性检查：确认自己卡组存在至少1张符合条件的「传说之都 亚特兰蒂斯」。
 	if chk==0 then return Duel.IsExistingMatchingCard(c43797906.filter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置连锁操作信息，指定将要处理的卡为卡组中的一张「传说之都 亚特兰蒂斯」
+	-- 登记操作信息：本效果处理时将检索1张卡加入手卡，目标位置为卡组。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 效果处理函数，执行从卡组检索并加入手卡的操作
+-- 效果处理函数：从自己卡组选出符合条件的「传说之都 亚特兰蒂斯」，将其加入手卡，并让对方确认。
 function c43797906.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 从卡组中检索满足条件的第一张「传说之都 亚特兰蒂斯」
+	-- 从自己卡组获取第1张符合条件的「传说之都 亚特兰蒂斯」。
 	local tg=Duel.GetFirstMatchingCard(c43797906.filter,tp,LOCATION_DECK,0,nil)
 	if tg then
-		-- 将检索到的「传说之都 亚特兰蒂斯」送入手卡
+		-- 将检索到的「传说之都 亚特兰蒂斯」加入其持有者的手卡。
 		Duel.SendtoHand(tg,nil,REASON_EFFECT)
-		-- 向对方确认翻开的「传说之都 亚特兰蒂斯」
+		-- 向对方玩家展示检索到并加入手卡的那张卡。
 		Duel.ConfirmCards(1-tp,tg)
 	end
 end

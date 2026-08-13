@@ -2,7 +2,7 @@
 -- 效果：
 -- 场上有「新宇宙」存在时，可以把这张卡作为祭品从手卡·卡组特殊召唤1只「新空间侠·黑暗豹」。
 function c43751755.initial_effect(c)
-	-- 记录该卡具有「新空间侠·黑暗豹」的卡名信息
+	-- 登记这张卡的效果文本中提及的「新空间侠·黑暗豹」（43237273）的卡号。
 	aux.AddCodeList(c,43237273)
 	-- 场上有「新宇宙」存在时，可以把这张卡作为祭品从手卡·卡组特殊召唤1只「新空间侠·黑暗豹」。
 	local e1=Effect.CreateEffect(c)
@@ -16,42 +16,42 @@ function c43751755.initial_effect(c)
 	e1:SetOperation(c43751755.spop)
 	c:RegisterEffect(e1)
 end
--- 检查场地是否为「新宇宙」
+-- 定义效果的发动条件：场上有「新宇宙」存在时才能发动。
 function c43751755.spcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查场地是否为「新宇宙」
+	-- 检查当前场上是否存在场地魔法「新宇宙」（卡号42015635）。
 	return Duel.IsEnvironment(42015635)
 end
--- 支付效果代价，解放自身
+-- 定义发动代价：先检查这张卡是否可被解放，然后将自身解放作为代价。
 function c43751755.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsReleasable() end
-	-- 将自身从游戏中解放作为效果的代价
+	-- 将效果持有者（这张卡自身）解放，作为发动效果的代价。
 	Duel.Release(e:GetHandler(),REASON_COST)
 end
--- 筛选可以特殊召唤的「新空间侠·黑暗豹」
+-- 定义特殊召唤对象的筛选条件：必须是「新空间侠·黑暗豹」（43237273），且能被当前效果特殊召唤。
 function c43751755.spfilter(c,e,tp)
 	return c:IsCode(43237273) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 设置效果的发动条件，确认场上存在可用区域且手卡或卡组有可特殊召唤的怪兽
+-- 定义效果发动时的合法性检查：确认己方怪兽区域可用，且手卡·卡组存在符合条件的「新空间侠·黑暗豹」。
 function c43751755.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 确认玩家场上是否存在可用的怪兽区域
+	-- 检查己方场上是否存在可用的怪兽区域（因代价会解放自身，所以允许当前区域已被占满）。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>-1
-		-- 确认玩家手卡或卡组中是否存在满足条件的怪兽
+		-- 确认手卡或卡组中存在至少1只满足特殊召唤条件的「新空间侠·黑暗豹」。
 		and Duel.IsExistingMatchingCard(c43751755.spfilter,tp,LOCATION_HAND+LOCATION_DECK,0,1,nil,e,tp) end
-	-- 设置效果处理时的操作信息，指定将要特殊召唤的怪兽来源为手卡或卡组
+	-- 登记本次效果的特殊召唤操作信息：从手卡·卡组特殊召唤1只怪兽。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_HAND+LOCATION_DECK)
 end
--- 执行效果的处理程序，检查是否满足特殊召唤条件并选择目标怪兽进行特殊召唤
+-- 定义效果处理：若场上无空位或「新宇宙」已不在场则终止；否则从手卡·卡组选择并特殊召唤1只「新空间侠·黑暗豹」。
 function c43751755.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查玩家场上是否还有可用的怪兽区域
+	-- 效果处理时若己方场上没有可用怪兽区域，则不进行特殊召唤。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-	-- 再次确认场地是否为「新宇宙」
+	-- 效果处理时再次确认「新宇宙」在场，若不在则不进行特殊召唤。
 	if not Duel.IsEnvironment(42015635) then return end
-	-- 提示玩家选择要特殊召唤的怪兽
+	-- 向玩家显示选择提示，提示内容为“请选择要特殊召唤的卡”。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 从手卡或卡组中选择1只满足条件的怪兽
+	-- 从手卡·卡组选择1只符合条件的「新空间侠·黑暗豹」。
 	local g=Duel.SelectMatchingCard(tp,c43751755.spfilter,tp,LOCATION_HAND+LOCATION_DECK,0,1,1,nil,e,tp)
 	if g:GetCount()>0 then
-		-- 将选中的怪兽特殊召唤到场上
+		-- 将选择的「新空间侠·黑暗豹」以表侧表示特殊召唤到己方场上。
 		Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
 	end
 end

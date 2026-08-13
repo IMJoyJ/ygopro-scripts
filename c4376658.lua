@@ -21,28 +21,28 @@ function c4376658.initial_effect(c)
 	e2:SetCondition(c4376658.condition)
 	c:RegisterEffect(e2)
 end
--- 检索满足条件的场上表侧表示怪兽，这些怪兽可以作为特殊召唤的cost被送去墓地。
+-- 筛选可作为特殊召唤代价的素材怪兽：必须表侧表示且能够作为代价送去墓地。
 function c4376658.spfilter(c)
 	return c:IsFaceup() and c:IsAbleToGraveAsCost()
 end
--- 检查所选的2张怪兽是否满足条件：一张是「火灵使 希塔」，另一张是炎属性怪兽，并且玩家怪兽区有足够空位。
+-- 检查素材组g是否可用：将g中的卡作为代价送去墓地后自己场上仍有怪兽区空位，且g中同时包含1只「火灵使 希塔」（卡号759393）和1只炎属性怪兽（顺序不限）。
 function c4376658.fselect(g,tp)
-	-- 检查所选的2张怪兽是否满足条件：一张是「火灵使 希塔」，另一张是炎属性怪兽，并且玩家怪兽区有足够空位。
+	-- 返回组合合法性：消耗素材后有空位，且素材恰好由「火灵使 希塔」和炎属性怪兽组成。
 	return aux.mzctcheck(g,tp) and aux.gffcheck(g,Card.IsCode,759393,Card.IsAttribute,ATTRIBUTE_FIRE)
 end
--- 检查玩家场上是否存在满足条件的2张怪兽（一张是「火灵使 希塔」，另一张是炎属性怪兽），用于特殊召唤的cost。
+-- 特殊召唤规则的条件：c为空时视为允许（规则询问）；否则检查自己场上是否存在2张满足spfilter的怪兽，且它们能满足fselect的组合要求。
 function c4376658.spcon(e,c)
 	if c==nil then return true end
 	local tp=c:GetControler()
-	-- 获取玩家场上所有满足条件的怪兽（表侧表示且可以送去墓地）。
+	-- 获取自己场上所有表侧表示且可作为代价送去墓地的怪兽，作为候选素材集合。
 	local g=Duel.GetMatchingGroup(c4376658.spfilter,tp,LOCATION_MZONE,0,nil)
 	return g:CheckSubGroup(c4376658.fselect,2,2,tp)
 end
--- 选择满足条件的2张怪兽（一张是「火灵使 希塔」，另一张是炎属性怪兽），并将其标记为特殊召唤的cost。
+-- 选择特殊召唤素材：从候选素材中选出2张满足组合条件的卡，选中后保存到效果e的LabelObject，并返回true；若取消选择则返回false。
 function c4376658.sptg(e,tp,eg,ep,ev,re,r,rp,chk,c)
-	-- 获取玩家场上所有满足条件的怪兽（表侧表示且可以送去墓地）。
+	-- 获取自己场上所有表侧表示且可作为代价送去墓地的怪兽，作为候选素材集合。
 	local g=Duel.GetMatchingGroup(c4376658.spfilter,tp,LOCATION_MZONE,0,nil)
-	-- 提示玩家选择要送去墓地的怪兽。
+	-- 向玩家显示选择提示：请选择要送去墓地的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
 	local sg=g:SelectSubGroup(tp,c4376658.fselect,true,2,2,tp)
 	if sg then
@@ -51,14 +51,14 @@ function c4376658.sptg(e,tp,eg,ep,ev,re,r,rp,chk,c)
 		return true
 	else return false end
 end
--- 将之前选择的2张怪兽从场上送去墓地，完成特殊召唤的cost处理。
+-- 执行特殊召唤处理：取出之前保存的素材组，将其送去墓地，并清理临时组对象。
 function c4376658.spop(e,tp,eg,ep,ev,re,r,rp,c)
 	local g=e:GetLabelObject()
-	-- 将指定的怪兽组以特殊召唤的原因送去墓地。
+	-- 将选中的素材卡以特殊召唤为由（REASON_SPSUMMON）送入墓地。
 	Duel.SendtoGrave(g,REASON_SPSUMMON)
 	g:DeleteGroup()
 end
--- 判断该卡是否为通过①的效果特殊召唤的。
+-- 贯穿伤害效果的发动条件：这张卡的召唤类型为通过①的效果进行的特殊召唤（SUMMON_TYPE_SPECIAL+SUMMON_VALUE_SELF）。
 function c4376658.condition(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():GetSummonType()==SUMMON_TYPE_SPECIAL+SUMMON_VALUE_SELF
 end

@@ -14,33 +14,33 @@ function c43898403.initial_effect(c)
 	e1:SetOperation(c43898403.activate)
 	c:RegisterEffect(e1)
 end
--- 检查是否可以丢弃1张手卡作为发动代价
+-- 发动代价：从手卡丢弃1张卡，作为效果发动的代价。
 function c43898403.cost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断玩家手牌中是否存在可丢弃的卡片
+	-- cost检查：确认手牌中是否存在至少1张可丢弃的卡，用于支付丢弃手卡的代价。
 	if chk==0 then return Duel.IsExistingMatchingCard(Card.IsDiscardable,tp,LOCATION_HAND,0,1,e:GetHandler()) end
-	-- 执行丢弃1张手卡的操作，丢弃原因包含费用和丢弃
+	-- 实际执行代价：从手卡选择1张卡丢弃，丢弃原因设为COST和DISCARD。
 	Duel.DiscardHand(tp,Card.IsDiscardable,1,1,REASON_COST+REASON_DISCARD)
 end
--- 定义过滤函数，用于筛选魔法或陷阱类型的卡片
+-- 筛选条件：对象必须是魔法·陷阱卡（包括场上的魔法·陷阱卡）。
 function c43898403.filter(c)
 	return c:IsType(TYPE_SPELL+TYPE_TRAP)
 end
--- 设置效果的目标选择逻辑，允许选择场上1到2张魔法或陷阱卡
+-- 发动时选择对象：从场上选择1~2张魔法·陷阱卡（不能选自身）作为效果对象，并登记破坏信息。
 function c43898403.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsOnField() and c43898403.filter(chkc) and chkc~=e:GetHandler() end
-	-- 判断场上是否存在满足条件的魔法或陷阱卡作为目标
+	-- 目标检查：确认场上是否存在至少1张符合条件的魔法·陷阱卡可选，否则不能发动。
 	if chk==0 then return Duel.IsExistingTarget(c43898403.filter,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,e:GetHandler()) end
-	-- 向玩家发送提示信息，提示选择要破坏的卡片
+	-- 显示选择提示：“请选择要破坏的卡”。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 选择场上1到2张魔法或陷阱卡作为效果对象
+	-- 玩家选择1~2张场上符合条件的魔法·陷阱卡作为对象（除去发动效果的卡本身），并登记为连锁对象。
 	local g=Duel.SelectTarget(tp,c43898403.filter,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,2,e:GetHandler())
-	-- 设置操作信息，表明此效果将破坏选定的卡片
+	-- 设置操作信息：宣告本次效果将破坏这些对象卡，供时点及联动效果检测。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,g:GetCount(),0,0)
 end
--- 处理效果的发动，对选定的目标卡片进行破坏
+-- 效果处理：取出连锁对象中仍与效果关联的卡，并将它们破坏。
 function c43898403.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁中选定的目标卡片，并筛选出与当前效果相关的卡片
+	-- 从连锁信息中获取对象卡组，并筛选出仍与该效果有关联的卡（已离场或不受影响的卡除外）。
 	local g=Duel.GetChainInfo(0,CHAININFO_TARGET_CARDS):Filter(Card.IsRelateToEffect,nil,e)
-	-- 以效果原因破坏选定的卡片
+	-- 以效果原因破坏筛选出的所有对象卡。
 	Duel.Destroy(g,REASON_EFFECT)
 end
