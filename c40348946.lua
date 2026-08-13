@@ -12,28 +12,28 @@ function c40348946.initial_effect(c)
 	e1:SetTarget(c40348946.tg)
 	e1:SetOperation(c40348946.op)
 	c:RegisterEffect(e1)
-	-- 为成为素材的卡片与其对应的素材触发效果建立关联，确保在效果处理期间能够正确识别并获取本次召唤所使用的原因怪兽。
+	-- 为作为素材的这张卡c登记其与主效果e1之间的关联关系，使以它为素材的同调怪兽能被后续效果正确追踪，从而施加攻击力上升及结束阶段除外。
 	aux.CreateMaterialReasonCardRelation(c,e1)
 end
--- 效果条件：这张卡在墓地且因同调召唤成为素材，且使它成为素材的怪兽为龙族。
+-- 效果发动条件：这张卡作为同调素材被送去墓地后位于墓地、那次同调召唤的原因为REASON_SYNCHRO，并且因同调召唤出场的同调怪兽是龙族。
 function c40348946.con(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	return c:IsLocation(LOCATION_GRAVE) and r==REASON_SYNCHRO and c:GetReasonCard():IsRace(RACE_DRAGON)
 end
--- 效果目标：设置使这张卡成为素材的同调怪兽为效果目标。
+-- 效果目标选择：取得这次同调召唤所出场的同调怪兽rc，若它仍与效果相关且表侧表示，则在发动确认阶段返回true并将其设为效果处理时要涉及的对象。
 function c40348946.tg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local rc=e:GetHandler():GetReasonCard()
 	if chk==0 then return rc:IsRelateToEffect(e) and rc:IsFaceup() end
-	-- 将目标怪兽设置为当前连锁的效果对象。
+	-- 将同调怪兽rc登记为当前连锁处理的对象，便于后续通过Duel.GetFirstTarget()取得该怪兽。
 	Duel.SetTargetCard(rc)
 end
--- 效果处理：若目标怪兽存在于连锁中且正面表示且未被效果免疫，则给该怪兽增加800攻击力，并注册结束阶段除外效果。
+-- 效果处理：若作为对象的同调怪兽仍与连锁相关、表侧表示且不免疫此效果，则给它注册攻击力上升800的效果，并为其放置标识；同时为当前玩家场上注册一个在结束阶段进行除外的持续效果e2。
 function c40348946.op(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取当前连锁的效果目标，即使这张卡成为素材的同调怪兽。
+	-- 取得当前连锁中之前被设为对象的同调怪兽sync。
 	local sync=Duel.GetFirstTarget()
 	if not sync:IsRelateToChain() or sync:IsFacedown() or sync:IsImmuneToEffect(e) then return end
-	-- 使目标怪兽的攻击力上升800。
+	-- 这张卡为同调素材的同调怪兽的攻击力上升800
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_UPDATE_ATTACK)
@@ -41,7 +41,7 @@ function c40348946.op(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetReset(RESET_EVENT+RESETS_STANDARD)
 	sync:RegisterEffect(e1)
 	sync:RegisterFlagEffect(40348946,RESET_EVENT+RESETS_STANDARD,0,1)
-	-- 在结束阶段时从游戏中除外目标怪兽。
+	-- 结束阶段时从游戏中除外
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e2:SetCode(EVENT_PHASE+PHASE_END)
@@ -50,10 +50,10 @@ function c40348946.op(e,tp,eg,ep,ev,re,r,rp)
 	e2:SetLabelObject(sync)
 	e2:SetCondition(c40348946.rmcon)
 	e2:SetOperation(c40348946.rmop)
-	-- 将结束阶段除外效果注册到场上。
+	-- 将结束阶段除外的持续效果e2注册到当前玩家场上，使其在结束阶段检查并执行对应除外。
 	Duel.RegisterEffect(e2,tp)
 end
--- 判断目标怪兽是否已注册flag，若已注册则继续执行除外操作。
+-- 结束阶段除外效果的条件：记录的同调怪兽仍带有本效果设置的标识时条件成立；若标识已消失，则重置该持续效果并返回false。
 function c40348946.rmcon(e,tp,eg,ep,ev,re,r,rp)
 	local tc=e:GetLabelObject()
 	if tc:GetFlagEffect(40348946)~=0 then
@@ -63,9 +63,9 @@ function c40348946.rmcon(e,tp,eg,ep,ev,re,r,rp)
 		return false
 	end
 end
--- 将目标怪兽从游戏中除外。
+-- 执行结束阶段除外：取得记录的同调怪兽tc，并将其除外。
 function c40348946.rmop(e,tp,eg,ep,ev,re,r,rp)
 	local tc=e:GetLabelObject()
-	-- 以效果原因将目标怪兽从游戏中除外。
+	-- 将同调怪兽tc以表侧表示除外，处理原因为效果。
 	Duel.Remove(tc,POS_FACEUP,REASON_EFFECT)
 end

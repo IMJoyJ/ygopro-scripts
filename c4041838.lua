@@ -12,22 +12,22 @@ function c4041838.initial_effect(c)
 	e1:SetOperation(c4041838.op)
 	c:RegisterEffect(e1)
 end
--- 检查是否满足效果发动条件：攻击怪兽是此卡，攻击目标存在且为表侧守备表示且与战斗相关
+-- 效果发动条件的判定：确认攻击者为此卡，且攻击目标存在、为表侧表示、为守备表示并与此战斗相关联。
 function c4041838.targ(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 获取攻击战斗中的攻击目标怪兽
+	-- 获取当前战斗中被这张卡攻击的怪兽。
 	local d=Duel.GetAttackTarget()
-	-- 判断攻击怪兽是否为此卡
+	-- 判定发起攻击的怪兽是否为效果持有者（这张卡）。
 	if chk==0 then return Duel.GetAttacker()==e:GetHandler()
 		and d~=nil and d:IsFaceup() and d:IsDefensePos() and d:IsRelateToBattle() end
-	-- 设置连锁操作信息为破坏效果，目标为攻击目标怪兽
+	-- 设置操作信息：将攻击目标登记为将被效果破坏的1张卡，供连锁与效果检测使用。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,d,1,0,0)
 end
--- 效果处理函数，判断攻击目标是否满足破坏条件并执行破坏
+-- 效果处理阶段：若攻击目标仍与本次战斗关联且为守备表示，则将其破坏。
 function c4041838.op(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取攻击战斗中的攻击目标怪兽
+	-- 效果处理时重新获取当前战斗的攻击目标怪兽。
 	local d=Duel.GetAttackTarget()
 	if d~=nil and d:IsRelateToBattle() and d:IsDefensePos() then
-		-- 将目标怪兽以效果为原因进行破坏
+		-- 以效果原因将攻击目标怪兽破坏。
 		Duel.Destroy(d,REASON_EFFECT)
 	end
 end

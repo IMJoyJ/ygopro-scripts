@@ -11,12 +11,12 @@ function c40453765.initial_effect(c)
 	e1:SetValue(c40453765.value)
 	c:RegisterEffect(e1)
 end
--- 过滤函数，用于筛选场上表侧表示的「野蛮人1号」
+-- 定义过滤条件：选择表侧表示且卡号为20394040（即「野蛮人1号」）的怪兽卡。
 function c40453765.filter(c)
 	return c:IsFaceup() and c:IsCode(20394040)
 end
--- 计算攻击力上升值，统计己方场上「野蛮人1号」的数量并乘以500
+-- 定义攻击力提升数值的计算函数：根据符合条件的「野蛮人1号」数量计算出这张卡的攻击力上升值。
 function c40453765.value(e,c)
-	-- 检索满足条件的「野蛮人1号」数量并乘以500作为攻击力加成
+	-- 统计效果持有者控制者场上表侧表示且卡号为20394040（「野蛮人1号」）的怪兽数量，每有1只上升500点攻击力。
 	return Duel.GetMatchingGroupCount(c40453765.filter,c:GetControler(),LOCATION_MZONE,0,nil)*500
 end
