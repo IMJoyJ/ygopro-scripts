@@ -27,46 +27,46 @@ function c47754278.initial_effect(c)
 	e2:SetOperation(c47754278.spop)
 	c:RegisterEffect(e2)
 end
--- 判断此卡是否在攻击回合中 announced 过攻击
+-- 判断条件：本回合这张卡进行过攻击宣言（攻击过）。
 function c47754278.descon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():GetAttackAnnouncedCount()~=0
 end
--- 设置连锁操作信息为破坏效果
+-- 目标判定函数：效果发动时无需选择对象，直接设置将这张卡破坏的操作信息。
 function c47754278.destg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置当前处理的连锁的操作信息为破坏此卡
+	-- 设置操作信息：本次效果将以效果原因破坏这张卡，数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,e:GetHandler(),1,0,0)
 end
--- 执行此卡的破坏效果
+-- 效果处理函数：以效果原因破坏这张卡。
 function c47754278.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 将此卡以效果原因破坏
+	-- 以效果原因破坏这张卡。
 	Duel.Destroy(e:GetHandler(),REASON_EFFECT)
 end
--- 判断此卡是否因破坏而送去墓地且之前在场上
+-- 特殊召唤的诱发条件：这张卡因被破坏而送去墓地，且被破坏前位于场上。
 function c47754278.spcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsReason(REASON_DESTROY) and e:GetHandler():IsPreviousLocation(LOCATION_ONFIELD)
 end
--- 检查玩家是否能解放1只怪兽作为cost，并选择1只怪兽进行解放
+-- 代价函数：从自己场上解放1只怪兽作为发动代价。
 function c47754278.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检测是否满足解放1只怪兽的条件
+	-- 检测是否满足解放代价：自己场上有至少1只可解放的怪兽。
 	if chk==0 then return Duel.CheckReleaseGroup(tp,nil,1,nil) end
-	-- 从玩家场上选择1只满足条件的怪兽进行解放
+	-- 选择自己场上1只可解放的怪兽作为代价。
 	local g=Duel.SelectReleaseGroup(tp,nil,1,1,nil)
-	-- 将选中的怪兽以代價原因进行解放
+	-- 将选择的怪兽解放（作为发动代价）。
 	Duel.Release(g,REASON_COST)
 end
--- 判断此卡是否可以特殊召唤，检查是否有足够的场地空间和召唤条件
+-- 目标判定函数：确认特殊召唤的合法性（发动时允许无空位，并检查这张卡能否被特殊召唤），并设置特殊召唤的操作信息。
 function c47754278.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检测场上是否有足够的召唤区域
+	-- 检查自己场上是否有可用的怪兽区（此处为宽松判定，允许发动时无空位，效果处理时再确认），且这张卡能被特殊召唤。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>-1
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置当前处理的连锁的操作信息为特殊召唤效果
+	-- 设置操作信息：本次效果将对这张卡进行特殊召唤，数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 执行此卡的特殊召唤效果
+-- 效果处理函数：若这张卡仍与该效果关联（尚未离开墓地等），将其特殊召唤到自己场上。
 function c47754278.spop(e,tp,eg,ep,ev,re,r,rp)
 	if e:GetHandler():IsRelateToEffect(e) then
-		-- 将此卡以0方式、正面表示特殊召唤到玩家场上
+		-- 将这张卡以表侧表示特殊召唤到自己场上（不检查召唤条件与苏生限制）。
 		Duel.SpecialSummon(e:GetHandler(),0,tp,tp,false,false,POS_FACEUP)
 	end
 end

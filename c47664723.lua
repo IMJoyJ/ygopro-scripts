@@ -10,7 +10,7 @@ function c47664723.initial_effect(c)
 	e1:SetOperation(c47664723.gete)
 	c:RegisterEffect(e1)
 end
--- 这张卡向守备表示怪兽攻击的场合，给与攻击力超过那个守备力的数值的战斗伤害。
+-- 该函数在特殊召唤成功时触发：先判断这张卡的特殊召唤是否来自墓地，若不是则结束；若是，则创建贯穿效果（EFFECT_PIERCE）并注册给这张卡，使其攻击守备表示怪兽时给予攻击力超过守备力的战斗伤害。
 function c47664723.gete(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if not c:IsPreviousLocation(LOCATION_GRAVE) then return end

@@ -5,7 +5,7 @@
 -- ②：这张卡被破坏时，以这张卡以外的自己墓地的「光道」怪兽任意数量为对象才能发动。那些怪兽回到卡组，自己回复回去数量×300基本分。
 -- ③：自己结束阶段发动。从自己卡组上面把3张卡送去墓地。
 function c4779823.initial_effect(c)
-	-- 添加同调召唤手续，要求1只调整和1只以上光属性调整以外的怪兽作为素材
+	-- 为这张卡添加同调召唤手续：调整＋调整以外的光属性怪兽1只以上（调整可以为任意调整，非调整必须是光属性怪兽）。
 	aux.AddSynchroProcedure(c,nil,aux.NonTuner(Card.IsAttribute,ATTRIBUTE_LIGHT),1)
 	c:EnableReviveLimit()
 	-- ①：1回合1次，支付1000基本分，以场上1张卡为对象才能发动。那张卡除外。
@@ -43,76 +43,76 @@ function c4779823.initial_effect(c)
 	e3:SetOperation(c4779823.disop)
 	c:RegisterEffect(e3)
 end
--- 检查玩家是否能支付1000基本分
+-- 效果①的发动代价函数：检查并支付1000基本分作为发动代价。
 function c4779823.rmcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查玩家是否能支付1000基本分
+	-- 在代价检查阶段确认玩家能否支付1000基本分。
 	if chk==0 then return Duel.CheckLPCost(tp,1000) end
-	-- 让玩家支付1000基本分
+	-- 实际支付1000基本分，作为效果①的发动代价。
 	Duel.PayLPCost(tp,1000)
 end
--- 设置效果目标为场上1张可除外的卡
+-- 效果①的取对象处理函数：选择场上1张可以除外的卡作为对象，并设置除外相关的操作信息。
 function c4779823.rmtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsOnField() and chkc:IsAbleToRemove() end
-	-- 检查场上是否存在1张可除外的卡
+	-- 在发动条件检查阶段，确认场上存在至少1张可以除外的卡。
 	if chk==0 then return Duel.IsExistingTarget(Card.IsAbleToRemove,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,nil) end
-	-- 提示玩家选择要除外的卡
+	-- 弹出选择提示，让玩家选择要除外的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
-	-- 选择场上1张可除外的卡作为对象
+	-- 让玩家从双方场上选择1张可以除外的卡作为效果对象，并登记为连锁对象。
 	local g=Duel.SelectTarget(tp,Card.IsAbleToRemove,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,1,nil)
-	-- 设置效果操作信息，指定将1张卡除外
+	-- 设置连锁操作信息：本效果将把1张对象卡除外，用于后续时点及判定。
 	Duel.SetOperationInfo(0,CATEGORY_REMOVE,g,1,0,0)
 end
--- 处理效果，将目标卡除外
+-- 效果①的发动处理函数：将选择的对象卡除外。
 function c4779823.rmop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的效果对象卡
+	-- 获取效果发动时选择的对象卡。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 将目标卡除外
+		-- 以表侧表示将该对象卡除外。
 		Duel.Remove(tc,POS_FACEUP,REASON_EFFECT)
 	end
 end
--- 定义过滤函数，筛选光道怪兽且可送回卡组的卡片
+-- 定义效果②选择对象的筛选条件：是「光道」怪兽、是怪兽且能返回卡组。
 function c4779823.filter(c)
 	return c:IsSetCard(0x38) and c:IsType(TYPE_MONSTER) and c:IsAbleToDeck()
 end
--- 设置效果目标为墓地里任意数量的光道怪兽
+-- 效果②的取对象处理函数：选择自己墓地任意数量的符合条件的「光道」怪兽，并设置回卡组和回复LP的信息。
 function c4779823.rettg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and c4779823.filter(chkc) end
-	-- 检查玩家墓地中是否存在至少1张符合条件的光道怪兽
+	-- 在发动条件检查阶段，确认自己墓地存在至少1张符合条件的「光道」怪兽（且不是本卡自身）。
 	if chk==0 then return Duel.IsExistingTarget(c4779823.filter,tp,LOCATION_GRAVE,0,1,e:GetHandler()) end
-	-- 提示玩家选择要返回卡组的卡
+	-- 弹出选择提示，让玩家选择要返回卡组的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TODECK)  --"请选择要返回卡组的卡"
-	-- 选择墓地里任意数量的光道怪兽作为对象
+	-- 让玩家从自己墓地选择1~99张符合条件的「光道」怪兽（排除自身）作为效果对象。
 	local g=Duel.SelectTarget(tp,c4779823.filter,tp,LOCATION_GRAVE,0,1,99,e:GetHandler())
-	-- 设置效果操作信息，指定将若干张卡送回卡组
+	-- 设置操作信息：将选择的对象卡返回卡组。
 	Duel.SetOperationInfo(0,CATEGORY_TODECK,g,g:GetCount(),0,0)
-	-- 设置效果操作信息，指定回复相应数量×300基本分
+	-- 设置操作信息：本效果将回复自己数值为对象数量×300的基本分。
 	Duel.SetOperationInfo(0,CATEGORY_RECOVER,nil,0,tp,g:GetCount()*300)
 end
--- 处理效果，将目标卡送回卡组并回复基本分
+-- 效果②的发动处理函数：将对象卡返回卡组，并按返回数量回复LP。
 function c4779823.retop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁中被选择的目标卡组，并筛选出与效果相关的卡
+	-- 获取连锁处理时仍与本效果相关的对象卡组，排除已无效或离场导致不相关的卡。
 	local g=Duel.GetChainInfo(0,CHAININFO_TARGET_CARDS):Filter(Card.IsRelateToEffect,nil,e)
-	-- 将目标卡送回卡组
+	-- 将对象卡返回持有者卡组并洗牌，返回实际返回卡组的数量。
 	local ct=Duel.SendtoDeck(g,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
 	if ct>0 then
-		-- 根据送回卡组的数量回复基本分
+		-- 根据实际返回卡组的数量回复自己基本分，每张×300。
 		Duel.Recover(tp,ct*300,REASON_EFFECT)
 	end
 end
--- 设置效果发动条件，仅在自己的结束阶段发动
+-- 效果③的发动条件函数：仅在自己回合的结束阶段满足。
 function c4779823.discon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断是否为当前回合玩家
+	-- 判断当前回合玩家是否为自己（控制者），以保证是自己结束阶段。
 	return tp==Duel.GetTurnPlayer()
 end
--- 设置效果目标为从自己卡组上面把3张卡送去墓地
+-- 效果③的发动设定函数：必发效果，设置将卡组上方3张卡送去墓地的信息。
 function c4779823.distg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置效果操作信息，指定将3张卡送去墓地
+	-- 设置连锁操作信息：从自己卡组上方把3张卡送去墓地。
 	Duel.SetOperationInfo(0,CATEGORY_DECKDES,nil,0,tp,3)
 end
--- 处理效果，从自己卡组上面把3张卡送去墓地
+-- 效果③的发动处理函数：从自己卡组上方把3张卡送去墓地。
 function c4779823.disop(e,tp,eg,ep,ev,re,r,rp)
-	-- 从自己卡组上面把3张卡送去墓地
+	-- 将自己卡组上方3张卡送去墓地。
 	Duel.DiscardDeck(tp,3,REASON_EFFECT)
 end

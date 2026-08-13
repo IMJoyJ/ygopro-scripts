@@ -24,70 +24,70 @@ function c47766694.initial_effect(c)
 	e2:SetOperation(c47766694.desop)
 	c:RegisterEffect(e2)
 end
--- 过滤满足条件的魔法与陷阱区域的表侧表示的卡（序列号小于5）
+-- 判断卡是否为表侧表示且位于魔法与陷阱区域（非场地格，序号<5）。
 function c47766694.filter(c)
 	return c:IsFaceup() and c:GetSequence()<5
 end
--- 设置效果目标为魔法与陷阱区域的表侧表示的卡
+-- 效果①发动时的目标处理：确认存在符合条件的取对象候选，选择魔法与陷阱区1张表侧表示的非自身卡为对象，并设置破坏操作信息。
 function c47766694.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_SZONE) and c47766694.filter(chkc) and chkc~=e:GetHandler() end
-	-- 判断是否存在满足条件的目标卡
+	-- 发动合法性检查：己方或对方魔法与陷阱区域存在1张表侧表示且不是本卡的可选对象时才能发动。
 	if chk==0 then return Duel.IsExistingTarget(c47766694.filter,tp,LOCATION_SZONE,LOCATION_SZONE,1,e:GetHandler()) end
-	-- 提示玩家选择要破坏的卡
+	-- 向操作玩家显示“请选择要破坏的卡”的选择提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 选择一个魔法与陷阱区域的表侧表示的卡作为目标
+	-- 从双方的魔法与陷阱区域选择1张表侧表示且不是本卡的卡作为效果对象。
 	local g=Duel.SelectTarget(tp,c47766694.filter,tp,LOCATION_SZONE,LOCATION_SZONE,1,1,e:GetHandler())
-	-- 设置操作信息，确定要破坏的卡的数量为1
+	-- 登记本次连锁将破坏1张卡的操作信息，供相关效果判定用。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,1,0,0)
 end
--- 处理效果发动后的操作，包括破坏目标卡并询问是否盖放魔法或陷阱卡
+-- 效果①的解决处理：若对象仍合法则将其破坏；破坏成功后，由该卡控制者选择是否从手卡盖放1张魔法·陷阱卡。
 function c47766694.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁中选择的目标卡
+	-- 取得效果①选择的那个对象卡。
 	local tc=Duel.GetFirstTarget()
-	-- 判断目标卡是否满足破坏条件（表侧表示、存在于场上、与效果相关）
+	-- 确认对象仍在场上表侧表示且与效果关联，然后将其破坏；仅当破坏处理实际成功时才继续后续盖放流程。
 	if tc and tc:IsFaceup() and tc:IsRelateToEffect(e) and Duel.Destroy(tc,REASON_EFFECT)~=0 then
 		local dp=tc:GetControler()
-		-- 获取破坏卡的控制者手牌中可以盖放的魔法或陷阱卡
+		-- 获取对象卡控制者手牌中所有可以盖放的魔法·陷阱卡。
 		local g=Duel.GetMatchingGroup(Card.IsSSetable,dp,LOCATION_HAND,0,nil)
-		-- 询问破坏卡的控制者是否要盖放一张魔法或陷阱卡
+		-- 若存在可盖放的卡，则询问该玩家是否要盖放；玩家选择“是”时继续。
 		if g:GetCount()>0 and Duel.SelectYesNo(dp,aux.Stringid(47766694,0)) then  --"是否要放置魔法或陷阱卡？"
-			-- 中断当前效果处理，使后续操作不同时处理
+			-- 中断当前效果链，使后续盖放处理视为另一段效果处理，以错开时点并可被连锁。
 			Duel.BreakEffect()
-			-- 提示玩家选择要盖放的卡
+			-- 显示“请选择要盖放的卡”的提示。
 			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SET)  --"请选择要盖放的卡"
 			local sg=g:Select(dp,1,1,nil)
-			-- 将选中的卡盖放到场上
+			-- 将从手牌选出的魔法·陷阱卡以里侧表示盖放到该玩家自己的魔法与陷阱区域。
 			Duel.SSet(dp,sg,dp,false)
 		end
 	end
 end
--- 判断该卡是否因破坏而进入墓地且处于背面表示状态
+-- 效果②的触发条件：本卡以里侧表示存在于场上时被破坏并送去墓地（破坏原因成立且此前位置在场上、此前表示为里侧）。
 function c47766694.descon(e,tp,eg,ep,ev,re,r,rp)
 	return bit.band(r,REASON_DESTROY)~=0
 		and e:GetHandler():IsPreviousLocation(LOCATION_ONFIELD)
 		and e:GetHandler():IsPreviousPosition(POS_FACEDOWN)
 end
--- 过滤满足条件的场上表侧表示的卡
+-- 效果②的取对象过滤：选择场上表侧表示的卡。
 function c47766694.desfilter(c)
 	return c:IsFaceup()
 end
--- 设置触发效果的目标为场上的表侧表示的卡
+-- 效果②发动时的目标处理：选择场上1张表侧表示的卡为对象，并设置破坏操作信息。
 function c47766694.destg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsOnField() and c47766694.desfilter(chkc) end
 	if chk==0 then return true end
-	-- 提示玩家选择要破坏的卡
+	-- 显示“请选择要破坏的卡”的提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 选择一个场上的表侧表示的卡作为目标
+	-- 从双方场上选择1张表侧表示的卡作为②效果的对象。
 	local g=Duel.SelectTarget(tp,c47766694.desfilter,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,1,nil)
-	-- 设置操作信息，确定要破坏的卡的数量为1
+	-- 登记本次连锁将破坏1张卡的操作信息。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,1,0,0)
 end
--- 处理触发效果的后续操作，即破坏目标卡
+-- 效果②的解决处理：破坏所选对象。
 function c47766694.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁中选择的目标卡
+	-- 取得效果②选择的对象卡。
 	local tc=Duel.GetFirstTarget()
 	if tc and tc:IsFaceup() and tc:IsRelateToEffect(e) then
-		-- 以效果原因破坏目标卡
+		-- 以效果原因破坏该对象卡。
 		Duel.Destroy(tc,REASON_EFFECT)
 	end
 end
