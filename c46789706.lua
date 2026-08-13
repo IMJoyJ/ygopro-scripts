@@ -5,9 +5,9 @@
 -- ②：对方把场上的怪兽的效果发动时才能发动。自己场上的这张卡当作持有以下效果的装备魔法卡使用给那只对方怪兽装备。
 -- ●装备怪兽的效果无效化。
 local s,id,o=GetID()
--- 创建两个效果，分别对应①特殊召唤和②装备效果
+-- 为这张卡注册两个效果：①在手牌作为起动效果特殊召唤自身；②在场上作为诱发即时效果，当对方发动场上怪兽效果时，将自身作为装备卡装备给那只怪兽并使其效果无效化。
 function s.initial_effect(c)
-	-- ①：这张卡在手卡存在，场上有「栗子球」怪兽卡存在的场合才能发动。这张卡特殊召唤。
+	-- 这个卡名的①②的效果1回合各能使用1次。①：这张卡在手卡存在，场上有「栗子球」怪兽卡存在的场合才能发动。这张卡特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(id,0))  --"特殊召唤"
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -31,56 +31,56 @@ function s.initial_effect(c)
 	e2:SetOperation(s.eqop)
 	c:RegisterEffect(e2)
 end
--- 定义过滤函数，用于判断场上是否存在「栗子球」怪兽（正面表示且为怪兽类型）
+-- 过滤函数：判断卡片是否为表侧表示，且持有「栗子球」字段，并且原本种类为怪兽卡。
 function s.cfilter(c)
 	return c:IsFaceup() and c:IsSetCard(0xa4) and bit.band(c:GetOriginalType(),TYPE_MONSTER)~=0
 end
--- 判断手牌中的机雷化的栗子球是否可以发动特殊召唤效果（场上有栗子球怪兽）
+-- ①效果的发动条件：自己或对方场上存在至少1只满足s.cfilter条件的「栗子球」怪兽卡。
 function s.spcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查场上是否存在至少1张「栗子球」怪兽
+	-- 检索场上是否存在满足条件的「栗子球」怪兽卡（表侧表示且为「栗子球」字段的怪兽）。
 	return Duel.IsExistingMatchingCard(s.cfilter,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,nil)
 end
--- 设置特殊召唤的发动条件和目标，判断是否满足召唤条件
+-- ①效果发动时的目标检查：自己主要怪兽区有空位，且这张卡能够被特殊召唤；满足条件后设置特殊召唤的操作信息。
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断玩家场上是否有足够的怪兽区域
+	-- 检查自己场上是否存在可用的主要怪兽区域空格。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置连锁操作信息，表示将要特殊召唤此卡
+	-- 设置特殊召唤的操作信息，表示接下来会将这张卡特殊召唤，用于连锁处理和效果检测。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 执行特殊召唤操作，将此卡从手牌特殊召唤到场上
+-- ①效果处理：若这张卡仍与效果保有联系，则将自身特殊召唤上场。
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if not c:IsRelateToEffect(e) then return end
-	-- 执行特殊召唤动作，以正面表示形式召唤到玩家场上
+	-- 将这张卡以表侧表示特殊召唤到自己场上。
 	Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 end
--- 判断是否满足装备效果发动条件（对方怪兽在场上发动效果）
+-- ②效果的发动条件：对方发动了场上怪兽的效果，即效果控制者为对方、效果类型为怪兽效果、且发动区域为怪兽区。
 function s.eqcon(e,tp,eg,ep,ev,re,r,rp)
 	return rp==1-tp and re:IsActiveType(TYPE_MONSTER) and re:GetActivateLocation()==LOCATION_MZONE
 end
--- 设置装备效果的发动目标和条件，判断是否可以装备
+-- ②效果发动时检查：自己魔陷区有空位，且对方那只发动效果的怪兽表侧表示存在于怪兽区；通过后建立关联并设置装备操作信息。
 function s.eqtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local rc=re:GetHandler()
 	local c=e:GetHandler()
-	-- 检查玩家场上是否有足够的魔法陷阱区域，并确认目标怪兽正面表示且在场上
+	-- 检查自己魔陷区是否有空位，且对象怪兽是否表侧表示并位于怪兽区。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_SZONE)>0 and rc:IsFaceup() and rc:IsLocation(LOCATION_MZONE) end
 	rc:CreateEffectRelation(e)
-	-- 设置连锁操作信息，表示将要装备此卡到对方怪兽
+	-- 设置装备操作信息，表示将这张卡作为装备卡处理。
 	Duel.SetOperationInfo(0,CATEGORY_EQUIP,c,1,0,0)
 end
--- 执行装备效果的操作，包括装备限制和效果无效化
+-- ②效果处理：若自身仍与效果关联且控制权未转移，则尝试装备给对方怪兽；装备成功后添加装备对象限制和无效化效果；若无法装备则自身送去墓地。
 function s.eqop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local rc=re:GetHandler()
 	if not c:IsRelateToEffect(e) or c:IsControler(1-tp) then return end
-	-- 判断是否满足装备失败条件（无空位、目标怪兽背向或不在场）
+	-- 判断是否仍满足装备条件：自己魔陷区有空位、对象怪兽仍表侧表示且仍与效果关联。
 	if Duel.GetLocationCount(tp,LOCATION_SZONE)<=0 or rc:IsFacedown() or not rc:IsRelateToEffect(e) then
-		-- 若装备失败，则将此卡送入墓地
+		-- 装备条件不满足时，将这张卡以效果原因送去墓地。
 		Duel.SendtoGrave(c,REASON_EFFECT)
-	-- 若装备成功，则设置装备限制和效果无效化效果
+	-- 尝试将这张卡作为装备魔法卡装备给那只对方怪兽。
 	elseif Duel.Equip(tp,c,rc) then
-		-- 设置装备对象限制，确保只能装备给指定的怪兽
+		-- 自己场上的这张卡当作持有以下效果的装备魔法卡使用给那只对方怪兽装备。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
@@ -89,7 +89,7 @@ function s.eqop(e,tp,eg,ep,ev,re,r,rp)
 		e1:SetValue(s.eqlimit)
 		e1:SetReset(RESET_EVENT+RESETS_STANDARD)
 		c:RegisterEffect(e1)
-		-- 设置装备后使目标怪兽效果无效
+		-- ●装备怪兽的效果无效化。
 		local e2=Effect.CreateEffect(c)
 		e2:SetType(EFFECT_TYPE_EQUIP)
 		e2:SetCode(EFFECT_DISABLE)
@@ -97,7 +97,7 @@ function s.eqop(e,tp,eg,ep,ev,re,r,rp)
 		c:RegisterEffect(e2)
 	end
 end
--- 定义装备对象限制函数，确保只能装备给特定怪兽
+-- 装备对象限制函数：这张卡只能装备给记录在LabelObject中的那只对方怪兽。
 function s.eqlimit(e,c)
 	return c==e:GetLabelObject()
 end

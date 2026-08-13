@@ -11,12 +11,12 @@ function c46700124.initial_effect(c)
 	e1:SetValue(c46700124.val)
 	c:RegisterEffect(e1)
 end
--- 计算满足条件的机械族怪兽数量并乘以100作为攻击力加成
+-- 计算这张卡的攻击力上升数值：场上每有1只表侧表示存在的机械族怪兽，就上升100。
 function c46700124.val(e,c)
-	-- 检索场上表侧表示的机械族怪兽数量，并乘以100作为攻击力提升值
+	-- 统计以这张卡的控制者视角来看，双方怪兽区域中表侧表示且为机械族的怪兽数量，再乘以100作为攻击力上升数值。
 	return Duel.GetMatchingGroupCount(c46700124.filter,c:GetControler(),LOCATION_MZONE,LOCATION_MZONE,nil)*100
 end
--- 过滤函数，用于判断怪兽是否为表侧表示的机械族怪兽
+-- 过滤条件：怪兽为表侧表示，且种族为机械族。
 function c46700124.filter(c)
 	return c:IsFaceup() and c:IsRace(RACE_MACHINE)
 end

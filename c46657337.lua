@@ -14,8 +14,8 @@ function c46657337.initial_effect(c)
 	e2:SetCode(EFFECT_UPDATE_DEFENSE)
 	c:RegisterEffect(e2)
 end
--- 计算控制者手牌数量并乘以300作为攻击力和守备力的提升值
+-- 计算这张卡控制者手牌的数量×300，作为攻击力和守备力的上升值；该函数返回的数值供攻击力/守备力上升效果使用。
 function c46657337.val(e,c)
-	-- 获取当前控制者手牌数量并乘以300
+	-- 获取这张卡控制者的手牌数量并乘以300，返回该数值作为攻击力/守备力实际上升的点数。
 	return Duel.GetFieldGroupCount(c:GetControler(),LOCATION_HAND,0)*300
 end

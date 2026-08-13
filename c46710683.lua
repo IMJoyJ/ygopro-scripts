@@ -11,19 +11,19 @@ function c46710683.initial_effect(c)
 	e1:SetOperation(c46710683.operation)
 	c:RegisterEffect(e1)
 end
--- 判断此卡是否从场上被破坏进入墓地
+-- 发动条件：这张卡被破坏送去墓地前存在于场上，且是被破坏（REASON_DESTROY）而送去墓地的。
 function c46710683.condition(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsPreviousLocation(LOCATION_ONFIELD) and e:GetHandler():IsReason(REASON_DESTROY)
 end
--- 创建一个影响自己的永续效果，使自己在该回合内受到的战斗伤害变为0
+-- 效果处理：创建一个影响己方玩家的领域效果，使这个回合自己受到的战斗伤害仅1次变成0，并在伤害计算阶段结束时或结束阶段时重置。
 function c46710683.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 这个回合自己受到的战斗伤害只有1次变成0
+	-- 这个回合自己受到的战斗伤害只有1次变成0。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_AVOID_BATTLE_DAMAGE)
 	e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
 	e1:SetTargetRange(1,0)
 	e1:SetReset(RESET_PHASE+PHASE_DAMAGE_CAL+PHASE_END)
-	-- 将效果e1注册给玩家tp
+	-- 将上述避免战斗伤害的效果注册给当前玩家tp，使该效果在tp方生效。
 	Duel.RegisterEffect(e1,tp)
 end
