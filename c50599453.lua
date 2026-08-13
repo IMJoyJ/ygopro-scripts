@@ -4,7 +4,7 @@
 -- ①：这张卡在手卡·墓地存在，对方墓地的卡数量比自己墓地的卡多的场合，自己准备阶段才能发动。这张卡特殊召唤。
 -- ②：这张卡的攻击力·守备力上升对方墓地的卡数量×200。
 function c50599453.initial_effect(c)
-	-- ①：这张卡在手卡·墓地存在，对方墓地的卡数量比自己墓地的卡多的场合，自己准备阶段才能发动。这张卡特殊召唤。
+	-- 这个卡名的①的效果1回合只能使用1次。①：这张卡在手卡·墓地存在，对方墓地的卡数量比自己墓地的卡多的场合，自己准备阶段才能发动。这张卡特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
@@ -27,28 +27,28 @@ function c50599453.initial_effect(c)
 	e3:SetCode(EFFECT_UPDATE_DEFENSE)
 	c:RegisterEffect(e3)
 end
--- 效果发动条件判断：当前回合玩家为使用者，且己方墓地卡数少于对方墓地卡数
+-- 定义①效果的发动条件判定函数：判断是否满足对方墓地的卡数量比自己墓地的卡多，且当前为这张卡控制者的准备阶段。
 function c50599453.spcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 当前回合玩家为使用者，且己方墓地卡数少于对方墓地卡数
+	-- 判定条件具体为：tp是当前回合玩家（即现在是tp的准备阶段），且tp视角下对方墓地卡数大于自己墓地卡数。
 	return tp==Duel.GetTurnPlayer() and Duel.GetFieldGroupCount(tp,LOCATION_GRAVE,0)<Duel.GetFieldGroupCount(tp,0,LOCATION_GRAVE)
 end
--- 特殊召唤效果的发动准备阶段，检查是否有足够的怪兽区域并判断卡片是否可以被特殊召唤
+-- 定义①效果的Target函数，在发动时检查自己主要怪兽区是否有空位，且这张卡能够被特殊召唤（无取对象）。
 function c50599453.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否有足够的怪兽区域
+	-- 在chk==0（发动合法性检查）时，确认存在可用主要怪兽区域，且这张卡满足特殊召唤条件。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置连锁操作信息：将此卡加入特殊召唤的处理对象中
+	-- 登记本次连锁将进行特殊召唤的操作信息：对象为这张卡自身，数量1，目标玩家和区域未知，供后续效果检测使用。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 执行特殊召唤的操作函数
+-- 定义①效果处理函数：若这张卡仍与效果关联（未因离场断开联系），则进行特殊召唤。
 function c50599453.spop(e,tp,eg,ep,ev,re,r,rp)
 	if e:GetHandler():IsRelateToEffect(e) then
-		-- 将此卡以正面表示形式特殊召唤到己方场上
+		-- 将这张卡以表侧表示特殊召唤到tp的场上，并正常检查特殊召唤条件与苏生限制。
 		Duel.SpecialSummon(e:GetHandler(),0,tp,tp,false,false,POS_FACEUP)
 	end
 end
--- 攻击力和守备力增加效果的计算函数
+-- 定义②效果的攻守上升值计算函数：每次适用时根据对方墓地卡数动态计算上升数值。
 function c50599453.adval(e,c)
-	-- 返回对方墓地卡数乘以200作为增减数值
+	-- 返回这张卡控制者视角下对方墓地的卡数量乘以200，作为攻击力/守备力上升值。
 	return Duel.GetFieldGroupCount(c:GetControler(),0,LOCATION_GRAVE)*200
 end

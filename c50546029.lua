@@ -6,10 +6,10 @@
 -- ②：这张卡和对方怪兽进行战斗的伤害计算前1次，从手卡把1只地属性怪兽送去墓地才能发动。那只对方怪兽直到回合结束时攻击力下降200，效果无效化。
 -- ③：自己场上的连接怪兽为对象的效果由对方发动时才能发动。那个效果无效并破坏。
 function c50546029.initial_effect(c)
-	-- 添加连接召唤手续，要求使用至少2个地属性怪兽作为连接素材
+	-- 为这张卡添加连接召唤手续：以2只以上地属性连接怪兽作为连接素材。
 	aux.AddLinkProcedure(c,aux.FilterBoolFunction(Card.IsLinkAttribute,ATTRIBUTE_EARTH),2)
 	c:EnableReviveLimit()
-	-- 可以攻击的对方怪兽必须向这张卡作出攻击。
+	-- ①：可以攻击的对方怪兽必须向这张卡作出攻击。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_MUST_ATTACK)
@@ -20,7 +20,7 @@ function c50546029.initial_effect(c)
 	e2:SetCode(EFFECT_MUST_ATTACK_MONSTER)
 	e2:SetValue(c50546029.atklimit)
 	c:RegisterEffect(e2)
-	-- 这张卡和对方怪兽进行战斗的伤害计算前1次，从手卡把1只地属性怪兽送去墓地才能发动。那只对方怪兽直到回合结束时攻击力下降200，效果无效化。
+	-- ②：这张卡和对方怪兽进行战斗的伤害计算前1次，从手卡把1只地属性怪兽送去墓地才能发动。那只对方怪兽直到回合结束时攻击力下降200，效果无效化。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(50546029,0))
 	e3:SetCategory(CATEGORY_ATKCHANGE+CATEGORY_DISABLE)
@@ -30,7 +30,7 @@ function c50546029.initial_effect(c)
 	e3:SetCost(c50546029.atkcost)
 	e3:SetOperation(c50546029.atkop)
 	c:RegisterEffect(e3)
-	-- 自己场上的连接怪兽为对象的效果由对方发动时才能发动。那个效果无效并破坏。
+	-- ③：自己场上的连接怪兽为对象的效果由对方发动时才能发动。那个效果无效并破坏。
 	local e4=Effect.CreateEffect(c)
 	e4:SetDescription(aux.Stringid(50546029,1))
 	e4:SetCategory(CATEGORY_DISABLE+CATEGORY_DESTROY)
@@ -43,48 +43,48 @@ function c50546029.initial_effect(c)
 	e4:SetOperation(c50546029.disop)
 	c:RegisterEffect(e4)
 end
--- 设置必须攻击的条件，只有当前卡本身才能被指定为攻击目标
+-- 该函数是①效果中“必须向这张卡作出攻击”的限定条件：当候选攻击对象为此卡时返回真，使对方怪兽只能选择这张卡作为攻击对象。
 function c50546029.atklimit(e,c)
 	return c==e:GetHandler()
 end
--- 判断是否满足攻击条件，即自身和对方怪兽都处于战斗状态且对方怪兽是对方控制
+-- ②效果的发动条件：这张卡正在进行战斗，且战斗对象是对方场上的表侧表示怪兽，并且该怪兽仍在战斗中（未离场）。
 function c50546029.atkcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local bc=c:GetBattleTarget()
 	return c:IsRelateToBattle() and bc and bc:IsFaceup() and bc:IsRelateToBattle() and bc:IsControler(1-tp)
 end
--- 定义用于支付代价的过滤函数，筛选手牌中可送入墓地的地属性怪兽
+-- 用于筛选②效果作为COST送去墓地的手卡怪兽：必须是怪兽、地属性且可以作为代价送去墓地。
 function c50546029.cfilter(c)
 	return c:IsType(TYPE_MONSTER) and c:IsAttribute(ATTRIBUTE_EARTH) and c:IsAbleToGraveAsCost()
 end
--- 发动效果时检查是否有满足条件的地属性怪兽并将其丢弃作为代价
+-- ②效果的COST：从手卡丢弃1只地属性怪兽；check阶段确认是否存在满足条件的卡，执行阶段进行丢弃。
 function c50546029.atkcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否满足发动条件，即手牌中存在至少1张符合条件的地属性怪兽
+	-- COST合法性检测：检查手卡中是否存在至少1只可被丢弃的地属性怪兽；若不存在则不能发动。
 	if chk==0 then return Duel.IsExistingMatchingCard(c50546029.cfilter,tp,LOCATION_HAND,0,1,nil) end
-	-- 从手牌中丢弃1张符合条件的地属性怪兽作为发动代价
+	-- 执行COST：从手卡中选择并丢弃1只满足条件的地属性怪兽，丢弃原因是COST。
 	Duel.DiscardHand(tp,c50546029.cfilter,1,1,REASON_COST)
 end
--- 处理攻击效果，使对方怪兽攻击力下降200并使其效果无效
+-- ②效果处理：使战斗对象怪兽的攻击力下降200且效果无效化，持续到回合结束；处理前若该怪兽已不满足表侧表示、仍在战斗中、对方控制等条件则不处理。
 function c50546029.atkop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local bc=c:GetBattleTarget()
 	if bc:IsFaceup() and bc:IsRelateToBattle() and bc:IsControler(1-tp) then
-		-- 使与该怪兽相关的连锁无效化
+		-- 使与该战斗对象怪兽相关的连锁效果无效化，并将该无效状态的重置时机设为变里侧表示时。
 		Duel.NegateRelatedChain(bc,RESET_TURN_SET)
-		-- 使对方怪兽的攻击力下降200
+		-- 那只对方怪兽直到回合结束时攻击力下降200。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)
 		e1:SetValue(-200)
 		e1:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END)
 		bc:RegisterEffect(e1)
-		-- 使对方怪兽的效果无效
+		-- 效果无效化。
 		local e2=Effect.CreateEffect(c)
 		e2:SetType(EFFECT_TYPE_SINGLE)
 		e2:SetCode(EFFECT_DISABLE)
 		e2:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END)
 		bc:RegisterEffect(e2)
-		-- 使对方怪兽的效果在回合结束时被无效化
+		-- 效果无效化。
 		local e3=Effect.CreateEffect(c)
 		e3:SetType(EFFECT_TYPE_SINGLE)
 		e3:SetCode(EFFECT_DISABLE_EFFECT)
@@ -93,34 +93,34 @@ function c50546029.atkop(e,tp,eg,ep,ev,re,r,rp)
 		bc:RegisterEffect(e3)
 	end
 end
--- 定义用于判断目标卡片是否为己方场上的连接怪兽的过滤函数
+-- 该过滤函数用于检测一张卡是否为自己场上表侧表示的连接怪兽，作为③效果中“自己场上的连接怪兽”的判定标准。
 function c50546029.acfilter(c,tp)
 	return c:IsType(TYPE_LINK) and c:IsControler(tp) and c:IsType(TYPE_MONSTER) and c:IsFaceup() and c:IsLocation(LOCATION_MZONE)
 end
--- 判断是否满足发动条件，即对方发动了针对己方连接怪兽的效果
+-- ③效果的发动条件：对方发动了以本方场上的连接怪兽为对象的效果，且这张卡未被战斗破坏。
 function c50546029.discon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsStatus(STATUS_BATTLE_DESTROYED) then return false end
 	if not re:IsHasProperty(EFFECT_FLAG_CARD_TARGET) then return false end
-	-- 获取当前连锁的目标卡片组
+	-- 取得对方发动的那组连锁中所记录的对象卡集合，用于判断其是否包含我方连接怪兽。
 	local tg=Duel.GetChainInfo(ev,CHAININFO_TARGET_CARDS)
 	return rp==1-tp and tg and tg:IsExists(c50546029.acfilter,1,nil,tp)
 end
--- 设置连锁操作信息，包括使效果无效和破坏目标
+-- ③效果的发动时处理：宣告将对对方效果进行无效并破坏，并根据情况设置破坏的操作信息；不发动对象。
 function c50546029.distg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置操作信息为使效果无效
+	-- 设定操作信息：本次效果将执行“使对方那个效果无效”的处理。
 	Duel.SetOperationInfo(0,CATEGORY_DISABLE,eg,1,0,0)
 	if re:GetHandler():IsDestructable() and re:GetHandler():IsRelateToEffect(re) then
-		-- 设置操作信息为破坏目标
+		-- 设定操作信息：本次效果将“破坏对方效果怪兽”，但仅当该卡可被破坏且仍与效果关联时才设定。
 		Duel.SetOperationInfo(0,CATEGORY_DESTROY,eg,1,0,0)
 	end
 end
--- 处理连锁无效化与破坏效果，先使效果无效再破坏目标
+-- ③效果的实际处理：尝试无效对方发动的效果；若无效成功且对方效果怪兽仍与效果关联，则将其破坏。
 function c50546029.disop(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断是否成功使效果无效且目标卡存在并关联到该效果
+	-- 判断条件：对方连锁上的效果是否被成功无效，且其发动者（卡）是否仍然与那个效果关联，两者都满足才执行破坏。
 	if Duel.NegateEffect(ev) and re:GetHandler():IsRelateToEffect(re) then
-		-- 破坏目标卡片
+		-- 以效果破坏对方发动效果的那只怪兽（eg）。
 		Duel.Destroy(eg,REASON_EFFECT)
 	end
 end

@@ -4,7 +4,7 @@
 -- ①：自己场上的怪兽不存在的场合或者只有「亚马逊」怪兽的场合才能发动。这张卡从手卡特殊召唤。
 -- ②：这张卡召唤·特殊召唤成功的场合才能发动。从卡组选1张「亚马逊」魔法·陷阱卡或者「融合」在自己场上盖放。这个回合，自己不用「亚马逊」怪兽不能攻击。
 local s,id,o=GetID()
--- 创建两个效果，分别对应①②效果的发动条件和处理
+-- 初始化效果函数：为这张卡注册①（手卡特殊召唤）和②（召唤·特殊召唤成功时盖放并附加攻击限制）三个效果对象。
 function s.initial_effect(c)
 	-- ①：自己场上的怪兽不存在的场合或者只有「亚马逊」怪兽的场合才能发动。这张卡从手卡特殊召唤。
 	local e1=Effect.CreateEffect(c)
@@ -30,58 +30,58 @@ function s.initial_effect(c)
 	e3:SetCode(EVENT_SPSUMMON_SUCCESS)
 	c:RegisterEffect(e3)
 end
--- 过滤函数，用于判断场上是否存在非「亚马逊」怪兽或里侧表示的怪兽
+-- 过滤条件：存在里侧表示怪兽或不是「亚马逊」怪兽时返回true，用于判断自己场上是否不是“没有怪兽或只有亚马逊怪兽”。
 function s.cfilter(c)
 	return c:IsFacedown() or not c:IsSetCard(0x4)
 end
--- 判断是否满足①效果的发动条件：自己场上的怪兽不存在或只有「亚马逊」怪兽
+-- ①的发动条件：自己场上不存在里侧表示或非亚马逊的怪兽，即没有怪兽或只有表侧「亚马逊」怪兽时满足。
 function s.spcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 自己场上的怪兽不存在或只有「亚马逊」怪兽
+	-- 检查自己场上是否不存在满足cfilter的怪兽（里侧或非亚马逊），不存在则条件成立。
 	return not Duel.IsExistingMatchingCard(s.cfilter,tp,LOCATION_MZONE,0,1,nil)
 end
--- 设置①效果的目标，检查是否可以特殊召唤
+-- ①的发动目标检查：确认主怪兽区有空位且这张卡可以被特殊召唤。
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
-	-- 检查是否有足够的场上空位
+	-- 检查自己主要怪兽区是否至少存在1个可用的空格。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and c:IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置操作信息，表示将要特殊召唤这张卡
+	-- 设置本次效果处理为特殊召唤这张卡的操作信息，供后续连锁或效果检测使用。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,c,1,0,0)
 end
--- ①效果的处理函数，执行特殊召唤
+-- ①的效果处理：若这张卡仍与效果关联，将其表侧表示特殊召唤到自己场上。
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 如果此卡存在于场上，则进行特殊召唤
+	-- 若这张卡没有中途离场等失去联系的情况，则执行特殊召唤（表侧攻击表示，无苏生限制检查）。
 	if c:IsRelateToEffect(e) then Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP) end
 end
--- 过滤函数，用于选择可盖放的「亚马逊」魔法或陷阱卡或「融合」
+-- ②的检索过滤器：选择可盖放的卡，且是「亚马逊」魔法·陷阱卡或「融合」（24094653）。
 function s.filter(c)
 	return c:IsSSetable() and (c:IsType(TYPE_SPELL+TYPE_TRAP) and c:IsSetCard(0x4) or c:IsCode(24094653))
 end
--- 设置②效果的目标，检查是否可以从卡组选择符合条件的卡
+-- ②的发动目标检查：卡组中存在满足filter的卡才能发动。
 function s.sstg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查卡组中是否存在符合条件的卡
+	-- 检查卡组中是否存在至少1张「亚马逊」魔法·陷阱卡或「融合」。
 	if chk==0 then return Duel.IsExistingMatchingCard(s.filter,tp,LOCATION_DECK,0,1,nil) end
 end
--- ②效果的处理函数，设置不能攻击的效果并选择盖放卡
+-- ②的效果处理：先给自己场上的非亚马逊怪兽附加不能攻击的永续效果，然后从卡组选择1张符合条件的卡盖放到自己场上。
 function s.ssop(e,tp,eg,ep,ev,re,r,rp)
-	-- 设置不能攻击的效果，使非「亚马逊」怪兽不能攻击
+	-- 从卡组选1张「亚马逊」魔法·陷阱卡或者「融合」在自己场上盖放。这个回合，自己不用「亚马逊」怪兽不能攻击。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_CANNOT_ATTACK)
 	e1:SetTargetRange(LOCATION_MZONE,0)
 	e1:SetTarget(s.atktg)
 	e1:SetReset(RESET_PHASE+PHASE_END)
-	-- 将效果注册到玩家
+	-- 将不能攻击的永续效果注册到场上，持续影响tp方场上的非亚马逊怪兽。
 	Duel.RegisterEffect(e1,tp)
-	-- 提示玩家选择要盖放的卡
+	-- 向玩家发送选择卡片的提示信息，提示内容为“请选择要盖放的卡”。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SET)  --"请选择要盖放的卡"
-	-- 从卡组中选择一张符合条件的卡
+	-- 从持有者tp的卡组中选择1张满足filter的卡。
 	local g=Duel.SelectMatchingCard(tp,s.filter,tp,LOCATION_DECK,0,1,1,nil)
-	-- 如果选择了卡，则将其盖放到场上
+	-- 若成功选择到卡片，则将其盖放到tp的魔法·陷阱区。
 	if #g>0 then Duel.SSet(tp,g) end
 end
--- 用于判断是否为「亚马逊」怪兽，以决定是否可以攻击
+-- 不能攻击效果的过滤器：非「亚马逊」怪兽处于主要怪兽区时返回true，即不能攻击。
 function s.atktg(e,c)
 	return not c:IsSetCard(0x4)
 end

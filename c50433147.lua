@@ -7,7 +7,7 @@ function c50433147.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- 场上名字带有「极星」的怪兽不会被战斗破坏
+	-- 场上名字带有「极星」的怪兽不会被战斗破坏。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD)
 	e2:SetCode(EFFECT_INDESTRUCTABLE_BATTLE)
@@ -16,7 +16,7 @@ function c50433147.initial_effect(c)
 	e2:SetTarget(c50433147.indtg)
 	e2:SetValue(1)
 	c:RegisterEffect(e2)
-	-- 场上的这张卡被破坏时，场上表侧表示存在的名字带有「极星」的怪兽全部破坏
+	-- 场上的这张卡被破坏时，场上表侧表示存在的名字带有「极星」的怪兽全部破坏。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(50433147,0))  --"表侧表示的名字带有「极星」的怪兽全部破坏"
 	e3:SetCategory(CATEGORY_DESTROY)
@@ -27,30 +27,30 @@ function c50433147.initial_effect(c)
 	e3:SetOperation(c50433147.desop)
 	c:RegisterEffect(e3)
 end
--- 判断目标怪兽是否为名字带有「极星」的怪兽
+-- 作为「不会被战斗破坏」效果的适用对象筛选：检查怪兽是否名字带有「极星」字段。
 function c50433147.indtg(e,c)
 	return c:IsSetCard(0x42)
 end
--- 判断此卡是否从场上被破坏
+-- 触发条件：这张卡被破坏时，且破坏前在场上区域存在时才发动。
 function c50433147.descon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsPreviousLocation(LOCATION_ONFIELD)
 end
--- 过滤出场上的表侧表示且名字带有「极星」的怪兽
+-- 筛选条件：怪兽为表侧表示，且名字带有「极星」。
 function c50433147.desfilter(c)
 	return c:IsFaceup() and c:IsSetCard(0x42)
 end
--- 设置连锁处理时的破坏对象为所有满足条件的怪兽
+-- 效果发动前的目标准备：确认可以发动后，获取当前场上所有表侧表示且名字带有「极星」的怪兽，并设置破坏这些卡的操作信息（不取对象破坏）。
 function c50433147.destg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 检索满足条件的怪兽组
+	-- 获取双方场上主要怪兽区域中所有满足筛选条件的「极星」怪兽，作为候选破坏集合。
 	local g=Duel.GetMatchingGroup(c50433147.desfilter,tp,LOCATION_MZONE,LOCATION_MZONE,nil)
-	-- 设置当前连锁的操作信息，包含要破坏的怪兽数量
+	-- 登记本连锁的操作信息为破坏效果：破坏对象为g中的所有极星怪兽，数量为g的怪兽数，用于连锁判定。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,g:GetCount(),0,0)
 end
--- 执行对满足条件的怪兽进行破坏的效果
+-- 效果处理时，重新获取当前场上表侧表示且名字带有「极星」的怪兽，并将其全部破坏。
 function c50433147.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 检索满足条件的怪兽组
+	-- 效果处理时重新获取当前场上所有表侧表示且名字带有「极星」的怪兽集合（因为处理时场上可能已变化）。
 	local g=Duel.GetMatchingGroup(c50433147.desfilter,tp,LOCATION_MZONE,LOCATION_MZONE,nil)
-	-- 将目标怪兽以效果原因进行破坏
+	-- 以效果原因将g中的所有怪兽破坏。
 	Duel.Destroy(g,REASON_EFFECT)
 end

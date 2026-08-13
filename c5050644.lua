@@ -31,68 +31,68 @@ function c5050644.initial_effect(c)
 	e3:SetOperation(c5050644.reop2)
 	c:RegisterEffect(e3)
 end
--- 过滤函数，检查以玩家来看的场上是否存在至少1张满足条件的「芳香」怪兽（正面表示）
+-- 过滤条件：卡片为表侧表示且属于「芳香」系列（0xc9），用于检查自己场上是否存在符合条件的怪兽。
 function c5050644.cfilter1(c)
 	return c:IsFaceup() and c:IsSetCard(0xc9)
 end
--- 效果发动条件：检查以玩家来看的场上是否存在至少1张满足条件的「芳香」怪兽（正面表示）
+-- ①效果的发动条件：自己场上存在至少1只表侧表示的「芳香」怪兽。
 function c5050644.recon1(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查以玩家来看的场上是否存在至少1张满足条件的「芳香」怪兽（正面表示）
+	-- 检索自己场上（LOCATION_MZONE）是否存在至少1张满足cfilter1的卡，存在则条件成立。
 	return Duel.IsExistingMatchingCard(c5050644.cfilter1,tp,LOCATION_MZONE,0,1,nil)
 end
--- 设置效果处理时的目标玩家为当前玩家，目标参数为500，操作信息包含回复500基本分
+-- ①效果的发动时处理：若检查通过，设置回复对象玩家为发动者、回复量为500，并登记回复效果的操作信息供连锁判定。
 function c5050644.retg1(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 将当前连锁的目标玩家设置为当前玩家
+	-- 将本次回复基本分的对象玩家设置为效果发动者tp，即回复自己的LP。
 	Duel.SetTargetPlayer(tp)
-	-- 将当前连锁的目标参数设置为500
+	-- 将本次回复基本分的数值设定为500。
 	Duel.SetTargetParam(500)
-	-- 设置当前处理的连锁的操作信息为回复500基本分
+	-- 设置操作信息：本次连锁将执行回复500LP的CATEGORY_RECOVER处理，对象玩家为tp，不取对象。
 	Duel.SetOperationInfo(0,CATEGORY_RECOVER,nil,0,tp,500)
 end
--- 效果处理函数：使目标玩家回复500基本分，并给对方场上所有怪兽增加500攻击力和守备力直到下次对方回合结束
+-- ①效果处理：先回复500LP，然后给自己场上的怪兽赋予攻击力·守备力上升500的持续效果，该效果持续到下次对方回合结束。
 function c5050644.reop1(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的目标玩家和目标参数
+	-- 从当前连锁信息中取出之前设定的目标玩家（回复对象）和目标参数（回复数值）。
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 以REASON_EFFECT原因使目标玩家回复指定数值的基本分
+	-- 使目标玩家p回复d点基本分，回复原因记为效果（REASON_EFFECT）。
 	Duel.Recover(p,d,REASON_EFFECT)
-	-- 创建一个影响全场的攻击力变更效果，并注册给当前玩家，持续到对方回合结束
+	-- ①中“这个效果的发动后，直到下次的对方回合结束时自己场上的怪兽的攻击力·守备力上升500。”以及②“自己场上的「芳香」怪兽被战斗·效果破坏送去墓地的场合发动。自己回复1000基本分。”
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_UPDATE_ATTACK)
 	e1:SetTargetRange(LOCATION_MZONE,0)
 	e1:SetValue(500)
 	e1:SetReset(RESET_PHASE+PHASE_END+RESET_OPPO_TURN)
-	-- 将攻击力变更效果注册给当前玩家
+	-- 将攻击力上升500的永续效果注册到场上，使其影响己方怪兽区（LOCATION_MZONE）的怪兽。
 	Duel.RegisterEffect(e1,tp)
 	local e2=e1:Clone()
 	e2:SetCode(EFFECT_UPDATE_DEFENSE)
-	-- 将守备力变更效果注册给当前玩家
+	-- 将守备力上升500的永续效果注册到场上，与攻击力上升效果持续期间相同。
 	Duel.RegisterEffect(e2,tp)
 end
--- 过滤函数，检查被破坏送去墓地的卡是否为「芳香」怪兽且由战斗或效果破坏、前控制者为当前玩家、位置为场上正面表示
+-- ②效果的触发筛选条件：被送去墓地的卡必须是原控制者为tp、原位置为怪兽区、原表侧表示的「芳香」怪兽，且破坏原因包含战斗或效果。
 function c5050644.cfilter2(c,tp)
 	return c:IsSetCard(0xc9) and c:IsReason(REASON_DESTROY) and c:IsReason(REASON_BATTLE+REASON_EFFECT)
 		and c:IsPreviousControler(tp) and c:IsPreviousLocation(LOCATION_MZONE) and c:IsPreviousPosition(POS_FACEUP)
 end
--- 效果发动条件：检查以玩家来看的墓地中是否存在至少1张满足条件的「芳香」怪兽（由战斗或效果破坏）
+-- ②效果的发动条件：本次被送去墓地的卡组（eg）中存在至少1张满足cfilter2的卡，即“自己场上的「芳香」怪兽被战斗·效果破坏送去墓地”的场合。
 function c5050644.recon2(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c5050644.cfilter2,1,nil,tp)
 end
--- 设置效果处理时的目标玩家为当前玩家，目标参数为1000，操作信息包含回复1000基本分
+-- ②效果的发动时处理：设置回复对象玩家为发动者、回复量为1000，并登记回复效果的操作信息。
 function c5050644.retg2(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 将当前连锁的目标玩家设置为当前玩家
+	-- 将本次回复基本分的对象玩家设置为效果发动者tp。
 	Duel.SetTargetPlayer(tp)
-	-- 将当前连锁的目标参数设置为1000
+	-- 将本次回复基本分的数值设定为1000。
 	Duel.SetTargetParam(1000)
-	-- 设置当前处理的连锁的操作信息为回复1000基本分
+	-- 设置操作信息：本次连锁将执行回复1000LP的CATEGORY_RECOVER处理。
 	Duel.SetOperationInfo(0,CATEGORY_RECOVER,nil,0,tp,1000)
 end
--- 效果处理函数：使目标玩家回复1000基本分
+-- ②效果处理：根据之前设定的对象玩家和数值，为自己回复1000基本分。
 function c5050644.reop2(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的目标玩家和目标参数
+	-- 从当前连锁信息中取出目标玩家和回复数值。
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 以REASON_EFFECT原因使目标玩家回复指定数值的基本分
+	-- 使目标玩家p回复d点基本分，回复原因记为效果（REASON_EFFECT）。
 	Duel.Recover(p,d,REASON_EFFECT)
 end

@@ -4,7 +4,7 @@
 -- ①：1回合1次，以自己场上1只表侧表示怪兽为对象才能发动。那只自己怪兽的位置向其他的自己的主要怪兽区域移动。
 -- ②：自己场上有「耀圣」怪兽3只以上存在，对方把魔法·陷阱卡发动时才能发动。那个效果无效。自己场上有同调怪兽存在的场合，可以再把那张无效的卡破坏。
 local s,id,o=GetID()
--- 注册场地魔法卡的发动效果，使该卡可以被正常发动
+-- 初始化效果：e1为卡作为魔陷发动所需的基础效果（EFFECT_TYPE_ACTIVATE）；e2为①效果的诱发即时效果（取对象移动怪兽位置）；e3为②效果的诱发即时效果（无效并可能破坏魔陷）。
 function s.initial_effect(c)
 	-- 永续魔陷/场地卡通用的“允许发动”空效果，无此效果则无法发动
 	local e1=Effect.CreateEffect(c)
@@ -36,73 +36,73 @@ function s.initial_effect(c)
 	e3:SetOperation(s.disop)
 	c:RegisterEffect(e3)
 end
--- 判断是否满足①效果的发动条件，包括场上存在1只表侧表示怪兽、有可用的怪兽区域、且该玩家未在本回合使用过②效果
+-- s.mvtg为①效果的发动条件和对象选择函数，该段用于非连锁处理时的合法性检查：存在可选择的表侧怪兽、有空格、且该连锁上未发动过②。
 function s.mvtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and chkc:IsFaceup() end
-	-- 检查场上是否存在至少1只表侧表示的己方怪兽
+	-- 检查自己场上是否存在1只表侧表示怪兽可以作为效果对象。
 	if chk==0 then return Duel.IsExistingTarget(Card.IsFaceup,tp,LOCATION_MZONE,0,1,nil)
-		-- 检查己方是否有足够的怪兽区域用于移动怪兽
+		-- 检查自己的主要怪兽区域是否有可用的空格，以便目标怪兽可以移动到其他主要怪兽区域。
 		and Duel.GetLocationCount(tp,LOCATION_MZONE,PLAYER_NONE,0)>0
-		-- 检查该玩家是否已在本回合使用过②效果（通过标识效果判断）
+		-- 检查自己是否带有id+o标记（即②效果是否已在本连锁发动过），该标记数量为0时①才可发动，实现“①②的效果在同一连锁上不能发动”。
 		and Duel.GetFlagEffect(tp,id+o)==0 end
-	-- 注册一个标识效果，防止该玩家在本回合再次发动②效果
+	-- 为发动玩家tp注册id标记，并在连锁结束时重置，用于阻止②在同一连锁上发动。
 	Duel.RegisterFlagEffect(tp,id,RESET_CHAIN,0,1)
-	-- 提示玩家选择要移动的怪兽对象
+	-- 弹出选择提示，告知玩家需要选择效果对象。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)  --"请选择效果的对象"
-	-- 选择目标怪兽并设置为当前连锁的对象
+	-- 选择自己场上1只表侧表示怪兽作为效果对象，并将其设定为当前连锁的取对象目标。
 	Duel.SelectTarget(tp,Card.IsFaceup,tp,LOCATION_MZONE,0,1,1,nil)
 end
--- 处理①效果的发动操作，获取目标怪兽并判断是否满足移动条件
+-- s.mvop为①效果的处理函数，开头检查目标是否仍与连锁关联、是否还在自己的主要怪兽区，且存在可移动空格，不满足则效果不处理。
 function s.mvop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁中被选中的目标怪兽
+	-- 获取这次效果取对象的目标怪兽。
 	local tc=Duel.GetFirstTarget()
 	if not tc:IsRelateToChain() or not tc:IsLocation(LOCATION_MZONE) or tc:IsControler(1-tp)
-		-- 检查目标怪兽是否仍然在场、是否属于己方、是否有可用的怪兽区域进行移动
+		-- 若自己场上没有可供移动的主要怪兽区空格，则终止处理，不移动怪兽。
 		or Duel.GetLocationCount(tp,LOCATION_MZONE,PLAYER_NONE,0)<=0 then return end
-	-- 提示玩家选择要将怪兽移动到的目标区域
+	-- 弹出提示，让玩家选择要移动到的位置。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOZONE)  --"请选择要移动到的位置"
-	-- 选择一个可用的怪兽区域位置
+	-- 让玩家从自己的主要怪兽区域选择1个空位，返回该位置的位标记（seq）。
 	local seq=Duel.SelectDisableField(tp,1,LOCATION_MZONE,0,0)
 	local nseq=math.log(seq,2)
-	-- 将目标怪兽移动到指定区域
+	-- 将目标怪兽移动到选定的主要怪兽区域（nseq由位标记换算为区域序号）。
 	Duel.MoveSequence(tc,nseq)
 end
--- 定义过滤函数，用于判断是否为表侧表示的「耀圣」怪兽
+-- 定义过滤器s.cfilter：卡片为表侧表示且具有「耀圣」字段（0x1d8）。
 function s.cfilter(c)
 	return c:IsFaceup() and c:IsSetCard(0x1d8)
 end
--- 判断②效果是否可以发动，包括对方发动魔法/陷阱卡、该连锁可被无效、己方场上有3只以上「耀圣」怪兽
+-- s.discon为②效果的发动条件判断函数，返回真时②效果才满足发动条件。
 function s.discon(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查对方是否发动了魔法或陷阱卡（即该连锁为魔法/陷阱卡发动）
+	-- ②效果发动条件其一：对方发动魔法·陷阱卡，且该连锁的发动可以被无效。
 	return rp==1-tp and re:IsHasType(EFFECT_TYPE_ACTIVATE) and Duel.IsChainNegatable(ev)
-		-- 检查己方场上有至少3只表侧表示的「耀圣」怪兽
+		-- ②效果发动条件其二：自己场上存在3只以上表侧表示的「耀圣」怪兽。
 		and Duel.IsExistingMatchingCard(s.cfilter,tp,LOCATION_MZONE,0,3,nil)
 end
--- 设置②效果的目标处理信息，包括使效果无效
+-- s.distg为②效果的发动合法性检查与操作信息设置函数，在chk==0时判定是否满足发动条件（同一连锁未发动过①），并注册标记、设置无效效果的操作信息。
 function s.distg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断是否满足②效果的发动条件，即该玩家未在本回合使用过②效果
+	-- 检查自己身上的id标记数量为0，即同一连锁上没有发动过①，满足“①②的效果在同一连锁上不能发动”的限制。
 	if chk==0 then return Duel.GetFlagEffect(tp,id)==0 end
-	-- 注册一个标识效果，防止该玩家在本回合再次发动②效果
+	-- 发动②时给自己注册id+o标记，连锁结束后重置，用于阻止①在同一连锁上发动。
 	Duel.RegisterFlagEffect(tp,id+o,RESET_CHAIN,0,1)
-	-- 设置操作信息，表示将使对方发动的效果无效
+	-- 设置本次连锁的操作信息为“无效效果”，目标是对方发动的魔法·陷阱卡（eg），表示后续处理将使其效果无效。
 	Duel.SetOperationInfo(0,CATEGORY_DISABLE,eg,1,0,0)
 end
--- 定义过滤函数，用于判断是否为表侧表示的同调怪兽
+-- 定义过滤器s.cdfilter：卡片为表侧表示且为同调怪兽，用于检查自己场上是否存在同调怪兽。
 function s.cdfilter(c)
 	return c:IsFaceup() and c:IsType(TYPE_SYNCHRO)
 end
--- 处理②效果的发动操作，包括使效果无效并可能破坏该卡
+-- s.disop为②效果的处理函数：先无效对方效果，若满足条件（对方卡仍关联、可破坏、自己场上有同调怪兽）则再询问并破坏那张无效的卡。
 function s.disop(e,tp,eg,ep,ev,re,r,rp)
 	local rc=re:GetHandler()
-	-- 尝试使对方发动的效果无效，并确认该卡仍在连锁中且可被破坏
+	-- 执行无效对方连锁效果，并确认对方发动的那张卡仍与连锁关联且可以被破坏。
 	if Duel.NegateEffect(ev) and rc:IsRelateToChain(ev) and rc:IsDestructable()
-		-- 检查己方场上有至少1只表侧表示的同调怪兽
+		-- 确认自己场上有表侧表示的同调怪兽，满足追加破坏的条件。
 		and Duel.IsExistingMatchingCard(s.cdfilter,tp,LOCATION_MZONE,0,1,nil)
-		-- 询问玩家是否要破坏该张无效的卡
+		-- 询问玩家是否选择把那张被无效的卡破坏。
 		and Duel.SelectYesNo(tp,aux.Stringid(id,2)) then  --"是否破坏？"
-		-- 中断当前效果处理，使后续操作视为错时点
+		-- 中断当前效果处理（BreakEffect），使后续的破坏处理与之前的无效处理不视为同时进行，避免错过时点。
 		Duel.BreakEffect()
-		-- 将目标卡破坏
+		-- 以效果原因破坏那张被无效的对方魔法·陷阱卡。
 		Duel.Destroy(rc,REASON_EFFECT)
 	end
 end

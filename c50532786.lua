@@ -23,16 +23,16 @@ function c50532786.initial_effect(c)
 	e3:SetValue(c50532786.atkup)
 	c:RegisterEffect(e3)
 end
--- 限制上级召唤时解放的怪兽必须是水属性。
+-- 作为上级召唤解放限制的判定函数，若用于解放的怪兽不是水属性则返回true，即不允许将其解放。
 function c50532786.tlimit(e,c)
 	return not c:IsAttribute(ATTRIBUTE_WATER)
 end
--- 用于筛选自己场上表侧表示的水属性怪兽。
+-- 攻击力加成效果的过滤条件，筛选出表侧表示且水属性的怪兽。
 function c50532786.atkfilter(c)
 	return c:IsFaceup() and c:IsAttribute(ATTRIBUTE_WATER)
 end
--- 计算自己场上表侧表示的水属性怪兽数量并乘以300作为攻击力提升值。
+-- 计算这张卡以外的自己场上表侧表示水属性怪兽数量，每只使这张卡的攻击力上升300。
 function c50532786.atkup(e,c)
-	-- 检索满足条件的水属性表侧表示怪兽数量并乘以300
+	-- 从自己场上主要怪兽区检索表侧表示且水属性、且除自身以外的怪兽数量，乘以300作为攻击力上升数值。
 	return Duel.GetMatchingGroupCount(c50532786.atkfilter,c:GetControler(),LOCATION_MZONE,0,c)*300
 end
