@@ -3,7 +3,7 @@
 -- ①：1回合1次，以自己墓地1只效果怪兽为对象才能发动。那只怪兽除外，这张卡直到结束阶段当作和那只怪兽同名卡使用，得到相同的原本攻击力和效果。
 -- ②：这张卡的战斗发生的对对方的战斗伤害变成0。
 local s,id,o=GetID()
--- 创建效果①，用于发动时除外墓地一只效果怪兽并复制其卡名和攻击力，且该效果只能在主要怪兽区发动，具有取对象效果且每回合只能发动一次。
+-- 初始化效果：注册①的起动效果（除外墓地1只效果怪兽并复制其卡名、原本攻击力和效果直到结束阶段）和②的自身战斗伤害为0的永续效果。
 function c30312361.initial_effect(c)
 	-- ①：1回合1次，以自己墓地1只效果怪兽为对象才能发动。那只怪兽除外，这张卡直到结束阶段当作和那只怪兽同名卡使用，得到相同的原本攻击力和效果。
 	local e1=Effect.CreateEffect(c)
@@ -23,39 +23,39 @@ function c30312361.initial_effect(c)
 	e2:SetCode(EFFECT_NO_BATTLE_DAMAGE)
 	c:RegisterEffect(e2)
 end
--- 设置效果①的发动费用，确保每回合只能发动一次。
+-- 发动代价：确认自身没有本回合使用过该效果的标记后，给自身注册该标记并持续到结束阶段，以此实现“1回合1次”。
 function c30312361.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():GetFlagEffect(30312361)==0 end
 	e:GetHandler():RegisterFlagEffect(30312361,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END,0,1)
 end
--- 定义过滤器，用于筛选墓地中的效果怪兽。
+-- 选择过滤器：对象必须是效果怪兽且可以被除外。
 function c30312361.filter(c)
 	return c:IsType(TYPE_EFFECT) and c:IsAbleToRemove()
 end
--- 设置效果①的目标选择逻辑，确保选择的是己方墓地中的效果怪兽。
+-- 发动目标处理：选择自己墓地1只满足条件的效果怪兽作为对象，并生成除外该卡的操作信息。
 function c30312361.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and c30312361.filter(chkc) end
-	-- 检查是否满足发动效果①的条件，即己方墓地是否存在效果怪兽。
+	-- 发动合法性检查：确认自己墓地存在至少1只可被选择的效果怪兽。
 	if chk==0 then return Duel.IsExistingTarget(c30312361.filter,tp,LOCATION_GRAVE,0,1,nil) end
-	-- 提示玩家选择要除外的卡。
+	-- 显示选择提示“请选择要除外的卡”。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
-	-- 选择目标怪兽并设置操作信息。
+	-- 让玩家从自己墓地选择1只效果怪兽作为效果对象。
 	local g=Duel.SelectTarget(tp,c30312361.filter,tp,LOCATION_GRAVE,0,1,1,nil)
-	-- 设置操作信息，表明将要除外目标怪兽。
+	-- 设置操作信息：效果处理时将除外1张自己墓地的卡，供连锁判定使用。
 	Duel.SetOperationInfo(0,CATEGORY_REMOVE,g,1,tp,LOCATION_GRAVE)
 end
--- 处理效果①的发动效果，将目标怪兽除外并复制其卡名和攻击力。
+-- 效果处理：将对象怪兽除外；若成功且自身仍表侧在场，则使自身卡名变为对象原始卡名、原本攻击力变为对象的原本攻击力，并复制对象的效果直到结束阶段；同时注册结束阶段清除复制状态的触发器。
 function c30312361.operation(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取效果①选择的目标怪兽。
+	-- 获取效果对象（选择的那只墓地怪兽）。
 	local tc=Duel.GetFirstTarget()
-	-- 判断目标怪兽是否仍然有效，且自身是否处于正面表示状态，以确保效果正常处理。
+	-- 判定对象仍与效果关联且除外成功，自身仍与效果关联且表侧表示，才继续执行复制。
 	if tc:IsRelateToEffect(e) and Duel.Remove(tc,POS_FACEUP,REASON_EFFECT)==1 and c:IsRelateToEffect(e) and c:IsFaceup() then
 		local code=tc:GetOriginalCode()
 		local ba=tc:GetBaseAttack()
-		-- 调用aux.BecomeOriginalCode函数，使自身卡名变为目标怪兽的原始卡号。
+		-- 使自身卡名变成对象怪兽的原始卡名（直到结束阶段），并获取该改名效果对象。
 		local e1=aux.BecomeOriginalCode(c,tc)
-		-- 创建一个临时效果，用于在结束阶段前将自身攻击力设置为与目标怪兽相同。
+		-- 得到相同的原本攻击力
 		local e2=Effect.CreateEffect(c)
 		e2:SetType(EFFECT_TYPE_SINGLE)
 		e2:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
@@ -65,7 +65,7 @@ function c30312361.operation(e,tp,eg,ep,ev,re,r,rp)
 		e2:SetValue(ba)
 		c:RegisterEffect(e2)
 		local cid=c:CopyEffect(code,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END,1)
-		-- 创建一个持续到结束阶段的效果，用于在结束阶段重置自身效果。
+		-- 直到结束阶段
 		local e3=Effect.CreateEffect(c)
 		e3:SetDescription(1162)
 		e3:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
@@ -80,7 +80,7 @@ function c30312361.operation(e,tp,eg,ep,ev,re,r,rp)
 		c:RegisterEffect(e3)
 	end
 end
--- 处理结束阶段时的效果重置逻辑，包括重置复制效果和临时攻击力效果。
+-- 结束阶段触发：清除复制的效果和原本攻击力变更，使自身恢复原状，并提示双方复制效果结束。
 function s.rstop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local cid=e:GetLabel()
@@ -90,8 +90,8 @@ function s.rstop(e,tp,eg,ep,ev,re,r,rp)
 	local e1=e2:GetLabelObject()
 	e1:Reset()
 	e2:Reset()
-	-- 显示被选为对象的动画效果。
+	-- 手动显示自身被选中动画，提示复制效果结束影响的是这张卡。
 	Duel.HintSelection(Group.FromCards(c))
-	-- 提示对方玩家效果已发动。
+	-- 向对方玩家发送“对方选择了：...”提示，告知复制效果已结束。
 	Duel.Hint(HINT_OPSELECTED,1-tp,e:GetDescription())
 end

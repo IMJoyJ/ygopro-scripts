@@ -9,7 +9,7 @@ function c30276969.initial_effect(c)
 	e1:SetValue(c30276969.indes)
 	c:RegisterEffect(e1)
 end
--- 判断自身是否为4星以上，用于决定是否免疫战斗破坏效果
+-- 作为效果值函数，判断与这张卡战斗的怪兽是否为4星以上，若是则这张卡不会被那次战斗破坏。
 function c30276969.indes(e,c)
 	return c:IsLevelAbove(4)
 end

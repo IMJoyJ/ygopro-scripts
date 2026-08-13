@@ -22,7 +22,7 @@ function c30270176.initial_effect(c)
 	e2:SetTarget(c30270176.sptg)
 	e2:SetOperation(c30270176.spop)
 	c:RegisterEffect(e2)
-	-- 这张卡不受这张卡以外的原本攻击力是3000以下的怪兽发动的效果影响。
+	-- ①：这张卡不受这张卡以外的原本攻击力是3000以下的怪兽发动的效果影响。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_SINGLE)
 	e3:SetCode(EFFECT_IMMUNE_EFFECT)
@@ -30,7 +30,7 @@ function c30270176.initial_effect(c)
 	e3:SetRange(LOCATION_MZONE)
 	e3:SetValue(c30270176.immval)
 	c:RegisterEffect(e3)
-	-- 这张卡的攻击破坏怪兽时才能发动。这次战斗阶段中，这张卡只再1次可以攻击。
+	-- ②：这张卡的攻击破坏怪兽时才能发动。这次战斗阶段中，这张卡只再1次可以攻击。
 	local e4=Effect.CreateEffect(c)
 	e4:SetDescription(aux.Stringid(30270176,0))
 	e4:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
@@ -39,7 +39,7 @@ function c30270176.initial_effect(c)
 	e4:SetTarget(c30270176.atktg)
 	e4:SetOperation(c30270176.atkop)
 	c:RegisterEffect(e4)
-	-- 自己结束阶段发动。双方玩家受到3000伤害。
+	-- 这个卡名的③的效果1回合只能使用1次。③：自己结束阶段发动。双方玩家受到3000伤害。
 	local e5=Effect.CreateEffect(c)
 	e5:SetDescription(aux.Stringid(30270176,1))
 	e5:SetCategory(CATEGORY_DAMAGE)
@@ -52,30 +52,30 @@ function c30270176.initial_effect(c)
 	e5:SetOperation(c30270176.damop)
 	c:RegisterEffect(e5)
 end
--- 过滤手卡中属于「方界」卡且未公开的卡片。
+-- 选择手牌中未公开且带有「方界」字段的卡，作为展示给对方确认的候选卡。
 function c30270176.spcfilter(c)
 	return c:IsSetCard(0xe3) and not c:IsPublic()
 end
--- 判断是否满足特殊召唤条件：手卡中存在至少3种不同的「方界」卡，并且场上存在可用空间。
+-- 特殊召唤条件判定：当怪兽需要特殊召唤时，检查主要怪兽区是否有空位，以及手牌中可展示的「方界」卡种类数是否至少为3种。
 function c30270176.spcon(e,c)
 	if c==nil then return true end
 	local tp=c:GetControler()
-	-- 获取满足条件的「方界」卡组。
+	-- 获取这张卡以外的手牌中所有未公开的「方界」卡。
 	local hg=Duel.GetMatchingGroup(c30270176.spcfilter,tp,LOCATION_HAND,0,c)
-	-- 判断场上是否有足够的空间以及手卡中是否有3种不同的「方界」卡。
+	-- 返回主要怪兽区空位数大于0，且手牌中「方界」卡的不同卡名种类数不少于3。
 	return Duel.GetLocationCount(tp,LOCATION_MZONE)>0 and hg:GetClassCount(Card.GetCode)>=3
 end
--- 设置特殊召唤时的选择逻辑：选择3张不同种类的「方界」卡并确认给对方观看。
+-- 特殊召唤的目标选择：从候选的「方界」卡中选择3张卡名互不相同的卡，并保存到效果对象中，用于处理时给对方确认。
 function c30270176.sptg(e,tp,eg,ep,ev,re,r,rp,chk,c)
-	-- 获取满足条件的「方界」卡组。
+	-- 获取手牌中所有可作为展示代价的「方界」卡。
 	local g=Duel.GetMatchingGroup(c30270176.spcfilter,tp,LOCATION_HAND,0,c)
-	-- 提示玩家选择要确认给对方的卡。
+	-- 提示当前玩家选择要展示给对方确认的「方界」卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_CONFIRM)  --"请选择给对方确认的卡"
-	-- 设置额外检查条件为卡名不同。
+	-- 设置额外的选择条件，要求选出的卡片卡名互不相同。
 	aux.GCheckAdditional=aux.dncheck
-	-- 从符合条件的卡中选择3张不同种类的卡。
+	-- 从候选组中选出3张满足条件的「方界」卡；若选择成功则返回true。
 	local sg=g:SelectSubGroup(tp,aux.TRUE,true,3,3)
-	-- 取消额外检查条件。
+	-- 清除额外选择条件，避免影响后续处理。
 	aux.GCheckAdditional=nil
 	if sg then
 		sg:KeepAlive()
@@ -83,34 +83,34 @@ function c30270176.sptg(e,tp,eg,ep,ev,re,r,rp,chk,c)
 		return true
 	else return false end
 end
--- 执行特殊召唤后的处理：确认对方观看所选卡并洗切手牌。
+-- 特殊召唤处理：将选出的「方界」卡给对方确认，然后洗切手牌。
 function c30270176.spop(e,tp,eg,ep,ev,re,r,rp,c)
 	local rg=e:GetLabelObject()
-	-- 向对方确认所选的卡。
+	-- 将选定的3张「方界」卡展示给对方玩家确认。
 	Duel.ConfirmCards(1-tp,rg)
-	-- 将玩家的手牌洗切。
+	-- 洗切手牌，以隐藏已展示过的卡牌顺序信息。
 	Duel.ShuffleHand(tp)
 	rg:DeleteGroup()
 end
--- 设置效果免疫条件：当对方发动的怪兽效果满足条件时，该效果对本卡无效。
+-- 判断一个效果是否为这张卡以外的原本攻击力为0～3000的怪兽发动的已生效效果；若满足则使这张卡不受该效果影响。
 function c30270176.immval(e,te)
 	return te:GetOwner()~=e:GetHandler() and te:IsActiveType(TYPE_MONSTER) and te:IsActivated()
 		and te:GetOwner():GetBaseAttack()<=3000 and te:GetOwner():GetBaseAttack()>=0
 end
--- 判断是否为本卡攻击破坏怪兽时触发。
+-- ②效果的发动条件：本卡作为攻击者，且在本回合战斗中破坏了对方怪兽。
 function c30270176.atkcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断当前攻击怪兽是否为本卡，并且该怪兽处于战斗状态。
+	-- 确认攻击者是这张卡，并且这张卡与本次战斗破坏事件相关。
 	return Duel.GetAttacker()==e:GetHandler() and aux.bdcon(e,tp,eg,ep,ev,re,r,rp)
 end
--- 设置攻击破坏后效果的处理条件。
+-- ②效果发动前检查：这张卡仍与战斗相关，且自身尚未获得额外攻击次数效果，避免重复追加攻击。
 function c30270176.atktg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsRelateToBattle() and not e:GetHandler():IsHasEffect(EFFECT_EXTRA_ATTACK) end
 end
--- 执行攻击破坏后效果：为本卡增加一次攻击机会。
+-- ②效果处理：给这张卡赋予1次额外攻击次数，该效果在战斗阶段结束时重置。
 function c30270176.atkop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if not c:IsRelateToBattle() then return end
-	-- 为本卡增加一次攻击机会。
+	-- 这次战斗阶段中，这张卡只再1次可以攻击。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_EXTRA_ATTACK)
@@ -118,23 +118,23 @@ function c30270176.atkop(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_BATTLE)
 	c:RegisterEffect(e1)
 end
--- 判断是否为自己的结束阶段。
+-- ③效果的发动条件：当前回合玩家是这张卡的控制者，即自己结束阶段。
 function c30270176.damcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断当前回合玩家是否为本卡控制者。
+	-- 判断当前回合玩家是否为这张卡的控制者（tp）。
 	return Duel.GetTurnPlayer()==tp
 end
--- 设置伤害效果的目标与数量。
+-- ③效果发动时无需选择对象，直接返回true并设置伤害信息。
 function c30270176.damtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置连锁操作信息：双方各受到3000伤害。
+	-- 设置操作信息：将对双方玩家各造成3000点效果伤害。
 	Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,PLAYER_ALL,3000)
 end
--- 执行伤害效果：给双方玩家造成3000伤害。
+-- ③效果处理：对双方玩家各造成3000点效果伤害，并完成伤害时点处理。
 function c30270176.damop(e,tp,eg,ep,ev,re,r,rp)
-	-- 给本卡控制者造成3000伤害。
+	-- 对这张卡的控制者造成3000点效果伤害（以伤害步骤分解形式处理）。
 	Duel.Damage(tp,3000,REASON_EFFECT,true)
-	-- 给对方玩家造成3000伤害。
+	-- 对对方玩家造成3000点效果伤害（以伤害步骤分解形式处理）。
 	Duel.Damage(1-tp,3000,REASON_EFFECT,true)
-	-- 完成伤害处理的时点触发。
+	-- 完成伤害处理，触发与此伤害相关的时点（如伤害后诱发的效果）。
 	Duel.RDComplete()
 end

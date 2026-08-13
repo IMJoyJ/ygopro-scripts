@@ -26,38 +26,38 @@ function c30230789.initial_effect(c)
 	e4:SetOperation(c30230789.op)
 	c:RegisterEffect(e4)
 end
--- 判断该卡是否处于攻击表示
+-- 判断效果的发动者（这张卡）是否处于表侧攻击表示，作为被选择为攻击对象时发动条件之一。
 function c30230789.poscon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsAttackPos()
 end
--- 将该卡变为守备表示
+-- 效果处理时，若这张卡仍表侧表示且与效果存在关联，则将其表示形式改变为表侧守备表示。
 function c30230789.posop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsFaceup() and c:IsRelateToEffect(e) then
-		-- 改变卡的表示形式为表侧守备表示
+		-- 将这张卡的表示形式变更为表侧守备表示。
 		Duel.ChangePosition(c,POS_FACEUP_DEFENSE)
 	end
 end
--- 过滤名字带有「机巧」的卡
+-- 检索的筛选条件：卡名含有「机巧」字段（SetCard 0x11）且可以被加入手卡。
 function c30230789.filter(c)
 	return c:IsSetCard(0x11) and c:IsAbleToHand()
 end
--- 设置连锁操作信息，指定将要从卡组检索1张卡加入手牌
+-- 发动时无额外条件；并设置操作信息：从己方卡组将1张卡加入手卡。
 function c30230789.tg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置连锁操作信息，指定处理的卡为1张手牌
+	-- 设置本次效果的操作信息：预定从玩家tp的卡组将1张卡加入手卡（CATEGORY_TOHAND）。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 检索满足条件的卡并加入手牌
+-- 效果处理：从己方卡组选择1张满足条件的「机巧」卡，加入手卡并向对方展示。
 function c30230789.op(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要加入手牌的卡
+	-- 弹出卡片选择提示，提示当前玩家tp选择要加入手卡的卡片。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 从卡组中选择满足条件的1张卡
+	-- 从己方卡组中选出1张满足 c30230789.filter 条件的「机巧」卡。
 	local g=Duel.SelectMatchingCard(tp,c30230789.filter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的卡送入手牌
+		-- 将选中的卡加入其持有者的手卡，原因为效果。
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 向对方确认送入手牌的卡
+		-- 将检索加入手卡的卡片展示给对方玩家确认。
 		Duel.ConfirmCards(1-tp,g)
 	end
 end
