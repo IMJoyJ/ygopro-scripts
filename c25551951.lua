@@ -14,27 +14,27 @@ function c25551951.initial_effect(c)
 	e1:SetOperation(c25551951.desop)
 	c:RegisterEffect(e1)
 end
--- 选择目标卡片效果处理函数
+-- 发动时的目标选择函数：检查是否存在合法对象，选择对方场上1张卡作为对象，并设置投掷3次硬币的操作信息。
 function c25551951.destg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsOnField() and chkc:IsControler(1-tp) end
-	-- 检查是否有满足条件的目标卡片
+	-- 若在效果发动时点（chk==0）检查是否存在至少1张对方场上的卡可以作为对象。
 	if chk==0 then return Duel.IsExistingTarget(aux.TRUE,tp,0,LOCATION_ONFIELD,1,nil) end
-	-- 向玩家提示选择要破坏的卡
+	-- 给玩家tp显示“请选择要破坏的卡”的提示，用于选择对象。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 选择一张对方场上的卡作为目标
+	-- 从对方场上选择1张卡作为效果对象（取对象）。
 	local g=Duel.SelectTarget(tp,aux.TRUE,tp,0,LOCATION_ONFIELD,1,1,nil)
-	-- 设置连锁操作信息，指定将进行3次硬币投掷
+	-- 设置操作信息：本次效果包含投掷3次硬币（CATEGORY_COIN），由tp投掷。
 	Duel.SetOperationInfo(0,CATEGORY_COIN,nil,0,tp,3)
 end
--- 效果发动时的处理函数
+-- 效果处理函数：取得对象，确认对象仍与效果关联后，投掷3次硬币，若正面次数不少于2则破坏对象。
 function c25551951.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的目标卡片
+	-- 取出发动时选择的对象卡。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 进行3次硬币投掷，返回3个结果
+		-- 玩家tp投掷3次硬币，c1、c2、c3分别表示三次结果（1为正面，0为反面）。
 		local c1,c2,c3=Duel.TossCoin(tp,3)
 		if c1+c2+c3<2 then return end
-		-- 若硬币正面次数大于等于2，则破坏目标卡片
+		-- 将对象卡以效果原因破坏。
 		Duel.Destroy(tc,REASON_EFFECT)
 	end
 end

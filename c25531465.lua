@@ -2,7 +2,7 @@
 -- 效果：
 -- 这张卡被魔法师族怪兽的同调召唤使用送去墓地的场合，可以让自己墓地存在的1张魔法卡回到卡组最上面。
 function c25531465.initial_effect(c)
-	-- 创建一个诱发选发效果，当此卡因同调召唤被送入墓地时可以发动
+	-- 这张卡被魔法师族怪兽的同调召唤使用送去墓地的场合，可以让自己墓地存在的1张魔法卡回到卡组最上面。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(25531465,0))  --"返回卡组"
 	e1:SetCategory(CATEGORY_TODECK)
@@ -14,33 +14,33 @@ function c25531465.initial_effect(c)
 	e1:SetOperation(c25531465.tdop)
 	c:RegisterEffect(e1)
 end
--- 效果发动条件：此卡在墓地且因同调召唤被送入墓地，且将其送入墓地的怪兽为魔法师族
+-- 效果触发条件：此卡因作为魔法师族怪兽的同调素材被送去墓地，且当前位于墓地时才满足条件。
 function c25531465.tdcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsLocation(LOCATION_GRAVE) and r==REASON_SYNCHRO
 		and e:GetHandler():GetReasonCard():IsRace(RACE_SPELLCASTER)
 end
--- 筛选条件：目标为魔法卡且可以送回卡组
+-- 筛选墓地中符合条件的卡：是魔法卡且可以返回卡组。
 function c25531465.filter(c)
 	return c:IsType(TYPE_SPELL) and c:IsAbleToDeck()
 end
--- 效果处理目标选择：选择1张自己墓地的魔法卡作为对象
+-- 选择效果对象：从自己墓地选择1张符合条件的魔法卡，并登记其回卡组的操作信息。
 function c25531465.tdtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(tp) and chkc:IsLocation(LOCATION_GRAVE) and c25531465.filter(chkc) end
-	-- 检查阶段：确认场上是否存在满足条件的魔法卡
+	-- 发动前检查自己墓地是否存在至少1张符合条件的魔法卡作为取对象候选。
 	if chk==0 then return Duel.IsExistingTarget(c25531465.filter,tp,LOCATION_GRAVE,0,1,nil) end
-	-- 提示选择：向玩家提示选择要送回卡组的卡
+	-- 向玩家展示“请选择要返回卡组的卡”的选择提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TODECK)  --"请选择要返回卡组的卡"
-	-- 选择目标：选择1张自己墓地的魔法卡作为对象
+	-- 让玩家从自己墓地选择1张符合条件的魔法卡，并设为效果对象。
 	local g=Duel.SelectTarget(tp,c25531465.filter,tp,LOCATION_GRAVE,0,1,1,nil)
-	-- 设置操作信息：将选择的卡设置为本次效果处理的对象
+	-- 登记本次操作信息：处理分类为回卡组，对象为所选卡，数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_TODECK,g,1,0,0)
 end
--- 效果处理执行：将选中的魔法卡送回卡组最上面
+-- 效果处理：取回效果对象卡，若仍与该效果关联则将其送回持有者卡组最上方。
 function c25531465.tdop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取目标卡：获取当前连锁中被选择的目标卡
+	-- 取得效果发动时选择的第1张对象卡。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 将目标卡送回卡组：将目标卡以效果原因送回卡组最上面
+		-- 将该卡以效果送回其持有者卡组的最上方（不洗牌）。
 		Duel.SendtoDeck(tc,nil,SEQ_DECKTOP,REASON_EFFECT)
 	end
 end
