@@ -27,34 +27,34 @@ function c52601736.initial_effect(c)
 	e3:SetOperation(c52601736.daop)
 	c:RegisterEffect(e3)
 end
--- 过滤函数，用于筛选名字带有「甲虫装机」且为怪兽卡且未被禁止的卡片。
+-- 筛选符合条件的『甲虫装机』怪兽：卡名含「甲虫装机」、是怪兽卡，且未被禁止作为装备卡使用。
 function c52601736.filter(c)
 	return c:IsSetCard(0x56) and c:IsType(TYPE_MONSTER) and not c:IsForbidden()
 end
--- 设置装备效果的发动条件，检查场上是否有空余的魔法陷阱区域，并且自己墓地或手牌中是否存在满足条件的怪兽卡。
+-- 装备效果的发动条件检查：自己的魔陷区有空位，且手卡·墓地存在至少1只符合条件的『甲虫装机』怪兽。
 function c52601736.eqtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查玩家当前场上的魔法陷阱区域是否还有空位。
+	-- 检查自己的魔陷区是否有可用的空位（用于放置装备卡）。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_SZONE)>0
-		-- 检查玩家墓地或手牌中是否存在至少一张名字带有「甲虫装机」的怪兽卡。
+		-- 检查手卡·墓地是否存在至少1只满足筛选条件的『甲虫装机』怪兽。
 		and Duel.IsExistingMatchingCard(c52601736.filter,tp,LOCATION_GRAVE+LOCATION_HAND,0,1,nil) end
-	-- 设置连锁操作信息，表示将要从墓地或手牌中送走一张卡片。
+	-- 设置操作信息：本效果涉及使卡从墓地离开（CATEGORY_LEAVE_GRAVE），预计从手卡·墓地处理1张卡，用于与王家长眠之谷等效果互动。
 	Duel.SetOperationInfo(0,CATEGORY_LEAVE_GRAVE,nil,1,tp,LOCATION_GRAVE+LOCATION_HAND)
 end
--- 装备效果的处理函数，执行装备操作并设置装备限制。
+-- 装备效果处理：若魔陷区仍有空位且这张卡仍表侧在场并关联本效果，则从手卡·墓地选择1只符合条件的『甲虫装机』怪兽，将其装备给这张卡；装备成功后给该装备卡设置装备对象限制。
 function c52601736.eqop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 检查玩家场上是否还有空余的魔法陷阱区域用于装备。
+	-- 处理阶段再次确认魔陷区有空位，若无空位则效果处理终止。
 	if Duel.GetLocationCount(tp,LOCATION_SZONE)<=0 then return end
 	if c:IsFacedown() or not c:IsRelateToEffect(e) then return end
-	-- 提示玩家选择要装备的怪兽卡。
+	-- 显示选择提示，要求玩家选择要装备的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_EQUIP)  --"请选择要装备的卡"
-	-- 从玩家墓地或手牌中选择一张名字带有「甲虫装机」的怪兽卡作为装备对象。
+	-- 从自己的手卡·墓地选择1只满足条件且不受王家长眠之谷影响的『甲虫装机』怪兽。
 	local g=Duel.SelectMatchingCard(tp,aux.NecroValleyFilter(c52601736.filter),tp,LOCATION_GRAVE+LOCATION_HAND,0,1,1,nil)
 	local tc=g:GetFirst()
 	if tc then
-		-- 尝试将选中的怪兽卡装备到当前卡片上。
+		-- 执行装备操作：将选中的怪兽卡作为装备卡装备给这张卡，若失败则终止处理。
 		if not Duel.Equip(tp,tc,c) then return end
-		-- 设置装备限制效果，确保只有当前卡片能装备该怪兽卡。
+		-- 当作装备卡使用给这张卡装备。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_EQUIP_LIMIT)
@@ -63,30 +63,30 @@ function c52601736.eqop(e,tp,eg,ep,ev,re,r,rp)
 		tc:RegisterEffect(e1)
 	end
 end
--- 装备限制函数，判断目标怪兽是否为当前装备卡的持有者且未被禁用。
+-- 装备限制判定：仅当目标卡是这张卡且这张卡效果有效时，装备才合法。
 function c52601736.eqlimit(e,c)
 	return e:GetOwner()==c and not c:IsDisabled()
 end
--- 直接攻击效果发动条件检查函数，判断是否满足发动条件。
+-- 直接攻击效果的发动条件：当前可进入战斗阶段，装备怪兽存在、可以攻击，且尚未获得直接攻击能力。
 function c52601736.dacon(e,tp,eg,ep,ev,re,r,rp)
 	local tc=e:GetHandler():GetEquipTarget()
-	-- 检查回合玩家是否可以进入战斗阶段。
+	-- 检查当前能否进入战斗阶段，防止在不能进入战斗阶段时发动。
 	return Duel.IsAbleToEnterBP()
 		and tc and tc:IsAttackable() and tc:GetEffectCount(EFFECT_DIRECT_ATTACK)==0
 end
--- 攻击禁止目标筛选函数，用于排除已装备此卡的怪兽。
+-- 禁止攻击效果的过滤函数：排除已记录的那只装备怪兽，使其他怪兽不能攻击。
 function c52601736.ftarget(e,c)
 	return e:GetLabel()~=c:GetFieldID()
 end
--- 直接攻击效果的费用支付处理函数，将当前卡片送去墓地并设置攻击禁止效果。
+-- 发动代价及处理：将装备状态的这张卡作为代价送入墓地，记录装备怪兽，并设置本回合的誓约效果：装备怪兽以外的怪兽不能攻击。
 function c52601736.dacost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsAbleToGraveAsCost() end
 	local tc=e:GetHandler():GetEquipTarget()
-	-- 设置当前连锁处理的目标为装备中的怪兽卡。
+	-- 将装备怪兽登记为当前连锁的对象，便于后续处理时获取。
 	Duel.SetTargetCard(tc)
-	-- 将当前卡片（装备卡）送去墓地作为发动费用。
+	-- 将这张装备状态的卡作为代价送入墓地。
 	Duel.SendtoGrave(e:GetHandler(),REASON_COST)
-	-- 注册一个场地区域的攻击禁止效果，使该回合其他怪兽不能攻击。
+	-- 此外，可以通过把当作装备卡使用而装备中的这张卡送去墓地，这个回合装备怪兽可以直接攻击对方玩家。这个效果发动的回合，装备怪兽以外的怪兽不能攻击。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_CANNOT_ATTACK)
@@ -95,15 +95,15 @@ function c52601736.dacost(e,tp,eg,ep,ev,re,r,rp,chk)
 	e1:SetTarget(c52601736.ftarget)
 	e1:SetLabel(tc:GetFieldID())
 	e1:SetReset(RESET_PHASE+PHASE_END)
-	-- 将攻击禁止效果注册到全局环境。
+	-- 将禁止攻击的誓约效果注册到场上，使本回合除装备怪兽外的我方怪兽不能攻击。
 	Duel.RegisterEffect(e1,tp)
 end
--- 直接攻击效果的处理函数，为装备中的怪兽卡添加直接攻击能力。
+-- 直接攻击效果处理：若对象怪兽仍表侧在场并关联本效果，则给它赋予直接攻击能力直到回合结束。
 function c52601736.daop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁处理的目标卡片（即装备中的怪兽）。
+	-- 获取效果处理时记录的目标怪兽（即发动代价时设置的装备怪兽）。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsFaceup() and tc:IsRelateToEffect(e) then
-		-- 为装备中的怪兽卡添加直接攻击效果。
+		-- 这个回合装备怪兽可以直接攻击对方玩家。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_DIRECT_ATTACK)

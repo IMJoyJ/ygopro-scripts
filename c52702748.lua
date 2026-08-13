@@ -24,37 +24,37 @@ function c52702748.initial_effect(c)
 	e2:SetOperation(c52702748.rmop)
 	c:RegisterEffect(e2)
 end
--- 设置控制权转移效果的处理目标为自身
+-- 发动控制权转移效果的必发触发判定：无额外发动条件，并在发动时把本卡自身作为控制权变更的对象信息登记。
 function c52702748.ctltg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置操作信息为改变控制权
+	-- 设置操作信息：本连锁的效果分类为改变控制权（CATEGORY_CONTROL），对象为效果持有者自身，数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_CONTROL,e:GetHandler(),1,0,0)
 end
--- 控制权转移效果的执行函数，将自身控制权转移给对方
+-- 处理控制权转移：若这张卡仍与效果相关且不是里侧表示，则将其控制权转移给对方。
 function c52702748.ctlop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if not c:IsRelateToEffect(e) or c:IsFacedown() then return end
-	-- 将自身控制权转移给对方玩家
+	-- 执行控制权转移操作：让这张卡归对方（当前控制者的对手）控制。
 	Duel.GetControl(c,1-tp)
 end
--- 设置每次结束阶段除外效果的处理目标为己方墓地可除外的卡
+-- 除外效果的发动条件与取对象处理：检查控制者墓地是否有可除外的卡；若存在，则由对方从当前控制者的墓地选择1张卡作为对象，并登记除外操作信息。
 function c52702748.rmtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(tp) and chkc:IsLocation(LOCATION_GRAVE) and chkc:IsAbleToRemove(1-tp) end
-	-- 检查己方墓地是否存在可除外的卡
+	-- 发动条件判定：检查当前控制者的墓地是否存在至少1张能被对方除外的卡。
 	if chk==0 then return Duel.IsExistingTarget(Card.IsAbleToRemove,tp,LOCATION_GRAVE,0,1,nil,1-tp) end
-	-- 向对方玩家提示选择要除外的卡
+	-- 向选择方（对方）发送提示消息，显示“请选择要除外的卡”。
 	Duel.Hint(HINT_SELECTMSG,1-tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
-	-- 选择对方玩家墓地中一张可除外的卡作为目标
+	-- 由对方从当前控制者的墓地选择1张能被对方除外的卡作为效果对象，并自动使其与效果建立联系。
 	local g=Duel.SelectTarget(1-tp,Card.IsAbleToRemove,tp,LOCATION_GRAVE,0,1,1,nil,1-tp)
-	-- 设置操作信息为除外效果
+	-- 设置操作信息：效果分类为除外（CATEGORY_REMOVE），对象为所选墓地卡，数量1，对象持有者为当前控制者，位置为墓地。
 	Duel.SetOperationInfo(0,CATEGORY_REMOVE,g,1,tp,LOCATION_GRAVE)
 end
--- 除外效果的执行函数，将选中的卡从游戏中除外
+-- 处理除外效果：取得连锁的对象卡，若它仍与效果相关，则将其除外。
 function c52702748.rmop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁处理的目标卡
+	-- 获取本次效果处理的连锁对象卡（被选择的那张墓地卡）。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 将目标卡从游戏中除外
+		-- 将被选择的那张卡以表侧表示、效果原因从墓地除外。
 		Duel.Remove(tc,POS_FACEUP,REASON_EFFECT)
 	end
 end
