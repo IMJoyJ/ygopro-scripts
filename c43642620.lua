@@ -21,31 +21,31 @@ function c43642620.initial_effect(c)
 	e2:SetOperation(c43642620.dmop)
 	c:RegisterEffect(e2)
 end
--- 检索满足条件的卡片组，检查自己墓地是否存在不死族怪兽
+-- 定义自毁效果的条件函数：只要自己墓地没有不死族怪兽，就满足这张卡自我破坏的诱发条件。
 function c43642620.sdcon(e)
-	-- 若自己墓地不存在不死族怪兽，则满足条件
+	-- 检查自己墓地是否存在至少1只不死族怪兽；若不存在（not）则返回真，即满足自毁条件。
 	return not Duel.IsExistingMatchingCard(Card.IsRace,e:GetHandlerPlayer(),LOCATION_GRAVE,0,1,nil,RACE_ZOMBIE)
 end
--- 判断场上的这张卡是否因破坏而离场且为正面表示
+-- 定义伤害效果的触发条件：这张卡因被破坏而离场，并且离场前是表侧表示。
 function c43642620.dmcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	return c:IsReason(REASON_DESTROY) and c:IsPreviousPosition(POS_FACEUP)
 end
--- 设置连锁处理时的目标玩家和伤害值
+-- 伤害效果的发动时点判定与信息登记：若效果可以发动，则记录伤害对象为这张卡离场前的控制者，伤害数值为原本攻击力1900，并设置操作信息。
 function c43642620.dmtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
 	local c=e:GetHandler()
-	-- 将目标玩家设置为该卡离开场时的控制者
+	-- 将当前连锁的对象玩家设置为这张卡被破坏离场前的控制者，即之后承受伤害的玩家。
 	Duel.SetTargetPlayer(c:GetPreviousControler())
-	-- 将目标参数设置为1900（攻击力数值）
+	-- 将当前连锁的对象参数设置为1900，即这张卡的原本攻击力数值，作为造成的伤害值。
 	Duel.SetTargetParam(1900)
-	-- 设置操作信息为伤害效果，目标玩家为之前设定的玩家，伤害值为1900
+	-- 登记本次效果的操作信息：类别为造成伤害，目标玩家为这张卡离场前的控制者，伤害数值为1900；由于伤害对象已确定，targets设为nil。
 	Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,c:GetPreviousControler(),1900)
 end
--- 执行伤害效果，对目标玩家造成指定数值的伤害
+-- 定义伤害效果的实际处理函数：从连锁信息中取出之前登记的对象玩家和伤害数值，执行伤害。
 function c43642620.dmop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁中设定的目标玩家和伤害值
+	-- 获取当前连锁中记录的对象玩家与对象参数，分别作为伤害承受者和伤害数值。
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 以效果为原因，对指定玩家造成指定数值的伤害
+	-- 对玩家p造成d点效果伤害，完成伤害效果的处理。
 	Duel.Damage(p,d,REASON_EFFECT)
 end

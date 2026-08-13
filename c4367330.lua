@@ -28,61 +28,61 @@ function c4367330.initial_effect(c)
 	e2:SetOperation(c4367330.disop)
 	c:RegisterEffect(e2)
 end
--- 判断破坏原因是否为效果或战斗破坏
+-- 效果①的发动条件：检测这张卡的破坏原因（r）是否包含战斗破坏或效果破坏（位与REASON_EFFECT+REASON_BATTLE非0），满足才可发动。
 function c4367330.thcon(e,tp,eg,ep,ev,re,r,rp)
 	return bit.band(r,REASON_EFFECT+REASON_BATTLE)~=0
 end
--- 筛选墓地中的十二兽卡，且不是兔铳本身，且可以加入手牌
+-- 效果①的检索过滤条件：必须是「十二兽」字段的卡、能够加入手牌，且不是卡名「十二兽 兔铳」（卡号4367330）自身。
 function c4367330.thfilter(c)
 	return c:IsSetCard(0xf1) and c:IsAbleToHand() and not c:IsCode(4367330)
 end
--- 设置效果目标为满足条件的墓地十二兽卡
+-- 效果①的发动处理：若在连锁处理中指定对象（chkc），校验该对象位于自己墓地且满足thfilter；若在发动时（chk==0），检查自己墓地是否存在至少1张满足条件的卡；然后提示玩家选择1张，选择后设为对象并设置回手牌的操作信息。
 function c4367330.thtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and c4367330.thfilter(chkc) end
-	-- 检查是否有满足条件的墓地十二兽卡作为目标
+	-- 发动时确认：自己墓地是否存在至少1张满足thfilter条件的「十二兽」卡，若存在则效果可发动。
 	if chk==0 then return Duel.IsExistingTarget(c4367330.thfilter,tp,LOCATION_GRAVE,0,1,nil) end
-	-- 提示玩家选择要加入手牌的卡
+	-- 向发动玩家发送选择提示，提示内容为“请选择要加入手牌的卡”。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择满足条件的墓地十二兽卡作为目标
+	-- 让玩家从自己墓地选择1张满足thfilter条件的卡作为效果对象，数量为1，并自动将该卡与当前连锁关联。
 	local g=Duel.SelectTarget(tp,c4367330.thfilter,tp,LOCATION_GRAVE,0,1,1,nil)
-	-- 设置效果处理信息为将目标卡加入手牌
+	-- 设置操作信息：本连锁的效果处理将把对象卡（g）以效果原因（REASON_EFFECT）加入手牌（CATEGORY_TOHAND），数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,1,0,0)
 end
--- 将选中的墓地十二兽卡加入手牌
+-- 效果①处理：获取对象卡，若对象仍与此效果关联（未离场或未被无效），则将其加入持有者的手牌。
 function c4367330.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取效果的目标卡
+	-- 获取当前连锁的第一个对象卡，即被选择的那张墓地的「十二兽」卡。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 将目标卡以效果原因送入手牌
+		-- 将对象卡送去其持有者的手牌，处理原因为效果（REASON_EFFECT）。
 		Duel.SendtoHand(tc,nil,REASON_EFFECT)
 	end
 end
--- 判断是否为兽战士族且未在战斗破坏状态，且对方发动的是魔法卡，且该连锁可被无效，且该卡被指定为目标
+-- 效果②的发动条件：持有此效果的超量怪兽原本种族是兽战士族，且该怪兽不处于战斗破坏确定状态；对方玩家（ep==1-tp）发动了以该怪兽为对象的魔法卡效果，该魔法卡效果是取对象效果且该连锁可以被无效。
 function c4367330.discon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	return c:GetOriginalRace()==RACE_BEASTWARRIOR
 		and not c:IsStatus(STATUS_BATTLE_DESTROYED) and ep==1-tp
-		-- 判断对方发动的是魔法卡且该连锁可被无效
+		-- 确认对方发动的连锁效果是魔法卡（TYPE_SPELL），且该连锁当前可以被无效（Duel.IsChainNegatable）。
 		and re:IsActiveType(TYPE_SPELL) and Duel.IsChainNegatable(ev)
 		and re:IsHasProperty(EFFECT_FLAG_CARD_TARGET)
-		-- 判断对方发动的魔法卡是否指定此卡为对象
+		-- 确认该魔法卡效果的对象中包含持有此效果的怪兽（c），即对方效果以这张超量怪兽为对象。
 		and Duel.GetChainInfo(ev,CHAININFO_TARGET_CARDS):IsContains(c)
 end
--- 支付1个超量素材作为代价
+-- 效果②的发动代价：从持有此效果的怪兽上取除1个超量素材作为COST（若可以取除才允许发动，实际取除1个）。
 function c4367330.discost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():CheckRemoveOverlayCard(tp,1,REASON_COST) end
 	e:GetHandler():RemoveOverlayCard(tp,1,1,REASON_COST)
 end
--- 设置效果处理信息为使对方魔法卡发动无效
+-- 效果②的发动目标处理：发动时无需选择卡片；向对方提示我方发动了此效果；设置操作信息为无效当前连锁（CATEGORY_NEGATE）。
 function c4367330.distg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 提示对方玩家该效果已发动
+	-- 向对方玩家（1-tp）发送提示消息，显示此效果的描述文本，告知对方发动了“魔法卡的效果发动无效”的效果。
 	Duel.Hint(HINT_OPSELECTED,1-tp,e:GetDescription())
-	-- 设置效果处理信息为使对方魔法卡发动无效
+	-- 设置操作信息：本连锁的处理将无效对方发动的那个魔法卡效果，对象为正在连锁的卡组（eg），数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_NEGATE,eg,1,0,0)
 end
--- 使对方魔法卡发动无效
+-- 效果②的处理：使当前连锁（ev）的发动无效。
 function c4367330.disop(e,tp,eg,ep,ev,re,r,rp)
-	-- 使对方魔法卡发动无效
+	-- 实际执行无效操作，将连锁ev对应的效果发动无效。
 	Duel.NegateActivation(ev)
 end

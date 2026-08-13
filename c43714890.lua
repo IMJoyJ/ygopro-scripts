@@ -14,34 +14,34 @@ function c43714890.initial_effect(c)
 	e1:SetOperation(c43714890.operation)
 	c:RegisterEffect(e1)
 end
--- 过滤函数，用于筛选场上满足条件的通常怪兽（排除衍生物）
+-- 定义祭品过滤条件：怪兽的类型必须是通常怪兽，且不是衍生物。
 function c43714890.cfilter(c)
 	local tp=c:GetType()
 	return bit.band(tp,TYPE_NORMAL)~=0 and bit.band(tp,TYPE_TOKEN)==0
 end
--- 效果的解放费用处理，检查并选择1只符合条件的怪兽进行解放
+-- 代价函数：发动前检查是否存在符合条件的通常怪兽，存在则选择1只并解放作为发动代价。
 function c43714890.cost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查玩家场上是否存在至少1张满足条件的可解放的通常怪兽（衍生物除外）
+	-- 在费用检查阶段，确认自己场上是否存在至少1只满足条件的可解放怪兽，以决定效果能否发动。
 	if chk==0 then return Duel.CheckReleaseGroup(tp,c43714890.cfilter,1,nil) end
-	-- 从玩家场上选择1张满足条件的可解放的通常怪兽（衍生物除外）
+	-- 从自己场上选择1只满足条件的通常怪兽（衍生物除外）作为解放代价。
 	local sg=Duel.SelectReleaseGroup(tp,c43714890.cfilter,1,1,nil)
-	-- 将选中的怪兽以代价原因进行解放
+	-- 将选择的怪兽解放，解放原因标记为代价（REASON_COST），完成发动代价的支付。
 	Duel.Release(sg,REASON_COST)
 end
--- 设置效果的目标玩家和参数，准备造成伤害
+-- 目标函数：效果发动时指定对象为对方玩家，设定伤害值为800，并登记操作信息。
 function c43714890.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 将连锁效果的目标玩家设置为对方玩家
+	-- 将效果对象玩家设为对方玩家（1-tp）。
 	Duel.SetTargetPlayer(1-tp)
-	-- 将连锁效果的目标参数设置为800点伤害
+	-- 将效果对象参数设为800，表示将要造成的伤害数值。
 	Duel.SetTargetParam(800)
-	-- 设置当前连锁的操作信息，指定为伤害效果并设定目标玩家和伤害值
+	-- 设置连锁操作信息为伤害效果，对象为对方玩家，预计伤害为800，供其他卡效果检测。
 	Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,1-tp,800)
 end
--- 效果的发动处理，根据连锁信息对目标玩家造成指定伤害
+-- 效果处理函数：实际执行给对方造成伤害的操作。
 function c43714890.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的目标玩家和目标参数（伤害值）
+	-- 从当前连锁信息中取出之前指定的对象玩家和伤害参数。
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 对目标玩家造成指定数值的伤害，伤害原因为效果
+	-- 以效果原因（REASON_EFFECT）向对象玩家造成800点伤害。
 	Duel.Damage(p,d,REASON_EFFECT)
 end
