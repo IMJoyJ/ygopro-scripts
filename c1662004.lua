@@ -22,36 +22,36 @@ function c1662004.initial_effect(c)
 	e2:SetOperation(c1662004.spop)
 	c:RegisterEffect(e2)
 end
--- 设置该卡不能被作为同调素材，除非是兽战士族怪兽。
+-- 作为同调素材限制判定：若候选怪兽不是兽战士族则返回 true，使其不能作为这张卡的同调素材。
 function c1662004.synlimit(e,c)
 	if not c then return false end
 	return not c:IsRace(RACE_BEASTWARRIOR)
 end
--- 筛选墓地符合条件的炎属性3星怪兽（守备力200以下且可特殊召唤）。
+-- 筛选可特殊召唤的墓地怪兽：需守备力200以下、炎属性、3星，且能被当前效果以表侧守备表示特殊召唤。
 function c1662004.spfilter(c,e,tp)
 	return c:IsDefenseBelow(200) and c:IsAttribute(ATTRIBUTE_FIRE) and c:IsLevel(3) and c:IsCanBeSpecialSummoned(e,0,tp,false,false,POS_FACEUP_DEFENSE)
 end
--- 处理效果的发动条件判断，检查是否有满足条件的怪兽可特殊召唤。
+-- ①效果的发动条件与取对象处理：确认己方主要怪兽区有空位，且墓地存在符合条件的炎属性·3星·守备力200以下的怪兽，然后选择其中1只为对象。
 function c1662004.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and c1662004.spfilter(chkc,e,tp) end
-	-- 判断场上是否有足够的空间进行特殊召唤。
+	-- 判断己方主要怪兽区是否有至少1个可用空格，作为特殊召唤的前提条件。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 判断自己墓地是否存在符合条件的怪兽。
+		-- 检查墓地是否存在1只满足筛选条件且能被当前效果取对象的炎属性·3星·守备力200以下怪兽。
 		and Duel.IsExistingTarget(c1662004.spfilter,tp,LOCATION_GRAVE,0,1,nil,e,tp) end
-	-- 提示玩家选择要特殊召唤的怪兽。
+	-- 向玩家弹出选择提示消息，提示内容是“请选择要特殊召唤的卡”。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 选择目标怪兽并设置为效果对象。
+	-- 让玩家从己方墓地选择1只符合条件的怪兽作为对象，并登记为该连锁的对象。
 	local g=Duel.SelectTarget(tp,c1662004.spfilter,tp,LOCATION_GRAVE,0,1,1,nil,e,tp)
-	-- 设置效果操作信息，表明将要特殊召唤怪兽。
+	-- 将本次操作信息登记为特殊召唤1只怪兽（对象为已选怪兽），供后续效果处理及连锁判定使用。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,1,0,0)
 end
--- 处理效果的发动后操作，特殊召唤目标怪兽并设置不能攻击效果。
+-- ①效果处理：若对象怪兽仍与效果相关且仍为炎属性，则将其表侧守备特殊召唤；召唤成功后给己方场上非兽战士族怪兽附加本回合不能攻击的制约效果。
 function c1662004.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前效果的目标怪兽。
+	-- 获取发动时选择的对象怪兽。
 	local tc=Duel.GetFirstTarget()
-	-- 确认目标怪兽有效且属性为炎，并执行特殊召唤。
+	-- 检查对象怪兽是否仍与效果关联且仍为炎属性，并尝试将其表侧守备特殊召唤；若特殊召唤成功则执行后续处理。
 	if tc:IsRelateToEffect(e) and tc:IsAttribute(ATTRIBUTE_FIRE) and Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP_DEFENSE)>0 then
-		-- 设置一个永续效果，使非兽战士族怪兽不能攻击。
+		-- 这个效果特殊召唤成功的回合，兽战士族以外的自己怪兽不能攻击。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_FIELD)
 		e1:SetCode(EFFECT_CANNOT_ATTACK)
@@ -59,11 +59,11 @@ function c1662004.spop(e,tp,eg,ep,ev,re,r,rp)
 		e1:SetTargetRange(LOCATION_MZONE,0)
 		e1:SetTarget(c1662004.atktg)
 		e1:SetReset(RESET_PHASE+PHASE_END)
-		-- 将该不能攻击效果注册到场上。
+		-- 将不能攻击的制约效果注册到场上，持续至回合结束，影响己方所有非兽战士族怪兽。
 		Duel.RegisterEffect(e1,tp)
 	end
 end
--- 定义不能攻击效果的目标筛选函数，排除兽战士族怪兽。
+-- 攻击限制的判定：若怪兽不是兽战士族，则返回 true，使其不能进行攻击。
 function c1662004.atktg(e,c)
 	return not c:IsRace(RACE_BEASTWARRIOR)
 end
