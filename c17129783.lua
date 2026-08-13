@@ -9,7 +9,7 @@ function c17129783.initial_effect(c)
 	e1:SetTargetRange(LOCATION_HAND+LOCATION_MZONE,0)
 	e1:SetCode(EFFECT_EXTRA_SUMMON_COUNT)
 	e1:SetRange(LOCATION_MZONE)
-	-- 设置效果目标为名字带有「星圣」的卡片
+	-- 设定该效果的对象只能是持有「星圣」字段的怪兽，与SetTargetRange结合后即手牌或场上的「星圣」怪兽才能享受额外召唤次数。
 	e1:SetTarget(aux.TargetBoolFunction(Card.IsSetCard,0x53))
 	c:RegisterEffect(e1)
 end

@@ -47,7 +47,7 @@ function c17228908.initial_effect(c)
 	e6:SetTargetRange(LOCATION_MZONE,LOCATION_MZONE)
 	e6:SetCondition(c17228908.tgcon)
 	e6:SetTarget(c17228908.tglimit)
-	-- 设置效果值为aux.tgoval函数，用于判断目标是否不能成为效果对象。
+	-- 设置该『不能成为效果对象』效果的Value为aux.tgoval函数，使该限制只针对对方发动的效果，即不会成为对方的卡的效果对象。
 	e6:SetValue(aux.tgoval)
 	c:RegisterEffect(e6)
 	-- ④：1回合1次，场上的通常怪兽被战斗·效果破坏的场合，可以作为代替把那个数量的自己的手卡·卡组的恐龙族怪兽破坏。
@@ -64,72 +64,72 @@ function c17228908.initial_effect(c)
 	g:KeepAlive()
 	e7:SetLabelObject(g)
 end
--- 判断目标怪兽是否不是恐龙族。
+-- atktg：效果①的目标筛选函数，判定怪兽不是恐龙族，只有非恐龙族怪兽才会受到攻击力下降500的影响。
 function c17228908.atktg(e,c)
 	return not c:IsRace(RACE_DINOSAUR)
 end
--- 过滤出场上表侧表示的恐龙族怪兽。
+-- cfilter：判定怪兽是否为表侧表示且为恐龙族，用于检测召唤·特殊召唤成功的怪兽是否为恐龙族。
 function c17228908.cfilter(c,tp)
 	return c:IsFaceup() and c:IsRace(RACE_DINOSAUR)
 end
--- 判断是否有恐龙族怪兽被召唤或特殊召唤成功。
+-- tkcon：效果②的发动条件，召唤成功的怪兽组中存在至少1只表侧表示恐龙族怪兽时满足条件。
 function c17228908.tkcon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c17228908.cfilter,1,nil,tp)
 end
--- 判断是否满足特殊召唤衍生物的条件。
+-- tktg：效果②发动时的合法检查与处理设定，检查对方怪兽区有空位且自己能将衍生物特殊召唤到对方场上。
 function c17228908.tktg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断对方场上是否有空位。
+	-- 在效果发动合法性检查阶段（chk==0），确认对方场上存在可用的主要怪兽区空格。
 	if chk==0 then return Duel.GetLocationCount(1-tp,LOCATION_MZONE)>0
-		-- 判断是否可以特殊召唤侏罗蛋衍生物。
+		-- 同时确认自己能够把「侏罗蛋衍生物」以表侧守备表示、恐龙族·地·1星·攻/守0特殊召唤到对方场上。
 		and Duel.IsPlayerCanSpecialSummonMonster(tp,17228909,0,TYPES_TOKEN_MONSTER,0,0,1,RACE_DINOSAUR,ATTRIBUTE_EARTH,POS_FACEUP_DEFENSE,1-tp) end
-	-- 设置操作信息为特殊召唤衍生物。
+	-- 设置该发动连锁的处理信息：包含1次特殊召唤操作，因为衍生物在效果处理时才确定，targets为nil。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,0,0)
-	-- 设置操作信息为召唤衍生物。
+	-- 设置该发动连锁的处理信息：包含1次衍生物生成操作，衍生物的持有者为自己。
 	Duel.SetOperationInfo(0,CATEGORY_TOKEN,nil,1,tp,0)
 end
--- 执行特殊召唤侏罗蛋衍生物的效果。
+-- tkop：效果②处理时，若本卡仍关联且条件满足，则在对方场上生成「侏罗蛋衍生物」并表侧守备表示特殊召唤。
 function c17228908.tkop(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断场地卡是否有效。
+	-- 处理时先检查失落世界是否仍然与效果关联（即未离场/未失效），并且对方怪兽区仍有空格。
 	if e:GetHandler():IsRelateToEffect(e) and Duel.GetLocationCount(1-tp,LOCATION_MZONE)>0
-		-- 判断是否可以特殊召唤侏罗蛋衍生物。
+		-- 再次确认自己仍可将侏罗蛋衍生物特殊召唤到对方场上，满足则继续执行特殊召唤。
 		and Duel.IsPlayerCanSpecialSummonMonster(tp,17228909,0,TYPES_TOKEN_MONSTER,0,0,1,RACE_DINOSAUR,ATTRIBUTE_EARTH,POS_FACEUP_DEFENSE,1-tp) then
-		-- 创建侏罗蛋衍生物。
+		-- 以自己为持有者创建1只编号17228909的「侏罗蛋衍生物」。
 		local token=Duel.CreateToken(tp,17228909)
-		-- 将侏罗蛋衍生物特殊召唤到对方场上。
+		-- 将生成的衍生物以表侧守备表示特殊召唤到对方（1-tp）的怪兽区。
 		Duel.SpecialSummon(token,0,tp,1-tp,false,false,POS_FACEUP_DEFENSE)
 	end
 end
--- 判断对方场上是否存在衍生物。
+-- tgcon：效果③的适用条件，通过aux.tkfcon判断对方场上是否存在衍生物。
 function c17228908.tgcon(e)
 	local tp=e:GetHandlerPlayer()
-	-- 调用aux.tkfcon函数判断对方场上是否存在衍生物。
+	-- 检查对方（1-tp）场上是否有衍生物，若有则效果③开始适用。
 	return aux.tkfcon(e,1-tp)
 end
--- 判断目标是否不是衍生物。
+-- tglimit：效果③的筛选目标，衍生物以外（非TOKEN）的场上的怪兽才会被限制成为效果对象。
 function c17228908.tglimit(e,c)
 	return not c:IsType(TYPE_TOKEN)
 end
--- 过滤出场上被破坏的通常怪兽。
+-- repfilter：判断被破坏的怪兽是否符合代破条件：表侧表示、通常怪兽、位于怪兽区、且破坏原因为战斗或效果，且尚未列入本次代破对象。
 function c17228908.repfilter(c,tp)
 	return c:IsFaceup() and c:IsType(TYPE_NORMAL) and c:IsLocation(LOCATION_MZONE)
 		and c:IsReason(REASON_BATTLE+REASON_EFFECT) and not c:IsReason(REASON_REPLACE) and c:GetFlagEffect(17228908)==0
 end
--- 过滤出可以被代替破坏的恐龙族怪兽。
+-- desfilter：选择代替破坏的卡的条件：自己手卡·卡组中的恐龙族怪兽，可被效果破坏，且未被确认破坏或战破确定。
 function c17228908.desfilter(c,e)
 	return c:IsRace(RACE_DINOSAUR) and c:IsDestructable(e)
 		and not c:IsStatus(STATUS_DESTROY_CONFIRMED+STATUS_BATTLE_DESTROYED)
 end
--- 判断是否满足代替破坏的条件。
+-- reptg：效果④的发动条件与目标选择，统计本次将被破坏的通常怪兽数ct，并检查手卡·卡组是否有足够恐龙族怪兽可代替破坏。
 function c17228908.reptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local ct=eg:FilterCount(c17228908.repfilter,nil,tp)
 	if chk==0 then return ct>0
-		-- 判断是否有足够的恐龙族怪兽可以代替破坏。
+		-- 进一步确认自己的手卡·卡组中存在至少ct只符合条件的恐龙族怪兽，否则不能发动代破效果。
 		and Duel.IsExistingMatchingCard(c17228908.desfilter,tp,LOCATION_HAND+LOCATION_DECK,0,ct,nil,e) end
-	-- 询问玩家是否发动代替破坏效果。
+	-- 询问失落世界控制者是否发动代替破坏效果，选择“是”才进行后续代替破坏处理。
 	if Duel.SelectEffectYesNo(tp,e:GetHandler(),96) then
-		-- 提示玩家选择代替破坏的卡。
+		-- 向控制者发送选卡提示，提示文字为“请选择要代替破坏的卡”。
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESREPLACE)  --"请选择要代替破坏的卡"
-		-- 选择代替破坏的恐龙族怪兽。
+		-- 从自己的手卡·卡组中选择恰好ct张符合条件的恐龙族怪兽，作为代替破坏的卡。
 		local tg=Duel.SelectMatchingCard(tp,c17228908.desfilter,tp,LOCATION_HAND+LOCATION_DECK,0,ct,ct,nil,e)
 		local g=e:GetLabelObject()
 		g:Clear()
@@ -143,13 +143,13 @@ function c17228908.reptg(e,tp,eg,ep,ev,re,r,rp,chk)
 		return true
 	else return false end
 end
--- 设置代替破坏的判断函数。
+-- repval：代破效果的Value函数，对每只将被破坏的怪兽调用repfilter，判断其是否为可代破的通常怪兽。
 function c17228908.repval(e,c)
 	return c17228908.repfilter(c,e:GetHandlerPlayer())
 end
--- 执行代替破坏的效果。
+-- repop：代替破坏处理：提示失落世界的卡片动画，取出之前选择的恐龙族怪兽组，清除其破坏确认状态，然后将其破坏。
 function c17228908.repop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示发动了代替破坏效果。
+	-- 展示失落世界的卡片发动/效果动画，向双方提示本次代替破坏由失落世界执行。
 	Duel.Hint(HINT_CARD,0,17228908)
 	local tg=e:GetLabelObject()
 	local tc=tg:GetFirst()
@@ -157,6 +157,6 @@ function c17228908.repop(e,tp,eg,ep,ev,re,r,rp)
 		tc:SetStatus(STATUS_DESTROY_CONFIRMED,false)
 		tc=tg:GetNext()
 	end
-	-- 将选择的卡破坏。
+	-- 将选择的恐龙族怪兽以“效果破坏+代替破坏”的理由破坏，完成代替破坏的最终处理。
 	Duel.Destroy(tg,REASON_EFFECT+REASON_REPLACE)
 end

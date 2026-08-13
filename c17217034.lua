@@ -5,10 +5,10 @@
 -- ①：这张卡特殊召唤的场合，以场上1只攻击力2500以上的怪兽为对象才能发动。那只怪兽的效果直到回合结束时无效。
 -- ②：自己墓地有「闪刀姬-零衣」以及「闪刀姬-露世」存在的场合，这张卡攻击的伤害步骤开始时才能发动。对方场上的怪兽全部破坏。
 local s,id,o=GetID()
--- 初始化效果函数，设置卡片的特殊召唤次数限制、连接召唤手续、复活限制，并注册三个效果
+-- 初始化效果注册函数：设置1回合1次特殊召唤限制、连接召唤手续（光·暗属性怪兽2只）、召唤限制，并注册①特殊召唤成功时无效场上怪兽效果的诱发效果、②攻击伤害步骤开始时的破坏效果，以及‘不能作为连接素材’的永续效果。
 function s.initial_effect(c)
 	c:SetSPSummonOnce(id)
-	-- 添加连接召唤手续，要求使用2只光属性和暗属性的怪兽作为连接素材
+	-- 连接召唤手续：以2只光属性或暗属性怪兽作为连接素材进行连接召唤。
 	aux.AddLinkProcedure(c,aux.FilterBoolFunction(Card.IsLinkAttribute,ATTRIBUTE_LIGHT+ATTRIBUTE_DARK),2,2)
 	c:EnableReviveLimit()
 	-- ①：这张卡特殊召唤的场合，以场上1只攻击力2500以上的怪兽为对象才能发动。那只怪兽的效果直到回合结束时无效。
@@ -39,38 +39,38 @@ function s.initial_effect(c)
 	e3:SetValue(1)
 	c:RegisterEffect(e3)
 end
--- 定义过滤函数，用于筛选可以被无效化的怪兽（表侧表示、效果怪兽且攻击力不低于2500）
+-- 定义①效果的过滤函数：选择场上表侧表示、效果未被无效且为效果怪兽，并且攻击力在2500以上的怪兽作为对象。
 function s.nefilter(c)
-	-- 筛选表侧表示、效果怪兽且攻击力不低于2500的怪兽
+	-- 返回true的条件：该怪兽是表侧表示、效果未被无效且原本是效果怪兽，并且攻击力在2500以上。
 	return aux.NegateMonsterFilter(c) and c:IsAttackAbove(2500)
 end
--- 设置效果目标选择函数，检查场上是否存在满足条件的怪兽并选择目标
+-- ①效果的发动/选目标函数：发动时检查场上是否存在符合条件的对象，若存在则让玩家选择1只怪兽作为对象，并设置本次操作要无效1张卡的信息。
 function s.netg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and s.nefilter(chkc) end
-	-- 检查是否存在满足条件的怪兽作为目标
+	-- 发动合法性检查：确认双方场上存在至少1只满足s.nefilter条件的怪兽，否则不能发动。
 	if chk==0 then return Duel.IsExistingTarget(s.nefilter,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil) end
-	-- 提示玩家选择要无效的怪兽
+	-- 向操作玩家显示选择提示文字（HINTMSG_DISABLE：请选择要无效的卡），作为后续选卡的提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DISABLE)  --"请选择要无效的卡"
-	-- 选择满足条件的怪兽作为目标
+	-- 让发动玩家从双方场上选择1只满足s.nefilter条件的怪兽作为效果对象，并将该卡设为当前连锁的对象。
 	local g=Duel.SelectTarget(tp,s.nefilter,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,nil)
-	-- 设置操作信息，记录将要无效的怪兽
+	-- 设置操作信息：本次效果将无效1张卡（CATEGORY_DISABLE），对象为已选择的g，用于发动检测和效果处理。
 	Duel.SetOperationInfo(0,CATEGORY_DISABLE,g,1,0,0)
 end
--- 设置效果处理函数，使目标怪兽的效果无效
+-- ①效果处理：取得对象怪兽；若对象仍与该效果相关且表侧表示，则将其相关连锁无效化，并对其赋予‘效果无效化’和‘效果发动无效化’状态直到回合结束。
 function s.neop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取当前效果的目标怪兽
+	-- 取得这张卡发动效果时所选择的对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if tc and tc:IsRelateToEffect(e) and tc:IsFaceup() then
-		-- 使目标怪兽相关的连锁无效化
+		-- 使与对象怪兽相关的连锁效果无效化，并在变里侧时重置，即同时无效其效果及相关连锁。
 		Duel.NegateRelatedChain(tc,RESET_TURN_SET)
-		-- 创建使目标怪兽效果无效的永续效果
+		-- 那只怪兽的效果直到回合结束时无效。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_DISABLE)
 		e1:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END)
 		tc:RegisterEffect(e1)
-		-- 创建使目标怪兽效果无效化的永续效果
+		-- 那只怪兽的效果直到回合结束时无效。
 		local e2=Effect.CreateEffect(c)
 		e2:SetType(EFFECT_TYPE_SINGLE)
 		e2:SetCode(EFFECT_DISABLE_EFFECT)
@@ -79,28 +79,28 @@ function s.neop(e,tp,eg,ep,ev,re,r,rp)
 		tc:RegisterEffect(e2)
 	end
 end
--- 设置效果发动条件函数，检查是否为该卡攻击且墓地存在指定卡片
+-- ②效果的发动条件：本次攻击的怪兽是本卡，且自己墓地同时存在「闪刀姬-零衣」（26077387）和「闪刀姬-露世」（37351133）。
 function s.descon(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查当前攻击的怪兽是否为该卡
+	-- 判定当前攻击的攻击怪兽是这张卡本身。
 	return Duel.GetAttacker()==e:GetHandler()
-		-- 检查自己墓地是否存在「闪刀姬-零衣」
+		-- 检查自己墓地是否存在1张卡号为26077387的卡（「闪刀姬-零衣」）。
 		and Duel.IsExistingMatchingCard(Card.IsCode,tp,LOCATION_GRAVE,0,1,nil,26077387)
-		-- 检查自己墓地是否存在「闪刀姬-露世」
+		-- 检查自己墓地是否存在1张卡号为37351133的卡（「闪刀姬-露世」）。
 		and Duel.IsExistingMatchingCard(Card.IsCode,tp,LOCATION_GRAVE,0,1,nil,37351133)
 end
--- 设置效果目标选择函数，检查对方场上是否存在怪兽并准备破坏
+-- ②效果的发动检查与操作信息设置函数：确认对方场上有怪兽存在，取得对方场上全部怪兽并设置操作信息为破坏这些怪兽。
 function s.destg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查对方场上是否存在怪兽
+	-- 发动合法性检查：确认对方场上存在至少1只怪兽（aux.TRUE表示任意怪兽），否则不能发动。
 	if chk==0 then return Duel.IsExistingMatchingCard(aux.TRUE,tp,0,LOCATION_MZONE,1,nil) end
-	-- 获取对方场上的所有怪兽
+	-- 取得对方场上的全部怪兽（不取对象，效果处理时确定破坏目标）。
 	local sg=Duel.GetMatchingGroup(aux.TRUE,tp,0,LOCATION_MZONE,nil)
-	-- 设置操作信息，记录将要破坏的怪兽
+	-- 设置操作信息：本次效果将破坏对方场上全部怪兽，数量为sg的数量，分类为CATEGORY_DESTROY。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,sg,sg:GetCount(),0,0)
 end
--- 设置效果处理函数，破坏对方场上的所有怪兽
+-- ②效果处理：实际处理时再次获取对方场上的全部怪兽，并用效果将其全部破坏。
 function s.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取对方场上的所有怪兽
+	-- 取得对方场上的全部怪兽（不取对象，在效果处理时确定破坏目标）。
 	local sg=Duel.GetMatchingGroup(aux.TRUE,tp,0,LOCATION_MZONE,nil)
-	-- 将所有怪兽破坏
+	-- 以效果（REASON_EFFECT）破坏sg这些怪兽。
 	Duel.Destroy(sg,REASON_EFFECT)
 end

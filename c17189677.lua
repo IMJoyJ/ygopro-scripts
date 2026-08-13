@@ -12,33 +12,33 @@ function c17189677.initial_effect(c)
 	e1:SetOperation(c17189677.activate)
 	c:RegisterEffect(e1)
 end
--- 检查是否满足丢弃手卡的代价条件并执行丢弃操作
+-- 发动代价函数：确认并执行丢弃1张手卡作为发动代价。
 function c17189677.cost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断玩家手牌中是否存在可丢弃的卡
+	-- 代价检查：确认手牌中存在至少1张除蛇雨自身以外可丢弃的手卡。
 	if chk==0 then return Duel.IsExistingMatchingCard(Card.IsDiscardable,tp,LOCATION_HAND,0,1,e:GetHandler()) end
-	-- 执行丢弃1张手牌的操作，原因包括代价和丢弃
+	-- 实际执行代价：从手牌挑选1张可丢弃的手卡以丢弃（当作代价）送入墓地。
 	Duel.DiscardHand(tp,Card.IsDiscardable,1,1,REASON_COST+REASON_DISCARD)
 end
--- 定义筛选爬虫类族怪兽的过滤函数
+-- 筛选条件：卡是爬虫类族怪兽且可以送去墓地（作为送去墓地的对象）。
 function c17189677.tgfilter(c)
 	return c:IsRace(RACE_REPTILE) and c:IsType(TYPE_MONSTER) and c:IsAbleToGrave()
 end
--- 检查卡组中是否存在至少4只满足条件的怪兽并设置操作信息
+-- 发动时点目标设定：确认卡组存在至少4只符合条件的爬虫类族怪兽，并设置本次效果将送去墓地的信息。
 function c17189677.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断卡组中是否存在至少4只满足条件的怪兽
+	-- 发动条件检查：卡组中是否存在至少4只满足tgfilter（爬虫类族怪兽且能送去墓地）的卡。
 	if chk==0 then return Duel.IsExistingMatchingCard(c17189677.tgfilter,tp,LOCATION_DECK,0,4,nil) end
-	-- 设置连锁操作信息，指定将4张卡从卡组送去墓地
+	-- 设置效果处理信息：把卡组的4张卡作为将要送去墓地的对象，用于连锁响应与效果判定。
 	Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,nil,4,tp,LOCATION_DECK)
 end
--- 检索卡组中满足条件的怪兽并选择其中4只送去墓地
+-- 效果处理：从卡组选出4只符合条件的爬虫类族怪兽，送入墓地。
 function c17189677.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取卡组中所有满足条件的怪兽组成卡片组
+	-- 获取卡组中所有符合条件的爬虫类族怪兽集合（数量不足4则不处理）。
 	local g=Duel.GetMatchingGroup(c17189677.tgfilter,tp,LOCATION_DECK,0,nil)
 	if g:GetCount()>=4 then
-		-- 提示玩家选择要送去墓地的卡
+		-- 显示选择提示，让玩家从候选卡中选择要送去墓地的卡。
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
 		local sg=g:Select(tp,4,4,nil)
-		-- 将选中的怪兽以效果原因送去墓地
+		-- 将已选择的卡以效果原因送去墓地。
 		Duel.SendtoGrave(sg,REASON_EFFECT)
 	end
 end
