@@ -14,46 +14,46 @@ function c40213117.initial_effect(c)
 	e1:SetOperation(c40213117.spop)
 	c:RegisterEffect(e1)
 end
--- 定义过滤函数，用于筛选手卡中未公开的「魔导书」魔法卡。
+-- 过滤函数：从手卡中筛选出名字带有「魔导书」的魔法卡，且该卡当前不是公开状态，作为展示代价的候选。
 function c40213117.cffilter(c)
 	return c:IsSetCard(0x106e) and c:IsType(TYPE_SPELL) and not c:IsPublic()
 end
--- 效果发动时的费用处理，选择并确认一张手卡中的「魔导书」魔法卡。
+-- 效果的发动代价（Cost）：需要玩家从手卡选择1张满足过滤条件的「魔导书」魔法卡，给对方玩家确认，然后洗切手卡。
 function c40213117.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否满足发动条件，即手卡中存在至少一张未公开的「魔导书」魔法卡。
+	-- 代价检测：在效果发动时（chk==0）检查自己手卡中是否至少存在1张满足cffilter的「魔导书」魔法卡，若不存在则不能发动。
 	if chk==0 then return Duel.IsExistingMatchingCard(c40213117.cffilter,tp,LOCATION_HAND,0,1,nil) end
-	-- 向玩家提示选择要确认的卡。
+	-- 给玩家显示选择提示：请选择给对方确认的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_CONFIRM)  --"请选择给对方确认的卡"
-	-- 选择满足条件的「魔导书」魔法卡。
+	-- 让玩家从自己的手卡中选出1张满足cffilter的「魔导书」魔法卡，作为展示给对方确认的代价。
 	local g=Duel.SelectMatchingCard(tp,c40213117.cffilter,tp,LOCATION_HAND,0,1,1,e:GetHandler())
-	-- 将所选卡确认给对方玩家观看。
+	-- 将选出的手卡展示给对方玩家确认，完成“给对方观看”这一发动条件。
 	Duel.ConfirmCards(1-tp,g)
-	-- 将玩家手卡洗牌。
+	-- 展示后洗切自己的手卡，使对方无法凭借展示过程确定手牌顺序。
 	Duel.ShuffleHand(tp)
 end
--- 定义过滤函数，用于筛选手卡中4星以下的魔法师族怪兽。
+-- 特殊召唤对象的过滤函数：判断手卡中的卡是否为4星以下、魔法师族，并且可以被当前效果特殊召唤。
 function c40213117.filter(c,e,tp)
 	return c:IsLevelBelow(4) and c:IsRace(RACE_SPELLCASTER) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 效果发动时的取对象处理，检查是否有满足条件的怪兽可特殊召唤。
+-- 效果发动目标选择函数：在发动时确认自己场上是否有空余怪兽区，且手卡中存在满足条件的可特殊召唤的魔法师族怪兽。
 function c40213117.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查玩家场上是否有空位可进行特殊召唤。
+	-- 目标检测：检查自己的主要怪兽区是否存在可用的空格，只有存在空格才可发动/处理特殊召唤。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查手卡中是否存在满足条件的魔法师族怪兽。
+		-- 目标检测：检查手卡中是否存在至少1只满足filter条件的魔法师族怪兽（4星以下且可被特殊召唤）。
 		and Duel.IsExistingMatchingCard(c40213117.filter,tp,LOCATION_HAND,0,1,nil,e,tp) end
-	-- 设置连锁操作信息，表示本次效果将特殊召唤1只怪兽。
+	-- 设置操作信息：将本次连锁的操作类别标记为特殊召唤，预定从手卡特殊召唤1只怪兽，目标玩家为自己。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_HAND)
 end
--- 效果发动时的处理，选择并特殊召唤满足条件的魔法师族怪兽。
+-- 效果处理函数：实际执行特殊召唤操作，包括再次确认空位、选择手卡中的怪兽并以表侧表示特殊召唤。
 function c40213117.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查玩家场上是否有空位可进行特殊召唤。
+	-- 效果处理前再次检查自己场上是否有空余怪兽区，若没有空位则本次效果不处理。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-	-- 向玩家提示选择要特殊召唤的卡。
+	-- 给玩家显示选择提示：请选择要特殊召唤的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 选择满足条件的魔法师族怪兽。
+	-- 让玩家从手卡中选择1只满足filter条件的怪兽（4星以下魔法师族且可特殊召唤），作为本次特殊召唤的对象。
 	local g=Duel.SelectMatchingCard(tp,c40213117.filter,tp,LOCATION_HAND,0,1,1,nil,e,tp)
 	if g:GetCount()>0 then
-		-- 将所选怪兽以正面表示形式特殊召唤到场上。
+		-- 将选中的怪兽以表侧表示特殊召唤到自己的怪兽区，完成特殊召唤。
 		Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
