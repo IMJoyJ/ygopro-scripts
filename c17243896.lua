@@ -18,26 +18,26 @@ function c17243896.initial_effect(c)
 	e2:SetCode(EVENT_SPSUMMON_SUCCESS)
 	c:RegisterEffect(e2)
 end
--- 检索满足条件的怪兽组，条件为：表侧攻击表示、由对方召唤或特殊召唤、可以改变表示形式、且与当前效果有关联
+-- 过滤条件：对象必须是表侧攻击表示、由对方玩家召唤/特殊召唤、可以变更表示形式，且在效果处理时仍与该效果关联（未离场）。
 function c17243896.filter(c,e,tp)
 	return c:IsPosition(POS_FACEUP_ATTACK) and c:IsSummonPlayer(1-tp) and c:IsCanChangePosition()
 		and (not e or c:IsRelateToEffect(e))
 end
--- 判断发动效果的怪兽是否为表侧守备表示
+-- 发动条件：效果持有者（这张卡）必须在自己场上表侧守备表示存在。
 function c17243896.condition(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsPosition(POS_FACEUP_DEFENSE)
 end
--- 设置连锁处理的目标为满足条件的怪兽组，同时设置操作信息为改变表示形式
+-- 效果发动时的处理：chk==0时检查eg中是否存在至少1只符合条件的怪兽；确定发动后，将eg全体设为效果对象，并设置操作信息为变更表示形式，数量为eg数量。
 function c17243896.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return eg:IsExists(c17243896.filter,1,nil,nil,tp) end
-	-- 将连锁处理的对象设置为满足条件的怪兽组
+	-- 将本次召唤/特殊召唤成功的怪兽群eg登记为当前连锁的对象，使它们在效果处理时可被确认关联。
 	Duel.SetTargetCard(eg)
-	-- 设置操作信息为改变表示形式效果，目标为满足条件的怪兽组，数量为怪兽数量
+	-- 设置操作信息：该效果将使eg中的怪兽变更表示形式（CATEGORY_POSITION），预定处理数量为eg的怪兽数量。
 	Duel.SetOperationInfo(0,CATEGORY_POSITION,eg,eg:GetCount(),0,0)
 end
--- 执行效果操作，将满足条件的怪兽组全部变为守备表示
+-- 效果处理时：从eg中筛选出仍然满足条件的怪兽（表侧攻击表示、对方召唤、可变更且与效果关联），并将它们全部变为守备表示。
 function c17243896.operation(e,tp,eg,ep,ev,re,r,rp)
 	local g=eg:Filter(c17243896.filter,nil,e,tp)
-	-- 将指定的怪兽组全部变为守备表示
+	-- 将筛选出的怪兽g全部变为表侧守备表示。
 	Duel.ChangePosition(g,POS_FACEUP_DEFENSE)
 end

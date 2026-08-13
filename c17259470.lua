@@ -15,46 +15,46 @@ function c17259470.initial_effect(c)
 	e1:SetOperation(c17259470.spop)
 	c:RegisterEffect(e1)
 end
--- 检索满足条件的手卡怪兽组，用于支付效果的代价
+-- 代价过滤函数：从手卡选出1只可以作为代价送去墓地的怪兽卡。
 function c17259470.costfilter(c)
 	return c:IsType(TYPE_MONSTER) and c:IsAbleToGraveAsCost()
 end
--- 选择1只手卡怪兽送去墓地作为代价
+-- 代价函数：从手卡挑选1只怪兽送入墓地作为发动代价；若是发动前检查（chk==0）则先确认手卡中是否有满足条件的怪兽，然后选择并送墓。
 function c17259470.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否满足支付代价的条件，即手卡是否存在至少1只怪兽
+	-- 发动合法性检查：确认手卡中至少存在1只满足代价条件的怪兽。
 	if chk==0 then return Duel.IsExistingMatchingCard(c17259470.costfilter,tp,LOCATION_HAND,0,1,nil) end
-	-- 提示玩家选择要送去墓地的卡
+	-- 弹出提示，让玩家选择要送去墓地的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
-	-- 选择1只满足条件的手卡怪兽
+	-- 玩家从手卡中选择1只符合条件的怪兽（用于支付代价）。
 	local g=Duel.SelectMatchingCard(tp,c17259470.costfilter,tp,LOCATION_HAND,0,1,1,nil)
-	-- 将选择的卡送去墓地作为效果的代价
+	-- 将选中的怪兽以代价原因（REASON_COST）送入墓地。
 	Duel.SendtoGrave(g,REASON_COST)
 end
--- 检索满足条件的墓地不死族怪兽组，用于特殊召唤
+-- 对象过滤函数：墓地中满足4星以下、不死族、且可以被特殊召唤的怪兽。
 function c17259470.filter(c,e,tp)
 	return c:IsLevelBelow(4) and c:IsRace(RACE_ZOMBIE) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 选择1只墓地的4星以下不死族怪兽作为特殊召唤对象
+-- 发动目标的选定函数：确认自身怪兽区域有空格且墓地存在可选对象；若为连锁处理中的对象检查，则验证该对象位于墓地且满足过滤条件。
 function c17259470.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and c17259470.filter(chkc,e,tp) end
-	-- 检查场上是否有足够的空间进行特殊召唤
+	-- 发动合法性检查：己方主要怪兽区域必须存在可用的空格，否则无法发动特殊召唤。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查墓地是否存在至少1只满足条件的不死族怪兽
+		-- 发动合法性检查：在双方墓地中至少存在1只满足条件且能成为效果对象的不死族怪兽。
 		and Duel.IsExistingTarget(c17259470.filter,tp,LOCATION_GRAVE,LOCATION_GRAVE,1,nil,e,tp) end
-	-- 提示玩家选择要特殊召唤的卡
+	-- 弹出提示，让玩家选择要特殊召唤的怪兽。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 选择1只满足条件的墓地不死族怪兽作为目标
+	-- 玩家从双方墓地选择1只符合条件的怪兽，并将其设为效果对象。
 	local g=Duel.SelectTarget(tp,c17259470.filter,tp,LOCATION_GRAVE,LOCATION_GRAVE,1,1,nil,e,tp)
-	-- 设置效果处理时的操作信息，确定特殊召唤的卡
+	-- 登记操作信息：本次效果将特殊召唤1只怪兽（用于后续时点/连锁的判定）。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,1,0,0)
 end
--- 将目标不死族怪兽特殊召唤
+-- 效果处理函数：效果处理时再次确认发动者仍表侧表示且效果、对象均有效，然后将对象怪兽表侧攻击表示特殊召唤到己方场上。
 function c17259470.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取当前连锁中选择的目标怪兽
+	-- 取得这个效果发动时所选择的对象卡。
 	local tc=Duel.GetFirstTarget()
 	if c:IsFaceup() and c:IsRelateToEffect(e) and tc:IsRelateToEffect(e) and tc:IsRace(RACE_ZOMBIE) then
-		-- 将目标怪兽以正面表示的形式特殊召唤到场上
+		-- 将对象不死族怪兽特殊召唤到己方场上，表示形式为表侧攻击表示。
 		Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP)
 	end
 end

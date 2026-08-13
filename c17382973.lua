@@ -5,10 +5,10 @@
 -- ①：这张卡连接召唤成功的场合才能发动。从卡组把1张「调皮宝贝」魔法·陷阱卡加入手卡。
 -- ②：把这张卡解放，以连接怪兽以外的自己墓地2张「调皮宝贝」卡为对象才能发动（同名卡最多1张）。那些卡加入手卡。
 function c17382973.initial_effect(c)
-	-- 为卡片添加连接召唤手续，需要2个满足过滤条件的怪兽作为连接素材
+	-- 为这张卡添加连接召唤手续：以2只「调皮宝贝」怪兽作为连接素材才能连接召唤。
 	aux.AddLinkProcedure(c,aux.FilterBoolFunction(Card.IsLinkSetCard,0x120),2)
 	c:EnableReviveLimit()
-	-- ①：这张卡连接召唤成功的场合才能发动。从卡组把1张「调皮宝贝」魔法·陷阱卡加入手卡。
+	-- 这个卡名的①②的效果1回合各能使用1次。①：这张卡连接召唤成功的场合才能发动。从卡组把1张「调皮宝贝」魔法·陷阱卡加入手卡。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(17382973,0))
 	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
@@ -33,50 +33,50 @@ function c17382973.initial_effect(c)
 	e2:SetOperation(c17382973.thop2)
 	c:RegisterEffect(e2)
 end
--- 效果条件：确认此卡是以连接召唤方式特殊召唤成功
+-- 发动条件判定：该卡必须是连接召唤成功（SUMMON_TYPE_LINK）时才能满足①效果的发动条件。
 function c17382973.thcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsSummonType(SUMMON_TYPE_LINK)
 end
--- 检索过滤函数：筛选满足「调皮宝贝」卡组、魔法·陷阱类型且能加入手牌的卡
+-- 检索筛滤条件：卡名属于「调皮宝贝」字段、是魔法陷阱卡、且可以加入手卡。
 function c17382973.thfilter(c)
 	return c:IsSetCard(0x120) and c:IsType(TYPE_SPELL+TYPE_TRAP) and c:IsAbleToHand()
 end
--- 效果处理目标设置：检查卡组是否存在满足条件的卡并设置操作信息
+-- ①效果的发动时点判定与连锁登记：确认卡组存在可检索的「调皮宝贝」魔法陷阱卡，并登记从卡组将1张卡加入手卡的连锁信息。
 function c17382973.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 条件判断：检查卡组中是否存在满足条件的卡
+	-- 效果发动条件检查（chk==0）：卡组中存在至少1张符合条件的「调皮宝贝」魔法·陷阱卡。
 	if chk==0 then return Duel.IsExistingMatchingCard(c17382973.thfilter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置操作信息：设置将1张卡从卡组加入手牌的操作信息
+	-- 登记操作信息：本次连锁将从卡组把1张卡加入手卡（分类为TOHAND+SEARCH），供后续效果连锁判定使用。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 效果处理：提示选择卡组中满足条件的卡并加入手牌
+-- ①效果处理：玩家从卡组选择1张符合条件的「调皮宝贝」魔法·陷阱卡加入手卡，并给对方确认。
 function c17382973.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示选择：提示玩家选择要加入手牌的卡
+	-- 弹出选择提示：请选择要加入手牌的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择卡组中的卡：选择满足条件的1张卡
+	-- 执行检索：从卡组筛选并选择1张符合条件的「调皮宝贝」魔法·陷阱卡。
 	local g=Duel.SelectMatchingCard(tp,c17382973.thfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将卡加入手牌：将选中的卡加入玩家手牌
+		-- 将选择的卡加入手卡（原因REASON_EFFECT，即效果处理）。
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 确认手牌：向对方确认加入手牌的卡
+		-- 将加入手卡的那张卡展示给对方玩家确认。
 		Duel.ConfirmCards(1-tp,g)
 	end
 end
--- 解放或除外的过滤函数：筛选满足条件的卡（在场上或墓地、可作为费用移除、具有特定效果）
+-- COST候选筛滤：选择位于表侧表示或墓地、可作为COST除外、且拥有25725326号代替解放效果的卡，用于替代解放。
 function c17382973.excostfilter(c,tp)
 	return (c:IsFaceup() or c:IsLocation(LOCATION_GRAVE)) and c:IsAbleToRemoveAsCost() and c:IsHasEffect(25725326,tp)
 end
--- 费用过滤函数：检查移除某张卡后剩余卡组是否满足卡名不同的条件
+-- 判断某张卡能否作为COST：在选择该卡作为解放/代替解放后，墓地目标组中仍至少存在2种不同卡名的「调皮宝贝」卡，从而能选出2张同名不同的对象。
 function c17382973.costfilter(c,tp,g)
 	local tg=g:Clone()
 	tg:RemoveCard(c)
 	return tg:GetClassCount(Card.GetCode)>=2
 end
--- 效果处理：设置费用并选择要解放或除外的卡
+-- ②效果的COST处理：收集可代替解放除外的候选卡与自身；在合法时设置标记供取对象阶段使用；实际支付时选择一张候选，若其具有25725326号代替解放效果则表侧除外代替解放，否则将其解放。
 function c17382973.thcost2(e,tp,eg,ep,ev,re,r,rp,chk)
 	e:SetLabel(0)
-	-- 获取满足条件的卡组：获取场上或墓地中满足条件的卡
+	-- 生成可代替解放的COST候选组（表侧表示或在墓地、可除外、且拥有25725326号效果的卡）。
 	local g=Duel.GetMatchingGroup(c17382973.excostfilter,tp,LOCATION_MZONE+LOCATION_GRAVE,0,nil,tp)
-	-- 获取目标卡组：获取墓地中满足条件的卡
+	-- 生成墓地中可作为效果对象的「调皮宝贝」非连接怪兽候选组（可被取对象且可加入手卡）。
 	local tg=Duel.GetMatchingGroup(c17382973.thfilter2,tp,LOCATION_GRAVE,0,nil,e)
 	if e:GetHandler():IsReleasable() then g:AddCard(e:GetHandler()) end
 	if chk==0 then
@@ -86,7 +86,7 @@ function c17382973.thcost2(e,tp,eg,ep,ev,re,r,rp,chk)
 	local cg=g:Filter(c17382973.costfilter,nil,tp,tg)
 	local tc
 	if #cg>1 then
-		-- 提示选择：提示玩家选择要解放或代替解放除外的卡
+		-- 提示玩家选择要解放或代替解放除外的卡片。
 		Duel.Hint(HINT_SELECTMSG,tp,aux.Stringid(25725326,0))  --"请选择要解放或代替解放除外的卡"
 		tc=cg:Select(tp,1,1,nil):GetFirst()
 	else
@@ -95,40 +95,40 @@ function c17382973.thcost2(e,tp,eg,ep,ev,re,r,rp,chk)
 	local te=tc:IsHasEffect(25725326,tp)
 	if te then
 		te:UseCountLimit(tp)
-		-- 将卡除外：将选中的卡以除外形式作为费用
+		-- 代替解放处理：将选定的卡表侧表示除外，作为COST（REASON_COST+REASON_REPLACE）。
 		Duel.Remove(tc,POS_FACEUP,REASON_COST+REASON_REPLACE)
 	else
-		-- 解放卡：将选中的卡解放作为费用
+		-- 通常解放处理：将选定的卡解放，作为COST（一般是解放这张卡自身）。
 		Duel.Release(tc,REASON_COST)
 	end
 end
--- 目标过滤函数：筛选满足「调皮宝贝」卡组、非连接怪兽、可成为效果对象且能加入手牌的卡
+-- 墓地取对象筛滤：属于「调皮宝贝」字段、不是连接怪兽、能被效果取对象且能加入手卡。
 function c17382973.thfilter2(c,e)
 	return c:IsSetCard(0x120) and not c:IsType(TYPE_LINK)
 		and c:IsCanBeEffectTarget(e) and c:IsAbleToHand()
 end
--- 效果处理目标设置：选择满足条件的2张卡并设置操作信息
+-- ②效果的取对象目标设定：仅在COST已支付（标签为100）时执行；从墓地符合条件的卡中选择2张卡名不同的「调皮宝贝」卡作为对象，并登记加入手卡的连锁信息。
 function c17382973.thtg2(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return false end
 	if chk==0 then return e:GetLabel()==100 end
 	e:SetLabel(0)
-	-- 获取满足条件的卡组：获取墓地中满足条件的卡
+	-- 获取墓地中所有符合条件的「调皮宝贝」非连接怪兽。
 	local g=Duel.GetMatchingGroup(c17382973.thfilter2,tp,LOCATION_GRAVE,0,nil,e)
-	-- 提示选择：提示玩家选择要加入手牌的卡
+	-- 弹出目标选择提示：请选择要加入手牌的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择满足条件的卡组：选择2张卡名不同的卡
+	-- 从候选组中选择2张卡，且2张卡卡名互不相同（同名卡最多1张）。
 	local g1=g:SelectSubGroup(tp,aux.dncheck,false,2,2)
-	-- 设置连锁目标：将选中的卡设置为连锁处理对象
+	-- 将选择的2张卡设置为当前连锁的取对象目标。
 	Duel.SetTargetCard(g1)
-	-- 设置操作信息：设置将2张卡加入手牌的操作信息
+	-- 登记操作信息：本次连锁将这2张对象卡加入手卡。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g1,2,0,0)
 end
--- 效果处理：处理连锁中设置的目标卡并加入手牌
+-- ②效果处理：将连锁对象中仍与效果相关的卡（仍可加入手卡）加入手卡。
 function c17382973.thop2(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁目标卡组：获取当前连锁中设置的目标卡
+	-- 从当前连锁信息中取得对象卡组，并过滤出仍然与效果相关（未被无效/未离场等）的对象卡。
 	local g=Duel.GetChainInfo(0,CHAININFO_TARGET_CARDS):Filter(Card.IsRelateToEffect,nil,e)
 	if g:GetCount()>0 then
-		-- 将卡加入手牌：将目标卡加入玩家手牌
+		-- 将处理时仍有效的对象卡加入手卡（效果处理原因REASON_EFFECT）。
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
 	end
 end

@@ -43,24 +43,24 @@ function c17286057.initial_effect(c)
 	e5:SetCondition(c17286057.atcon)
 	c:RegisterEffect(e5)
 end
--- 过滤满足条件的「双子太阳 赫利俄斯」卡片，用于特殊召唤的祭品检查。
+-- 过滤条件：候选祭品必须是卡号80887952的「双子太阳 赫利俄斯」，并且解放后自己场上仍有空余怪兽区。
 function c17286057.hspfilter(c,tp)
 	return c:IsCode(80887952)
-		-- 检查该卡片是否在场上且有可用怪兽区。
+		-- 要求该「双子太阳 赫利俄斯」被解放后自己场上有空余怪兽区，且该卡是自己控制的或表侧表示，以保证可以解放。
 		and Duel.GetMZoneCount(tp,c)>0 and (c:IsControler(tp) or c:IsFaceup())
 end
--- 检查是否有满足条件的「双子太阳 赫利俄斯」可作为祭品进行特殊召唤。
+-- 特殊召唤规则的条件：若c为空表示询问是否可用；否则检查自己场上是否存在满足hspfilter的1只可解放怪兽作为祭品。
 function c17286057.hspcon(e,c)
 	if c==nil then return true end
 	local tp=c:GetControler()
-	-- 调用CheckReleaseGroupEx函数检查是否满足特殊召唤条件。
+	-- 检查自己场上（非上级召唤用）是否存在至少1只满足hspfilter且可解放的「双子太阳 赫利俄斯」用于祭品特殊召唤。
 	return Duel.CheckReleaseGroupEx(tp,c17286057.hspfilter,1,REASON_SPSUMMON,false,nil,tp)
 end
--- 选择并确认要解放的「双子太阳 赫利俄斯」卡片。
+-- 选择要解放的「双子太阳 赫利俄斯」；若选到则将其存入效果标签并返回true，否则返回false。
 function c17286057.hsptg(e,tp,eg,ep,ev,re,r,rp,chk,c)
-	-- 获取玩家可解放的「双子太阳 赫利俄斯」卡片组。
+	-- 获取自己场上可解放（非上级召唤用）的怪兽组，并筛选出满足hspfilter的「双子太阳 赫利俄斯」作为候选。
 	local g=Duel.GetReleaseGroup(tp,false,REASON_SPSUMMON):Filter(c17286057.hspfilter,nil,tp)
-	-- 提示玩家选择要解放的卡片。
+	-- 显示“请选择要解放的卡”的选择提示消息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_RELEASE)  --"请选择要解放的卡"
 	local tc=g:SelectUnselect(nil,tp,false,true,1,1)
 	if tc then
@@ -68,40 +68,40 @@ function c17286057.hsptg(e,tp,eg,ep,ev,re,r,rp,chk,c)
 		return true
 	else return false end
 end
--- 执行解放操作，将选中的卡片从场上移除。
+-- 特殊召唤规则处理：取出之前选择的「双子太阳 赫利俄斯」作为祭品解放，完成从手卡的特殊召唤手续。
 function c17286057.hspop(e,tp,eg,ep,ev,re,r,rp,c)
 	local g=e:GetLabelObject()
-	-- 实际执行解放操作。
+	-- 解放选中的「双子太阳 赫利俄斯」，作为这次特殊召唤的祭品。
 	Duel.Release(g,REASON_SPSUMMON)
 end
--- 过滤场上正面表示的怪兽卡片。
+-- 过滤函数：用于统计除外区的表侧表示怪兽卡。
 function c17286057.filter(c)
 	return c:IsFaceup() and c:IsType(TYPE_MONSTER)
 end
--- 计算场上正面表示的怪兽数量并乘以300作为攻击力和守备力。
+-- 计算攻击力（守备力）数值：除外区表侧表示怪兽卡数量×300。
 function c17286057.value(e,c)
-	-- 获取从游戏中除外的怪兽卡数量并乘以300。
+	-- 返回除外区表侧表示怪兽卡数量乘以300，作为攻击力（守备力）的数值。
 	return Duel.GetMatchingGroupCount(c17286057.filter,0,LOCATION_REMOVED,LOCATION_REMOVED,nil)*300
 end
--- 判断该卡是否因战斗破坏而进入墓地且为当前回合。
+-- 诱发条件：这张卡因战斗破坏被送去墓地，且该事件发生在当前回合。
 function c17286057.spcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断该卡是否因战斗破坏而进入墓地且为当前回合。
+	-- 判定这张卡的送入墓地原因是战斗破坏，并且进入墓地的回合是当前回合。
 	return e:GetHandler():IsReason(REASON_BATTLE) and e:GetHandler():GetTurnID()==Duel.GetTurnCount()
 end
--- 判断是否可以将该卡特殊召唤。
+-- 效果发动的目标阶段：检查是否存在空余怪兽区以及这张卡是否可以被特殊召唤。
 function c17286057.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查玩家场上是否有足够的怪兽区。
+	-- chk==0时，确认自己场上有可用怪兽区，且这张卡满足特殊召唤条件（苏生限制、召唤条件等）。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置特殊召唤的操作信息。
+	-- 设置操作信息：本效果将特殊召唤这张卡，供相关时点/效果检测（如星尘龙等）。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 执行特殊召唤后的处理，包括攻击力和守备力上升500。
+-- 效果处理：若这张卡仍与效果关联且特殊召唤成功，则立即赋予其攻击力·守备力上升500的效果；最后完成特殊召唤处理。
 function c17286057.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 判断该卡是否可以特殊召唤并开始特殊召唤步骤。
+	-- 确认墓地中的这张卡与当前效果仍有联系，并且可以以表侧表示特殊召唤到自己场上。
 	if c:IsRelateToEffect(e) and Duel.SpecialSummonStep(c,0,tp,tp,false,false,POS_FACEUP) then
-		-- 设置特殊召唤后攻击力上升500的效果。
+		-- 攻击力·守备力上升500
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
@@ -114,11 +114,11 @@ function c17286057.spop(e,tp,eg,ep,ev,re,r,rp)
 		e2:SetCode(EFFECT_UPDATE_DEFENSE)
 		c:RegisterEffect(e2)
 	end
-	-- 完成特殊召唤流程。
+	-- 完成特殊召唤处理并触发召唤成功时的时点。
 	Duel.SpecialSummonComplete()
 end
--- 判断对方场上是否有怪兽存在。
+-- 额外攻击次数的条件：对方场上有怪兽存在时才适用。
 function c17286057.atcon(e)
-	-- 获取对方场上的怪兽数量。
+	-- 返回对方场上怪兽区是否存在怪兽；存在时允许再进行一次攻击。
 	return Duel.GetFieldGroupCount(e:GetHandlerPlayer(),0,LOCATION_MZONE)>0
 end

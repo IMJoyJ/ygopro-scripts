@@ -9,7 +9,7 @@ function c17285476.initial_effect(c)
 	e1:SetRange(LOCATION_MZONE)
 	e1:SetCode(EFFECT_CANNOT_BE_BATTLE_TARGET)
 	e1:SetCondition(c17285476.atcon)
-	-- 设置效果值为aux.imval1函数，用于判断目标是否不能成为攻击对象。
+	-- 设置效果值为aux.imval1函数：该函数判定卡片是否对此效果免疫，若免疫则不允许成为攻击对象，否则允许。
 	e1:SetValue(aux.imval1)
 	c:RegisterEffect(e1)
 	-- 这张卡以外的自己场上表侧表示存在的名字带有「自然」的怪兽的战斗发生的对自己的战斗伤害由对方代受。
@@ -22,16 +22,16 @@ function c17285476.initial_effect(c)
 	e2:SetValue(1)
 	c:RegisterEffect(e2)
 end
--- 过滤函数，用于判断一张卡是否是表侧表示且名字带有「自然」。
+-- 定义过滤函数cfilter：用于判断卡片是否为表侧表示且拥有「自然」字段（0x2a）。
 function c17285476.cfilter(c)
 	return c:IsFaceup() and c:IsSetCard(0x2a)
 end
--- 条件函数，用于判断自己场上是否存在除这张卡外的表侧表示的「自然」怪兽。
+-- 定义发动条件atcon：检查自己场上是否存在除本卡以外满足cfilter（表侧且「自然」）的怪兽，若存在则本卡获得“不能成为攻击对象”的适用条件。
 function c17285476.atcon(e)
-	-- 检查以效果拥有者为玩家，在自己的主要怪兽区是否存在至少1张满足cfilter条件且不等于效果处理卡的卡。
+	-- 调用Duel.IsExistingMatchingCard，确认在自己怪兽区、除本卡之外，是否存在至少1张表侧表示且字段为「自然」的怪兽。
 	return Duel.IsExistingMatchingCard(c17285476.cfilter,e:GetOwnerPlayer(),LOCATION_MZONE,0,1,e:GetHandler())
 end
--- 目标过滤函数，用于判断一张卡是否不是效果处理卡且是表侧表示且名字带有「自然」。
+-- 定义伤害代受对象过滤函数reftg：卡片需满足不是本卡、表侧表示且字段为「自然」，即“这张卡以外的自己场上表侧表示存在的名字带有「自然」的怪兽”的判定条件。
 function c17285476.reftg(e,c)
 	return c~=e:GetHandler() and c:IsFaceup() and c:IsSetCard(0x2a)
 end
