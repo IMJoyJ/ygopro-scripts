@@ -7,7 +7,7 @@ function c39131963.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- 创建一个诱发必发效果，用于处理战斗伤害时的破坏效果
+	-- 进行直接攻击并对玩家造成战斗伤害的怪兽被破坏。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(39131963,0))  --"破坏"
 	e2:SetCategory(CATEGORY_DESTROY)
@@ -19,24 +19,24 @@ function c39131963.initial_effect(c)
 	e2:SetOperation(c39131963.operation)
 	c:RegisterEffect(e2)
 end
--- 效果条件函数，判断是否为直接攻击
+-- 该效果为诱发必发效果，需满足直接攻击并造成战斗伤害的条件才可发动。
 function c39131963.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断攻击目标是否为空，即是否为直接攻击
+	-- 检查攻击对象是否不存在（即为直接攻击）。
 	return Duel.GetAttackTarget()==nil
 end
--- 效果目标函数，设置破坏对象及操作信息
+-- 效果发动时的目标处理：无条件通过，并将造成伤害的怪兽组设为对象，登记破坏操作信息。
 function c39131963.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 将连锁中涉及的卡设为当前效果的目标
+	-- 将造成战斗伤害的怪兽组设为当前连锁的对象，使其与效果建立关联。
 	Duel.SetTargetCard(eg)
-	-- 设置操作信息为破坏类别，指定目标卡组和数量
+	-- 设置操作信息：本次效果将破坏eg中的1只怪兽，分类为破坏。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,eg,1,0,0)
 end
--- 效果处理函数，执行破坏操作
+-- 处理效果：取出之前登记的怪兽，若仍与效果有关联则将其破坏。
 function c39131963.operation(e,tp,eg,ep,ev,re,r,rp)
 	local tc=eg:GetFirst()
 	if tc:IsRelateToEffect(e) then
-		-- 将目标怪兽以效果原因破坏
+		-- 以效果原因将那只怪兽破坏并送入墓地。
 		Duel.Destroy(tc,REASON_EFFECT)
 	end
 end

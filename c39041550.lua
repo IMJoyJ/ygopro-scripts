@@ -33,59 +33,59 @@ function c39041550.initial_effect(c)
 	e3:SetOperation(c39041550.operation)
 	c:RegisterEffect(e3)
 end
--- 过滤场上正面表示的昆虫族怪兽
+-- 筛选满足表侧表示、昆虫族、控制者为发动玩家tp的怪兽，用于判断召唤·特殊召唤的怪兽是否为己方场上的昆虫族怪兽。
 function c39041550.filter(c,tp)
 	return c:IsFaceup() and c:IsRace(RACE_INSECT) and c:IsControler(tp)
 end
--- 判断是否有满足条件的昆虫族怪兽
+-- 当这次召唤/特殊召唤成功的怪兽群eg中存在至少1只满足filter条件的昆虫族怪兽时，①效果的发动条件成立。
 function c39041550.spcon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c39041550.filter,1,nil,tp)
 end
--- 判断是否可以特殊召唤
+-- ①效果发动时的合法性判定：chk==0时，确认自己主怪兽区有空位，且这张卡能够被效果特殊召唤；若满足则允许发动。
 function c39041550.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
-	-- 判断场上是否有足够的怪兽区域
+	-- 检查己方主要怪兽区域是否有可用的空格，以确保能从手卡特殊召唤这张卡。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and c:IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置特殊召唤的操作信息
+	-- 设置连锁处理信息为“特殊召唤这张卡c”，数量为1，供后续效果检测和相关判定使用。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,c,1,0,0)
 end
--- 执行特殊召唤操作
+-- ①效果处理：确认这张卡仍与该效果关联后，将其从手卡特殊召唤到己方场上。
 function c39041550.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) then
-		-- 将卡片特殊召唤到场上
+		-- 将这张卡以表侧表示特殊召唤到发动者tp的场上，不检查召唤条件且不解除苏生限制。
 		Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
--- 判断是否为对方怪兽效果发动
+-- ②效果的发动条件：对方发动了场上的怪兽效果，且发动效果的怪兽仍在场上、与该效果仍有关联，并且是怪兽效果。
 function c39041550.condition(e,tp,eg,ep,ev,re,r,rp)
 	local tc=re:GetHandler()
 	return tc:IsControler(1-tp) and tc:IsOnField() and tc:IsRelateToEffect(re) and re:IsActiveType(TYPE_MONSTER)
 end
--- 过滤自己场上的昆虫族怪兽
+-- 代价选择用过滤器：选择昆虫族怪兽，且该怪兽由己方控制或处于表侧表示（用于后续选择可解放的昆虫族怪兽）。
 function c39041550.cfilter(c,tp)
 	return c:IsRace(RACE_INSECT) and (c:IsControler(tp) or c:IsFaceup())
 end
--- 设置解放怪兽作为cost的处理
+-- ②效果发动前支付代价：检查并选择己方场上1只昆虫族怪兽解放，排除发动效果的那只怪兽，解放作为COST。
 function c39041550.cost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否可以解放满足条件的怪兽
+	-- chk==0时，确认场上存在至少1只符合条件的昆虫族怪兽可解放（排除发动效果的那只怪兽），以判断能否支付代价。
 	if chk==0 then return Duel.CheckReleaseGroup(tp,c39041550.cfilter,1,re:GetHandler(),tp) end
-	-- 选择要解放的怪兽
+	-- 让玩家tp从符合条件的昆虫族怪兽中选择1只作为解放代价，排除发动效果的那只怪兽。
 	local g=Duel.SelectReleaseGroup(tp,c39041550.cfilter,1,1,re:GetHandler(),tp)
-	-- 将选中的怪兽解放
+	-- 将选择的昆虫族怪兽解放，作为发动②效果所需支付的代价。
 	Duel.Release(g,REASON_COST)
 end
--- 设置破坏操作信息
+-- ②效果的目标处理：确认对方发动效果的那只怪兽可被破坏，并设置破坏操作信息；破坏对象由连锁事件确定，不取对象。
 function c39041550.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return re:GetHandler():IsDestructable() end
-	-- 设置破坏的操作信息
+	-- 设置本次连锁的处理信息为“破坏”分类，对象为eg（即对方发动效果的那只怪兽），数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,eg,1,0,0)
 end
--- 执行破坏操作
+-- ②效果处理：若发动效果的那只怪兽仍与该效果关联，则将其破坏。
 function c39041550.operation(e,tp,eg,ep,ev,re,r,rp)
 	if re:GetHandler():IsRelateToEffect(re) then
-		-- 将目标怪兽破坏
+		-- 以“效果”为破坏原因，破坏eg中的那只怪兽（即对方发动效果的那只怪兽）。
 		Duel.Destroy(eg,REASON_EFFECT)
 	end
 end

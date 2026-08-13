@@ -27,31 +27,31 @@ function c39118197.initial_effect(c)
 	e4:SetOperation(c39118197.atkop)
 	c:RegisterEffect(e4)
 end
--- 判断该卡是否处于攻击表示
+-- 判断条件：自身处于攻击表示时才触发此效果（对应“场上表侧攻击表示存在的这张卡”的限制）。
 function c39118197.poscon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsAttackPos()
 end
--- 将该卡变为守备表示
+-- 效果处理：将这张卡变为表侧守备表示。
 function c39118197.posop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsFaceup() and c:IsRelateToEffect(e) then
-		-- 改变卡的表示形式为表侧守备表示
+		-- 将此卡的表示形式变更为表侧守备表示。
 		Duel.ChangePosition(c,POS_FACEUP_DEFENSE)
 	end
 end
--- 筛选被破坏的怪兽是否满足条件（在主要怪兽区、表侧表示、名字带有「机巧」）
+-- 过滤条件：被破坏的怪兽在破坏前位于怪兽区域、表侧表示，且卡名含有「机巧」字段（0x11）。
 function c39118197.filter(c)
 	return c:IsPreviousLocation(LOCATION_MZONE) and c:IsPreviousPosition(POS_FACEUP) and c:IsPreviousSetCard(0x11)
 end
--- 判断被破坏的怪兽中是否存在满足条件的怪兽
+-- 诱发条件：本次被破坏的怪兽集合中存在至少1只满足filter条件的「机巧」怪兽。
 function c39118197.atkcon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c39118197.filter,1,nil)
 end
--- 使该卡的攻击力上升400
+-- 处理效果：若这张卡仍与效果相关且表侧表示，则使其攻击力上升400，并设置该增益的复位条件（离场、无效等时失效）。
 function c39118197.atkop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) and c:IsFaceup() then
-		-- 增加该卡的攻击力
+		-- 这张卡的攻击力上升400。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)

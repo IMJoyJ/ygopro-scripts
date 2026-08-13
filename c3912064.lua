@@ -39,48 +39,48 @@ function c3912064.initial_effect(c)
 	e4:SetValue(1)
 	c:RegisterEffect(e4)
 end
--- 过滤函数：判断怪兽是否为里侧表示或守备表示
+-- 筛选出场上处于守备表示或里侧表示的怪兽，作为效果①要变成表侧攻击表示的对象。
 function c3912064.posfilter(c)
 	return c:IsDefensePos() or c:IsFacedown()
 end
--- 条件函数：判断此卡是否为上级召唤
+-- 效果①的发动条件：这张卡的召唤类型为上级召唤（即上级召唤成功时）。
 function c3912064.poscon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsSummonType(SUMMON_TYPE_ADVANCE)
 end
--- 目标函数：检查场上是否存在至少1只里侧或守备表示的怪兽
+-- 效果①的发动时点判定：检查场上是否存在至少1只守备表示或里侧表示的怪兽，若有则可发动。
 function c3912064.postg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查场上是否存在至少1只里侧或守备表示的怪兽
+	-- 在效果发动合法性检查阶段（chk==0），确认场上存在至少1只符合条件的怪兽（守备表示或里侧表示）。
 	if chk==0 then return Duel.IsExistingMatchingCard(c3912064.posfilter,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil) end
 end
--- 效果处理函数：将场上所有里侧或守备表示的怪兽变为表侧攻击表示
+-- 效果①处理时：获取场上所有守备表示或里侧表示的怪兽，若存在则将它们全部变成表侧攻击表示。
 function c3912064.posop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取场上所有里侧或守备表示的怪兽
+	-- 获取场上所有守备表示或里侧表示的怪兽组。
 	local g=Duel.GetMatchingGroup(c3912064.posfilter,tp,LOCATION_MZONE,LOCATION_MZONE,nil)
 	if g:GetCount()==0 then return end
-	-- 将怪兽变为表侧攻击表示
+	-- 将选中的怪兽全部变为表侧攻击表示。
 	Duel.ChangePosition(g,POS_FACEUP_ATTACK)
 end
--- 召唤条件函数：判断是否满足解放3只怪兽的召唤条件
+-- 效果②的召唤规则条件：允许通过解放3只怪兽来通常召唤这张卡（若c为空则规则效果存在；否则要求所需解放数不超过3且场上存在3只可解放的怪兽）。
 function c3912064.ttcon(e,c,minc)
 	if c==nil then return true end
-	-- 判断是否满足解放3只怪兽的召唤条件
+	-- 确认所需解放数不超过3，且场上存在至少3只可解放的怪兽作为祭品。
 	return minc<=3 and Duel.CheckTribute(c,3)
 end
--- 效果处理函数：选择并解放3只怪兽进行召唤
+-- 效果②召唤规则的处理：让玩家选择3只怪兽作为祭品，将其设为这张卡的素材并解放，用于这次召唤。
 function c3912064.ttop(e,tp,eg,ep,ev,re,r,rp,c)
-	-- 提示玩家选择要解放的卡
+	-- 向玩家显示『请选择要解放的卡』的提示信息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_RELEASE)  --"请选择要解放的卡"
-	-- 选择3只怪兽作为祭品
+	-- 让玩家选择3只要解放的怪兽作为上级召唤的祭品。
 	local g=Duel.SelectTribute(tp,c,3,3)
 	c:SetMaterial(g)
-	-- 解放所选的怪兽
+	-- 将选择的3只怪兽解放，作为这张卡的上级召唤素材。
 	Duel.Release(g,REASON_SUMMON+REASON_MATERIAL)
 end
--- 攻击力下降效果的触发条件：此卡通过②的方法召唤
+-- 效果③的适用条件：这张卡是以效果②的方法（解放3只怪兽）召唤的，即召唤类型为上级召唤+自身规则值。
 function c3912064.atkcon(e)
 	return e:GetHandler():GetSummonType()==SUMMON_TYPE_ADVANCE+SUMMON_VALUE_SELF
 end
--- 攻击力下降效果的数值计算：返回怪兽原本攻击力的负值
+-- 被适用怪兽的攻击力下降其原本攻击力数值（若原本攻击力为负则视为0）。
 function c3912064.atkval(e,c)
 	local rec=c:GetBaseAttack()
 	if rec<0 then rec=0 end

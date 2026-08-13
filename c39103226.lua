@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：对方场上的怪兽数量比自己场上的怪兽多2只以上的场合才能发动。对方直到自身场上的怪兽变成1只为止必须送去墓地。
 function c39103226.initial_effect(c)
-	-- 创建效果并设置其分类、类型、发动时机、条件、目标和处理函数
+	-- ①：对方场上的怪兽数量比自己场上的怪兽多2只以上的场合才能发动。对方直到自身场上的怪兽变成1只为止必须送去墓地。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_TOGRAVE)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -13,32 +13,32 @@ function c39103226.initial_effect(c)
 	e1:SetOperation(c39103226.operation)
 	c:RegisterEffect(e1)
 end
--- 判断发动条件：对方场上的怪兽数量比自己场上的怪兽多2只以上
+-- 发动条件函数：判断对方场上的怪兽数量是否比自己场上的怪兽多2只以上，满足才可发动。
 function c39103226.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 计算对方场上的怪兽数量与自己场上的怪兽数量的差值是否大于等于2
+	-- 计算对方场上的怪兽数量减去自己场上的怪兽数量，差值大于等于2则条件成立。
 	return Duel.GetFieldGroupCount(tp,0,LOCATION_MZONE)-Duel.GetFieldGroupCount(tp,LOCATION_MZONE,0)>=2
 end
--- 设置效果的目标：选择对方场上需要送去墓地的怪兽数量
+-- 发动时目标处理：计算对方场上需要送去墓地的怪兽数量（使其只剩1只），并设置本次效果的操作信息。
 function c39103226.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 获取自己场上的怪兽数量
+	-- 获取对方场上当前存在的怪兽数量，作为计算需要送去墓地数量的基准。
 	local mc=Duel.GetFieldGroupCount(tp,0,LOCATION_MZONE)
 	local count=mc-1
 	if chk==0 then return count>0 end
-	-- 设置连锁操作信息，指定将对方场上的怪兽送去墓地
+	-- 设置操作信息：本次效果涉及不取对象的送去墓地，数量为count，对象为对方场上的怪兽区域。
 	Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,nil,count,1-tp,LOCATION_MZONE)
 end
--- 处理效果的发动：从对方场上选择怪兽送去墓地
+-- 效果处理函数：从对方场上的所有怪兽中，由对方选择（总怪兽数-1）只送去墓地，使其场上只剩1只怪兽。
 function c39103226.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取对方场上的所有怪兽
+	-- 获取对方场上当前存在的所有怪兽，组成集合g。
 	local g=Duel.GetFieldGroup(1-tp,LOCATION_MZONE,0)
 	local count=g:GetCount()-1
 	if count>0 then
-		-- 提示对方选择要送去墓地的怪兽
+		-- 向对方玩家显示选择提示，要求选择要送去墓地的卡。
 		Duel.Hint(HINT_SELECTMSG,1-tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
 		local sg=g:Select(1-tp,count,count,nil)
-		-- 显示选中的怪兽被选为对象的动画效果
+		-- 显示被选中的卡片的选中动画，并将这些卡记录为本次效果涉及的卡。
 		Duel.HintSelection(sg)
-		-- 将选中的怪兽以规则原因送去墓地
+		-- 将选中的卡以规则效果（REASON_RULE）送去墓地。
 		Duel.SendtoGrave(sg,REASON_RULE)
 	end
 end

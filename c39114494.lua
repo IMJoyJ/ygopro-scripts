@@ -36,68 +36,68 @@ function c39114494.initial_effect(c)
 	e4:SetCode(EVENT_SPSUMMON_SUCCESS)
 	c:RegisterEffect(e4)
 end
--- 过滤函数，用于筛选满足条件的「肃声」卡（非本卡、表侧表示、属于肃声卡组、可以加入手牌）
+-- 筛选可作为①效果对象的卡：不是「肃声之祝福」自身、处于表侧表示（含除外区表侧表示，排除里侧除外等状态）、属于「肃声」字段且能够加入手卡。
 function c39114494.filter(c,e,tp)
 	return not c:IsCode(39114494) and c:IsFaceupEx() and c:IsSetCard(0x1a6) and c:IsAbleToHand()
 end
--- 效果处理时的Target阶段，检查是否存在满足条件的「肃声」卡作为对象
+-- ①效果的发动条件与对象选择处理：先检查墓地/除外区是否存在符合filter的「肃声」卡，若存在则提示玩家选择1张作为对象，并根据对象所在位置（墓地或除外）设置对应的效果类别和操作信息。
 function c39114494.thtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE+LOCATION_REMOVED) and chkc:IsControler(tp) and c39114494.filter(chkc,e,tp) end
-	-- 检查是否存在满足条件的「肃声」卡作为对象
+	-- 在效果发动合法性检查中，确认自己墓地·除外区存在至少1张符合filter且能成为效果对象的「肃声」卡，否则不能发动。
 	if chk==0 then return Duel.IsExistingTarget(c39114494.filter,tp,LOCATION_GRAVE+LOCATION_REMOVED,0,1,nil,e,tp) end
-	-- 提示玩家选择要加入手牌的卡
+	-- 向玩家发送选择提示：请选择要加入手牌的卡（该消息将用于后续对象选择界面）。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择满足条件的「肃声」卡作为对象
+	-- 让玩家从自己墓地/除外区选择1张满足filter的「肃声」卡作为效果对象，并将其登记为本连锁的对象卡。
 	local tc=Duel.SelectTarget(tp,c39114494.filter,tp,LOCATION_GRAVE+LOCATION_REMOVED,0,1,1,nil,e,tp):GetFirst()
 	if tc:IsLocation(LOCATION_GRAVE) then
 		e:SetCategory(CATEGORY_TOHAND+CATEGORY_GRAVE_ACTION)
-		-- 设置操作信息，标记该卡将从墓地离开
+		-- 设置操作信息：标记该效果涉及使对象卡离开墓地（CATEGORY_LEAVE_GRAVE），以配合相关效果（如王家长眠之谷）的发动检测。
 		Duel.SetOperationInfo(0,CATEGORY_LEAVE_GRAVE,tc,1,0,0)
 	else
 		e:SetCategory(CATEGORY_TOHAND)
 	end
 end
--- 效果处理阶段，将目标卡加入手牌
+-- ①效果的实际处理：取得效果对象，若对象仍与效果关联，则将该卡加入其持有者手卡。
 function c39114494.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前效果的目标卡
+	-- 取出发动时选择的效果对象卡（即作为回收对象的「肃声」卡）。
 	local tc=Duel.GetFirstTarget()
 	if not tc:IsRelateToEffect(e) then return end
 	if tc then
-		-- 将目标卡加入手牌
+		-- 将对象卡以效果原因加入持有者手卡，完成回收。
 		Duel.SendtoHand(tc,nil,REASON_EFFECT)
 	end
 end
--- 过滤函数，用于筛选满足条件的非仪式怪兽（表侧表示）
+-- ②效果的触发条件过滤器：被召唤的怪兽须为表侧表示且不是仪式怪兽（即“仪式怪兽以外的怪兽表侧表示召唤·特殊召唤”）。
 function c39114494.cfilter(c)
 	return c:IsFaceup() and not c:IsType(TYPE_RITUAL)
 end
--- 触发条件函数，判断是否有非仪式怪兽被召唤或特殊召唤成功
+-- ②效果的发动条件：在本次召唤/特殊召唤成功的怪兽中，存在至少1只表侧表示且非仪式怪兽的怪兽。
 function c39114494.ricon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c39114494.cfilter,1,nil)
 end
--- 过滤函数，用于筛选满足条件的战士族·龙族·光属性仪式怪兽
+-- 仪式召唤对象的过滤条件：该怪兽须为仪式怪兽，且种族为战士族或龙族，属性为光属性。
 function c39114494.rfilter(c,e,tp)
 	return c:IsType(TYPE_RITUAL) and (c:IsRace(RACE_DRAGON) or c:IsRace(RACE_WARRIOR)) and c:IsAttribute(ATTRIBUTE_LIGHT)
 end
--- 效果处理时的Target阶段，检查是否存在满足条件的仪式怪兽可被仪式召唤
+-- ②效果的发动时目标判定：检查手牌中是否有符合条件的仪式怪兽，并能用当前仪式素材凑出等级合计大于等于其等级的组合；同时设置特殊召唤的操作信息。
 function c39114494.ritg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then
-		-- 获取玩家可用的仪式召唤素材组（手牌、场上、墓地）
+		-- 获取当前玩家可用的仪式召唤素材组（包含手卡、场上可解放的怪兽以及墓地中可作为仪式素材的特殊卡等）。
 		local mg=Duel.GetRitualMaterial(tp)
-		-- 检查是否存在满足条件的仪式怪兽可被仪式召唤
+		-- 检索手牌中是否存在满足rfilter条件且通过aux.RitualUltimateFilter判定的仪式怪兽，并能在现有素材中选出等级合计达到该怪兽等级以上的解放组合。
 		return Duel.IsExistingMatchingCard(aux.RitualUltimateFilter,tp,LOCATION_HAND,0,1,nil,c39114494.rfilter,e,tp,mg,nil,Card.GetLevel,"Greater")
 	end
-	-- 设置操作信息，标记将特殊召唤仪式怪兽
+	-- 设置操作信息：本效果将进行特殊召唤（仪式召唤），预计从手卡特殊召唤1只怪兽。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_HAND)
 end
--- 效果处理阶段，进行仪式召唤操作
+-- ②效果的实际处理：选择1只符合条件的仪式怪兽，从可用素材中选择能使其等级合计达到该怪兽等级以上的解放组，解放后以仪式召唤方式特殊召唤，并赋予其“不会被战斗破坏”的耐性。
 function c39114494.riop(e,tp,eg,ep,ev,re,r,rp)
 	::cancel::
-	-- 获取玩家可用的仪式召唤素材组（手牌、场上、墓地）
+	-- 再次获取当前玩家的仪式素材组，用于实际选择解放素材。
 	local mg=Duel.GetRitualMaterial(tp)
-	-- 提示玩家选择要特殊召唤的仪式怪兽
+	-- 向玩家发送选择提示：请选择要特殊召唤的卡（用于仪式怪兽选择）。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 选择满足条件的仪式怪兽作为仪式召唤对象
+	-- 让玩家从手卡中选择1只满足战士族·龙族·光属性仪式怪兽条件、且能用当前素材完成仪式召唤的怪兽作为要召唤的对象。
 	local tg=Duel.SelectMatchingCard(tp,aux.RitualUltimateFilter,tp,LOCATION_HAND,0,1,1,nil,c39114494.rfilter,e,tp,mg,nil,Card.GetLevel,"Greater")
 	local tc=tg:GetFirst()
 	if tc then
@@ -107,24 +107,24 @@ function c39114494.riop(e,tp,eg,ep,ev,re,r,rp)
 		else
 			mg:RemoveCard(tc)
 		end
-		-- 提示玩家选择要解放的卡
+		-- 向玩家发送选择提示：请选择要解放的卡（用于仪式素材选择）。
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_RELEASE)  --"请选择要解放的卡"
-		-- 设置附加检查函数，用于等级合计验证
+		-- 设置额外的仪式素材检查规则：按“大于等于”模式计算素材等级合计，在选素材时动态检查，避免选择无意义的多余素材。
 		aux.GCheckAdditional=aux.RitualCheckAdditional(tc,tc:GetLevel(),"Greater")
-		-- 从可用素材中选择满足等级要求的卡组作为祭品
+		-- 让玩家从可用素材中选择一组等级合计达到该仪式怪兽等级以上的素材（至少1张），并通过合法性检查；返回选中的素材组，若未选择则返回nil。
 		local mat=mg:SelectSubGroup(tp,aux.RitualCheck,true,1,tc:GetLevel(),tp,tc,tc:GetLevel(),"Greater")
-		-- 清除附加检查函数
+		-- 清除临时的额外检查规则，防止影响后续其他效果处理。
 		aux.GCheckAdditional=nil
 		if not mat then goto cancel end
 		tc:SetMaterial(mat)
 		local lv=mat:GetSum(Card.GetLevel)
-		-- 解放仪式召唤用的祭品
+		-- 解放选定的仪式素材（手卡/场上的怪兽送去墓地，墓地的仪式魔人等卡则除外）。
 		Duel.ReleaseRitualMaterial(mat)
-		-- 中断当前效果，使之后的效果处理视为不同时处理
+		-- 中断当前连锁处理，使之后的仪式召唤处理与解放素材处理分开（错开时点），以便正确触发相关时点。
 		Duel.BreakEffect()
-		-- 特殊召唤仪式怪兽
+		-- 以仪式召唤方式将所选怪兽表侧表示特殊召唤到己方场上（跳过召唤条件检查但保留苏生限制），此步骤为特殊召唤流程的一部分。
 		if Duel.SpecialSummonStep(tc,SUMMON_TYPE_RITUAL,tp,tp,false,true,POS_FACEUP) then
-			-- 「肃声之祝福」效果适用中，不会被战斗破坏
+			-- 这个效果特殊召唤的怪兽不会被战斗破坏。
 			local e1=Effect.CreateEffect(e:GetHandler())
 			e1:SetDescription(aux.Stringid(39114494,3))  --"「肃声之祝福」效果适用中，不会被战斗破坏"
 			e1:SetType(EFFECT_TYPE_SINGLE)
@@ -136,7 +136,7 @@ function c39114494.riop(e,tp,eg,ep,ev,re,r,rp)
 			tc:RegisterEffect(e1)
 			tc:CompleteProcedure()
 		end
-		-- 完成特殊召唤流程
+		-- 完成这次特殊召唤流程，触发特殊召唤成功相关的时点与后续处理。
 		Duel.SpecialSummonComplete()
 	end
 end

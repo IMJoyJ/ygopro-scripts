@@ -44,53 +44,53 @@ function c39078434.initial_effect(c)
 	e4:SetOperation(c39078434.desop)
 	c:RegisterEffect(e4)
 end
--- 判断是否为对方怪兽攻击宣言时触发的效果
+-- ①效果的发动条件：检测当前攻击宣言的怪兽是否为对方控制，若是则条件成立。
 function c39078434.spcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断攻击怪兽是否为对方控制
+	-- 获取正在攻击宣言的怪兽，并判定其控制者是否为对方玩家（1-tp）。
 	return Duel.GetAttacker():IsControler(1-tp)
 end
--- 设置特殊召唤的条件
+-- ①效果的发动合法性检查：我方主要怪兽区有空位，且手牌中的这张卡可以特殊召唤。
 function c39078434.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断场上是否有足够的怪兽区域
+	-- 在效果发动合法性检查阶段，确认我方主要怪兽区存在可用区域。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false,POS_FACEUP) end
-	-- 设置特殊召唤的处理信息
+	-- 登记特殊召唤的操作信息，将这张卡作为要特殊召唤的卡。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 执行特殊召唤操作
+-- ①效果处理：若这张卡仍与效果关联，则将其特殊召唤。
 function c39078434.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) then
-		-- 将卡片特殊召唤到场上
+		-- 将这张卡不检查召唤条件、不检查苏生限制地以表侧攻击表示特殊召唤到我方场上。
 		Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
--- 定义装备卡的筛选条件
+-- ②效果的装备卡筛选：选择昆虫族怪兽，且该卡满足同名卡限制、不属于禁止卡。
 function c39078434.eqfilter(c,tp)
 	return c:IsRace(RACE_INSECT) and c:CheckUniqueOnField(tp) and not c:IsForbidden()
 end
--- 设置装备效果的条件
+-- ②效果发动合法性检查：我方魔陷区有空位，且手牌·墓地中存在符合条件的昆虫族怪兽。
 function c39078434.eqtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断场上是否有足够的装备区域
+	-- 在合法性检查阶段，确认我方魔陷区存在可用区域。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_SZONE)>0
-		-- 判断手牌或墓地是否存在符合条件的昆虫族怪兽
+		-- 并确认手牌·墓地中至少有1只符合条件的昆虫族怪兽存在。
 		and Duel.IsExistingMatchingCard(c39078434.eqfilter,tp,LOCATION_GRAVE+LOCATION_HAND,0,1,nil,tp) end
 end
--- 执行装备操作
+-- ②效果处理：确认可用魔陷区且本卡仍可处理时，从手牌·墓地选择昆虫族怪兽，将其作为装备卡装备给本卡，并赋予其攻守上升500的效果及装备对象限制。
 function c39078434.eqop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 判断装备区域是否为空
+	-- 效果处理前再次确认魔陷区仍有空位，否则直接结束处理。
 	if Duel.GetLocationCount(tp,LOCATION_SZONE)<=0 then return end
 	if c:IsFacedown() or not c:IsRelateToEffect(e) then return end
-	-- 提示玩家选择要装备的卡
+	-- 给玩家显示'请选择要装备的卡'的选择提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_EQUIP)  --"请选择要装备的卡"
-	-- 选择符合条件的昆虫族怪兽
+	-- 从手牌·墓地中选取符合条件的昆虫族怪兽（排除受王家长眠之谷影响的卡），由玩家选择1张。
 	local g=Duel.SelectMatchingCard(tp,aux.NecroValleyFilter(c39078434.eqfilter),tp,LOCATION_GRAVE+LOCATION_HAND,0,1,1,nil,tp)
 	local tc=g:GetFirst()
 	if tc then
-		-- 尝试将卡装备给目标怪兽
+		-- 尝试将选中的怪兽作为装备卡装备给本卡；若失败则终止处理。
 		if not Duel.Equip(tp,tc,c) then return end
-		-- 设置装备卡的限制效果
+		-- 当作攻击力·守备力上升500的装备卡使用给这张卡装备
 		local e1=Effect.CreateEffect(c)
 		e1:SetProperty(EFFECT_FLAG_OWNER_RELATE)
 		e1:SetType(EFFECT_TYPE_SINGLE)
@@ -98,7 +98,7 @@ function c39078434.eqop(e,tp,eg,ep,ev,re,r,rp)
 		e1:SetReset(RESET_EVENT+RESETS_STANDARD)
 		e1:SetValue(c39078434.eqlimit)
 		tc:RegisterEffect(e1)
-		-- 设置装备卡的攻击力提升效果
+		-- 攻击力·守备力上升500
 		local e2=Effect.CreateEffect(c)
 		e2:SetType(EFFECT_TYPE_EQUIP)
 		e2:SetCode(EFFECT_UPDATE_ATTACK)
@@ -110,42 +110,42 @@ function c39078434.eqop(e,tp,eg,ep,ev,re,r,rp)
 		tc:RegisterEffect(e3)
 	end
 end
--- 设置装备卡的装备限制条件
+-- 装备限制条件：该装备卡只能装备给效果的所有者（即此卡本身）。
 function c39078434.eqlimit(e,c)
 	return e:GetOwner()==c
 end
--- 判断战斗中的怪兽是否为昆虫族
+-- ③效果的发动条件：我方或对方场上存在表侧表示的昆虫族怪兽正在进行战斗。
 function c39078434.descon(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前战斗中的攻击怪兽和防守怪兽
+	-- 取得我方和对方各自正在战斗的怪兽（可能为nil）。
 	local a,d=Duel.GetBattleMonster(tp)
 	return a and a:IsFaceup() and a:IsRace(RACE_INSECT) or d and d:IsFaceup() and d:IsRace(RACE_INSECT)
 end
--- 设置破坏效果的条件
+-- ③效果发动合法性检查：我方场上和对方场上各自至少存在1张可选为对象的卡。
 function c39078434.destg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return false end
-	-- 判断己方场上是否存在可破坏的卡
+	-- 在合法性检查阶段，确认我方场上有至少1张卡可以选择为对象。
 	if chk==0 then return Duel.IsExistingTarget(aux.TRUE,tp,LOCATION_ONFIELD,0,1,nil)
-		-- 判断对方场上是否存在可破坏的卡
+		-- 并确认对方场上有至少1张卡可以选择为对象。
 		and Duel.IsExistingTarget(aux.TRUE,tp,0,LOCATION_ONFIELD,1,nil) end
-	-- 提示玩家选择要破坏的卡
+	-- 给玩家显示'请选择要破坏的卡'的选择提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 选择己方场上的卡
+	-- 选择我方场上的1张卡作为破坏对象。
 	local g1=Duel.SelectTarget(tp,aux.TRUE,tp,LOCATION_ONFIELD,0,1,1,nil)
-	-- 提示玩家选择要破坏的卡
+	-- 给玩家显示'请选择要破坏的卡'的选择提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 选择对方场上的卡
+	-- 选择对方场上的1张卡作为破坏对象。
 	local g2=Duel.SelectTarget(tp,aux.TRUE,tp,0,LOCATION_ONFIELD,1,1,nil)
 	g1:Merge(g2)
-	-- 设置破坏效果的处理信息
+	-- 登记破坏效果的操作信息，对象为已选择的2张卡。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g1,2,0,0)
 end
--- 执行破坏操作
+-- ③效果处理：取出连锁对象并过滤出仍与效果关联的卡，将它们破坏。
 function c39078434.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁中目标卡组
+	-- 获取当前连锁中记录的对象卡组。
 	local g=Duel.GetChainInfo(0,CHAININFO_TARGET_CARDS)
 	local tg=g:Filter(Card.IsRelateToEffect,nil,e)
 	if tg:GetCount()>0 then
-		-- 将目标卡组破坏
+		-- 将过滤后的对象卡以效果原因破坏。
 		Duel.Destroy(tg,REASON_EFFECT)
 	end
 end
