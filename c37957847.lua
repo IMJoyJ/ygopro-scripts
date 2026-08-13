@@ -19,20 +19,20 @@ function c37957847.initial_effect(c)
 	e2:SetOperation(c37957847.atkop)
 	c:RegisterEffect(e2)
 end
--- 目标为昆虫族怪兽
+-- 判定候选怪兽是否为昆虫族，用于筛选出对方场上受到表侧攻击表示变更影响的昆虫族怪兽。
 function c37957847.target(e,c)
 	return c:IsRace(RACE_INSECT)
 end
--- 战斗破坏的怪兽为昆虫族时效果才发动
+-- 获取这张卡战斗破坏的怪兽，并判断其是否为昆虫族，若为昆虫族则满足攻击力上升的触发条件。
 function c37957847.atkcon(e,tp,eg,ep,ev,re,r,rp)
 	local bc=e:GetHandler():GetBattleTarget()
 	return bc and bc:IsRace(RACE_INSECT)
 end
--- 使自身攻击力上升500点
+-- 确认此卡仍与该效果存在联系后，赋予其攻击力上升500的持续效果。
 function c37957847.atkop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) then
-		-- 攻击力上升500点
+		-- 攻击力上升500点。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)

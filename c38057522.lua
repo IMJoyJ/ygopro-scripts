@@ -29,64 +29,64 @@ function c38057522.initial_effect(c)
 	e2:SetOperation(c38057522.thop)
 	c:RegisterEffect(e2)
 end
--- 过滤函数，用于判断场上是否存在满足条件的魔法师族怪兽（守备力为1500）
+-- 该过滤器用于判断场上是否存在表侧表示、种族为魔法师族且守备力为1500的怪兽，即①效果的发动/适用条件。
 function c38057522.disfilter(c)
 	return c:IsFaceup() and c:IsRace(RACE_SPELLCASTER) and c:IsDefense(1500)
 end
--- 条件函数，判断是否满足效果①的触发条件（对方发动怪兽效果且己方场上有符合条件的怪兽）
+-- ①效果的发动条件：自己场上有满足disfilter的怪兽（表侧表示·魔法师族·守备力1500）存在，并且当前连锁上发动效果的是对方玩家的怪兽效果。
 function c38057522.discon(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查己方场上是否存在至少1只守备力为1500的魔法师族怪兽
+	-- 检查自己场上是否存在至少1只满足disfilter的怪兽，即①效果生效所需的前置条件。
 	return Duel.IsExistingMatchingCard(c38057522.disfilter,tp,LOCATION_MZONE,0,1,nil)
 		and rp==1-tp and re:IsActiveType(TYPE_MONSTER)
 end
--- 操作函数，使对方怪兽效果无效
+-- ①效果的处理：无效对方发动的那个怪兽效果。
 function c38057522.disop(e,tp,eg,ep,ev,re,r,rp)
-	-- 向双方玩家显示此卡的发动动画
+	-- 给对方玩家展示卡牌动画，提示正在发动“大灵术-「一轮」”的①效果。
 	Duel.Hint(HINT_CARD,0,38057522)
-	-- 使当前连锁的效果无效
+	-- 将当前连锁上对方发动的怪兽效果无效化。
 	Duel.NegateEffect(ev)
 end
--- 过滤函数，用于选择手卡中可以给对方确认的魔法师族怪兽（未公开且能送回卡组）
+-- ②效果选择手卡怪兽的过滤器：该手卡怪兽必须是魔法师族、未公开、可以返回卡组，且卡组中存在与之相同属性的检索目标。
 function c38057522.tdfilter(c,tp)
 	return c:IsRace(RACE_SPELLCASTER) and not c:IsPublic() and c:IsAbleToDeck()
-		-- 检查卡组中是否存在满足条件的怪兽（攻击力1500/守备力200且属性相同）
+		-- 进一步确认卡组中存在与手卡怪兽相同属性、且攻击力1500/守备力200的怪兽可加入手卡，保证效果处理时能完成检索。
 		and Duel.IsExistingMatchingCard(c38057522.thfilter,tp,LOCATION_DECK,0,1,nil,c:GetAttribute())
 end
--- 过滤函数，用于选择卡组中满足条件的怪兽（攻击力1500/守备力200且属性相同）
+-- ②效果检索目标的过滤器：攻击力1500、守备力200、与展示怪兽属性相同、并且可以加入手卡的怪兽。
 function c38057522.thfilter(c,attr)
 	return c:IsAttack(1500) and c:IsDefense(200) and c:IsAttribute(attr) and c:IsAbleToHand()
 end
--- 目标函数，设置效果处理时的操作信息（检索、送手牌、送卡组）
+-- ②效果发动时判定：手牌中存在满足tdfilter的魔法师族怪兽；同时设置本次操作涉及从卡组加入手牌和从手牌返回卡组。
 function c38057522.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查手卡中是否存在满足条件的魔法师族怪兽
+	-- 发动合法性检查：确认自己手牌中是否存在1张可以展示并返回卡组、且卡组中有对应检索目标的魔法师族怪兽。
 	if chk==0 then return Duel.IsExistingMatchingCard(c38057522.tdfilter,tp,LOCATION_HAND,0,1,nil,tp) end
-	-- 设置效果处理时将1张卡从卡组送入手牌的操作信息
+	-- 设置操作信息：本次效果可能从卡组将1只怪兽加入手卡（用于触发如星尘龙等效果的检测）。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
-	-- 设置效果处理时将1张卡送回卡组的操作信息
+	-- 设置操作信息：本次效果可能将1张手卡返回卡组。
 	Duel.SetOperationInfo(0,CATEGORY_TODECK,nil,1,tp,LOCATION_HAND)
 end
--- 效果处理函数，执行②效果的具体操作
+-- ②效果处理：展示手卡1只魔法师族怪兽，从卡组检索相同属性的1500/200怪兽加入手牌，并将展示怪兽洗回卡组。
 function c38057522.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要给对方确认的手卡怪兽
+	-- 弹出选择提示，让玩家选择一张要展示给对方确认的手卡怪兽。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_CONFIRM)  --"请选择给对方确认的卡"
-	-- 选择满足条件的手卡怪兽
+	-- 玩家从手牌中选择1张满足tdfilter的魔法师族怪兽作为展示对象。
 	local g=Duel.SelectMatchingCard(tp,c38057522.tdfilter,tp,LOCATION_HAND,0,1,1,nil,tp)
 	local tc=g:GetFirst()
 	if tc then
-		-- 向对方玩家确认所选怪兽
+		-- 将选中的手卡怪兽展示给对方玩家确认。
 		Duel.ConfirmCards(1-tp,tc)
 		local attr=tc:GetAttribute()
-		-- 提示玩家选择要加入手牌的卡
+		-- 弹出选择提示，让玩家选择一张要加入手卡的卡。
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-		-- 从卡组中选择满足条件的怪兽
+		-- 玩家从卡组中选择1张满足thfilter（相同属性、攻击力1500、守备力200）的怪兽作为检索目标。
 		local hg=Duel.SelectMatchingCard(tp,c38057522.thfilter,tp,LOCATION_DECK,0,1,1,nil,attr)
 		local hc=hg:GetFirst()
-		-- 将选中的怪兽送入手牌
+		-- 将检索到的卡加入手牌；若加入成功且该卡确实到了手牌，则继续处理展示怪兽回卡组。
 		if hc and Duel.SendtoHand(hc,nil,REASON_EFFECT)~=0 then
-			-- 向对方玩家确认送入手牌的怪兽
+			-- 将检索加入手卡的怪兽展示给对方玩家确认。
 			Duel.ConfirmCards(1-tp,hc)
 			if hc:IsLocation(LOCATION_HAND) then
-				-- 将给对方确认的怪兽送回卡组并洗牌
+				-- 将展示的手卡怪兽以效果洗回持有者卡组。
 				Duel.SendtoDeck(tc,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
 			end
 		end
