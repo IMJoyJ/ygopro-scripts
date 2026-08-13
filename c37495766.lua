@@ -5,7 +5,7 @@
 -- ②：自己主要阶段才能发动。从卡组把最多4张「救援ACE队」速攻魔法·通常陷阱卡在自己场上盖放（同名卡最多1张）。
 -- ③：自己场上的其他卡因对方的效果从场上离开的场合，以场上1张卡为对象才能发动。那张卡破坏。
 local s,id,o=GetID()
--- 初始化卡片效果，注册三个效果：①特殊召唤、②盖放魔法陷阱、③破坏对方场上的卡
+-- 创建并注册三个效果：①从手卡特殊召唤；②从卡组盖放救援ACE队速攻魔法/通常陷阱；③其他卡因对方效果离场时破坏场上1张卡。
 function s.initial_effect(c)
 	-- ①：从自己墓地把2张「救援ACE队」卡除外才能发动。这张卡从手卡特殊召唤。
 	local e1=Effect.CreateEffect(c)
@@ -42,92 +42,92 @@ function s.initial_effect(c)
 	e3:SetOperation(s.desop)
 	c:RegisterEffect(e3)
 end
--- 检索满足条件的卡片组（卡名是救援ACE队且能除外作为费用）
+-- 过滤墓地中满足「救援ACE队」系列且可以作为代价除外的卡。
 function s.costfilter(c)
 	return c:IsSetCard(0x18b) and c:IsAbleToRemoveAsCost()
 end
--- 检查是否满足除外2张「救援ACE队」卡的条件，并选择2张卡除外
+-- ①效果的代价处理：从自己墓地选择2张「救援ACE队」卡除外才能发动此效果。
 function s.sscost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否满足除外2张「救援ACE队」卡的条件
+	-- 发动代价检查：确认墓地中是否存在至少2张符合条件的「救援ACE队」卡可以除外。
 	if chk==0 then return Duel.IsExistingMatchingCard(s.costfilter,tp,LOCATION_GRAVE,0,2,nil) end
-	-- 提示玩家选择要除外的卡
+	-- 提示玩家选择要除外的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
-	-- 选择满足条件的2张卡
+	-- 从自己墓地选择2张符合条件的「救援ACE队」卡。
 	local g=Duel.SelectMatchingCard(tp,s.costfilter,tp,LOCATION_GRAVE,0,2,2,nil)
-	-- 将选择的卡除外作为费用
+	-- 将选择的2张卡以表侧表示除外，作为发动①效果的代价。
 	Duel.Remove(g,POS_FACEUP,REASON_COST)
 end
--- 检查是否满足特殊召唤的条件
+-- ①效果的目标判定：确认手牌中的这张卡可以被特殊召唤且自己主要怪兽区有空位。
 function s.sstg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查场上是否有足够的怪兽区域
+	-- 检查自己主要怪兽区是否有可用的空位。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置特殊召唤的处理信息
+	-- 设置本次连锁的操作信息为特殊召唤这张卡。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 执行特殊召唤操作
+-- ①效果处理：若这张卡仍与效果关联，则将其特殊召唤。
 function s.ssop(e,tp,eg,ep,ev,re,r,rp)
 	if e:GetHandler():IsRelateToEffect(e) then
-		-- 将此卡特殊召唤到场上
+		-- 将这张卡以表侧表示特殊召唤到自己的主要怪兽区。
 		Duel.SpecialSummon(e:GetHandler(),0,tp,tp,false,false,POS_FACEUP)
 	end
 end
--- 检索满足条件的卡片组（卡名是救援ACE队且能盖放）
+-- 过滤卡组中属于「救援ACE队」系列且可以盖放到魔陷区的速攻魔法卡或通常陷阱卡。
 function s.setfilter(c)
 	return c:IsSetCard(0x18b) and c:IsSSetable()
 		and (c:IsType(TYPE_QUICKPLAY) or c:GetType()==TYPE_TRAP)
 end
--- 检查是否满足盖放魔法陷阱的条件
+-- ②效果的目标判定：确认卡组中是否存在至少1张符合条件的「救援ACE队」速攻魔法或通常陷阱卡。
 function s.settg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查场上是否有满足条件的魔法陷阱卡
+	-- 发动条件检查：卡组中存在可盖放的符合条件的卡。
 	if chk==0 then return Duel.IsExistingMatchingCard(s.setfilter,tp,LOCATION_DECK,0,1,nil) end
 end
--- 执行盖放魔法陷阱的操作
+-- ②效果处理：根据魔陷区空格数，从卡组选择最多4张卡名互不相同的「救援ACE队」速攻魔法/通常陷阱盖放到自己场上。
 function s.setop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取玩家场上可用的魔法陷阱区域数量
+	-- 获取自己魔陷区当前可用的空格数量。
 	local ft=Duel.GetLocationCount(tp,LOCATION_SZONE)
 	if ft<=0 then return end
 	if ft>=4 then ft=4 end
-	-- 检索满足条件的魔法陷阱卡
+	-- 获取卡组中所有符合盖放条件的「救援ACE队」速攻魔法/通常陷阱卡。
 	local g=Duel.GetMatchingGroup(s.setfilter,tp,LOCATION_DECK,0,nil)
 	if g:GetCount()>0 then
-		-- 提示玩家选择要盖放的卡
+		-- 提示玩家选择要盖放的卡。
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SET)  --"请选择要盖放的卡"
-		-- 选择满足条件的魔法陷阱卡组
+		-- 从符合条件的中选择1至ft张卡名各不相同的卡。
 		local sg=g:SelectSubGroup(tp,aux.dncheck,false,1,ft)
 		if sg:GetCount()>0 then
-			-- 将选择的卡盖放到场上
+			-- 将选择的卡盖放到自己的魔陷区。
 			Duel.SSet(tp,sg)
 		end
 	end
 end
--- 判断卡片是否因对方效果从场上离开
+-- 过滤离场卡：该卡之前由自己控制，且是由对方的效果导致离场。
 function s.cfilter(c,tp)
 	return c:IsPreviousControler(tp)
 		and c:GetReasonPlayer()==1-tp and c:IsReason(REASON_EFFECT)
 end
--- 判断是否满足触发破坏效果的条件
+-- ③发动条件：自己场上的其他卡因对方效果离场，且发动效果的这张卡不在离场卡之中。
 function s.descon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(s.cfilter,1,nil,tp) and not eg:IsContains(e:GetHandler())
 end
--- 设置破坏效果的目标选择
+-- ③效果目标：以场上1张卡为对象才能发动，并设置破坏的操作信息。
 function s.destg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsOnField() end
-	-- 检查是否满足选择目标的条件
+	-- 确认场上存在至少1张可以作为对象的卡。
 	if chk==0 then return Duel.IsExistingTarget(nil,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,nil) end
-	-- 提示玩家选择要破坏的卡
+	-- 提示玩家选择要破坏的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 选择场上的一张卡作为破坏目标
+	-- 选择场上1张卡作为破坏对象。
 	local g=Duel.SelectTarget(tp,nil,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,1,nil)
-	-- 设置破坏效果的处理信息
+	-- 设置本次连锁的操作信息为破坏该对象卡。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,1,0,0)
 end
--- 执行破坏效果的操作
+-- ③效果处理：若对象卡仍与效果关联，则将其破坏。
 function s.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的目标卡
+	-- 取得效果处理时选择的破坏对象卡。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 将目标卡破坏
+		-- 以效果原因破坏那张对象卡。
 		Duel.Destroy(tc,REASON_EFFECT)
 	end
 end

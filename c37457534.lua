@@ -36,53 +36,53 @@ function c37457534.initial_effect(c)
 	e4:SetOperation(c37457534.damop)
 	c:RegisterEffect(e4)
 end
--- 限制装备对象为名字带有「古代的机械」的怪兽。
+-- 装备限制判定：只有名字带有「古代的机械」的怪兽才能装备这张卡。
 function c37457534.eqlimit(e,c)
 	return c:IsSetCard(0x7)
 end
--- 判断目标怪兽是否为名字带有「古代的机械」的怪兽且表侧表示。
+-- 装备对象过滤条件：筛选场上表侧表示且名字带有「古代的机械」的怪兽。
 function c37457534.filter(c)
 	return c:IsFaceup() and c:IsSetCard(0x7)
 end
--- 设置装备效果的处理目标为名字带有「古代的机械」的怪兽。
+-- 发动时的取对象处理：选择场上表侧表示且名字带有「古代的机械」的1只怪兽作为装备对象，并设置操作信息。
 function c37457534.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and c37457534.filter(chkc) end
-	-- 判断是否存在名字带有「古代的机械」的怪兽作为装备目标。
+	-- 发动条件判定：场上（双方主要怪兽区）是否存在至少1只表侧表示且名字带有「古代的机械」的怪兽可作为装备对象。
 	if chk==0 then return Duel.IsExistingTarget(c37457534.filter,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil) end
-	-- 向玩家提示选择要装备的卡。
+	-- 显示“请选择要装备的卡”的提示信息，引导玩家选择装备对象。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_EQUIP)  --"请选择要装备的卡"
-	-- 选择名字带有「古代的机械」的怪兽作为装备目标。
+	-- 让玩家从双方主要怪兽区选择1只表侧表示且名字带有「古代的机械」的怪兽作为装备对象，并将其记录为本次连锁的对象。
 	Duel.SelectTarget(tp,c37457534.filter,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,nil)
-	-- 设置装备效果的操作信息。
+	-- 设置本次连锁的操作信息为装备分类，处理对象为这张装备魔法卡自身，数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_EQUIP,e:GetHandler(),1,0,0)
 end
--- 执行装备操作，将装备卡装备给目标怪兽。
+-- 效果处理时，若这张卡和选择的对象仍与效果相关且对象表侧表示，则把这张卡装备给对象怪兽。
 function c37457534.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的装备目标怪兽。
+	-- 取得发动时选择的装备对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if e:GetHandler():IsRelateToEffect(e) and tc:IsRelateToEffect(e) and tc:IsFaceup() then
-		-- 将装备卡装备给目标怪兽。
+		-- 将这张卡作为装备卡装备到对象怪兽身上。
 		Duel.Equip(tp,e:GetHandler(),tc)
 	end
 end
--- 判断此卡是否因破坏而送去墓地。
+-- 伤害效果发动条件：这张卡被破坏并因此送去墓地时满足条件。
 function c37457534.damcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsReason(REASON_DESTROY)
 end
--- 设置伤害效果的目标玩家和伤害值。
+-- 伤害效果发动时设定对象玩家和参数：以对方玩家为对象，伤害数值为600，并设置操作信息。
 function c37457534.damtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置伤害效果的目标玩家为对方。
+	-- 将效果对象玩家设为对方玩家（1-tp）。
 	Duel.SetTargetPlayer(1-tp)
-	-- 设置伤害效果的伤害值为600。
+	-- 将效果参数设为600（要造成的伤害数值）。
 	Duel.SetTargetParam(600)
-	-- 设置伤害效果的操作信息。
+	-- 设置操作信息为造成600点伤害给对方玩家。
 	Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,1-tp,600)
 end
--- 执行伤害效果，对对方造成600点伤害。
+-- 效果处理时，从连锁信息中取得对象玩家和伤害数值，给对方造成600点效果伤害。
 function c37457534.damop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁中设定的目标玩家和伤害值。
+	-- 获取当前连锁中记录的对象玩家和伤害参数。
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 对指定玩家造成指定伤害。
+	-- 以效果原因给对象玩家造成600点伤害。
 	Duel.Damage(p,d,REASON_EFFECT)
 end

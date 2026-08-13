@@ -13,32 +13,32 @@ function c37580756.initial_effect(c)
 	e1:SetOperation(c37580756.activate)
 	c:RegisterEffect(e1)
 end
--- 检索满足条件的卡片组：检查是否为怪兽卡、是否为当前控制者、是否之前在主要怪兽区
+-- 筛选送去墓地的卡中，属于怪兽、控制者为发动方tp且离场前位于主要怪兽区的卡，用于判定是否满足“自己场上的怪兽被送去自己墓地”的事件条件。
 function c37580756.filter(c,tp)
 	return c:IsType(TYPE_MONSTER) and c:IsControler(tp) and c:IsPreviousLocation(LOCATION_MZONE)
 end
--- 判断效果是否可以发动：检查是否有满足filter条件的卡进入墓地
+-- 检查本次送去墓地的卡组中是否存在至少1张满足filter条件的卡，即判定“怪兽被战斗破坏送去自己墓地时或者场上的怪兽被送去自己墓地时”的发动条件是否成立。
 function c37580756.condition(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c37580756.filter,1,nil,tp)
 end
--- 设置效果目标：选择场上1只怪兽作为破坏对象
+-- 效果发动时的取对象处理：确认对象必须位于场上怪兽区域；在发动时选择场上1只怪兽作为对象，并设置破坏的操作信息。
 function c37580756.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) end
-	-- 判断是否满足发动条件：确认场上是否存在满足条件的怪兽
+	-- 在效果发动的合法性检查（chk==0）时，确认场上是否存在至少1张可选择为对象的卡，若不存在则效果不能发动。
 	if chk==0 then return Duel.IsExistingTarget(aux.TRUE,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil) end
-	-- 提示玩家选择要破坏的卡
+	-- 向发动玩家显示“请选择要破坏的卡”的选择提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 选择场上1只怪兽作为破坏对象
+	-- 让发动玩家从双方主要怪兽区选择1张卡作为对象，并将其登记为当前连锁的对象。
 	local g=Duel.SelectTarget(tp,aux.TRUE,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,nil)
-	-- 设置操作信息：确定要破坏的怪兽数量和类型为破坏效果
+	-- 登记本次连锁的操作信息：将执行破坏1张卡的效果，对象为已选择的目标g，供其他卡在连锁判定时使用。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,1,0,0)
 end
--- 效果处理：将选中的怪兽破坏
+-- 效果处理时：取得对象卡，若该卡仍与本效果关联（未被离场等），则将其破坏。
 function c37580756.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的目标怪兽
+	-- 获取效果发动时选择的那1张对象卡。
 	local tc=Duel.GetFirstTarget()
 	if tc and tc:IsRelateToEffect(e) then
-		-- 将目标怪兽以效果原因破坏
+		-- 以效果原因将对象卡破坏，使其送去墓地。
 		Duel.Destroy(tc,REASON_EFFECT)
 	end
 end

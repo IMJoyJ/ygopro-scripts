@@ -5,24 +5,24 @@
 -- ②：只要这张卡在怪兽区域存在，自己的「救援ACE队」卡的效果盖放的1张速攻魔法·陷阱卡在盖放的回合也能发动。
 -- ③：自己主要阶段才能发动。从卡组把「救援ACE队 消防栓」以外的1只「救援ACE队」怪兽加入手卡。
 local s,id,o=GetID()
--- 注册卡片的两个永续效果，分别使该卡不能成为攻击对象和效果对象
+-- initial_effect：注册①的不能成为攻击/效果对象效果、②的救援ACE队效果盖放的速攻/陷阱可在盖放回合发动效果、③的检索效果，并注册全局监视器记录救援ACE队效果盖放的卡。
 function s.initial_effect(c)
-	-- 只要自己场上有「救援ACE队 消防栓」以外的「救援ACE队」怪兽存在，对方怪兽不能选择这张卡作为攻击对象
+	-- 对应①效果前半句：‘对方怪兽不能选择这张卡作为攻击对象’。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
 	e1:SetRange(LOCATION_MZONE)
 	e1:SetCode(EFFECT_CANNOT_BE_BATTLE_TARGET)
 	e1:SetCondition(s.atkcon)
-	-- 设置效果值为过滤函数aux.imval1，用于判断是否能成为攻击对象
+	-- e1:SetValue(aux.imval1)：设置①的攻击对象保护判定，对方怪兽不免疫此效果时不能选择这张卡攻击。
 	e1:SetValue(aux.imval1)
 	c:RegisterEffect(e1)
 	local e2=e1:Clone()
 	e2:SetCode(EFFECT_CANNOT_BE_EFFECT_TARGET)
-	-- 设置效果值为过滤函数aux.tgoval，用于判断是否能成为对方效果的对象
+	-- e2:SetValue(aux.tgoval)：设置①的效果对象保护判定，对方发动的效果不能以这张卡为对象。
 	e2:SetValue(aux.tgoval)
 	c:RegisterEffect(e2)
-	-- 只要这张卡在怪兽区域存在，自己的「救援ACE队」卡的效果盖放的1张速攻魔法·陷阱卡在盖放的回合也能发动
+	-- 对应②效果（陷阱部分）：‘自己的「救援ACE队」卡的效果盖放的1张速攻魔法·陷阱卡在盖放的回合也能发动’。此处为陷阱卡的适用。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(id,1))  --"适用「救援ACE队 消防栓」的效果来发动"
 	e3:SetType(EFFECT_TYPE_FIELD)
@@ -36,7 +36,7 @@ function s.initial_effect(c)
 	local e4=e3:Clone()
 	e4:SetCode(EFFECT_QP_ACT_IN_SET_TURN)
 	c:RegisterEffect(e4)
-	-- 自己主要阶段才能发动。从卡组把「救援ACE队 消防栓」以外的1只「救援ACE队」怪兽加入手卡
+	-- 对应③效果：‘自己主要阶段才能发动。从卡组把「救援ACE队 消防栓」以外的1只「救援ACE队」怪兽加入手卡。’
 	local e5=Effect.CreateEffect(c)
 	e5:SetDescription(aux.Stringid(id,0))
 	e5:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
@@ -48,16 +48,16 @@ function s.initial_effect(c)
 	c:RegisterEffect(e5)
 	if not s.global_check then
 		s.global_check=true
-		-- 注册一个全局连续效果，用于记录盖放的「救援ACE队」魔法陷阱卡
+		-- 对应②效果中‘自己的「救援ACE队」卡的效果盖放的’限定：注册全局监视器，在救援ACE队效果盖放卡时给该卡打标记。
 		local ge1=Effect.CreateEffect(c)
 		ge1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 		ge1:SetCode(EVENT_SSET)
 		ge1:SetOperation(s.checkop)
-		-- 将全局连续效果ge1注册给玩家0（双方）
+		-- Duel.RegisterEffect(ge1,0)：将全局监视效果注册到场上，捕捉所有盖放魔法·陷阱卡的事件。
 		Duel.RegisterEffect(ge1,0)
 	end
 end
--- 当有卡片盖放时，为盖放的「救援ACE队」卡注册标记效果，用于后续判断是否能发动
+-- checkop：当卡被盖放时，若发动者效果来自救援ACE队卡，则给盖放的卡注册flag标记，供②效果识别。
 function s.checkop(e,tp,eg,ep,ev,re,r,rp)
 	if not re or not re:GetHandler():IsSetCard(0x18b) then return end
 	local tc=eg:GetFirst()
@@ -66,41 +66,41 @@ function s.checkop(e,tp,eg,ep,ev,re,r,rp)
 		tc=eg:GetNext()
 	end
 end
--- 过滤函数，用于筛选场上正面表示的「救援ACE队」怪兽（不包括自身）
+-- atkfilter：①效果的过滤条件：表侧表示的救援ACE队怪兽，且不是这张卡自身。
 function s.atkfilter(c)
 	return c:IsFaceup() and c:IsSetCard(0x18b) and not c:IsCode(id)
 end
--- 条件函数，判断自己场上有「救援ACE队」怪兽（不包括自身）
+-- atkcon：①效果的适用条件：检查自己场上是否存在至少1只满足atkfilter的救援ACE队怪兽。
 function s.atkcon(e)
-	-- 检查自己场上是否存在满足atkfilter条件的怪兽
+	-- return Duel.IsExistingMatchingCard(...)：判断自己怪兽区是否存在符合条件的救援ACE队怪兽，只有存在时①效果才适用。
 	return Duel.IsExistingMatchingCard(s.atkfilter,e:GetHandlerPlayer(),LOCATION_MZONE,0,1,nil)
 end
--- 过滤函数，判断目标卡是否具有标记效果id
+-- qfilter：②效果的筛选函数，仅让带有flag标记（即被救援ACE队效果盖放）的速攻魔法·陷阱卡获得“盖放回合可发动”的权限。
 function s.qfilter(e,c)
 	return c:GetFlagEffect(id)>0
 end
--- 过滤函数，用于筛选可以加入手牌的「救援ACE队」怪兽
+-- filter：③检索的过滤条件：救援ACE队怪兽、可以加入手牌、且不是消防栓自身。
 function s.filter(c)
 	return c:IsSetCard(0x18b) and c:IsType(TYPE_MONSTER)
 		and c:IsAbleToHand() and not c:IsCode(id)
 end
--- 设置连锁处理信息，确定发动效果时会将一张卡从卡组加入手牌
+-- thtg：③效果的发动条件和操作信息设定：检查卡组有检索目标，并设置回手牌的操作信息。
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否满足发动条件，即卡组中是否存在满足filter条件的卡
+	-- if chk==0 then return Duel.IsExistingMatchingCard(...)：合法发动检测，确认卡组中存在符合filter的救援ACE队怪兽。
 	if chk==0 then return Duel.IsExistingMatchingCard(s.filter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置连锁处理信息，指定效果处理时将要处理的卡为1张手牌
+	-- Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)：设置当前连锁的操作信息为从卡组将1张卡加入手牌，供其他效果检测。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 效果处理函数，选择并把符合条件的卡加入手牌，并向对方确认该卡
+-- thop：③效果处理：选择1张符合条件的救援ACE队怪兽加入手牌，并向对方展示。
 function s.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要加入手牌的卡
+	-- Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)：提示玩家选择要加入手牌的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择满足filter条件的1张卡
+	-- Duel.SelectMatchingCard：让玩家从卡组选择1张符合filter的救援ACE队怪兽。
 	local g=Duel.SelectMatchingCard(tp,s.filter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选择的卡以效果原因送入手牌
+		-- Duel.SendtoHand(g,nil,REASON_EFFECT)：将选中的卡加入持有者的手牌。
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 向对方确认送入手牌的卡
+		-- Duel.ConfirmCards(1-tp,g)：将加入手牌的卡展示给对方玩家确认。
 		Duel.ConfirmCards(1-tp,g)
 	end
 end
