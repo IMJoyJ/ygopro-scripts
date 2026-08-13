@@ -32,23 +32,23 @@ function c33695750.initial_effect(c)
 	e4:SetTarget(c33695750.reptg)
 	c:RegisterEffect(e4)
 end
--- 设置连锁操作信息，表明将要放置指示物
+-- 效果发动的条件判定：召唤成功时必发诱发效果，判定条件恒成立，并预先登记放置指示物的操作信息。
 function c33695750.addct(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置连锁操作信息，表明将要放置指示物
+	-- 登记本次连锁将进行指示物（0x27）相关的操作（放置1次指示物），供系统进行效果交互判定。
 	Duel.SetOperationInfo(0,CATEGORY_COUNTER,nil,1,0,0x27)
 end
--- 将2个指示物放置到自身上
+-- 效果处理时：若此卡仍与该效果相关联，则给它放置2个0x27指示物。
 function c33695750.addc(e,tp,eg,ep,ev,re,r,rp)
 	if e:GetHandler():IsRelateToEffect(e) then
 		e:GetHandler():AddCounter(0x27,2)
 	end
 end
--- 根据指示物数量增加攻击力
+-- 计算攻击力上升值：此卡当前0x27指示物数量×500。
 function c33695750.attackup(e,c)
 	return c:GetCounter(0x27)*500
 end
--- 判断是否为战斗破坏且可以移除指示物
+-- 代替破坏的条件判定：当此卡被战斗破坏且能够移除自身1个0x27指示物作为代价时，允许发动代替破坏。
 function c33695750.reptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsReason(REASON_BATTLE)
 		and e:GetHandler():IsCanRemoveCounter(tp,0x27,1,REASON_COST) end

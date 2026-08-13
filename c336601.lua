@@ -4,7 +4,7 @@
 -- ①：对方场上有怪兽2只以上存在的场合，这张卡可以从手卡特殊召唤。
 -- ②：这张卡召唤·特殊召唤的场合，若对方场上有怪兽存在，以「月之守卫者」以外的自己墓地1只光属性·4星怪兽为对象才能发动。那只怪兽加入手卡。
 local s,id,o=GetID()
--- 初始化卡片效果，创建特殊召唤和发动效果
+-- 此函数为「月之守卫者」注册三个效果：e1为手卡中的规则特殊召唤效果（①），e2为召唤成功时发动②效果的诱发效果，e3为e2的克隆并改为特殊召唤成功时发动②效果。
 function s.initial_effect(c)
 	-- ①：对方场上有怪兽2只以上存在的场合，这张卡可以从手卡特殊召唤。
 	local e1=Effect.CreateEffect(c)
@@ -16,7 +16,7 @@ function s.initial_effect(c)
 	e1:SetCountLimit(1,id+EFFECT_COUNT_CODE_OATH)
 	e1:SetCondition(s.spcon)
 	c:RegisterEffect(e1)
-	-- ②：这张卡召唤·特殊召唤的场合，若对方场上有怪兽存在，以「月之守卫者」以外的自己墓地1只光属性·4星怪兽为对象才能发动。那只怪兽加入手卡。
+	-- ②：这张卡召唤的场合，若对方场上有怪兽存在，以「月之守卫者」以外的自己墓地1只光属性·4星怪兽为对象才能发动。那只怪兽加入手卡。（特殊召唤的场合由e3克隆处理）
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(id,1))  --"加入手卡"
 	e2:SetCategory(CATEGORY_TOHAND)
@@ -31,39 +31,39 @@ function s.initial_effect(c)
 	e3:SetCode(EVENT_SPSUMMON_SUCCESS)
 	c:RegisterEffect(e3)
 end
--- 判断特殊召唤条件是否满足：场上存在至少2只对方怪兽且有空位
+-- 规则特殊召唤的条件函数：当c为nil时表示该规则召唤本身可用；否则需要满足控制者怪兽区有空位，且对方场上有2只以上怪兽。
 function s.spcon(e,c)
 	if c==nil then return true end
-	-- 判断己方场上是否存在空位
+	-- 确认该怪兽的控制者场上是否有可用的主要怪兽区空格。
 	return Duel.GetLocationCount(c:GetControler(),LOCATION_MZONE)>0
-		-- 判断对方场上是否存在至少2只怪兽
+		-- 确认对方场（以控制者视角的0号位）上存在至少2只怪兽（aux.TRUE表示不限定怪兽种类）。
 		and Duel.IsExistingMatchingCard(aux.TRUE,c:GetControler(),0,LOCATION_MZONE,2,nil)
 end
--- 定义效果发动时可选择的墓地目标怪兽过滤条件
+-- 墓地检索过滤条件：不是「月之守卫者」、等级4、光属性、怪兽卡，并且能够加入手卡。
 function s.thfilter(c)
 	return not c:IsCode(id) and c:IsLevel(4) and c:IsAttribute(ATTRIBUTE_LIGHT) and c:IsType(TYPE_MONSTER) and c:IsAbleToHand()
 end
--- 设置效果发动时的选择目标处理逻辑
+-- ②效果的发动条件和取目标函数：若在连锁中检查目标则验证目标合法；在发动时确认对方场上有怪兽且自己墓地存在符合条件的怪兽，并进入选目标流程。
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and s.thfilter(chkc) end
-	-- 检查是否满足发动条件：对方场上有怪兽存在
+	-- 效果发动时需要确认对方场上有至少1只怪兽存在。
 	if chk==0 then return Duel.IsExistingMatchingCard(aux.TRUE,tp,0,LOCATION_MZONE,1,nil)
-		-- 检查是否满足发动条件：己方墓地存在符合条件的怪兽
+		-- 同时需要自己墓地存在1张满足s.thfilter条件且可以成为效果对象的卡。
 		and Duel.IsExistingTarget(s.thfilter,tp,LOCATION_GRAVE,0,1,nil) end
-	-- 提示玩家选择要加入手牌的卡
+	-- 向玩家显示选择“加入手卡”卡片的提示消息（HINTMSG_ATOHAND）。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择目标怪兽
+	-- 让玩家从自己墓地选择1张满足s.thfilter的卡作为取对象效果的对象。
 	local g=Duel.SelectTarget(tp,s.thfilter,tp,LOCATION_GRAVE,0,1,1,nil)
-	-- 设置效果发动信息，指定将目标怪兽加入手牌
+	-- 设置操作信息：将该对象卡以CATEGORY_TOHAND分类进行处理，用于后续时点判定和连锁响应。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,1,0,0)
 end
--- 执行效果发动的操作：将目标怪兽加入手牌
+-- ②效果处理函数：取得效果对象，若该对象仍与当前连锁相关且不受王家长眠之谷等效果影响，则将其加入手卡。
 function s.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁效果的目标怪兽
+	-- 获取本效果处理时选定的对象卡（这里只有1张，为其对象）。
 	local tc=Duel.GetFirstTarget()
-	-- 判断目标怪兽是否有效且未受王家长眠之谷影响
+	-- 判断对象是否仍与该连锁保持联系（未被移回或离场），且通过王家长眠之谷的过滤判定（不受王谷影响时才可处理）。
 	if tc:IsRelateToChain() and aux.NecroValleyFilter()(tc) then
-		-- 将目标怪兽加入手牌
+		-- 将该对象卡以效果原因加入其持有者的手卡。
 		Duel.SendtoHand(tc,nil,REASON_EFFECT)
 	end
 end

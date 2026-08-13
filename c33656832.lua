@@ -7,9 +7,9 @@
 -- ①：魔法·陷阱卡的发动无效的场合才能发动。这张卡从手卡特殊召唤。
 -- ②：这张卡被战斗破坏时才能发动。这张卡在自己的灵摆区域放置。
 function c33656832.initial_effect(c)
-	-- 为该卡添加灵摆怪兽属性，使其可以灵摆召唤和作为灵摆卡发动
+	-- 为这张卡注册灵摆怪兽的基本属性（可进行灵摆召唤、可在灵摆区域发动等）。
 	aux.EnablePendulumAttribute(c)
-	-- ①：自己场上的怪兽被效果破坏时才能发动。灵摆区域的这张卡特殊召唤。
+	-- 「曲芸之魔术师」的灵摆效果1回合只能使用1次。①：自己场上的怪兽被效果破坏时才能发动。灵摆区域的这张卡特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
@@ -39,42 +39,42 @@ function c33656832.initial_effect(c)
 	e3:SetOperation(c33656832.penop)
 	c:RegisterEffect(e3)
 end
--- 用于判断被破坏的怪兽是否在自己场上且是因效果破坏
+-- 筛选条件：判断被破坏的怪兽之前位于主要怪兽区、控制者为tp，且是因效果而被破坏。
 function c33656832.cfilter(c,tp)
 	return c:IsPreviousLocation(LOCATION_MZONE) and c:IsPreviousControler(tp) and c:IsReason(REASON_EFFECT)
 end
--- 判断是否有满足条件的怪兽被破坏（即是否满足灵摆效果发动条件）
+-- 发动条件：被破坏的怪兽中存在至少1只满足“自己场上被效果破坏”条件的怪兽。
 function c33656832.spcon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c33656832.cfilter,1,nil,tp)
 end
--- 设置特殊召唤的条件：场上是否有空位且该卡可以被特殊召唤
+-- 效果发动目标判定：需要自己主要怪兽区有空位，且这张卡处于灵摆区域时可以特殊召唤。
 function c33656832.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查场上是否有空位可用于特殊召唤
+	-- 效果发动条件检查：自己场上是否有可用的主要怪兽区空格。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置连锁操作信息，表示将要特殊召唤这张卡
+	-- 设置操作信息：宣告本次效果将把这张卡特殊召唤，数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 执行特殊召唤操作，将该卡特殊召唤到场上
+-- 效果处理：若这张卡仍与发动时的效果保持关联，则将其特殊召唤。
 function c33656832.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if not c:IsRelateToEffect(e) then return end
-	-- 将该卡以正面表示形式特殊召唤到场上
+	-- 将这张卡以表侧表示特殊召唤到持有者（tp）的场上。
 	Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 end
--- 判断是否为魔法或陷阱卡的发动被无效
+-- 发动条件：被无效的连锁是魔法·陷阱卡的发动（即对应『魔法·陷阱卡的发动无效的场合』）。
 function c33656832.spcon2(e,tp,eg,ep,ev,re,r,rp)
 	return re:IsHasType(EFFECT_TYPE_ACTIVATE)
 end
--- 判断灵摆区域是否有空位可用于放置该卡
+-- 效果发动目标判定：自己的灵摆区域左右两侧中至少有一个空格可用。
 function c33656832.pentg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查灵摆区域是否有空位
+	-- 效果发动条件检查：自己的灵摆区域（左侧或右侧）有空格。
 	if chk==0 then return Duel.CheckLocation(tp,LOCATION_PZONE,0) or Duel.CheckLocation(tp,LOCATION_PZONE,1) end
 end
--- 执行将该卡移动到灵摆区域的操作
+-- 效果处理：若这张卡仍与发动时的效果保持关联，则将其移动到自己的灵摆区域。
 function c33656832.penop(e,tp,eg,ep,ev,re,r,rp)
 	if e:GetHandler():IsRelateToEffect(e) then
-		-- 将该卡移动到自己的灵摆区域并正面表示
+		-- 将这张卡以表侧表示移动到己方灵摆区域。
 		Duel.MoveToField(e:GetHandler(),tp,tp,LOCATION_PZONE,POS_FACEUP,true)
 	end
 end

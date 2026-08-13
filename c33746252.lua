@@ -18,7 +18,7 @@ function c33746252.initial_effect(c)
 	e2:SetValue(c33746252.aclimit)
 	c:RegisterEffect(e2)
 end
--- 判断效果是否作用于怪兽类型，用于限制怪兽效果的发动。
+-- 该函数作为EFFECT_CANNOT_ACTIVATE的Value过滤器，当连锁中的效果发动时检查此效果是否为效果怪兽的效果，如果是则不允许发动。
 function c33746252.aclimit(e,re,tp)
 	return re:IsActiveType(TYPE_MONSTER)
 end
