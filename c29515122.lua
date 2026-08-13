@@ -3,7 +3,7 @@
 -- 5星怪兽×3
 -- 1回合1次，把这张卡1个超量素材取除才能发动。从对方卡组上面把3张卡送去墓地。这个效果送去墓地的卡之中有怪兽卡的场合，把最多有那个数量的对方场上的卡破坏。
 function c29515122.initial_effect(c)
-	-- 为卡片添加XYZ召唤手续，使用等级为5且数量为3的怪兽作为素材
+	-- 为这张卡添加以任意3只5星怪兽为素材的XYZ召唤手续，使其可以通过超量召唤出场。
 	aux.AddXyzProcedure(c,nil,5,3)
 	c:EnableReviveLimit()
 	-- 1回合1次，把这张卡1个超量素材取除才能发动。从对方卡组上面把3张卡送去墓地。这个效果送去墓地的卡之中有怪兽卡的场合，把最多有那个数量的对方场上的卡破坏。
@@ -18,39 +18,39 @@ function c29515122.initial_effect(c)
 	e1:SetOperation(c29515122.operation)
 	c:RegisterEffect(e1)
 end
--- 检查并移除自身1个超量素材作为发动代价
+-- 发动代价的处理：先检查这张卡是否有1个超量素材可供取除作为代价，若有则实际取除1个超量素材。
 function c29515122.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():CheckRemoveOverlayCard(tp,1,REASON_COST) end
 	e:GetHandler():RemoveOverlayCard(tp,1,1,REASON_COST)
 end
--- 设置效果发动时的操作信息，确定将从对方卡组顶部送去墓地3张卡
+-- 发动时的目标设定：检查对方是否可以把卡组顶端3张卡送去墓地，并登记本效果包含从卡组送墓地的处理信息，但此时不选择具体卡片。
 function c29515122.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断对方玩家是否可以将卡组顶部3张卡送去墓地
+	-- 发动合法性判定：对方玩家必须能够将卡组顶端的3张卡送去墓地，否则不能发动。
 	if chk==0 then return Duel.IsPlayerCanDiscardDeck(1-tp,3) end
-	-- 设置连锁操作信息，指定将从对方卡组送去墓地3张卡
+	-- 设置连锁操作信息，声明本效果将把对方卡组顶端的3张卡送去墓地，用于后续发动检测和时点判定。
 	Duel.SetOperationInfo(0,CATEGORY_DECKDES,nil,0,1-tp,3)
 end
--- 定义过滤函数，用于判断卡片是否为墓地中的怪兽卡
+-- 过滤函数：判断一张卡是否在墓地且为怪兽卡，用于统计这次因效果送去墓地的怪兽卡数量。
 function c29515122.cfilter(c)
 	return c:IsLocation(LOCATION_GRAVE) and c:IsType(TYPE_MONSTER)
 end
--- 执行效果处理流程，包括从对方卡组送去墓地3张卡、检测是否有怪兽卡、选择并破坏对方场上等量的卡
+-- 效果处理：先将对方卡组顶端3张卡送去墓地，统计其中怪兽卡数量；若有怪兽卡被送去墓地，则选择对方场上最多为该数量的卡并破坏；若没有则效果处理结束。
 function c29515122.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 将对方卡组顶部3张卡送去墓地
+	-- 以效果原因将对方卡组顶端的3张卡送去墓地，实际执行送墓操作。
 	Duel.DiscardDeck(1-tp,3,REASON_EFFECT)
-	-- 获取刚刚执行的卡组操作所涉及的卡片组
+	-- 获取上一次卡片操作（送墓）实际被操作的卡片组，即被送去墓地的那3张卡。
 	local g=Duel.GetOperatedGroup()
 	local ct=g:FilterCount(c29515122.cfilter,nil)
 	if ct==0 then return end
-	-- 提示玩家选择要破坏的卡片
+	-- 向当前玩家发送选择提示，提示内容为“请选择要破坏的卡”，为后续选择卡片做准备。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 选择对方场上最多与送去墓地的怪兽数量相等的卡片
+	-- 从对方场上选择1到ct张卡（ct为本次送墓的怪兽卡数量），任意卡片均可被选择，用于作为破坏对象。
 	local dg=Duel.SelectMatchingCard(tp,aux.TRUE,tp,0,LOCATION_ONFIELD,1,ct,nil)
 	if dg:GetCount()==0 then return end
-	-- 中断当前效果处理，使后续效果视为错时处理
+	-- 中断当前效果链，使此后的破坏处理与之前的送墓处理不在同一时点进行，避免被当作同时处理。
 	Duel.BreakEffect()
-	-- 显示所选卡片被作为对象的动画效果
+	-- 手动为选中的破坏对象显示“被选为对象”的动画，并登记这些卡为本次效果关联的对象。
 	Duel.HintSelection(dg)
-	-- 将所选的对方场上的卡片破坏
+	-- 将选中的卡片以效果原因破坏，完成破坏处理。
 	Duel.Destroy(dg,REASON_EFFECT)
 end

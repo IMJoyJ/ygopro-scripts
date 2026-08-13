@@ -15,7 +15,7 @@ function c295517.initial_effect(c)
 	e2:SetCode(EFFECT_UPDATE_LEVEL)
 	e2:SetRange(LOCATION_FZONE)
 	e2:SetTargetRange(LOCATION_HAND+LOCATION_MZONE,LOCATION_HAND+LOCATION_MZONE)
-	-- 设置效果目标为具有水属性的卡片
+	-- 设置等级下降效果的适用对象，仅水属性怪兽会受到此效果影响。
 	e2:SetTarget(aux.TargetBoolFunction(Card.IsAttribute,ATTRIBUTE_WATER))
 	e2:SetValue(-1)
 	c:RegisterEffect(e2)

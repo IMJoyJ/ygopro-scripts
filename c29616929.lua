@@ -12,29 +12,29 @@ function c29616929.initial_effect(c)
 	e1:SetOperation(c29616929.activate)
 	c:RegisterEffect(e1)
 end
--- 判断连锁是否满足发动条件，即对方在主要怪兽区特殊召唤的怪兽发动效果
+-- 发动条件：当前连锁的效果由对方玩家在怪兽区发动，且发动效果的那只怪兽在本回合被特殊召唤过，并且该效果可以被无效。
 function c29616929.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的发动玩家和发动位置
+	-- 获取当前连锁的效果控制者及其发动位置（怪兽区）。
 	local tgp,loc=Duel.GetChainInfo(ev,CHAININFO_TRIGGERING_CONTROLER,CHAININFO_TRIGGERING_LOCATION)
 	local tc=re:GetHandler()
-	-- 判断连锁发动玩家为对方、发动位置在主要怪兽区、发动怪兽为本回合特殊召唤且该连锁可被无效
+	-- 判断是否满足发动条件：效果控制者为对方、发动位置为怪兽区、发动效果的怪兽持有本回合特殊召唤状态，且该连锁效果可被无效。
 	return tgp==1-tp and loc==LOCATION_MZONE and tc:IsStatus(STATUS_SPSUMMON_TURN) and Duel.IsChainDisablable(ev)
 end
--- 设置连锁处理时的操作信息，包括使效果无效和破坏目标怪兽
+-- 效果发动时：确认发动合法后，设定无效该连锁效果的操作信息；若发动效果的怪兽可被破坏且仍与效果关联，则同时设定破坏该怪兽的操作信息。
 function c29616929.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置使连锁效果无效的操作信息
+	-- 设置操作信息：本次连锁处理包含‘使效果无效’这一分类，对象为当前发动的效果。
 	Duel.SetOperationInfo(0,CATEGORY_DISABLE,eg,1,0,0)
 	if re:GetHandler():IsDestructable() and re:GetHandler():IsRelateToEffect(re) then
-		-- 设置破坏连锁目标怪兽的操作信息
+		-- 设置操作信息：若该效果怪兽可被破坏且与连锁效果相关，则追加‘破坏’分类，对象为发动效果的怪兽。
 		Duel.SetOperationInfo(0,CATEGORY_DESTROY,eg,1,0,0)
 	end
 end
--- 执行连锁效果无效并破坏目标怪兽的操作
+-- 效果处理：先无效该连锁的效果，若成功且效果怪兽仍与效果相关，则将其破坏。
 function c29616929.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断连锁效果是否成功无效且目标怪兽仍存在于场上
+	-- 若该连锁效果已被成功无效，且发动效果的怪兽仍与那个效果保持关联（未离场或重置），则继续处理破坏。
 	if Duel.NegateEffect(ev) and re:GetHandler():IsRelateToEffect(re) then
-		-- 将目标怪兽以效果原因破坏
+		-- 以效果原因破坏发动效果的那组怪兽（即诱发这次连锁的怪兽）。
 		Duel.Destroy(eg,REASON_EFFECT)
 	end
 end
