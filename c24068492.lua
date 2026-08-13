@@ -13,25 +13,25 @@ function c24068492.initial_effect(c)
 	e1:SetOperation(c24068492.activate)
 	c:RegisterEffect(e1)
 end
--- 定义效果的目标处理函数：检查对方场上有怪兽，设置目标玩家和伤害值，并登记伤害操作信息。
+-- 效果发动时的目标处理函数：检查发动条件，将对方玩家设为对象，计算伤害值并设定为对象参数，同时写入操作信息。
 function c24068492.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 在效果发动条件检查中，确认对方主要怪兽区至少存在一只怪兽。
+	-- 发动条件检查：只有对方场上有1只以上怪兽时，该效果才满足发动条件。
 	if chk==0 then return Duel.IsExistingMatchingCard(aux.TRUE,tp,0,LOCATION_MZONE,1,nil) end
-	-- 设置效果的目标玩家为对方玩家。
+	-- 将本连锁的效果对象玩家设置为对方玩家（1-tp），表明伤害对象为对方。
 	Duel.SetTargetPlayer(1-tp)
-	-- 计算伤害值：对方场上怪兽数量乘以500。
+	-- 计算对方场上怪兽数量并乘以500，得到本次效果应给予的伤害值。
 	local dam=Duel.GetFieldGroupCount(1-tp,LOCATION_MZONE,0)*500
-	-- 设置效果的目标参数为计算出的伤害值。
+	-- 将计算出的伤害数值设为当前连锁的对象参数，供效果处理时使用。
 	Duel.SetTargetParam(dam)
-	-- 设置操作信息：登记为伤害效果，目标玩家为对方，伤害值为计算值。
+	-- 写入连锁的操作信息：效果类别为伤害，针对的玩家是对方，预估伤害值为dam，以便其他卡片/效果正确响应。
 	Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,1-tp,dam)
 end
--- 定义效果的处理函数：获取目标玩家和伤害值，并给予对方相应伤害。
+-- 效果处理函数：从连锁信息中取出对象玩家，重新计算对方场上当前怪兽数量×500的伤害值，并对该玩家造成伤害。
 function c24068492.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 从当前连锁信息中获取之前设置的目标玩家。
+	-- 从当前连锁信息中获取效果对象玩家（即之前设置的对方玩家）。
 	local p=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER)
-	-- 在效果处理时重新计算伤害值：对方场上怪兽数量乘以500。
+	-- 在处理阶段重新统计对方场上怪兽数量并乘以500，以决定实际造成的伤害值。
 	local dam=Duel.GetFieldGroupCount(1-tp,LOCATION_MZONE,0)*500
-	-- 执行伤害操作，给予目标玩家计算出的伤害值。
+	-- 以效果原因对玩家p造成dam点伤害。
 	Duel.Damage(p,dam,REASON_EFFECT)
 end

@@ -17,16 +17,16 @@ function c24137081.initial_effect(c)
 	e2:SetOperation(c24137081.atkop)
 	c:RegisterEffect(e2)
 end
--- 判断是否为对方玩家造成的战斗伤害且攻击对象为空
+-- 该效果的发动条件：受到战斗伤害的是对方玩家，且本卡是直接攻击（没有攻击对象）。
 function c24137081.atkcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 对方玩家造成的战斗伤害且攻击对象为空
+	-- ‘ep~=tp’表示受到战斗伤害的玩家是对方；‘Duel.GetAttackTarget()==nil’表示攻击时没有攻击对象（直接攻击）。
 	return ep~=tp and Duel.GetAttackTarget()==nil
 end
--- 满足条件时，使该卡攻击力上升1000
+-- 效果处理：若本卡仍与效果关联且表侧表示存在，则为其附加攻击力上升1000的永续效果；该效果在卡片离场、反转、无效等标准时机被重置。
 function c24137081.atkop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) and c:IsFaceup() then
-		-- 使该卡攻击力上升1000
+		-- 这张卡的攻击力上升1000。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)

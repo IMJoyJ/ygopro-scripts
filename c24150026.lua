@@ -26,27 +26,27 @@ function c24150026.initial_effect(c)
 	e4:SetOperation(c24150026.bpop)
 	c:RegisterEffect(e4)
 end
--- 效果适用的卡必须处于攻击表示状态
+-- 作为被选择为攻击对象时的诱发效果的发动条件：判断这张卡当前是否为表侧攻击表示，只有满足时才执行变守备。
 function c24150026.poscon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsAttackPos()
 end
--- 将目标卡变为守备表示
+-- 处理被选择为攻击对象时的强制效果：若这张卡在效果处理时仍表侧表示且与该效果关联，则将其变为表侧守备表示。
 function c24150026.posop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsFaceup() and c:IsRelateToEffect(e) then
-		-- 改变目标卡的表示形式为表侧守备表示
+		-- 将这张卡的表示形式变为表侧守备表示。
 		Duel.ChangePosition(c,POS_FACEUP_DEFENSE)
 	end
 end
--- 判断此卡在战斗阶段是否进行过攻击
+-- 作为战斗阶段结束时的诱发条件：判断这张卡在本回合是否进行过攻击（攻击次数大于0），满足时才执行变守备。
 function c24150026.bpcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():GetAttackedCount()>0
 end
--- 若此卡处于攻击表示则将其变为守备表示
+-- 战斗阶段结束时，若这张卡仍为攻击表示，则强制将其变为表侧守备表示。
 function c24150026.bpop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsAttackPos() then
-		-- 改变目标卡的表示形式为表侧守备表示
+		-- 将这张卡的表示形式变为表侧守备表示。
 		Duel.ChangePosition(c,POS_FACEUP_DEFENSE)
 	end
 end

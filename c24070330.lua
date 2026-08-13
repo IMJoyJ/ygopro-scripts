@@ -11,16 +11,16 @@
 -- ②：自己的场地区域有「音响放大器」存在的场合才能发动。选场上1张卡破坏。
 -- ③：怪兽区域的这张卡被战斗·效果破坏的场合才能发动。这张卡在自己的灵摆区域放置。
 local s,id,o=GetID()
--- 初始化卡片效果，注册代码列表、同调召唤手续、灵摆属性、设置5个效果
+-- 为这张卡注册全部效果：同调召唤手续、灵摆属性、两个灵摆效果（准备阶段回手/攻击宣言破坏）和三个怪兽效果（特殊召唤回手/有音响放大器时选1张破坏/被破坏时放置灵摆区），并设置各效果的条件、目标、操作与次数限制。
 function c24070330.initial_effect(c)
-	-- 记录该卡拥有「音响放大器」的卡名
+	-- 将卡号75304793（「音响放大器」）登记为此卡上记载的卡名，用于后续判定自己的场地区域是否存在「音响放大器」。
 	aux.AddCodeList(c,75304793)
-	-- 设置该卡为1只调整+调整以外的怪兽的同调召唤手续
+	-- 为这张卡添加同调召唤手续：调整＋调整以外的怪兽1只以上。
 	aux.AddSynchroProcedure(c,nil,aux.NonTuner(nil),1)
 	c:EnableReviveLimit()
-	-- 为该卡添加灵摆怪兽属性，不注册灵摆卡的发动效果
+	-- 使这张卡获得灵摆怪兽属性（可作为灵摆卡发动/放置灵摆区），但不注册灵摆卡“卡的发动”的效果。
 	aux.EnablePendulumAttribute(c,false)
-	-- ①：自己·对方的准备阶段才能发动。从自己的额外卡组把1只表侧表示的灵摆怪兽加入手卡。
+	-- ①：自己·对方的准备阶段才能发动。从自己的额外卡组把1只表侧表示的灵摆怪兽加入手卡。（这个卡名的①的灵摆效果1回合只能使用1次。）
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(24070330,0))
 	e1:SetCategory(CATEGORY_TOHAND)
@@ -42,7 +42,7 @@ function c24070330.initial_effect(c)
 	e2:SetTarget(c24070330.pdtg)
 	e2:SetOperation(c24070330.pdop)
 	c:RegisterEffect(e2)
-	-- ①：这张卡特殊召唤成功的场合才能发动。从自己的额外卡组把1只表侧表示的灵摆怪兽加入手卡。
+	-- ①：这张卡特殊召唤成功的场合才能发动。从自己的额外卡组把1只表侧表示的灵摆怪兽加入手卡。（这个卡名的①的怪兽效果1回合只能使用1次。）
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(24070330,2))
 	e3:SetCategory(CATEGORY_TOHAND)
@@ -53,7 +53,7 @@ function c24070330.initial_effect(c)
 	e3:SetTarget(c24070330.thtg)
 	e3:SetOperation(c24070330.thop)
 	c:RegisterEffect(e3)
-	-- ②：自己的场地区域有「音响放大器」存在的场合才能发动。选场上1张卡破坏。
+	-- ②：自己的场地区域有「音响放大器」存在的场合才能发动。选场上1张卡破坏。（这个卡名的②的怪兽效果1回合只能使用1次。）
 	local e4=Effect.CreateEffect(c)
 	e4:SetDescription(aux.Stringid(24070330,3))
 	e4:SetCategory(CATEGORY_DESTROY)
@@ -75,97 +75,97 @@ function c24070330.initial_effect(c)
 	e5:SetOperation(c24070330.penop)
 	c:RegisterEffect(e5)
 end
--- 检索满足条件的灵摆怪兽（表侧表示、能加入手牌）
+-- 定义回手效果的过滤器：额外卡组中表侧表示的灵摆怪兽且能够加入手卡。
 function c24070330.thfilter(c)
 	return c:IsFaceup() and c:IsType(TYPE_PENDULUM) and c:IsAbleToHand()
 end
--- 设置效果处理时的条件检查，确认是否有满足条件的灵摆怪兽
+-- 回手效果的发动条件和操作信息设置：确认额外卡组存在符合条件的卡，并声明将1张卡从额外卡组加入手卡。
 function c24070330.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 条件检查：确认是否有满足条件的灵摆怪兽
+	-- 检查自己的额外卡组是否存在至少1张满足回手过滤器（表侧灵摆且能加入手卡）的卡。
 	if chk==0 then return Duel.IsExistingMatchingCard(c24070330.thfilter,tp,LOCATION_EXTRA,0,1,nil) end
-	-- 设置连锁操作信息：将1张灵摆怪兽加入手牌
+	-- 设置效果处理信息：本次效果将把1张持有者为自己、位于额外卡组的卡加入手卡（具体卡在处理时选择）。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_EXTRA)
 end
--- 处理效果：选择并加入手牌
+-- 回手效果的实际处理：玩家从自己的额外卡组选择1张符合条件的表侧灵摆怪兽加入手卡，并让对手确认。
 function c24070330.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要加入手牌的灵摆怪兽
+	-- 弹出选择框提示，让该玩家选择要加入手卡的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择满足条件的灵摆怪兽
+	-- 玩家从自己的额外卡组中选出1张满足回手过滤器的卡。
 	local g=Duel.SelectMatchingCard(tp,c24070330.thfilter,tp,LOCATION_EXTRA,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的灵摆怪兽加入手牌
+		-- 将选择的卡以效果原因加入其持有者的手卡。
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 确认对方看到加入手牌的灵摆怪兽
+		-- 让对手确认加入手卡的卡。
 		Duel.ConfirmCards(1-tp,g)
 	end
 end
--- 判断攻击方是否为对方
+-- 灵摆效果②的发动条件：检测到攻击怪兽的控制者不是自己（即对方怪兽攻击宣言）。
 function c24070330.pdcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 攻击方不是自己时触发
+	-- 判断攻击宣言的怪兽控制者不是自己，满足对方怪兽攻击宣言条件。
 	return Duel.GetAttacker():GetControler()~=tp
 end
--- 设置攻击宣言时的效果处理条件和目标
+-- 攻击宣言破坏效果的发动条件和对象设置：确认攻击怪兽仍与战斗相关，将其设为对象，并设置破坏这张卡和攻击怪兽的操作信息。
 function c24070330.pdtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 条件检查：攻击怪兽是否参与战斗
+	-- 发动时检查攻击怪兽是否仍与战斗相关（防止其已离场导致无法取对象）。
 	if chk==0 then return Duel.GetAttacker():IsRelateToBattle() end
-	-- 设置攻击怪兽为效果目标
+	-- 将攻击怪兽设定为当前连锁的效果对象。
 	Duel.SetTargetCard(Duel.GetAttacker())
-	-- 设置连锁操作信息：破坏攻击怪兽和自身
+	-- 设置破坏操作信息：将这张卡和攻击怪兽作为可能破坏的2张卡。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,Group.FromCards(e:GetHandler(),Duel.GetAttacker()),2,0,0)
 end
--- 处理效果：破坏攻击怪兽和自身
+-- 破坏处理：将这张卡与攻击怪兽组成组，保留仍与效果相关的卡，若两者都在则一并破坏。
 function c24070330.pdop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取攻击怪兽
+	-- 获取当前连锁的第一个对象（即攻击怪兽）。
 	local tc=Duel.GetFirstTarget()
 	local g=Group.FromCards(c,tc):Filter(Card.IsRelateToEffect,nil,e)
 	if g:GetCount()==2 then
-		-- 破坏攻击怪兽和自身
+		-- 将这张卡和攻击怪兽以效果原因破坏。
 		Duel.Destroy(g,REASON_EFFECT)
 	end
 end
--- 判断场地是否存在「音响放大器」
+-- 怪兽效果②的发动条件：自己的场地区域存在「音响放大器」。
 function c24070330.descon(e,tp,eg,ep,ev,re,r,rp)
-	-- 场地存在「音响放大器」时触发
+	-- 检查自己的场地魔法区域内是否有卡号75304793（「音响放大器」）适用中。
 	return Duel.IsEnvironment(75304793,tp,LOCATION_FZONE)
 end
--- 设置破坏效果的处理条件和目标
+-- 破坏效果的目标检测：场上存在至少1张可破坏的卡时允许发动，并设置操作信息为从场上选1张破坏。
 function c24070330.destg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 条件检查：场上是否存在至少1张卡
+	-- 检查双方场上是否存在至少1张卡。
 	if chk==0 then return Duel.IsExistingMatchingCard(aux.TRUE,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,nil) end
-	-- 获取场上所有卡的集合
+	-- 获取双方场上的所有卡，作为操作信息中可能被破坏的对象集合。
 	local g=Duel.GetMatchingGroup(aux.TRUE,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,nil)
-	-- 设置连锁操作信息：破坏1张卡
+	-- 设置破坏操作信息：可能破坏的对象为双方场上所有卡，数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,1,0,0)
 end
--- 处理效果：选择并破坏场上卡
+-- 破坏处理：玩家从双方场上选择1张卡并破坏，同时显示选择动画。
 function c24070330.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要破坏的卡
+	-- 弹出选择框提示，让该玩家选择要破坏的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 选择场上要破坏的卡
+	-- 玩家从双方场上选择1张卡。
 	local g=Duel.SelectMatchingCard(tp,aux.TRUE,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,1,nil)
 	if g:GetCount()>0 then
-		-- 显示选中卡的动画效果
+		-- 手动画出选中卡的被选为对象动画，并记录这些卡被选为对象。
 		Duel.HintSelection(g)
-		-- 破坏选中的卡
+		-- 将选择的卡以效果原因破坏。
 		Duel.Destroy(g,REASON_EFFECT)
 	end
 end
--- 判断该卡是否从怪兽区域被破坏
+-- 怪兽效果③的发动条件：这张卡被破坏前位于怪兽区域且当时是表侧表示。
 function c24070330.pencon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	return c:IsPreviousLocation(LOCATION_MZONE) and c:IsFaceup()
 end
--- 设置灵摆区域放置效果的处理条件
+-- 放置灵摆区域前的目标检测：确认自己的灵摆区域有空位。
 function c24070330.pentg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 条件检查：玩家的灵摆区域是否有空位
+	-- 检查自己的灵摆区域0号位或1号位是否存在空位。
 	if chk==0 then return Duel.CheckLocation(tp,LOCATION_PZONE,0) or Duel.CheckLocation(tp,LOCATION_PZONE,1) end
 end
--- 处理效果：将该卡移动到灵摆区域
+-- 放置处理：若这张卡仍与效果相关，则将其在自己的灵摆区域表侧表示放置。
 function c24070330.penop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) then
-		-- 将该卡移动到玩家的灵摆区域
+		-- 将这张卡移动到自己的灵摆区域，表侧表示放置，并立即适用其效果。
 		Duel.MoveToField(c,tp,tp,LOCATION_PZONE,POS_FACEUP,true)
 	end
 end
