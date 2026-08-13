@@ -5,7 +5,7 @@
 -- ②：这张卡召唤·特殊召唤成功的场合才能发动。从卡组把1张「英豪」魔法·陷阱卡加入手卡。
 -- ③：这张卡在墓地存在，自己基本分是500以下的场合才能发动。这张卡效果无效特殊召唤。
 local s,id,o=GetID()
--- 初始化卡片效果，创建三个效果分别为①②③效果
+-- 注册本卡的三个效果：①手卡起动效果特殊召唤自身；②召唤/特殊召唤成功时检索「英豪」魔法陷阱卡；③墓地起动效果特殊召唤自身并使其效果无效化。
 function c18548966.initial_effect(c)
 	-- ①：自己场上有战士族怪兽2只以上存在的场合才能发动。这张卡从手卡特殊召唤。
 	local e1=Effect.CreateEffect(c)
@@ -41,81 +41,81 @@ function c18548966.initial_effect(c)
 	e4:SetOperation(c18548966.rvop)
 	c:RegisterEffect(e4)
 end
--- 过滤函数，用于判断场上是否存在正面表示的战士族怪兽
+-- 过滤器：筛选表侧表示且种族为战士族的怪兽。
 function c18548966.filter(c)
 	return c:IsFaceup() and c:IsRace(RACE_WARRIOR)
 end
--- 判断自己场上是否存在至少2只正面表示的战士族怪兽
+-- ①的发动条件：自己场上有战士族怪兽2只以上存在。
 function c18548966.spcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断自己场上是否存在至少2只正面表示的战士族怪兽
+	-- 检查自己场上主要怪兽区是否存在至少2只满足条件的战士族怪兽。
 	return Duel.IsExistingMatchingCard(c18548966.filter,tp,LOCATION_MZONE,0,2,nil)
 end
--- 设置①效果的发动条件判断
+-- ①的发动时点处理：确认手卡的这张卡可以特殊召唤且自己主要怪兽区有空位，不取对象。
 function c18548966.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断自己场上是否存在至少1个空怪兽区域
+	-- 发动合法性检查：自己主要怪兽区有空位，且这张卡能被效果特殊召唤。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置①效果发动时的操作信息为特殊召唤
+	-- ①：设置本次处理为特殊召唤这张卡的操作信息，使其他卡能响应此次特殊召唤。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- ①效果的发动处理函数
+-- ①的效果处理：若这张卡仍与效果关联，则将其以表侧表示特殊召唤。
 function c18548966.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) then
-		-- 将该卡从手卡特殊召唤到自己场上
+		-- 将这张卡从手卡特殊召唤到自己的主要怪兽区。
 		Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
--- 过滤函数，用于检索卡组中「英豪」魔法·陷阱卡
+-- 过滤器：筛选卡名含有「英豪」字段的魔法·陷阱卡，且能够加入手卡。
 function c18548966.thfilter(c)
 	return c:IsSetCard(0x6f) and c:IsType(TYPE_SPELL+TYPE_TRAP) and c:IsAbleToHand()
 end
--- 设置②效果的发动条件判断
+-- ②的发动时点处理：确认卡组中有满足条件的「英豪」魔法·陷阱卡，并设置检索操作信息。
 function c18548966.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断自己卡组中是否存在至少1张「英豪」魔法·陷阱卡
+	-- 发动合法性检查：卡组中存在至少1张满足条件的「英豪」魔法·陷阱卡。
 	if chk==0 then return Duel.IsExistingMatchingCard(c18548966.thfilter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置②效果发动时的操作信息为从卡组检索1张卡加入手牌
+	-- ②：设置操作信息：从卡组将1张卡加入手卡（具体卡在效果处理时选择）。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- ②效果的发动处理函数
+-- ②的效果处理：从卡组选1张「英豪」魔法·陷阱卡加入手卡，并让对方确认。
 function c18548966.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要加入手牌的卡
+	-- 弹出选择提示，让玩家选择要加入手卡的那张卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 从卡组中选择1张「英豪」魔法·陷阱卡
+	-- 让玩家从卡组挑选1张满足条件的「英豪」魔法·陷阱卡。
 	local g=Duel.SelectMatchingCard(tp,c18548966.thfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的卡加入手牌
+		-- 将选中的卡加入其持有者的手卡。
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 向对方确认加入手牌的卡
+		-- 向对方展示加入手卡的卡，以进行确认。
 		Duel.ConfirmCards(1-tp,g)
 	end
 end
--- ③效果的发动条件判断
+-- ③的发动条件：自己基本分在500以下。
 function c18548966.rvcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断自己基本分是否小于等于500
+	-- 检查玩家当前基本分是否不超过500。
 	return Duel.GetLP(tp)<=500
 end
--- 设置③效果的发动条件判断
+-- ③的发动时点处理：确认墓地中的这张卡可以特殊召唤且自己主要怪兽区有空位。
 function c18548966.rvtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断自己场上是否存在至少1个空怪兽区域
+	-- 发动合法性检查：自己主要怪兽区有空位，且墓地中的这张卡能被特殊召唤。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置③效果发动时的操作信息为特殊召唤
+	-- ③：设置本次处理为特殊召唤这张卡的操作信息。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- ③效果的发动处理函数
+-- ③的效果处理：将这张卡特殊召唤，并附加“效果无效”状态；最后完成特殊召唤流程。
 function c18548966.rvop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 判断该卡是否能被特殊召唤且是否在场上
+	-- 确认这张卡仍与效果关联，并尝试进行特殊召唤步骤；若成功则继续执行无效化处理。
 	if c:IsRelateToEffect(e) and Duel.SpecialSummonStep(c,0,tp,tp,false,false,POS_FACEUP) then
-		-- 使该卡获得无效化效果
+		-- ③：这张卡效果无效特殊召唤。（对应“效果无效”：EFFECT_DISABLE）
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_DISABLE)
 		e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
 		e1:SetReset(RESET_EVENT+RESETS_STANDARD)
 		c:RegisterEffect(e1)
-		-- 使该卡获得无效化效果
+		-- ③：这张卡效果无效特殊召唤。（对应“效果无效”：EFFECT_DISABLE_EFFECT）
 		local e2=Effect.CreateEffect(c)
 		e2:SetType(EFFECT_TYPE_SINGLE)
 		e2:SetCode(EFFECT_DISABLE_EFFECT)
@@ -124,6 +124,6 @@ function c18548966.rvop(e,tp,eg,ep,ev,re,r,rp)
 		e2:SetReset(RESET_EVENT+RESETS_STANDARD)
 		c:RegisterEffect(e2)
 	end
-	-- 完成特殊召唤流程
+	-- 完成本次特殊召唤流程的收尾处理（与SpecialSummonStep配合使用）。
 	Duel.SpecialSummonComplete()
 end

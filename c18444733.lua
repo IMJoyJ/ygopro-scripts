@@ -32,54 +32,54 @@ function c18444733.initial_effect(c)
 	e4:SetCode(EVENT_SPSUMMON_SUCCESS)
 	c:RegisterEffect(e4)
 end
--- 该函数用于判断连锁效果是否为雷族怪兽发动的效果，若是则该效果不会被无效。
+-- 过滤函数：检查当前连锁的效果是否为玩家自己的雷族怪兽效果，若是则返回true，用于决定是否给予“发动不会被无效化”的适用。
 function c18444733.efilter(e,ct)
 	local p=e:GetHandlerPlayer()
-	-- 获取当前正在处理的连锁效果及其发动玩家。
+	-- 获取当前连锁的效果te及发动玩家tp，用于判断发动者是否为自己、效果是否来自雷族怪兽。
 	local te,tp=Duel.GetChainInfo(ct,CHAININFO_TRIGGERING_EFFECT,CHAININFO_TRIGGERING_PLAYER)
 	return p==tp and te:IsActiveType(TYPE_MONSTER) and te:GetHandler():IsRace(RACE_THUNDER)
 end
--- 过滤函数，用于判断一张卡是否为己方的雷族怪兽。
+-- 过滤函数：判断怪兽是否表侧表示、卡名属于「雷龙」字段、且控制者为tp。
 function c18444733.cfilter(c,tp)
 	return c:IsFaceup() and c:IsSetCard(0x11c) and c:IsControler(tp)
 end
--- 判断是否有己方的雷族怪兽被召唤或特殊召唤成功。
+-- 触发条件：在召唤·特殊召唤成功时，若这些怪兽中存在满足cfilter的「雷龙」怪兽，则条件成立。
 function c18444733.descon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c18444733.cfilter,1,nil,tp)
 end
--- 过滤函数，用于判断卡组中是否存在可除外的雷族怪兽。
+-- 过滤函数：判断卡组中的卡是否雷族怪兽且可以被除外。
 function c18444733.rmfilter(c)
 	return c:IsRace(RACE_THUNDER) and c:IsAbleToRemove()
 end
--- 设置效果的发动条件和目标选择逻辑，检查场上是否存在魔法或陷阱卡作为目标，并确认卡组中是否存在雷族怪兽。
+-- 取对象及发动合法性检查：选择场上1张魔法·陷阱卡作为对象，同时确认卡组中有雷族怪兽可除外；若本卡效果尚未正常生效（如正在发动中），则将自身排除在可选对象外。
 function c18444733.destg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsOnField() and chkc:IsType(TYPE_SPELL+TYPE_TRAP) end
 	local xg=nil
 	if not e:GetHandler():IsStatus(STATUS_EFFECT_ENABLED) then xg=e:GetHandler() end
-	-- 检查是否满足发动条件，即场上存在魔法或陷阱卡作为目标。
+	-- 检查场上是否存在1张除排除对象外的魔法·陷阱卡可以作为效果对象。
 	if chk==0 then return Duel.IsExistingTarget(Card.IsType,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,xg,TYPE_SPELL+TYPE_TRAP)
-		-- 检查是否满足发动条件，即卡组中存在雷族怪兽。
+		-- 检查卡组中是否存在1张雷族怪兽可以除外。
 		and Duel.IsExistingMatchingCard(c18444733.rmfilter,tp,LOCATION_DECK,0,1,nil) end
-	-- 提示玩家选择要破坏的卡。
+	-- 向玩家提示“请选择要破坏的卡”。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 选择场上的一张魔法或陷阱卡作为目标。
+	-- 选择场上1张魔法·陷阱卡，将其设为效果对象。
 	local g=Duel.SelectTarget(tp,Card.IsType,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,1,xg,TYPE_SPELL+TYPE_TRAP)
-	-- 设置操作信息，表示将要破坏一张卡。
+	-- 设置操作信息：本次连锁将破坏1张卡（即选择的对象）。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,1,0,0)
-	-- 设置操作信息，表示将要从卡组除外一只雷族怪兽。
+	-- 设置操作信息：本次连锁将从卡组除外1张雷族怪兽（不取对象）。
 	Duel.SetOperationInfo(0,CATEGORY_REMOVE,nil,1,tp,LOCATION_DECK)
 end
--- 执行效果处理，选择雷族怪兽除外并破坏目标卡。
+-- 效果处理：先选择卡组1张雷族怪兽除外，若除外成功且对象卡仍与效果关联，则破坏该对象卡。
 function c18444733.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的目标卡。
+	-- 取得效果处理时连锁的对象卡（之前选择的魔法·陷阱卡）。
 	local tc=Duel.GetFirstTarget()
-	-- 提示玩家选择要除外的雷族怪兽。
+	-- 向玩家提示“请选择要除外的卡”。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
-	-- 从卡组中选择一只雷族怪兽除外。
+	-- 从卡组选择1张雷族怪兽，准备除外。
 	local g=Duel.SelectMatchingCard(tp,c18444733.rmfilter,tp,LOCATION_DECK,0,1,1,nil)
-	-- 判断除外是否成功且目标卡仍然有效，若满足则进行破坏处理。
+	-- 判定除外是否成功、被除外的卡是否在除外区，以及对象卡是否仍与效果有联系；满足条件才执行破坏。
 	if Duel.Remove(g,POS_FACEUP,REASON_EFFECT)~=0 and g:GetFirst():IsLocation(LOCATION_REMOVED) and tc:IsRelateToEffect(e) then
-		-- 将目标卡破坏。
+		-- 将对象卡破坏。
 		Duel.Destroy(tc,REASON_EFFECT)
 	end
 end
