@@ -92,7 +92,7 @@ function s.spop(e,tp,eg,ep,ev,re,r,rp)
 end
 -- 过滤条件：卡名为71344451且可加入手牌
 function s.cfilter(c)
-	return c:IsCode(71344451) and c:IsAbleToHand()
+	return c:IsCode(71344451)
 end
 -- ②效果发动条件检查：卡组数量大于对方场上卡片数且卡组存在71344451
 function s.tdtg(e,tp,eg,ep,ev,re,r,rp,chk)
