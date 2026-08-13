@@ -28,61 +28,61 @@ function c15173384.initial_effect(c)
 	e2:SetOperation(c15173384.spop2)
 	c:RegisterEffect(e2)
 end
--- 用于判断被破坏的怪兽是否为「眼纳祭神」融合怪兽或「纳祭之魔」，并且是战斗或效果破坏，且在自己场上正面表示被破坏。
+-- 判断被破坏的怪兽是否满足①效果条件：是被战斗·效果破坏，且破坏前为己方场上主要怪兽区表侧表示的「眼纳祭神」融合怪兽或「纳祭之魔」。
 function c15173384.cfilter(c,tp)
 	return c:IsReason(REASON_BATTLE+REASON_EFFECT)
 		and ((c:IsPreviousSetCard(0x1110) and bit.band(c:GetPreviousTypeOnField(),TYPE_FUSION)~=0) or c:GetPreviousCodeOnField()==64631466)
 		and c:IsPreviousControler(tp) and c:IsPreviousLocation(LOCATION_MZONE) and c:IsPreviousPosition(POS_FACEUP)
 end
--- 判断是否有满足条件的怪兽被破坏，即是否触发效果①。
+-- ①效果触发条件：被破坏的怪兽集合中存在至少1只满足cfilter条件的卡，即己方场上的表侧表示「眼纳祭神」融合怪兽或「纳祭之魔」被战斗·效果破坏。
 function c15173384.spcon1(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c15173384.cfilter,1,nil,tp)
 end
--- 判断是否可以发动效果①，即场上是否有空位且该卡可以特殊召唤。
+-- ①效果发动的合法性确认：检查自己主要怪兽区有空位，且这张卡自身可以被特殊召唤，满足时才允许发动。
 function c15173384.sptg1(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断场上是否有空位用于特殊召唤。
+	-- 检查自己场上主要怪兽区是否有可用空格。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置效果①的处理信息，表示将特殊召唤此卡。
+	-- 设置本次连锁的操作信息：将特殊召唤这张卡登记为CATEGORY_SPECIAL_SUMMON，用于时点检测等后续判定。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 效果①的处理函数，将此卡特殊召唤到场上。
+-- ①效果处理：获取效果持有者（这张卡），若这张卡仍与本次效果关联，则将其特殊召唤。
 function c15173384.spop1(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) then
-		-- 将此卡以正面表示形式特殊召唤到场上。
+		-- 执行特殊召唤：将无脸幻想魔术师以表侧表示特殊召唤到自己的主要怪兽区。
 		Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
--- 判断此卡是否从场上送去墓地，即是否触发效果②。
+-- ②效果触发条件：这张卡从场上被送去墓地，而不是从手牌·卡组直接送入墓地。
 function c15173384.spcon2(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsPreviousLocation(LOCATION_ONFIELD)
 end
--- 用于筛选墓地中的「眼纳祭神」融合怪兽或「纳祭之魔」，确保其可以被特殊召唤。
+-- 目标怪兽的筛选条件：自己墓地中存在「眼纳祭神」融合怪兽（系列0x1110且类型为融合）或「纳祭之魔」（卡号64631466），且可以被特殊召唤。
 function c15173384.filter(c,e,tp)
 	return ((c:IsSetCard(0x1110) and c:IsType(TYPE_FUSION)) or c:IsCode(64631466))
 		and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 判断是否可以发动效果②，即场上是否有空位且墓地中有符合条件的怪兽。
+-- ②效果发动的合法性确认：若指定对象则验证该对象是自己墓地且满足filter；否则检查主要怪兽区有空位且墓地存在合法对象。
 function c15173384.sptg2(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and c15173384.filter(chkc,e,tp) end
-	-- 判断场上是否有空位用于特殊召唤。
+	-- 检查自己场上主要怪兽区是否有可用空格。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 判断墓地中是否存在符合条件的怪兽。
+		-- 检查自己墓地存在至少1只满足filter条件且可被选择为对象的「眼纳祭神」融合怪兽或「纳祭之魔」。
 		and Duel.IsExistingTarget(c15173384.filter,tp,LOCATION_GRAVE,0,1,nil,e,tp) end
-	-- 提示玩家选择要特殊召唤的怪兽。
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
-	-- 选择墓地中符合条件的怪兽作为效果②的目标。
+	-- 向玩家显示选择提示，要求选择要特殊召唤的卡片。
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
+	-- 选择自己墓地1只满足filter条件的怪兽作为效果对象，并将该对象绑定到当前连锁。
 	local g=Duel.SelectTarget(tp,c15173384.filter,tp,LOCATION_GRAVE,0,1,1,nil,e,tp)
-	-- 设置效果②的处理信息，表示将特殊召唤所选怪兽。
+	-- 设置本次连锁的操作信息：对选择的对象进行特殊召唤，登记为CATEGORY_SPECIAL_SUMMON。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,1,0,0)
 end
--- 效果②的处理函数，将目标怪兽特殊召唤到场上。
+-- ②效果处理：获取对象怪兽，若对象仍与本次效果关联，则将其特殊召唤。
 function c15173384.spop2(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取效果②选择的目标怪兽。
+	-- 取得②效果发动时选择的目标怪兽。
 	local tc=Duel.GetFirstTarget()
 	if tc and tc:IsRelateToEffect(e) then
-		-- 将目标怪兽以正面表示形式特殊召唤到场上。
+		-- 执行特殊召唤：将目标怪兽以表侧表示特殊召唤到自己的主要怪兽区。
 		Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
