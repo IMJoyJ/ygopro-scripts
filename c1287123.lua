@@ -16,41 +16,41 @@ function c1287123.initial_effect(c)
 	e1:SetOperation(c1287123.operation)
 	c:RegisterEffect(e1)
 end
--- 过滤函数，用于判断卡是否在场上且为魔法或陷阱类型
+-- 筛选位于场上的魔法·陷阱卡（不要求表侧），用于判断被连锁的破坏效果是否涉及场上的魔法·陷阱卡。
 function c1287123.filter(c)
 	return c:IsOnField() and c:IsType(TYPE_SPELL+TYPE_TRAP)
 end
--- 效果发动时的发动条件判断函数
+-- 发动条件判定：此卡不在战斗破坏确定状态且当前连锁可被无效；发动连锁的卡是怪兽效果且该效果不带CATEGORY_NEGATE分类；并且该连锁的破坏操作信息中确实存在至少1张场上的魔法·陷阱卡。
 function c1287123.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查自身是否处于战斗破坏状态或连锁是否可无效，若满足则返回false
+	-- 若此卡处于战斗破坏确定状态，或当前连锁不能无效，则不满足发动条件。
 	if e:GetHandler():IsStatus(STATUS_BATTLE_DESTROYED) or not Duel.IsChainNegatable(ev) then return false end
 	if not re:IsActiveType(TYPE_MONSTER) or re:IsHasCategory(CATEGORY_NEGATE) then return false end
-	-- 获取连锁发动时的破坏相关信息
+	-- 从当前连锁中读取该效果的破坏操作信息，返回是否有破坏分类、操作对象组和预定破坏数量，用于判断是否包含场上的魔法·陷阱卡。
 	local ex,tg,tc=Duel.GetOperationInfo(ev,CATEGORY_DESTROY)
 	return ex and tg~=nil and tc+tg:FilterCount(c1287123.filter,nil)-tg:GetCount()>0
 end
--- 支付代价时的处理函数
+-- 发动代价：从手卡丢弃1张卡送入墓地，作为让那个发动无效并破坏的代价。
 function c1287123.cost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查玩家手牌中是否存在可作为代价送去墓地的卡
+	-- 代价检测阶段：确认手卡中存在至少1张可作为代价送入墓地的卡，否则不能发动。
 	if chk==0 then return Duel.IsExistingMatchingCard(Card.IsAbleToGraveAsCost,tp,LOCATION_HAND,0,1,nil) end
-	-- 让玩家丢弃1张手卡作为代价
+	-- 实际支付代价：让发动玩家从手卡选择1张卡丢弃到墓地，原因记为REASON_COST。
 	Duel.DiscardHand(tp,Card.IsAbleToGraveAsCost,1,1,REASON_COST)
 end
--- 效果发动时的目标设定函数
+-- 发动时设定操作信息：登记要无效当前连锁的发动，并尝试破坏发动效果的那只怪兽；仅在该怪兽可被破坏且仍与效果相关时登记破坏信息。
 function c1287123.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置连锁发动无效的操作信息
+	-- 登记本次处理将无效连锁ev的发动，对象是发动效果的那张卡（eg），数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_NEGATE,eg,1,0,0)
 	if re:GetHandler():IsDestructable() and re:GetHandler():IsRelateToEffect(re) then
-		-- 设置连锁发动破坏的操作信息
+		-- 登记本次处理将破坏发动效果的那张卡（eg），数量为1，且该卡可被破坏并仍与效果相关。
 		Duel.SetOperationInfo(0,CATEGORY_DESTROY,eg,1,0,0)
 	end
 end
--- 效果发动时的处理函数
+-- 处理效果：先无效对应连锁的发动；若无效成功且发动效果的那只怪兽仍与效果相关，则将其破坏。
 function c1287123.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 使连锁发动无效并检查目标卡是否有效
+	-- 尝试无效该连锁，并检查发动效果的那只怪兽是否仍与效果保持关联（未离场或未失效）。
 	if Duel.NegateActivation(ev) and re:GetHandler():IsRelateToEffect(re) then
-		-- 破坏目标卡
+		-- 以效果原因破坏发动效果的那只怪兽，将其送入墓地。
 		Duel.Destroy(eg,REASON_EFFECT)
 	end
 end
