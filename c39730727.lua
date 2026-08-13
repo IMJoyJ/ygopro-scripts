@@ -30,43 +30,43 @@ function c39730727.initial_effect(c)
 	e3:SetOperation(c39730727.drop)
 	c:RegisterEffect(e3)
 end
--- 过滤函数，用于判断目标怪兽是否为效果怪兽以外的怪兽
+-- 免疫效果的适用对象筛选：判断怪兽是否为效果怪兽以外的怪兽（非效果怪兽），是则作为本卡的免疫保护对象，不受怪兽效果影响。
 function c39730727.etarget(e,c)
 	return not c:IsType(TYPE_EFFECT)
 end
--- 过滤函数，用于判断效果是否为怪兽效果
+-- 免疫效果的过滤条件：判断即将生效的效果是否为怪兽的效果，若是怪兽效果则对其免疫。
 function c39730727.efilter(e,re)
 	return re:IsActiveType(TYPE_MONSTER)
 end
--- 过滤函数，用于判断自己场上的怪兽是否为效果怪兽以外的表侧表示怪兽或里侧表示怪兽
+-- 判定怪兽是否满足“效果怪兽以外的怪兽”：表侧表示且不是效果怪兽，或者里侧表示（此时不公开怪兽种类）即视为满足条件，用于检查自己场上是否存在可触发②的怪兽。
 function c39730727.drfilter1(c)
 	return (not c:IsType(TYPE_EFFECT) and c:IsFaceup()) or c:IsFacedown()
 end
--- 过滤函数，用于判断对方特殊召唤成功的怪兽是否为效果怪兽且为对方召唤的表侧表示怪兽
+-- 筛选对方特殊召唤成功的怪兽中，属于对方（1-tp）特殊召唤的表侧表示效果怪兽，用于触发②的场合条件。
 function c39730727.drfilter2(c,tp)
 	return c:IsType(TYPE_EFFECT) and c:IsSummonPlayer(1-tp) and c:IsFaceup()
 end
--- 条件函数，用于判断是否满足发动效果的条件，即自己场上存在效果怪兽以外的怪兽且对方有效果怪兽被特殊召唤
+-- ②的发动条件：自己场上存在效果怪兽以外的怪兽，且本次特殊召唤成功的怪兽中有对方特殊召唤的效果怪兽。
 function c39730727.drcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 检索满足条件的卡片组，检查自己场上是否存在效果怪兽以外的怪兽
+	-- 检查自己场上是否存在至少1只满足drfilter1条件的怪兽（效果怪兽以外的怪兽）。
 	return Duel.IsExistingMatchingCard(c39730727.drfilter1,tp,LOCATION_MZONE,0,1,nil)
 		and eg:IsExists(c39730727.drfilter2,1,nil,tp)
 end
--- 目标函数，用于设置效果的目标玩家和抽卡数量
+-- ②的发动目标处理：确认自己能够抽2张卡，将抽卡玩家设为自己、抽卡数设为2，并登记抽卡的操作信息。
 function c39730727.drtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查玩家是否可以抽2张卡
+	-- 发动合法性检查：确认自己是否可以通过效果抽2张卡。
 	if chk==0 then return Duel.IsPlayerCanDraw(tp,2) end
-	-- 设置当前正在处理的连锁的对象玩家为玩家tp
+	-- 将本次效果的对象玩家设为自己，即后续抽卡的玩家。
 	Duel.SetTargetPlayer(tp)
-	-- 设置当前正在处理的连锁的对象参数为2
+	-- 将本次效果的对象参数设为2，即抽卡数量为2。
 	Duel.SetTargetParam(2)
-	-- 设置当前处理的连锁的操作信息为抽卡效果，抽2张卡
+	-- 登记操作信息：声明本连锁将执行由tp玩家抽2张卡的处理，供其他效果（如抽卡限制、替代效果）进行连锁判定。
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,2)
 end
--- 效果处理函数，用于执行抽卡效果
+-- ②的效果处理：取出发动时登记的抽卡玩家和抽卡数量，让该玩家抽对应数量的卡。
 function c39730727.drop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的目标玩家和抽卡数量
+	-- 从当前连锁信息中取出发动时设定的对象玩家（p）和对象参数（d），即抽卡的玩家和抽卡张数。
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 让玩家p以效果原因抽d张卡
+	-- 让玩家p以效果原因抽取d张卡，完成②的抽卡处理。
 	Duel.Draw(p,d,REASON_EFFECT)
 end

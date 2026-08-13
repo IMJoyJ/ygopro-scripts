@@ -33,82 +33,82 @@ function c39732186.initial_effect(c)
 	e2:SetOperation(c39732186.thop2)
 	c:RegisterEffect(e2)
 end
--- 判断是否满足效果①的发动条件：确认攻击怪兽为电子界族连接怪兽
+-- ①效果发动条件：取得本次战斗的攻击怪兽和被攻击怪兽，若攻击方是对方则交换，使tc为发动方的电子界族连接怪兽、bc为对方怪兽；将bc保存到LabelObject，并判定tc为表侧表示且属于电子界族连接怪兽。
 function c39732186.thcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前战斗的攻击怪兽
+	-- 获取当前战斗的攻击怪兽。
 	local tc=Duel.GetAttacker()
-	-- 获取当前战斗的防守怪兽
+	-- 获取当前战斗的被攻击怪兽。
 	local bc=Duel.GetAttackTarget()
 	if not bc then return false end
 	if tc:IsControler(1-tp) then tc,bc=bc,tc end
 	e:SetLabelObject(bc)
 	return tc:IsFaceup() and tc:IsRace(RACE_CYBERSE) and tc:IsType(TYPE_LINK)
 end
--- 效果①的发动费用：将此卡送去墓地
+-- ①效果发动代价：检查这张卡能否从手卡作为代价送去墓地，若能则支付。
 function c39732186.thcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsAbleToGraveAsCost() end
-	-- 将此卡从手牌送去墓地作为费用
+	-- 将这张卡从手卡送去墓地作为发动代价。
 	Duel.SendtoGrave(e:GetHandler(),REASON_COST)
 end
--- 效果①的发动宣言：将对方怪兽送回手牌
+-- ①效果发动时确认：取回之前保存的对方怪兽，检查其可以加入手牌，并设定将其回手牌的操作信息。
 function c39732186.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local bc=e:GetLabelObject()
 	if chk==0 then return bc and bc:IsAbleToHand() end
-	-- 设置连锁操作信息，指定将防守怪兽送回手牌
+	-- 设定连锁处理时将对方怪兽回到持有者手牌的操作信息。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,bc,1,0,0)
 end
--- 效果①的处理：将防守怪兽送回手牌
+-- ①效果处理：若之前保存的对方怪兽仍与本次战斗相关且仍由对方控制，则将其送回持有者手卡。
 function c39732186.thop(e,tp,eg,ep,ev,re,r,rp)
 	local bc=e:GetLabelObject()
 	if bc:IsRelateToBattle() and bc:IsControler(1-tp) then
-		-- 将防守怪兽送回手牌
+		-- 将那只对方怪兽因效果返回持有者手卡。
 		Duel.SendtoHand(bc,nil,REASON_EFFECT)
 	end
 end
--- 判断是否满足效果②的发动条件：确认被战斗破坏的怪兽为己方电子界族怪兽
+-- ②效果发动条件：确认被战斗破坏送去墓地的只有对方1只怪兽，且它是被自己的电子界族怪兽战斗破坏，该电子界族怪兽仍与战斗相关。
 function c39732186.thcon2(e,tp,eg,ep,ev,re,r,rp)
 	local tc=eg:GetFirst()
 	local bc=tc:GetBattleTarget()
 	return eg:GetCount()==1	and tc:IsLocation(LOCATION_GRAVE) and tc:IsReason(REASON_BATTLE)
 		and bc:IsRelateToBattle() and bc:IsControler(tp) and bc:IsRace(RACE_CYBERSE)
 end
--- 过滤函数：检查墓地是否存在可除外的卡并能选择目标怪兽
+-- 代价选择过滤：判定该卡可作为除外代价，并且自己墓地还存在至少1只满足加入手牌条件的4星以下电子界族怪兽。
 function c39732186.cfilter(c,tp)
-	-- 检查墓地是否存在可除外的卡并能选择目标怪兽
+	-- 返回该卡可作为代价除外，且墓地存在满足条件的电子界族对象（排除该代价卡）。
 	return c:IsAbleToRemoveAsCost() and Duel.IsExistingTarget(c39732186.thfilter,tp,LOCATION_GRAVE,0,1,c)
 end
--- 过滤函数：选择墓地4星以下的电子界族怪兽
+-- ②效果对象过滤：等级4以下的电子界族怪兽且可以被加入手牌。
 function c39732186.thfilter(c)
 	return c:IsLevelBelow(4) and c:IsRace(RACE_CYBERSE) and c:IsAbleToHand()
 end
--- 效果②的发动费用：从墓地除外1张卡
+-- ②效果发动代价：确认自己墓地存在可除外且能保证有对象可选的卡，让玩家选择1张除外作为代价。
 function c39732186.thcost2(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否满足效果②的发动费用条件
+	-- 代价检查阶段：确认自己墓地存在至少1张可作为代价除外的卡且同时存在可加入手牌的对象。
 	if chk==0 then return Duel.IsExistingMatchingCard(c39732186.cfilter,tp,LOCATION_GRAVE,0,1,nil,tp) end
-	-- 提示玩家选择要除外的卡
+	-- 向玩家提示选择要除外的卡（发送选择消息）。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
-	-- 选择1张可除外的卡
+	-- 让玩家从自己墓地选择1张满足条件的卡作为除外代价。
 	local g=Duel.SelectMatchingCard(tp,c39732186.cfilter,tp,LOCATION_GRAVE,0,1,1,nil,tp)
-	-- 将选中的卡除外作为费用
+	-- 将选择的卡表侧除外，作为②效果的发动代价。
 	Duel.Remove(g,POS_FACEUP,REASON_COST)
 end
--- 效果②的发动宣言：选择1只4星以下的电子界族怪兽加入手牌
+-- ②效果目标处理：选择自己墓地1只4星以下电子界族怪兽作为对象，并设定将其加入手牌的操作信息。
 function c39732186.thtg2(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and c39732186.thfilter(chkc) end
 	if chk==0 then return true end
-	-- 提示玩家选择要加入手牌的卡
+	-- 向玩家提示选择要加入手牌的卡（发送选择消息）。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择1只4星以下的电子界族怪兽
+	-- 让玩家选择自己墓地1只满足条件的电子界族怪兽作为效果对象。
 	local g=Duel.SelectTarget(tp,c39732186.thfilter,tp,LOCATION_GRAVE,0,1,1,nil)
-	-- 设置连锁操作信息，指定将目标怪兽送回手牌
+	-- 设定将选择的对象卡加入手牌的操作信息。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,1,0,0)
 end
--- 效果②的处理：将目标怪兽送回手牌
+-- ②效果处理：若对象仍与效果关联，则将其加入持有者手卡。
 function c39732186.thop2(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的目标怪兽
+	-- 获取②效果发动时选择的对象卡。
 	local tc=Duel.GetFirstTarget()
 	if tc and tc:IsRelateToEffect(e) then
-		-- 将目标怪兽送回手牌
+		-- 将对象卡因效果返回持有者手卡。
 		Duel.SendtoHand(tc,nil,REASON_EFFECT)
 	end
 end
