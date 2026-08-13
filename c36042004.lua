@@ -14,31 +14,31 @@ function c36042004.initial_effect(c)
 	e1:SetOperation(c36042004.operation)
 	c:RegisterEffect(e1)
 end
--- 判断破坏原因是否包含效果破坏（REASON_EFFECT）和送去墓地（REASON_DESTROY）
+-- 判定这张卡被送去墓地的原因是否为效果破坏（通过位运算检查r同时包含效果破坏相关标志位）。
 function c36042004.condition(e,tp,eg,ep,ev,re,r,rp)
 	return bit.band(r,0x41)==0x41
 end
--- 过滤满足等级4以下、恐龙族、可以特殊召唤的怪兽
+-- 筛选条件：满足4星以下、恐龙族且能被当前效果特殊召唤的怪兽。
 function c36042004.filter(c,e,tp)
 	return c:IsLevelBelow(4) and c:IsRace(RACE_DINOSAUR)
 		and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 设置连锁处理信息，表示将要从卡组特殊召唤1只怪兽
+-- 效果发动的目标阶段：仅在发动时返回true，并设置本次操作的信息为从卡组特殊召唤1只怪兽。
 function c36042004.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置连锁处理信息，表示将要从卡组特殊召唤1只怪兽
+	-- 设置操作信息：本次效果属于特殊召唤分类，从卡组特殊召唤1只怪兽（处理时确定具体卡），目标玩家为tp。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_DECK)
 end
--- 检查场上是否有空位，若无则不执行特殊召唤；否则提示选择并执行特殊召唤
+-- 效果处理阶段：先确认我方主要怪兽区有空位，然后从卡组选择1只符合条件的恐龙族怪兽以表侧表示特殊召唤。
 function c36042004.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查玩家场上是否有空位，若无则不执行特殊召唤
+	-- 若我方主要怪兽区没有可用的空格，则效果处理失败，直接结束。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-	-- 提示玩家选择要特殊召唤的卡
+	-- 向玩家tp弹出选择提示，提示内容为“请选择要特殊召唤的卡”。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 从卡组选择满足条件的1只怪兽
+	-- 从tp的卡组中选择1张满足filter过滤条件的卡，不取对象，在处理时确定具体特殊召唤的怪兽。
 	local g=Duel.SelectMatchingCard(tp,c36042004.filter,tp,LOCATION_DECK,0,1,1,nil,e,tp)
 	if g:GetCount()>0 then
-		-- 将选中的怪兽正面表示特殊召唤到场上
+		-- 将选择的怪兽以表侧攻击表示特殊召唤到tp的场上。
 		Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
