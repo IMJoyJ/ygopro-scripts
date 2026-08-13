@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：自己场上的怪兽数量是对方场上的怪兽数量以下的场合才能发动。自己以及对方场上的怪兽的攻击力直到回合结束时上升那怪兽的控制者场上的怪兽的等级合计×100。
 function c18752707.initial_effect(c)
-	-- 效果发动条件设置为自由时点且需要满足条件、有目标、有发动效果
+	-- ①：自己场上的怪兽数量是对方场上的怪兽数量以下的场合才能发动。自己以及对方场上的怪兽的攻击力直到回合结束时上升那怪兽的控制者场上的怪兽的等级合计×100。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
@@ -11,27 +11,27 @@ function c18752707.initial_effect(c)
 	e1:SetOperation(c18752707.activate)
 	c:RegisterEffect(e1)
 end
--- 效果发动条件：自己场上的怪兽数量是对方场上的怪兽数量以下的场合才能发动
+-- 定义效果的发动条件：己方场上怪兽数量不超过对方场上怪兽数量时才能发动。
 function c18752707.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 自己场上的怪兽数量小于等于对方场上的怪兽数量
+	-- 检查己方场上主要怪兽区的怪兽数量是否不大于对方场上主要怪兽区的怪兽数量。
 	return Duel.GetFieldGroupCount(tp,LOCATION_MZONE,0)<=Duel.GetFieldGroupCount(tp,0,LOCATION_MZONE)
 end
--- 效果发动目标：检查自己场上是否存在表侧表示的怪兽
+-- 效果发动时的目标检查函数，此处仅验证场上是否存在表侧表示怪兽，以决定是否满足发动条件。
 function c18752707.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查自己场上是否存在至少1张表侧表示的怪兽
+	-- 发动时确认双方场上合计存在至少1只表侧表示怪兽（若不存在则不能发动）。
 	if chk==0 then return Duel.IsExistingMatchingCard(Card.IsFaceup,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil) end
 end
--- 效果发动时的处理：检索满足条件的怪兽组并为它们设置攻击力提升效果
+-- 效果处理部分：收集场上所有表侧表示怪兽，分别计算双方各自场上表侧表示怪兽的等级合计×100，然后为每只表侧怪兽赋予对应的攻击力上升效果，持续到回合结束。
 function c18752707.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 检索自己场上所有表侧表示的怪兽
+	-- 获取双方场上所有表侧表示怪兽的集合。
 	local g=Duel.GetMatchingGroup(Card.IsFaceup,tp,LOCATION_MZONE,LOCATION_MZONE,nil)
 	local tc=g:GetFirst()
-	-- 计算自己场上所有表侧表示怪兽的等级总和并乘以100作为攻击力提升值
+	-- 计算己方场上所有表侧表示怪兽的等级合计×100，作为己方控制怪兽的攻击力上升数值。
 	local val1=Duel.GetMatchingGroup(Card.IsFaceup,tp,LOCATION_MZONE,0,nil):GetSum(Card.GetLevel)*100
-	-- 计算对方场上所有表侧表示怪兽的等级总和并乘以100作为攻击力提升值
+	-- 计算对方场上所有表侧表示怪兽的等级合计×100，作为对方控制怪兽的攻击力上升数值。
 	local val2=Duel.GetMatchingGroup(Card.IsFaceup,tp,0,LOCATION_MZONE,nil):GetSum(Card.GetLevel)*100
 	while tc do
-		-- 为每张符合条件的怪兽设置攻击力提升效果，提升值根据控制者不同而不同
+		-- 自己以及对方场上的怪兽的攻击力直到回合结束时上升那怪兽的控制者场上的怪兽的等级合计×100。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)

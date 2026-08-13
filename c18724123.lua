@@ -9,8 +9,8 @@ function c18724123.initial_effect(c)
 	e1:SetCondition(c18724123.con)
 	c:RegisterEffect(e1)
 end
--- 检查当前控制者手卡数量是否为0
+-- 直接攻击效果的发动条件函数：判定当前效果控制者（这张卡的控制者）的手牌数是否为0，条件满足时才允许直接攻击。
 function c18724123.con(e)
-	-- 获取当前卡片控制者手上卡片数量并判断是否为0
+	-- 获取效果控制者手牌区的卡牌数量，并与0比较，用于判断其手卡是否为0张。
 	return Duel.GetFieldGroupCount(e:GetHandlerPlayer(),LOCATION_HAND,0)==0
 end

@@ -18,26 +18,26 @@ function c18658572.initial_effect(c)
 	e2:SetOperation(c18658572.cfop)
 	c:RegisterEffect(e2)
 end
--- 判断是否为自己的结束阶段且自己卡组不为空
+-- 条件判断函数的整体：判定是否在己方结束阶段且己方卡组中还有卡。
 function c18658572.cfcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 当前回合玩家为效果持有者且自己卡组数量不为0
+	-- 返回条件：当前回合玩家为自己（tp），且自己卡组中卡片数量不为0。
 	return Duel.GetTurnPlayer()==tp and Duel.GetFieldGroupCount(tp,LOCATION_DECK,0)~=0
 end
--- 检索满足条件的卡片组并移动到卡组最上方，确认卡组最上方的卡，询问是否里侧表示从游戏中除外
+-- 效果处理函数的整体：若己方卡组有卡，则取出卡组最下方的卡，将其移动到卡组最上方并展示，然后由自己选择是否将那张卡里侧表示从游戏中除外。
 function c18658572.cfop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取自己卡组中的所有卡片
+	-- 获取自己卡组中的所有卡，存入组g。
 	local g=Duel.GetFieldGroup(tp,LOCATION_DECK,0)
 	if g:GetCount()==0 then return end
 	local tc=g:GetMinGroup(Card.GetSequence):GetFirst()
-	-- 将目标卡片移动到卡组最上方
+	-- 将取出的那张卡移动到卡组最上方。
 	Duel.MoveSequence(tc,SEQ_DECKTOP)
-	-- 确认玩家卡组最上方的1张卡
+	-- 确认自己卡组最上方的1张卡（即刚移动上来的那张卡），展示给双方。
 	Duel.ConfirmDecktop(tp,1)
-	-- 判断目标卡是否可以除外且玩家选择里侧表示从游戏中除外
+	-- 检查该卡是否可以被自己里侧除外，并询问自己是否要将其里侧表示除外。
 	if tc:IsAbleToRemove(tp,POS_FACEDOWN) and Duel.SelectYesNo(tp,aux.Stringid(18658572,1)) then  --"是否要里侧表示从游戏中除外？"
-		-- 禁止接下来的除外操作进行洗卡检测
+		-- 禁用系统自动洗牌检查，避免从卡组除外卡片后系统自动洗切卡组。
 		Duel.DisableShuffleCheck()
-		-- 以里侧表示从游戏中除外目标卡片
+		-- 将该卡以里侧表示从游戏中除外（原因：效果）。
 		Duel.Remove(tc,POS_FACEDOWN,REASON_EFFECT)
 	end
 end
