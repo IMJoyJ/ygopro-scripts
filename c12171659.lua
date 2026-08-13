@@ -3,7 +3,7 @@
 -- ①：把这张卡从手卡丢弃去墓地才能发动。从卡组把1张「天空的圣域」加入手卡。
 -- ②：场上没有「天空的圣域」存在的场合这张卡破坏。
 function c12171659.initial_effect(c)
-	-- 为卡片注册「天空的圣域」的卡片代码，用于后续效果判断
+	-- 将卡名「天空的圣域」（密码56433456）登记进本卡的代码列表，用于标记效果文本中提到的这张关联卡。
 	aux.AddCodeList(c,56433456)
 	-- ①：把这张卡从手卡丢弃去墓地才能发动。从卡组把1张「天空的圣域」加入手卡。
 	local e1=Effect.CreateEffect(c)
@@ -24,37 +24,37 @@ function c12171659.initial_effect(c)
 	e2:SetCondition(c12171659.descon)
 	c:RegisterEffect(e2)
 end
--- 效果的发动费用函数，用于检查是否满足丢弃条件并执行丢弃操作
+-- 效果①的代价函数：检查阶段判定这张卡能否从手卡丢弃作为COST；发动时把自身从手卡送去墓地并标记为代价丢弃。
 function c12171659.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	if chk==0 then return c:IsAbleToGraveAsCost() and c:IsDiscardable() end
-	-- 将该卡从手卡丢弃至墓地作为发动代价
+	-- 以“代价+丢弃”的原因将作为COST的这张卡从手卡送去墓地。
 	Duel.SendtoGrave(c,REASON_COST+REASON_DISCARD)
 end
--- 用于过滤卡组中「天空的圣域」卡片的函数
+-- 检索过滤器：目标卡必须是「天空的圣域」（56433456），且能够被加入手卡。
 function c12171659.filter(c)
 	return c:IsCode(56433456) and c:IsAbleToHand()
 end
--- 效果的目标选择函数，用于判断是否能检索「天空的圣域」
+-- 效果①的发动目标处理：检查卡组中是否存在可检索的「天空的圣域」，并设置这次效果的操作信息为从卡组把1张卡加入手卡。
 function c12171659.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查场上是否存在满足条件的「天空的圣域」卡片
+	-- 发动合法性检查：己方卡组中存在至少1张满足过滤条件的「天空的圣域」才能发动。
 	if chk==0 then return Duel.IsExistingMatchingCard(c12171659.filter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置连锁操作信息，表示将从卡组检索1张「天空的圣域」加入手卡
+	-- 设置操作信息：本效果处理时会把1张卡从卡组加入手卡，供相关效果或时点检测使用。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 效果的处理函数，用于执行检索并展示卡片
+-- 效果①的解决处理：从卡组选取1张「天空的圣域」送入持有者手卡，并向对方玩家展示。
 function c12171659.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 从卡组中检索满足条件的第一张「天空的圣域」卡片
+	-- 从己方卡组取得第一张满足过滤条件的「天空的圣域」，若不存在则为nil。
 	local tg=Duel.GetFirstMatchingCard(c12171659.filter,tp,LOCATION_DECK,0,nil)
 	if tg then
-		-- 将检索到的「天空的圣域」加入手卡
+		-- 以效果原因将这张「天空的圣域」加入其持有者的手卡。
 		Duel.SendtoHand(tg,nil,REASON_EFFECT)
-		-- 向对手确认展示检索到的「天空的圣域」卡片
+		-- 向对方玩家确认这张刚检索到的「天空的圣域」，使检索结果公开。
 		Duel.ConfirmCards(1-tp,tg)
 	end
 end
--- 判断该卡是否需要因场上无「天空的圣域」而破坏的条件函数
+-- 效果②的自毁条件函数：满足“场上没有「天空的圣域」存在”这一条件时，这张卡将自毁。
 function c12171659.descon(e)
-	-- 判断当前场上是否没有「天空的圣域」场地卡
+	-- 返回“场上不存在卡号为56433456的「天空的圣域」环境”这一判定结果。
 	return not Duel.IsEnvironment(56433456)
 end

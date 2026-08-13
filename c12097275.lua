@@ -32,23 +32,23 @@ function c12097275.initial_effect(c)
 	e3:SetOperation(c12097275.thop)
 	c:RegisterEffect(e3)
 end
--- 效果处理时的Target选择函数，用于选择对方场上的表侧表示怪兽
+-- ①效果的发动条件与取对象处理：选择对方场上1只攻击力不为0的表侧表示怪兽作为对象，若不存在合法对象则不能发动。
 function c12097275.atktg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	-- 判断当前是否在选择目标，如果是则返回是否满足条件的怪兽
+	-- 连锁处理时判定候选对象是否合法：必须是对方场上的表侧表示怪兽且攻击力不为0。
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(1-tp) and aux.nzatk(chkc) end
-	-- 判断是否满足发动条件，即对方场上是否存在表侧表示且攻击力不为0的怪兽
+	-- 发动时检查是否存在至少1只对方场上的表侧表示且攻击力不为0的怪兽可以作为对象。
 	if chk==0 then return Duel.IsExistingTarget(aux.nzatk,tp,0,LOCATION_MZONE,1,nil) end
-	-- 提示玩家选择目标怪兽
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)
-	-- 选择对方场上满足条件的1只表侧表示怪兽作为目标
+	-- 显示选择表侧表示怪兽的提示信息，引导玩家进行选择。
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
+	-- 从对方场上的表侧表示且攻击力不为0的怪兽中选择1只作为效果对象。
 	Duel.SelectTarget(tp,aux.nzatk,tp,0,LOCATION_MZONE,1,1,nil)
 end
--- 效果处理时的Operation函数，用于执行攻击力变更效果
+-- ①效果处理：若对象怪兽仍表侧表示且与效果关联，则将其攻击力变成原本攻击力的一半直到回合结束。
 function c12097275.atkop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁中选择的目标怪兽
+	-- 取得①效果选择的对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsFaceup() and tc:IsRelateToEffect(e) then
-		-- 创建一个改变目标怪兽攻击力的效果，将其攻击力变为原来的一半
+		-- 那只怪兽的攻击力直到回合结束时变成原本攻击力的一半。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_SET_ATTACK_FINAL)
@@ -57,35 +57,35 @@ function c12097275.atkop(e,tp,eg,ep,ev,re,r,rp)
 		tc:RegisterEffect(e1)
 	end
 end
--- 判断是否满足①效果发动条件，即是否为「刚鬼」卡的效果特殊召唤成功
+-- 此条件用于区分用「刚鬼」卡的效果特殊召唤成功的场合（e2的追加条件），与召唤成功时共用同一套效果处理。
 function c12097275.atkcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsSpecialSummonSetCard(0xfc)
 end
--- 判断是否满足②效果发动条件，即是否从场上送去墓地
+-- ②效果的发动条件：这张卡从场上（怪兽区域或魔陷区域）被送去墓地的场合才能发动。
 function c12097275.thcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsPreviousLocation(LOCATION_ONFIELD)
 end
--- 检索过滤函数，用于筛选「刚鬼」卡组中除自身外的卡
+-- 检索过滤条件：卡组中满足「刚鬼」字段、不是「刚鬼 熊抱熊精」自身且能够加入手卡的卡。
 function c12097275.thfilter(c)
 	return c:IsSetCard(0xfc) and not c:IsCode(12097275) and c:IsAbleToHand()
 end
--- 效果处理时的Target选择函数，用于选择要加入手卡的「刚鬼」卡
+-- ②效果发动时的目标判定：确认卡组存在符合条件的「刚鬼」卡，并向系统宣告本次操作会加入手卡。
 function c12097275.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断是否满足发动条件，即卡组中是否存在满足条件的「刚鬼」卡
+	-- 判断卡组中是否存在至少1张符合条件的「刚鬼」卡。
 	if chk==0 then return Duel.IsExistingMatchingCard(c12097275.thfilter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置操作信息，表示将从卡组检索1张「刚鬼」卡加入手卡
+	-- 设置操作信息：本次效果处理会将1张卡从卡组加入手卡，用于后续连锁检测与效果抵消判定。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 效果处理时的Operation函数，用于执行检索并加入手卡效果
+-- ②效果处理：从卡组选1张符合条件的「刚鬼」卡加入手卡，并让对方确认。
 function c12097275.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要加入手卡的卡
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)
-	-- 从卡组中选择满足条件的1张「刚鬼」卡
+	-- 显示选择要加入手牌的卡的提示信息。
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
+	-- 从卡组筛选并选择1张符合条件的「刚鬼」卡。
 	local g=Duel.SelectMatchingCard(tp,c12097275.thfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的卡以效果原因送入手卡
+		-- 将选择的卡加入其持有者的手卡，原因记为效果。
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 向对方确认送入手卡的卡
+		-- 让对手确认加入手卡的那张卡。
 		Duel.ConfirmCards(1-tp,g)
 	end
 end

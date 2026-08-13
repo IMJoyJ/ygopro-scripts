@@ -38,79 +38,79 @@ function c12213463.initial_effect(c)
 	e3:SetOperation(c12213463.tgop)
 	c:RegisterEffect(e3)
 end
--- 过滤函数，用于判断场上是否存在龙族或植物族的调整
+-- 定义过滤条件：对方场上表侧表示且为龙族或植物族的调整怪兽。
 function c12213463.cfilter(c)
 	return c:IsFaceup() and c:IsRace(RACE_DRAGON+RACE_PLANT) and c:IsType(TYPE_TUNER)
 end
--- 效果①的发动条件判断函数
+-- 发动条件判断：自己场上存在满足cfilter条件的表侧表示龙族或植物族调整怪兽。
 function c12213463.spcon1(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查自己场上是否存在至少1张龙族或植物族的调整
+	-- 检查自己场上是否有至少1只符合cfilter条件的表侧表示龙族或植物族调整怪兽。
 	return Duel.IsExistingMatchingCard(c12213463.cfilter,tp,LOCATION_MZONE,0,1,nil)
 end
--- 效果①的发动时点处理函数
+-- 效果发动目标判断：需要空出主要怪兽区，且这张卡自身可以被特殊召唤。
 function c12213463.sptg1(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断是否满足特殊召唤的条件：场上存在空位且自身可以特殊召唤
+	-- 效果发动时检查自己场上是否有空余的主要怪兽区。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置效果①的发动信息，表示将特殊召唤自身
+	-- 设置操作信息：本次效果处理将进行特殊召唤（对象为本卡）。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 效果①的发动处理函数
+-- 效果处理：从手卡将这张卡特殊召唤到自己场上。
 function c12213463.spop1(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if not c:IsRelateToEffect(e) then return end
-	-- 将自身特殊召唤到场上
+	-- 将这张卡以表侧攻击/守备表示特殊召唤到自己场上，不检查召唤条件和苏生限制。
 	Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 end
--- 过滤函数，用于筛选「蔷薇龙」怪兽（除自身外）
+-- 定义过滤条件：是「蔷薇龙」怪兽、不是「白蔷薇龙」本人、且可以被特殊召唤。
 function c12213463.spfilter(c,e,tp)
 	return c:IsSetCard(0x1123) and not c:IsCode(12213463) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 效果②的发动时点处理函数
+-- 效果发动目标判断：需要空出主要怪兽区，并在手卡·墓地中存在符合条件的「蔷薇龙」怪兽。
 function c12213463.sptg2(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断是否满足特殊召唤的条件：场上存在空位且存在符合条件的「蔷薇龙」怪兽
+	-- 效果发动时检查自己场上是否有空余的主要怪兽区。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查自己手牌或墓地是否存在至少1张符合条件的「蔷薇龙」怪兽
+		-- 检查手卡·墓地中是否存在1张满足spfilter的「蔷薇龙」怪兽。
 		and Duel.IsExistingMatchingCard(c12213463.spfilter,tp,LOCATION_HAND+LOCATION_GRAVE,0,1,nil,e,tp) end
-	-- 设置效果②的发动信息，表示将特殊召唤1只「蔷薇龙」怪兽
+	-- 设置操作信息：本次效果处理将进行特殊召唤，对象来自手卡·墓地。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_HAND+LOCATION_GRAVE)
 end
--- 效果②的发动处理函数
+-- 效果处理：选择手卡·墓地中1只符合条件的「蔷薇龙」怪兽特殊召唤。
 function c12213463.spop2(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断场上是否还有空位，若无则不执行效果
+	-- 效果处理前再次确认自己主要怪兽区仍有空位，否则不处理。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-	-- 提示玩家选择要特殊召唤的卡
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
-	-- 选择符合条件的「蔷薇龙」怪兽（排除受王家长眠之谷影响的卡）
+	-- 弹出选择提示，要求玩家选择要特殊召唤的卡。
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
+	-- 从手卡·墓地中筛选出符合条件且不受王家长眠之谷影响的「蔷薇龙」怪兽，由玩家选择1张。
 	local g=Duel.SelectMatchingCard(tp,aux.NecroValleyFilter(c12213463.spfilter),tp,LOCATION_HAND+LOCATION_GRAVE,0,1,1,nil,e,tp)
 	if g:GetCount()>0 then
-		-- 将选中的怪兽特殊召唤到场上
+		-- 将选择的「蔷薇龙」怪兽以表侧表示特殊召唤到自己场上。
 		Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
--- 效果③的发动条件判断函数
+-- 效果发动条件：这张卡在墓地且作为同调素材被送去墓地。
 function c12213463.tgcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsLocation(LOCATION_GRAVE) and r==REASON_SYNCHRO
 end
--- 过滤函数，用于筛选4星以上且为植物族的怪兽
+-- 定义过滤条件：等级4以上、植物族、且可以被送去墓地。
 function c12213463.tgfilter(c)
 	return c:IsLevelAbove(4) and c:IsRace(RACE_PLANT) and c:IsAbleToGrave()
 end
--- 效果③的发动时点处理函数
+-- 效果发动目标判断：卡组中存在等级4以上的植物族怪兽，并设置送去墓地的操作信息。
 function c12213463.tgtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查卡组中是否存在至少1张符合条件的怪兽
+	-- 检查卡组中是否有至少1只等级4以上且植物族的怪兽。
 	if chk==0 then return Duel.IsExistingMatchingCard(c12213463.tgfilter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置效果③的发动信息，表示将送去墓地1只怪兽
+	-- 设置操作信息：本次效果处理将把卡组中的怪兽送去墓地。
 	Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,nil,1,tp,LOCATION_DECK)
 end
--- 效果③的发动处理函数
+-- 效果处理：从卡组选择1只等级4以上的植物族怪兽送去墓地。
 function c12213463.tgop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要送去墓地的卡
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)
-	-- 从卡组中选择1张符合条件的怪兽
+	-- 弹出选择提示，要求玩家选择要送去墓地的卡。
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
+	-- 从卡组中筛选出等级4以上且植物族的怪兽，由玩家选择1张。
 	local g=Duel.SelectMatchingCard(tp,c12213463.tgfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的怪兽送去墓地
+		-- 将选择的怪兽以效果原因送去墓地。
 		Duel.SendtoGrave(g,REASON_EFFECT)
 	end
 end
