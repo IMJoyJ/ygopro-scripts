@@ -25,29 +25,29 @@ function c22398665.initial_effect(c)
 	e2:SetOperation(c22398665.thop)
 	c:RegisterEffect(e2)
 end
--- 过滤函数，用于判断是否为场上表侧表示的「龙辉巧」怪兽且攻击力不低于1000。
+-- 过滤函数：选择我方场上表侧表示、属于「龙辉巧」系列且攻击力1000以上的怪兽，作为②效果可选对象。
 function c22398665.cfilter(c)
 	return c:IsFaceup() and c:IsSetCard(0x154) and c:IsAttackAbove(1000)
 end
--- 设置效果处理时的条件判断，检查是否满足选择对象和将此卡加入手卡的条件。
+-- ②效果的发动目标判定函数：确认场上存在符合条件的「龙辉巧」怪兽且自身在墓地可加入手卡，然后选择1只符合条件的怪兽作为对象，并设置将自身加入手卡的操作信息。
 function c22398665.thtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and c22398665.cfilter(chkc) end
-	-- 条件判断：检查场上是否存在满足cfilter条件的怪兽，且此卡可以加入手卡。
+	-- 发动合法性检查：场上存在1只符合条件的表侧「龙辉巧」怪兽，且这张卡在墓地能够加入手卡。
 	if chk==0 then return Duel.IsExistingTarget(c22398665.cfilter,tp,LOCATION_MZONE,0,1,nil) and e:GetHandler():IsAbleToHand() end
-	-- 提示玩家选择效果的对象。
+	-- 弹出选择提示，让玩家选择效果对象（“请选择效果的对象”）。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)  --"请选择效果的对象"
-	-- 选择满足cfilter条件的场上1只怪兽作为效果对象。
+	-- 选择1只符合条件的「龙辉巧」怪兽作为效果对象，并将其登记为当前连锁的对象。
 	Duel.SelectTarget(tp,c22398665.cfilter,tp,LOCATION_MZONE,0,1,1,nil)
-	-- 设置效果处理信息，表示此效果会将此卡加入手卡。
+	-- 设置操作信息：这张卡将加入持有者手卡，分类为回手牌，数量1。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,e:GetHandler(),1,0,0)
 end
--- 处理效果的执行函数，对目标怪兽造成攻击力下降1000的效果，并将此卡加入手卡。
+-- ②效果处理：对象怪兽攻击力下降1000，持续到对方回合结束；若对象未受反转增减效果影响且这张卡仍与效果关联，则将这张卡加入手卡。
 function c22398665.thop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取当前连锁中选择的目标怪兽。
+	-- 获取效果对象（选择的那只「龙辉巧」怪兽）。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsFaceup() and tc:IsRelateToEffect(e) and tc:IsAttackAbove(1000) and not tc:IsImmuneToEffect(e) then
-		-- 创建一个攻击力减少1000的效果并注册到目标怪兽上。
+		-- 那只怪兽的攻击力直到对方回合结束时下降1000。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)
@@ -56,30 +56,30 @@ function c22398665.thop(e,tp,eg,ep,ev,re,r,rp)
 		e1:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END+RESET_OPPO_TURN)
 		tc:RegisterEffect(e1)
 		if not tc:IsHasEffect(EFFECT_REVERSE_UPDATE) and c:IsRelateToEffect(e) then
-			-- 将此卡以效果原因送入手卡。
+			-- 将这张卡（流星辉巧群）以效果原因加入持有者手卡。
 			Duel.SendtoHand(c,nil,REASON_EFFECT)
 		end
 	end
 end
--- ①：攻击力合计直到变成仪式召唤的怪兽的攻击力以上为止，把自己的手卡·场上的机械族怪兽解放，从自己的手卡·墓地把1只仪式怪兽仪式召唤。
+-- ①效果的发动目标判定函数：确认存在可用机械族解放素材，且手卡·墓地存在能通过解放这些素材进行仪式召唤的仪式怪兽；满足时设置特殊召唤的操作信息。
 function c22398665.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then
-		-- 获取玩家的仪式召唤素材，并筛选出种族为机械族的卡片。
+		-- 获取可以作为仪式素材的卡组，并筛选出机械族怪兽作为可解放素材。
 		local mg=Duel.GetRitualMaterialEx(tp):Filter(Card.IsRace,nil,RACE_MACHINE)
-		-- 检查是否存在满足仪式召唤条件的怪兽。
+		-- 检查手卡·墓地是否存在1只满足条件的仪式怪兽，能够使用机械族素材以“攻击力合计大于等于其攻击力”的方式进行仪式召唤。
 		return Duel.IsExistingMatchingCard(c22398665.RitualUltimateFilter,tp,LOCATION_HAND+LOCATION_GRAVE,0,1,nil,nil,e,tp,mg,nil,aux.GetCappedAttack,"Greater")
 	end
-	-- 设置效果处理信息，表示此效果会特殊召唤1只仪式怪兽。
+	-- 设置操作信息：将从手卡·墓地特殊召唤1只仪式怪兽（分类为特殊召唤）。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_HAND+LOCATION_GRAVE)
 end
--- ①：攻击力合计直到变成仪式召唤的怪兽的攻击力以上为止，把自己的手卡·场上的机械族怪兽解放，从自己的手卡·墓地把1只仪式怪兽仪式召唤。
+-- ①效果处理：选择1只仪式怪兽，选择满足攻击力合计要求的机械族解放素材，解放素材后进行仪式召唤。
 function c22398665.operation(e,tp,eg,ep,ev,re,r,rp)
 	::cancel::
-	-- 获取玩家的仪式召唤素材，并筛选出种族为机械族的卡片。
+	-- 在效果处理时重新获取机械族仪式素材，用于选择解放的组合。
 	local mg=Duel.GetRitualMaterialEx(tp):Filter(Card.IsRace,nil,RACE_MACHINE)
-	-- 提示玩家选择要特殊召唤的仪式怪兽。
+	-- 提示玩家选择要仪式召唤的怪兽（“请选择要特殊召唤的卡”）。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 选择满足仪式召唤条件的1只怪兽。
+	-- 从手卡·墓地选择1只满足条件的仪式怪兽（不受王家长眠之谷影响，且可用机械族素材以攻击力合计≥其攻击力的方式仪式召唤）。
 	local tg=Duel.SelectMatchingCard(tp,aux.NecroValleyFilter(c22398665.RitualUltimateFilter),tp,LOCATION_HAND+LOCATION_GRAVE,0,1,1,nil,nil,e,tp,mg,nil,aux.GetCappedAttack,"Greater")
 	local tc=tg:GetFirst()
 	if tc then
@@ -89,66 +89,66 @@ function c22398665.operation(e,tp,eg,ep,ev,re,r,rp)
 		else
 			mg:RemoveCard(tc)
 		end
-		-- 提示玩家选择要解放的怪兽。
+		-- 提示玩家选择要解放的机械族怪兽作为仪式素材（“请选择要解放的卡”）。
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_RELEASE)  --"请选择要解放的卡"
-		-- 设置仪式召唤的附加条件。
+		-- 设置额外的素材组合检查函数：用于校验所选素材组的攻击力合计不超过仪式怪兽攻击力的某个约束（针对“大于等于”检索方式，实际上是用于限制额外选择标准，防止过度解放）。
 		aux.GCheckAdditional=c22398665.RitualCheckAdditional(tc,tc:GetAttack(),"Greater")
 		local mat=mg:SelectSubGroup(tp,c22398665.RitualCheck,true,1,#mg,tp,tc,tc:GetAttack(),"Greater")
-		-- 清除仪式召唤的附加条件。
+		-- 清除额外的素材组合检查函数，避免影响后续选择。
 		aux.GCheckAdditional=nil
 		if not mat then goto cancel end
 		tc:SetMaterial(mat)
-		-- 解放选中的仪式召唤素材。
+		-- 将选择的素材作为仪式召唤的解放释放（仪式召唤手续）。
 		Duel.ReleaseRitualMaterial(mat)
-		-- 中断当前效果处理，使后续效果视为不同时处理。
+		-- 中断当前效果链，使仪式召唤的后续处理视为不同时处理，避免错过时点。
 		Duel.BreakEffect()
-		-- 以仪式召唤方式将选中的怪兽特殊召唤到场上。
+		-- 将选择的怪兽以仪式召唤方式表侧攻击表示特殊召唤到场上。
 		Duel.SpecialSummon(tc,SUMMON_TYPE_RITUAL,tp,tp,false,true,POS_FACEUP)
 		tc:CompleteProcedure()
 	end
 end
--- 判断给定的怪兽组中是否存在攻击力总和大于等于指定值的组合。
+-- 判断素材组攻击力合计是否大于等于仪式怪兽攻击力（用于“攻击力合计直到变成仪式召唤的怪兽的攻击力以上”）。
 function c22398665.RitualCheckGreater(g,c,atk)
 	if atk==0 then return false end
-	-- 设置当前选中的卡片组。
+	-- 将当前检查的素材组设置为已选择卡，供其它检查函数参考。
 	Duel.SetSelectedCard(g)
-	-- 判断给定的怪兽组中是否存在攻击力总和大于等于指定值的组合。
+	-- 检查素材组攻击力合计是否大于等于目标攻击力。
 	return g:CheckWithSumGreater(aux.GetCappedAttack,atk)
 end
--- 判断给定的怪兽组中是否存在攻击力总和等于指定值的组合。
+-- 判断素材组攻击力合计是否恰好等于仪式怪兽攻击力（备用相等检查，本效果未使用）。
 function c22398665.RitualCheckEqual(g,c,atk)
 	if atk==0 then return false end
-	-- 判断给定的怪兽组中是否存在攻击力总和等于指定值的组合。
+	-- 检查素材组攻击力合计是否恰好等于目标攻击力，用于精确等量解放。
 	return g:CheckWithSumEqual(aux.GetCappedAttack,atk,#g,#g)
 end
--- 判断给定的怪兽组是否满足仪式召唤的条件。
+-- 综合检查素材组是否满足：攻击力条件、解放后空余怪兽区足够、且满足怪兽自身素材限制和额外限制。
 function c22398665.RitualCheck(g,tp,c,atk,greater_or_equal)
-	-- 判断给定的怪兽组是否满足仪式召唤的条件。
+	-- 检查素材组攻击力满足“大于等于/等于”条件，并且解放素材后自己场上有足够怪兽区域容纳仪式召唤。
 	return c22398665["RitualCheck"..greater_or_equal](g,c,atk) and Duel.GetMZoneCount(tp,g,tp)>0 and (not c.mat_group_check or c.mat_group_check(g,tp))
-		-- 判断给定的怪兽组是否满足仪式召唤的附加条件。
+		-- 追加检查怪兽自身素材组限制和全局额外仪式素材限制。
 		and (not aux.RCheckAdditional or aux.RCheckAdditional(tp,g,c))
 end
--- 根据指定的条件创建一个用于判断仪式召唤附加条件的过滤函数。
+-- 构造额外的素材组检查函数：对于“等于”要求，素材组攻击力合计不能超过仪式怪兽攻击力；对于“大于”要求，在使用额外卡（ec）时需扣除其攻击力后仍不超过目标攻击力。
 function c22398665.RitualCheckAdditional(c,atk,greater_or_equal)
 	if greater_or_equal=="Equal" then
 		return	function(g)
-					-- 判断给定的怪兽组中攻击力总和是否小于等于指定值。
+					-- 检查素材组攻击力合计不超过仪式怪兽攻击力（用于等量解放时禁止超量）。
 					return (not aux.RGCheckAdditional or aux.RGCheckAdditional(g)) and g:GetSum(aux.GetCappedAttack)<=atk
 				end
 	else
 		return	function(g,ec)
 					if atk==0 then return #g<=1 end
 					if ec then
-						-- 判断给定的怪兽组中攻击力总和减去目标怪兽攻击力是否小于等于指定值。
+						-- 检查在考虑额外卡ec的攻击力后，素材组合计攻击力减去ec的攻击力不超过目标攻击力，以防止重复计算ec导致攻击力溢出。
 						return (not aux.RGCheckAdditional or aux.RGCheckAdditional(g,ec)) and g:GetSum(aux.GetCappedAttack)-aux.GetCappedAttack(ec)<=atk
 					else
-						-- 判断给定的怪兽组是否满足附加条件。
+						-- 仅检查全局额外素材限制，不校验具体攻击力（在未指定ec时）。
 						return not aux.RGCheckAdditional or aux.RGCheckAdditional(g)
 					end
 				end
 	end
 end
--- 判断给定的怪兽是否满足仪式召唤的条件。
+-- 仪式怪兽候选的终极过滤函数：必须是仪式怪兽、满足额外过滤、可被仪式召唤，且存在一组机械族素材能够以攻击力条件完成仪式召唤。
 function c22398665.RitualUltimateFilter(c,filter,e,tp,m1,m2,attack_function,greater_or_equal,chk)
 	if bit.band(c:GetType(),0x81)~=0x81 or (filter and not filter(c,e,tp,chk)) or not c:IsCanBeSpecialSummoned(e,SUMMON_TYPE_RITUAL,tp,false,true) then return false end
 	local mg=m1:Filter(Card.IsCanBeRitualMaterial,c,c)
@@ -161,10 +161,10 @@ function c22398665.RitualUltimateFilter(c,filter,e,tp,m1,m2,attack_function,grea
 		mg:RemoveCard(c)
 	end
 	local atk=attack_function(c)
-	-- 设置仪式召唤的附加条件。
+	-- 设置针对该候选怪兽的额外素材组合检查函数，用于选择素材时执行攻击力限制。
 	aux.GCheckAdditional=c22398665.RitualCheckAdditional(c,atk,greater_or_equal)
 	local res=mg:CheckSubGroup(c22398665.RitualCheck,1,#mg,tp,c,atk,greater_or_equal)
-	-- 清除仪式召唤的附加条件。
+	-- 清除额外素材组合检查函数，防止污染后续候选判断。
 	aux.GCheckAdditional=nil
 	return res
 end

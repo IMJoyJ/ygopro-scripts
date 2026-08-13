@@ -30,73 +30,73 @@ function c22411609.initial_effect(c)
 	e3:SetOperation(c22411609.tkop)
 	c:RegisterEffect(e3)
 end
--- 过滤函数，用于筛选满足条件的「火山」卡（不包括火山骑兵本身）
+-- 检索的过滤条件：筛选卡组中满足「火山」字段、不是「火山骑兵」本身且能够加入手卡的卡。
 function c22411609.thfilter(c)
 	return c:IsSetCard(0x32) and not c:IsCode(22411609) and c:IsAbleToHand()
 end
--- 效果处理时的判断条件，检查是否满足检索条件
+-- ①效果的发动目标判定：检查卡组中是否存在满足条件的「火山」卡，并设置本次效果将进行“从卡组加入手卡”的操作信息。
 function c22411609.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查场上是否有满足条件的「火山」卡
+	-- 效果合法性检查：确认卡组中存在至少1张满足检索条件的「火山」卡（非「火山骑兵」本身且可加入手卡）。
 	if chk==0 then return Duel.IsExistingMatchingCard(c22411609.thfilter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置操作信息，表示将从卡组检索1张卡加入手牌
+	-- 设置操作信息，标明本效果为从卡组检索并加入手卡，且预计处理1张卡。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 效果处理函数，选择并检索满足条件的卡
+-- ①效果处理：让发动者从卡组选出1张符合条件的「火山」卡加入手卡，并向对方展示。
 function c22411609.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要加入手牌的卡
+	-- 显示选择提示“请选择要加入手牌的卡”，引导玩家进行卡片选择。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择满足条件的卡
+	-- 从卡组选择1张符合条件的「火山」卡（不取对象，效果处理时选择）。
 	local g=Duel.SelectMatchingCard(tp,c22411609.thfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的卡加入手牌
+		-- 将选中的「火山」卡加入其持有者的手卡，原因为效果处理。
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 确认对方看到被加入手牌的卡
+		-- 让对方玩家确认加入手卡的卡片。
 		Duel.ConfirmCards(1-tp,g)
 	end
 end
--- 丢弃手卡作为发动代价
+-- ②效果的发动代价：丢弃1张手卡；先检查是否有可丢弃的手卡，再执行丢弃作为代价。
 function c22411609.tkcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否满足丢弃手卡的条件
+	-- 代价合法性检查：确认手卡中存在至少1张可以丢弃的卡。
 	if chk==0 then return Duel.IsExistingMatchingCard(Card.IsDiscardable,tp,LOCATION_HAND,0,1,nil) end
-	-- 执行丢弃手卡的操作
+	-- 丢弃1张手卡，作为发动②效果的代价（原因同时为COST和DISCARD）。
 	Duel.DiscardHand(tp,Card.IsDiscardable,1,1,REASON_COST+REASON_DISCARD)
 end
--- 设置特殊召唤衍生物的条件
+-- ②效果的目标合法性判定：检查对方主要怪兽区是否有空位，且自己能否在对方场上特殊召唤「炸弹衍生物」（炎族·炎·1星·攻/守1000）。
 function c22411609.tktg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查对方场上是否有空位
+	-- 检查对方主要怪兽区是否存在可用格子（从发动者视角来看对方场上的空格数要大于0）。
 	if chk==0 then return Duel.GetLocationCount(1-tp,LOCATION_MZONE,tp)>0
-		-- 检查是否可以特殊召唤衍生物
+		-- 检查自己是否能够在对方场上以表侧表示特殊召唤「炸弹衍生物」（满足其种族、属性、等级、攻守等参数要求）。
 		and Duel.IsPlayerCanSpecialSummonMonster(tp,22411610,0,TYPES_TOKEN_MONSTER,1000,1000,1,RACE_PYRO,ATTRIBUTE_FIRE,POS_FACEUP,1-tp) end
-	-- 设置操作信息，表示将特殊召唤衍生物
+	-- 设置操作信息：本效果涉及衍生物的生成。
 	Duel.SetOperationInfo(0,CATEGORY_TOKEN,nil,1,0,0)
-	-- 设置操作信息，表示将特殊召唤衍生物
+	-- 设置操作信息：本效果涉及特殊召唤。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,0,0)
 end
--- 特殊召唤衍生物并设置其效果
+-- ②效果处理：在对方场上特殊召唤1只「炸弹衍生物」，并给该衍生物注册“被破坏时其控制者受到500伤害”的持续效果。
 function c22411609.tkop(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查对方场上是否有空位
+	-- 效果处理时再次确认对方主要怪兽区仍有空位，若没有格子则效果不处理。
 	if Duel.GetLocationCount(1-tp,LOCATION_MZONE,tp)<=0 then return end
-	-- 检查是否可以特殊召唤衍生物
+	-- 效果处理时再次确认自己仍能特殊召唤该衍生物到对方场上，若不能则效果不处理。
 	if not Duel.IsPlayerCanSpecialSummonMonster(tp,22411610,0,TYPES_TOKEN_MONSTER,1000,1000,1,RACE_PYRO,ATTRIBUTE_FIRE,POS_FACEUP,1-tp) then return end
-	-- 创建「炸弹衍生物」
+	-- 创建1只「炸弹衍生物」的衍生物卡。
 	local token=Duel.CreateToken(tp,22411610)
-	-- 特殊召唤衍生物
+	-- 以分步特殊召唤方式将「炸弹衍生物」以表侧表示特殊召唤到对方场上。
 	if Duel.SpecialSummonStep(token,0,tp,1-tp,false,false,POS_FACEUP) then
-		-- 为衍生物设置被破坏时造成伤害的效果
+		-- 这衍生物被破坏时那个控制者受到500伤害。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_CONTINUOUS)
 		e1:SetCode(EVENT_LEAVE_FIELD)
 		e1:SetOperation(c22411609.damop)
 		token:RegisterEffect(e1,true)
 	end
-	-- 完成特殊召唤流程
+	-- 完成分步特殊召唤流程，触发特殊召唤成功时的相关时点。
 	Duel.SpecialSummonComplete()
 end
--- 衍生物被破坏时造成伤害的效果处理函数
+-- 衍生物的离场伤害效果：若该衍生物因破坏而离场，则给予其离场前的控制者500点效果伤害；效果处理完毕后自行重置。
 function c22411609.damop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsReason(REASON_DESTROY) then
-		-- 对衍生物的控制者造成500伤害
+		-- 给予该衍生物被破坏前的控制者500点效果伤害，伤害原因为效果。
 		Duel.Damage(c:GetPreviousControler(),500,REASON_EFFECT)
 	end
 	e:Reset()

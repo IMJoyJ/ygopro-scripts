@@ -4,7 +4,7 @@
 -- ①：让自己场上1只上级召唤的怪兽回到持有者手卡才能发动。这张卡从手卡特殊召唤。这个回合，自己不能从额外卡组把怪兽特殊召唤。
 -- ②：这张卡为上级召唤而被解放的场合才能发动。从卡组把「风帝家臣 迦楼姆」以外的1只攻击力800/守备力1000的怪兽加入手卡。
 function c22382087.initial_effect(c)
-	-- ①：让自己场上1只上级召唤的怪兽回到持有者手卡才能发动。这张卡从手卡特殊召唤。这个回合，自己不能从额外卡组把怪兽特殊召唤。
+	-- 「①：让自己场上1只上级召唤的怪兽回到持有者手卡才能发动。这张卡从手卡特殊召唤。这个回合，自己不能从额外卡组把怪兽特殊召唤。」
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e1:SetType(EFFECT_TYPE_IGNITION)
@@ -14,7 +14,7 @@ function c22382087.initial_effect(c)
 	e1:SetTarget(c22382087.sptg)
 	e1:SetOperation(c22382087.spop)
 	c:RegisterEffect(e1)
-	-- ②：这张卡为上级召唤而被解放的场合才能发动。从卡组把「风帝家臣 迦楼姆」以外的1只攻击力800/守备力1000的怪兽加入手卡。
+	-- 「②：这张卡为上级召唤而被解放的场合才能发动。从卡组把「风帝家臣 迦楼姆」以外的1只攻击力800/守备力1000的怪兽加入手卡。」
 	local e2=Effect.CreateEffect(c)
 	e2:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
 	e2:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
@@ -26,33 +26,33 @@ function c22382087.initial_effect(c)
 	e2:SetOperation(c22382087.thop)
 	c:RegisterEffect(e2)
 end
--- 过滤函数，检查自己场上是否存在1只上级召唤的怪兽且能送入手牌作为费用
+-- 定义①效果代价的筛选条件：我方场上1只进行过上级召唤的怪兽，且该怪兽能够作为代价返回手卡。
 function c22382087.cfilter(c)
 	return c:IsSummonType(SUMMON_TYPE_ADVANCE) and c:IsAbleToHandAsCost()
 end
--- 效果处理时，检查自己场上是否存在1只上级召唤的怪兽且能送入手牌作为费用，若存在则选择1只送入手牌作为费用
+-- ①效果的代价处理：检查时确认我方场上是否存在符合条件的上级召唤怪兽；实际发动时选择1只返回持有者手卡作为代价。
 function c22382087.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查自己场上是否存在1只上级召唤的怪兽且能送入手牌作为费用
+	-- 代价检查：确认自己场上是否存在至少1只满足“上级召唤过”且能被返回手卡的怪兽，若不存在则不能发动。
 	if chk==0 then return Duel.IsExistingMatchingCard(c22382087.cfilter,tp,LOCATION_MZONE,0,1,nil) end
-	-- 提示玩家选择要返回手牌的卡
+	-- 向发动玩家显示选择提示，提示内容为“请选择要返回手牌的卡”。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_RTOHAND)  --"请选择要返回手牌的卡"
-	-- 选择1只满足条件的上级召唤怪兽送入手牌作为费用
+	-- 由发动玩家从自己场上选择1只满足筛选条件的上级召唤怪兽，作为效果发动的代价。
 	local g=Duel.SelectMatchingCard(tp,c22382087.cfilter,tp,LOCATION_MZONE,0,1,1,nil)
-	-- 将所选怪兽送入手牌作为费用
+	-- 将所选怪兽返回其持有者手卡，支付原因标记为REASON_COST，作为发动效果的代价。
 	Duel.SendtoHand(g,nil,REASON_COST)
 end
--- 判断是否满足特殊召唤的条件，包括自己场上是否有足够的怪兽区域以及此卡是否能被特殊召唤
+-- ①效果的目标条件判定：确认自己主要怪兽区有可供特殊召唤的空格（用-1容忍代价先腾出格子），并且这张卡自身满足特殊召唤条件，满足才能发动。
 function c22382087.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断自己场上是否有足够的怪兽区域
+	-- 检查自己主要怪兽区是否存在可用空格；由于代价处理前判断，用-1表示允许通过返回怪兽腾出1个空格。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>-1
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置操作信息，表示此效果将特殊召唤此卡
+	-- 登记本次连锁的操作信息：本效果将特殊召唤这张卡，供其他需要检测操作信息的卡（如星尘龙）参考。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 效果处理时，创建一个使自己不能从额外卡组特殊召唤怪兽的效果并注册，然后将此卡特殊召唤
+-- ①效果的处理：先给发动玩家施加直到结束阶段不能从额外卡组特殊召唤怪兽的自肃效果；然后若这张卡仍与效果关联，则将其表侧表示特殊召唤。
 function c22382087.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 创建一个使自己不能从额外卡组特殊召唤怪兽的效果并注册，然后将此卡特殊召唤
+	-- 「这张卡从手卡特殊召唤。这个回合，自己不能从额外卡组把怪兽特殊召唤。②：这张卡为上级召唤而被解放的场合才能发动。从卡组把「风帝家臣 迦楼姆」以外的1只攻击力800/守备力1000的怪兽加入手卡。」
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
@@ -60,41 +60,41 @@ function c22382087.spop(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetReset(RESET_PHASE+PHASE_END)
 	e1:SetTargetRange(1,0)
 	e1:SetTarget(c22382087.splimit)
-	-- 将效果注册给玩家
+	-- 将刚创建的自肃效果注册到当前玩家tp身上，使该玩家受到“不能从额外卡组特殊召唤”的限制。
 	Duel.RegisterEffect(e1,tp)
 	if not c:IsRelateToEffect(e) then return end
-	-- 将此卡特殊召唤到场上
+	-- 将这张卡以表侧表示形式特殊召唤到发动玩家的场上。
 	Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 end
--- 限制效果，使不能特殊召唤额外卡组的怪兽
+-- 自肃效果的判定函数：若试图特殊召唤的怪兽来自额外卡组，则禁止该特殊召唤。
 function c22382087.splimit(e,c,sump,sumtype,sumpos,targetp,se)
 	return c:IsLocation(LOCATION_EXTRA)
 end
--- 判断此卡是否因上级召唤而被解放
+-- ②效果的发动条件：这张卡被解放时，判断其解放原因是否为上级召唤（REASON_SUMMON），以确认是“为上级召唤而被解放的场合”。
 function c22382087.thcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsReason(REASON_SUMMON)
 end
--- 过滤函数，检查卡组中是否存在攻击力800/守备力1000且不是此卡的怪兽
+-- 定义检索条件：从卡组中筛选攻击力800、守备力1000、卡名不是「风帝家臣 迦楼姆」且可以被加入手卡的怪兽。
 function c22382087.filter(c)
 	return c:IsAttack(800) and c:IsDefense(1000) and not c:IsCode(22382087) and c:IsAbleToHand()
 end
--- 判断是否满足检索条件，即卡组中是否存在满足条件的怪兽
+-- ②效果的目标检查与操作信息登记：确认卡组中存在至少1只满足检索条件的怪兽，并登记本次操作是将1张卡从卡组加入手卡。
 function c22382087.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查卡组中是否存在攻击力800/守备力1000且不是此卡的怪兽
+	-- 发动时检查：卡组中是否存在满足检索条件的怪兽，若不存在则②效果不能发动。
 	if chk==0 then return Duel.IsExistingMatchingCard(c22382087.filter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置操作信息，表示此效果将从卡组检索1张符合条件的怪兽加入手牌
+	-- 登记本次连锁将进行的操作：从卡组把1只符合条件的怪兽加入手卡（CATEGORY_TOHAND+CATEGORY_SEARCH）。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 效果处理时，提示玩家选择1张符合条件的怪兽加入手牌，并确认对方看到该卡
+-- ②效果处理：从卡组选择1只符合条件的怪兽加入手卡，并向对方展示确认。
 function c22382087.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要加入手牌的卡
+	-- 向发动玩家显示选择提示，提示内容为“请选择要加入手牌的卡”。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择1张满足条件的怪兽加入手牌
+	-- 从卡组中筛选并选择1只满足检索条件的怪兽，作为要加入手卡的目标。
 	local g=Duel.SelectMatchingCard(tp,c22382087.filter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将所选怪兽加入手牌
+		-- 将选择的检索目标加入其持有者的手卡，原因标记为REASON_EFFECT（效果处理）。
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 确认对方看到所选怪兽
+		-- 将加入手卡的那张卡展示给对方玩家确认。
 		Duel.ConfirmCards(1-tp,g)
 	end
 end

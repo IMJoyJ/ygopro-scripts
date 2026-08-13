@@ -22,17 +22,17 @@ function c22386234.initial_effect(c)
 	e2:SetOperation(c22386234.desop)
 	c:RegisterEffect(e2)
 end
--- 效果处理时判断召唤的怪兽是否为该卡本身，若不是则设置破坏目标
+-- 效果②的发动判定：当有怪兽召唤成功时，若召唤的怪兽不是这张卡自身，则满足发动条件；同时登记将破坏这张卡自身的操作信息。
 function c22386234.destg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return eg:GetFirst()~=e:GetHandler() end
-	-- 设置连锁操作信息为破坏自身
+	-- 登记本连锁的操作信息：以效果破坏这张卡自身1张，用于系统联动判定。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,e:GetHandler(),1,0,0)
 end
--- 效果处理时检查自身是否表侧表示且与效果相关联，若是则破坏自身
+-- 效果②的解决处理：获取这张卡，若它仍表侧表示且与效果保持关联，则将其破坏。
 function c22386234.desop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsFaceup() and c:IsRelateToEffect(e) then
-		-- 将自身以效果原因破坏
+		-- 以效果原因将这张卡破坏。
 		Duel.Destroy(c,REASON_EFFECT)
 	end
 end

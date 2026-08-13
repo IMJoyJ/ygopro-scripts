@@ -9,7 +9,7 @@ function c22499034.initial_effect(c)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
 	e1:SetCode(EFFECT_ADD_EXTRA_TRIBUTE)
 	e1:SetTargetRange(LOCATION_SZONE,0)
-	-- 规则层面：设置效果目标为场上的永续魔法·永续陷阱卡（LOCATION_SZONE位置，且类型为TYPE_CONTINUOUS）
+	-- 设置追加解放的筛选条件：只有自己场上的永续魔法·永续陷阱卡可以作为这张卡上级召唤时代替怪兽的解放素材。
 	e1:SetTarget(aux.TargetBoolFunction(Card.IsType,TYPE_CONTINUOUS))
 	e1:SetValue(POS_FACEUP_ATTACK)
 	c:RegisterEffect(e1)
@@ -26,40 +26,40 @@ function c22499034.initial_effect(c)
 	e2:SetOperation(c22499034.thop)
 	c:RegisterEffect(e2)
 end
--- 规则层面：判断此卡是否为上级召唤且对方发动了效果
+-- 该效果的发动条件：这张卡已经通过上级召唤出场，且对方玩家发动了魔法·陷阱·怪兽的效果（rp==1-tp）。
 function c22499034.thcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsSummonType(SUMMON_TYPE_ADVANCE) and rp==1-tp
 end
--- 规则层面：过滤满足条件的「真龙」永续魔法卡（类型为TYPE_CONTINUOUS且可加入手卡或可发动）
+-- 检索的过滤条件：从卡组中筛选1张卡名属于「真龙」系列的永续魔法卡，并且该卡能够加入手卡，或者其自身的魔法卡发动效果在当前状态下可以被自己发动。
 function c22499034.thfilter(c,tp)
 	return c:IsSetCard(0xf9) and c:GetType()==0x20002
 		and (c:IsAbleToHand() or c:GetActivateEffect():IsActivatable(tp))
 end
--- 规则层面：检测卡组中是否存在满足条件的卡，并设置操作信息为检索1张卡加入手牌
+-- 发动时点检查：确认自己卡组是否存在至少1张符合条件的「真龙」永续魔法卡，如果存在则本次效果可以发动，并设置操作信息为从卡组将卡加入手卡。
 function c22499034.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 规则层面：检测卡组中是否存在满足条件的卡
+	-- 在效果发动时（chk==0）检查卡组中是否存在至少1张满足c22499034.thfilter条件的卡，作为发动是否合法的判定。
 	if chk==0 then return Duel.IsExistingMatchingCard(c22499034.thfilter,tp,LOCATION_DECK,0,1,nil,tp) end
-	-- 规则层面：设置连锁操作信息为检索1张卡加入手牌
+	-- 设置本次连锁的操作信息：预期将1张卡从卡组加入手卡（用于给其他卡或时点检测本效果的行为）。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 从卡组选1张「真龙」永续魔法卡加入手卡或在自己场上发动。
+-- 效果处理：从卡组选择1张符合条件的「真龙」永续魔法卡，根据玩家选择将其加入手卡，或在自己场上表侧表示发动；若选择发动则还需要支付该卡自身的魔法卡发动cost。
 function c22499034.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 规则层面：提示玩家选择要操作的卡
+	-- 向操作玩家显示选择卡片的提示信息，提示文字为“请选择要操作的卡”。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_OPERATECARD)  --"请选择要操作的卡"
-	-- 规则层面：从卡组中选择1张满足条件的卡
+	-- 让玩家从自己卡组中选出1张满足c22499034.thfilter条件的卡。
 	local g=Duel.SelectMatchingCard(tp,c22499034.thfilter,tp,LOCATION_DECK,0,1,1,nil,tp)
 	local tc=g:GetFirst()
 	if tc then
 		local b1=tc:IsAbleToHand()
 		local b2=tc:GetActivateEffect():IsActivatable(tp)
-		-- 规则层面：根据选择决定将卡加入手牌或在场上发动
+		-- 如果该卡既能加入手卡又能发动，则让玩家选择“加入手卡”或“在自己场上发动”；若只能加入手卡（或玩家选择加入手卡），则执行加入手卡的分支，否则执行场上发动的分支。
 		if b1 and (not b2 or Duel.SelectOption(tp,1190,1150)==0) then
-			-- 规则层面：将选中的卡加入手牌
+			-- 将选中的那张卡以效果原因加入其持有者的手卡。
 			Duel.SendtoHand(tc,nil,REASON_EFFECT)
-			-- 规则层面：确认对方看到该卡
+			-- 向对方玩家展示确认被加入手卡的那张卡。
 			Duel.ConfirmCards(1-tp,tc)
 		else
-			-- 规则层面：将选中的卡移至场上（魔法陷阱区）并发动其效果
+			-- 将选中的卡以表侧表示放置到自己的魔法与陷阱区域，即作为永续魔法卡在自己场上发动。
 			Duel.MoveToField(tc,tp,tp,LOCATION_SZONE,POS_FACEUP,true)
 			local te=tc:GetActivateEffect()
 			local tep=tc:GetControler()
