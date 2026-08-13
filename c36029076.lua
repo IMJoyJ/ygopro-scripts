@@ -11,18 +11,18 @@ function c36029076.initial_effect(c)
 	e1:SetOperation(c36029076.ntop)
 	c:RegisterEffect(e1)
 end
--- 判断是否满足不需解放的召唤条件
+-- 无解放召唤的规则判定：c==nil时用于规则查询返回可召唤；否则要求本次召唤无需解放、己方主怪兽区有空位、对方场上有怪兽且己方场上无怪兽。
 function c36029076.ntcon(e,c,minc)
 	if c==nil then return true end
 	local tp=c:GetControler()
-	-- 判断召唤者场上是否有足够的怪兽区域
+	-- 确认本次召唤不需要解放（minc==0）且己方主要怪兽区域有空余格子。
 	return minc==0 and Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 判断对方场上是否存在怪兽
+		-- 确认对方场上有怪兽存在（对方场上怪兽区怪兽数量大于0）。
 		and Duel.GetFieldGroupCount(tp,0,LOCATION_MZONE)>0
-		-- 判断召唤者场上是否不存在怪兽
+		-- 确认己方场上没有怪兽存在（己方怪兽区怪兽数量为0）。
 		and Duel.GetFieldGroupCount(tp,LOCATION_MZONE,0)==0
 end
--- 设置召唤后这张卡的原本攻击力变为1300
+-- 无解放召唤成功后的处理：给这张卡注册一个仅在场上存在的永续效果，将其原本攻击力设为1300（离场或重置时失效）。
 function c36029076.ntop(e,tp,eg,ep,ev,re,r,rp,c)
 	-- 这个方法召唤的这张卡的原本攻击力变成1300。
 	local e1=Effect.CreateEffect(c)

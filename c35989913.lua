@@ -4,11 +4,11 @@
 -- ①：作为这张卡的发动时的效果处理，可以从自己墓地把1只「No.39 希望皇 霍普」特殊召唤。那只怪兽的攻击力上升自己墓地的光属性「霍普」超量怪兽的攻击力的合计数值。
 -- ②：原本属性是光属性的自己的「霍普」超量怪兽的攻击破坏对方怪兽时才能发动。那只自己怪兽的攻击力下降1000，那只怪兽可以继续攻击。
 local s,id,o=GetID()
--- 创建卡片效果，注册发动和攻击效果
+-- 注册这张卡的两个效果：①包含特殊召唤及相关攻击力变化的发动效果，以及②在光属性「霍普」超量怪兽战斗破坏对方怪兽后发动、下降攻击力并继续攻击的效果。
 function s.initial_effect(c)
-	-- 将卡名记录为「No.39 希望皇 霍普」，用于规则判定
+	-- 将卡号84013237（No.39 希望皇 霍普）登记到这张卡的关联卡名列表中，使这张卡在规则上也被视为记载了该卡名。
 	aux.AddCodeList(c,84013237)
-	-- 效果①：作为发动时的效果处理，可以从自己墓地把1只「No.39 希望皇 霍普」特殊召唤
+	-- ①：作为这张卡的发动时的效果处理，可以从自己墓地把1只「No.39 希望皇 霍普」特殊召唤。那只怪兽的攻击力上升自己墓地的光属性「霍普」超量怪兽的攻击力的合计数值。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(id,0))  --"发动"
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_GRAVE_SPSUMMON)
@@ -17,7 +17,7 @@ function s.initial_effect(c)
 	e1:SetCountLimit(1,id+EFFECT_COUNT_CODE_OATH)
 	e1:SetOperation(s.activate)
 	c:RegisterEffect(e1)
-	-- 效果②：原本属性是光属性的自己的「霍普」超量怪兽的攻击破坏对方怪兽时才能发动
+	-- ②：原本属性是光属性的自己的「霍普」超量怪兽的攻击破坏对方怪兽时才能发动。那只自己怪兽的攻击力下降1000，那只怪兽可以继续攻击。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(id,1))  --"继续攻击"
 	e2:SetCategory(CATEGORY_ATKCHANGE)
@@ -28,32 +28,32 @@ function s.initial_effect(c)
 	e2:SetOperation(s.atkop)
 	c:RegisterEffect(e2)
 end
--- 过滤满足条件的「No.39 希望皇 霍普」怪兽，用于特殊召唤
+-- 筛选墓地中卡号为84013237且可以被当前效果特殊召唤的「No.39 希望皇 霍普」。
 function s.spfilter(c,e,sp)
 	return c:IsCode(84013237) and c:IsCanBeSpecialSummoned(e,0,sp,false,false)
 end
--- 过滤满足条件的光属性「霍普」超量怪兽，用于计算攻击力加成
+-- 筛选自己墓地中卡名含有「霍普」、为超量怪兽且属性为光属性的怪兽。
 function s.atkfilter(c)
 	return c:IsSetCard(0x7f) and c:IsType(TYPE_XYZ) and c:IsAttribute(ATTRIBUTE_LIGHT)
 end
--- 发动效果①的处理流程，检索并特殊召唤「No.39 希望皇 霍普」，并根据墓地光属性「霍普」超量怪兽的攻击力合计值提升其攻击力
+-- ①效果的处理：从自己墓地选择1只「No.39 希望皇 霍普」特殊召唤，并在特殊召唤成功后将其攻击力上升自己墓地所有满足条件的光属性「霍普」超量怪兽攻击力的合计数值。
 function s.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取满足条件的「No.39 希望皇 霍普」怪兽组，用于特殊召唤
+	-- 获取自己墓地中满足特殊召唤条件、且不受「王家长眠之谷」效果影响的「No.39 希望皇 霍普」的集合。
 	local cg=Duel.GetMatchingGroup(aux.NecroValleyFilter(s.spfilter),tp,LOCATION_GRAVE,0,nil,e,tp)
-	-- 判断是否有满足条件的怪兽且场上存在空位
+	-- 判断是否存在符合条件的特殊召唤目标，以及自己场上是否还有可用的怪兽区域。
 	if #cg>0 and Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 询问玩家是否发动特殊召唤
+		-- 询问玩家是否发动效果，从墓地特殊召唤「No.39 希望皇 霍普」。
 		and Duel.SelectYesNo(tp,aux.Stringid(id,2)) then  --"是否特殊召唤？"
-		-- 提示玩家选择要特殊召唤的卡
+		-- 显示“请选择要特殊召唤的卡”的选择提示。
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
 		local sg=cg:Select(tp,1,1,nil)
 		local tc=sg:GetFirst()
-		-- 执行特殊召唤步骤
+		-- 将选中的「No.39 希望皇 霍普」以表侧表示特殊召唤；若特殊召唤成功则继续后续的攻击力上升处理。
 		if Duel.SpecialSummonStep(tc,0,tp,tp,false,false,POS_FACEUP) then
-			-- 获取满足条件的光属性「霍普」超量怪兽组，用于计算攻击力加成
+			-- 检索自己墓地中所有光属性「霍普」超量怪兽，用于计算攻击力的上升数值。
 			local ag=Duel.GetMatchingGroup(s.atkfilter,tp,LOCATION_GRAVE,0,nil)
 			local atk=ag:GetSum(Card.GetAttack)
-			-- 为特殊召唤的怪兽设置攻击力提升效果
+			-- 那只怪兽的攻击力上升自己墓地的光属性「霍普」超量怪兽的攻击力的合计数值。
 			local e1=Effect.CreateEffect(e:GetHandler())
 			e1:SetType(EFFECT_TYPE_SINGLE)
 			e1:SetCode(EFFECT_UPDATE_ATTACK)
@@ -61,27 +61,27 @@ function s.activate(e,tp,eg,ep,ev,re,r,rp)
 			e1:SetValue(atk)
 			tc:RegisterEffect(e1)
 		end
-		-- 完成特殊召唤流程
+		-- 完成整个特殊召唤流程，使特殊召唤的怪兽正式上场。
 		Duel.SpecialSummonComplete()
 	end
 end
--- 判断是否满足效果②发动条件，即攻击怪兽为光属性且为「霍普」超量怪兽且攻击力不低于1000
+-- ②效果的发动条件判断：自己原本属性为光属性的「霍普」超量怪兽在攻击对方怪兽并战斗破坏对方怪兽，且自身表侧表示、攻击力在1000以上、未处于预定破坏状态等。
 function s.atkcon(e,tp,eg,ep,ev,re,r,rp)
 	local rc=eg:GetFirst()
-	-- 判断攻击怪兽是否为当前攻击怪兽且处于对方战斗阶段且正面表示
+	-- 确认进行战斗破坏的正是当前攻击的怪兽，且该怪兽与对方怪兽进行了战斗、自身处于表侧表示。
 	return rc==Duel.GetAttacker() and rc:IsStatus(STATUS_OPPO_BATTLE) and rc:IsFaceup()
 		and rc:IsSetCard(0x7f) and rc:IsType(TYPE_XYZ)
 		and rc:IsAttackAbove(1000) and rc:IsControler(tp)
 		and (rc:GetOriginalAttribute()&ATTRIBUTE_LIGHT)~=0
 		and not rc:IsStatus(STATUS_DESTROY_CONFIRMED)
 end
--- 执行效果②的处理流程，使攻击怪兽攻击力下降1000并可继续攻击
+-- ②效果的处理：将那只攻击怪兽的攻击力下降1000，并在没有攻击力反转效果影响时使其可以继续攻击。
 function s.atkop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取当前攻击怪兽
+	-- 取得这次战斗中的攻击怪兽，即那只破坏了对方怪兽的「霍普」怪兽。
 	local tc=Duel.GetAttacker()
 	if tc:IsFaceup() and tc:IsControler(tp) and tc:IsType(TYPE_MONSTER) then
-		-- 为攻击怪兽设置攻击力下降1000的效果
+		-- 那只自己怪兽的攻击力下降1000。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)
@@ -89,7 +89,7 @@ function s.atkop(e,tp,eg,ep,ev,re,r,rp)
 		e1:SetReset(RESET_EVENT+RESETS_STANDARD)
 		tc:RegisterEffect(e1)
 		if not tc:IsHasEffect(EFFECT_REVERSE_UPDATE) then
-			-- 使攻击怪兽可以继续攻击
+			-- 让该「霍普」怪兽在本次战斗阶段中可以继续进行下一次攻击。
 			Duel.ChainAttack()
 		end
 	end

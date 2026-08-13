@@ -4,14 +4,14 @@
 -- ●从卡组·额外卡组选卡名不同的「异热同心武器」怪兽任意数量当作装备卡使用给作为对象的怪兽装备。
 -- ●和作为对象的自己怪兽卡名不同的1只「希望皇 霍普」超量怪兽在那只怪兽上面重叠当作超量召唤从额外卡组特殊召唤。
 function c35906693.initial_effect(c)
-	-- ①：自己抽卡阶段通过把通常抽卡的这张卡持续公开，那个回合的主要阶段1，可以以自己场上1只「希望皇 霍普」超量怪兽为对象，从以下效果选择1个发动。
+	-- 对应①效果的前半句：自己抽卡阶段通过把通常抽卡的这张卡持续公开。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_CONTINUOUS)
 	e1:SetCode(EVENT_DRAW)
 	e1:SetCondition(c35906693.regcon)
 	e1:SetOperation(c35906693.regop)
 	c:RegisterEffect(e1)
-	-- ●从卡组·额外卡组选卡名不同的「异热同心武器」怪兽任意数量当作装备卡使用给作为对象的怪兽装备。
+	-- 对应●效果：从卡组·额外卡组选卡名不同的「异热同心武器」怪兽任意数量当作装备卡使用给作为对象的怪兽装备。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(35906693,1))  --"装备"
 	e2:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -29,18 +29,18 @@ function c35906693.initial_effect(c)
 	e3:SetOperation(c35906693.spop)
 	c:RegisterEffect(e3)
 end
--- 规则层面：判断是否满足效果发动条件，即玩家未发动过此效果、当前处于抽卡阶段、此卡因规则而被抽卡
+-- 该触发效果的发动条件：当前是抽卡阶段，本回合尚未用过此卡效果，且这张卡是通过规则抽卡抽到的通常抽卡。
 function c35906693.regcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 规则层面：判断是否满足效果发动条件，即玩家未发动过此效果、当前处于抽卡阶段、此卡因规则而被抽卡
+	-- 判断是否满足：本回合没有使用过闪光抽卡的标识、处于抽卡阶段、且本次抽卡的原因为规则抽卡。
 	return Duel.GetFlagEffect(tp,35906693)==0 and Duel.GetCurrentPhase()==PHASE_DRAW and c:IsReason(REASON_RULE)
 end
--- 规则层面：询问玩家是否要持续公开此卡，若选择公开则设置公开效果和标志
+-- 抽到此卡时，询问玩家是否要持续公开；若选择是，则给此卡附加持续公开效果并设置本回合使用标识。
 function c35906693.regop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 规则层面：询问玩家是否要持续公开此卡
+	-- 弹出选择提示，让玩家决定是否公开这张卡。
 	if Duel.SelectYesNo(tp,aux.Stringid(35906693,0)) then  --"是否要持续公开「闪光抽卡」？"
-		-- ●和作为对象的自己怪兽卡名不同的1只「希望皇 霍普」超量怪兽在那只怪兽上面重叠当作超量召唤从额外卡组特殊召唤。
+		-- 对应“通过把通常抽卡的这张卡持续公开”：给这张卡附加永久公开效果，持续到主要阶段1结束。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_PUBLIC)
@@ -49,57 +49,57 @@ function c35906693.regop(e,tp,eg,ep,ev,re,r,rp)
 		c:RegisterFlagEffect(35906693,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_MAIN1,EFFECT_FLAG_CLIENT_HINT,1,0,66)
 	end
 end
--- 规则层面：判断是否处于主要阶段1
+-- 第二个效果的发动条件：当前必须处于主要阶段1，才能发动后续效果。
 function c35906693.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 规则层面：判断是否处于主要阶段1
+	-- 检查当前阶段是否为主要阶段1。
 	return Duel.GetCurrentPhase()==PHASE_MAIN1
 end
--- 规则层面：判断是否已通过抽卡阶段公开此卡
+-- 效果的发动代价：确认这张卡已经通过抽卡阶段的公开操作持有对应标识，即已经满足“持续公开”的前提。
 function c35906693.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():GetFlagEffect(35906693)~=0 end
 end
--- 规则层面：过滤目标怪兽，必须为表侧表示、属于希望皇系列、且为超量怪兽
+-- 对象筛选：以自己场上的表侧表示「希望皇」超量怪兽作为效果对象。
 function c35906693.tgfilter(c)
 	return c:IsFaceup() and c:IsSetCard(0x107f) and c:IsType(TYPE_XYZ)
 end
--- 规则层面：过滤装备卡，必须为异热同心武器系列、为怪兽类型、在场上未重复、且未被禁止
+-- 装备卡筛选：从卡组·额外卡组选择「异热同心武器」怪兽，且要满足场上同名唯一、不是禁止卡。
 function c35906693.eqfilter(c,tp)
 	return c:IsSetCard(0x107e) and c:IsType(TYPE_MONSTER) and c:CheckUniqueOnField(tp) and not c:IsForbidden()
 end
--- 规则层面：设置装备效果的目标选择和条件检查
+-- 装备效果的发动条件与对象选择：选择1只符合条件的「希望皇」超量怪兽，同时确认魔陷区有空位且卡组·额外存在可装备的「异热同心武器」怪兽。
 function c35906693.eqtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(tp) and chkc:IsLocation(LOCATION_MZONE) and c35906693.tgfilter(chkc) end
-	-- 规则层面：检查是否存在满足条件的目标怪兽
+	-- 检查场上是否存在符合条件的表侧表示「希望皇」超量怪兽可以作为对象。
 	if chk==0 then return Duel.IsExistingTarget(c35906693.tgfilter,tp,LOCATION_MZONE,0,1,nil)
-		-- 规则层面：检查场上是否有足够的装备区域
+		-- 检查自己魔陷区是否有空位来放置要装备的卡。
 		and Duel.GetLocationCount(tp,LOCATION_SZONE)>0
-		-- 规则层面：检查卡组或额外卡组是否存在满足条件的装备卡
+		-- 检查卡组或额外卡组中是否存在至少1张符合条件的「异热同心武器」怪兽。
 		and Duel.IsExistingMatchingCard(c35906693.eqfilter,tp,LOCATION_DECK+LOCATION_EXTRA,0,1,nil,tp) end
-	-- 规则层面：提示玩家选择表侧表示的怪兽
+	-- 向玩家发送选择对象的提示信息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
-	-- 规则层面：选择目标怪兽
+	-- 让玩家从自己场上选择1只符合条件的表侧表示「希望皇」超量怪兽作为对象。
 	Duel.SelectTarget(tp,c35906693.tgfilter,tp,LOCATION_MZONE,0,1,1,nil)
 end
--- 规则层面：装备卡的处理流程
+-- 装备效果的处理：从卡组·额外卡组选择卡名不同的「异热同心武器」怪兽任意数量，装备到对象怪兽身上，并给每张装备卡设置仅限该对象装备的限制。
 function c35906693.eqop(e,tp,eg,ep,ev,re,r,rp)
-	-- 规则层面：获取玩家场上装备区域的可用数量
+	-- 获取自己魔陷区的可用空格数，用于限制可装备的数量。
 	local ft=Duel.GetLocationCount(tp,LOCATION_SZONE)
 	local c=e:GetHandler()
-	-- 规则层面：获取当前连锁的目标怪兽
+	-- 取得发动效果时选择的那只对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if ft<=0 or tc:IsFacedown() or not tc:IsRelateToEffect(e) then return end
-	-- 规则层面：提示玩家选择要装备的卡
+	-- 向玩家发送选择装备卡的提示信息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_EQUIP)  --"请选择要装备的卡"
-	-- 规则层面：获取满足条件的装备卡组
+	-- 获取卡组与额外卡组中所有符合条件的「异热同心武器」怪兽作为候选集合。
 	local g=Duel.GetMatchingGroup(c35906693.eqfilter,tp,LOCATION_DECK+LOCATION_EXTRA,0,nil,tp)
-	-- 规则层面：从装备卡组中选择卡名不同的卡组
+	-- 让玩家从中选择1至ft张卡名互不相同的「异热同心武器」怪兽（ft为可用魔陷区数量）。
 	local sg=g:SelectSubGroup(tp,aux.dncheck,false,1,ft)
 	if not sg then return end
 	local ec=sg:GetFirst()
 	while ec do
-		-- 规则层面：将装备卡装备给目标怪兽
+		-- 将选择的怪兽作为装备卡装备给对象怪兽，使用分步处理以保证装备成功时能正确触发时点。
 		Duel.Equip(tp,ec,tc,true,true)
-		-- 从卡组·额外卡组选卡名不同的「异热同心武器」怪兽任意数量当作装备卡使用给作为对象的怪兽装备。
+		-- 对应“当作装备卡使用给作为对象的怪兽装备”：为装备卡设置装备限制，使其只能装备给当前对象。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_EQUIP_LIMIT)
@@ -110,62 +110,62 @@ function c35906693.eqop(e,tp,eg,ep,ev,re,r,rp)
 		ec:RegisterEffect(e1)
 		ec=sg:GetNext()
 	end
-	-- 规则层面：完成装备过程
+	-- 完成装备处理，统一触发装备相关时点。
 	Duel.EquipComplete()
 end
--- 和作为对象的自己怪兽卡名不同的1只「希望皇 霍普」超量怪兽在那只怪兽上面重叠当作超量召唤从额外卡组特殊召唤。
+-- 装备限制的判断：只有效果设置时记录的对象怪兽才能装备这张卡。
 function c35906693.eqlimit(e,c)
 	return c==e:GetLabelObject()
 end
--- 规则层面：过滤目标怪兽，必须为表侧表示、属于希望皇系列、且为超量怪兽，并且能作为超量召唤的素材
+-- 超量召唤效果的对象筛选：对象必须是「希望皇」超量怪兽，且额外卡组中存在能够以其为素材进行超量召唤的、卡名不同的「希望皇」超量怪兽，同时对象不受“必须作为超量素材”的限制。
 function c35906693.filter1(c,e,tp)
 	return c35906693.tgfilter(c)
-		-- 规则层面：检查是否存在满足条件的超量怪兽
+		-- 检查额外卡组中是否存在符合条件的「希望皇」超量怪兽，且其卡名与作为对象的怪兽不同，并可以作为该对象的超量素材。
 		and Duel.IsExistingMatchingCard(c35906693.filter2,tp,LOCATION_EXTRA,0,1,nil,e,tp,c)
-		-- 规则层面：检查目标怪兽是否满足超量召唤的素材要求
+		-- 检查对象怪兽是否受到“必须作为超量素材”的效果影响，若受影响则不能作为本次超量召唤的素材。
 		and aux.MustMaterialCheck(c,tp,EFFECT_MUST_BE_XMATERIAL)
 end
--- 规则层面：过滤超量怪兽，必须为希望皇系列、为超量怪兽、卡名不同、能作为目标怪兽的素材、可特殊召唤、且有足够召唤区域
+-- 额外卡组超量怪兽的筛选：是「希望皇」超量怪兽、卡名与对象不同、可以以对象为超量素材、能够以超量召唤方式特殊召唤，并且有可用额外怪兽区。
 function c35906693.filter2(c,e,tp,mc)
 	return c:IsSetCard(0x107f) and c:IsType(TYPE_XYZ) and not c:IsCode(mc:GetCode()) and mc:IsCanBeXyzMaterial(c)
-		-- 规则层面：检查超量怪兽是否可特殊召唤、且有足够召唤区域
+		-- 确认该额外怪兽可以以超量召唤方式特殊召唤，且从额外卡组特殊召唤时有足够的可用区域。
 		and c:IsCanBeSpecialSummoned(e,SUMMON_TYPE_XYZ,tp,false,false) and Duel.GetLocationCountFromEx(tp,tp,mc,c)>0
 end
--- 规则层面：设置超量召唤效果的目标选择和条件检查
+-- 超量召唤效果的目标选择与操作信息设置：选择场上1只符合条件的「希望皇」超量怪兽，并声明将要进行超量召唤。
 function c35906693.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(tp) and chkc:IsLocation(LOCATION_MZONE) and c35906693.filter1(chkc,e,tp) end
-	-- 规则层面：检查是否存在满足条件的目标怪兽
+	-- 检查场上是否存在能作为超量召唤素材的合法对象。
 	if chk==0 then return Duel.IsExistingTarget(c35906693.filter1,tp,LOCATION_MZONE,0,1,nil,e,tp) end
-	-- 规则层面：提示玩家选择效果的对象
+	-- 向玩家发送选择对象的提示信息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)  --"请选择效果的对象"
-	-- 规则层面：选择目标怪兽
+	-- 让玩家从自己场上选择1只符合条件的「希望皇」超量怪兽作为对象。
 	Duel.SelectTarget(tp,c35906693.filter1,tp,LOCATION_MZONE,0,1,1,nil,e,tp)
-	-- 规则层面：设置操作信息，表示将要特殊召唤超量怪兽
+	-- 设置操作信息：本次效果处理将进行特殊召唤，范围是额外卡组的1只怪兽。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_EXTRA)
 end
--- 规则层面：超量召唤的处理流程
+-- 超量召唤效果的处理：将对象怪兽及其叠放卡全部作为素材，在对象上方重叠召唤1只卡名不同的「希望皇」超量怪兽。
 function c35906693.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 规则层面：获取当前连锁的目标怪兽
+	-- 取得效果对象（作为超量素材的场上怪兽）。
 	local tc=Duel.GetFirstTarget()
-	-- 规则层面：检查目标怪兽是否满足超量召唤的素材要求
+	-- 再次确认对象怪兽没有被“必须作为超量素材”等限制所禁止，防止处理时状态变化。
 	if not aux.MustMaterialCheck(tc,tp,EFFECT_MUST_BE_XMATERIAL) then return end
 	if tc:IsFacedown() or not tc:IsRelateToEffect(e) or tc:IsControler(1-tp) or tc:IsImmuneToEffect(e) then return end
-	-- 规则层面：提示玩家选择要特殊召唤的卡
+	-- 向玩家发送选择超量召唤怪兽的提示信息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 规则层面：选择满足条件的超量怪兽
+	-- 从额外卡组选择1只符合条件的「希望皇」超量怪兽作为特殊召唤目标。
 	local g=Duel.SelectMatchingCard(tp,c35906693.filter2,tp,LOCATION_EXTRA,0,1,1,nil,e,tp,tc)
 	local sc=g:GetFirst()
 	if sc then
 		local mg=tc:GetOverlayGroup()
 		if mg:GetCount()~=0 then
-			-- 规则层面：将目标怪兽的叠放卡叠放到特殊召唤的怪兽上
+			-- 将对象怪兽原本的叠放卡全部移动到新超量怪兽下面作为叠放素材。
 			Duel.Overlay(sc,mg)
 		end
 		sc:SetMaterial(Group.FromCards(tc))
-		-- 规则层面：将目标怪兽叠放到特殊召唤的怪兽上
+		-- 将对象怪兽自身叠放在新超量怪兽下面，作为超量素材。
 		Duel.Overlay(sc,Group.FromCards(tc))
-		-- 规则层面：将特殊召唤的超量怪兽以超量召唤方式特殊召唤到场上
+		-- 以超量召唤方式将选择的怪兽特殊召唤到场上。
 		Duel.SpecialSummon(sc,SUMMON_TYPE_XYZ,tp,tp,false,false,POS_FACEUP)
 		sc:CompleteProcedure()
 	end

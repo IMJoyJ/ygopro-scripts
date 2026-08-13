@@ -7,13 +7,13 @@ function c35956022.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- 全部地属性怪兽的攻击力下降500，守备力上升400。
+	-- 全部地属性怪兽的攻击力下降500
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD)
 	e2:SetRange(LOCATION_FZONE)
 	e2:SetTargetRange(LOCATION_MZONE,LOCATION_MZONE)
 	e2:SetCode(EFFECT_UPDATE_ATTACK)
-	-- 检索满足条件的地属性怪兽组
+	-- 设置效果适用对象的筛选条件，仅对场上的地属性怪兽适用。
 	e2:SetTarget(aux.TargetBoolFunction(Card.IsAttribute,ATTRIBUTE_EARTH))
 	e2:SetValue(-500)
 	c:RegisterEffect(e2)

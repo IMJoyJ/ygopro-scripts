@@ -6,7 +6,7 @@
 -- ②：1回合1次，魔法·陷阱·怪兽的效果发动时才能发动。那个发动无效并破坏。
 -- ③：表侧表示的这张卡从场上离开时才能发动。从额外卡组把1只「流星龙」特殊召唤。
 function c35952884.initial_effect(c)
-	-- 添加同调召唤手续，要求1只调整和至少2只调整以外的同调怪兽作为素材
+	-- 为这张卡添加同调召唤手续，素材要求为：同调怪兽调整＋调整以外的同调怪兽2只以上。
 	aux.AddSynchroProcedure(c,aux.FilterBoolFunction(Card.IsSynchroType,TYPE_SYNCHRO),aux.NonTuner(Card.IsSynchroType,TYPE_SYNCHRO),2)
 	c:EnableReviveLimit()
 	-- 这张卡不用同调召唤不能特殊召唤。
@@ -14,7 +14,7 @@ function c35952884.initial_effect(c)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_SPSUMMON_CONDITION)
-	-- 设置该卡的特殊召唤条件为必须通过同调召唤方式
+	-- 将特殊召唤限制效果的值设为aux.synlimit，使这张卡仅能通过同调召唤方式特殊召唤，不能用其他方式特殊召唤。
 	e1:SetValue(aux.synlimit)
 	c:RegisterEffect(e1)
 	-- ①：这张卡在同1次的战斗阶段中可以作出最多有那些作为同调素材的怪兽之内除调整以外的怪兽数量的攻击。
@@ -50,11 +50,11 @@ function c35952884.initial_effect(c)
 end
 c35952884.material_type=TYPE_SYNCHRO
 c35952884.cosmic_quasar_dragon_summon=true
--- 检查同调素材数量并为该卡增加额外攻击次数
+-- 同调召唤成功时计算素材中除调整怪兽以外的数量（素材数-1），若该数量大于1，则给这张卡赋予额外攻击次数效果。
 function c35952884.valcheck(e,c)
 	local ct=c:GetMaterialCount()-1
 	if ct>1 then
-		-- 增加该卡在同1次战斗阶段中可进行的攻击次数
+		-- ①：这张卡在同1次的战斗阶段中可以作出最多有那些作为同调素材的怪兽之内除调整以外的怪兽数量的攻击。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_EXTRA_ATTACK)
@@ -63,51 +63,51 @@ function c35952884.valcheck(e,c)
 		c:RegisterEffect(e1)
 	end
 end
--- 判断连锁是否可以被无效
+-- ②效果的发动条件：此卡没有被战斗破坏，且当前发动的效果可以被无效。
 function c35952884.discon(e,tp,eg,ep,ev,re,r,rp)
-	-- 该卡未在战斗阶段被破坏且连锁可被无效
+	-- 检查此卡不是被战斗破坏状态，且当前连锁可以被无效。
 	return not e:GetHandler():IsStatus(STATUS_BATTLE_DESTROYED) and Duel.IsChainNegatable(ev)
 end
--- 设置连锁处理时的操作信息，包括使发动无效和破坏目标卡片
+-- ②效果的发动目标处理：若在效果发动时确认，则设置要无效的对象为当前发动的效果；若对应卡仍可被破坏且与发动效果关联，则同时设置破坏对象。
 function c35952884.distg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置使发动无效的操作信息
+	-- 设置操作信息：本次效果包含“无效发动”，对象为当前发动的效果（eg），数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_NEGATE,eg,1,0,0)
 	if re:GetHandler():IsDestructable() and re:GetHandler():IsRelateToEffect(re) then
-		-- 设置破坏目标卡片的操作信息
+		-- 设置操作信息：本次效果包含“破坏”，对象为当前发动的效果对应卡（eg），数量为1。
 		Duel.SetOperationInfo(0,CATEGORY_DESTROY,eg,1,0,0)
 	end
 end
--- 处理连锁无效并破坏目标卡片的效果
+-- ②效果处理：若成功无效该效果的发动，且对应卡仍未离场并与之关联，则将其破坏。
 function c35952884.disop(e,tp,eg,ep,ev,re,r,rp)
-	-- 使连锁发动无效且目标卡片存在并关联到该效果
+	-- 判断是否成功无效了该发动，且发动效果的那张卡仍与效果相关联（没有因连锁失去联系）。
 	if Duel.NegateActivation(ev) and re:GetHandler():IsRelateToEffect(re) then
-		-- 破坏目标卡片
+		-- 将无效掉发动的那张卡（eg）以效果破坏。
 		Duel.Destroy(eg,REASON_EFFECT)
 	end
 end
--- 判断该卡是否从场上离开且处于表侧表示状态
+-- ③效果的发动条件：这张卡曾表侧表示存在于场上，并且从场上离开。
 function c35952884.sumcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsPreviousPosition(POS_FACEUP) and e:GetHandler():IsPreviousLocation(LOCATION_ONFIELD)
 end
--- 过滤满足条件的「流星龙」卡片
+-- 定义可特殊召唤的卡：卡号为24696097（「流星龙」），能被当前效果特殊召唤，且额外卡组怪兽有可用的特殊召唤区域。
 function c35952884.filter(c,e,tp)
-	-- 卡片为「流星龙」且可特殊召唤且场上存在召唤空间
+	-- 确认目标卡是「流星龙」、满足特殊召唤条件，并且有足够的空位从额外卡组特殊召唤。
 	return c:IsCode(24696097) and c:IsCanBeSpecialSummoned(e,0,tp,false,true) and Duel.GetLocationCountFromEx(tp,tp,nil,c)>0
 end
--- 设置特殊召唤效果的目标和操作信息
+-- ③效果发动目标处理：若效果发动时检查到额外卡组存在符合条件的「流星龙」，则设置从额外卡组特殊召唤1只「流星龙」的操作信息。
 function c35952884.sumtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查额外卡组是否存在满足条件的「流星龙」卡片
+	-- 在效果发动时检查额外卡组是否有至少1只满足条件的「流星龙」。
 	if chk==0 then return Duel.IsExistingMatchingCard(c35952884.filter,tp,LOCATION_EXTRA,0,1,nil,e,tp) end
-	-- 设置特殊召唤操作信息
+	-- 设置操作信息：本次效果将进行从额外卡组特殊召唤1只怪兽，目标在效果处理时确定。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_EXTRA)
 end
--- 处理特殊召唤效果
+-- ③效果处理：从额外卡组选取符合条件的「流星龙」，将其特殊召唤到场上。
 function c35952884.sumop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取满足条件的「流星龙」卡片
+	-- 从额外卡组取得第一张符合条件的「流星龙」（发动时确认存在，处理时再取）。
 	local tg=Duel.GetFirstMatchingCard(c35952884.filter,tp,LOCATION_EXTRA,0,nil,e,tp)
 	if tg then
-		-- 将目标卡片特殊召唤到场上
+		-- 将选中的「流星龙」以表侧表示特殊召唤到自己场上（不检查苏生限制，不检查特殊召唤条件）。
 		Duel.SpecialSummon(tg,0,tp,tp,false,true,POS_FACEUP)
 	end
 end
