@@ -4,7 +4,7 @@
 -- ①：场上有相同等级的怪兽2只以上存在的场合，这张卡可以从手卡特殊召唤。
 -- ②：把这张卡解放才能发动。下次的自己抽卡阶段的通常抽卡变成2张。
 function c10505300.initial_effect(c)
-	-- ①：场上有相同等级的怪兽2只以上存在的场合，这张卡可以从手卡特殊召唤。
+	-- 这个卡名的①的方法的特殊召唤1回合只能有1次。①：场上有相同等级的怪兽2只以上存在的场合，这张卡可以从手卡特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_SPSUMMON_PROC)
@@ -22,34 +22,34 @@ function c10505300.initial_effect(c)
 	e2:SetOperation(c10505300.operation)
 	c:RegisterEffect(e2)
 end
--- 检索满足条件的怪兽组，用于判断场上有无相同等级的怪兽
+-- spfilter1用于判断“场上有相同等级的怪兽2只以上存在”：以一只表侧表示怪兽为基准，要求它等级大于0，且场上还存在另一只与此怪兽等级相同的表侧表示怪兽。
 function c10505300.spfilter1(c)
 	return c:IsFaceup() and c:IsLevelAbove(0)
-		-- 检查场上是否存在至少1只与当前怪兽等级相同的表侧表示怪兽
+		-- 检查场上是否存在另一只与当前基准怪兽等级相同的表侧表示怪兽（排除当前基准怪兽自身），用于构成“相同等级怪兽2只以上”的条件。
 		and Duel.IsExistingMatchingCard(c10505300.spfilter2,0,LOCATION_MZONE,LOCATION_MZONE,1,c,c:GetLevel())
 end
--- 用于判断指定等级的怪兽是否存在
+-- spfilter2用于筛选与指定等级lv相同的表侧表示怪兽，即寻找和基准怪兽等级相同的其他怪兽。
 function c10505300.spfilter2(c,lv)
 	return c:IsFaceup() and c:IsLevel(lv)
 end
--- 判断特殊召唤条件是否满足
+-- 特殊召唤规则效果的发动条件：这张卡若在手上（c非nil），需要己方主要怪兽区有空位，且双方场上存在至少一组同等级的表侧表示怪兽；c为nil时用于效果注册内部查询，返回true。
 function c10505300.spcon(e,c)
 	if c==nil then return true end
 	local tp=c:GetControler()
-	-- 检查玩家场上是否有可用空间
+	-- 确认自己场上存在可以用于特殊召唤的空闲主要怪兽区格子。
 	return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查场上是否存在至少1只满足条件的表侧表示怪兽
+		-- 确认双方场上存在至少一只满足“有其他同等级表侧表示怪兽存在”的怪兽，即整体满足“场上存在相同等级的怪兽2只以上”。
 		and Duel.IsExistingMatchingCard(c10505300.spfilter1,0,LOCATION_MZONE,LOCATION_MZONE,1,nil)
 end
--- 设置效果的发动费用
+-- ②效果的代价函数：发动前检查这张卡是否满足可被解放的条件；满足则实际将其解放作为代价。
 function c10505300.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsReleasable() end
-	-- 将自身解放作为发动费用
+	-- 将这张卡本身解放，作为②效果发动的代价（REASON_COST）。
 	Duel.Release(e:GetHandler(),REASON_COST)
 end
--- 设置效果的发动后操作
+-- ②效果处理：为当前玩家设置一个持续到下次己方抽卡阶段结束的效果，使其该次通常抽卡数量变为2张。
 function c10505300.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 下次自己抽卡阶段的通常抽卡变成2张
+	-- 下次的自己抽卡阶段的通常抽卡变成2张。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
@@ -57,6 +57,6 @@ function c10505300.operation(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetTargetRange(1,0)
 	e1:SetReset(RESET_PHASE+PHASE_DRAW+RESET_SELF_TURN)
 	e1:SetValue(2)
-	-- 将效果注册到游戏环境，使效果生效
+	-- 将改变抽卡数量的永续效果注册给己方玩家，使其在下次抽卡阶段生效。
 	Duel.RegisterEffect(e1,tp)
 end

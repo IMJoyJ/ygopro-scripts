@@ -22,25 +22,25 @@ function c1050186.initial_effect(c)
 	c:RegisterEffect(e3)
 	c1050186.star_knight_summon_effect=e1
 end
--- 过滤函数，用于筛选满足条件的卡片
+-- 筛选卡组中满足条件的卡：卡名属于「星骑士」字段、不是「星因士 天市右垣七」、且可以送去墓地。
 function c1050186.filter(c)
 	return c:IsSetCard(0x9c) and not c:IsCode(1050186) and c:IsAbleToGrave()
 end
--- 效果处理时的Target函数，用于判断是否可以发动效果
+-- 效果发动时的目标处理：检查卡组是否存在符合条件的「星骑士」卡，并登记本次效果将执行送去墓地的操作信息。
 function c1050186.target(e,tp,eg,ep,ev,re,r,rp,chk,_,exc)
-	-- 检查以玩家tp来看的卡组中是否存在至少1张满足filter条件且不等于exc的卡
+	-- 发动条件判定：从卡组中确认是否存在至少1张满足筛选条件的「星骑士」卡（即非本卡名且能送去墓地的卡）。
 	if chk==0 then return Duel.IsExistingMatchingCard(c1050186.filter,tp,LOCATION_DECK,0,1,exc) end
-	-- 设置当前处理的连锁的操作信息为送去墓地效果
+	-- 登记效果处理信息：将本连锁效果分类设为送去墓地，预计从持有者卡组把1张卡送去墓地。
 	Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,nil,1,tp,LOCATION_DECK)
 end
--- 效果处理时的Operation函数，用于执行效果
+-- 效果处理时的操作：提示玩家选择1张符合条件的「星骑士」卡，然后将其从卡组送去墓地。
 function c1050186.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 向玩家tp发送提示信息，提示选择要送去墓地的卡
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)
-	-- 让玩家tp从卡组中选择满足filter条件的1张卡
+	-- 给出选择提示，要求玩家选择要送去墓地的卡。
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
+	-- 从己方卡组中选出1张满足筛选条件的「星骑士」卡（不包含本卡名且能够送去墓地）。
 	local g=Duel.SelectMatchingCard(tp,c1050186.filter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的卡送去墓地，原因是由效果造成
+		-- 将选中的卡片以效果原因送去墓地。
 		Duel.SendtoGrave(g,REASON_EFFECT)
 	end
 end

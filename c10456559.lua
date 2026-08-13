@@ -13,28 +13,28 @@ function c10456559.initial_effect(c)
 	e1:SetOperation(c10456559.operation)
 	c:RegisterEffect(e1)
 end
--- 效果发动的条件判断，确保卡片在墓地、是自己控制者且因战斗破坏被送去墓地
+-- 触发条件判定：被战斗破坏的这张卡必须位于墓地，且其上一个控制者为发动效果的玩家，同时破坏原因必须是战斗。
 function c10456559.condition(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	return c:IsLocation(LOCATION_GRAVE) and c:IsPreviousControler(tp) and c:IsReason(REASON_BATTLE)
 end
--- 过滤函数，用于筛选卡组中可以加入手牌的「恶魂邪苦止」
+-- 检索过滤函数：筛选出卡组中卡名为「恶魂邪苦止」（10456559）且能够加入手卡的卡。
 function c10456559.filter(c)
 	return c:IsCode(10456559) and c:IsAbleToHand()
 end
--- 效果的处理目标设定，检查卡组中是否存在满足条件的卡片
+-- 效果发动时的目标处理：确认卡组存在可检索的同名卡后，将本次效果的信息登记为从卡组把1张卡加入手牌。
 function c10456559.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断是否满足效果发动条件，检查卡组中是否存在至少1张「恶魂邪苦止」
+	-- 发动合法性检查：当chk==0（效果发动前的确认阶段）时，检查自己卡组是否存在至少1张符合条件的「恶魂邪苦止」，否则不能发动。
 	if chk==0 then return Duel.IsExistingMatchingCard(c10456559.filter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置连锁处理信息，指定将要处理的卡为卡组中的一张「恶魂邪苦止」
+	-- 登记操作信息：向连锁系统告知本效果涉及从卡组将卡加入手牌，用于后续时点/对应卡的判定。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 效果的处理执行函数，负责实际执行将卡片加入手牌的操作
+-- 效果处理阶段：提示玩家选择要加入手牌的卡，从卡组选择1~3张符合条件的「恶魂邪苦止」，并以效果原因加入持有者的手卡。
 function c10456559.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 向玩家发送提示信息，提示选择要加入手牌的卡
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)
-	-- 从卡组中选择1到3张「恶魂邪苦止」
+	-- 弹出选择提示：提示玩家正在选择要加入手牌的卡片（HINTMSG_ATOHAND）。
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
+	-- 执行选择：从自己卡组中选出1~3张符合filter条件的「恶魂邪苦止」（不取对象，效果处理时选择）。
 	local g=Duel.SelectMatchingCard(tp,c10456559.filter,tp,LOCATION_DECK,0,1,3,nil)
-	-- 将选中的卡片以效果原因加入手牌
+	-- 将选中的卡以效果原因（REASON_EFFECT）送去持有者手卡，即加入手牌。
 	Duel.SendtoHand(g,nil,REASON_EFFECT)
 end

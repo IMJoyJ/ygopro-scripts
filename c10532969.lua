@@ -14,28 +14,28 @@ function c10532969.initial_effect(c)
 	e1:SetOperation(c10532969.operation)
 	c:RegisterEffect(e1)
 end
--- 效果发动条件：造成战斗伤害的玩家不是效果持有者
+-- 作为诱发效果的发动条件，仅当这张卡的战斗伤害是给与对方基本分（即受到伤害的玩家ep不是本卡控制者tp）时，该效果才满足发动条件。
 function c10532969.condition(e,tp,eg,ep,ev,re,r,rp)
 	return ep~=tp
 end
--- 效果目标选择函数
+-- 目标选择函数：进行取对象发动时的合法性检查，并在满足条件时从对方场上选择1只怪兽作为效果对象，同时设置破坏相关的操作信息。
 function c10532969.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(1-tp) and chkc:IsLocation(LOCATION_MZONE) end
-	-- 判断是否满足选择目标的条件：对方场上存在至少1只怪兽
+	-- 在发动时（chk==0）检查对方场上是否存在至少1只可选怪兽，只有存在可选对象时才允许发动效果。
 	if chk==0 then return Duel.IsExistingTarget(aux.TRUE,tp,0,LOCATION_MZONE,1,nil) end
-	-- 向玩家提示选择要破坏的怪兽
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)
-	-- 选择对方场上1只怪兽作为破坏对象
+	-- 向操作玩家tp显示选择提示，提示内容为“请选择要破坏的卡”。
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
+	-- 从对方场上（tp的对方区域）选择1只怪兽作为效果对象，并通过Duel.SelectTarget将所选卡与当前连锁关联。
 	local g=Duel.SelectTarget(tp,aux.TRUE,tp,0,LOCATION_MZONE,1,1,nil)
-	-- 设置连锁操作信息为破坏效果
+	-- 将本次连锁的处理信息设置为“破坏1张卡”，供后续效果检测和连锁判定使用。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,1,0,0)
 end
--- 效果处理函数
+-- 效果处理函数：在效果结算时获取之前选择的对象怪兽，若该怪兽仍与效果相关联，则将其破坏。
 function c10532969.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的破坏对象
+	-- 获取效果发动时所选择的1只对象怪兽（即之前用Duel.SelectTarget选中的对方场上的怪兽）。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 将目标怪兽破坏
+		-- 以效果（REASON_EFFECT）为原因破坏该对象怪兽，完成“选择对方场上1只怪兽破坏”的规则处理。
 		Duel.Destroy(tc,REASON_EFFECT)
 	end
 end
