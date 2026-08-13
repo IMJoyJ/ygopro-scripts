@@ -5,7 +5,7 @@
 -- 【怪兽效果】
 -- ①：1回合1次，以自己场上1只灵摆怪兽为对象才能发动。那只怪兽的攻击力直到回合结束时上升自己场上的「娱乐伙伴」怪兽数量×300。
 function c23377694.initial_effect(c)
-	-- 为怪兽添加灵摆怪兽属性，使其可以进行灵摆召唤和灵摆卡的发动
+	-- 为这张灵摆怪兽卡添加灵摆怪兽共同属性（可进行灵摆召唤、灵摆卡发动等）。
 	aux.EnablePendulumAttribute(c)
 	-- ①：1回合1次，以自己场上1只灵摆怪兽为对象才能发动。那只怪兽的攻击力直到回合结束时上升自己场上的「娱乐伙伴」怪兽数量×300。
 	local e1=Effect.CreateEffect(c)
@@ -29,32 +29,32 @@ function c23377694.initial_effect(c)
 	e2:SetOperation(c23377694.spop)
 	c:RegisterEffect(e2)
 end
--- 过滤函数，用于判断是否为表侧表示的灵摆怪兽
+-- 筛选条件：卡为表侧表示且是灵摆怪兽（用于选择攻击力上升效果的对象）。
 function c23377694.filter1(c)
 	return c:IsFaceup() and c:IsType(TYPE_PENDULUM)
 end
--- 设置效果目标，选择自己场上一只表侧表示的灵摆怪兽
+-- 起动效果的目标处理：确认存在可选对象时，从自己场上选择1只表侧表示灵摆怪兽作为对象（取对象）。
 function c23377694.atktg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and c23377694.filter1(chkc) end
-	-- 检查是否有满足条件的目标怪兽
+	-- 效果发动合法性检查：自己场上不存在表侧表示灵摆怪兽时，该效果不能发动。
 	if chk==0 then return Duel.IsExistingTarget(c23377694.filter1,tp,LOCATION_MZONE,0,1,nil) end
-	-- 提示玩家选择表侧表示的卡
+	-- 显示选择提示：请选择表侧表示的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
-	-- 选择目标怪兽
+	-- 实际选择1只自己场上的表侧表示灵摆怪兽，并将其注册为效果对象。
 	Duel.SelectTarget(tp,c23377694.filter1,tp,LOCATION_MZONE,0,1,1,nil)
 end
--- 过滤函数，用于判断是否为表侧表示的「娱乐伙伴」怪兽
+-- 筛选条件：表侧表示且属于「娱乐伙伴」系列，用于计算攻击力上升的数量。
 function c23377694.filter2(c)
 	return c:IsFaceup() and c:IsSetCard(0x9f)
 end
--- 处理攻击力提升效果，将自己场上的「娱乐伙伴」怪兽数量乘以300作为攻击力加成
+-- 效果处理：计算自己场上表侧表示「娱乐伙伴」怪兽数量×300，为对象怪兽附加直到回合结束的攻击力上升效果。
 function c23377694.atkop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁效果的目标怪兽
+	-- 取得效果选择的对象怪兽。
 	local tc=Duel.GetFirstTarget()
-	-- 统计自己场上表侧表示的「娱乐伙伴」怪兽数量
+	-- 统计自己场上表侧表示「娱乐伙伴」怪兽的数量，作为攻击力上升的倍数。
 	local ct=Duel.GetMatchingGroupCount(c23377694.filter2,tp,LOCATION_MZONE,0,nil)
 	if ct>0 and tc:IsFaceup() and tc:IsRelateToEffect(e) then
-		-- 创建一个攻击力提升的效果并注册到目标怪兽上
+		-- 那只怪兽的攻击力直到回合结束时上升自己场上的「娱乐伙伴」怪兽数量×300。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
@@ -64,36 +64,36 @@ function c23377694.atkop(e,tp,eg,ep,ev,re,r,rp)
 		tc:RegisterEffect(e1)
 	end
 end
--- 过滤函数，用于判断是否为「娱乐伙伴」或「异色眼」卡且之前在自己的控制下
+-- 筛选条件：被战斗破坏的怪兽属于「娱乐伙伴」系列，且其上一个控制者是自己。
 function c23377694.cfilter(c,tp)
 	return c:IsSetCard(0x9f) and c:IsPreviousControler(tp)
 end
--- 判断被战斗破坏的怪兽是否为自己的「娱乐伙伴」怪兽
+-- 发动条件：本次战斗破坏的事件中存在1只以上自己的「娱乐伙伴」怪兽被战斗破坏。
 function c23377694.spcon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c23377694.cfilter,1,nil,tp)
 end
--- 过滤函数，用于判断是否为「娱乐伙伴」或「异色眼」卡且可以特殊召唤
+-- 筛选条件：位于灵摆区域、属于「娱乐伙伴」或「异色眼」系列、且可以被特殊召唤。
 function c23377694.spfilter(c,e,tp)
 	return c:IsSetCard(0x9f,0x99) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 设置效果目标，选择自己灵摆区域的一张符合条件的卡
+-- 灵摆效果的目标处理：从自己的灵摆区域选择1张可特殊召唤的「娱乐伙伴」或「异色眼」卡为对象，并登记特殊召唤操作信息。
 function c23377694.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(tp) and chkc:IsLocation(LOCATION_PZONE) and c23377694.spfilter(chkc,e,tp) end
-	-- 检查是否有满足条件的目标卡
+	-- 效果发动合法性检查：灵摆区域不存在符合条件的卡时，该效果不能发动。
 	if chk==0 then return Duel.IsExistingTarget(c23377694.spfilter,tp,LOCATION_PZONE,0,1,nil,e,tp) end
-	-- 提示玩家选择要特殊召唤的卡
+	-- 显示选择提示：请选择要特殊召唤的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 选择目标卡
+	-- 从自己灵摆区域选择1张符合条件的卡，并将其注册为效果对象。
 	local g=Duel.SelectTarget(tp,c23377694.spfilter,tp,LOCATION_PZONE,0,1,1,nil,e,tp)
-	-- 设置操作信息，确定特殊召唤的卡
+	-- 登记操作信息：此次效果将特殊召唤1张对象卡。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,1,0,0)
 end
--- 处理特殊召唤效果，将目标卡特殊召唤到场上
+-- 效果处理：若对象卡仍与效果关联，则将其特殊召唤到自己场上。
 function c23377694.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁效果的目标卡
+	-- 取得灵摆效果选择的对象卡。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 将目标卡特殊召唤到场上
+		-- 将对象卡以表侧攻击表示特殊召唤到自己场上。
 		Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP)
 	end
 end

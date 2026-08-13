@@ -3,13 +3,13 @@
 -- 这张卡不能通常召唤。把手卡3张怪兽卡送去墓地的场合才能特殊召唤。这张卡的攻击力变成这张卡的特殊召唤时送去墓地的怪兽的等级合计×300的数值。
 function c23303072.initial_effect(c)
 	c:EnableReviveLimit()
-	-- 设置此卡的特殊召唤条件为必须满足特定条件才能特殊召唤
+	-- 这张卡不能通常召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
 	e1:SetCode(EFFECT_SPSUMMON_CONDITION)
 	c:RegisterEffect(e1)
-	-- 把手卡3张怪兽卡送去墓地的场合才能特殊召唤
+	-- 把手卡3张怪兽卡送去墓地的场合才能特殊召唤。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(23303072,1))
 	e2:SetType(EFFECT_TYPE_FIELD)
@@ -21,23 +21,23 @@ function c23303072.initial_effect(c)
 	e2:SetOperation(c23303072.spop)
 	c:RegisterEffect(e2)
 end
--- 过滤函数，用于筛选手牌中可以作为召唤代价送去墓地的怪兽卡
+-- 筛选可作为特殊召唤代价送去墓地的手卡怪兽：需为怪兽卡且可以作为代价送去墓地。
 function c23303072.filter(c)
 	return c:IsType(TYPE_MONSTER) and c:IsAbleToGraveAsCost()
 end
--- 判断是否满足特殊召唤条件，包括场上是否有空位以及手牌中是否有3张符合条件的怪兽卡
+-- 特殊召唤手续的发动条件：c为nil时表示系统查询返回true；c为具体卡时，要求其控制者场上有可用的主要怪兽区空格，且手卡中至少存在3张满足filter条件的怪兽卡（不含合成龙自身）。
 function c23303072.spcon(e,c)
 	if c==nil then return true end
-	-- 检查当前玩家场上主要怪兽区是否有空位
+	-- 检查该卡控制者的主要怪兽区是否有空位。
 	return Duel.GetLocationCount(c:GetControler(),LOCATION_MZONE)>0
-		-- 检查当前玩家手牌中是否存在至少3张符合条件的怪兽卡
+		-- 检查手卡中是否存在至少3张满足filter条件的怪兽卡（排除合成龙自身），用于作为特殊召唤的COST。
 		and Duel.IsExistingMatchingCard(c23303072.filter,c:GetControler(),LOCATION_HAND,0,3,e:GetHandler())
 end
--- 设置特殊召唤时的选择处理函数，用于选择3张怪兽卡送去墓地
+-- 特殊召唤手续的目标选择：从手卡获取所有可作为COST的怪兽，提示玩家选择3张（可取消）；选择成功则保存为效果标签对象并返回true，否则返回false。
 function c23303072.sptg(e,tp,eg,ep,ev,re,r,rp,chk,c)
-	-- 获取当前玩家手牌中所有符合条件的怪兽卡
+	-- 获取当前玩家手卡中满足filter条件且不是合成龙自身的所有怪兽卡，构成候选卡片组。
 	local g=Duel.GetMatchingGroup(c23303072.filter,tp,LOCATION_HAND,0,c)
-	-- 向玩家发送提示信息，提示选择要送去墓地的卡
+	-- 向玩家显示选择提示，提示内容为“请选择要送去墓地的卡”。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
 	local sg=g:CancelableSelect(tp,3,3,nil)
 	if sg then
@@ -46,10 +46,10 @@ function c23303072.sptg(e,tp,eg,ep,ev,re,r,rp,chk,c)
 		return true
 	else return false end
 end
--- 设置特殊召唤时的处理函数，将选中的卡送去墓地并计算攻击力
+-- 执行特殊召唤处理：取出保存的3张怪兽卡全部送去墓地，遍历累加这些怪兽的等级，为合成龙注册攻击力变成等级合计×300的效果（离场时重置），最后删除临时卡片组。
 function c23303072.spop(e,tp,eg,ep,ev,re,r,rp,c)
 	local g=e:GetLabelObject()
-	-- 将选中的卡组以特殊召唤理由送去墓地
+	-- 将选中的3张手卡怪兽作为特殊召唤的代价送去墓地，送墓原因为特殊召唤（REASON_SPSUMMON）。
 	Duel.SendtoGrave(g,REASON_SPSUMMON)
 	local sum=0
 	local tc=g:GetFirst()
@@ -58,7 +58,7 @@ function c23303072.spop(e,tp,eg,ep,ev,re,r,rp,c)
 		sum=sum+lv
 		tc=g:GetNext()
 	end
-	-- 这张卡的攻击力变成这张卡的特殊召唤时送去墓地的怪兽的等级合计×300的数值
+	-- 这张卡的攻击力变成这张卡的特殊召唤时送去墓地的怪兽的等级合计×300的数值。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_SET_ATTACK)

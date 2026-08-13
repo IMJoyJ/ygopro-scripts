@@ -12,8 +12,8 @@ function c23421244.initial_effect(c)
 	e1:SetValue(1)
 	c:RegisterEffect(e1)
 end
--- 检查当前怪兽是否在攻击表示且自己手卡数量为0
+-- 定义该效果的发动条件：卡片自身为攻击表示，并且其控制者手牌数为0。
 function c23421244.condition(e)
-	-- 返回当前怪兽是否在攻击表示且自己手卡数量为0
+	-- 返回该卡是否为攻击表示且其控制者手牌为0张的判断结果。
 	return e:GetHandler():IsAttackPos() and Duel.GetFieldGroupCount(e:GetHandlerPlayer(),LOCATION_HAND,0)==0
 end

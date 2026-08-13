@@ -19,16 +19,16 @@ function c2333365.initial_effect(c)
 	e2:SetValue(c2333365.atlimit)
 	c:RegisterEffect(e2)
 end
--- 检索满足条件的表侧表示的「极星」卡
+-- 过滤出表侧表示且名字带有「极星」的怪兽，用于后续判定是否存在这张卡以外的极星怪兽。
 function c2333365.filter(c)
 	return c:IsFaceup() and c:IsSetCard(0x42)
 end
--- 判断场上是否不存在其他表侧表示的「极星」怪兽
+-- 判定场上是否不存在这张卡以外的表侧表示名字带有「极星」的怪兽；若不存在则满足自我破坏条件。
 function c2333365.descon(e)
-	-- 若场上不存在其他表侧表示的「极星」怪兽则返回真
+	-- 检查双方怪兽区域是否存在满足filter条件且不是这张卡自身的表侧表示「极星」怪兽；若不存在则返回true。
 	return not Duel.IsExistingMatchingCard(c2333365.filter,0,LOCATION_MZONE,LOCATION_MZONE,1,e:GetHandler())
 end
--- 限制对方不能选择非提尔的「极星」怪兽作为攻击对象
+-- 作为攻击对象限制效果的判定函数：若攻击对象是表侧表示、卡名不是「极星将 提尔」且名字带有「极星」的怪兽，则对方不能将其选为攻击对象。
 function c2333365.atlimit(e,c)
 	return c:IsFaceup() and not c:IsCode(2333365) and c:IsSetCard(0x42)
 end

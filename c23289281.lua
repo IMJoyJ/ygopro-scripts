@@ -2,7 +2,7 @@
 -- 效果：
 -- 1回合1次，自己的主要阶段时才能发动。这张卡的攻击力直到结束阶段时变成原本攻击力2倍的数值。这个效果使用的场合，这张卡在结束阶段时破坏。
 function c23289281.initial_effect(c)
-	-- 1回合1次，自己的主要阶段时才能发动。
+	-- 1回合1次，自己的主要阶段时才能发动。这张卡的攻击力直到结束阶段时变成原本攻击力2倍的数值。这个效果使用的场合，这张卡在结束阶段时破坏。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(23289281,0))  --"攻击变化"
 	e1:SetCategory(CATEGORY_ATKCHANGE)
@@ -12,7 +12,7 @@ function c23289281.initial_effect(c)
 	e1:SetOperation(c23289281.operaion)
 	c:RegisterEffect(e1)
 end
--- 检查卡是否里侧表示或与效果无关联，若满足则返回不执行效果。
+-- 效果发动时的处理：若此卡已里侧或与效果失去关联则不处理；否则将攻击力设为原本攻击力的2倍（持续到结束阶段），并设置结束阶段破坏此卡的效果。
 function c23289281.operaion(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsFacedown() or not c:IsRelateToEffect(e) then return end
@@ -35,16 +35,16 @@ function c23289281.operaion(e,tp,eg,ep,ev,re,r,rp)
 	e2:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END)
 	c:RegisterEffect(e2)
 end
--- 设置连锁操作信息，确定破坏目标为自身。
+-- 此破坏诱发效果的发动条件与操作信息设定：条件检查时返回真（满足发动条件），并宣告破坏此卡1张。
 function c23289281.destg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置当前处理的连锁操作信息为破坏效果，目标为自身。
+	-- 设置操作信息：本次效果处理将破坏效果来源卡（此卡）1张，破坏分类为 CATEGORY_DESTROY。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,e:GetHandler(),1,0,0)
 end
--- 破坏效果处理函数，检查目标是否与效果相关联，若关联则进行破坏。
+-- 破坏效果的解决处理：若此卡仍与效果关联，则将其破坏；否则不处理。
 function c23289281.desop(e,tp,eg,ep,ev,re,r,rp)
 	if e:GetHandler():IsRelateToEffect(e) then
-		-- 以效果原因将目标卡破坏至墓地。
+		-- 以‘效果’为破坏原因，将此卡破坏。
 		Duel.Destroy(e:GetHandler(),REASON_EFFECT)
 	end
 end
