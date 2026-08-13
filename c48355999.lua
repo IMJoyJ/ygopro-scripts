@@ -13,40 +13,40 @@ function c48355999.initial_effect(c)
 	e1:SetOperation(c48355999.spop)
 	c:RegisterEffect(e1)
 end
--- 过滤满足等级5以上、暗属性、龙族且能特殊召唤的墓地怪兽
+-- 过滤函数：筛选自己墓地中等级5以上、暗属性、龙族且可以被表侧守备表示特殊召唤的怪兽。
 function c48355999.spfilter(c,e,tp)
 	return c:IsLevelAbove(5) and c:IsAttribute(ATTRIBUTE_DARK) and c:IsRace(RACE_DRAGON) and c:IsCanBeSpecialSummoned(e,0,tp,false,false,POS_FACEUP_DEFENSE)
 end
--- 判断是否满足发动条件：场上存在空位且墓地存在符合条件的目标怪兽
+-- 取对象效果的发动条件判定：若为连锁处理中的对象确认，则检查对象是否是自己墓地符合条件的卡；若为发动条件确认，则检查自己场上是否有空位且墓地存在符合条件的对象。
 function c48355999.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(tp) and chkc:IsLocation(LOCATION_GRAVE) and c48355999.spfilter(chkc,e,tp) end
-	-- 判断是否满足发动条件：场上存在空位
+	-- 发动条件之一：自己主要怪兽区有空余位置可用于特殊召唤。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 判断是否满足发动条件：墓地存在符合条件的目标怪兽
+		-- 发动条件之二：墓地存在1张满足spfilter过滤条件且能成为本效果对象的怪兽。
 		and Duel.IsExistingTarget(c48355999.spfilter,tp,LOCATION_GRAVE,0,1,nil,e,tp) end
-	-- 提示玩家选择要特殊召唤的卡
+	-- 弹出选择提示，提示玩家从符合条件的墓地怪兽中选择要特殊召唤的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 选择目标怪兽并设置为效果对象
+	-- 玩家从自己墓地选择1只符合条件的怪兽，并设为效果对象（连锁处理时取得该对象）。
 	local g=Duel.SelectTarget(tp,c48355999.spfilter,tp,LOCATION_GRAVE,0,1,1,nil,e,tp)
-	-- 设置连锁操作信息，确定将要特殊召唤的怪兽
+	-- 设置操作信息：本次连锁将特殊召唤1只怪兽，用于给其他卡检测此效果类型（如星尘龙等）。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,1,0,0)
 end
--- 处理效果发动后的后续操作：特殊召唤目标怪兽，并对其施加效果无效化和结束阶段破坏效果
+-- 效果处理：取出对象怪兽，确认关联后以表侧守备表示进行特殊召唤；若成功，则为该怪兽附加效果无效化和结束阶段破坏的标记/效果，并将其登记到结束阶段的破坏处理中；最后完成特殊召唤，并给自己附加回合结束前不能从额外卡组特殊召唤非暗属性怪兽的自肃。
 function c48355999.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取当前效果的目标怪兽
+	-- 取得本效果发动时选择的对象卡（目标）。这里只有一个目标，因此直接获取。
 	local tc=Duel.GetFirstTarget()
-	-- 判断目标怪兽是否仍然存在于场上并执行特殊召唤步骤
+	-- 确认对象怪兽仍与本效果关联（未被重置），并以表侧守备表示将其特殊召唤（通过SpecialSummonStep分步处理，尚未实际落地）。
 	if tc:IsRelateToEffect(e) and Duel.SpecialSummonStep(tc,0,tp,tp,false,false,POS_FACEUP_DEFENSE) then
 		local fid=c:GetFieldID()
-		-- 使特殊召唤的怪兽效果无效化
+		-- 这个效果特殊召唤的怪兽的效果无效化（EFFECT_DISABLE：使该怪兽效果无效）。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetProperty(EFFECT_FLAG_IGNORE_IMMUNE)
 		e1:SetCode(EFFECT_DISABLE)
 		e1:SetReset(RESET_EVENT+RESETS_STANDARD)
 		tc:RegisterEffect(e1)
-		-- 使特殊召唤的怪兽的效果无效化（持续到回合结束）
+		-- 这个效果特殊召唤的怪兽的效果无效化（EFFECT_DISABLE_EFFECT：使其已适用的效果也被无效，离场后仍保留无效状态）。
 		local e2=Effect.CreateEffect(c)
 		e2:SetType(EFFECT_TYPE_SINGLE)
 		e2:SetProperty(EFFECT_FLAG_IGNORE_IMMUNE)
@@ -55,7 +55,7 @@ function c48355999.spop(e,tp,eg,ep,ev,re,r,rp)
 		e2:SetReset(RESET_EVENT+RESETS_STANDARD)
 		tc:RegisterEffect(e2)
 		tc:RegisterFlagEffect(48355999,RESET_EVENT+RESETS_STANDARD,0,1,fid)
-		-- 设置一个在结束阶段触发的效果，用于破坏该特殊召唤的怪兽
+		-- 结束阶段破坏。
 		local e3=Effect.CreateEffect(c)
 		e3:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 		e3:SetCode(EVENT_PHASE+PHASE_END)
@@ -65,12 +65,12 @@ function c48355999.spop(e,tp,eg,ep,ev,re,r,rp)
 		e3:SetLabelObject(tc)
 		e3:SetCondition(c48355999.descon)
 		e3:SetOperation(c48355999.desop)
-		-- 注册结束阶段破坏效果
+		-- 将结束阶段破坏效果注册到场上，使已特殊召唤的怪兽在结束阶段由该效果破坏（并通过descon条件判定只处理本效果特殊召唤的怪兽）。
 		Duel.RegisterEffect(e3,tp)
 	end
-	-- 完成本次特殊召唤流程
+	-- 完成分步特殊召唤的收尾处理，将之前SpecialSummonStep的怪兽真正特殊召唤到场上；若此前有步骤失败则整合结果。
 	Duel.SpecialSummonComplete()
-	-- ①：这个效果的发动后，直到回合结束时自己不是暗属性怪兽不能从额外卡组特殊召唤。
+	-- 这个效果的发动后，直到回合结束时自己不是暗属性怪兽不能从额外卡组特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_CANNOT_SPECIAL_SUMMON)
@@ -78,10 +78,10 @@ function c48355999.spop(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetTargetRange(1,0)
 	e1:SetTarget(c48355999.splimit)
 	e1:SetReset(RESET_PHASE+PHASE_END)
-	-- 注册不能从额外卡组特殊召唤非暗属性怪兽的效果
+	-- 将自肃效果注册到场上（仅影响自己），直到回合结束阶段重置。
 	Duel.RegisterEffect(e1,tp)
 end
--- 判断是否为该特殊召唤的怪兽触发破坏效果
+-- 破坏条件判定：仅当当前结束时登记的怪兽仍是本次特殊召唤的那只（通过FieldID标记确认）才执行破坏；若因标记不符说明该怪兽不再是本效果处理对象，则重置该结束阶段效果。
 function c48355999.descon(e,tp,eg,ep,ev,re,r,rp)
 	local tc=e:GetLabelObject()
 	if tc:GetFlagEffectLabel(48355999)==e:GetLabel() then
@@ -91,13 +91,13 @@ function c48355999.descon(e,tp,eg,ep,ev,re,r,rp)
 		return false
 	end
 end
--- 执行破坏操作
+-- 结束阶段对登记的怪兽执行破坏的处理函数。
 function c48355999.desop(e,tp,eg,ep,ev,re,r,rp)
 	local tc=e:GetLabelObject()
-	-- 将目标怪兽因效果而破坏
+	-- 以效果原因将该怪兽破坏（实际执行结束阶段的破坏）。
 	Duel.Destroy(tc,REASON_EFFECT)
 end
--- 限制非暗属性怪兽从额外卡组特殊召唤
+-- 自肃过滤函数：当怪兽不是暗属性且位于额外卡组时，不允许从额外卡组特殊召唤。
 function c48355999.splimit(e,c)
 	return not c:IsAttribute(ATTRIBUTE_DARK) and c:IsLocation(LOCATION_EXTRA)
 end

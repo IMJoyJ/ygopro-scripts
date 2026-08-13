@@ -27,24 +27,24 @@ function c48356796.initial_effect(c)
 	e3:SetOperation(c48356796.disop)
 	c:RegisterEffect(e3)
 end
--- 判断场上是否满足激活条件，即当此卡为里侧表示时需至少有1个空魔陷区，表侧表示时需至少有2个空魔陷区。
+-- 判断这张卡能否发动：若自身为里侧表示（从场上里侧发动）需要魔陷区至少1个空格；若从手卡发动则需要至少2个空格，因为自身要占用1个区域且另有1个区域会变为不能使用。
 function c48356796.accon(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取玩家当前可用的魔陷区数量。
+	-- 获取自己魔法与陷阱区域当前可用的空格数量。
 	local c=Duel.GetLocationCount(tp,LOCATION_SZONE,PLAYER_NONE,0)
 	if e:GetHandler():IsFacedown() then return c>0 end
 	return c>1
 end
--- 过滤函数，用于检测场上是否存在表侧表示的「闪光之宝札」。
+-- 过滤条件：卡名为48356796（闪光之宝札）且表侧表示。
 function c48356796.filter(c)
 	return c:IsCode(48356796) and c:IsFaceup()
 end
--- 判断是否满足抽卡效果发动条件，即场上存在其他表侧表示的「闪光之宝札」。
+-- 抽卡数增加效果的发动条件：自己魔法与陷阱区域存在其他表侧表示的「闪光之宝札」时才适用。
 function c48356796.drawcon(e)
-	-- 检查以玩家来看的魔陷区是否存在至少1张满足过滤条件的「闪光之宝札」。
+	-- 检查自己魔法与陷阱区是否存在1张满足条件的卡（即除自身外的表侧「闪光之宝札」）。
 	return Duel.IsExistingMatchingCard(c48356796.filter,e:GetHandlerPlayer(),LOCATION_SZONE,0,1,e:GetHandler())
 end
--- 无效区域操作函数，选择一个魔陷区格子使其不能使用。
+-- 无效区域效果的操作：选择自己魔法与陷阱区域中的1个空格设置为不能使用。
 function c48356796.disop(e,tp,eg,ep,ev,re,r,rp)
-	-- 让玩家选择一个魔陷区格子并标记为不可用。
+	-- 使用Duel.SelectDisableField让该卡控制者从自己的魔法与陷阱区域选择1个空格，返回其位置标记作为无效区域。
 	return Duel.SelectDisableField(tp,1,LOCATION_SZONE,0,0)
 end

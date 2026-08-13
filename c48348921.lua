@@ -39,31 +39,31 @@ function c48348921.initial_effect(c)
 	e3:SetValue(c48348921.atkval)
 	c:RegisterEffect(e3)
 end
--- 设置该卡为No.62系列的超量怪兽
+-- 将该卡登记为编号62的「No.」超量怪兽，用于相关卡片的编号判定。
 aux.xyz_number[48348921]=62
--- 过滤满足条件的超量素材：场上的「No.62 银河眼光子龙皇」
+-- 定义叠放素材的额外条件：对方（自己场上）需要存在表侧表示的「No.62 银河眼光子龙皇」（卡号31801517），才能在这只怪兽上面重叠来超量召唤。
 function c48348921.ovfilter(c)
 	return c:IsFaceup() and c:IsCode(31801517)
 end
--- 判断是否为自己的回合
+-- ①效果的发动条件判定：当前回合玩家必须是这张卡的控制者，即只有自己战斗阶段开始时才能发动。
 function c48348921.atkcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断是否为自己的回合
+	-- 判断当前回合是否为这张卡的控制者的回合。
 	return Duel.GetTurnPlayer()==tp
 end
--- 支付1个超量素材作为代价
+-- ①效果发动代价：检查并移除这张卡的1个超量素材作为发动代价；若可以支付代价则返回true，并实际移除1张超量素材。
 function c48348921.atkcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():CheckRemoveOverlayCard(tp,1,REASON_COST) end
 	e:GetHandler():RemoveOverlayCard(tp,1,1,REASON_COST)
 end
--- 检查是否已获得额外攻击次数效果
+-- ①效果的发动目标条件：确认这张卡尚未获得额外攻击怪兽次数的效果，防止重复发动或叠加。
 function c48348921.atktg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():GetEffectCount(EFFECT_EXTRA_ATTACK_MONSTER)==0 end
 end
--- 赋予该卡3次额外攻击机会
+-- ①效果处理：若这张卡仍与效果关联，则给它注册一个本战斗阶段内“额外攻击怪兽次数+2”的效果，使其合计最多可攻击3次。
 function c48348921.atkop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) then
-		-- 赋予该卡3次额外攻击机会
+		-- 这张卡在这次战斗阶段中最多3次可以向怪兽攻击。（对应的效果处理为赋予额外2次攻击怪兽的机会）
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_EXTRA_ATTACK_MONSTER)
@@ -73,19 +73,19 @@ function c48348921.atkop(e,tp,eg,ep,ev,re,r,rp)
 		c:RegisterEffect(e1)
 	end
 end
--- 判断是否有「银河眼光子龙」作为超量素材
+-- ②效果的获得条件判定：这张卡的超量素材中存在「银河眼光子龙」（卡号93717133）时，条件成立。
 function c48348921.econ(e)
 	return e:GetHandler():GetOverlayGroup():IsExists(Card.IsCode,1,nil,93717133)
 end
--- 过滤对方怪兽效果，使其无法影响此卡
+-- 免疫效果的过滤函数：只免疫对方怪兽发动的效果，即不受对方怪兽的效果影响。
 function c48348921.efilter(e,te)
 	return te:IsActiveType(TYPE_MONSTER) and te:GetOwnerPlayer()~=e:GetHandlerPlayer()
 end
--- 计算超量素材等级或阶级总和并乘以100作为攻击力提升值
+-- 攻击力上升数值的设定：取这张卡所有超量素材的等级或阶级合计值，再乘以100作为上升数值。
 function c48348921.atkval(e,c)
 	return c:GetOverlayGroup():GetSum(c48348921.lv_or_rk)*100
 end
--- 根据怪兽类型返回其等级或阶级
+-- 计算超量素材的等级或阶级：若素材是超量怪兽则取阶级，否则取等级。
 function c48348921.lv_or_rk(c)
 	if c:IsType(TYPE_XYZ) then return c:GetRank()
 	else return c:GetLevel() end
