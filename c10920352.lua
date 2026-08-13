@@ -8,7 +8,7 @@ function c10920352.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
 	e1:SetCode(EFFECT_SPSUMMON_CONDITION)
-	-- 设置特殊召唤条件为必须通过假面变化方式召唤。
+	-- 将特殊召唤条件效果e1的判定值设为aux.MaskChangeLimit，即只有在通过「假面变化」的效果进行特殊召唤（或特召源为「假面变化」）时才允许特殊召唤。
 	e1:SetValue(aux.MaskChangeLimit)
 	c:RegisterEffect(e1)
 	-- 这张卡不会被魔法·陷阱·效果怪兽的效果破坏。

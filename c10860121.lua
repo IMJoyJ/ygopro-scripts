@@ -3,7 +3,7 @@
 -- 「武神器-五百箇」的效果1回合只能使用1次。
 -- ①：自己场上的兽战士族「武神」怪兽被战斗破坏送去墓地时，把这张卡从手卡送去墓地才能发动。从卡组把1只「武神」怪兽特殊召唤。
 function c10860121.initial_effect(c)
-	-- 创建效果，设置为场上的诱发选发效果，可在伤害步骤发动，只能从手卡发动，发动时需支付送去墓地的代价，效果条件为己方场上的兽战士族武神怪兽被战斗破坏送入墓地时，效果描述为特殊召唤，效果限制为每回合只能发动一次
+	-- 「武神器-五百箇」的效果1回合只能使用1次。①：自己场上的兽战士族「武神」怪兽被战斗破坏送去墓地时，把这张卡从手卡送去墓地才能发动。从卡组把1只「武神」怪兽特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(10860121,1))
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -18,44 +18,44 @@ function c10860121.initial_effect(c)
 	e1:SetOperation(c10860121.operation)
 	c:RegisterEffect(e1)
 end
--- 过滤函数，用于判断被送入墓地的卡是否为己方场上被战斗破坏的兽战士族武神怪兽
+-- 判定送去墓地的卡是否满足：在我方场上主要怪兽区被战斗破坏送去墓地，且是兽战士族的「武神」怪兽。
 function c10860121.cfilter(c,tp)
 	return c:IsPreviousControler(tp) and c:IsPreviousLocation(LOCATION_MZONE)
 		and c:IsSetCard(0x88) and c:IsRace(RACE_BEASTWARRIOR) and c:IsReason(REASON_BATTLE)
 end
--- 效果条件函数，判断是否有满足条件的卡被送入墓地
+-- 检查本次送去墓地的怪兽集合中是否存在至少1只满足上述条件的我方兽战士族「武神」怪兽，以此判断触发条件是否成立。
 function c10860121.condition(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c10860121.cfilter,1,nil,tp)
 end
--- 效果代价函数，判断是否能将此卡送去墓地作为代价
+-- 发动代价的检查与执行：确认这张卡可以从手卡作为代价送去墓地，然后实际将其送去墓地作为发动代价。
 function c10860121.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsAbleToGraveAsCost() end
-	-- 将此卡送去墓地作为发动代价
+	-- 实际将效果发动者（这张卡）从手卡送去墓地，作为效果的发动代价（REASON_COST）。
 	Duel.SendtoGrave(e:GetHandler(),REASON_COST)
 end
--- 过滤函数，用于筛选可以特殊召唤的武神怪兽
+-- 筛选卡组中满足条件的「武神」怪兽：属于「武神」系列且可以被当前效果特殊召唤（不跳过召唤条件与苏生限制的检查）。
 function c10860121.filter(c,e,tp)
 	return c:IsSetCard(0x88) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 效果目标函数，判断是否满足发动条件并设置操作信息
+-- 发动前合法性检查：我方主要怪兽区有空位，且卡组中存在符合条件的「武神」怪兽，并设置操作信息为特殊召唤。
 function c10860121.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否满足发动条件，判断己方场上是否有空位
+	-- 检查我方主要怪兽区是否还有可用空格。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查是否满足发动条件，判断卡组中是否存在满足条件的武神怪兽
+		-- 检查我方卡组中是否存在至少1只符合特殊召唤条件的「武神」怪兽。
 		and Duel.IsExistingMatchingCard(c10860121.filter,tp,LOCATION_DECK,0,1,nil,e,tp) end
-	-- 设置操作信息，表示将从卡组特殊召唤一只武神怪兽
+	-- 设置本次连锁的处理信息：预计从卡组把1只怪兽特殊召唤，供后续效果检测使用。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,0,LOCATION_DECK)
 end
--- 效果处理函数，执行特殊召唤操作
+-- 效果处理：若主要怪兽区仍有空位，则提示玩家选择并特殊召唤1只符合条件的「武神」怪兽。
 function c10860121.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查场上是否还有空位，若无则不执行特殊召唤
+	-- 在效果处理时再次确认我方主要怪兽区仍有空格，若没有则效果不处理。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-	-- 提示玩家选择要特殊召唤的卡
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
-	-- 从卡组选择一只满足条件的武神怪兽
+	-- 向操作玩家发出选择特殊召唤对象的提示信息。
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
+	-- 让玩家从卡组选择1只满足过滤条件的「武神」怪兽。
 	local g=Duel.SelectMatchingCard(tp,c10860121.filter,tp,LOCATION_DECK,0,1,1,nil,e,tp)
 	if g:GetCount()>0 then
-		-- 将选中的怪兽特殊召唤到场上
+		-- 将选择的怪兽以表侧攻击表示特殊召唤到我方场上。
 		Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
 	end
 end

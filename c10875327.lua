@@ -6,7 +6,7 @@
 -- ④：没有场地魔法卡表侧表示存在的场合这张卡破坏。
 -- ⑤：表侧表示的这张卡因这张卡的效果以外的方法从场上离开的场合发动。对方场上的表侧表示怪兽全部破坏，给与对方破坏数量×800伤害。
 function c10875327.initial_effect(c)
-	-- 设置场上只能存在1只表侧表示的「地缚神」怪兽
+	-- 设置「地缚神」怪兽在场上只能有1只表侧表示存在的唯一限制：双方场上存在其他表侧表示的地缚神怪兽时，此卡不能上场。
 	c:SetUniqueOnField(1,1,aux.FilterBoolFunction(Card.IsSetCard,0x1021),LOCATION_MZONE)
 	-- ④：没有场地魔法卡表侧表示存在的场合这张卡破坏。
 	local e4=Effect.CreateEffect(c)
@@ -22,7 +22,7 @@ function c10875327.initial_effect(c)
 	e5:SetCode(EFFECT_CANNOT_BE_BATTLE_TARGET)
 	e5:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
 	e5:SetRange(LOCATION_MZONE)
-	-- 效果值设为不能成为攻击对象的过滤函数
+	-- 设置该攻击限制效果的判定值：对方怪兽若不免疫此效果，则不能选择这张卡作为攻击对象。
 	e5:SetValue(aux.imval1)
 	c:RegisterEffect(e5)
 	-- ②：这张卡可以直接攻击。
@@ -41,41 +41,41 @@ function c10875327.initial_effect(c)
 	e7:SetOperation(c10875327.desop)
 	c:RegisterEffect(e7)
 end
--- 判断是否满足效果④的发动条件
+-- 自我破坏效果的发动条件：场上不存在表侧表示的场地魔法卡时条件成立。
 function c10875327.sdcon(e)
-	-- 检查对方场上是否存在表侧表示的场地魔法卡
+	-- 判断双方场地魔法区域是否没有表侧表示的卡（即没有场地魔法卡），没有则返回真。
 	return not Duel.IsExistingMatchingCard(Card.IsFaceup,0,LOCATION_FZONE,LOCATION_FZONE,1,nil)
 end
--- 判断是否满足效果⑤的发动条件
+-- ⑤效果的发动条件：这张卡离场前是表侧表示，离场后不在卡组，且离场原因不是这张卡自身的效果。
 function c10875327.descon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	return c:IsPreviousPosition(POS_FACEUP) and not c:IsLocation(LOCATION_DECK)
 		and (not re or re:GetOwner()~=c)
 end
--- 用于过滤场上表侧表示怪兽的函数
+-- 过滤函数：筛出表侧表示的怪兽，用于确定对方场上要被破坏的怪兽。
 function c10875327.desfilter(c)
 	return c:IsFaceup()
 end
--- 设置效果⑤的发动时处理目标
+-- ⑤效果的发动前操作：获取对方场上所有表侧表示怪兽，设置破坏对象及数量，并按破坏数量设置伤害值。
 function c10875327.destg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 获取对方场上所有表侧表示怪兽组成组
+	-- 获取对方场上满足表侧表示条件的所有怪兽，作为可能被破坏的卡组。
 	local g=Duel.GetMatchingGroup(c10875327.desfilter,tp,0,LOCATION_MZONE,nil)
-	-- 设置连锁操作信息为破坏对方场上怪兽
+	-- 设置破坏效果的操作信息：将g中的怪兽全部破坏，破坏数量为g的卡数。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,g:GetCount(),0,0)
 	if g:GetCount()~=0 then
-		-- 设置连锁操作信息为对对方造成伤害
+		-- 设置伤害效果的操作信息：对对方玩家造成破坏数量×800点伤害。
 		Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,1-tp,g:GetCount()*800)
 	end
 end
--- 效果⑤的处理函数
+-- ⑤效果处理：获取当前对方场上所有表侧表示怪兽并全部破坏，若实际破坏数大于0，对对方造成破坏数量×800伤害。
 function c10875327.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取对方场上所有表侧表示怪兽组成组
+	-- 处理时重新获取对方场上所有表侧表示怪兽，确定实际破坏的对象。
 	local g=Duel.GetMatchingGroup(c10875327.desfilter,tp,0,LOCATION_MZONE,nil)
-	-- 将对方场上所有表侧表示怪兽破坏
+	-- 以效果原因破坏g中的所有怪兽，返回实际破坏的数量ct。
 	local ct=Duel.Destroy(g,REASON_EFFECT)
 	if ct~=0 then
-		-- 对对方造成破坏怪兽数量×800的伤害
+		-- 给与对方玩家1-tp造成ct×800点效果伤害。
 		Duel.Damage(1-tp,ct*800,REASON_EFFECT)
 	end
 end

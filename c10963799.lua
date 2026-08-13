@@ -12,7 +12,7 @@ function c10963799.initial_effect(c)
 	e1:SetTarget(c10963799.sumlimit)
 	c:RegisterEffect(e1)
 end
--- 检索满足条件的卡片组，将目标怪兽特殊召唤
+-- 作为效果的限制判断：若被特殊召唤的怪兽属性不是水属性，则禁止该特殊召唤。
 function c10963799.sumlimit(e,c,sump,sumtype,sumpos,targetp)
 	return c:GetAttribute()~=ATTRIBUTE_WATER
 end

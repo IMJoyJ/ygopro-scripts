@@ -5,7 +5,7 @@
 -- ②：自己主要阶段才能发动。选自己的手卡·场上1张「宝玉兽」卡破坏，从卡组把1张「宝玉」魔法·陷阱卡加入手卡。
 -- ③：自己的魔法与陷阱区域有「宝玉兽」卡被放置的场合，以对方场上1张卡为对象才能发动（伤害步骤也能发动）。那张卡和这张卡回到持有者手卡。
 local s,id,o=GetID()
--- 注册场地魔法卡的发动效果，使卡能被正常发动
+-- s.initial_effect函数：为「心之桥梁」注册4个效果，e1为通常魔陷发动的空效果（允许发动），e2为①的额外召唤效果，e3为②的破坏检索效果，e4为③的回手效果。
 function s.initial_effect(c)
 	-- 永续魔陷/场地卡通用的“允许发动”空效果，无此效果则无法发动
 	local e1=Effect.CreateEffect(c)
@@ -19,7 +19,7 @@ function s.initial_effect(c)
 	e2:SetRange(LOCATION_SZONE)
 	e2:SetTargetRange(LOCATION_HAND+LOCATION_MZONE,0)
 	e2:SetCode(EFFECT_EXTRA_SUMMON_COUNT)
-	-- 设置效果目标为「宝玉兽」卡
+	-- 指定EFFECT_EXTRA_SUMMON_COUNT的适用对象为持有「宝玉兽」字段的怪兽，即只有这类怪兽能享受额外召唤次数。
 	e2:SetTarget(aux.TargetBoolFunction(Card.IsSetCard,0x1034))
 	c:RegisterEffect(e2)
 	-- ②：自己主要阶段才能发动。选自己的手卡·场上1张「宝玉兽」卡破坏，从卡组把1张「宝玉」魔法·陷阱卡加入手卡。
@@ -46,76 +46,76 @@ function s.initial_effect(c)
 	e4:SetOperation(s.thop)
 	c:RegisterEffect(e4)
 end
--- 检索满足条件的「宝玉兽」卡
+-- desfilter过滤函数：选择自己手牌中的「宝玉兽」卡，或场上表侧表示的「宝玉兽」卡作为可被破坏的对象。
 function s.desfilter(c)
 	return c:IsSetCard(0x1034) and (c:IsFaceup() or c:IsLocation(LOCATION_HAND))
 end
--- 检索满足条件的「宝玉」魔法·陷阱卡
+-- thfilter过滤函数：选择卡组中持有「宝玉」字段的魔法·陷阱卡，且能够加入手牌的卡作为检索对象。
 function s.thfilter(c)
 	return c:IsSetCard(0x34) and c:IsType(TYPE_SPELL+TYPE_TRAP) and c:IsAbleToHand()
 end
--- 判断是否满足②效果的发动条件
+-- destg的发动合法性检查：确认存在至少1张可破坏的「宝玉兽」卡，且卡组中存在至少1张可加入手牌的「宝玉」魔法·陷阱卡。
 function s.destg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断是否满足②效果的发动条件
+	-- 检查自己的手牌或场上是否存在满足条件的1张「宝玉兽」卡（手牌或表侧表示）可供破坏。
 	if chk==0 then return Duel.IsExistingMatchingCard(s.desfilter,tp,LOCATION_HAND+LOCATION_ONFIELD,0,1,nil)
-		-- 判断是否满足②效果的发动条件
+		-- 检查卡组中是否存在至少1张满足条件的「宝玉」魔法·陷阱卡可供检索加入手牌。
 		and Duel.IsExistingMatchingCard(s.thfilter,tp,LOCATION_DECK,0,1,nil) end
-	-- 获取满足条件的「宝玉兽」卡组
+	-- 获取所有满足破坏条件的「宝玉兽」卡（手牌+场上表侧），用于后续设置操作信息。
 	local g=Duel.GetMatchingGroup(s.desfilter,tp,LOCATION_HAND+LOCATION_ONFIELD,0,nil)
-	-- 设置连锁操作信息为破坏目标卡
+	-- 设置操作信息：本次连锁将破坏1张卡（对象为上述满足条件的卡组），供其他卡牌响应。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,1,0,0)
-	-- 设置连锁操作信息为检索卡组
+	-- 设置操作信息：本次连锁将从卡组把1张卡加入手牌（对象不确定，预计持有者为tp，位置为卡组）。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 处理②效果的发动效果
+-- desop操作处理：先让玩家选择并破坏1张「宝玉兽」卡，若破坏成功，再从卡组选择1张「宝玉」魔法·陷阱卡加入手牌，并让对方确认。
 function s.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要破坏的卡
+	-- 弹出选择提示，让当前玩家选择要破坏的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 选择要破坏的「宝玉兽」卡
+	-- 从自己的手牌或场上（表侧）选择1张满足条件的「宝玉兽」卡作为破坏对象。
 	local g=Duel.SelectMatchingCard(tp,s.desfilter,tp,LOCATION_HAND+LOCATION_ONFIELD,0,1,1,nil)
-	-- 执行破坏操作
+	-- 若成功选择了卡且该卡被效果破坏成功，则继续执行后续检索处理。
 	if g:GetCount()>0 and Duel.Destroy(g,REASON_EFFECT)~=0 then
-		-- 提示玩家选择要加入手牌的卡
+		-- 弹出选择提示，让当前玩家选择要加入手牌的卡。
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-		-- 选择要加入手牌的「宝玉」魔法·陷阱卡
+		-- 从自己卡组选择1张满足条件的「宝玉」魔法·陷阱卡。
 		local g=Duel.SelectMatchingCard(tp,s.thfilter,tp,LOCATION_DECK,0,1,1,nil)
 		if g:GetCount()>0 then
-			-- 将卡加入手牌
+			-- 将选择的卡加入其持有者的手牌。
 			Duel.SendtoHand(g,nil,REASON_EFFECT)
-			-- 确认玩家手牌
+			-- 让对方玩家确认加入手牌的卡片。
 			Duel.ConfirmCards(1-tp,g)
 		end
 	end
 end
--- 判断是否满足③效果的发动条件
+-- cfilter过滤函数：判断移动事件的卡是否为表侧表示、持有「宝玉兽」字段、为我方控制、位于我方魔陷区且不在场地魔法格（序号<5），即是否被放置到魔陷区。
 function s.cfilter(c,tp)
 	return c:IsFaceup() and c:IsSetCard(0x1034) and c:IsControler(tp) and c:IsLocation(LOCATION_SZONE) and c:GetSequence()<5
 end
--- 判断是否满足③效果的发动条件
+-- thcon触发条件：本次移动事件中存在至少1张被放置到我方魔陷区的表侧「宝玉兽」卡。
 function s.thcon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(s.cfilter,1,nil,tp)
 end
--- 处理③效果的发动效果
+-- thtg发动时点处理：选择对方场上1张能回手牌的卡作为对象，并将「心之桥梁」本身加入对象组，然后设置2张卡返回手牌的操作信息。
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsOnField() and chkc:IsControler(1-tp) and chkc:IsAbleToHand() end
 	local c=e:GetHandler()
-	-- 判断是否满足③效果的发动条件
+	-- 合法性检查：「心之桥梁」自身能够加入手牌，且对方场上有至少1张可作为对象的卡。
 	if chk==0 then return c:IsAbleToHand() and Duel.IsExistingTarget(Card.IsAbleToHand,tp,0,LOCATION_ONFIELD,1,nil) end
-	-- 提示玩家选择要返回手牌的卡
+	-- 弹出选择提示，让当前玩家选择要返回手牌的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_RTOHAND)  --"请选择要返回手牌的卡"
-	-- 选择要返回手牌的对方场上卡
+	-- 选择对方场上1张能够加入手牌的卡作为效果对象。
 	local g=Duel.SelectTarget(tp,Card.IsAbleToHand,tp,0,LOCATION_ONFIELD,1,1,nil)
 	g:AddCard(c)
-	-- 设置连锁操作信息为返回手牌
+	-- 将「心之桥梁」和选中的对方卡合并为对象组，并设置操作信息：本次连锁将2张卡返回持有者手牌。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,2,0,0)
 end
--- 处理③效果的发动效果
+-- thop处理：若「心之桥梁」和对方对象卡仍与效果关联，则将这些卡一起返回各自持有者的手牌。
 function s.thop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取当前连锁的目标卡
+	-- 获取效果对象（即发动时选择的对方场上那张卡）。
 	local tc=Duel.GetFirstTarget()
 	if c:IsRelateToEffect(e) and tc:IsRelateToEffect(e) then
-		-- 将目标卡和自身返回手牌
+		-- 将「心之桥梁」和对方场上那张对象卡同时返回持有者手牌。
 		Duel.SendtoHand(Group.FromCards(c,tc),nil,REASON_EFFECT)
 	end
 end
