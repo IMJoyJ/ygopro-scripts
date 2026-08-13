@@ -4,16 +4,16 @@
 -- ①：这张卡不会被战斗破坏。
 -- ②：这张卡和对方怪兽进行战斗的伤害步骤结束时，把这张卡1个超量素材取除才能发动。自己场上的全部「源数」怪兽的攻击力直到回合结束时变成2倍。
 function c42230449.initial_effect(c)
-	-- 添加XYZ召唤手续，使用1星怪兽3只进行叠放
+	-- 为这张卡添加XYZ召唤手续：用3只1星怪兽叠放来XYZ召唤。
 	aux.AddXyzProcedure(c,nil,1,3)
 	c:EnableReviveLimit()
-	-- 这张卡不会被战斗破坏
+	-- ①：这张卡不会被战斗破坏。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_INDESTRUCTABLE_BATTLE)
 	e1:SetValue(1)
 	c:RegisterEffect(e1)
-	-- 这张卡和对方怪兽进行战斗的伤害步骤结束时，把这张卡1个超量素材取除才能发动。自己场上的全部「源数」怪兽的攻击力直到回合结束时变成2倍。
+	-- ②：这张卡和对方怪兽进行战斗的伤害步骤结束时，把这张卡1个超量素材取除才能发动。自己场上的全部「源数」怪兽的攻击力直到回合结束时变成2倍。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(42230449,0))
 	e2:SetCategory(CATEGORY_ATKCHANGE)
@@ -25,34 +25,34 @@ function c42230449.initial_effect(c)
 	e2:SetOperation(c42230449.atkop)
 	c:RegisterEffect(e2)
 end
--- 设置该卡为No.2系列的XYZ怪兽
+-- 将这张卡的『No.』编号登记为2，用于规则上的No.卡相关判定。
 aux.xyz_number[42230449]=2
--- 支付效果代价，从自身场上取除1个超量素材
+-- ②效果的发动代价：取除这张卡的1个超量素材（先检查是否能取除，然后实际取除）。
 function c42230449.atkcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():CheckRemoveOverlayCard(tp,1,REASON_COST) end
 	e:GetHandler():RemoveOverlayCard(tp,1,1,REASON_COST)
 end
--- 判断此卡是否参与了战斗且处于和对方怪兽战斗的状态
+-- ②效果的发动条件：这张卡与对方怪兽进行过战斗，且在伤害步骤结束时仍与本次战斗关联（未离场）。
 function c42230449.atkcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	return c:IsRelateToBattle() and c:IsStatus(STATUS_OPPO_BATTLE)
 end
--- 过滤满足条件的「源数」怪兽（场上表侧表示）
+-- 定义『源数』怪兽的过滤条件：表侧表示且属于0x14a（源数）系列。
 function c42230449.atkfilter(c)
 	return c:IsFaceup() and c:IsSetCard(0x14a)
 end
--- 检索满足条件的「源数」怪兽组
+-- ②效果的发动目标检查：确认自己场上有至少1只表侧表示『源数』怪兽，以确定能否发动。
 function c42230449.atktg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检索满足条件的「源数」怪兽组
+	-- 效果发动时的合法性检查：自己场上是否已存在至少1只满足过滤条件的『源数』怪兽。
 	if chk==0 then return Duel.IsExistingMatchingCard(c42230449.atkfilter,tp,LOCATION_MZONE,0,1,nil) end
 end
--- 将满足条件的「源数」怪兽的攻击力变为2倍
+-- ②效果的结算：将自己场上全部『源数』怪兽的攻击力直到回合结束时变成2倍。
 function c42230449.atkop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取满足条件的「源数」怪兽组
+	-- 获取自己场上所有满足条件的『源数』怪兽集合。
 	local g=Duel.GetMatchingGroup(c42230449.atkfilter,tp,LOCATION_MZONE,0,nil)
 	local tc=g:GetFirst()
 	while tc do
-		-- 将目标怪兽的攻击力变为2倍
+		-- 自己场上的全部「源数」怪兽的攻击力直到回合结束时变成2倍。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_SET_ATTACK_FINAL)

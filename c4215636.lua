@@ -7,7 +7,7 @@ function c4215636.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- 创建一个诱发选发效果，用于在风属性怪兽被破坏送入墓地时发动，特殊召唤风属性3星以下的怪兽，且该效果1回合只能使用1次。
+	-- 风属性怪兽被卡的效果破坏送去自己墓地时，可以从自己的手卡·卡组把1只风属性·3星以下的怪兽特殊召唤。这个效果特殊召唤的怪兽的效果无效化。这个效果1回合只能使用1次。
 	local e2=Effect.CreateEffect(c)
 	e2:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e2:SetDescription(aux.Stringid(4215636,0))  --"特殊召唤"
@@ -20,44 +20,44 @@ function c4215636.initial_effect(c)
 	e2:SetOperation(c4215636.operation)
 	c:RegisterEffect(e2)
 end
--- 过滤函数，用于判断被破坏送入墓地的怪兽是否为风属性且为己方控制。
+-- 检查送入墓地的怪兽是否满足：被卡的效果破坏、原控制者为发动方、属性为风，以判断是否符合触发条件。
 function c4215636.cfilter(c,tp)
 	return bit.band(c:GetReason(),0x41)==0x41 and c:IsControler(tp) and c:IsAttribute(ATTRIBUTE_WIND)
 end
--- 条件函数，判断是否有满足条件的风属性怪兽被破坏送入墓地。
+-- 确认本次送去墓地的事件集合中存在至少1只满足上述条件的风属性怪兽。
 function c4215636.condition(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c4215636.cfilter,1,nil,tp)
 end
--- 过滤函数，用于筛选手卡或卡组中风属性且等级为3星以下的可特殊召唤怪兽。
+-- 筛选可特殊召唤的怪兽：等级3以下、风属性，并且能够被玩家tp以效果形式特殊召唤。
 function c4215636.spfilter(c,e,tp)
 	return c:IsLevelBelow(3) and c:IsAttribute(ATTRIBUTE_WIND) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 目标函数，检查是否满足发动条件，包括未处于连锁中、场上存在空位、手卡或卡组存在符合条件的怪兽。
+-- 发动合法性判定：该效果不在连锁处理中、自己主怪兽区有空位，并且手卡·卡组中存在符合条件的怪兽。
 function c4215636.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return not e:GetHandler():IsStatus(STATUS_CHAINING)
-		-- 目标函数中判断是否满足发动条件，包括场上存在空位、手卡或卡组存在符合条件的怪兽。
+		-- 进一步检查主怪兽区空格数大于0，且手卡·卡组中存在可特殊召唤的风属性3星以下怪兽。
 		and Duel.GetLocationCount(tp,LOCATION_MZONE)>0 and Duel.IsExistingMatchingCard(c4215636.spfilter,tp,LOCATION_DECK+LOCATION_HAND,0,1,nil,e,tp) end
-	-- 设置操作信息，表示该效果将特殊召唤1只怪兽，目标为手卡或卡组。
+	-- 向系统登记本次操作包含将1只风属性怪兽从手卡·卡组特殊召唤，供相关卡牌效果进行连锁判定。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_DECK+LOCATION_HAND)
 end
--- 效果处理函数，检查场上是否有空位，若存在则提示选择并特殊召唤符合条件的怪兽。
+-- 效果处理：若主怪兽区已无空位则直接结束；否则提示玩家选择要特殊召唤的卡，从手卡·卡组选出符合条件的1只，以表侧表示特殊召唤，并给该怪兽附加效果无效化状态，最后完成特殊召唤处理。
 function c4215636.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查场上是否还有空位，若无则直接返回。
+	-- 处理开始时再次确认自己场上是否有可用的主怪兽区空格，没有则本次特殊召唤不处理。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-	-- 提示玩家选择要特殊召唤的怪兽。
+	-- 显示“请选择要特殊召唤的卡”的提示，让玩家从候选卡中选择。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 选择满足条件的风属性3星以下的怪兽。
+	-- 从自己的手卡·卡组中选择1张满足风属性·3星以下且可特殊召唤的怪兽卡。
 	local g=Duel.SelectMatchingCard(tp,c4215636.spfilter,tp,LOCATION_DECK+LOCATION_HAND,0,1,1,nil,e,tp)
 	local tc=g:GetFirst()
-	-- 尝试特殊召唤所选怪兽，若成功则继续设置效果无效化。
+	-- 成功将所选怪兽以表侧表示特殊召唤时，继续为其附加后续的无效化效果。
 	if tc and Duel.SpecialSummonStep(tc,0,tp,tp,false,false,POS_FACEUP) then
-		-- 为特殊召唤的怪兽设置效果无效化（禁止其发动效果）。
+		-- 这个效果特殊召唤的怪兽的效果无效化。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_DISABLE)
 		e1:SetReset(RESET_EVENT+RESETS_STANDARD)
 		tc:RegisterEffect(e1,true)
-		-- 为特殊召唤的怪兽设置效果无效化（禁止其效果在回合结束时重置）。
+		-- 这个效果特殊召唤的怪兽的效果无效化。
 		local e2=Effect.CreateEffect(e:GetHandler())
 		e2:SetType(EFFECT_TYPE_SINGLE)
 		e2:SetCode(EFFECT_DISABLE_EFFECT)
@@ -65,6 +65,6 @@ function c4215636.operation(e,tp,eg,ep,ev,re,r,rp)
 		e2:SetReset(RESET_EVENT+RESETS_STANDARD)
 		tc:RegisterEffect(e2,true)
 	end
-	-- 完成特殊召唤流程，结束该次特殊召唤处理。
+	-- 完成整个特殊召唤流程，统一处理特殊召唤成功时的时点与诱发效果。
 	Duel.SpecialSummonComplete()
 end

@@ -4,11 +4,11 @@
 -- ①：自己场上没有怪兽存在的场合或者有「勇者衍生物」存在的场合，自己·对方的主要阶段才能发动。这张卡从手卡特殊召唤。
 -- ②：自己场上有「勇者衍生物」存在的场合，以对方场上最多2张卡为对象才能发动。这张卡的控制权移给对方，作为对象的卡回到持有者手卡。这个效果在对方回合也能发动。
 local s,id,o=GetID()
--- 创建外法之骑士的卡效果，包括①②两个效果
+-- 注册①从手卡特殊召唤自身和②转移控制权并弹回对方卡片的效果，并登记「勇者衍生物」为关联卡名。
 function c42198835.initial_effect(c)
-	-- 记录该卡与「勇者衍生物」的关联
+	-- 将「勇者衍生物」（卡号3285552）登记为这张卡的关联卡名，用于“记载着卡名”的判定。
 	aux.AddCodeList(c,3285552)
-	-- 效果①：自己场上没有怪兽存在的场合或者有「勇者衍生物」存在的场合，自己·对方的主要阶段才能发动。这张卡从手卡特殊召唤。
+	-- ①：自己场上没有怪兽存在的场合或者有「勇者衍生物」存在的场合，自己·对方的主要阶段才能发动。这张卡从手卡特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(42198835,0))
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -21,7 +21,7 @@ function c42198835.initial_effect(c)
 	e1:SetTarget(c42198835.sptg)
 	e1:SetOperation(c42198835.spop)
 	c:RegisterEffect(e1)
-	-- 效果②：自己场上有「勇者衍生物」存在的场合，以对方场上最多2张卡为对象才能发动。这张卡的控制权移给对方，作为对象的卡回到持有者手卡。这个效果在对方回合也能发动。
+	-- ②：自己场上有「勇者衍生物」存在的场合，以对方场上最多2张卡为对象才能发动。这张卡的控制权移给对方，作为对象的卡回到持有者手卡。这个效果在对方回合也能发动。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(42198835,1))
 	e2:SetCategory(CATEGORY_CONTROL+CATEGORY_TOHAND)
@@ -36,64 +36,64 @@ function c42198835.initial_effect(c)
 	e2:SetOperation(c42198835.rhop)
 	c:RegisterEffect(e2)
 end
--- 过滤器函数，用于判断场上是否存在「勇者衍生物」
+-- 筛选条件是：表侧表示且卡名为「勇者衍生物」（卡号3285552）。
 function c42198835.cfilter(c)
 	return c:IsCode(3285552) and c:IsFaceup()
 end
--- 效果①的发动条件判断函数，判断是否在主要阶段且满足场上无怪兽或存在「勇者衍生物」
+-- ①的发动条件：当前为双方的主要阶段，且满足“自己场上没有怪兽”或“自己场上有表侧表示的「勇者衍生物」”其中之一。
 function c42198835.spcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断当前是否处于主要阶段1或主要阶段2
+	-- 只有当前阶段是主要阶段1或主要阶段2时，才允许发动，否则返回false。
 	if not (Duel.GetCurrentPhase()==PHASE_MAIN1 or Duel.GetCurrentPhase()==PHASE_MAIN2) then return false end
-	-- 判断自己场上是否没有怪兽
+	-- 检查自己怪兽区域是否存在怪兽：数量为0，即没有怪兽。
 	return Duel.GetFieldGroupCount(tp,LOCATION_MZONE,0)==0
-		-- 判断自己场上是否存在「勇者衍生物」
+		-- 或者检查自己场上是否存在表侧表示的「勇者衍生物」，存在1张即可。
 		or Duel.IsExistingMatchingCard(c42198835.cfilter,tp,LOCATION_ONFIELD,0,1,nil)
 end
--- 效果①的发动时点处理函数，判断是否满足特殊召唤条件
+-- ①的发动时点确认：自己怪兽区域有空位，且手牌的这张卡能够被特殊召唤。
 function c42198835.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断场上是否有足够的召唤空间
+	-- 确认自己主要怪兽区域可用空格数大于0。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置效果①的发动信息，表示将要特殊召唤此卡
+	-- 将本次特殊召唤的操作信息（对象为本卡、数量为1）写入连锁，供其他效果检测。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 效果①的发动处理函数，执行特殊召唤操作
+-- ①效果处理：若这张卡仍与效果相关，则将其表侧表示特殊召唤。
 function c42198835.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) then
-		-- 执行特殊召唤操作，将此卡特殊召唤到场上
+		-- 以表侧表示将这张卡特殊召唤到自己场上。
 		Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
--- 效果②的发动条件判断函数，判断是否场上有「勇者衍生物」
+-- ②的发动条件：自己场上有表侧表示的「勇者衍生物」。
 function c42198835.rhcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断自己场上是否存在「勇者衍生物」
+	-- 检查自己场上是否至少存在1张表侧表示的「勇者衍生物」。
 	return Duel.IsExistingMatchingCard(c42198835.cfilter,tp,LOCATION_ONFIELD,0,1,nil)
 end
--- 效果②的发动时点处理函数，判断是否满足控制权转移和回手条件
+-- ②的发动时点确认：这张卡的控制权能够转移，且对方场上有可以返回手牌的卡；然后选择1~2张对方场上的卡作为对象。
 function c42198835.rhtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsOnField() and chkc:IsControler(1-tp) and chkc:IsAbleToHand() end
 	if chk==0 then return e:GetHandler():IsControlerCanBeChanged()
-		-- 判断对方场上是否存在可返回手牌的卡
+		-- 确认对方场上有至少1张符合条件、可以返回手牌的卡。
 		and Duel.IsExistingTarget(Card.IsAbleToHand,tp,0,LOCATION_ONFIELD,1,nil) end
-	-- 提示玩家选择要返回手牌的卡
+	-- 弹出“请选择要返回手牌的卡”的选择提示，供玩家选择目标。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_RTOHAND)  --"请选择要返回手牌的卡"
-	-- 选择对方场上最多2张可返回手牌的卡作为对象
+	-- 选择对方场上1~2张可以返回手牌的卡作为效果对象（同时设为连锁对象）。
 	local g=Duel.SelectTarget(tp,Card.IsAbleToHand,tp,0,LOCATION_ONFIELD,1,2,nil)
-	-- 设置效果②的发动信息，表示将要改变控制权
+	-- 将这张卡控制权转移的效果分类写入连锁信息。
 	Duel.SetOperationInfo(0,CATEGORY_CONTROL,e:GetHandler(),1,0,0)
-	-- 设置效果②的发动信息，表示将要将对象卡送回手牌
+	-- 将对象卡返回手牌的效果分类及数量（按实际选择张数）写入连锁信息。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,g:GetCount(),0,0)
 end
--- 效果②的发动处理函数，执行控制权转移和回手操作
+-- ②效果处理：获取连锁对象卡；若这张卡仍与效果相关且控制权转移成功，则将仍相关的对象卡返回持有者手牌。
 function c42198835.rhop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取连锁中指定的目标卡组
+	-- 取得当前连锁选择的处理对象卡组（即发动时选中的卡）。
 	local g=Duel.GetChainInfo(0,CHAININFO_TARGET_CARDS)
 	local tg=g:Filter(Card.IsRelateToEffect,nil,e)
-	-- 判断此卡和目标卡是否有效且满足发动条件
+	-- 判断是否继续处理：这张卡仍与效果相关、控制权成功转移给对方、且仍有对象卡需要返回手牌。
 	if c:IsRelateToEffect(e) and Duel.GetControl(c,1-tp)>0 and tg:GetCount()>0 then
-		-- 将目标卡送回持有者手牌
+		-- 将对象卡返回其持有者手牌，原因是效果（REASON_EFFECT）。
 		Duel.SendtoHand(tg,nil,REASON_EFFECT)
 	end
 end

@@ -14,7 +14,7 @@ function c42199039.initial_effect(c)
 	e1:SetTarget(c42199039.target)
 	e1:SetOperation(c42199039.activate)
 	c:RegisterEffect(e1)
-	-- 这个卡名的②的效果1回合只能使用1次。
+	-- 装备怪兽（①中的“装备怪兽”限定了本卡只能装备给怪兽）
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_SINGLE)
 	e2:SetCode(EFFECT_EQUIP_LIMIT)
@@ -43,55 +43,55 @@ function c42199039.initial_effect(c)
 	e4:SetOperation(c42199039.thop)
 	c:RegisterEffect(e4)
 end
--- 选择装备怪兽，检查场上是否存在至少1只表侧表示的怪兽
+-- 装备魔法发动时的目标选择：选择场上1只表侧表示怪兽作为此卡的装备对象。
 function c42199039.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsFaceup() end
-	-- 检查场上是否存在至少1只表侧表示的怪兽
+	-- 检查场上是否存在1只以上表侧表示怪兽可以作为装备对象，否则不能发动。
 	if chk==0 then return Duel.IsExistingTarget(Card.IsFaceup,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil) end
-	-- 提示玩家选择要装备的卡
+	-- 向玩家提示选择要装备的卡（装备对象）。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_EQUIP)  --"请选择要装备的卡"
-	-- 选择1只场上表侧表示的怪兽作为装备对象
+	-- 选择场上1只表侧表示怪兽作为装备对象，并登记为当前连锁的对象。
 	Duel.SelectTarget(tp,Card.IsFaceup,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,nil)
-	-- 设置效果处理信息，将装备卡装备给目标怪兽
+	-- 设置操作信息：本连锁将对这张妖刀竹光进行装备处理，数量1。
 	Duel.SetOperationInfo(0,CATEGORY_EQUIP,e:GetHandler(),1,0,0)
 end
--- 装备卡生效，将装备卡装备给目标怪兽
+-- 效果处理时，若此卡和选择的怪兽仍与效果关联且怪兽表侧表示，则将此卡装备给该怪兽。
 function c42199039.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的装备对象
+	-- 取得当前连锁中选择的装备对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if e:GetHandler():IsRelateToEffect(e) and tc:IsRelateToEffect(e) and tc:IsFaceup() then
-		-- 执行装备操作，将装备卡装备给目标怪兽
+		-- 将此卡装备给对象怪兽。
 		Duel.Equip(tp,e:GetHandler(),tc)
 	end
 end
--- 过滤函数，筛选场上表侧表示的「竹光」卡
+-- 定义②的“其他的『竹光』卡”的过滤条件：表侧表示、属于『竹光』系列、可以加入手卡。
 function c42199039.filter(c)
 	return c:IsFaceup() and c:IsSetCard(0x60) and c:IsAbleToHand()
 end
--- 选择要返回手卡的「竹光」卡，检查是否存在满足条件的卡
+-- ②的发动条件和目标选择：需要此卡处于装备状态且装备怪兽没有直接攻击效果，选择自己场上1张其他『竹光』卡为对象并返回手牌。
 function c42199039.dttg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsOnField() and chkc:IsControler(tp) and c42199039.filter(chkc) and chkc~=e:GetHandler() end
 	local eq=e:GetHandler():GetEquipTarget()
-	-- 检查是否存在满足条件的「竹光」卡
+	-- 检查是否满足发动条件：存在装备怪兽、该怪兽不持有直接攻击效果、且场上存在可选择的『竹光』卡。
 	if chk==0 then return eq and not eq:IsHasEffect(EFFECT_DIRECT_ATTACK) and Duel.IsExistingTarget(c42199039.filter,tp,LOCATION_ONFIELD,0,1,e:GetHandler()) end
-	-- 提示玩家选择要返回手牌的卡
+	-- 向玩家提示选择要返回手牌的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_RTOHAND)  --"请选择要返回手牌的卡"
-	-- 选择1张满足条件的「竹光」卡作为返回手卡的对象
+	-- 选择自己场上1张其他的『竹光』卡作为效果对象。
 	local g=Duel.SelectTarget(tp,c42199039.filter,tp,LOCATION_ONFIELD,0,1,1,e:GetHandler())
-	-- 设置效果处理信息，将目标卡返回手卡
+	-- 设置操作信息：将对选择的对象卡执行回手牌操作，数量1。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,1,0,0)
 end
--- 执行效果，将目标卡返回手卡并赋予装备怪兽直接攻击能力
+-- ②的效果处理：将对象卡返回手牌并展示；若返回成功，则给装备怪兽赋予本回合可直接攻击的效果。
 function c42199039.dtop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取当前连锁的目标卡
+	-- 取得②选择的对象卡。
 	local tc=Duel.GetFirstTarget()
-	-- 检查目标卡是否有效且成功返回手卡
+	-- 确认对象卡仍与效果关联、返回手牌成功且位于手牌中，才继续赋予直接攻击效果。
 	if tc:IsRelateToEffect(e) and Duel.SendtoHand(tc,nil,REASON_EFFECT)~=0 and tc:IsLocation(LOCATION_HAND) then
-		-- 向对方确认目标卡
+		-- 向对方玩家展示返回手牌的那张卡。
 		Duel.ConfirmCards(1-tp,tc)
 		local ec=c:GetEquipTarget()
-		-- 赋予装备怪兽直接攻击能力
+		-- 装备怪兽在这个回合可以直接攻击。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_DIRECT_ATTACK)
@@ -100,31 +100,31 @@ function c42199039.dtop(e,tp,eg,ep,ev,re,r,rp)
 		ec:RegisterEffect(e1)
 	end
 end
--- 判断装备怪兽是否为当前玩家控制
+-- 直接攻击效果的条件：装备怪兽的控制者必须为此卡的原持有者。
 function c42199039.dircon(e)
 	return e:GetHandler():GetControler()==e:GetOwnerPlayer()
 end
--- 过滤函数，筛选卡组中非妖刀竹光的「竹光」卡
+-- 定义③的检索过滤条件：卡名属于『竹光』系列、不是『妖刀竹光』自身、且可以加入手卡。
 function c42199039.thfilter(c)
 	return c:IsSetCard(0x60) and not c:IsCode(42199039) and c:IsAbleToHand()
 end
--- 检索卡组中的「竹光」卡，检查是否存在满足条件的卡
+-- ③的发动条件设定：检查卡组中是否存在符合条件的『竹光』卡，并设置从卡组检索到手的操作信息。
 function c42199039.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查卡组中是否存在满足条件的「竹光」卡
+	-- 检查卡组中是否存在1张以上满足条件的『竹光』卡，否则不能发动。
 	if chk==0 then return Duel.IsExistingMatchingCard(c42199039.thfilter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置效果处理信息，准备从卡组检索卡
+	-- 设置操作信息：将从卡组把1张『竹光』卡加入手牌（目标未确定，不取对象）。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 执行卡组检索效果，选择1张「竹光」卡加入手卡
+-- ③的效果处理：从卡组选1张符合条件的『竹光』卡加入手牌，并向对方展示。
 function c42199039.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要加入手牌的卡
+	-- 向玩家提示选择要加入手牌的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 从卡组中选择1张满足条件的「竹光」卡
+	-- 从卡组选择1张符合条件的『竹光』卡。
 	local g=Duel.SelectMatchingCard(tp,c42199039.thfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的卡加入手卡
+		-- 将选择的卡加入手牌。
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 向对方确认加入手卡的卡
+		-- 向对方玩家展示加入手牌的卡。
 		Duel.ConfirmCards(1-tp,g)
 	end
 end
