@@ -14,26 +14,26 @@ function c49885567.initial_effect(c)
 	e1:SetOperation(c49885567.operation)
 	c:RegisterEffect(e1)
 end
--- 检索满足条件的「灵兽」卡（且可以除外）
+-- 筛选卡组中持有「灵兽」字段且能够被除外的卡。
 function c49885567.filter(c)
 	return c:IsSetCard(0xb5) and c:IsAbleToRemove()
 end
--- 检查是否满足发动条件（卡组存在符合条件的卡）
+-- 起动效果的发动检查与操作信息设置：确认卡组存在符合条件的「灵兽」卡，并登记本次将进行的除外操作。
 function c49885567.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断是否满足发动条件（卡组中是否存在至少1张「灵兽」卡）
+	-- 发动条件合法化检查：卡组中是否存在至少1张满足「灵兽」字段且能够被除外的卡。
 	if chk==0 then return Duel.IsExistingMatchingCard(c49885567.filter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置连锁操作信息为除外卡
+	-- 登记本次效果的处理信息为从卡组除外1张卡，供连锁上的其他效果正确检测和响应。
 	Duel.SetOperationInfo(0,CATEGORY_REMOVE,nil,1,tp,LOCATION_DECK)
 end
--- 选择并除外1张「灵兽」卡，并注册一个准备阶段触发的效果
+-- 效果处理：从卡组选择1张「灵兽」卡以表侧表示除外，并给该卡注册一个在发动者自己的准备阶段回收的效果。
 function c49885567.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要除外的卡
+	-- 提示玩家选择要除外的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
-	-- 从卡组中选择1张符合条件的卡
+	-- 在己方卡组中选出1张满足条件的「灵兽」卡（不取对象，于效果处理时选择）。
 	local g=Duel.SelectMatchingCard(tp,c49885567.filter,tp,LOCATION_DECK,0,1,1,nil)
 	local tc=g:GetFirst()
 	if tc then
-		-- 将选中的卡除外
+		-- 将选择的卡以表侧表示除外。
 		Duel.Remove(tc,POS_FACEUP,REASON_EFFECT)
 		-- 发动后第2次的自己准备阶段，这个效果除外的卡加入手卡。
 		local e1=Effect.CreateEffect(e:GetHandler())
@@ -48,19 +48,19 @@ function c49885567.operation(e,tp,eg,ep,ev,re,r,rp)
 		tc:RegisterEffect(e1)
 	end
 end
--- 判断是否为当前回合玩家触发
+-- 回收效果的触发条件：当前回合必须是效果发动者自己的准备阶段。
 function c49885567.thcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断当前回合玩家是否为效果持有者
+	-- 判定当前回合玩家是否为效果发动者tp，即是否为发动者自己的准备阶段。
 	return Duel.GetTurnPlayer()==tp
 end
--- 处理准备阶段触发的效果（将除外的卡送入手卡）
+-- 回收效果的处理：用Label记录已经历的自己的准备阶段次数；到达第2次自己的准备阶段时，将被除外的卡加入手卡，否则将计数设为1继续等待。
 function c49885567.thop(e,tp,eg,ep,ev,re,r,rp)
 	local ct=e:GetLabel()
 	e:GetHandler():SetTurnCounter(ct+1)
 	if ct==1 then
-		-- 将除外的卡加入手卡
+		-- 将之前被除外的这张卡加入其持有者的手卡。
 		Duel.SendtoHand(e:GetHandler(),nil,REASON_EFFECT)
-		-- 确认对手看到该卡
+		-- 让对方确认加入手卡的这张卡。
 		Duel.ConfirmCards(1-tp,e:GetHandler())
 	else e:SetLabel(1) end
 end

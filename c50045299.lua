@@ -7,12 +7,12 @@ function c50045299.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- 只要这张卡在场上存在，场上表侧表示存在的龙族怪兽全部变成守备表示，不能把表示形式变更。
+	-- 只要这张卡在场上存在，场上表侧表示存在的龙族怪兽全部变成守备表示
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD)
 	e2:SetCode(EFFECT_SET_POSITION)
 	e2:SetRange(LOCATION_SZONE)
-	-- 设置效果目标为场上的龙族怪兽
+	-- 设定该效果的影响对象筛选条件，使效果作用于场上的龙族怪兽
 	e2:SetTarget(aux.TargetBoolFunction(Card.IsRace,RACE_DRAGON))
 	e2:SetTargetRange(LOCATION_MZONE,LOCATION_MZONE)
 	e2:SetValue(POS_FACEUP_DEFENSE)

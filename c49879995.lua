@@ -21,27 +21,27 @@ function c49879995.initial_effect(c)
 	e2:SetValue(2)
 	c:RegisterEffect(e2)
 end
--- 过滤函数，检查敌方召唤的怪兽数量是否至少为1张
+-- 检查特殊召唤成功的怪兽的召唤玩家是否为对方玩家（1-tp）。
 function c49879995.cfilter(c,tp)
 	return c:IsSummonPlayer(1-tp)
 end
--- 效果条件：当有敌方怪兽特殊召唤成功时触发
+-- 诱发条件判断：特殊召唤成功的怪兽集合中存在由对方玩家特殊召唤的怪兽。
 function c49879995.spcon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c49879995.cfilter,1,nil,tp)
 end
--- 效果处理目标：判断是否可以将自身从手卡特殊召唤
+-- 效果发动时判定：自己怪兽区域有空位，且这张卡满足特殊召唤条件。
 function c49879995.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断玩家场上是否有足够的怪兽区域
+	-- 检查自己怪兽区域是否有空位（大于0）。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置连锁操作信息，确定将要特殊召唤的卡片
+	-- 设置操作信息：本效果将进行特殊召唤，对象为这张卡，数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 效果处理：将自身特殊召唤到场上
+-- 效果处理时：若这张卡仍与效果关联，则将其特殊召唤。
 function c49879995.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) then
-		-- 执行将卡片以正面表示形式特殊召唤到场上的操作
+		-- 将这张卡以表侧表示特殊召唤到自己场上。
 		Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 	end
 end

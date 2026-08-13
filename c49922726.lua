@@ -13,7 +13,7 @@ function c49922726.initial_effect(c)
 	e1:SetTarget(c49922726.atktg)
 	e1:SetOperation(c49922726.atkop)
 	c:RegisterEffect(e1)
-	-- ②：以这张卡以外的场上1只表侧表示怪兽为对象才能发动。那只怪兽的守备力下降这张卡的攻击力数值。这个效果让那只怪兽的守备力变成0的场合，再把那只怪兽破坏。这个效果的发动后，直到回合结束时这张卡不能攻击。
+	-- 这个卡名的②的效果1回合只能使用1次。②：以这张卡以外的场上1只表侧表示怪兽为对象才能发动。那只怪兽的守备力下降这张卡的攻击力数值。这个效果让那只怪兽的守备力变成0的场合，再把那只怪兽破坏。这个效果的发动后，直到回合结束时这张卡不能攻击。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(49922726,1))
 	e2:SetCategory(CATEGORY_DESTROY+CATEGORY_DEFCHANGE)
@@ -25,19 +25,19 @@ function c49922726.initial_effect(c)
 	e2:SetOperation(c49922726.desop)
 	c:RegisterEffect(e2)
 end
--- 检查自己墓地是否存在怪兽卡
+-- ①效果的target函数：检查自己墓地是否有怪兽，作为①效果的发动条件。
 function c49922726.atktg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查自己墓地是否存在怪兽卡
+	-- 效果发动判定：chk==0时，检查自己墓地是否存在至少1只怪兽卡。
 	if chk==0 then return Duel.IsExistingMatchingCard(Card.IsType,tp,LOCATION_GRAVE,0,1,nil,TYPE_MONSTER) end
 end
--- 检索满足条件的卡片组并计算攻击力提升值
+-- ①效果处理函数：获取自己墓地所有怪兽，按种族种类数×100计算上升值，若这张卡仍表侧且效果有效，则赋予其攻击力上升效果直到回合结束。
 function c49922726.atkop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 检索满足条件的卡片组
+	-- 获取自己墓地的所有怪兽卡，用于统计种族种类数。
 	local g=Duel.GetMatchingGroup(Card.IsType,tp,LOCATION_GRAVE,0,nil,TYPE_MONSTER)
 	local val=g:GetClassCount(Card.GetRace)*100
 	if c:IsFaceup() and c:IsRelateToEffect(e) and val>0 then
-		-- 将攻击力提升效果应用到自身
+		-- 这张卡的攻击力直到回合结束时上升自己墓地的怪兽的种族种类×100。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)
@@ -46,30 +46,30 @@ function c49922726.atkop(e,tp,eg,ep,ev,re,r,rp)
 		c:RegisterEffect(e1)
 	end
 end
--- 筛选目标怪兽是否为表侧表示且守备力大于0
+-- ②效果选择对象的过滤函数：要求怪兽为表侧表示且当前守备力大于0。
 function c49922726.desfilter(c)
 	return c:IsFaceup() and c:GetDefense()>0
 end
--- 设置效果发动时的目标选择逻辑
+-- ②效果的target函数：检查这张卡攻击力大于0且场上有满足条件的对象；发动时选择一张除自身以外的表侧表示且守备力大于0的怪兽作为对象，并登记守备力变化操作信息。
 function c49922726.destg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	local c=e:GetHandler()
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and c49922726.desfilter(chkc) and chkc~=c end
-	-- 检查是否存在满足条件的怪兽作为目标
+	-- 发动条件判定：chk==0时，检查这张卡攻击力大于0，且场上存在除这张卡以外的表侧表示且守备力大于0的怪兽。
 	if chk==0 then return c:GetAttack()>0 and Duel.IsExistingTarget(c49922726.desfilter,tp,LOCATION_MZONE,LOCATION_MZONE,1,c) end
-	-- 提示玩家选择表侧表示的怪兽
+	-- 向玩家显示选择提示，要求选择一张表侧表示的怪兽卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
-	-- 选择满足条件的怪兽作为目标
+	-- 选择1只满足条件的表侧表示怪兽作为效果对象，并将其登记为当前连锁的对象。
 	local g=Duel.SelectTarget(tp,c49922726.desfilter,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,c)
-	-- 设置操作信息，用于后续处理
+	-- 登记操作信息：本连锁将进行守备力变化（对象为选中的怪兽，数量1），供其他卡检测。
 	Duel.SetOperationInfo(0,CATEGORY_DEFCHANGE,g,1,0,0)
 end
--- 处理效果发动后的操作
+-- ②效果处理函数：先给这张卡附加‘不能攻击’效果；然后使对象怪兽守备力下降这张卡当前攻击力的数值；若对象守备力因此变成0，则将其破坏。
 function c49922726.desop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取当前连锁中的目标怪兽
+	-- 取得②效果选择的对象卡。
 	local tc=Duel.GetFirstTarget()
 	if c:IsFaceup() and c:IsRelateToEffect(e) then
-		-- 使自身在本回合不能攻击
+		-- 这个效果的发动后，直到回合结束时这张卡不能攻击。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
@@ -80,7 +80,7 @@ function c49922726.desop(e,tp,eg,ep,ev,re,r,rp)
 	if tc:IsFaceup() and tc:IsRelateToEffect(e) then
 		local atk=c:GetAttack()
 		local def=tc:GetDefense()
-		-- 将目标怪兽的守备力减少自身攻击力数值
+		-- 那只怪兽的守备力下降这张卡的攻击力数值。
 		local e2=Effect.CreateEffect(c)
 		e2:SetType(EFFECT_TYPE_SINGLE)
 		e2:SetCode(EFFECT_UPDATE_DEFENSE)
@@ -88,9 +88,9 @@ function c49922726.desop(e,tp,eg,ep,ev,re,r,rp)
 		e2:SetReset(RESET_EVENT+RESETS_STANDARD)
 		tc:RegisterEffect(e2)
 		if def~=0 and tc:IsDefense(0) then
-			-- 中断当前效果，使之后的效果处理视为不同时处理
+			-- 中断当前效果处理，使随后的破坏处理与之前的守备力变化不在同一时点，以正确触发相关时点。
 			Duel.BreakEffect()
-			-- 破坏目标怪兽
+			-- 将对象怪兽以效果破坏。
 			Duel.Destroy(tc,REASON_EFFECT)
 		end
 	end
