@@ -7,9 +7,9 @@
 -- ③：「亚马逊女帝」或者「亚马逊女王」为素材作融合召唤的这张卡在同1次的战斗阶段中可以作2次攻击。
 function c23965033.initial_effect(c)
 	c:EnableReviveLimit()
-	-- 添加融合召唤手续，要求融合素材为1只融合类型的亚马逊怪兽和1只亚马逊融合怪兽
+	-- 为这张卡注册融合召唤手续：融合素材为1只「亚马逊」融合怪兽和1只「亚马逊」怪兽。
 	aux.AddFusionProcFun2(c,c23965033.matfilter,aux.FilterBoolFunction(Card.IsFusionSetCard,0x4),true)
-	-- ①：这张卡融合召唤成功的场合才能发动。从卡组把1只「亚马逊」怪兽特殊召唤。
+	-- 这个卡名的①的效果1回合只能使用1次。①：这张卡融合召唤成功的场合才能发动。从卡组把1只「亚马逊」怪兽特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(23965033,0))
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -21,17 +21,17 @@ function c23965033.initial_effect(c)
 	e1:SetTarget(c23965033.sptg)
 	e1:SetOperation(c23965033.spop)
 	c:RegisterEffect(e1)
-	-- ②：只要这张卡在怪兽区域存在，这张卡以外的自己场上的「亚马逊」卡不会成为对方的效果的对象，不会被对方的效果破坏。
+	-- ②：只要这张卡在怪兽区域存在，这张卡以外的自己场上的「亚马逊」卡不会被对方的效果破坏。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD)
 	e2:SetCode(EFFECT_INDESTRUCTABLE_EFFECT)
 	e2:SetRange(LOCATION_MZONE)
 	e2:SetTargetRange(LOCATION_ONFIELD,0)
 	e2:SetTarget(c23965033.indtg)
-	-- 设置效果值为aux.indoval，用于过滤不会被对方效果破坏的卡
+	-- 设置不会被效果破坏的判定函数：仅当效果的发动者是对手时，该卡不会被那次效果破坏。
 	e2:SetValue(aux.indoval)
 	c:RegisterEffect(e2)
-	-- ②：只要这张卡在怪兽区域存在，这张卡以外的自己场上的「亚马逊」卡不会成为对方的效果的对象，不会被对方的效果破坏。
+	-- ②：只要这张卡在怪兽区域存在，这张卡以外的自己场上的「亚马逊」卡不会成为对方的效果的对象。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_FIELD)
 	e3:SetProperty(EFFECT_FLAG_IGNORE_IMMUNE)
@@ -39,7 +39,7 @@ function c23965033.initial_effect(c)
 	e3:SetRange(LOCATION_MZONE)
 	e3:SetTargetRange(LOCATION_ONFIELD,0)
 	e3:SetTarget(c23965033.indtg)
-	-- 设置效果值为aux.tgoval，用于过滤不会成为对方效果对象的卡
+	-- 设置不能成为效果对象的判定函数：对由对方发动的效果，这些「亚马逊」卡不能成为其对象。
 	e3:SetValue(aux.tgoval)
 	c:RegisterEffect(e3)
 	-- ③：「亚马逊女帝」或者「亚马逊女王」为素材作融合召唤的这张卡在同1次的战斗阶段中可以作2次攻击。
@@ -50,7 +50,7 @@ function c23965033.initial_effect(c)
 	e4:SetCondition(c23965033.condition)
 	e4:SetOperation(c23965033.operation)
 	c:RegisterEffect(e4)
-	-- 记录融合素材中包含「亚马逊女帝」或「亚马逊女王」的个数
+	-- 「亚马逊女帝」或者「亚马逊女王」为素材作融合召唤的这张卡
 	local e5=Effect.CreateEffect(c)
 	e5:SetType(EFFECT_TYPE_SINGLE)
 	e5:SetCode(EFFECT_MATERIAL_CHECK)
@@ -58,58 +58,58 @@ function c23965033.initial_effect(c)
 	e5:SetLabelObject(e4)
 	c:RegisterEffect(e5)
 end
--- 融合素材过滤器，筛选融合类型为融合且种族为亚马逊的怪兽
+-- 融合素材过滤器：判断一张卡是否为「亚马逊」融合怪兽（融合类型且字段为「亚马逊」）。
 function c23965033.matfilter(c)
 	return c:IsFusionType(TYPE_FUSION) and c:IsFusionSetCard(0x4)
 end
--- 效果发动条件，判断此卡是否为融合召唤
+-- ①效果的发动条件：这张卡是以融合召唤方式特殊召唤成功的场合。
 function c23965033.spcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsSummonType(SUMMON_TYPE_FUSION)
 end
--- 特殊召唤目标过滤器，筛选种族为亚马逊且可特殊召唤的怪兽
+-- 特殊召唤对象过滤器：选择卡组中1只字段为「亚马逊」且能被当前效果特殊召唤的怪兽。
 function c23965033.spfilter(c,e,tp)
 	return c:IsSetCard(0x4) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 效果目标设定函数，检查是否有满足条件的怪兽可特殊召唤
+-- ①效果发动时的合法性检查：要求己方主要怪兽区有空位，且卡组中存在符合条件的「亚马逊」怪兽。
 function c23965033.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查场上是否有空位可特殊召唤
+	-- 检查己方主要怪兽区是否有空位（无空位则不能发动①）。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查卡组中是否存在满足条件的怪兽
+		-- 同时检查卡组中是否存在至少1只满足spfilter的「亚马逊」怪兽，作为发动条件之一。
 		and Duel.IsExistingMatchingCard(c23965033.spfilter,tp,LOCATION_DECK,0,1,nil,e,tp) end
-	-- 设置连锁操作信息，表示将要特殊召唤1只怪兽
+	-- 设置操作信息：效果类别为特殊召唤，预计从卡组将1只怪兽特殊召唤。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_DECK)
 end
--- 效果处理函数，选择并特殊召唤符合条件的怪兽
+-- ①效果处理：若怪兽区有空位，则提示玩家从卡组选择1只「亚马逊」怪兽并以表侧表示特殊召唤。
 function c23965033.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查场上是否有空位
+	-- 效果处理时若己方主要怪兽区已无空位，则直接终止特殊召唤处理。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-	-- 提示玩家选择要特殊召唤的怪兽
+	-- 向操作玩家发送选择提示，内容为“请选择要特殊召唤的卡”。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 选择满足条件的怪兽
+	-- 让玩家从己方卡组中选择1只符合条件的「亚马逊」怪兽（spfilter）。
 	local g=Duel.SelectMatchingCard(tp,c23965033.spfilter,tp,LOCATION_DECK,0,1,1,nil,e,tp)
 	if g:GetCount()>0 then
-		-- 将选中的怪兽特殊召唤到场上
+		-- 将选择的怪兽以表侧表示特殊召唤到己方场上（进行召唤条件与苏生限制的常规检查）。
 		Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
--- 效果目标过滤器，筛选种族为亚马逊且不是此卡的怪兽
+-- ②的保护对象筛选：自己场上的「亚马逊」卡，且不包括这张卡自身。
 function c23965033.indtg(e,c)
 	return c:IsSetCard(0x4) and c~=e:GetHandler()
 end
--- 检查融合素材中包含「亚马逊女帝」或「亚马逊女王」的个数并记录
+-- 素材检查：统计融合素材中「亚马逊女帝」（4591250）或「亚马逊女王」（15951532）的数量，并保存到e4的Label中。
 function c23965033.valcheck(e,c)
 	e:GetLabelObject():SetLabel(c:GetMaterial():FilterCount(Card.IsCode,nil,4591250,15951532))
 end
--- 判断此卡是否为融合召唤
+-- e4的触发条件：这张卡融合召唤成功时。
 function c23965033.condition(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsSummonType(SUMMON_TYPE_FUSION)
 end
--- 若融合素材中包含「亚马逊女帝」或「亚马逊女王」则赋予此卡额外一次攻击
+-- e4的效果处理：若融合素材包含「亚马逊女帝」或「亚马逊女王」（Label≥1），则给这张卡注册额外攻击次数效果，使其在同1次战斗阶段可攻击2次。
 function c23965033.operation(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local ct=e:GetLabel()
 	if ct>=1 then
-		-- ③：「亚马逊女帝」或者「亚马逊女王」为素材作融合召唤的这张卡在同1次的战斗阶段中可以作2次攻击。
+		-- 在同1次的战斗阶段中可以作2次攻击。
 		local e1=Effect.CreateEffect(c)
 		e1:SetDescription(aux.Stringid(23965033,1))  --"可以作2次攻击"
 		e1:SetType(EFFECT_TYPE_SINGLE)

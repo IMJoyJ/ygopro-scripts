@@ -11,8 +11,8 @@ function c23927545.initial_effect(c)
 	e1:SetValue(c23927545.val)
 	c:RegisterEffect(e1)
 end
--- 返回对方场上怪兽数量乘以100的数值
+-- 定义攻击力上升数值的计算函数：根据此卡控制者的对方场上存在的怪兽数量，计算出该卡攻击力应上升的数值（每只怪兽上升100）。
 function c23927545.val(e,c)
-	-- 检索对方场上怪兽数量并乘以100
+	-- 获取此卡控制者的对方场上怪兽区的怪兽数量，乘以100后作为攻击力上升值返回。
 	return Duel.GetFieldGroupCount(c:GetControler(),0,LOCATION_MZONE)*100
 end

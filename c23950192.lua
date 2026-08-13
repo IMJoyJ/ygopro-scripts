@@ -12,16 +12,16 @@ function c23950192.initial_effect(c)
 	e2:SetCondition(c23950192.con)
 	c:RegisterEffect(e2)
 end
--- 过滤函数，用于检查场上是否存在表侧表示的「冰结界」怪兽
+-- 定义过滤函数：筛选出表侧表示且具有「冰结界」字段的怪兽。
 function c23950192.filter(c)
 	return c:IsFaceup() and c:IsSetCard(0x2f)
 end
--- 条件函数，判断自己场上有其他「冰结界」怪兽存在
+-- 定义效果满足条件：自己场上有其他「冰结界」怪兽存在时，此限制效果才适用。
 function c23950192.con(e)
-	-- 检索满足条件的卡片组，检查场上是否存在至少1张符合条件的「冰结界」怪兽
+	-- 检查效果控制者场上主要怪兽区是否存在至少1张除自身以外的表侧表示「冰结界」怪兽，若存在则条件成立。
 	return Duel.IsExistingMatchingCard(c23950192.filter,e:GetHandler():GetControler(),LOCATION_MZONE,0,1,e:GetHandler())
 end
--- 目标函数，设定被禁止攻击宣言的怪兽为等级4以上的怪兽
+-- 定义适用对象判定：等级在4星及以上的怪兽不能进行攻击宣言。
 function c23950192.tg(e,c)
 	return c:IsLevelAbove(4)
 end

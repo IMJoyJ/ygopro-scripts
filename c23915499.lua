@@ -13,38 +13,38 @@ function c23915499.initial_effect(c)
 	e1:SetOperation(c23915499.operation)
 	c:RegisterEffect(e1)
 end
--- 过滤函数，检查场上是否存在表侧表示的「漏洞人Z」
+-- 定义过滤条件：卡必须为表侧表示，且卡名是「漏洞人Z」（卡号50319138）。
 function c23915499.cfilter(c)
 	return c:IsFaceup() and c:IsCode(50319138)
 end
--- 过滤函数，检查卡组中是否存在可以特殊召唤的「漏洞人X」
+-- 定义特殊召唤候选的过滤条件：卡名是「漏洞人X」（卡号87526784），并且可以被当前效果以通常方式特殊召唤。
 function c23915499.spfilter(c,e,tp)
 	return c:IsCode(87526784) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 效果条件函数，判断自己场上是否存在「漏洞人Z」
+-- 发动条件判断：检查自己场上是否存在表侧表示的「漏洞人Z」。
 function c23915499.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查场上是否存在至少1张「漏洞人Z」
+	-- 具体检查自己场上是否存在至少1张满足cfilter条件（表侧表示的「漏洞人Z」）的卡。
 	return Duel.IsExistingMatchingCard(c23915499.cfilter,tp,LOCATION_ONFIELD,0,1,nil)
 end
--- 效果目标函数，判断是否满足特殊召唤条件
+-- 效果发动时的目标合法性判断：自己的主要怪兽区域有空位，且卡组中存在可以特殊召唤的「漏洞人X」。
 function c23915499.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查自己场上是否有可用怪兽区域
+	-- 发动时确认自己主要怪兽区域有可用空格。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查卡组中是否存在可特殊召唤的「漏洞人X」
+		-- 发动时确认卡组中存在满足spfilter的「漏洞人X」可以作为特殊召唤对象。
 		and Duel.IsExistingMatchingCard(c23915499.spfilter,tp,LOCATION_DECK,0,1,nil,e,tp) end
-	-- 设置连锁操作信息，指定将要特殊召唤的卡为「漏洞人X」
+	-- 将本次效果处理信息设置为：从卡组特殊召唤1只怪兽（用于连锁/时点判定）。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_DECK)
 end
--- 效果处理函数，执行特殊召唤操作
+-- 效果处理时的实际执行：在仍有空位且场上仍有表侧表示「漏洞人Z」时，从卡组选择1只「漏洞人X」特殊召唤。
 function c23915499.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查自己场上是否还有可用怪兽区域
+	-- 效果处理前再次确认主要怪兽区域有空位，否则终止处理。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-	-- 再次确认场上是否存在「漏洞人Z」
+	-- 效果处理前再次确认自己场上仍有表侧表示的「漏洞人Z」，否则终止处理。
 	if not Duel.IsExistingMatchingCard(c23915499.cfilter,tp,LOCATION_ONFIELD,0,1,nil) then return end
-	-- 从卡组检索满足条件的「漏洞人X」
+	-- 从卡组中选取符合spfilter的第一张卡，即「漏洞人X」。
 	local tc=Duel.GetFirstMatchingCard(c23915499.spfilter,tp,LOCATION_DECK,0,nil,e,tp)
 	if tc then
-		-- 将检索到的「漏洞人X」特殊召唤到场上
+		-- 将选取的「漏洞人X」以表侧表示特殊召唤到自己场上。
 		Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP)
 	end
 end

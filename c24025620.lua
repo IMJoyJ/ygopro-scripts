@@ -13,24 +13,24 @@ function c24025620.initial_effect(c)
 	e1:SetOperation(c24025620.atkop)
 	c:RegisterEffect(e1)
 end
--- 判断触发条件，确认该卡是否因战斗破坏而进入墓地且为我方控制者。
+-- 发动条件判断：本卡从场上被战斗破坏后送去墓地，且战斗破坏之前由这张卡的效果发动者（原控制者）控制，满足“自己场上存在的这张卡被战斗破坏送去墓地时”。
 function c24025620.atkcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	return c:IsLocation(LOCATION_GRAVE) and c:IsReason(REASON_BATTLE) and c:IsPreviousControler(tp)
 end
--- 选择对方场上表侧表示的1只怪兽作为目标。
+-- 取对象的目标选择处理：从对方场上表侧表示怪兽中选择1只作为效果对象，并校验对象必须是对方场上表侧表示怪兽。
 function c24025620.atktg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(1-tp) and chkc:IsLocation(LOCATION_MZONE) and chkc:IsFaceup() end
-	-- 检查是否有对方场上表侧表示的怪兽可作为目标。
+	-- 效果发动时确认是否有合法对象：检查对方场上是否存在至少1只表侧表示怪兽可以作为效果对象（取对象效果需要存在合法目标才能发动）。
 	if chk==0 then return Duel.IsExistingTarget(Card.IsFaceup,tp,0,LOCATION_MZONE,1,nil) end
-	-- 提示玩家选择对方场上表侧表示的怪兽。
+	-- 向操作者显示“请选择表侧表示的卡”的提示消息，用于接下来的选择怪兽操作。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
-	-- 选择对方场上表侧表示的1只怪兽为目标。
+	-- 让玩家从对方场上表侧表示怪兽中选择1只，并将其登记为当前连锁的效果对象。
 	Duel.SelectTarget(tp,Card.IsFaceup,tp,0,LOCATION_MZONE,1,1,nil)
 end
--- 将目标怪兽的攻击力变为原来的一半数值，持续到结束阶段。
+-- 效果处理：获取对象怪兽，若对象仍然表侧表示且与效果存在关联，则赋予其攻击力变为原攻击力一半的永续效果，并持续到结束阶段。
 function c24025620.atkop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁中选择的目标怪兽。
+	-- 获取当前连锁的效果所选择的对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if tc and tc:IsFaceup() and tc:IsRelateToEffect(e) then
 		-- 对方场上表侧表示存在的1只怪兽的攻击力直到结束阶段时变成一半数值。
