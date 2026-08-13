@@ -44,37 +44,37 @@ function c29951323.initial_effect(c)
 	e5:SetTargetRange(0,1)
 	c:RegisterEffect(e5)
 end
--- 判断是否满足特殊召唤条件：必须是行动效果且当前回合未进行过特殊召唤，且当前阶段为主要阶段1，且当前回合玩家为该卡的持有者。
+-- 判定此卡能否用卡的效果特殊召唤：必须是由入连锁的卡的效果进行特殊召唤，且此卡控制者本回合未进行过特殊召唤，并且当前是自己回合的主要阶段1。
 function c29951323.splimit(e,se,sp,st)
-	-- 判断是否为行动效果且当前回合未进行过特殊召唤。
+	-- 特殊召唤条件之一：发动特殊召唤的效果是入连锁的卡的效果，且此卡控制者本回合的特殊召唤次数为0。
 	return se:IsHasType(EFFECT_TYPE_ACTIONS) and Duel.GetActivityCount(e:GetHandlerPlayer(),ACTIVITY_SPSUMMON)==0
-		-- 判断当前阶段是否为主要阶段1且当前回合玩家为该卡的持有者。
+		-- 特殊召唤条件之二：当前阶段必须为主要阶段1，且当前回合玩家必须是此卡控制者。
 		and Duel.GetCurrentPhase()==PHASE_MAIN1 and Duel.GetTurnPlayer()==e:GetHandlerPlayer()
 end
--- 判断是否为战斗破坏。
+-- 该函数用于判定战斗破坏抗性效果的适用：检查破坏原因中是否包含战斗破坏（REASON_BATTLE），只有战斗破坏才会计入本次不破坏次数并适用。
 function c29951323.valcon(e,re,r,rp)
 	return bit.band(r,REASON_BATTLE)~=0
 end
--- 判断目标怪兽是否为回合玩家且其特殊召唤次数大于等于战斗次数。
+-- 该函数是②效果的禁止特殊召唤判定：若当前回合玩家正是要特殊召唤的玩家，且其本回合已经特殊召唤的次数不少于本回合攻击次数，则该次特殊召唤被禁止。
 function c29951323.limittg(e,c,tp)
-	-- 判断当前回合玩家是否为目标玩家且其特殊召唤次数大于等于战斗次数。
+	-- 当特殊召唤玩家的本回合特殊召唤次数已经大于等于攻击次数时，返回true以禁止其再特殊召唤。
 	return Duel.GetTurnPlayer()==tp and Duel.GetActivityCount(tp,ACTIVITY_SPSUMMON)>=Duel.GetBattledCount(tp)
 end
--- 判断当前回合玩家是否为该卡持有者。
+-- e4的发动条件：只在当前回合玩家为此卡控制者（即控制者的回合）时，才应用对自己玩家的剩余特殊召唤次数限制。
 function c29951323.countcon1(e)
-	-- 判断当前回合玩家是否为该卡持有者。
+	-- 判断当前回合玩家是否为此卡控制者，若是则满足条件。
 	return Duel.GetTurnPlayer()==e:GetHandlerPlayer()
 end
--- 判断当前回合玩家是否不为该卡持有者。
+-- e5的条件：只在当前回合玩家不是此卡控制者（即对手回合）时，才应用对对方玩家的剩余特殊召唤次数限制。
 function c29951323.countcon2(e)
-	-- 判断当前回合玩家是否不为该卡持有者。
+	-- 判断当前回合玩家是否不是此卡控制者，若是则满足条件。
 	return Duel.GetTurnPlayer()~=e:GetHandlerPlayer()
 end
--- 计算剩余可特殊召唤次数：若特殊召唤次数大于等于战斗次数则返回0，否则返回差值。
+-- 计算该玩家本回合剩余可特殊召唤次数：为本回合攻击次数减去已特殊召唤次数；若已特殊召唤次数不少于攻击次数，则剩余次数为0。
 function c29951323.countval(e,re,tp)
-	-- 获取当前回合玩家的特殊召唤次数。
+	-- 获取该玩家本回合已经进行的特殊召唤次数，作为已使用次数t1。
 	local t1=Duel.GetActivityCount(tp,ACTIVITY_SPSUMMON)
-	-- 获取当前回合玩家的战斗次数。
+	-- 获取该玩家本回合已经攻击过的次数，作为上限基准t2。
 	local t2=Duel.GetBattledCount(tp)
 	if t1>=t2 then return 0 else return t2-t1 end
 end

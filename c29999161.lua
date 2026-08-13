@@ -13,44 +13,44 @@ function c29999161.initial_effect(c)
 	e1:SetOperation(c29999161.activate)
 	c:RegisterEffect(e1)
 end
--- 过滤函数：选择场上正面表示、名字带有「发条」、等级4以下且能送入手牌的怪兽
+-- 过滤条件：对象必须是自己场上表侧表示、卡名含有「发条」、等级4以下且可以被返回手卡的怪兽。
 function c29999161.filter(c)
 	return c:IsFaceup() and c:IsSetCard(0x58) and c:IsLevelBelow(4) and c:IsAbleToHand()
 end
--- 效果处理：选择场上正面表示、名字带有「发条」、等级4以下且能送入手牌的怪兽作为对象
+-- 效果的发动条件与对象选择：确认有合法对象时才能发动，发动时选择自己场上1只符合条件的表侧表示发条怪兽作为对象，并设置“返回手牌”和“特殊召唤”的操作信息。
 function c29999161.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and c29999161.filter(chkc) end
-	-- 检查阶段：确认场上是否存在满足条件的怪兽
+	-- 发动时点检查：确认自己场上是否存在至少1只符合条件的表侧表示4星以下「发条」怪兽可以作为对象。
 	if chk==0 then return Duel.IsExistingTarget(c29999161.filter,tp,LOCATION_MZONE,0,1,nil) end
-	-- 提示信息：提示玩家选择要返回手牌的怪兽
+	-- 向玩家显示“选择要返回手牌的卡”的提示信息，用于选择对象的交互界面。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_RTOHAND)  --"请选择要返回手牌的卡"
-	-- 选择对象：选择1只满足条件的怪兽作为效果对象
+	-- 让玩家从自己场上表侧表示的符合条件的「发条」怪兽中选择1只作为效果对象。
 	local g=Duel.SelectTarget(tp,c29999161.filter,tp,LOCATION_MZONE,0,1,1,nil)
-	-- 设置操作信息：将送入手牌的怪兽设置为效果处理对象
+	-- 设置本次连锁的处理信息：将选择的对象卡从场上返回手牌（数量为1）。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,1,0,0)
-	-- 设置操作信息：将从手牌特殊召唤的怪兽设置为效果处理对象
+	-- 设置本次连锁的处理信息：预定从手卡将1只怪兽特殊召唤到自己的场上。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_HAND)
 end
--- 过滤函数：选择手牌中名字带有「发条」、等级与目标怪兽相同且能特殊召唤的怪兽
+-- 特殊召唤的过滤条件：选择手卡中卡名含有「发条」、等级与返回怪兽相同、并且可以被当前效果特殊召唤的怪兽。
 function c29999161.spfilter(c,lv,e,tp)
 	return c:IsSetCard(0x58) and c:IsLevel(lv) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 效果处理：将目标怪兽送回手牌，并从手牌中特殊召唤相同等级的怪兽
+-- 效果处理：获取对象卡，确认对象仍合法且成功返回手牌后，洗切手牌，检查可用怪兽区，再从手卡选择1只同名系列且同等级的怪兽表侧表示特殊召唤。
 function c29999161.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取对象：获取当前连锁效果的目标怪兽
+	-- 获取在发动时选择的效果对象卡。
 	local tc=Duel.GetFirstTarget()
-	-- 条件判断：确认目标怪兽有效且正面表示、已送入手牌
+	-- 判断对象卡仍然与效果相关联、表侧表示，且通过效果成功返回手牌并位于手卡中；只有满足这些条件才继续处理。
 	if tc:IsRelateToEffect(e) and tc:IsFaceup() and Duel.SendtoHand(tc,nil,REASON_EFFECT)~=0 and tc:IsLocation(LOCATION_HAND) then
-		-- 洗切手牌：将目标怪兽的持有者手牌洗切
+		-- 洗切返回手牌的那张卡的控制者的手牌（因为手牌内容可能被确认或洗切重置）。
 		Duel.ShuffleHand(tc:GetControler())
-		-- 判断召唤区是否为空：确认是否有足够的召唤区域
+		-- 检查自己的怪兽区域是否有空位；如果没有空位则无法特殊召唤，直接终止处理。
 		if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-		-- 提示信息：提示玩家选择要特殊召唤的怪兽
+		-- 向玩家显示“选择要特殊召唤的卡”的提示信息，用于特殊召唤选择界面。
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-		-- 选择特殊召唤怪兽：选择手牌中满足等级和属性条件的怪兽
+		-- 让玩家从手卡中选择1只满足特殊召唤条件（卡名含「发条」且等级等于返回怪兽等级）的怪兽。
 		local g=Duel.SelectMatchingCard(tp,c29999161.spfilter,tp,LOCATION_HAND,0,1,1,nil,tc:GetLevel(),e,tp)
 		if g:GetCount()>0 then
-			-- 特殊召唤怪兽：将选择的怪兽特殊召唤到场上
+			-- 将选择的怪兽以表侧表示（通常为攻击表示）特殊召唤到自己场上。
 			Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
 		end
 	end

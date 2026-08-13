@@ -4,7 +4,7 @@
 -- ①：攻击表示的这张卡不会被战斗破坏，被对方怪兽攻击的伤害步骤结束时这张卡变成守备表示。
 -- ②：这张卡在怪兽区域守备表示存在的场合，自己·对方的准备阶段才能发动。从卡组把1只「恐龙摔跤手·卡波耶拉盗龙」特殊召唤。
 function c29996433.initial_effect(c)
-	-- ①：攻击表示的这张卡不会被战斗破坏
+	-- ①：攻击表示的这张卡不会被战斗破坏。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
@@ -13,7 +13,7 @@ function c29996433.initial_effect(c)
 	e1:SetValue(1)
 	e1:SetCondition(c29996433.indcon)
 	c:RegisterEffect(e1)
-	-- 被对方怪兽攻击的伤害步骤结束时这张卡变成守备表示
+	-- 被对方怪兽攻击的伤害步骤结束时这张卡变成守备表示。
 	local e2=Effect.CreateEffect(c)
 	e2:SetCategory(CATEGORY_POSITION)
 	e2:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_CONTINUOUS)
@@ -21,7 +21,7 @@ function c29996433.initial_effect(c)
 	e2:SetCondition(c29996433.poscon)
 	e2:SetOperation(c29996433.posop)
 	c:RegisterEffect(e2)
-	-- ②：这张卡在怪兽区域守备表示存在的场合，自己·对方的准备阶段才能发动。从卡组把1只「恐龙摔跤手·卡波耶拉盗龙」特殊召唤
+	-- 这个卡名的②的效果1回合只能使用1次。②：这张卡在怪兽区域守备表示存在的场合，自己·对方的准备阶段才能发动。从卡组把1只「恐龙摔跤手·卡波耶拉盗龙」特殊召唤。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(29996433,0))
 	e3:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -34,50 +34,50 @@ function c29996433.initial_effect(c)
 	e3:SetOperation(c29996433.spop)
 	c:RegisterEffect(e3)
 end
--- 判断当前卡片是否处于攻击表示
+-- 判定这张卡是否为攻击表示，仅在该状态下适用①的不被战斗破坏效果。
 function c29996433.indcon(e)
 	return e:GetHandler():IsAttackPos()
 end
--- 判断当前卡片是否为攻击阶段中被攻击的怪兽且参与了战斗
+-- 判定本卡是被攻击的怪兽且与本次战斗保持关联，用于触发伤害步骤结束时的变守备效果。
 function c29996433.poscon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断当前卡片是否为攻击阶段中被攻击的怪兽且参与了战斗
+	-- 本卡是被攻击对象且与战斗关联时才满足发动条件。
 	return e:GetHandler()==Duel.GetAttackTarget() and e:GetHandler():IsRelateToBattle()
 end
--- 如果当前卡片处于攻击表示则将其变为守备表示
+-- 效果处理：若这张卡仍为攻击表示，则将其变为表侧守备表示。
 function c29996433.posop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsAttackPos() then
-		-- 将目标怪兽变为守备表示
+		-- 将这张卡的表示形式变为表侧守备表示。
 		Duel.ChangePosition(c,POS_FACEUP_DEFENSE)
 	end
 end
--- 判断当前卡片是否处于守备表示
+-- 判定这张卡是否以守备表示存在于怪兽区域，作为②的发动条件。
 function c29996433.spcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsDefensePos()
 end
--- 过滤满足条件的卡片（卡号为29996433且可特殊召唤）
+-- 筛选卡组中卡名为「恐龙摔跤手·卡波耶拉盗龙」且能够被当前效果特殊召唤的卡。
 function c29996433.spfilter(c,e,tp)
 	return c:IsCode(29996433) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 判断在准备阶段发动效果时是否满足特殊召唤条件
+-- ②的发动目标处理：己方怪兽区域有空位，且卡组中存在符合条件的同名卡。
 function c29996433.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断目标玩家场上是否有足够的怪兽区域
+	-- 检查己方主要怪兽区域是否还有可用空位。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 判断目标玩家卡组中是否存在满足条件的卡片
+		-- 检查卡组中是否存在至少1张满足条件的同名卡。
 		and Duel.IsExistingMatchingCard(c29996433.spfilter,tp,LOCATION_DECK,0,1,nil,e,tp) end
-	-- 设置连锁操作信息，表示将要特殊召唤1张卡
+	-- 登记本次连锁将执行从卡组特殊召唤1只怪兽的操作信息。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_DECK)
 end
--- 执行特殊召唤操作
+-- ②效果处理：从卡组选择1张符合条件的同名卡特殊召唤到己方场上。
 function c29996433.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断目标玩家场上是否有足够的怪兽区域
+	-- 处理时再次确认己方怪兽区域仍有空位，否则效果不处理。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-	-- 向玩家提示选择要特殊召唤的卡
+	-- 弹出提示文字，提示玩家选择要特殊召唤的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 从卡组中选择1张满足条件的卡片
+	-- 从己方卡组中选择1张满足条件的「恐龙摔跤手·卡波耶拉盗龙」。
 	local g=Duel.SelectMatchingCard(tp,c29996433.spfilter,tp,LOCATION_DECK,0,1,1,nil,e,tp)
 	if g:GetCount()>0 then
-		-- 将选中的卡片特殊召唤到场上
+		-- 将选择的怪兽以表侧攻击表示特殊召唤到己方场上。
 		Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
 	end
 end

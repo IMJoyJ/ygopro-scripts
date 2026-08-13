@@ -43,95 +43,95 @@ function c29884951.initial_effect(c)
 	e3:SetOperation(c29884951.remop)
 	c:RegisterEffect(e3)
 end
--- 判断当前是否为自己的主要阶段1或主要阶段2
+-- 效果①的发动条件判断：仅当当前阶段为主要阶段1或主要阶段2时，才能发动（自己·对方的主要阶段）。
 function c29884951.spcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前游戏阶段
+	-- 获取当前游戏阶段，用于判断是否为主要阶段。
 	local ph=Duel.GetCurrentPhase()
 	return ph==PHASE_MAIN1 or ph==PHASE_MAIN2
 end
--- 筛选满足条件的可解放怪兽（必须是怪兽类型且场上存在可用怪兽区）
+-- 解放候选过滤器：候选卡必须是怪兽，且解放该卡后自己场上有空余的怪兽区，以便后续从手卡特殊召唤这张卡。
 function c29884951.rfilter(c,tp)
-	-- 判断目标是否为怪兽类型且场上存在可用怪兽区
+	-- 判定候选卡是怪兽且解放后自己场上仍有可用的怪兽区。
 	return c:IsType(TYPE_MONSTER) and Duel.GetMZoneCount(tp,c)>0
 end
--- 检查是否满足解放怪兽的条件并选择1张怪兽进行解放
+-- 效果①的发动代价处理：从自己场上解放1只怪兽作为COST；先检查是否存在满足条件的可解放怪兽，再选择并解放。
 function c29884951.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否满足解放怪兽的条件
+	-- COST检测：确认自己场上是否存在至少1只满足rfilter条件（是怪兽且解放后有空位）的可解放怪兽。
 	if chk==0 then return Duel.CheckReleaseGroup(tp,c29884951.rfilter,1,nil,tp) end
-	-- 提示玩家选择要解放的卡
+	-- 给玩家显示“请选择要解放的卡”的选择提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_RELEASE)  --"请选择要解放的卡"
-	-- 选择满足条件的1张怪兽进行解放
+	-- 让玩家从自己场上选择1只满足条件的怪兽作为解放COST。
 	local g=Duel.SelectReleaseGroup(tp,c29884951.rfilter,1,1,nil,tp)
-	-- 执行解放操作
+	-- 将被选择的怪兽作为COST解放。
 	Duel.Release(g,REASON_COST)
 end
--- 设置特殊召唤的处理目标
+-- 效果①的目标阶段：确认这张卡本身能够被特殊召唤，并设置后续特殊召唤的操作信息。
 function c29884951.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置特殊召唤的处理信息
+	-- 设置当前连锁的操作信息：本次处理包含特殊召唤，对象是这张卡自身，数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 执行特殊召唤操作
+-- 效果①的处理：若这张卡仍与该效果关联，则将其特殊召唤。
 function c29884951.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) then
-		-- 将卡片特殊召唤到场上
+		-- 将这张卡以表侧攻击表示特殊召唤到其控制者（tp）场上。
 		Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
--- 判断是否满足破坏效果的发动条件
+-- 效果②的发动条件：自己的幻龙族怪兽与从额外卡组特殊召唤的对方怪兽进行战斗的伤害计算前，且双方怪兽均为表侧表示并与战斗相关。
 function c29884951.descon(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前战斗中的怪兽
+	-- 获取己方和对方正在战斗中的怪兽。
 	local a,d=Duel.GetBattleMonster(tp)
 	return a and d and a:IsFaceup() and a:IsRelateToBattle() and a:IsRace(RACE_WYRM)
 		and d:IsFaceup() and d:IsRelateToBattle() and d:IsSummonLocation(LOCATION_EXTRA)
 end
--- 设置破坏效果的处理目标
+-- 效果②的目标设定：满足条件即可发动，将对方那只从额外卡组特殊召唤的战斗怪兽和这张卡作为破坏对象。
 function c29884951.destg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 获取当前战斗中的怪兽
+	-- 获取己方和对方正在战斗中的怪兽，用于设置目标。
 	local a,d=Duel.GetBattleMonster(tp)
 	local g=Group.FromCards(d,e:GetHandler())
-	-- 设置破坏效果的处理信息
+	-- 设置破坏操作信息：将对方战斗怪兽和这张卡作为可能被破坏的卡，数量为2。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,2,0,0)
 end
--- 执行破坏操作
+-- 效果②的处理：若这张卡仍表侧且与效果相关，对方战斗怪兽仍与战斗相关，则将对方那只怪兽和这张卡破坏。
 function c29884951.desop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取当前战斗中的怪兽
+	-- 获取当前战斗中的双方怪兽，用于处理时确认对象。
 	local a,d=Duel.GetBattleMonster(tp)
 	if c:IsFaceup() and c:IsRelateToEffect(e) and d and d:IsRelateToBattle() then
 		local g=Group.FromCards(d,c)
-		-- 破坏目标怪兽
+		-- 将对方战斗怪兽和这张卡因效果破坏。
 		Duel.Destroy(g,REASON_EFFECT)
 	end
 end
--- 判断是否满足除外效果的发动条件
+-- 效果③的发动条件：这张卡作为同调素材被送去墓地时才能发动。
 function c29884951.remcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsLocation(LOCATION_GRAVE) and r==REASON_SYNCHRO
 end
--- 筛选可除外的卡片
+-- 除外候选过滤器：判断卡片是否可以被除外。
 function c29884951.remfilter(c)
 	return c:IsAbleToRemove()
 end
--- 设置除外效果的处理目标
+-- 效果③的目标设定：选择双方场上·墓地中1张可以除外的卡作为对象，并设置除外操作信息。
 function c29884951.remtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_ONFIELD+LOCATION_GRAVE) and c29884951.remfilter(chkc) end
-	-- 检查是否存在满足条件的除外目标
+	-- 目标检测：确认双方场上·墓地是否存在至少1张满足remfilter条件的卡可以作为对象。
 	if chk==0 then return Duel.IsExistingTarget(c29884951.remfilter,tp,LOCATION_ONFIELD+LOCATION_GRAVE,LOCATION_ONFIELD+LOCATION_GRAVE,1,nil) end
-	-- 提示玩家选择要除外的卡
+	-- 给玩家显示“请选择要除外的卡”的选择提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
-	-- 选择满足条件的1张卡进行除外
+	-- 使用辅助选择函数，优先从场上选择满足条件的对象，若场上不足再从墓地等区域选择，最终选择1张。
 	local g=aux.SelectTargetFromFieldFirst(tp,c29884951.remfilter,tp,LOCATION_ONFIELD+LOCATION_GRAVE,LOCATION_ONFIELD+LOCATION_GRAVE,1,1,nil)
-	-- 设置除外效果的处理信息
+	-- 设置除外操作信息：确定将选中的卡作为除外对象，数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_REMOVE,g,1,0,0)
 end
--- 执行除外操作
+-- 效果③的处理：将选中的目标卡除外。
 function c29884951.remop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的目标卡
+	-- 取得效果发动时选择的目标卡。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 将目标卡除外
+		-- 将目标卡以表侧表示除外。
 		Duel.Remove(tc,POS_FACEUP,REASON_EFFECT)
 	end
 end

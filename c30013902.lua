@@ -23,82 +23,82 @@ function c30013902.initial_effect(c)
 	e2:SetProperty(EFFECT_FLAG_CARD_TARGET)
 	e2:SetRange(LOCATION_GRAVE)
 	e2:SetCountLimit(1,30013903)
-	-- 将此卡从墓地除外作为cost
+	-- 设置效果②的发动代价：把墓地中的这张卡除外（作为COST）。
 	e2:SetCost(aux.bfgcost)
 	e2:SetTarget(c30013902.sptg1)
 	e2:SetOperation(c30013902.spop1)
 	c:RegisterEffect(e2)
 end
--- 过滤函数，用于判断场上是否存在正面表示的植物族通常怪兽
+-- 定义植物族通常怪兽的筛选条件：类型为通常怪兽、种族为植物族、表侧表示。
 function c30013902.spcfilter(c)
 	return c:IsType(TYPE_NORMAL) and c:IsRace(RACE_PLANT) and c:IsFaceup()
 end
--- 效果条件：自己场上有植物族通常怪兽存在
+-- 效果①的发动条件：检查自己场上是否存在至少1只表侧表示的植物族通常怪兽。
 function c30013902.spcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查自己场上是否存在至少1只正面表示的植物族通常怪兽
+	-- 通过Duel.IsExistingMatchingCard检查自己场上是否存在满足条件的植物族通常怪兽。
 	return Duel.IsExistingMatchingCard(c30013902.spcfilter,tp,LOCATION_MZONE,0,1,nil)
 end
--- 效果目标设定：检查是否能将此卡特殊召唤
+-- 效果①发动时的合法性判定：手牌中的这张卡能够特殊召唤且自己场上存在可用区域。
 function c30013902.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查自己场上是否有足够的特殊召唤空间
+	-- 检查自己场上是否存在空闲的主要怪兽区域（用于特殊召唤这张卡）。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置连锁操作信息：将此卡加入特殊召唤的处理对象
+	-- 设置操作信息，表明本效果将特殊召唤这张卡（数量为1）。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 效果处理：将此卡特殊召唤
+-- 效果①处理时：若这张卡仍与效果相关联，则将其特殊召唤到场上。
 function c30013902.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) then
-		-- 将此卡以正面表示特殊召唤到自己场上
+		-- 将这张卡以表侧表示特殊召唤到其控制者（tp）的场上。
 		Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
--- 过滤函数，用于判断是否能选择作为对象的连接怪兽
+-- 定义效果②对象的选择条件：自己场上连接标记在2以下且处于连接状态的「圣天树」或「圣蔓」连接怪兽，并且额外卡组中有同名卡可特殊召唤。
 function c30013902.tgfilter(c,e,tp)
 	return c:IsType(TYPE_LINK) and c:IsSetCard(0x1158,0x2158) and c:IsLinkBelow(2) and c:IsLinkState()
-		-- 检查自己额外卡组是否存在与所选对象同名且可特殊召唤的怪兽
+		-- 确认额外卡组中存在与目标怪兽同卡名且可通过本效果特殊召唤的卡。
 		and Duel.IsExistingMatchingCard(c30013902.spfilter,tp,LOCATION_EXTRA,0,1,nil,e,tp,c:GetCode())
 end
--- 过滤函数，用于判断额外卡组中是否存在可特殊召唤的同名怪兽
+-- 定义额外卡组中候选卡的条件：与对象卡同名、能够被特殊召唤，且从额外卡组特殊召唤时出场区域足够。
 function c30013902.spfilter(c,e,tp,code)
-	-- 检查额外卡组中是否存在可特殊召唤的同名怪兽且有足够召唤空间
+	-- 依次判断候选卡是否同名、是否可特殊召唤、是否有额外卡组出场空格。
 	return c:IsCode(code) and c:IsCanBeSpecialSummoned(e,0,tp,false,false) and Duel.GetLocationCountFromEx(tp,tp,nil,c)>0
 end
--- 效果目标设定：选择一只连接2以下的「圣天树」或「圣蔓」连接怪兽
+-- 效果②发动时的目标选择处理：选择自己场上1只符合条件的连接怪兽作为对象，并设置操作信息；同时进行取对象检查和发动合法性检查。
 function c30013902.sptg1(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(tp) and chkc:IsLocation(LOCATION_MZONE) and c30013902.tgfilter(chkc,e,tp) end
-	-- 检查自己场上是否存在符合条件的连接怪兽作为对象
+	-- 发动时检查场上是否存在可作为效果②对象的连接怪兽（通过Duel.IsExistingTarget进行取对象检查）。
 	if chk==0 then return Duel.IsExistingTarget(c30013902.tgfilter,tp,LOCATION_MZONE,0,1,e:GetHandler(),e,tp) end
-	-- 提示玩家选择效果对象
+	-- 向玩家显示选择效果对象的提示消息（HINTMSG_TARGET）。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)  --"请选择效果的对象"
-	-- 选择一只符合条件的连接怪兽作为对象
+	-- 让玩家从自己场上选择1只满足条件的连接怪兽，并将其设为当前连锁的对象。
 	local g=Duel.SelectTarget(tp,c30013902.tgfilter,tp,LOCATION_MZONE,0,1,1,nil,e,tp)
-	-- 设置连锁操作信息：将额外卡组中的一只怪兽加入特殊召唤的处理对象
+	-- 设置操作信息，表明本效果将从额外卡组特殊召唤1只怪兽；由于具体卡在效果处理时确定，目标为nil。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_EXTRA)
 end
--- 效果处理：从额外卡组特殊召唤同名怪兽
+-- 效果②处理时：若对象怪兽仍与效果关联，从额外卡组选择其同名怪兽，将其效果无效并特殊召唤；最后给予自肃效果，直到回合结束不能特殊召唤植物族以外的怪兽。
 function c30013902.spop1(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取当前连锁效果选择的对象怪兽
+	-- 取得效果②发动时选择的对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if tc and tc:IsRelateToEffect(e) then
 		local code=tc:GetCode()
-		-- 获取额外卡组中所有与对象怪兽同名且可特殊召唤的怪兽
+		-- 从额外卡组中筛选出与对象怪兽同名且满足可特殊召唤条件的候选卡组。
 		local g=Duel.GetMatchingGroup(c30013902.spfilter,tp,LOCATION_EXTRA,0,nil,e,tp,code)
 		if #g>0 then
-			-- 提示玩家选择要特殊召唤的怪兽
+			-- 向玩家显示选择要特殊召唤的卡的提示消息（HINTMSG_SPSUMMON）。
 			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
 			local sc=g:Select(tp,1,1,nil):GetFirst()
-			-- 将所选怪兽以正面表示特殊召唤到场上
+			-- 分步特殊召唤：尝试把选中的卡表侧表示特殊召唤，若成功则继续执行后续无效化处理。
 			if Duel.SpecialSummonStep(sc,0,tp,tp,false,false,POS_FACEUP) then
-				-- 使特殊召唤的怪兽效果无效
+				-- 效果无效（对应“那1只同名怪兽效果无效特殊召唤”中的“效果无效”，使怪兽效果无效化）。
 				local e1=Effect.CreateEffect(c)
 				e1:SetType(EFFECT_TYPE_SINGLE)
 				e1:SetCode(EFFECT_DISABLE)
 				e1:SetReset(RESET_EVENT+RESETS_STANDARD)
 				sc:RegisterEffect(e1)
-				-- 使特殊召唤的怪兽效果在回合结束时无效
+				-- 效果无效（对应“那1只同名怪兽效果无效特殊召唤”中的“效果无效”，使效果发动本身无效化）。
 				local e2=Effect.CreateEffect(c)
 				e2:SetType(EFFECT_TYPE_SINGLE)
 				e2:SetCode(EFFECT_DISABLE_EFFECT)
@@ -106,11 +106,11 @@ function c30013902.spop1(e,tp,eg,ep,ev,re,r,rp)
 				e2:SetReset(RESET_EVENT+RESETS_STANDARD)
 				sc:RegisterEffect(e2)
 			end
-			-- 完成特殊召唤流程
+			-- 完成特殊召唤操作，与SpecialSummonStep配合使用，使特殊召唤正式生效。
 			Duel.SpecialSummonComplete()
 		end
 	end
-	-- 直到回合结束时自己不是植物族怪兽不能特殊召唤
+	-- 这个效果的发动后，直到回合结束时自己不是植物族怪兽不能特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_CANNOT_SPECIAL_SUMMON)
@@ -118,10 +118,10 @@ function c30013902.spop1(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetTargetRange(1,0)
 	e1:SetTarget(c30013902.splimit)
 	e1:SetReset(RESET_PHASE+PHASE_END)
-	-- 将效果注册给玩家
+	-- 将自肃效果注册为场地效果，影响该玩家（tp），持续到回合结束。
 	Duel.RegisterEffect(e1,tp)
 end
--- 限制非植物族怪兽不能特殊召唤
+-- 定义自肃效果的限制条件：被特殊召唤的怪兽不是植物族时禁止特殊召唤。
 function c30013902.splimit(e,c)
 	return not c:IsRace(RACE_PLANT)
 end

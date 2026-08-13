@@ -46,59 +46,59 @@ function c29942771.initial_effect(c)
 	e5:SetCode(EVENT_SPSUMMON_SUCCESS)
 	c:RegisterEffect(e5)
 end
--- 过滤函数，用于筛选卡组中满足条件的「自然」卡（可送去墓地）
+-- 筛选卡组中满足『自然』字段且可以被效果送去墓地的卡。
 function c29942771.tgfilter(c)
 	return c:IsSetCard(0x2a) and c:IsAbleToGrave()
 end
--- 效果处理前的检查函数，判断是否满足发动条件（卡组中存在「自然」卡）
+-- ①效果的发动时点判定：检查卡组是否存在符合条件的『自然』卡；满足后向对方提示已发动效果，并登记送去墓地的操作信息。
 function c29942771.tgtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断卡组中是否存在满足条件的「自然」卡
+	-- 发动时点检查：卡组中是否存在至少1张满足条件的『自然』卡（不取对象，效果处理时才选择要送去墓地的卡）。
 	if chk==0 then return Duel.IsExistingMatchingCard(c29942771.tgfilter,tp,LOCATION_DECK,0,1,nil) end
-	-- 向对方玩家提示发动了效果
+	-- 向对方玩家提示本效果已发动，并展示对应的效果描述。
 	Duel.Hint(HINT_OPSELECTED,1-tp,e:GetDescription())
-	-- 设置效果处理信息，表示将要将卡送去墓地
+	-- 登记本次效果将把卡组中1张卡送去墓地的操作信息，用于连锁处理和相关效果检测。
 	Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,nil,1,tp,LOCATION_DECK)
 end
--- 效果处理函数，选择并把卡送去墓地
+-- ①效果处理：从卡组选择1张满足条件的『自然』卡，选择到则将其以效果原因送去墓地。
 function c29942771.tgop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要送去墓地的卡
+	-- 弹出选择提示，要求玩家选择要送去墓地的卡，提示文字为『请选择要送去墓地的卡』。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
-	-- 选择满足条件的「自然」卡
+	-- 从自己卡组筛选出1张满足『自然』字段且可送去墓地的卡，供玩家选择。
 	local g=Duel.SelectMatchingCard(tp,c29942771.tgfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的卡送去墓地
+		-- 将玩家选择的卡以效果原因送去墓地。
 		Duel.SendtoGrave(g,REASON_EFFECT)
 	end
 end
--- 判断是否为对方召唤/特殊召唤成功
+-- ③效果的发动条件判定：对方（1-tp）对怪兽的召唤或特殊召唤成功时，即存在召唤玩家为对方的怪兽时，本效果可以发动。
 function c29942771.spcon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(Card.IsSummonPlayer,1,e:GetHandler(),1-tp)
 end
--- 过滤函数，用于筛选墓地中满足条件的「自然」怪兽（可特殊召唤）
+-- 筛选墓地中满足『自然』字段且可以被玩家tp通过效果特殊召唤的怪兽。
 function c29942771.spfilter(c,e,tp)
 	return c:IsSetCard(0x2a) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 效果处理前的检查函数，判断是否满足发动条件（墓地中存在「自然」怪兽）
+-- ③效果的发动条件与可处理性检查：自己主要怪兽区有空位，且墓地中至少存在1只符合条件的『自然』怪兽。
 function c29942771.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断场上是否有空位可特殊召唤
+	-- 发动时检查：自己场上是否有可用的主要怪兽区空格。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 判断墓地中是否存在满足条件的「自然」怪兽
+		-- 发动时检查：墓地中是否存在至少1只满足『自然』字段且可特殊召唤的怪兽（不取对象，效果处理时选择）。
 		and Duel.IsExistingMatchingCard(c29942771.spfilter,tp,LOCATION_GRAVE,0,1,nil,e,tp) end
-	-- 向对方玩家提示发动了效果
+	-- 向对方玩家提示已发动③效果，并展示对应的效果描述。
 	Duel.Hint(HINT_OPSELECTED,1-tp,e:GetDescription())
-	-- 设置效果处理信息，表示将要特殊召唤怪兽
+	-- 登记本次效果将从墓地特殊召唤1只怪兽的操作信息。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_GRAVE)
 end
--- 效果处理函数，选择并特殊召唤怪兽
+-- ③效果处理：若自己场上仍有主要怪兽区空格，则从墓地选择1只『自然』怪兽以表侧表示特殊召唤到自己场上。
 function c29942771.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断场上是否有空位可特殊召唤
+	-- 效果处理时再次确认自己场上仍有可用的主要怪兽区空格，若没有则终止处理。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-	-- 提示玩家选择要特殊召唤的卡
+	-- 弹出选择提示，要求玩家选择要特殊召唤的卡，提示文字为『请选择要特殊召唤的卡』。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 选择满足条件的「自然」怪兽
+	-- 从自己墓地选择1只满足『自然』字段且可特殊召唤的怪兽。
 	local g=Duel.SelectMatchingCard(tp,c29942771.spfilter,tp,LOCATION_GRAVE,0,1,1,nil,e,tp)
 	if g:GetCount()>0 then
-		-- 将选中的怪兽特殊召唤到场上
+		-- 将选择的怪兽以表侧表示特殊召唤到自己场上，完成③效果的特殊召唤。
 		Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
