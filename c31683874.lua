@@ -4,7 +4,7 @@
 -- ①：把这张卡抽到时，把这张卡给对方观看才能发动。这张卡从手卡特殊召唤。
 -- ②：这张卡从手卡的特殊召唤成功的场合才能发动。从卡组把1只魔法师族怪兽除外。
 function c31683874.initial_effect(c)
-	-- 创建一个诱发选发效果，用于处理抽卡时的特殊召唤，该效果只能在伤害步骤发动，且每回合只能发动一次
+	-- 这个卡名的①②的效果1回合各能使用1次。①：把这张卡抽到时，把这张卡给对方观看才能发动。这张卡从手卡特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(31683874,0))
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -16,7 +16,7 @@ function c31683874.initial_effect(c)
 	e1:SetTarget(c31683874.sptg)
 	e1:SetOperation(c31683874.spop)
 	c:RegisterEffect(e1)
-	-- 创建一个诱发选发效果，用于处理从手卡特殊召唤成功后的除外魔法师族怪兽，该效果具有延迟属性，每回合只能发动一次
+	-- ②：这张卡从手卡的特殊召唤成功的场合才能发动。从卡组把1只魔法师族怪兽除外。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(31683874,1))
 	e2:SetCategory(CATEGORY_REMOVE)
@@ -29,49 +29,49 @@ function c31683874.initial_effect(c)
 	e2:SetOperation(c31683874.rmop)
 	c:RegisterEffect(e2)
 end
--- 检查是否满足特殊召唤的费用条件，即确认该卡在抽卡时未被公开
+-- 作为①效果的发动代价，检查这张卡是否处于非公开状态（若已公开则不能再展示），以符合“把这张卡给对方观看”的发动条件。
 function c31683874.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return not e:GetHandler():IsPublic() end
 end
--- 设置特殊召唤的发动条件，检查场上是否有足够的怪兽区域以及该卡是否可以被特殊召唤
+-- ①效果发动时进行合法性检查：自己的主要怪兽区有空位，且这张卡能够被特殊召唤。
 function c31683874.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
-	-- 检查场上是否有足够的怪兽区域用于特殊召唤
+	-- 检查自己的主要怪兽区是否存在可用空格。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and c:IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置特殊召唤的效果操作信息，告知对方将要特殊召唤该卡
+	-- 设置本次连锁要特殊召唤这张卡的操作信息，明确效果类别为特殊召唤，用于连锁判定。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,c,1,0,0)
 end
--- 执行特殊召唤的操作，将该卡从手卡特殊召唤到场上
+-- 效果处理时，先确认这张卡仍与效果保持关联（未离开手牌或效果被重置），若成立则将其特殊召唤。
 function c31683874.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if not c:IsRelateToEffect(e) then return end
-	-- 将该卡以正面表示的形式特殊召唤到玩家场上
+	-- 将这张卡以表侧攻击表示特殊召唤到发动玩家的场上。
 	Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 end
--- 设置除外效果的发动条件，确认该卡是从手卡特殊召唤成功的
+-- ②效果的发动条件：判断这张卡是否是从手卡特殊召唤成功（即特殊召唤前所在位置为手牌）。
 function c31683874.rmcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsPreviousLocation(LOCATION_HAND)
 end
--- 定义除外效果的过滤函数，筛选出卡组中可以除外的魔法师族怪兽
+-- 从卡组筛选满足条件的卡片：必须是魔法师族怪兽，且当前可以被除外。
 function c31683874.rmfilter(c)
 	return c:IsRace(RACE_SPELLCASTER) and c:IsAbleToRemove()
 end
--- 设置除外效果的发动条件，检查卡组中是否存在至少一张魔法师族怪兽
+-- ②效果发动时进行合法性检查：卡组中存在至少1只可除外的魔法师族怪兽；并设置操作信息为除外卡组的1张卡。
 function c31683874.rmtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查卡组中是否存在至少一张魔法师族怪兽
+	-- 检查卡组中是否存在至少1只满足筛选条件的魔法师族怪兽。
 	if chk==0 then return Duel.IsExistingMatchingCard(c31683874.rmfilter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置除外效果的操作信息，告知对方将要除外一张魔法师族怪兽
+	-- 设置本次效果处理将除外卡组中的1张卡（不取对象，处理时选择），用于连锁判定。
 	Duel.SetOperationInfo(0,CATEGORY_REMOVE,nil,1,tp,LOCATION_DECK)
 end
--- 执行除外操作，选择并除外一张魔法师族怪兽
+-- 效果处理时，提示玩家选择要除外的卡，从卡组选择1只符合条件的魔法师族怪兽表侧除外。
 function c31683874.rmop(e,tp,eg,ep,ev,re,r,rp)
-	-- 向玩家提示选择要除外的卡
+	-- 显示“请选择要除外的卡”的系统提示，引导玩家进行选择。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
-	-- 从卡组中选择一张魔法师族怪兽作为除外目标
+	-- 从自己的卡组中筛选并选择1张满足“魔法师族且可除外”条件的卡片。
 	local g=Duel.SelectMatchingCard(tp,c31683874.rmfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的魔法师族怪兽以正面表示的形式除外
+		-- 将所选卡片以表侧表示除外，处理原因为效果。
 		Duel.Remove(g,POS_FACEUP,REASON_EFFECT)
 	end
 end

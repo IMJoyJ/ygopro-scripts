@@ -14,34 +14,34 @@ function c31786629.initial_effect(c)
 	c:RegisterEffect(e1)
 	c31786629.discard_effect=e1
 end
--- 检查是否可以丢弃此卡作为发动代价
+-- 发动代价：将这张卡从手卡丢弃；先检查该卡是否可作为代价丢弃，再将其送入墓地。
 function c31786629.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	if chk==0 then return c:IsDiscardable() end
-	-- 将此卡丢入墓地作为发动代价
+	-- 以“代价+丢弃”的原因将这张卡从手卡送入墓地。
 	Duel.SendtoGrave(c,REASON_COST+REASON_DISCARD)
 end
--- 过滤函数，用于筛选卡组中可加入手牌的「雷龙」
+-- 检索过滤器：卡名必须为「雷龙」（31786629）且能够加入手卡。
 function c31786629.filter(c)
 	return c:IsCode(31786629) and c:IsAbleToHand()
 end
--- 设置效果发动时的处理信息，确定将从卡组检索「雷龙」加入手牌
+-- 效果发动时的目标判断：确认卡组中存在可检索的「雷龙」，并设置将卡加入手牌的操作信息。
 function c31786629.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查卡组中是否存在至少1张「雷龙」
+	-- 合法性检查：卡组中是否存在至少1张符合条件的「雷龙」。
 	if chk==0 then return Duel.IsExistingMatchingCard(c31786629.filter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置连锁处理信息，指定将从卡组检索1张卡加入手牌
+	-- 设置操作信息：标记效果为从卡组将卡加入手牌；此处预计1张，用于连锁判定和效果检测。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 效果发动时执行的操作，选择并加入手牌
+-- 效果处理：从卡组选择1~2只「雷龙」加入手牌，并向对方展示。
 function c31786629.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要加入手牌的卡
+	-- 给玩家显示选择卡片的提示文字‘请选择要加入手牌的卡’。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 从卡组中选择1到2张「雷龙」
+	-- 玩家从卡组中选择1~2张符合条件的「雷龙」（不取对象，处理时选择）。
 	local g=Duel.SelectMatchingCard(tp,c31786629.filter,tp,LOCATION_DECK,0,1,2,nil)
 	if g:GetCount()>0 then
-		-- 将选中的「雷龙」加入手牌
+		-- 将选中的卡以效果原因加入其持有者的手卡。
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 向对方确认所选的「雷龙」
+		-- 向对方玩家展示这些加入手卡的卡。
 		Duel.ConfirmCards(1-tp,g)
 	end
 end

@@ -14,42 +14,42 @@ function c31677606.initial_effect(c)
 	e1:SetOperation(c31677606.activate)
 	c:RegisterEffect(e1)
 end
--- 检查怪兽是否为超量怪兽且其超量素材中包含同调怪兽
+-- 判定超量怪兽是否持有超量素材，且其超量素材中是否存在同调怪兽。
 function c31677606.cfilter(c)
 	return c:GetOverlayCount()>0 and c:GetOverlayGroup():IsExists(Card.IsType,1,nil,TYPE_SYNCHRO)
 end
--- 判断场上是否存在满足条件的超量怪兽
+-- 发动条件判定：从双方主要怪兽区检查是否存在至少1只满足“有同调怪兽作为超量素材的超量怪兽”条件的怪兽。
 function c31677606.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断场上是否存在满足条件的超量怪兽
+	-- 检索场上是否存在满足条件的超量怪兽。
 	return Duel.IsExistingMatchingCard(c31677606.cfilter,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil)
 end
--- 过滤可以除外的卡片
+-- 对象选择用过滤函数：判定卡片是否可以被除外。
 function c31677606.filter(c)
 	return c:IsAbleToRemove()
 end
--- 设置选择目标的过滤条件
+-- 发动时的目标处理：确认自己可以抽卡且场上存在可除外的对象；选择目标时，从双方场上选择1张卡作为效果对象。
 function c31677606.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsOnField() and c31677606.filter(chkc) end
-	-- 检查玩家是否可以抽卡
+	-- 效果发动合法性检查：确认自己玩家可以抽1张卡。
 	if chk==0 then return Duel.IsPlayerCanDraw(tp,1)
-		-- 检查场上是否存在可除外的卡片
+		-- 效果发动合法性检查：确认场上存在可作为效果对象且能够被除外的卡（排除发动效果的这张卡自身）。
 		and Duel.IsExistingTarget(c31677606.filter,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,e:GetHandler()) end
-	-- 提示玩家选择要除外的卡片
+	-- 选择要除外的卡时，向玩家显示“请选择要除外的卡”的提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
-	-- 选择场上一张可除外的卡片作为效果对象
+	-- 让玩家从场上选择1张可除外的卡作为效果对象，并将其设为当前连锁的对象。
 	local g=Duel.SelectTarget(tp,c31677606.filter,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,1,e:GetHandler())
-	-- 设置效果处理信息，记录将要除外的卡片
+	-- 设置操作信息：本次效果将除外1张已选择的卡。
 	Duel.SetOperationInfo(0,CATEGORY_REMOVE,g,1,0,0)
-	-- 设置效果处理信息，记录将要抽卡的数量
+	-- 设置操作信息：本次效果使自己抽1张卡。
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,1)
 end
--- 有同调怪兽在作为超量素材中的超量怪兽在场上存在的场合才能发动。选择场上1张卡从游戏中除外，从自己卡组抽1张卡。
+-- 效果处理：取得对象卡，若对象仍与效果关联则将其表侧表示除外；除外成功后，自己从卡组抽1张卡。
 function c31677606.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的效果对象
+	-- 取得本次效果处理时选择的1张对象卡。
 	local tc=Duel.GetFirstTarget()
-	-- 判断对象卡是否仍然有效且满足除外条件
+	-- 确认对象卡仍与效果关联且能够被除外；若将其表侧表示除外成功，则继续处理。
 	if tc and tc:IsRelateToEffect(e) and Duel.Remove(tc,POS_FACEUP,REASON_EFFECT)>0 then
-		-- 让玩家从卡组抽一张卡
+		-- 自己从卡组抽1张卡。
 		Duel.Draw(tp,1,REASON_EFFECT)
 	end
 end
