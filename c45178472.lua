@@ -13,37 +13,37 @@ function c45178472.initial_effect(c)
 	e1:SetOperation(c45178472.activate)
 	c:RegisterEffect(e1)
 end
--- 定义一个函数用于判断卡片是否为表侧表示的魔法·陷阱卡
+-- 筛选出场上表侧表示的魔法·陷阱卡，用于选择“表侧表示存在的2张魔法·陷阱卡”的对象。
 function c45178472.up(c)
 	return c:IsFaceup() and c:IsType(TYPE_SPELL+TYPE_TRAP)
 end
--- 定义一个函数用于判断卡片是否为里侧表示的魔法·陷阱卡
+-- 筛选出场上的里侧表示魔法·陷阱卡，用于选择“盖放的3张魔法·陷阱卡”的对象。
 function c45178472.down(c)
 	return c:IsFacedown() and c:IsType(TYPE_SPELL+TYPE_TRAP)
 end
--- 效果发动时的处理函数，用于判断是否满足选择目标的条件
+-- 效果的目标函数：连锁中对已选对象的合法性检查直接返回false；发动时检查场上是否存在2张表侧魔陷和3张盖放魔陷（均除本卡外）可作为对象，满足后进入选择流程。
 function c45178472.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return false end
-	-- 判断场上是否存在至少2张表侧表示的魔法·陷阱卡
+	-- 检查场上是否存在至少2张表侧表示的魔法·陷阱卡（除本卡外）可以作为对象，作为发动条件之一。
 	if chk==0 then return Duel.IsExistingTarget(c45178472.up,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,2,e:GetHandler())
-		-- 判断场上是否存在至少3张里侧表示的魔法·陷阱卡
+		-- 检查场上是否存在至少3张里侧表示的魔法·陷阱卡（除本卡外）可以作为对象，作为发动条件之一。
 		and Duel.IsExistingTarget(c45178472.down,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,3,e:GetHandler()) end
-	-- 向玩家提示选择要破坏的卡
+	-- 给玩家显示“请选择要破坏的卡”的选择提示，用于选择表侧魔法·陷阱卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 选择满足条件的2张表侧表示的魔法·陷阱卡作为目标
+	-- 从场上选择2张表侧表示的魔法·陷阱卡（除本卡外）作为效果对象，并登记为连锁对象。
 	local g1=Duel.SelectTarget(tp,c45178472.up,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,2,2,e:GetHandler())
-	-- 向玩家提示选择要破坏的卡
+	-- 再次给玩家显示“请选择要破坏的卡”的选择提示，用于选择里侧（盖放）的魔法·陷阱卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 选择满足条件的3张里侧表示的魔法·陷阱卡作为目标
+	-- 从场上选择3张里侧表示的魔法·陷阱卡（除本卡外）作为效果对象，并登记为连锁对象。
 	local g2=Duel.SelectTarget(tp,c45178472.down,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,3,3,e:GetHandler())
 	g1:Merge(g2)
-	-- 设置本次连锁的操作信息，指定将要破坏5张卡
+	-- 将破坏分类及合计5张对象卡写入连锁信息，供后续处理与时点检测使用。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g1,5,0,0)
 end
--- 效果发动时的处理函数，用于执行破坏操作
+-- 效果处理时取得连锁对象，筛除已不关联的卡后全部破坏。
 function c45178472.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁中指定的目标卡组，并筛选出与当前效果相关的卡
+	-- 从当前连锁中获取对象卡组，并筛选出仍与本次效果有关的卡（排除已离场或关系重置的卡）。
 	local g=Duel.GetChainInfo(0,CHAININFO_TARGET_CARDS):Filter(Card.IsRelateToEffect,nil,e)
-	-- 以效果为原因破坏指定的卡组
+	-- 以效果原因破坏筛选后的对象卡。
 	Duel.Destroy(g,REASON_EFFECT)
 end

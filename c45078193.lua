@@ -40,85 +40,85 @@ function c45078193.initial_effect(c)
 	e3:SetOperation(c45078193.op)
 	c:RegisterEffect(e3)
 end
--- 检查手卡是否可以丢弃此卡作为发动①的代价
+-- ①效果的发动代价：检查手牌中的这张卡是否能够丢弃；可丢弃时将这张卡作为代价从手牌送入墓地。
 function c45078193.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	if chk==0 then return c:IsDiscardable() end
-	-- 将此卡从手卡丢入墓地作为发动①的代价
+	-- 将这张卡以丢弃自身为代价送入墓地（cost）。
 	Duel.SendtoGrave(c,REASON_COST+REASON_DISCARD)
 end
--- 过滤函数，用于筛选卡组中满足条件的机械族「电子暗黑」怪兽
+-- 定义检索过滤条件：被检索的卡必须属于机械族、具有「电子暗黑」字段，并且可以加入手卡。
 function c45078193.filter(c)
 	return c:IsSetCard(0x4093) and c:IsRace(RACE_MACHINE) and c:IsAbleToHand()
 end
--- 设置效果发动时的操作信息，确定将要从卡组检索的卡的类型为加入手牌
+-- ①效果的发动目标：确认卡组中存在符合条件的机械族「电子暗黑」怪兽，并设置本次处理为从卡组把1张卡加入手卡。
 function c45078193.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查手卡是否可以丢弃此卡作为发动①的代价
+	-- 发动时检查：卡组中是否存在至少1张满足过滤条件的机械族「电子暗黑」怪兽。
 	if chk==0 then return Duel.IsExistingMatchingCard(c45078193.filter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置效果发动时的操作信息，确定将要从卡组检索的卡的类型为加入手牌
+	-- 设置操作信息：效果处理时将从卡组把1张卡加入持有者手卡（检索动作）。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 处理①效果的发动，选择并把符合条件的卡加入手牌
+-- ①效果处理：从卡组选择1只符合条件的机械族「电子暗黑」怪兽加入手卡，并展示给对方确认。
 function c45078193.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要加入手牌的卡
+	-- 显示选择提示，让发动者选择要加入手卡的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 从卡组中选择满足条件的卡
+	-- 发动者从卡组中选择1张满足c45078193.filter条件的卡片（检索选择）。
 	local tg=Duel.SelectMatchingCard(tp,c45078193.filter,tp,LOCATION_DECK,0,1,1,nil)
 	if tg:GetCount()>0 then
-		-- 将选中的卡加入手牌
+		-- 将选中的卡片加入其持有者的手卡（以效果原因）。
 		Duel.SendtoHand(tg,nil,REASON_EFFECT)
-		-- 向对方确认加入手牌的卡
+		-- 将加入手卡的卡片展示给对方玩家确认。
 		Duel.ConfirmCards(1-tp,tg)
 	end
 end
--- 过滤函数，用于筛选卡组中满足条件的怪兽
+-- 定义②效果用于送去墓地的过滤条件：必须是怪兽卡且可以送去墓地。
 function c45078193.tgfilter(c)
 	return c:IsType(TYPE_MONSTER) and c:IsAbleToGrave()
 end
--- 判断装备此卡的怪兽是否参与了战斗
+-- ②效果的发动条件：这张卡作为装备卡所装备的怪兽，正参与本次战斗的伤害计算（是攻击怪兽或被攻击怪兽）。
 function c45078193.gycon(e,tp,eg,ep,ev,re,r,rp)
 	local ec=e:GetHandler():GetEquipTarget()
-	-- 判断装备此卡的怪兽是否参与了战斗
+	-- 判定装备怪兽是否为当前战斗的攻击怪兽或被攻击对象；是则发动条件成立。
 	return ec and (ec==Duel.GetAttacker() or ec==Duel.GetAttackTarget())
 end
--- 设置效果发动时的操作信息，确定将要从卡组送去墓地的卡的类型
+-- ②效果的目标：检查卡组是否存在可送去墓地的怪兽，并设置从卡组把1只怪兽送去墓地的操作信息。
 function c45078193.gytg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查卡组中是否存在满足条件的怪兽
+	-- 发动时检查：卡组中是否存在至少1只可以送去墓地的怪兽。
 	if chk==0 then return Duel.IsExistingMatchingCard(c45078193.tgfilter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置效果发动时的操作信息，确定将要从卡组送去墓地的卡的类型
+	-- 设置操作信息：效果处理时将从卡组把1只怪兽送去墓地。
 	Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,nil,1,tp,LOCATION_DECK)
 end
--- 处理②效果的发动，选择并把符合条件的卡送去墓地
+-- ②效果处理：从卡组选择1只满足条件的怪兽送去墓地。
 function c45078193.gyop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要送去墓地的卡
+	-- 显示选择提示，让发动者选择要送去墓地的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
-	-- 从卡组中选择满足条件的卡
+	-- 发动者从卡组中选择1张满足c45078193.tgfilter条件的怪兽卡。
 	local g=Duel.SelectMatchingCard(tp,c45078193.tgfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的卡送去墓地
+		-- 将选中的卡片以效果原因送入墓地。
 		Duel.SendtoGrave(g,REASON_EFFECT)
 	end
 end
--- 判断此卡是否因装备状态被送去墓地
+-- ③效果的发动条件：这张卡在作为装备卡装备于怪兽的状态下从魔陷区被送去墓地，且不是因装备对象失去而自动送入墓地（REASON_LOST_TARGET）。
 function c45078193.con(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	return c:IsPreviousLocation(LOCATION_SZONE) and c:GetPreviousEquipTarget() and not c:IsReason(REASON_LOST_TARGET)
 end
--- 设置效果发动时的操作信息，确定将要抽卡的数量
+-- ③效果的目标设定：确认发动者能够抽1张卡，并记录抽卡玩家和抽卡数量。
 function c45078193.tg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查玩家是否可以抽卡
+	-- 发动时检查：玩家tp是否可以抽取1张卡。
 	if chk==0 then return Duel.IsPlayerCanDraw(tp,1) end
-	-- 设置效果的目标玩家
+	-- 将本次效果的对象玩家设定为发动者tp。
 	Duel.SetTargetPlayer(tp)
-	-- 设置效果的目标参数为抽卡数量
+	-- 将本次效果的对象参数设定为1（抽卡数量）。
 	Duel.SetTargetParam(1)
-	-- 设置效果发动时的操作信息，确定将要抽卡
+	-- 设置操作信息：本次效果处理包含从卡组抽1张卡的动作。
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,1)
 end
--- 处理③效果的发动，执行抽卡操作
+-- ③效果处理：实际让之前设定的玩家从卡组抽取1张卡。
 function c45078193.op(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁中设定的目标玩家和抽卡数量
+	-- 从当前连锁信息中获取之前设定的目标玩家和抽卡参数。
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 执行抽卡操作
+	-- 使玩家p以效果原因抽d张卡（此处d为1）。
 	Duel.Draw(p,d,REASON_EFFECT)
 end

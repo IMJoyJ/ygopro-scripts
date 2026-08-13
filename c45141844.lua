@@ -12,23 +12,23 @@ function c45141844.initial_effect(c)
 	e1:SetOperation(c45141844.operation)
 	c:RegisterEffect(e1)
 end
--- 选择破坏对象，筛选对方场上的怪兽作为目标
+-- 效果发动时的取对象处理：先判断对象必须是对方场上怪兽区的卡；在可以发动的场合，让玩家选择对方场上1只怪兽作为对象，并设置将破坏该对象的操作信息。
 function c45141844.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(1-tp) end
 	if chk==0 then return true end
-	-- 提示玩家选择要破坏的卡
+	-- 向当前玩家显示“请选择要破坏的卡”的选择提示信息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 选择对方场上1只怪兽作为破坏目标
+	-- 从对方场上（LOCATION_MZONE）选择1只怪兽作为效果对象，同时将该怪兽登记为当前连锁的取对象目标。
 	local g=Duel.SelectTarget(tp,aux.TRUE,tp,0,LOCATION_MZONE,1,1,nil)
-	-- 设置连锁操作信息，确定破坏效果的处理对象
+	-- 设置本连锁的效果操作信息：破坏所选择的怪兽，数量为已选择对象数，供后续效果判定使用。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,g:GetCount(),0,0)
 end
--- 执行破坏效果，将选定的怪兽破坏
+-- 效果处理时的破坏处理：取得发动时选择的对象怪兽，若该怪兽仍与效果关联（未离场或未被无效等），则将其破坏。
 function c45141844.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的破坏目标怪兽
+	-- 取得本效果发动时选择的那1只对象怪兽（因为只选1只，所以就是唯一的目标）。
 	local tc=Duel.GetFirstTarget()
 	if tc and tc:IsRelateToEffect(e) then
-		-- 将目标怪兽因效果而破坏
+		-- 以效果原因（REASON_EFFECT）将那只对象怪兽破坏。
 		Duel.Destroy(tc,REASON_EFFECT)
 	end
 end

@@ -5,7 +5,7 @@
 -- ②：对方场上的卡数量比自己场上的卡多的场合，1回合1次，以除外的1只自己的「玄化」怪兽为对象才能发动。那只怪兽特殊召唤。这个效果特殊召唤的怪兽在下个回合的结束阶段除外。
 function c45148985.initial_effect(c)
 	c:EnableReviveLimit()
-	-- 这张卡不能通常召唤。从自己墓地以及自己场上的表侧表示的卡之中把「玄化」卡5种类各1张除外的场合才能特殊召唤。
+	-- 这张卡不能通常召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
 	e1:SetType(EFFECT_TYPE_SINGLE)
@@ -21,7 +21,7 @@ function c45148985.initial_effect(c)
 	e2:SetTarget(c45148985.sprtg)
 	e2:SetOperation(c45148985.sprop)
 	c:RegisterEffect(e2)
-	-- 场上的这张卡不会被效果破坏，不能用效果除外。
+	-- 场上的这张卡不会被效果破坏
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_SINGLE)
 	e3:SetCode(EFFECT_INDESTRUCTABLE_EFFECT)
@@ -29,7 +29,7 @@ function c45148985.initial_effect(c)
 	e3:SetRange(LOCATION_MZONE)
 	e3:SetValue(1)
 	c:RegisterEffect(e3)
-	-- 场上的这张卡不会被效果破坏，不能用效果除外。
+	-- 不能用效果除外
 	local e4=Effect.CreateEffect(c)
 	e4:SetType(EFFECT_TYPE_FIELD)
 	e4:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
@@ -38,7 +38,7 @@ function c45148985.initial_effect(c)
 	e4:SetTargetRange(1,1)
 	e4:SetTarget(c45148985.rmlimit)
 	c:RegisterEffect(e4)
-	-- 对方场上的卡数量比自己场上的卡多的场合，1回合1次，以除外的1只自己的「玄化」怪兽为对象才能发动。那只怪兽特殊召唤。这个效果特殊召唤的怪兽在下个回合的结束阶段除外。
+	-- ②：对方场上的卡数量比自己场上的卡多的场合，1回合1次，以除外的1只自己的「玄化」怪兽为对象才能发动。那只怪兽特殊召唤。这个效果特殊召唤的怪兽在下个回合的结束阶段除外。
 	local e5=Effect.CreateEffect(c)
 	e5:SetDescription(aux.Stringid(45148985,0))
 	e5:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -51,35 +51,35 @@ function c45148985.initial_effect(c)
 	e5:SetOperation(c45148985.spop)
 	c:RegisterEffect(e5)
 end
--- 检索满足条件的「玄化」卡（在墓地或场上表侧表示），用于特殊召唤的除外条件检查。
+-- 筛选可作为特殊召唤代价的「玄化」卡：必须是「玄化」卡、可以除外，且位于墓地或场上表侧表示。
 function c45148985.sprfilter(c)
 	return c:IsSetCard(0x105) and c:IsAbleToRemoveAsCost() and (c:IsLocation(LOCATION_GRAVE) or c:IsFaceup())
 end
--- 检查是否满足特殊召唤条件：从自己墓地及场上表侧表示的卡中选择5种不同种类的「玄化」卡各1张除外。
+-- 特殊召唤手续的条件检查：从自己场上表侧表示和墓地的「玄化」卡中，确认是否存在5张卡名互不相同且除外后自己场上仍有可用怪兽区域的组合。
 function c45148985.sprcon(e,c)
 	if c==nil then return true end
 	local tp=c:GetControler()
-	-- 获取满足条件的「玄化」卡组（在墓地或场上表侧表示）。
+	-- 获取自己场上表侧表示及墓地的所有可作为代价除外的「玄化」卡。
 	local g=Duel.GetMatchingGroup(c45148985.sprfilter,tp,LOCATION_ONFIELD+LOCATION_GRAVE,0,nil)
-	-- 设置额外检查条件为卡名不同（dncheck）。
+	-- 设置额外的分组检查条件：要求选出的卡名互不相同（对应5种类各1张）。
 	aux.GCheckAdditional=aux.dncheck
-	-- 检查是否能选出5张不同种类的卡（满足卡名各不相同且数量为5）。
+	-- 检查是否存在一组5张「玄化」卡，满足卡名互不相同，且将它们除外后自己场上仍有可用怪兽区域。
 	local res=g:CheckSubGroup(aux.mzctcheck,5,5,tp)
-	-- 清除额外检查条件。
+	-- 清除临时设置的额外检查条件。
 	aux.GCheckAdditional=nil
 	return res
 end
--- 选择满足条件的5张不同种类的「玄化」卡并设置为本次特殊召唤的除外卡组。
+-- 特殊召唤手续的选牌处理：从候选「玄化」卡中选择5张卡名互不相同且满足格子的卡作为除外代价，保存选择结果。
 function c45148985.sprtg(e,tp,eg,ep,ev,re,r,rp,chk,c)
-	-- 获取满足条件的「玄化」卡组（在墓地或场上表侧表示）。
+	-- 获取自己场上表侧表示及墓地的所有可作为代价除外的「玄化」卡。
 	local g=Duel.GetMatchingGroup(c45148985.sprfilter,tp,LOCATION_ONFIELD+LOCATION_GRAVE,0,nil)
 	-- 提示玩家选择要除外的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
-	-- 设置额外检查条件为卡名不同（dncheck）。
+	-- 设置额外的分组检查条件：要求选出的卡名互不相同。
 	aux.GCheckAdditional=aux.dncheck
-	-- 从满足条件的卡中选择5张不同种类的卡作为本次特殊召唤的除外卡组。
+	-- 让玩家选择5张「玄化」卡作为除外代价，并保证卡名互不相同且除外后场上仍有空位。
 	local sg=g:SelectSubGroup(tp,aux.mzctcheck,true,5,5,tp)
-	-- 清除额外检查条件。
+	-- 清除临时设置的额外检查条件。
 	aux.GCheckAdditional=nil
 	if sg then
 		sg:KeepAlive()
@@ -87,77 +87,77 @@ function c45148985.sprtg(e,tp,eg,ep,ev,re,r,rp,chk,c)
 		return true
 	else return false end
 end
--- 将选中的卡组以特殊召唤原因除外。
+-- 特殊召唤手续执行：将之前选择的5张「玄化」卡作为祭品除外，完成特殊召唤手续。
 function c45148985.sprop(e,tp,eg,ep,ev,re,r,rp,c)
 	local g=e:GetLabelObject()
-	-- 将选中的卡组以特殊召唤原因除外。
+	-- 以表侧表示除外选择的「玄化」卡，作为特殊召唤的代价。
 	Duel.Remove(g,POS_FACEUP,REASON_SPSUMMON)
 	g:DeleteGroup()
 end
--- 限制该卡不能被效果除外。
+-- 判定是否受到“不能用效果除外”的限制：仅当对象为这张卡自身且除外原因为效果时适用。
 function c45148985.rmlimit(e,c,tp,r)
 	return c==e:GetHandler() and r==REASON_EFFECT
 end
--- 判断是否满足发动条件：对方场上的卡数量比自己场上的卡多。
+-- ②效果的发动条件：对方场上的卡数量多于自己场上的卡。
 function c45148985.spcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断是否满足发动条件：对方场上的卡数量比自己场上的卡多。
+	-- 比较对方场上与己方场上的卡数，返回对方是否更多。
 	return Duel.GetFieldGroupCount(tp,0,LOCATION_ONFIELD)>Duel.GetFieldGroupCount(tp,LOCATION_ONFIELD,0)
 end
--- 检索满足条件的「玄化」怪兽（在除外区），用于特殊召唤。
+-- 筛选特殊召唤对象：除外的自己的表侧表示「玄化」怪兽，且满足特殊召唤条件。
 function c45148985.spfilter(c,e,tp)
 	return c:IsFaceup() and c:IsSetCard(0x105) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 设置效果目标：选择除外区的1只「玄化」怪兽作为特殊召唤对象。
+-- ②效果的目标选择处理：确认自己场上有空位，并从除外区选择1只符合条件的「玄化」怪兽作为对象。
 function c45148985.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_REMOVED) and chkc:IsControler(tp) and c45148985.spfilter(chkc,e,tp) end
-	-- 判断是否满足发动条件：自己场上存在空位且除外区存在符合条件的「玄化」怪兽。
+	-- 效果发动时检查自己场上是否有可用的怪兽区域。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 判断是否满足发动条件：自己场上存在空位且除外区存在符合条件的「玄化」怪兽。
+		-- 检查除外区是否存在1只满足条件的「玄化」怪兽可以作为对象。
 		and Duel.IsExistingTarget(c45148985.spfilter,tp,LOCATION_REMOVED,0,1,nil,e,tp) end
 	-- 提示玩家选择要特殊召唤的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 选择除外区的1只符合条件的「玄化」怪兽作为特殊召唤对象。
+	-- 从除外的自己的「玄化」怪兽中选择1只作为效果对象。
 	local g=Duel.SelectTarget(tp,c45148985.spfilter,tp,LOCATION_REMOVED,0,1,1,nil,e,tp)
-	-- 设置本次特殊召唤的操作信息。
+	-- 设置本次效果的操作信息：将特殊召唤1只怪兽。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,1,0,0)
 end
--- 执行特殊召唤操作，并注册结束阶段除外效果。
+-- ②效果处理：将对象怪兽特殊召唤；成功则给它注册下个回合结束阶段除外的效果。
 function c45148985.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取本次特殊召唤的目标怪兽。
+	-- 获取效果对象（那只被选中的「玄化」怪兽）。
 	local tc=Duel.GetFirstTarget()
-	-- 判断目标怪兽是否有效且成功特殊召唤。
+	-- 确认对象仍与效果关联后将其特殊召唤；若召唤成功则继续注册除外效果。
 	if tc:IsRelateToEffect(e) and Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP)~=0 then
 		tc:RegisterFlagEffect(45148985,RESET_EVENT+RESETS_STANDARD,0,1)
-		-- 对方场上的卡数量比自己场上的卡多的场合，1回合1次，以除外的1只自己的「玄化」怪兽为对象才能发动。那只怪兽特殊召唤。这个效果特殊召唤的怪兽在下个回合的结束阶段除外。
+		-- 这个效果特殊召唤的怪兽在下个回合的结束阶段除外。
 		local e2=Effect.CreateEffect(e:GetHandler())
 		e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 		e2:SetCode(EVENT_PHASE+PHASE_END)
 		e2:SetCountLimit(1)
 		e2:SetProperty(EFFECT_FLAG_IGNORE_IMMUNE)
-		-- 设置效果标签为下个回合的回合数。
+		-- 记录“下个回合”的回合数标记，用于在正确的结束阶段触发除外。
 		e2:SetLabel(Duel.GetTurnCount()+1)
 		e2:SetLabelObject(tc)
 		e2:SetReset(RESET_PHASE+PHASE_END,2)
 		e2:SetCondition(c45148985.rmcon)
 		e2:SetOperation(c45148985.rmop)
-		-- 将效果注册到玩家环境。
+		-- 将“下个回合结束阶段除外”的延迟效果注册到场上。
 		Duel.RegisterEffect(e2,tp)
 	end
 end
--- 判断是否满足结束阶段除外条件：当前回合数等于设定的回合数且目标怪兽仍存在。
+-- 判定除外的时机：被特殊召唤的怪兽仍存在且当前回合数达到记录的回合数时，执行除外。
 function c45148985.rmcon(e,tp,eg,ep,ev,re,r,rp)
 	local tc=e:GetLabelObject()
 	if tc:GetFlagEffect(45148985)~=0 then
-		-- 判断是否满足结束阶段除外条件：当前回合数等于设定的回合数。
+		-- 返回当前回合数是否等于记录的回合数。
 		return Duel.GetTurnCount()==e:GetLabel()
 	else
 		e:Reset()
 		return false
 	end
 end
--- 将目标怪兽以效果原因除外。
+-- 执行除外操作：将那只怪兽除外。
 function c45148985.rmop(e,tp,eg,ep,ev,re,r,rp)
 	local tc=e:GetLabelObject()
-	-- 将目标怪兽以效果原因除外。
+	-- 将对象怪兽以表侧表示除外，原因是效果。
 	Duel.Remove(tc,POS_FACEUP,REASON_EFFECT)
 end
