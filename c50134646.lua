@@ -4,9 +4,9 @@
 -- ①：从卡组把1只怪兽当作永续魔法卡使用在自己的魔法与陷阱区域表侧表示放置。
 -- ②：把墓地的这张卡除外才能发动。从卡组把1只怪兽当作永续陷阱卡使用在自己的魔法与陷阱区域表侧表示放置。
 local s,id,o=GetID()
--- 注册两个效果：①作为永续魔法卡发动的效果和②从墓地发动作为永续陷阱卡发动的效果
+-- 创建并注册两个效果：e1为①效果，作为魔法卡发动；e2为②效果，在墓地作为起动效果；二者通过SetCountLimit(1,id)共用1回合1次的发动次数，并都受s.condition限制。
 function s.initial_effect(c)
-	-- ①：从卡组把1只怪兽当作永续魔法卡使用在自己的魔法与陷阱区域表侧表示放置。
+	-- 这个卡名的①②的效果1回合只能有1次使用其中任意1个，若非怪兽区域的卡和魔法与陷阱区域的表侧表示的怪兽卡合计10张以上存在的场合则不能发动。①：从卡组把1只怪兽当作永续魔法卡使用在自己的魔法与陷阱区域表侧表示放置。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
@@ -15,51 +15,51 @@ function s.initial_effect(c)
 	e1:SetTarget(s.target)
 	e1:SetOperation(s.operation)
 	c:RegisterEffect(e1)
-	-- ②：把墓地的这张卡除外才能发动。从卡组把1只怪兽当作永续陷阱卡使用在自己的魔法与陷阱区域表侧表示放置。
+	-- 这个卡名的①②的效果1回合只能有1次使用其中任意1个，若非怪兽区域的卡和魔法与陷阱区域的表侧表示的怪兽卡合计10张以上存在的场合则不能发动。②：把墓地的这张卡除外才能发动。从卡组把1只怪兽当作永续陷阱卡使用在自己的魔法与陷阱区域表侧表示放置。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_IGNITION)
 	e2:SetRange(LOCATION_GRAVE)
 	e2:SetCountLimit(1,id)
 	e2:SetCondition(s.condition)
-	-- 将此卡除外作为效果②的费用
+	-- 设置②效果的发动代价为：把墓地里的这张卡除外（aux.bfgcost实现）。
 	e2:SetCost(aux.bfgcost)
 	e2:SetTarget(s.target)
 	e2:SetOperation(s.operation2)
 	c:RegisterEffect(e2)
 end
--- 判断是否为非怪兽区域的卡或魔法与陷阱区域的表侧表示怪兽卡
+-- s.check用于统计发动条件所需卡片：位于主要怪兽区的卡，或原本是怪兽且表侧表示的卡（包括被放置在魔法与陷阱区域的表侧怪兽卡）均计入。
 function s.check(c)
 	return c:IsLocation(LOCATION_MZONE) or (c:GetOriginalType()&TYPE_MONSTER>0 and c:IsFaceup())
 end
--- 判断非怪兽区域的卡和魔法与陷阱区域的表侧表示的怪兽卡合计是否超过9张
+-- s.condition为发动条件：双方场上满足s.check的卡合计超过9张（即10张以上）时才能发动。
 function s.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 非怪兽区域的卡和魔法与陷阱区域的表侧表示的怪兽卡合计超过9张
+	-- 统计双方场上满足s.check的卡数量是否大于9，即是否达到10张以上。
 	return Duel.GetMatchingGroupCount(s.check,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,nil)>9
 end
--- 过滤函数，筛选可使用的怪兽卡
+-- s.filter为选择卡组怪兽的过滤条件：怪兽卡且未被禁止（非禁止卡）。
 function s.filter(c)
 	return c:IsType(TYPE_MONSTER) and not c:IsForbidden()
 end
--- 判断是否满足发动条件：卡组存在可用怪兽且场上存在空位
+-- s.target为发动时的合法性检查：卡组中存在至少1只满足s.filter的怪兽，且自己的魔法与陷阱区域有空位。
 function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 卡组中是否存在满足条件的怪兽
+	-- 检查卡组中是否存在至少1只满足s.filter的怪兽卡。
 	if chk==0 then return Duel.IsExistingMatchingCard(s.filter,tp,LOCATION_DECK,0,1,nil)
-		-- 场上是否存在空位
+		-- 同时检查自己的魔法与陷阱区域是否有空位（大于0）。
 		and Duel.GetLocationCount(tp,LOCATION_SZONE)>0 end
 end
--- 效果①的处理函数：从卡组选择一只怪兽当作永续魔法卡放置到场上
+-- ①效果处理：若自己的魔陷区有空位，从卡组选择1只满足s.filter的怪兽，移动到自己的魔法与陷阱区域表侧表示放置，并给它附加变为永续魔法卡的效果。
 function s.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断场上是否还有空位
+	-- 处理前再次确认自己的魔法与陷阱区域有空位，若没有空位则不执行放置。
 	if Duel.GetLocationCount(tp,LOCATION_SZONE)<=0 then return end
-	-- 提示玩家选择要放置到场上的卡
+	-- 向操作者显示提示文字，要求选择要放置到场上的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOFIELD)  --"请选择要放置到场上的卡"
-	-- 从卡组中选择一张满足条件的怪兽卡
+	-- 从卡组中选出1只满足s.filter的怪兽卡。
 	local g=Duel.SelectMatchingCard(tp,s.filter,tp,LOCATION_DECK,0,1,1,nil)
 	local tc=g:GetFirst()
 	if tc then
-		-- 将选中的怪兽卡移动到场上作为永续魔法卡
+		-- 将选中的怪兽卡由当前玩家移动到自己的魔法与陷阱区域，以表侧表示放置。
 		Duel.MoveToField(tc,tp,tp,LOCATION_SZONE,POS_FACEUP,true)
-		-- 将选中的怪兽卡变为永续魔法卡类型
+		-- 从卡组把1只怪兽当作永续魔法卡使用在自己的魔法与陷阱区域表侧表示放置。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetCode(EFFECT_CHANGE_TYPE)
 		e1:SetType(EFFECT_TYPE_SINGLE)
@@ -69,19 +69,19 @@ function s.operation(e,tp,eg,ep,ev,re,r,rp)
 		tc:RegisterEffect(e1)
 	end
 end
--- 效果②的处理函数：从墓地发动，从卡组选择一只怪兽当作永续陷阱卡放置到场上
+-- ②效果处理：若自己的魔陷区有空位，从卡组选择1只满足s.filter的怪兽，移动到自己的魔法与陷阱区域表侧表示放置，并给它附加变为永续陷阱卡的效果。
 function s.operation2(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断场上是否还有空位
+	-- 处理前再次确认自己的魔法与陷阱区域有空位，若没有空位则不执行放置。
 	if Duel.GetLocationCount(tp,LOCATION_SZONE)<=0 then return end
-	-- 提示玩家选择要放置到场上的卡
+	-- 向操作者显示提示文字，要求选择要放置到场上的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOFIELD)  --"请选择要放置到场上的卡"
-	-- 从卡组中选择一张满足条件的怪兽卡
+	-- 从卡组中选出1只满足s.filter的怪兽卡。
 	local g=Duel.SelectMatchingCard(tp,s.filter,tp,LOCATION_DECK,0,1,1,nil)
 	local tc=g:GetFirst()
 	if tc then
-		-- 将选中的怪兽卡移动到场上作为永续陷阱卡
+		-- 将选中的怪兽卡由当前玩家移动到自己的魔法与陷阱区域，以表侧表示放置。
 		Duel.MoveToField(tc,tp,tp,LOCATION_SZONE,POS_FACEUP,true)
-		-- 将选中的怪兽卡变为永续陷阱卡类型
+		-- 从卡组把1只怪兽当作永续陷阱卡使用在自己的魔法与陷阱区域表侧表示放置。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetCode(EFFECT_CHANGE_TYPE)
 		e1:SetType(EFFECT_TYPE_SINGLE)

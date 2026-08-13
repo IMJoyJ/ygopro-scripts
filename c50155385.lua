@@ -23,35 +23,35 @@ function c50155385.initial_effect(c)
 	e2:SetOperation(c50155385.thop)
 	c:RegisterEffect(e2)
 end
--- 该效果仅在因战斗破坏时生效
+-- 判断破坏原因是否为战斗破坏，若是则适用该效果。
 function c50155385.valcon(e,re,r,rp)
 	return bit.band(r,REASON_BATTLE)~=0
 end
--- 确保此卡是通过灵摆召唤方式特殊召唤成功的
+-- 判断这张卡是否是通过灵摆召唤成功而触发效果。
 function c50155385.thcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsSummonType(SUMMON_TYPE_PENDULUM)
 end
--- 过滤函数，用于筛选可以加入手牌的仪式怪兽
+-- 筛选卡组中满足条件的卡：仪式怪兽或仪式魔法，且能够加入手卡。
 function c50155385.filter(c)
 	return c:IsType(TYPE_RITUAL) and c:IsAbleToHand()
 end
--- 设置连锁操作信息，表示将从卡组检索一张仪式怪兽加入手牌
+-- 设置效果的发动条件和目标：若卡组存在符合条件的卡则发动，并预埋加入手卡的操作信息。
 function c50155385.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查玩家场上是否存在满足条件的仪式怪兽
+	-- 发动时判定：卡组中是否存在至少1张符合条件的仪式怪兽或仪式魔法卡。
 	if chk==0 then return Duel.IsExistingMatchingCard(c50155385.filter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置连锁操作信息，表示将从卡组检索一张仪式怪兽加入手牌
+	-- 设置操作信息，预告本效果将把1张卡从卡组加入手卡。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 处理效果发动时的卡牌选择与执行逻辑
+-- 效果处理时，从卡组挑选1张符合条件的仪式怪兽或仪式魔法加入手卡，并让对手确认。
 function c50155385.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要加入手牌的卡
+	-- 提示发动者选择要加入手卡的卡片。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 根据过滤条件从卡组中选择一张仪式怪兽
+	-- 从卡组选出1张符合条件的仪式怪兽或仪式魔法卡。
 	local g=Duel.SelectMatchingCard(tp,c50155385.filter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的仪式怪兽送入玩家手牌
+		-- 将选中的卡片以效果原因加入持有者的手卡。
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 向对方确认被送入手牌的卡
+		-- 将加入手卡的那张卡展示给对手确认。
 		Duel.ConfirmCards(1-tp,g)
 	end
 end

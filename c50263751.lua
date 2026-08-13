@@ -22,22 +22,22 @@ function c50263751.initial_effect(c)
 	e2:SetOperation(c50263751.operation)
 	c:RegisterEffect(e2)
 end
--- 设置自身原本攻击力为等级乘以300
+-- 返回这张卡的当前等级乘以300，作为其原本攻击力的数值。
 function c50263751.atkval(e,c)
 	return c:GetLevel()*300
 end
--- 判断自身是否参与了战斗且处于表侧表示
+-- 确认此卡仍与本次战斗关联且为表侧表示，满足条件时才处理等级上升效果。
 function c50263751.condition(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsRelateToBattle() and e:GetHandler():IsFaceup()
 end
--- 处理战斗破坏后等级提升的效果，包括初始化和累加等级值
+-- 获取战斗破坏的怪兽的等级，若该数值大于0，则首次创建等级上升效果并注册；若已存在则更新累计上升数值。
 function c50263751.operation(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local bc=c:GetBattleTarget()
 	local lv=bc:GetLevel()
 	if lv>0 then
 		if c:GetFlagEffect(50263751)==0 then
-			-- 提升自身等级
+			-- 这张卡的等级上升这张卡战斗破坏的怪兽的原本等级数值。
 			local e1=Effect.CreateEffect(c)
 			e1:SetType(EFFECT_TYPE_SINGLE)
 			e1:SetCode(EFFECT_UPDATE_LEVEL)
