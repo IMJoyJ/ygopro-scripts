@@ -2,7 +2,7 @@
 -- 效果：
 -- 把自己场上1只名字带有「忍者」的怪兽解放才能发动。选择对方场上1只怪兽从游戏中除外。只要那只怪兽从游戏中除外中，那个怪兽卡区域不能使用。这张卡从场上离开时，这个效果除外的怪兽以相同表示形式回到原本的怪兽卡区域。
 function c13629812.initial_effect(c)
-	-- 发动时支付代价：解放1只名字带有「忍者」的怪兽。选择对方场上1只怪兽从游戏中除外。只要那只怪兽从游戏中除外中，那个怪兽卡区域不能使用。这张卡从场上离开时，这个效果除外的怪兽以相同表示形式回到原本的怪兽卡区域。
+	-- 把自己场上1只名字带有「忍者」的怪兽解放才能发动。选择对方场上1只怪兽从游戏中除外。只要那只怪兽从游戏中除外中，那个怪兽卡区域不能使用。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_REMOVE)
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET)
@@ -22,42 +22,42 @@ function c13629812.initial_effect(c)
 	e2:SetOperation(c13629812.retop)
 	c:RegisterEffect(e2)
 end
--- 检查玩家场上是否存在至少1张名字带有「忍者」的可解放的怪兽
+-- 发动代价：从自己场上选择并解放1只名字带有「忍者」的怪兽。
 function c13629812.cost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查玩家场上是否存在至少1张名字带有「忍者」的可解放的怪兽
+	-- 在发动合法性检查时，确认自己场上是否存在至少1只可解放的「忍者」怪兽。
 	if chk==0 then return Duel.CheckReleaseGroup(tp,Card.IsSetCard,1,nil,0x2b) end
-	-- 让玩家从场上选择1张名字带有「忍者」的可解放的怪兽
+	-- 让玩家从自己场上选择1只名字带有「忍者」的怪兽作为解放对象。
 	local g=Duel.SelectReleaseGroup(tp,Card.IsSetCard,1,1,nil,0x2b)
-	-- 以支付代价的形式解放选择的怪兽
+	-- 将选择的「忍者」怪兽解放，作为发动代价。
 	Duel.Release(g,REASON_COST)
 end
--- 过滤函数，用于判断目标怪兽是否可以被除外
+-- 过滤器：判断卡片是否可以被除外（满足可除外条件）。
 function c13629812.filter(c)
 	return c:IsAbleToRemove()
 end
--- 选择对方场上1只可以被除外的怪兽作为效果对象
+-- 效果发动时的对象选择：选择对方场上1只怪兽作为除外对象。
 function c13629812.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(1-tp) and c13629812.filter(chkc) end
-	-- 检查对方场上是否存在至少1只可以被除外的怪兽
+	-- 在发动合法性检查时，确认对方场上是否存在至少1只可以成为对象的怪兽。
 	if chk==0 then return Duel.IsExistingTarget(c13629812.filter,tp,0,LOCATION_MZONE,1,nil) end
-	-- 向玩家提示“请选择要除外的卡”
+	-- 提示玩家选择要除外的卡片，弹出选择消息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
-	-- 让玩家从对方场上选择1只可以被除外的怪兽
+	-- 从对方场上选择1只怪兽，并设置为效果对象。
 	local g=Duel.SelectTarget(tp,c13629812.filter,tp,0,LOCATION_MZONE,1,1,nil)
-	-- 设置效果处理信息，确定要除外的怪兽数量为1
+	-- 设置效果处理信息：本次处理将进行1只怪兽的除外。
 	Duel.SetOperationInfo(0,CATEGORY_REMOVE,g,1,0,0)
 end
--- 处理效果的发动，将目标怪兽除外并设置无效区域效果
+-- 效果处理：将对象怪兽暂时除外，并封印其原本的怪兽区域。
 function c13629812.operation(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取当前连锁效果的目标怪兽
+	-- 取得效果处理时选择的1只对象怪兽。
 	local tc=Duel.GetFirstTarget()
-	-- 将目标怪兽的位置信息转换为全局位掩码值
+	-- 计算对象怪兽所在怪兽区域的格子位置，转换为全局区域掩码，用于后续无效该区域。
 	local val=aux.SequenceToGlobal(tc:GetControler(),LOCATION_MZONE,tc:GetSequence())
-	-- 判断目标怪兽是否仍然在连锁效果中且成功被除外
+	-- 确认对象仍然关联此效果且能被除外，执行暂时除外；若成功且对象在除外区，则继续封印区域。
 	if tc:IsRelateToEffect(e) and Duel.Remove(tc,0,REASON_EFFECT+REASON_TEMPORARY)~=0 and tc:IsLocation(LOCATION_REMOVED) then
 		c:SetCardTarget(tc)
-		-- 创建一个无效区域效果，用于阻止目标怪兽所在区域被使用
+		-- 只要那只怪兽从游戏中除外中，那个怪兽卡区域不能使用。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_FIELD)
 		e1:SetCode(EFFECT_DISABLE_FIELD)
@@ -68,11 +68,11 @@ function c13629812.operation(e,tp,eg,ep,ev,re,r,rp)
 		c:RegisterEffect(e1)
 	end
 end
--- 无效区域效果的触发条件，当此卡有目标怪兽时触发
+-- 无效区域效果的发动条件：只要此卡仍有通过效果关联的被除外的怪兽，就持续封印该区域。
 function c13629812.discon(e)
 	return e:GetHandler():GetCardTargetCount()>0
 end
--- 判断此卡的效果是否在场且目标怪兽处于除外状态
+-- 离场回场效果的触发条件：此卡离场时，存在因本卡效果被除外且仍在除外区的对象怪兽。
 function c13629812.retcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local tc=c:GetFirstCardTarget()
@@ -82,13 +82,13 @@ function c13629812.retcon(e,tp,eg,ep,ev,re,r,rp)
 		return true
 	else return false end
 end
--- 将目标怪兽以原表示形式返回到其原本的怪兽卡区域
+-- 离场回场效果处理：将被除外的对象怪兽以离场前的形式返回其原本的怪兽区域。
 function c13629812.retop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local tc=e:GetLabelObject()
 	if tc:IsRelateToEffect(e) then
 		local zone=0x1<<tc:GetPreviousSequence()
-		-- 将目标怪兽以原表示形式返回到其原本的怪兽卡区域
+		-- 将对象怪兽返回场上，表示形式取离场前的形式，并且只允许回到其原来的怪兽格子。
 		Duel.ReturnToField(tc,tc:GetPreviousPosition(),zone)
 	end
 end

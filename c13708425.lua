@@ -11,15 +11,15 @@ function c13708425.initial_effect(c)
 	e1:SetOperation(c13708425.atkop)
 	c:RegisterEffect(e1)
 end
--- 判断是否因同调召唤成为素材
+-- 判断这张卡作为素材的原因是否为同调召唤（REASON_SYNCHRO），即是否作为同调素材被使用。
 function c13708425.atkcon(e,tp,eg,ep,ev,re,r,rp)
 	return r==REASON_SYNCHRO
 end
--- 使同调怪兽攻击力上升300
+-- 获取这张卡成为素材后对应的同调怪兽，并为其赋予攻击力上升300的效果。
 function c13708425.atkop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local sync=c:GetReasonCard()
-	-- 使同调怪兽攻击力上升300
+	-- 攻击力上升300。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_UPDATE_ATTACK)

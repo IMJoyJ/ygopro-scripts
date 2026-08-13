@@ -3,7 +3,7 @@
 -- 这个卡名的卡在1回合只能发动1张。
 -- ①：自己场上有8星以上的龙族同调怪兽存在的场合才能发动。这个回合被战斗或者对方的效果破坏送去自己墓地的怪兽尽可能特殊召唤。
 function c13556444.initial_effect(c)
-	-- ①：自己场上有8星以上的龙族同调怪兽存在的场合才能发动。这个回合被战斗或者对方的效果破坏送去自己墓地的怪兽尽可能特殊召唤。
+	-- 这个卡名的卡在1回合只能发动1张。①：自己场上有8星以上的龙族同调怪兽存在的场合才能发动。这个回合被战斗或者对方的效果破坏送去自己墓地的怪兽尽可能特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -15,42 +15,42 @@ function c13556444.initial_effect(c)
 	e1:SetOperation(c13556444.spop)
 	c:RegisterEffect(e1)
 end
--- 过滤函数，用于检查场上是否存在8星以上且为龙族的同调怪兽
+-- 筛选自己场上表侧表示且等级为8星以上的龙族同调怪兽，用于判断是否满足发动条件。
 function c13556444.cfilter(c)
 	return c:IsFaceup() and c:IsLevelAbove(8) and c:IsType(TYPE_SYNCHRO) and c:IsRace(RACE_DRAGON)
 end
--- 效果发动的条件判断函数
+-- 发动条件判定：自己场上存在至少1只8星以上的龙族同调怪兽。
 function c13556444.spcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查自己场上是否存在满足cfilter条件的怪兽
+	-- 检测自己主要怪兽区是否存在至少1只满足8星以上龙族同调怪兽条件的面朝上的怪兽。
 	return Duel.IsExistingMatchingCard(c13556444.cfilter,tp,LOCATION_MZONE,0,1,nil)
 end
--- 过滤函数，用于筛选可以特殊召唤的墓地怪兽
+-- 筛选本回合被破坏送去自己墓地的怪兽，且其破坏原因必须是战斗破坏或对方效果破坏，同时该怪兽可以被己方特殊召唤。
 function c13556444.spfilter(c,e,tp,tid)
 	return c:GetTurnID()==tid and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 		and c:IsReason(REASON_DESTROY)
 		and (c:IsReason(REASON_BATTLE) or c:IsReason(REASON_EFFECT) and c:GetReasonPlayer()==1-tp)
 end
--- 效果的发动目标设定函数
+-- 发动时点合法性检查：自己场上存在可用的主要怪兽区域空格，且墓地存在满足特殊召唤条件的怪兽。
 function c13556444.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断是否满足发动条件，检查场上是否有足够的召唤位置
+	-- 检查自己场上是否有空余的主要怪兽区域。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 判断是否满足发动条件，检查墓地是否存在符合条件的怪兽
+		-- 检查墓地是否存在至少1只满足条件的本回合被战斗或对方效果破坏的怪兽。
 		and Duel.IsExistingMatchingCard(c13556444.spfilter,tp,LOCATION_GRAVE,0,1,nil,e,tp,Duel.GetTurnCount()) end
-	-- 设置效果处理时的操作信息，指定将要特殊召唤的卡牌来源为墓地
+	-- 设置本次效果处理中包含特殊召唤的操作信息，预计处理数量为1，对象来自墓地。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_GRAVE)
 end
--- 效果的发动处理函数
+-- 效果处理：从墓地选择满足条件的怪兽尽可能特殊召唤到己方场上；若青眼精灵龙效果适用中，则最多只能特殊召唤1只。
 function c13556444.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取自己场上可用的召唤位置数量
+	-- 获取自己场上可用的主要怪兽区域数量。
 	local ft=Duel.GetLocationCount(tp,LOCATION_MZONE)
-	-- 获取满足特殊召唤条件的墓地怪兽组
+	-- 获取墓地中满足本回合被战斗或对方效果破坏且可特殊召唤条件的全部怪兽。
 	local tg=Duel.GetMatchingGroup(c13556444.spfilter,tp,LOCATION_GRAVE,0,nil,e,tp,Duel.GetTurnCount())
 	if ft<1 or #tg<1 then return end
-	-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中：禁止该玩家同时特殊召唤2只以上怪兽
+	-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中。禁止双方同时特殊召唤2只以上怪兽
 	if Duel.IsPlayerAffectedByEffect(tp,59822133) then ft=1 end
-	-- 向玩家提示选择要特殊召唤的卡牌
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
+	-- 提示玩家选择需要特殊召唤的卡片。
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
 	local g=tg:Select(tp,ft,ft,nil)
-	-- 执行特殊召唤操作，将选中的卡牌正面表示特殊召唤到场上
+	-- 将选择的怪兽以表侧攻击表示特殊召唤到自己场上。
 	Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
 end

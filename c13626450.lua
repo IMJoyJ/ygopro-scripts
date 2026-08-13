@@ -12,30 +12,30 @@ function c13626450.initial_effect(c)
 	e1:SetOperation(c13626450.activate)
 	c:RegisterEffect(e1)
 end
--- 检查是否可以丢弃1张手卡，若可以则执行丢弃操作。
+-- 发动代价：从手卡丢弃1张卡。
 function c13626450.cost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断玩家手牌中是否存在可丢弃的卡片。
+	-- 检查手卡中是否存在1张可以丢弃的卡，以满足发动代价。
 	if chk==0 then return Duel.IsExistingMatchingCard(Card.IsDiscardable,tp,LOCATION_HAND,0,1,e:GetHandler()) end
-	-- 丢弃1张手牌，丢弃原因为效果支付代价和丢弃。
+	-- 让玩家从手卡选择1张可以丢弃的卡丢弃，丢弃原因记为费用与丢弃。
 	Duel.DiscardHand(tp,Card.IsDiscardable,1,1,REASON_COST+REASON_DISCARD)
 end
--- 过滤函数，用于筛选场上表侧表示的永续陷阱卡。
+-- 筛选条件：场上表侧表示且为永续陷阱卡。
 function c13626450.filter(c)
 	return c:IsFaceup() and bit.band(c:GetType(),0x20004)==0x20004
 end
--- 设置连锁处理信息，确定将要破坏的卡片组。
+-- 发动时处理：确认存在符合条件的卡，获取全部此类卡并预设破坏信息。
 function c13626450.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断场上是否存在满足条件的永续陷阱卡。
+	-- 检查场上是否存在至少1张表侧表示的永续陷阱卡。
 	if chk==0 then return Duel.IsExistingMatchingCard(c13626450.filter,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,nil) end
-	-- 获取场上所有满足条件的永续陷阱卡组成的卡片组。
+	-- 获取场上所有表侧表示的永续陷阱卡。
 	local g=Duel.GetMatchingGroup(c13626450.filter,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,nil)
-	-- 设置操作信息，将要破坏的卡片数量和类型设定为破坏效果。
+	-- 设置操作信息：将上述卡片登记为本次效果将破坏的对象，数量为集合中的卡数。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,g:GetCount(),0,0)
 end
--- 执行破坏操作，将符合条件的卡片全部破坏。
+-- 效果处理：再次获取场上所有表侧表示的永续陷阱卡，并将其全部破坏。
 function c13626450.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取场上所有满足条件的永续陷阱卡组成的卡片组。
+	-- 获取当前场上所有表侧表示的永续陷阱卡。
 	local g=Duel.GetMatchingGroup(c13626450.filter,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,nil)
-	-- 以效果原因将卡片组全部破坏。
+	-- 将这些卡全部破坏，破坏原因记为效果破坏。
 	Duel.Destroy(g,REASON_EFFECT)
 end

@@ -43,76 +43,76 @@ function c13694209.initial_effect(c)
 	e3:SetOperation(c13694209.atkop)
 	c:RegisterEffect(e3)
 end
--- 判断是否有融合·同调·超量·连接怪兽被送去墓地
+-- 检查本次送去墓地的怪兽中是否存在至少1只融合·同调·超量或连接怪兽，作为①效果的发动条件。
 function c13694209.spcon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(Card.IsType,1,nil,TYPE_FUSION+TYPE_SYNCHRO+TYPE_XYZ+TYPE_LINK)
 end
--- 设置特殊召唤的处理目标
+-- ①效果发动时的目标检查和操作信息设定：确认自己主要怪兽区有空位且此卡能被特殊召唤，并登记特殊召唤操作。
 function c13694209.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否满足特殊召唤条件
+	-- 效果发动时检查自己场上是否有可用怪兽区域，且这张卡是否满足特殊召唤条件。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0 and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置特殊召唤的操作信息
+	-- 将这张卡特殊召唤的操作信息登记到当前连锁中，供后续效果检测使用。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 设置特殊召唤的效果处理函数
+-- ①效果处理：若此卡仍与效果关联，则将其以表侧表示特殊召唤到自己场上。
 function c13694209.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) then
-		-- 将卡片特殊召唤到场上
+		-- 将这张卡以表侧表示特殊召唤到自己场上，不检查召唤条件与苏生限制。
 		Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
--- 判断此卡是否由手卡特殊召唤
+-- ②效果的发动条件：判断此卡是从手牌特殊召唤成功的。
 function c13694209.thcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsPreviousLocation(LOCATION_HAND)
 end
--- 过滤墓地中的「教导」卡
+-- 筛选可以加入手卡的墓地「教导」卡：卡名含「教导」、不是“教导的神徒”本身、且能被加入手卡。
 function c13694209.thfilter(c)
 	return c:IsSetCard(0x145) and not c:IsCode(13694209) and c:IsAbleToHand()
 end
--- 设置回手牌的处理目标
+-- ②效果发动时选择自己墓地1张符合条件的「教导」卡为对象，并登记加入手卡的操作信息。
 function c13694209.thtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and c13694209.thfilter(chkc) end
-	-- 检查是否有满足条件的墓地卡片
+	-- 效果发动时检查自己墓地是否存在至少1张符合条件的「教导」卡。
 	if chk==0 then return Duel.IsExistingTarget(c13694209.thfilter,tp,LOCATION_GRAVE,0,1,nil) end
-	-- 提示选择要回手的卡片
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)
-	-- 选择目标卡片
+	-- 向操作者显示“请选择要加入手牌的卡”的提示信息。
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
+	-- 让玩家从自己墓地选择1张符合条件的「教导」卡作为②效果的对象。
 	local g=Duel.SelectTarget(tp,c13694209.thfilter,tp,LOCATION_GRAVE,0,1,1,nil)
-	-- 设置回手牌的操作信息
+	-- 将选中的对象卡加入手卡的操作信息登记到当前连锁中。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,1,0,0)
 end
--- 设置回手牌的效果处理函数
+-- ②效果处理：若对象卡仍与效果关联，则将其加入持有者手卡。
 function c13694209.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的目标卡片
+	-- 取得②效果发动时选择的对象卡。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 将目标卡片送入手牌
+		-- 将对象卡以效果原因加入持有者的手卡。
 		Duel.SendtoHand(tc,nil,REASON_EFFECT)
 	end
 end
--- 判断是否为对方怪兽攻击宣言
+-- ③效果的发动条件：确认攻击宣言的怪兽是对方控制的怪兽。
 function c13694209.atkcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 确认攻击方为对方
+	-- 判断当前发动攻击宣言的怪兽的控制者是否为对方玩家。
 	return Duel.GetAttacker():IsControler(1-tp)
 end
--- 过滤场上的「教导」怪兽
+-- 筛选自己场上表侧表示且卡名含「教导」的怪兽。
 function c13694209.atkfilter(c)
 	return c:IsFaceup() and c:IsSetCard(0x145)
 end
--- 设置攻击力上升的处理目标
+-- ③效果发动时检查自己场上是否存在至少1只表侧表示的「教导」怪兽。
 function c13694209.atktg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查场上是否有「教导」怪兽
+	-- 效果发动时确认自己场上有符合条件的「教导」怪兽才能发动。
 	if chk==0 then return Duel.IsExistingMatchingCard(c13694209.atkfilter,tp,LOCATION_MZONE,0,1,nil) end
 end
--- 设置攻击力上升的效果处理函数
+-- ③效果处理：为自己场上所有表侧表示的「教导」怪兽各附加一个攻击力上升500的效果。
 function c13694209.atkop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取场上的「教导」怪兽
+	-- 获取自己场上所有表侧表示的「教导」怪兽组成的集合。
 	local g=Duel.GetMatchingGroup(c13694209.atkfilter,tp,LOCATION_MZONE,0,nil)
 	local tc=g:GetFirst()
 	while tc do
-		-- 给目标怪兽的攻击力加上500
+		-- 自己场上的全部「教导」怪兽的攻击力上升500。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)
