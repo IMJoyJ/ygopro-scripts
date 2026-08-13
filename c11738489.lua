@@ -8,7 +8,7 @@
 function c11738489.initial_effect(c)
 	c:SetUniqueOnField(1,0,11738489)
 	c:EnableReviveLimit()
-	-- 添加连接召唤手续，要求使用3到6个连接素材，且素材怪兽属性各不相同
+	-- 为这张卡添加连接召唤手续：使用3~6只满足条件（属性各不相同）的怪兽作为连接素材。
 	aux.AddLinkProcedure(c,nil,3,6,c11738489.lcheck)
 	-- ②：这张卡的原本攻击力变成作为这张卡的连接素材的怪兽数量×1000。
 	local e1=Effect.CreateEffect(c)
@@ -35,14 +35,14 @@ function c11738489.initial_effect(c)
 	e3:SetOperation(c11738489.desop)
 	c:RegisterEffect(e3)
 end
--- 连接素材属性检查函数，确保连接素材的属性各不相同
+-- 判定连接素材是否满足“属性各不相同”的条件：素材中不同属性的种类数等于素材总数，即每种属性只出现一次。
 function c11738489.lcheck(g)
 	return g:GetClassCount(Card.GetLinkAttribute)==g:GetCount()
 end
--- 材质检查函数，用于设置卡牌原本攻击力
+-- 素材检查效果：当这张卡作为连接素材被使用后，读取素材数量ct，为这张卡注册一个“原本攻击力变为ct×1000”的永续效果。
 function c11738489.matcheck(e,c)
 	local ct=c:GetMaterialCount()
-	-- 设置自身原本攻击力为连接素材数量乘以1000
+	-- ②：这张卡的原本攻击力变成作为这张卡的连接素材的怪兽数量×1000。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_SET_BASE_ATTACK)
@@ -50,51 +50,51 @@ function c11738489.matcheck(e,c)
 	e1:SetReset(RESET_EVENT+RESETS_STANDARD-RESET_TOFIELD+RESET_DISABLE)
 	c:RegisterEffect(e1)
 end
--- 效果免疫过滤函数，使该卡不受其他卡的效果影响
+-- 免疫判定函数：当试图作用于这张卡的效果的持有者不是这张卡的持有者时，返回true，即不受其他卡的效果影响。
 function c11738489.efilter(e,te)
 	return te:GetOwner()~=e:GetOwner()
 end
--- 目标选择过滤函数，用于判断目标怪兽是否满足破坏条件
+-- 选择对象的过滤器：若连接区有可用空格，则场上任意怪兽可选；若无空格，则只能选择本卡所连接区的我方怪兽（通过破坏腾出格子后特招衍生物）。
 function c11738489.cfilter(c,g,ct)
 	return (c:IsType(TYPE_MONSTER) and ct~=0) or (ct==0 and g:IsContains(c))
 end
--- 效果发动时的目标选择函数
+-- ④效果的发动条件与目标选择：计算连接区可用空格数及本卡所连接区的我方怪兽；确认场上存在可选目标且能特殊召唤衍生物；选定目标后设置破坏、特殊召唤、衍生物的操作信息。
 function c11738489.destg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	local c=e:GetHandler()
 	local zone=bit.band(c:GetLinkedZone(tp),0x1f)
-	-- 获取连接区可用的怪兽区域数量
+	-- 计算本卡连接区（仅主怪兽区）内玩家tp可用的空格数量，用于判断破坏后是否有位置特殊召唤衍生物。
 	local ct=Duel.GetLocationCount(tp,LOCATION_MZONE,tp,LOCATION_REASON_TOFIELD,zone)
 	local lg=c:GetLinkedGroup():Filter(Card.IsControler,nil,tp)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and c11738489.cfilter(chkc,lg,ct) and chkc~=c end
-	-- 判断是否满足发动条件，存在符合条件的目标怪兽
+	-- 发动条件检查：确认场上存在至少1只满足cfilter条件的怪兽（不能选择本卡），可作为破坏对象。
 	if chk==0 then return Duel.IsExistingTarget(c11738489.cfilter,tp,LOCATION_MZONE,LOCATION_MZONE,1,c,lg,ct)
-		-- 判断是否可以特殊召唤衍生物
+		-- 同时确认玩家tp可以在指定连接区zone特殊召唤「@火灵天星衍生物」，满足后才能发动。
 		and Duel.IsPlayerCanSpecialSummonMonster(tp,11738490,0x135,TYPES_TOKEN_MONSTER,0,0,1,RACE_CYBERSE,ATTRIBUTE_DARK,POS_FACEUP,tp,0,zone) end
-	-- 提示玩家选择要破坏的怪兽
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)
-	-- 选择目标怪兽
+	-- 向玩家显示选择提示“请选择要破坏的卡”。
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
+	-- 让玩家从场上选择1只满足条件的怪兽作为效果对象，并登记为当前连锁的对象。
 	local g=Duel.SelectTarget(tp,c11738489.cfilter,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,c,lg,ct)
-	-- 设置操作信息，记录将要破坏的怪兽
+	-- 设置操作信息：本次连锁包含破坏所选择的对象，数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,1,0,0)
-	-- 设置操作信息，记录将要特殊召唤的衍生物
+	-- 设置操作信息：本次连锁包含特殊召唤，数量为1（衍生物）。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,0,0)
-	-- 设置操作信息，记录将要生成的衍生物
+	-- 设置操作信息：本次连锁包含衍生物特殊召唤，数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_TOKEN,nil,1,0,0)
 end
--- 效果处理函数，执行破坏与特殊召唤操作
+-- ④效果处理时：若对象仍与效果关联且被成功破坏，则在该卡连接区特殊召唤1只「@火灵天星衍生物」。
 function c11738489.desop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取当前连锁的目标怪兽
+	-- 取得效果发动时选择的对象怪兽。
 	local tc=Duel.GetFirstTarget()
-	-- 若目标怪兽存在且成功破坏，则继续处理特殊召唤
+	-- 确认对象仍与该效果关联（未离场等），然后将其破坏；若破坏成功则继续处理后续特招。
 	if tc:IsRelateToEffect(e) and Duel.Destroy(tc,REASON_EFFECT)~=0 then
 		if not c:IsRelateToEffect(e) then return end
 		local zone=bit.band(c:GetLinkedZone(tp),0x1f)
-		-- 判断是否可以特殊召唤衍生物
+		-- 特殊召唤衍生物前再次确认玩家tp可以在连接区zone特殊召唤该衍生物（防止格子或限制变化）。
 		if Duel.IsPlayerCanSpecialSummonMonster(tp,11738490,0x135,TYPES_TOKEN_MONSTER,0,0,1,RACE_CYBERSE,ATTRIBUTE_DARK,POS_FACEUP,tp,0,zone) then
-			-- 创建一张衍生物卡片
+			-- 创建1只「@火灵天星衍生物」（卡号11738490）的衍生物。
 			local token=Duel.CreateToken(tp,11738490)
-			-- 将衍生物特殊召唤到场上
+			-- 以表侧表示将衍生物特殊召唤到玩家tp场上的指定连接区zone。
 			Duel.SpecialSummon(token,0,tp,tp,false,false,POS_FACEUP,zone)
 		end
 	end

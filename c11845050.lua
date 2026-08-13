@@ -37,49 +37,49 @@ function c11845050.initial_effect(c)
 	e3:SetOperation(c11845050.effop)
 	c:RegisterEffect(e3)
 end
--- 检索满足条件的「左手鲨」卡片
+-- thfilter：检索条件，必须为卡号47840168（「左手鲨」）且能被加入手卡。
 function c11845050.thfilter(c)
 	return c:IsCode(47840168) and c:IsAbleToHand()
 end
--- 效果处理时的判断函数
+-- thtg：效果发动时的目标判定函数，检查卡组中是否存在符合条件的「左手鲨」，并设置将1张卡从卡组加入手卡的操作信息。
 function c11845050.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断是否满足检索条件
+	-- chk==0时检查卡组中是否存在至少1张满足thfilter条件的「左手鲨」，作为发动合法性的依据。
 	if chk==0 then return Duel.IsExistingMatchingCard(c11845050.thfilter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置连锁操作信息为检索效果
+	-- 设置本次连锁处理的操作信息：从卡组将1张卡加入手卡（CATEGORY_TOHAND），用于后续的连锁响应判定。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 效果处理函数
+-- thop：效果处理时，让玩家从卡组选择1只「左手鲨」加入手卡，并让对方确认。
 function c11845050.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要加入手牌的卡
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)
-	-- 选择满足条件的「左手鲨」卡片
+	-- 显示“请选择要加入手牌的卡”的选择提示，将选择消息写入缓存。
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
+	-- 从卡组中选择1张满足thfilter的「左手鲨」（执行实际选择）。
 	local g=Duel.SelectMatchingCard(tp,c11845050.thfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的卡片送入手牌
+		-- 将选择的卡加入其持有者的手卡。
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 确认对方查看送入手牌的卡片
+		-- 让对方玩家确认加入手卡的那张卡。
 		Duel.ConfirmCards(1-tp,g)
 	end
 end
--- 特殊召唤条件判断函数
+-- spcon：②效果的发动条件，要求自己场上没有怪兽存在。
 function c11845050.spcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断自己场上是否没有怪兽
+	-- 检查自己场上（主要怪兽区）怪兽数量为0。
 	return Duel.GetFieldGroupCount(tp,LOCATION_MZONE,0)==0
 end
--- 特殊召唤效果处理时的判断函数
+-- sptg：②效果的发动目标判定，确认自己场上有可用怪兽区且此卡可以特殊召唤，并设置特殊召唤的操作信息。
 function c11845050.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断是否满足特殊召唤条件
+	-- chk==0时检查自己场上有空余的主要怪兽区。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置连锁操作信息为特殊召唤效果
+	-- 设置本次连锁的处理信息：将这张卡特殊召唤（CATEGORY_SPECIAL_SUMMON）。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 特殊召唤效果处理函数
+-- spop：效果处理时，将此卡从墓地特殊召唤；若成功，则给它赋予“离场时除外”的持续效果。
 function c11845050.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 判断是否满足特殊召唤条件并执行特殊召唤
+	-- 确认此卡仍与效果关联后，以表侧表示特殊召唤；若特殊召唤成功（返回值≠0），继续赋予除外效果。
 	if c:IsRelateToEffect(e) and Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)~=0 then
-		-- 设置特殊召唤后离场时的去向为除外区
+		-- 这个效果特殊召唤的这张卡从场上离开的场合除外。只用包含场上的这张卡的水属性怪兽为素材作超量召唤的怪兽得到以下效果。●这张卡不会被战斗破坏。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
@@ -89,22 +89,22 @@ function c11845050.spop(e,tp,eg,ep,ev,re,r,rp)
 		c:RegisterEffect(e1,true)
 	end
 end
--- 过滤非水属性怪兽的函数
+-- cfilter：过滤素材中是否存在不是水属性的怪兽，用于判定是否“只用包含场上的这张卡的水属性怪兽为素材”。
 function c11845050.cfilter(c)
 	return not c:IsAttribute(ATTRIBUTE_WATER)
 end
--- 超量召唤效果适用条件判断函数
+-- effcon：③效果的触发条件，确认这张卡在场上作为超量素材、所有素材均为水属性（且都是怪兽卡）。
 function c11845050.effcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local mg=c:GetReasonCard():GetMaterial()
 	return r==REASON_XYZ and c:IsPreviousLocation(LOCATION_ONFIELD) and not mg:IsExists(c11845050.cfilter,1,nil)
 		and mg:FilterCount(Card.IsXyzType,nil,TYPE_MONSTER)==mg:GetCount()
 end
--- 超量召唤效果处理函数
+-- effop：给超量召唤出的怪兽赋予“不会被战斗破坏”的效果；若该怪兽不是效果怪兽，则追加将其变为效果怪兽，以便正确获得效果文本。
 function c11845050.effop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local rc=c:GetReasonCard()
-	-- 给超量召唤的怪兽添加不会被战斗破坏的效果
+	-- ●这张卡不会被战斗破坏。
 	local e1=Effect.CreateEffect(rc)
 	e1:SetDescription(aux.Stringid(11845050,2))  --"「右手鲨」效果适用中"
 	e1:SetType(EFFECT_TYPE_SINGLE)
@@ -114,7 +114,7 @@ function c11845050.effop(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetReset(RESET_EVENT+RESETS_STANDARD)
 	rc:RegisterEffect(e1,true)
 	if not rc:IsType(TYPE_EFFECT) then
-		-- 给超量召唤的怪兽添加效果怪兽类型
+		-- ③：只用包含场上的这张卡的水属性怪兽为素材作超量召唤的怪兽得到以下效果。（若怪兽不是效果怪兽，则将其变为效果怪兽以承载效果）
 		local e2=Effect.CreateEffect(c)
 		e2:SetType(EFFECT_TYPE_SINGLE)
 		e2:SetCode(EFFECT_ADD_TYPE)

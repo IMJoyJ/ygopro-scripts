@@ -14,32 +14,32 @@ function c11830996.initial_effect(c)
 	e1:SetOperation(c11830996.activate)
 	c:RegisterEffect(e1)
 end
--- 检查玩家是否满足基本分条件
+-- 定义效果发动条件：当前发动玩家基本分在9000以上时才可发动。
 function c11830996.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断玩家基本分是否大于等于9000
+	-- 获取发动玩家当前基本分，判断是否大于等于9000。
 	return Duel.GetLP(tp)>=9000
 end
--- 支付2000基本分的处理函数
+-- 定义效果的发动代价：支付2000基本分。
 function c11830996.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 让玩家支付2000基本分
+	-- 让发动玩家支付2000基本分作为发动代价。
 	Duel.PayLPCost(tp,2000)
 end
--- 设置效果目标的处理函数
+-- 定义效果发动时的合法性检查与对象设定：确认发动玩家可以抽2张，并将后续处理所需的玩家与张数信息写入连锁。
 function c11830996.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查玩家是否可以抽2张卡
+	-- 在效果发动合法性检查阶段，判定发动玩家是否能够抽2张卡。
 	if chk==0 then return Duel.IsPlayerCanDraw(tp,2) end
-	-- 设置效果的目标玩家为当前玩家
+	-- 将当前连锁的对象玩家设置为发动玩家。
 	Duel.SetTargetPlayer(tp)
-	-- 设置效果的目标参数为2
+	-- 将当前连锁的对象参数设置为2，表示抽卡张数为2。
 	Duel.SetTargetParam(2)
-	-- 设置连锁操作信息为抽2张卡
+	-- 设置操作信息：本次效果包含抽卡分类，对象玩家为发动玩家，抽卡数量为2。
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,2)
 end
--- 效果发动时的处理函数
+-- 定义效果处理时执行的动作：根据连锁记录中的玩家和数量进行抽卡。
 function c11830996.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁中目标玩家和目标参数
+	-- 从当前连锁信息中取出之前设定的对象玩家和抽卡数量。
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 让目标玩家抽指定数量的卡
+	-- 让对象玩家以效果原因抽取对应数量的卡。
 	Duel.Draw(p,d,REASON_EFFECT)
 end
