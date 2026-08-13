@@ -25,7 +25,7 @@ function c46502744.initial_effect(c)
 	e2:SetCondition(c46502744.remcon)
 	e2:SetValue(LOCATION_REMOVED)
 	c:RegisterEffect(e2)
-	-- ③：这张卡从场上送去墓地的场合才能发动。从卡组把「应战的G」以外的1只攻击力1500以下的昆虫族·地属性怪兽加入手卡。
+	-- ③：这张卡从场上送去墓地的场合才能发动。除「应战的G」外的1只攻击力1500以下的昆虫族·地属性怪兽从卡组加入手卡。
 	local e3=Effect.CreateEffect(c)
 	e3:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
 	e3:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
@@ -36,58 +36,58 @@ function c46502744.initial_effect(c)
 	e3:SetOperation(c46502744.thop)
 	c:RegisterEffect(e3)
 end
--- 效果发动时，对方发动了包含特殊召唤的魔法卡
+-- 发动条件判定：对方玩家发动魔法卡，且该魔法卡的效果包含特殊召唤。
 function c46502744.spcon(e,tp,eg,ep,ev,re,r,rp)
 	return ep~=tp and re:IsHasType(EFFECT_TYPE_ACTIVATE) and re:IsActiveType(TYPE_SPELL) and re:IsHasCategory(CATEGORY_SPECIAL_SUMMON)
 end
--- 效果处理时，确认是否满足特殊召唤条件
+-- 发动合法性检查：确认自己主要怪兽区域有空位，且这张卡可以被效果特殊召唤。
 function c46502744.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 确认玩家场上是否有空位
+	-- 检查自己主要怪兽区域的可使用空格数量是否大于0。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置效果处理信息为特殊召唤
+	-- 设置本次连锁的操作信息：将把这张卡作为特殊召唤的对象，数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 效果处理时，将自身从手牌特殊召唤到场上
+-- 效果处理：若这张卡仍与效果关联，则将其以表侧表示特殊召唤到自己场上，成功后记录一个标记（用于②效果的判定）。
 function c46502744.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if not c:IsRelateToEffect(e) then return end
-	-- 执行特殊召唤步骤
+	-- 执行特殊召唤步骤，尝试将这张卡以表侧表示特殊召唤，若成功则继续后续处理。
 	if Duel.SpecialSummonStep(c,0,tp,tp,false,false,POS_FACEUP) then
 		c:RegisterFlagEffect(46502745,RESET_EVENT+RESETS_STANDARD-RESET_TOFIELD-RESET_TEMP_REMOVE-RESET_LEAVE,0,1)
 	end
-	-- 完成特殊召唤流程
+	-- 完成整个特殊召唤处理，结束特殊召唤步骤。
 	Duel.SpecialSummonComplete()
 end
--- 效果适用条件：自身被①效果特殊召唤过
+-- ②效果的适用条件：该卡带有①效果特殊召唤成功时设置的标记，即确认是①效果特殊召唤出来的那张卡。
 function c46502744.remcon(e)
 	return e:GetHandler():GetFlagEffect(46502745)~=0
 end
--- 效果发动条件：自身从场上送去墓地
+-- ③效果的发动条件：这张卡从场上区域被送去墓地时满足条件。
 function c46502744.thcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsPreviousLocation(LOCATION_ONFIELD)
 end
--- 检索过滤函数：昆虫族·地属性·攻击力1500以下且非应战的G
+-- 检索筛选条件：目标是「应战的G」以外的、攻击力1500以下的昆虫族·地属性怪兽，且能够加入手牌。
 function c46502744.thfilter(c)
 	return c:IsRace(RACE_INSECT) and c:IsAttribute(ATTRIBUTE_EARTH) and c:IsAttackBelow(1500) and not c:IsCode(46502744) and c:IsAbleToHand()
 end
--- 效果处理时，确认是否满足检索条件
+-- ③效果发动时的合法性检查：确认卡组中存在符合条件的怪兽，并设置本次操作信息为检索加入手牌。
 function c46502744.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 确认卡组中是否存在满足条件的怪兽
+	-- 发动合法性检查：确认卡组中至少存在1只符合条件的怪兽。
 	if chk==0 then return Duel.IsExistingMatchingCard(c46502744.thfilter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置效果处理信息为加入手牌
+	-- 设置操作信息：本次效果将从卡组把1只符合条件的怪兽加入手牌。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 效果处理时，从卡组检索符合条件的怪兽并加入手牌
+-- ③效果处理：从卡组选择1只符合条件的怪兽加入手牌，并向对方展示。
 function c46502744.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要加入手牌的卡
+	-- 显示选择提示，提示玩家选择要加入手牌的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择满足条件的怪兽
+	-- 让玩家从自己卡组中筛选并选择1只符合条件的怪兽。
 	local g=Duel.SelectMatchingCard(tp,c46502744.thfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的怪兽加入手牌
+		-- 将选择的怪兽加入持有者的手卡，原因记为效果。
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 向对方确认加入手牌的卡
+		-- 把加入手卡的那张卡展示给对方玩家确认。
 		Duel.ConfirmCards(1-tp,g)
 	end
 end

@@ -11,12 +11,12 @@ function c46508640.initial_effect(c)
 	e1:SetValue(c46508640.atkval)
 	c:RegisterEffect(e1)
 end
--- 过滤函数，用于筛选表侧表示的永续魔法卡（不包括场地魔法），用于计算攻击力提升值。
+-- 过滤函数：判定一张卡是否为表侧表示且类型为永续魔法卡，并排除场地魔法区域（序号5），用于后续筛选自己魔法与陷阱区域中符合条件的永续魔法卡。
 function c46508640.cfilter(c)
 	return c:IsFaceup() and c:GetType()==TYPE_SPELL+TYPE_CONTINUOUS and c:GetSequence()~=5
 end
--- 计算效果值，返回己方魔法与陷阱区域中满足条件的永续魔法卡数量乘以300作为攻击力上升值。
+-- 攻击力变化值的计算函数：根据此卡控制者场上满足过滤条件的永续魔法卡数量，每张提升300攻击力，作为EFFECT_UPDATE_ATTACK的Value值。
 function c46508640.atkval(e,c)
-	-- 检索满足条件的卡片组数量并乘以300，作为该卡攻击力的增加量。
+	-- 统计此卡控制者自己的魔法与陷阱区域中满足cfilter条件的卡的数量，并乘以300，得到攻击力上升的具体数值。
 	return Duel.GetMatchingGroupCount(c46508640.cfilter,c:GetControler(),LOCATION_SZONE,0,nil)*300
 end

@@ -6,10 +6,10 @@
 -- ②：只要这张卡在怪兽区域存在，对方场上的怪兽的攻击力下降600。
 -- ③：这张卡被送去墓地的场合，从自己墓地让1只其他的恶魔族·光属性怪兽回到卡组·额外卡组才能发动。给与对方1200伤害。
 local s,id,o=GetID()
--- 初始化卡片效果，设置融合召唤限制并注册三个效果
+-- 注册该卡的召唤限制与融合素材条件（2只光属性·恶魔族怪兽），并依次创建注册①效果（融合召唤时回收/特召）、②效果（降低对方怪兽攻击）、③效果（送墓时给予伤害）。
 function s.initial_effect(c)
 	c:EnableReviveLimit()
-	-- 添加融合召唤手续，使用2个满足s.ffilter条件的怪兽作为素材
+	-- 为该卡添加融合召唤手续：使用2只满足s.ffilter条件的光属性·恶魔族怪兽作为融合素材。
 	aux.AddFusionProcFunRep(c,s.ffilter,2,true)
 	-- ①：这张卡融合召唤的场合，以自己的墓地·除外状态的1只恶魔族·光属性怪兽为对象才能发动。那只怪兽加入手卡或特殊召唤。
 	local e1=Effect.CreateEffect(c)
@@ -44,87 +44,87 @@ function s.initial_effect(c)
 	e3:SetOperation(s.damop)
 	c:RegisterEffect(e3)
 end
--- 过滤用于融合召唤的怪兽必须是光属性恶魔族
+-- 定义融合素材过滤条件：怪兽需为光属性且恶魔族，可作为融合素材。
 function s.ffilter(c)
 	return c:IsFusionAttribute(ATTRIBUTE_LIGHT) and c:IsRace(RACE_FIEND)
 end
--- 判断是否为融合召唤成功触发的效果
+-- ①效果的发动条件：这张卡是以融合召唤方式特殊召唤成功时。
 function s.thcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsSummonType(SUMMON_TYPE_FUSION)
 end
--- 筛选可作为效果对象的墓地或除外状态的恶魔族光属性怪兽，满足加入手卡或特殊召唤条件
+-- 定义①效果可选择的对象：自己墓地或除外状态的光属性·恶魔族怪兽，且能够加入手卡，或在有可用怪兽区空格时能够特殊召唤。
 function s.filter(c,e,tp,ft)
 	return c:IsFaceupEx() and c:IsRace(RACE_FIEND) and c:IsAttribute(ATTRIBUTE_LIGHT) and c:IsType(TYPE_MONSTER)
 		and (c:IsAbleToHand() or ft>0 and c:IsCanBeSpecialSummoned(e,0,tp,false,false,POS_FACEUP))
 end
--- 设置①效果的目标选择逻辑，检查是否存在符合条件的卡片并提示选择
+-- ①效果的取对象处理：从自己墓地或除外状态选择1只符合条件的恶魔族·光属性怪兽作为对象；若对象在墓地，则额外将效果类别标记为包含墓地动作/墓地特殊召唤，以正确响应相关时点。
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	-- 获取玩家场上可用的怪兽区域数量
+	-- 获取自己场上可用的主要怪兽区空格数，用于判断是否能够特殊召唤。
 	local ft=Duel.GetLocationCount(tp,LOCATION_MZONE)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE+LOCATION_REMOVED) and chkc:IsControler(tp) and s.filter(chkc,e,tp,ft) end
-	-- 判断是否满足①效果的发动条件，即存在符合条件的目标怪兽
+	-- 发动检查：确认自己墓地或除外状态存在至少1只满足s.filter条件的怪兽可作为对象，否则不能发动。
 	if chk==0 then return Duel.IsExistingTarget(s.filter,tp,LOCATION_GRAVE+LOCATION_REMOVED,0,1,nil,e,tp,ft) end
-	-- 提示玩家选择效果对象
+	-- 向玩家显示“请选择效果的对象”的提示信息，用于选择卡片。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)  --"请选择效果的对象"
-	-- 选择目标怪兽并获取其引用
+	-- 让玩家从自己墓地或除外状态选择1只符合条件的怪兽，设定为效果对象并记录为连锁对象。
 	local tc=Duel.SelectTarget(tp,s.filter,tp,LOCATION_GRAVE+LOCATION_REMOVED,0,1,1,nil,e,tp,ft):GetFirst()
 	if tc:IsLocation(LOCATION_GRAVE) then
 		e:SetCategory(CATEGORY_TOHAND+CATEGORY_SPECIAL_SUMMON+CATEGORY_GRAVE_ACTION+CATEGORY_GRAVE_SPSUMMON)
 	end
 end
--- 执行①效果的操作，根据条件将目标怪兽加入手卡或特殊召唤
+-- ①效果处理：若对象仍与效果关联，先检查是否受王家长眠之谷影响；若受影响则无效。否则在满足特殊召唤条件且（对象不能加入手卡或玩家选择特殊召唤）时，将对象特殊召唤；否则将对象加入手卡。
 function s.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的效果对象
+	-- 获取①效果选择的对象卡。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 检查目标怪兽是否受王家长眠之谷保护，若受保护则无效该效果
+		-- 若对象受“王家长眠之谷”影响且当前连锁可被无效，则自动无效并终止该效果的后续处理。
 		if aux.NecroValleyNegateCheck(tc) then return end
-		-- 再次确认目标怪兽不受王家长眠之谷影响
+		-- 再次过滤：若对象受王家长眠之谷影响，则终止处理。
 		if not aux.NecroValleyFilter()(tc) then return end
-		-- 判断是否有足够的怪兽区域进行特殊召唤
+		-- 判断能否特殊召唤：自己场上有可用怪兽区空格，且对象可以被特殊召唤（表侧表示），满足才进入特召分支。
 		if Duel.GetLocationCount(tp,LOCATION_MZONE)>0 and tc:IsCanBeSpecialSummoned(e,0,tp,false,false,POS_FACEUP)
-			-- 若无法加入手卡或玩家选择特殊召唤，则执行特殊召唤操作
+			-- 若对象不能加入手卡则无条件选择特召；否则弹出选项让玩家选择：0为加入手卡，1为特殊召唤；仅当选择特殊召唤时进入特召分支。
 			and (not tc:IsAbleToHand() or Duel.SelectOption(tp,1190,1152)==1) then
-			-- 执行特殊召唤操作
+			-- 将对象怪兽以表侧表示特殊召唤到自己场上（不检查召唤条件、苏生限制）。
 			Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP)
 		else
-			-- 执行将目标怪兽加入手卡的操作
+			-- 将对象怪兽加入其持有者的手卡（效果处理）。
 			Duel.SendtoHand(tc,nil,REASON_EFFECT)
 		end
 	end
 end
--- 定义用于支付③效果费用的卡片过滤条件，必须是恶魔族光属性且可送入卡组或额外卡组
+-- 定义③效果费用过滤条件：自己墓地中除自身以外且为光属性·恶魔族的怪兽，并且可以作为费用返回卡组或额外卡组。
 function s.costfilter(c)
 	return c:IsRace(RACE_FIEND) and c:IsAttribute(ATTRIBUTE_LIGHT) and c:IsAbleToDeckOrExtraAsCost()
 end
--- 设置③效果的费用支付流程，选择并送入卡组作为费用
+-- ③效果的发动代价处理：从自己墓地选择1只符合条件的其他光属性·恶魔族怪兽，返回持有者卡组/额外卡组并洗切，作为发动代价。
 function s.damcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
-	-- 判断是否满足③效果的发动条件，即存在符合条件的墓地怪兽
+	-- 发动前检查：自己墓地是否存在至少1只满足costfilter条件的其他光属性·恶魔族怪兽可作为费用。
 	if chk==0 then return Duel.IsExistingMatchingCard(s.costfilter,tp,LOCATION_GRAVE,0,1,c) end
-	-- 提示玩家选择要返回卡组的卡片
+	-- 向玩家显示“请选择要返回卡组的卡”的提示信息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TODECK)  --"请选择要返回卡组的卡"
-	-- 选择用于支付费用的卡片
+	-- 让玩家从自己墓地中选择1只除自身以外的光属性·恶魔族怪兽作为返回卡组的费用卡。
 	local g=Duel.SelectMatchingCard(tp,s.costfilter,tp,LOCATION_GRAVE,0,1,1,c)
-	-- 显示所选卡片被选为对象的动画效果
+	-- 显示所选费用卡的选中动画，并记录为已选择对象。
 	Duel.HintSelection(g)
-	-- 将选中的卡片送入卡组并洗牌作为费用
+	-- 将选择的费用卡返回其持有者的卡组，并洗切卡组（作为发动代价）。
 	Duel.SendtoDeck(g,nil,SEQ_DECKSHUFFLE,REASON_COST)
 end
--- 设置③效果的目标信息，指定对方玩家和伤害值
+-- ③效果的目标设定：指定对方为受到伤害的玩家，伤害值为1200，并登记伤害效果的操作信息。
 function s.damtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设定连锁目标玩家为对方玩家
+	-- 将当前连锁的目标玩家设置为对方玩家。
 	Duel.SetTargetPlayer(1-tp)
-	-- 设定连锁目标参数为1200点伤害
+	-- 将当前连锁的目标参数设置为1200，即伤害数值。
 	Duel.SetTargetParam(1200)
-	-- 设置操作信息，记录本次效果将造成1200点伤害
+	-- 登记操作信息：将对对方造成1200点效果伤害（不取对象）。
 	Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,1-tp,1200)
 end
--- 执行③效果的操作，对对方玩家造成1200点伤害
+-- ③效果处理：从连锁中读取目标玩家和伤害值，并给予对方效果伤害。
 function s.damop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的目标玩家和伤害值
+	-- 获取当前连锁记录的目标玩家和伤害参数。
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 对指定玩家造成相应伤害
+	-- 给予目标玩家指定数值的效果伤害。
 	Duel.Damage(p,d,REASON_EFFECT)
 end

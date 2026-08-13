@@ -25,7 +25,7 @@ function c46647144.initial_effect(c)
 	e2:SetTargetRange(0,LOCATION_MZONE)
 	e2:SetValue(c46647144.atktg)
 	c:RegisterEffect(e2)
-	-- ③：从额外卡组有怪兽特殊召唤的场合发动。在双方场上把「星遗物衍生物」（机械族·暗·1星·攻/守0）各1只守备表示特殊召唤。
+	-- 这个卡名的①③的效果1回合各能使用1次。③：从额外卡组有怪兽特殊召唤的场合发动。在双方场上把「星遗物衍生物」（机械族·暗·1星·攻/守0）各1只守备表示特殊召唤。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(46647144,1))
 	e3:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_TOKEN)
@@ -39,29 +39,29 @@ function c46647144.initial_effect(c)
 	e3:SetOperation(c46647144.tkop)
 	c:RegisterEffect(e3)
 end
--- 判断是否满足效果①的发动条件，即战斗中至少有一只连接怪兽参与攻击或被攻击。
+-- 伤害计算时，取得攻击怪兽和攻击对象；若攻击怪兽属于对方则交换位置，使 e 的 LabelObject 记录对方进行战斗的怪兽；随后判断战斗双方是否都仍关联本次战斗，且其中至少一方为连接怪兽。
 function c46647144.atkcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取此次战斗中的攻击怪兽。
+	-- 取得此次战斗的攻击怪兽。
 	local a=Duel.GetAttacker()
-	-- 获取此次战斗中的被攻击怪兽。
+	-- 取得此次战斗的攻击对象怪兽。
 	local d=Duel.GetAttackTarget()
 	if a:IsControler(1-tp) then a,d=d,a end
 	e:SetLabelObject(d)
 	local g=Group.FromCards(a,d)
 	return a and d and a:IsRelateToBattle() and d:IsRelateToBattle() and g:IsExists(Card.IsType,1,nil,TYPE_LINK)
 end
--- 设置效果①的发动代价为将此卡从手牌丢弃。
+-- 发动代价：检查手卡中的这张卡能否丢弃，若能则丢弃这张卡作为代价。
 function c46647144.atkcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	if chk==0 then return c:IsDiscardable() end
-	-- 将此卡从手牌丢入墓地作为发动代价。
+	-- 将这张卡从手卡丢弃到墓地，作为效果发动的代价（丢弃）。
 	Duel.SendtoGrave(c,REASON_COST+REASON_DISCARD)
 end
--- 执行效果①的处理，使对方怪兽攻击力下降3000。
+-- 效果处理：对之前记录的那只对方战斗怪兽，若其仍表侧表示且与本次战斗关联，则让其攻击力下降3000。
 function c46647144.atkop(e,tp,eg,ep,ev,re,r,rp)
 	local tc=e:GetLabelObject()
 	if tc:IsFaceup() and tc:IsRelateToBattle() then
-		-- 使对方怪兽攻击力下降3000。
+		-- 那只进行战斗的对方怪兽的攻击力下降3000。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)
@@ -70,46 +70,46 @@ function c46647144.atkop(e,tp,eg,ep,ev,re,r,rp)
 		tc:RegisterEffect(e1)
 	end
 end
--- 设定效果②的目标为对方场上所有「星遗物」怪兽（不包括自身）。
+-- 判定一张表侧表示怪兽是否为「星遗物」怪兽且不是这张卡本身，作为对方不能选择攻击对象的过滤条件。
 function c46647144.atktg(e,c)
 	return c:IsFaceup() and c:IsSetCard(0xfe) and c~=e:GetHandler()
 end
--- 用于筛选发动特殊召唤的怪兽是否来自额外卡组。
+-- 判定怪兽是否是从额外卡组特殊召唤的。
 function c46647144.cfilter(c,tp)
 	return c:IsSummonLocation(LOCATION_EXTRA)
 end
--- 判断是否有怪兽从额外卡组特殊召唤成功。
+-- ③的发动条件：本次特殊召唤成功的怪兽群中存在从额外卡组特殊召唤的怪兽。
 function c46647144.tkcon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c46647144.cfilter,1,nil,tp)
 end
--- 设置效果③的处理信息，准备召唤2只衍生物。
+-- 效果发动时的目标处理：声明将特殊召唤衍生物，并将衍生物与特殊召唤的操作信息写入连锁。
 function c46647144.tktg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置效果③的处理信息，准备召唤2只衍生物。
+	-- 设置操作信息：将进行衍生物相关处理（数目为2）。
 	Duel.SetOperationInfo(0,CATEGORY_TOKEN,nil,2,0,0)
-	-- 设置效果③的处理信息，准备特殊召唤2只衍生物。
+	-- 设置操作信息：将进行特殊召唤相关处理（数目为2）。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,2,0,0)
 end
--- 检查是否满足效果③的发动条件，包括是否有足够的召唤空间和召唤权限。
+-- 效果处理：先确认双方场上都有足够的主要怪兽区空位、自己能够把衍生物特殊召唤到自己及对方场上，且不受「青眼精灵龙」的“双方不能把2只以上的怪兽同时特殊召唤”限制；满足后各生成1只「星遗物衍生物」并守备表示特殊召唤到双方场上。
 function c46647144.tkop(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查己方场上是否有足够的召唤空间。
+	-- 检查自己场上主要怪兽区是否有空位，若没有则无法特殊召唤衍生物。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0
-		-- 检查对方场上是否有足够的召唤空间。
+		-- 检查对方场上主要怪兽区是否有空位，若没有则无法特殊召唤衍生物。
 		or Duel.GetLocationCount(1-tp,LOCATION_MZONE)<=0
-		-- 检查己方是否可以特殊召唤衍生物。
+		-- 检查自己是否可以把「星遗物衍生物」以表侧守备表示特殊召唤到自己场上。
 		or not Duel.IsPlayerCanSpecialSummonMonster(tp,46647145,0xfe,TYPES_TOKEN_MONSTER,0,0,1,RACE_MACHINE,ATTRIBUTE_DARK,POS_FACEUP_DEFENSE)
-		-- 检查对方是否可以特殊召唤衍生物。
+		-- 检查自己是否可以把「星遗物衍生物」以表侧守备表示特殊召唤到对方场上。
 		or not Duel.IsPlayerCanSpecialSummonMonster(tp,46647145,0xfe,TYPES_TOKEN_MONSTER,0,0,1,RACE_MACHINE,ATTRIBUTE_DARK,POS_FACEUP_DEFENSE,1-tp)
 		-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中。禁止双方同时特殊召唤2只以上怪兽
 		or Duel.IsPlayerAffectedByEffect(tp,59822133) then return end
-	-- 创建一只「星遗物衍生物」。
+	-- 创建一只「星遗物衍生物」（给自己场上的token）。
 	local token1=Duel.CreateToken(tp,46647145)
-	-- 创建另一只「星遗物衍生物」。
+	-- 创建一只「星遗物衍生物」（给对方场上的token）。
 	local token2=Duel.CreateToken(tp,46647145)
-	-- 将第一只衍生物以守备表示特殊召唤到己方场上。
+	-- 将第1只衍生物特殊召唤到自己场上（表侧守备表示）。
 	Duel.SpecialSummonStep(token1,0,tp,tp,false,false,POS_FACEUP_DEFENSE)
-	-- 将第二只衍生物以守备表示特殊召唤到对方场上。
+	-- 将第2只衍生物特殊召唤到对方场上（表侧守备表示）。
 	Duel.SpecialSummonStep(token2,0,tp,1-tp,false,false,POS_FACEUP_DEFENSE)
-	-- 完成所有衍生物的特殊召唤流程。
+	-- 完成这次连续的特殊召唤处理，触发特殊召唤成功的相关时点。
 	Duel.SpecialSummonComplete()
 end

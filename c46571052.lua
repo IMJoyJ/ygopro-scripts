@@ -12,29 +12,29 @@ function c46571052.initial_effect(c)
 	e1:SetOperation(c46571052.spop)
 	c:RegisterEffect(e1)
 end
--- 过滤函数，用于检测手牌中是否包含可特殊召唤的「死亡石斛」
+-- 定义特殊召唤的过滤条件：筛选手卡中卡名为「死亡石斛」且能够被当前效果特殊召唤的卡。
 function c46571052.filter(c,e,tp)
 	return c:IsCode(12965761) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 效果的发动条件判断，检查场上是否有空位且手牌中有符合条件的怪兽
+-- 效果发动时的目标判定：确认自己主要怪兽区有空位，并且手卡中存在符合条件的「死亡石斛」。
 function c46571052.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查玩家场上是否有可用区域
+	-- 发动条件检查：自己主要怪兽区是否有可用的空格。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查玩家手牌中是否存在满足条件的「死亡石斛」
+		-- 发动条件检查：手卡中是否存在至少1张满足filter条件的「死亡石斛」。
 		and Duel.IsExistingMatchingCard(c46571052.filter,tp,LOCATION_HAND,0,1,nil,e,tp) end
-	-- 设置连锁操作信息，表明将要特殊召唤一张手牌中的怪兽
+	-- 设置本次效果的操作信息，预告将从手卡特殊召唤1只怪兽。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_HAND)
 end
--- 效果处理函数，执行特殊召唤操作
+-- 效果处理函数：在满足条件时从手卡选择1只「死亡石斛」进行特殊召唤。
 function c46571052.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 再次确认场上是否有空位以进行特殊召唤
+	-- 效果处理时再次检查主要怪兽区是否有空位，没有空位则终止处理。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-	-- 提示玩家选择要特殊召唤的卡
+	-- 提示玩家选择要特殊召唤的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 从手牌中选择符合条件的「死亡石斛」
+	-- 从手卡中选择1张符合条件的「死亡石斛」。
 	local g=Duel.SelectMatchingCard(tp,c46571052.filter,tp,LOCATION_HAND,0,1,1,nil,e,tp)
 	if g:GetCount()>0 then
-		-- 将选中的怪兽特殊召唤到场上
+		-- 将选择的「死亡石斛」以表侧攻击表示特殊召唤到自己场上。
 		Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
 	end
 end

@@ -14,14 +14,14 @@ function c46552140.initial_effect(c)
 	e2:SetCode(EFFECT_UPDATE_ATTACK)
 	e2:SetRange(LOCATION_FZONE)
 	e2:SetTargetRange(LOCATION_MZONE,0)
-	-- 筛选满足条件的卡片组，即场上岩石族怪兽
+	-- 设置攻击力上升效果的适用对象：我方怪兽区域中种族为岩石族的怪兽。
 	e2:SetTarget(aux.TargetBoolFunction(Card.IsRace,RACE_ROCK))
 	e2:SetValue(500)
 	c:RegisterEffect(e2)
 	local e3=e2:Clone()
 	e3:SetCode(EFFECT_UPDATE_DEFENSE)
 	c:RegisterEffect(e3)
-	-- ②：1回合1次，自己主要阶段才能发动。从卡组选最多5张「魔救」卡用喜欢的顺序在卡组最上面放置。
+	-- ②：1回合1次，自己主要阶段才能发动。从卡组选最多5张『魔救』卡用喜欢的顺序在卡组最上面放置。
 	local e4=Effect.CreateEffect(c)
 	e4:SetDescription(aux.Stringid(46552140,0))
 	e4:SetType(EFFECT_TYPE_IGNITION)
@@ -31,29 +31,29 @@ function c46552140.initial_effect(c)
 	e4:SetOperation(c46552140.sortop)
 	c:RegisterEffect(e4)
 end
--- 判断是否可以发动效果，检查卡组中是否存在至少一张「魔救」卡
+-- 效果发动条件检测：确认我方卡组中存在至少1张『魔救』字段（0x140）的卡，否则不能发动。
 function c46552140.sorttg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检测卡组中是否存在满足条件的「魔救」卡
+	-- 效果发动时的合法性检查：若chk==0，检查我方卡组是否存在1张以上『魔救』字段的卡，存在才允许发动。
 	if chk==0 then return Duel.IsExistingMatchingCard(Card.IsSetCard,tp,LOCATION_DECK,0,1,nil,0x140) end
 end
--- 处理效果发动后的操作，包括提示选择、选取卡片、确认卡片、洗切卡组并排序
+-- 效果处理：从卡组选1～5张『魔救』卡，向对方展示，洗切卡组，将所选卡依次放到卡组最上方，最后由自己决定这些卡在顶部的排列顺序。
 function c46552140.sortop(e,tp,eg,ep,ev,re,r,rp)
-	-- 向玩家发送提示信息，提示其选择要放置到卡组最上面的卡
+	-- 向操作玩家发送选择提示消息：请选择要放置卡组最上面的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,aux.Stringid(46552140,1))  --"请选择要放置卡组最上面的卡"
-	-- 从卡组中选择最多5张「魔救」卡
+	-- 让玩家从自己卡组中选择1～5张『魔救』字段（0x140）的卡作为要放置到卡组顶部的卡。
 	local g=Duel.SelectMatchingCard(tp,Card.IsSetCard,tp,LOCATION_DECK,0,1,5,nil,0x140)
 	if g:GetCount()>0 then
-		-- 确认对方玩家看到所选的卡
+		-- 将本次选择的卡展示给对方玩家确认。
 		Duel.ConfirmCards(1-tp,g)
-		-- 将玩家的卡组进行洗切
+		-- 洗切自己的卡组（选卡后使卡组其余部分随机化）。
 		Duel.ShuffleDeck(tp)
 		local tc=g:GetFirst()
 		while tc do
-			-- 将选定的卡移动到卡组最上方
+			-- 把当前这张选中的卡移动到卡组最顶端（SEQ_DECKTOP）。
 			Duel.MoveSequence(tc,SEQ_DECKTOP)
 			tc=g:GetNext()
 		end
-		-- 对玩家卡组最上方的卡进行排序
+		-- 让操作玩家对自己卡组最上方g:GetCount()张卡进行排序，决定它们在卡组顶部的最终顺序。
 		Duel.SortDecktop(tp,tp,g:GetCount())
 	end
 end
