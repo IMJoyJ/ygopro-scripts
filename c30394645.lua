@@ -5,7 +5,7 @@
 -- ②：这张卡从手卡特殊召唤的场合才能发动。双方各自从自身的额外卡组把1只怪兽送去墓地。
 -- ③：这张卡被送去墓地的场合，以「教导的死徒」以外的自己墓地1张「教导」卡为对象才能发动。那张卡加入手卡。
 local s,id,o=GetID()
--- 创建三个效果，分别对应①②③效果的发动条件与处理
+-- 初始化函数：为这张卡注册①手卡起动特殊召唤自身、②从手卡特殊召唤成功时双方从额外卡组各送墓1只怪兽、③被送去墓地时回收墓地的「教导」卡三个效果，并分别设定1回合1次的发动限制。
 function s.initial_effect(c)
 	-- ①：这张卡在手卡存在，从额外卡组特殊召唤的怪兽在场上存在的场合才能发动。这张卡特殊召唤。
 	local e1=Effect.CreateEffect(c)
@@ -42,93 +42,93 @@ function s.initial_effect(c)
 	e3:SetOperation(s.thop)
 	c:RegisterEffect(e3)
 end
--- 过滤函数，用于判断场上是否存在从额外卡组召唤的怪兽
+-- 过滤函数：判断一张怪兽是否是从额外卡组特殊召唤的怪兽。
 function s.cfilter(c)
 	return c:IsSummonLocation(LOCATION_EXTRA)
 end
--- 判断场上是否存在从额外卡组召唤的怪兽
+-- ①效果的发动条件：检查双方场上是否存在至少1只从额外卡组特殊召唤的怪兽。
 function s.spcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断场上是否存在从额外卡组召唤的怪兽
+	-- 返回场上是否存在满足条件的从额外卡组特殊召唤的怪兽。
 	return Duel.IsExistingMatchingCard(s.cfilter,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil)
 end
--- 设置特殊召唤的处理条件
+-- ①效果的发动合法性检查：自己场上有主要怪兽区空位，且这张卡能够被特殊召唤。
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断是否有足够的怪兽区域进行特殊召唤
+	-- 检查自己场上是否有可用的主要怪兽区空位。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置特殊召唤的连锁操作信息
+	-- 登记效果处理信息：将特殊召唤这张卡作为本次效果处理的内容。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 执行特殊召唤的操作
+-- ①效果处理：这张卡仍与连锁相关时将其特殊召唤。
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToChain() then
-		-- 将卡片特殊召唤到场上
+		-- 以表侧表示将这张卡特殊召唤到发动者（tp）的场上。
 		Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
--- 判断该卡是否是从手卡特殊召唤的
+-- ②效果的发动条件：这张卡从手卡被特殊召唤。
 function s.tgcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsSummonLocation(LOCATION_HAND)
 end
--- 设置送去墓地效果的处理条件
+-- ②效果发动时检查：双方额外卡组中都至少存在1张可以送去墓地的怪兽。
 function s.tgtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 获取己方额外卡组中可送去墓地的怪兽数量
+	-- 获取自己额外卡组中所有可以送去墓地的怪兽。
 	local g=Duel.GetMatchingGroup(Card.IsAbleToGrave,tp,LOCATION_EXTRA,0,nil)
-	-- 获取对方额外卡组中可送去墓地的怪兽数量
+	-- 获取对方额外卡组中所有可以送去墓地的怪兽。
 	local g2=Duel.GetMatchingGroup(Card.IsAbleToGrave,tp,0,LOCATION_EXTRA,nil)
 	if chk==0 then return g:GetCount()>0 and g2:GetCount()>0 end
 end
--- 判断双方额外卡组中是否存在可送去墓地的怪兽
+-- ②效果处理时确认双方额外卡组仍各有至少1张可送墓的卡，否则终止处理。
 function s.tgop(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断己方额外卡组中是否存在可送去墓地的怪兽
+	-- 若自己额外卡组不存在可送墓的卡，则终止处理。
 	if not Duel.IsExistingMatchingCard(Card.IsAbleToGrave,tp,LOCATION_EXTRA,0,1,nil)
-		-- 判断对方额外卡组中是否存在可送去墓地的怪兽
+		-- 若对方额外卡组不存在可送墓的卡，也终止处理。
 		or not Duel.IsExistingMatchingCard(Card.IsAbleToGrave,tp,0,LOCATION_EXTRA,1,nil) then return end
-	-- 获取当前回合玩家
+	-- 取得当前回合玩家，作为先选择并处理送墓的一方。
 	local p=Duel.GetTurnPlayer()
-	-- 获取当前回合玩家额外卡组中可送去墓地的怪兽数量
+	-- 获取当前回合玩家的额外卡组中所有可以送去墓地的怪兽。
 	local g=Duel.GetMatchingGroup(Card.IsAbleToGrave,p,LOCATION_EXTRA,0,nil)
-	-- 提示当前回合玩家选择要送去墓地的卡
+	-- 向当前回合玩家显示选择要送去墓地的卡的提示信息。
 	Duel.Hint(HINT_SELECTMSG,p,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
 	local sg=g:Select(p,1,1,nil)
 	if sg:GetCount()>0 then
-		-- 将选择的卡送去墓地
+		-- 将当前回合玩家选择的卡以效果原因送去墓地。
 		Duel.SendtoGrave(sg,REASON_EFFECT)
 	end
-	-- 获取当前回合玩家对方额外卡组中可送去墓地的怪兽数量
+	-- 获取当前回合玩家的对手的额外卡组中所有可以送去墓地的怪兽。
 	local g2=Duel.GetMatchingGroup(Card.IsAbleToGrave,p,0,LOCATION_EXTRA,nil)
-	-- 提示对方玩家选择要送去墓地的卡
+	-- 向对手显示选择要送去墓地的卡的提示信息。
 	Duel.Hint(HINT_SELECTMSG,1-p,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
 	local sg2=g2:Select(1-p,1,1,nil)
 	if sg2:GetCount()>0 then
-		-- 将选择的卡送去墓地
+		-- 将对手选择的卡以效果原因送去墓地。
 		Duel.SendtoGrave(sg2,REASON_EFFECT)
 	end
 end
--- 过滤函数，用于筛选墓地中非「教导的死徒」且为「教导」卡的卡片
+-- 过滤函数：选择自己墓地的「教导」卡时，要求卡名不是「教导的死徒」、属于「教导」系列、且可以加入手卡。
 function s.thfilter(c)
 	return not c:IsCode(id) and c:IsSetCard(0x145) and c:IsAbleToHand()
 end
--- 设置回收效果的处理条件
+-- ③效果的发动目标处理：从自己墓地选择1张符合条件的「教导」卡作为效果对象。
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and s.thfilter(chkc) end
-	-- 判断己方墓地中是否存在满足条件的「教导」卡
+	-- 检查自己墓地是否存在至少1张符合条件的「教导」卡可以作为效果对象。
 	if chk==0 then return Duel.IsExistingTarget(s.thfilter,tp,LOCATION_GRAVE,0,1,nil) end
-	-- 提示玩家选择要加入手牌的卡
+	-- 向玩家显示选择要加入手牌的卡的提示信息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择目标卡片
+	-- 让玩家从自己墓地选择1张符合条件的卡，并将其登记为效果对象。
 	local g=Duel.SelectTarget(tp,s.thfilter,tp,LOCATION_GRAVE,0,1,1,nil)
-	-- 设置回收的连锁操作信息
+	-- 登记效果处理信息：将选择的对象卡加入手卡。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,1,0,0)
 end
--- 执行回收的操作
+-- ③效果处理：将对象卡加入手卡，并考虑「王家长眠之谷」等对墓地卡移动的限制。
 function s.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的目标卡片
+	-- 获取③效果处理时选择的对象卡。
 	local tc=Duel.GetFirstTarget()
-	-- 判断目标卡片是否有效且未受王家长眠之谷影响
+	-- 确认对象卡仍与当前连锁相关，且不受「王家长眠之谷」等效果影响。
 	if tc:IsRelateToChain() and aux.NecroValleyFilter()(tc) then
-		-- 将目标卡片加入手牌
+		-- 将对象卡加入其持有者的手卡。
 		Duel.SendtoHand(tc,nil,REASON_EFFECT)
 	end
 end

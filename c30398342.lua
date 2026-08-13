@@ -31,42 +31,42 @@ function c30398342.initial_effect(c)
 	e3:SetTarget(c30398342.sumlimit)
 	c:RegisterEffect(e3)
 end
--- 判断被破坏的怪兽是否为己方场上怪兽且由战斗或效果破坏
+-- 判断被破坏的怪兽是否满足“因战斗或效果破坏，且破坏前在自己场上”的条件，即是否为“自己场上的怪兽被战斗·效果破坏”的怪兽。
 function c30398342.cfilter(c,tp)
 	return c:IsReason(REASON_BATTLE+REASON_EFFECT)
 		and c:IsPreviousLocation(LOCATION_MZONE) and c:IsPreviousControler(tp)
 end
--- 判断是否有己方场上被战斗或效果破坏的怪兽
+-- 检查本次破坏事件中是否存在至少1只满足cfilter条件的怪兽，从而判定①效果的发动条件是否成立。
 function c30398342.spcon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c30398342.cfilter,1,nil,tp)
 end
--- 筛选满足条件的「龙星」怪兽（可特殊召唤）
+-- 筛选符合条件的「龙星」怪兽，要求卡名属于「龙星」字段，并且能够被当前效果特殊召唤。
 function c30398342.filter(c,e,tp)
 	return c:IsSetCard(0x9e) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 判断是否满足发动条件（场上有空位且卡组有符合条件的怪兽）
+-- 效果发动时点检查：自己场上主要怪兽区有空位，且卡组中存在可特殊召唤的「龙星」怪兽时，才允许发动。
 function c30398342.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断己方场上是否有空位
+	-- 检查自己场上主要怪兽区是否有可用的空格，确保可以特殊召唤怪兽。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 判断卡组中是否存在满足条件的「龙星」怪兽
+		-- 同时检查卡组中是否存在至少1只满足条件的「龙星」怪兽；条件判定结束后返回true，允许发动。
 		and Duel.IsExistingMatchingCard(c30398342.filter,tp,LOCATION_DECK,0,1,nil,e,tp) end
-	-- 设置连锁操作信息，表明将要特殊召唤1只怪兽
+	-- 登记本次操作信息：从卡组特殊召唤1只怪兽（具体对象在处理时选择），用于其他卡片对该效果的连锁检测。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_DECK)
 end
--- 执行特殊召唤操作，选择并特殊召唤符合条件的怪兽
+-- 效果处理时，若自己主要怪兽区仍有空位，则从卡组选择1只「龙星」怪兽，以表侧表示特殊召唤到自己场上。
 function c30398342.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断己方场上是否还有空位
+	-- 效果处理时再次确认自己主要怪兽区仍有空位，若没有则特殊召唤不处理。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-	-- 提示玩家选择要特殊召唤的怪兽
+	-- 向发动者tp发送卡片选择提示，提示内容为“请选择要特殊召唤的卡”。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 选择满足条件的「龙星」怪兽
+	-- 让发动者tp从自己卡组中选择1只满足filter条件的「龙星」怪兽，作为本次特殊召唤的对象。
 	local g=Duel.SelectMatchingCard(tp,c30398342.filter,tp,LOCATION_DECK,0,1,1,nil,e,tp)
 	if g:GetCount()>0 then
-		-- 将选中的怪兽特殊召唤到场上
+		-- 将选择的「龙星」怪兽以表侧表示特殊召唤到发动者tp的场上，完成①效果的特殊召唤处理。
 		Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
--- 限制己方不能从额外卡组特殊召唤非同调怪兽
+-- ②效果的禁止特殊召唤判定：若怪兽c来自额外卡组且不是同调怪兽，则禁止该特殊召唤；即从额外卡组仅允许特殊召唤同调怪兽。
 function c30398342.sumlimit(e,c,sump,sumtype,sumpos,targetp)
 	return c:IsLocation(LOCATION_EXTRA) and not c:IsType(TYPE_SYNCHRO)
 end

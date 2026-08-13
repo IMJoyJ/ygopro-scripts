@@ -11,7 +11,7 @@ function c30464153.initial_effect(c)
 	e1:SetTarget(c30464153.target)
 	c:RegisterEffect(e1)
 end
--- 设置效果仅对鱼族·海龙族·水族怪兽生效
+-- 贯穿伤害效果的过滤函数，用于判定场上表侧表示存在的这张卡所影响的己方怪兽是否为鱼族、海龙族或水族怪兽；若满足该种族条件，则其攻击守备表示怪兽时发动贯穿战斗伤害。
 function c30464153.target(e,c)
 	return c:IsRace(RACE_FISH+RACE_SEASERPENT+RACE_AQUA)
 end
