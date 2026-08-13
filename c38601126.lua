@@ -32,38 +32,38 @@ function c38601126.initial_effect(c)
 	e3:SetOperation(c38601126.daop)
 	c:RegisterEffect(e3)
 end
--- 筛选场上表侧表示存在的「破坏之剑士」怪兽
+-- 过滤条件：卡为表侧表示且卡号是78193831（「破坏之剑士」）。
 function c38601126.filter(c)
 	return c:IsFaceup() and c:IsCode(78193831)
 end
--- 设置效果目标为场上表侧表示存在的「破坏之剑士」怪兽
+-- ①效果的发动条件与取对象：确认自己场上有表侧表示的「破坏之剑士」可作为对象，且自己魔陷区有空位；若检查对象时，仅允许选择自己场上表侧表示的「破坏之剑士」。
 function c38601126.eqtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and c38601126.filter(chkc) end
-	-- 判断装备区域是否充足
+	-- 检查自己魔陷区是否有可用空格（用于放置装备卡）。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_SZONE)>0
-		-- 判断场上是否存在「破坏之剑士」怪兽
+		-- 检查自己场上是否存在表侧表示且卡号为78193831（「破坏之剑士」）的怪兽，可以作为装备对象。
 		and Duel.IsExistingTarget(c38601126.filter,tp,LOCATION_MZONE,0,1,nil) end
-	-- 提示选择要装备的怪兽
+	-- 显示“请选择要装备的卡”的选择提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_EQUIP)  --"请选择要装备的卡"
-	-- 选择目标怪兽
+	-- 让玩家从自己场上表侧表示的「破坏之剑士」中选择1只作为效果对象，并设为连锁对象。
 	Duel.SelectTarget(tp,c38601126.filter,tp,LOCATION_MZONE,0,1,1,nil)
 end
--- 处理装备效果的执行流程
+-- ①效果处理：确认自身仍与效果相关且不是里侧表示；若对象仍合法，则把这张卡装备给对象怪兽，并附加仅能装备给该对象的装备限制；若对象不合法则这张卡以效果原因送墓。
 function c38601126.eqop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if not c:IsRelateToEffect(e) then return end
 	if c:IsLocation(LOCATION_MZONE) and c:IsFacedown() then return end
-	-- 获取当前连锁效果的目标怪兽
+	-- 取得发动时选择的装备对象怪兽。
 	local tc=Duel.GetFirstTarget()
-	-- 判断装备条件是否满足
+	-- 若自己魔陷区无空位、对象怪兽已失控、变为里侧表示或不再与效果相关，则装备处理失败。
 	if Duel.GetLocationCount(tp,LOCATION_SZONE)<=0 or tc:IsControler(1-tp) or tc:IsFacedown() or not tc:IsRelateToEffect(e) then
-		-- 将装备卡送入墓地
+		-- 因无法装备，将这张卡以效果原因送去墓地。
 		Duel.SendtoGrave(c,REASON_EFFECT)
 		return
 	end
-	-- 将装备卡装备给目标怪兽
+	-- 将这张卡作为装备卡装备给对象怪兽。
 	Duel.Equip(tp,c,tc)
-	-- 设置装备对象限制效果
+	-- 从自己的手卡·场上把这只怪兽当作装备卡使用给那只自己怪兽装备。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_EQUIP_LIMIT)
@@ -73,34 +73,34 @@ function c38601126.eqop(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetLabelObject(tc)
 	c:RegisterEffect(e1)
 end
--- 限制只能装备给特定怪兽
+-- 装备限制判定：仅允许装备给效果发动时选择的「破坏之剑士」（记录在LabelObject中）。
 function c38601126.eqlimit(e,c)
 	return c==e:GetLabelObject()
 end
--- 判断装备卡是否已装备
+-- 判断这张卡是否处于装备状态（存在装备对象）。
 function c38601126.condition(e)
 	return e:GetHandler():GetEquipTarget()
 end
--- 限制对方魔法·陷阱卡发动
+-- ②效果的禁止发动判定：对方在魔法与陷阱区域发动的非卡发动的效果（即已是表侧表示的魔法·陷阱卡发动效果）被禁止。
 function c38601126.aclimit(e,re,tp)
 	local loc=re:GetActivateLocation()
 	return loc==LOCATION_SZONE and not re:IsHasType(EFFECT_TYPE_ACTIVATE)
 end
--- 支付装备效果的代价
+-- ③效果的发动代价：检查装备中的这张卡能否作为代价送去墓地，并将装备对象怪兽设为连锁对象，然后送墓。
 function c38601126.dacost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsAbleToGraveAsCost() end
 	local tc=e:GetHandler():GetEquipTarget()
-	-- 设置装备卡为效果目标
+	-- 将这张卡装备过的怪兽设为连锁对象，以便效果处理时取得该怪兽。
 	Duel.SetTargetCard(tc)
-	-- 将装备卡送入墓地作为代价
+	-- 将这张装备卡作为代价送去墓地。
 	Duel.SendtoGrave(e:GetHandler(),REASON_COST)
 end
--- 处理装备卡效果的发动
+-- ③效果处理：这张卡装备过的怪兽攻击力直到回合结束时上升1000。
 function c38601126.daop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁效果的目标怪兽
+	-- 取得通过代价记录的装备对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsFaceup() and tc:IsRelateToEffect(e) then
-		-- 使装备怪兽的攻击力上升1000
+		-- 这张卡装备过的怪兽的攻击力直到回合结束时上升1000。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)
