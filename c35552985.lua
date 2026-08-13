@@ -4,7 +4,7 @@
 -- ①：自己场上的表侧表示怪兽不存在的场合或者只有恶魔族·光属性怪兽的场合才能发动。在自己场上把1只「刻魔衍生物」（恶魔族·光·1星·攻/守0）特殊召唤。这个回合，自己不用恶魔族怪兽不能攻击宣言。
 -- ②：这张卡在墓地存在的状态，自己场上的表侧表示的「刻魔」怪兽被对方的效果破坏的场合才能发动。这张卡在自己场上盖放。
 local s,id,o=GetID()
--- 创建两个效果，分别对应①和②效果
+-- 初始化效果：创建并注册①的发动效果（特召刻魔衍生物）和②的触发效果（墓地盖放），分别设置描述、分类、类型、发动时机、次数限制、条件/目标/处理函数。
 function s.initial_effect(c)
 	-- ①：自己场上的表侧表示怪兽不存在的场合或者只有恶魔族·光属性怪兽的场合才能发动。在自己场上把1只「刻魔衍生物」（恶魔族·光·1星·攻/守0）特殊召唤。这个回合，自己不用恶魔族怪兽不能攻击宣言。
 	local e1=Effect.CreateEffect(c)
@@ -31,39 +31,39 @@ function s.initial_effect(c)
 	e2:SetOperation(s.setop)
 	c:RegisterEffect(e2)
 end
--- 过滤函数，用于判断场上是否存在非恶魔族·光属性的表侧表示怪兽
+-- 定义①的发动条件过滤器：返回true表示场上存在表侧表示且不是恶魔族·光属性的怪兽，用于阻断①的发动。
 function s.cfilter(c)
 	return not (c:IsRace(RACE_FIEND) and c:IsAttribute(ATTRIBUTE_LIGHT)) and c:IsFaceup()
 end
--- 效果①的发动条件，判断场上是否不存在表侧表示怪兽或仅存在恶魔族·光属性怪兽
+-- ①的发动条件判定：自己场上不存在表侧表示的非恶魔族·光属性怪兽（即没有表侧怪兽或只有恶魔族·光属性怪兽）。
 function s.spcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 场上不存在非恶魔族·光属性的表侧表示怪兽
+	-- 检查自己场上是否存在至少1张表侧表示且非恶魔族·光属性的怪兽；不存在则条件满足。
 	return not Duel.IsExistingMatchingCard(s.cfilter,tp,LOCATION_MZONE,0,1,nil)
 end
--- 效果①的发动时的处理函数，判断是否可以发动
+-- ①发动时进行合法性检查：自己的主要怪兽区有空位，且自己能够特殊召唤「刻魔衍生物」（恶魔族·光·1星·攻/守0）。
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断场上是否有空位
+	-- 检查自己主要怪兽区是否有空位（大于0）。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0 and
-		-- 判断是否可以特殊召唤token
+		-- 检查自己是否能够将「刻魔衍生物」（恶魔族·光·1星·攻/守0）以表侧表示特殊召唤到场上。
 		Duel.IsPlayerCanSpecialSummonMonster(tp,id+o,0,TYPES_TOKEN_MONSTER,0,0,1,RACE_FIEND,ATTRIBUTE_LIGHT) end
-	-- 设置操作信息为召唤token
+	-- 设置操作信息：本效果将产生1只衍生物，供连锁判定和效果提示使用。
 	Duel.SetOperationInfo(0,CATEGORY_TOKEN,nil,1,0,0)
-	-- 设置操作信息为特殊召唤
+	-- 设置操作信息：本效果将进行1次特殊召唤（对象在效果处理时确定，targets为nil，控制者为tp）。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,0)
 end
--- 效果①的发动处理函数，执行特殊召唤token并设置不能攻击宣言效果
+-- ①效果处理：若仍有空位且能特招token，则创建「刻魔衍生物」并表侧表示特殊召唤到自己场上。
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 判断场上是否有空位
+	-- 处理时再次确认自己主要怪兽区仍有空位。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 判断是否可以特殊召唤token
+		-- 处理时再次确认自己仍然能够特殊召唤该token。
 		and Duel.IsPlayerCanSpecialSummonMonster(tp,id+o,0,TYPES_TOKEN_MONSTER,0,0,1,RACE_FIEND,ATTRIBUTE_LIGHT) then
-		-- 创建token
+		-- 创建「刻魔衍生物」（卡号为id+o，恶魔族·光·1星·攻/守0）的Token，控制者为tp。
 		local token=Duel.CreateToken(tp,id+o)
-		-- 将token特殊召唤到场上
+		-- 将token以表侧攻击表示特殊召唤到tp场上（不检查召唤条件与苏生限制）。
 		Duel.SpecialSummon(token,0,tp,tp,false,false,POS_FACEUP)
 	end
-	-- 设置不能攻击宣言效果，仅对非恶魔族怪兽生效
+	-- 这个回合，自己不用恶魔族怪兽不能攻击宣言。②：这张卡在墓地存在的状态，自己场上的表侧表示的「刻魔」怪兽被对方的效果破坏的场合才能发动。这张卡在自己场上盖放。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_CANNOT_ATTACK_ANNOUNCE)
@@ -71,32 +71,32 @@ function s.spop(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetTargetRange(LOCATION_MZONE,0)
 	e1:SetTarget(s.atktg)
 	e1:SetReset(RESET_PHASE+PHASE_END)
-	-- 将效果注册到玩家
+	-- 将「不能攻击宣言」的永续效果注册到场上，影响tp方的主要怪兽区，直到回合结束。
 	Duel.RegisterEffect(e1,tp)
 end
--- 设置不能攻击宣言效果的目标过滤函数，仅对非恶魔族怪兽生效
+-- 攻击限制的对象判定：非恶魔族怪兽不能进行攻击宣言。
 function s.atktg(e,c)
 	return not c:IsRace(RACE_FIEND)
 end
--- 过滤函数，用于判断被破坏的怪兽是否为刻魔族且在场上正面表示且为盖放状态
+-- ②的破坏对象过滤器：被破坏的怪兽必须是tp之前控制、之前位于主要怪兽区、表侧表示、且是「刻魔」字段怪兽（setcode 0x1b0）。
 function s.cfilter2(c,tp)
 	return c:IsPreviousControler(tp) and c:IsPreviousLocation(LOCATION_MZONE) and c:IsPreviousPosition(POS_FACEUP)
 		and c:IsPreviousSetCard(0x1b0)
 end
--- 效果②的发动条件，判断是否为对方破坏且被破坏的怪兽为刻魔族且为盖放状态
+-- ②的发动条件：对方效果（rp==1-tp）破坏了自己场上的表侧表示「刻魔」怪兽，且被破坏的怪兽中不包含这张卡自身（e:GetHandler()排除）。
 function s.setcon(e,tp,eg,ep,ev,re,r,rp)
 	return rp==1-tp and eg:IsExists(s.cfilter2,1,e:GetHandler(),tp)
 end
--- 效果②的发动时的处理函数，判断是否可以发动
+-- ②发动时检查：这张卡是否能够盖放到魔法陷阱区；若能则设置操作信息为从墓地离开。
 function s.settg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	if chk==0 then return c:IsSSetable() end
-	-- 设置操作信息为盖放
+	-- 设置操作信息：本效果将把墓地的这张卡盖放到场上，涉及墓地移动（CATEGORY_LEAVE_GRAVE）。
 	Duel.SetOperationInfo(0,CATEGORY_LEAVE_GRAVE,c,1,0,0)
 end
--- 效果②的发动处理函数，执行盖放
+-- ②效果处理：若这张卡仍在墓地且与效果关联，则将其盖放到自己场上。
 function s.setop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 判断卡片是否与效果相关，若相关则执行盖放
+	-- 确认卡片仍与效果关联（未被除外等导致关系重置）后，将其盖放到自己的魔法陷阱区。
 	if c:IsRelateToEffect(e) then Duel.SSet(tp,c) end
 end
