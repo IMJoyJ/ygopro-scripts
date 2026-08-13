@@ -5,9 +5,9 @@
 -- ②：只要自己场上有「天魔之声选姬」以外的怪兽存在，对方怪兽不能选择这张卡作为攻击对象。
 -- ③：这张卡被送去墓地的场合，若自己的灵摆区域有2张「异响鸣」卡存在则能发动。这张卡加入手卡。
 local s,id,o=GetID()
--- 注册卡片的3个效果，包括召唤时检索、灵摆召唤时检索、以及被送去墓地时的特殊处理
+-- 为这张卡注册以下效果：①效果（召唤/灵摆召唤时检索「异响鸣」卡，含召唤分支和灵摆召唤分支，共用1回合1次）、②效果（自己场上有其他怪兽时，对方怪兽不能选择这张卡为攻击对象）、③效果（送墓时若自己灵摆区有2张「异响鸣」卡则加入手卡）。
 function s.initial_effect(c)
-	-- ①：这张卡召唤·灵摆召唤的场合才能发动。从卡组把「天魔之声选姬」以外的1张「异响鸣」卡加入手卡。
+	-- 这个卡名的①③的效果1回合各能使用1次。①：这张卡召唤·灵摆召唤的场合才能发动。从卡组把「天魔之声选姬」以外的1张「异响鸣」卡加入手卡。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(id,0))  --"检索「异响鸣」卡"
 	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
@@ -29,7 +29,7 @@ function s.initial_effect(c)
 	e3:SetCode(EFFECT_CANNOT_BE_BATTLE_TARGET)
 	e3:SetRange(LOCATION_MZONE)
 	e3:SetCondition(s.atcon)
-	-- 设置效果值为过滤函数aux.imval1，用于判断是否能成为攻击对象
+	-- 设置②效果的值函数：对于不免疫此效果的对方怪兽，使其不能选择这张卡作为攻击对象。
 	e3:SetValue(aux.imval1)
 	c:RegisterEffect(e3)
 	-- ③：这张卡被送去墓地的场合，若自己的灵摆区域有2张「异响鸣」卡存在则能发动。这张卡加入手卡。
@@ -44,56 +44,56 @@ function s.initial_effect(c)
 	e4:SetOperation(s.thop2)
 	c:RegisterEffect(e4)
 end
--- 过滤函数：检索满足条件的「异响鸣」卡，排除自身且能加入手牌
+-- ①效果的检索过滤条件：判定卡组中的卡是否为「异响鸣」字段、卡名不为「天魔之声选姬」且能够加入手卡。
 function s.thfilter(c)
 	return c:IsSetCard(0x1a3) and not c:IsCode(id) and c:IsAbleToHand()
 end
--- 设置效果处理时的检索操作信息，确定要检索的卡为1张「异响鸣」卡
+-- ①效果的目标函数：发动时检查卡组是否存在满足检索条件的卡，并设置本效果操作信息为从卡组将1张卡加入手卡。
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断是否满足检索条件，即卡组中是否存在至少1张满足条件的「异响鸣」卡
+	-- 发动合法性判定：卡组中必须存在至少1张满足检索过滤条件的「异响鸣」卡，否则不能发动。
 	if chk==0 then return Duel.IsExistingMatchingCard(s.thfilter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置操作信息，表示将要从卡组检索1张卡加入手牌
+	-- 设置操作信息：声明本效果类别为加入手卡，不取对象，预期从卡组将1张卡加入手卡，供系统及连锁判定使用。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 执行检索操作，提示玩家选择卡牌并发送至手牌
+-- ①效果的处理函数：玩家选择1张符合条件的「异响鸣」卡加入手卡，并向对方展示所选的卡。
 function s.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要加入手牌的卡
+	-- 显示“请选择要加入手牌的卡”的提示信息，供玩家在后续选择时阅读。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 从卡组中选择1张满足条件的卡
+	-- 从自己卡组中选择1张满足检索条件的「异响鸣」卡（不取对象）。
 	local g=Duel.SelectMatchingCard(tp,s.thfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的卡发送至手牌
+		-- 将选中的卡加入其持有者的手卡，原因记为效果。
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 确认对方能看到被加入手牌的卡
+		-- 向对方玩家确认检索到的卡，使对方可以查看这张卡。
 		Duel.ConfirmCards(1-tp,g)
 	end
 end
--- 判断是否为灵摆召唤成功触发的效果
+-- ①效果灵摆召唤分支的发动条件：判定这张卡的召唤类型是否为灵摆召唤（SUMMON_TYPE_PENDULUM）。
 function s.thcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsSummonType(SUMMON_TYPE_PENDULUM)
 end
--- 过滤函数：判断场上是否存在非自身且非里侧的怪兽
+-- ②效果的过滤条件：返回 true 的卡为“不是这张卡（或非同名卡）”或“里侧表示”的怪兽，用于判断场上是否存在这张卡以外的其他怪兽。
 function s.cfilter(c)
 	return not c:IsCode(id) or c:IsFacedown()
 end
--- 判断是否满足效果触发条件，即场上存在非自身怪兽
+-- ②效果的适用条件：自己场上存在至少1张满足过滤条件的这张卡以外的怪兽时，该效果适用，使对方怪兽不能选择这张卡为攻击对象。
 function s.atcon(e)
-	-- 判断场上是否存在至少1张非自身且非里侧的怪兽
+	-- 检查自己场上主要怪兽区是否存在至少1张这张卡以外的怪兽（通过 s.cfilter 过滤，并排除这张卡自身）。
 	return Duel.IsExistingMatchingCard(s.cfilter,e:GetHandlerPlayer(),LOCATION_MZONE,0,1,e:GetHandler())
 end
--- 设置效果处理时的检索操作信息，确定要检索的卡为1张「异响鸣」卡
+-- ③效果的目标函数：发动判定时确认这张卡可以加入手卡，且自己灵摆区域存在2张「异响鸣」卡，满足发动条件。
 function s.thtg2(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsAbleToHand()
-		-- 判断灵摆区域是否存在至少2张「异响鸣」卡
+		-- 追加发动条件：自己的灵摆区域存在至少2张「异响鸣」字段的卡。
 		and Duel.IsExistingMatchingCard(Card.IsSetCard,tp,LOCATION_PZONE,0,2,nil,0x1a3) end
-	-- 设置操作信息，表示将要将自身加入手牌
+	-- 设置操作信息：声明本效果将这张卡自身加入手卡，类别为加入手卡，数量1。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,e:GetHandler(),1,0,0)
 end
--- 执行效果处理，将自身加入手牌
+-- ③效果的处理函数：若这张卡仍在墓地且与发动时的效果保持关联，则将其加入持有者手卡。
 function s.thop2(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) then
-		-- 将自身发送至手牌
+		-- 将这张卡加入持有者手卡，原因记为效果。
 		Duel.SendtoHand(c,nil,REASON_EFFECT)
 	end
 end

@@ -9,7 +9,7 @@ function c23087070.initial_effect(c)
 	e1:SetValue(c23087070.condition)
 	c:RegisterEffect(e1)
 end
--- 当怪兽进行上级召唤时，若其为植物族，则可将其作为2个祭品进行解放
+-- 判定上级召唤的怪兽是否为植物族，若为植物族则允许本卡作为2只祭品解放。
 function c23087070.condition(e,c)
 	return c:IsRace(RACE_PLANT)
 end

@@ -4,14 +4,14 @@
 -- ②：这张卡的①的效果特殊召唤的场合发动。场上的其他怪兽全部破坏。
 -- ③：这张卡被战斗破坏送去墓地时才能发动。从卡组把「炎王神兽 大鹏不死鸟」以外的1只「炎王」怪兽特殊召唤。
 function c23015896.initial_effect(c)
-	-- ①：这张卡被效果破坏送去墓地的场合，下次的准备阶段发动。这张卡从墓地特殊召唤。
+	-- ①：这张卡被效果破坏送去墓地的场合，下次的准备阶段发动。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_CONTINUOUS)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
 	e1:SetCode(EVENT_TO_GRAVE)
 	e1:SetOperation(c23015896.spreg)
 	c:RegisterEffect(e1)
-	-- ①：这张卡被效果破坏送去墓地的场合，下次的准备阶段发动。这张卡从墓地特殊召唤。
+	-- ①：下次的准备阶段发动。这张卡从墓地特殊召唤。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(23015896,0))  --"特殊召唤"
 	e2:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -44,13 +44,13 @@ function c23015896.initial_effect(c)
 	e4:SetOperation(c23015896.spop2)
 	c:RegisterEffect(e4)
 end
--- 注册效果①的触发标记，判断是否为效果破坏送墓，并根据当前阶段设置延迟发动的回合数标记。
+-- 该函数由e1在怪兽被送去墓地时触发，检查破坏原因是否为效果破坏；若是，则记录当前是否处于准备阶段：若在准备阶段则保存当前回合数并设置2次准备阶段重置的标记，否则保存0并设置1次准备阶段重置的标记，以确保①效果在下一次准备阶段发动。
 function c23015896.spreg(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if bit.band(r,0x41)~=0x41 then return end
-	-- 判断当前是否为准备阶段，用于处理在同一准备阶段被破坏时的时点计数逻辑。
+	-- 判断当前阶段是否为准备阶段，用于决定被效果破坏时是否已经处于准备阶段，从而正确计算延迟到下一次准备阶段的时机。
 	if Duel.GetCurrentPhase()==PHASE_STANDBY then
-		-- 记录当前回合数，用于后续判断是否为“下次”的准备阶段。
+		-- 将被效果破坏时的回合数记录到e1的Label中，供spcon条件判断是否为“下一次”准备阶段（排除当回合）。
 		e:SetLabel(Duel.GetTurnCount())
 		c:RegisterFlagEffect(23015896,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_STANDBY,0,2)
 	else
@@ -58,73 +58,73 @@ function c23015896.spreg(e,tp,eg,ep,ev,re,r,rp)
 		c:RegisterFlagEffect(23015896,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_STANDBY,0,1)
 	end
 end
--- 效果①的发动条件，检查是否满足“下次准备阶段”以及卡片是否仍持有触发标记。
+-- 该条件函数判断e2能否发动：要求e1记录的回合数不等于当前回合数（表示已不是被破坏的那个回合），且卡片带有23015896标记（表示确实曾因效果破坏送去墓地）。
 function c23015896.spcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断回合数是否不同（确保是下次准备阶段）且标记存在（确保是效果破坏送墓）。
+	-- 判断e1的Label（被效果破坏时的回合数）与当前回合数不同，且自身带有23015896标记，两者同时成立才符合发动条件。
 	return e:GetLabelObject():GetLabel()~=Duel.GetTurnCount() and e:GetHandler():GetFlagEffect(23015896)>0
 end
--- 效果①的目标函数，设置特殊召唤的操作信息并重置标记。
+-- 该目标函数在效果发动时无需选择对象，直接登记将自身特殊召唤的操作信息，并清除23015896标记（防止重复发动）。
 function c23015896.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
 	local c=e:GetHandler()
-	-- 宣告效果分类为特殊召唤，目标为这张卡自身。
+	-- 将特殊召唤这张卡（c）登记为操作信息，数量1，用于后续处理和相关效果检测。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,c,1,0,0)
 	c:ResetFlagEffect(23015896)
 end
--- 效果①的操作函数，执行特殊召唤操作。
+-- 该效果处理时，若这张卡仍与效果存在联系（未被除外等），则将其以自身效果特殊召唤上场。
 function c23015896.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) then
-		-- 将这张卡从墓地特殊召唤，并标记召唤来源为效果①（SUMMON_VALUE_SELF）。
+		-- 以自身效果（SUMMON_VALUE_SELF）将这张卡表侧表示特殊召唤到其持有者场上，不检查召唤条件和苏生限制。
 		Duel.SpecialSummon(c,SUMMON_VALUE_SELF,tp,tp,false,false,POS_FACEUP)
 	end
 end
--- 效果②的发动条件，判断是否为效果①的特殊召唤成功。
+-- ②效果的发动条件：这张卡是被①效果特殊召唤成功的（通过自身效果特殊召唤，召唤类型为SUMMON_TYPE_SPECIAL+SUMMON_VALUE_SELF）。
 function c23015896.descon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():GetSummonType()==SUMMON_TYPE_SPECIAL+SUMMON_VALUE_SELF
 end
--- 效果②的目标函数，选取场上除这张卡以外的所有怪兽作为破坏对象。
+-- ②效果的目标处理：不指定对象，但登记破坏场上除自身以外的所有怪兽为操作信息，以便处理时统一破坏。
 function c23015896.destg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 获取场上除这张卡以外的所有怪兽。
+	-- 获取场上（双方怪兽区）除这张卡自身以外的所有怪兽，作为预计要破坏的卡集合。
 	local g=Duel.GetMatchingGroup(aux.TRUE,tp,LOCATION_MZONE,LOCATION_MZONE,e:GetHandler())
-	-- 宣告效果分类为破坏，目标为选取的怪兽组。
+	-- 将上述怪兽集合及其数量登记到操作信息中，表示该效果将破坏这些怪兽。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,g:GetCount(),0,0)
 end
--- 效果②的操作函数，执行破坏场上其他怪兽的处理。
+-- 效果处理时，重新获取场上除自身以外的所有怪兽，并将其全部破坏。
 function c23015896.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 再次过滤场上怪兽，排除自身（使用ExceptThisCard确保逻辑严谨）。
+	-- 效果处理时获取当前场上除自身外的所有怪兽（因为发动时与处理时场面可能不同，需以处理时为准）。
 	local g=Duel.GetMatchingGroup(aux.TRUE,tp,LOCATION_MZONE,LOCATION_MZONE,aux.ExceptThisCard(e))
-	-- 破坏选中的怪兽组。
+	-- 以效果破坏这些怪兽。
 	Duel.Destroy(g,REASON_EFFECT)
 end
--- 效果③的发动条件，判断是否为被战斗破坏送去墓地。
+-- ③效果的发动条件：这张卡被战斗破坏后位于墓地（即因此战斗破坏被送去墓地）。
 function c23015896.spcon2(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsLocation(LOCATION_GRAVE) and e:GetHandler():IsReason(REASON_BATTLE)
 end
--- 效果③的过滤函数，检查是否为「炎王」怪兽且非本卡名且可特殊召唤。
+-- 定义卡组检索筛选条件：必须是「炎王」系列（0x81）怪兽，卡名不是「炎王神兽 大鹏不死鸟」，且可以被特殊召唤。
 function c23015896.spfilter(c,e,tp)
 	return c:IsSetCard(0x81) and not c:IsCode(23015896) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 效果③的目标函数，检查是否有空位并设置特殊召唤的操作信息。
+-- ③效果的发动时确认：满足自己主要怪兽区有空位且卡组存在符合条件的「炎王」怪兽时，才可发动；并通过SetOperationInfo登记从卡组特殊召唤1只怪兽。
 function c23015896.sptg2(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查自己场上是否有可用的怪兽区域。
+	-- 检查自己场上是否有空闲的主要怪兽区域，作为能否发动特殊召唤的前提条件。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查卡组中是否存在满足条件的「炎王」怪兽。
+		-- 检查卡组中是否存在至少1张满足spfilter条件的「炎王」怪兽。
 		and Duel.IsExistingMatchingCard(c23015896.spfilter,tp,LOCATION_DECK,0,1,nil,e,tp) end
-	-- 宣告效果分类为特殊召唤，来源为卡组。
+	-- 登记从卡组特殊召唤1只怪兽的操作信息，因具体怪兽在效果处理时才选择，目标设为nil。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_DECK)
 end
--- 效果③的操作函数，从卡组选择怪兽并特殊召唤。
+-- 效果处理时，若仍有空位，则提示玩家选择，从卡组选出1只符合条件的「炎王」怪兽并表侧表示特殊召唤。
 function c23015896.spop2(e,tp,eg,ep,ev,re,r,rp)
-	-- 再次检查怪兽区域是否可用，若无可用的则效果处理结束。
+	-- 如果处理时主要怪兽区没有空位，则直接终止处理，不进行特殊召唤。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-	-- 提示玩家选择要特殊召唤的卡片。
+	-- 向玩家显示选择提示信息，提示其选择要特殊召唤的卡片。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 玩家从卡组选择1张满足条件的怪兽。
+	-- 让玩家从卡组中筛选并选择1只满足spfilter条件的「炎王」怪兽。
 	local g=Duel.SelectMatchingCard(tp,c23015896.spfilter,tp,LOCATION_DECK,0,1,1,nil,e,tp)
 	if g:GetCount()>0 then
-		-- 将选中的怪兽以表侧表示特殊召唤。
+		-- 将选出的怪兽以表侧表示特殊召唤到玩家场上。
 		Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
