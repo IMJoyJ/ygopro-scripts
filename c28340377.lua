@@ -4,7 +4,7 @@
 -- ①：自己场上没有「王后骑士」「卫兵骑士」「国王骑士」以外的怪兽存在的场合才能发动。从自己的手卡·墓地选「王后骑士」「卫兵骑士」「国王骑士」之内1只特殊召唤。
 -- ②：从自己的手卡·墓地把「王后骑士」「卫兵骑士」「国王骑士」各最多1只除外才能发动。自己从卡组抽出除外的数量。
 function c28340377.initial_effect(c)
-	-- 注册该卡牌所关联的其他卡片代码，用于识别其效果中涉及的特定怪兽卡片。
+	-- 注册代码列表，将本卡与「王后骑士」「国王骑士」「卫兵骑士」的卡号关联，用于效果文本中记载这些卡名的检索。
 	aux.AddCodeList(c,25652259,64788463,90876561)
 	-- 永续魔陷/场地卡通用的“允许发动”空效果，无此效果则无法发动
 	local e1=Effect.CreateEffect(c)
@@ -38,81 +38,81 @@ function c28340377.initial_effect(c)
 	e3:SetOperation(c28340377.drop)
 	c:RegisterEffect(e3)
 end
--- 过滤函数，用于判断场上是否存在「王后骑士」「卫兵骑士」「国王骑士」以外的怪兽。
+-- 定义过滤条件：怪兽须为表侧表示且卡名为「国王骑士」「王后骑士」「卫兵骑士」之一。
 function c28340377.confilter(c)
 	return c:IsFaceup() and c:IsCode(64788463,25652259,90876561)
 end
--- 判断是否满足效果①的发动条件：自己场上没有「王后骑士」「卫兵骑士」「国王骑士」以外的怪兽。
+-- 效果①的发动条件：自己场上不存在上述三张骑士以外的怪兽（场上没有怪兽或全部是骑士）。
 function c28340377.spcon(e,tp)
-	-- 获取自己场上的所有怪兽组。
+	-- 获取自己主要怪兽区当前存在的所有怪兽。
 	local g=Duel.GetFieldGroup(tp,LOCATION_MZONE,0)
 	return #g==0 or (#g>0 and g:FilterCount(c28340377.confilter,nil)==#g)
 end
--- 过滤函数，用于判断手牌或墓地中的卡片是否为「王后骑士」「卫兵骑士」「国王骑士」且可特殊召唤。
+-- 定义特殊召唤对象过滤条件：卡名是上述三张骑士之一，且可以被当前效果特殊召唤。
 function c28340377.spfilter(c,e,tp)
 	return c:IsCode(64788463,25652259,90876561) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 设置效果①的发动条件：确认场上是否有足够的召唤位置以及手牌或墓地中是否存在符合条件的怪兽。
+-- 效果①的发动目标判定：在发动阶段检查是否存在空位和符合条件的怪兽，并登记特殊召唤操作信息。
 function c28340377.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查场上是否有足够的召唤位置。
+	-- 检查自己场上是否有可用的主要怪兽区空格。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查手牌或墓地中是否存在符合条件的怪兽。
+		-- 检查手卡·墓地是否存在至少1张可特殊召唤的上述骑士怪兽。
 		and Duel.IsExistingMatchingCard(c28340377.spfilter,tp,LOCATION_HAND+LOCATION_GRAVE,0,1,nil,e,tp) end
-	-- 设置效果①的处理信息，表示将特殊召唤1只怪兽。
+	-- 登记本次连锁为特殊召唤操作，使相关卡片（如「星尘龙」等）能正确响应。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_HAND+LOCATION_GRAVE)
 end
--- 效果①的处理函数，执行特殊召唤操作。
+-- 执行效果①：选择1只符合条件的骑士怪兽从手卡·墓地以表侧表示特殊召唤到自己的主要怪兽区。
 function c28340377.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查场上是否有足够的召唤位置，若无则不执行特殊召唤。
+	-- 处理时再次确认空位，若无空位则效果不适用。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-	-- 提示玩家选择要特殊召唤的怪兽。
+	-- 向玩家显示“请选择要特殊召唤的卡”的提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 从手牌或墓地中选择符合条件的怪兽。
+	-- 从自己的手卡·墓地选择1只符合条件的骑士怪兽（并排除王家长眠之谷等影响）。
 	local g=Duel.SelectMatchingCard(tp,aux.NecroValleyFilter(c28340377.spfilter),tp,LOCATION_HAND+LOCATION_GRAVE,0,1,1,nil,e,tp)
 	if #g>0 then
-		-- 将选中的怪兽特殊召唤到场上。
+		-- 将选择的怪兽以表侧攻击表示特殊召唤到自己的主要怪兽区。
 		Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
--- 过滤函数，用于判断手牌或墓地中的卡片是否为「王后骑士」「卫兵骑士」「国王骑士」且可除外作为费用。
+-- 定义代价对象过滤条件：卡名为骑士三张之一且可以作为代价除外。
 function c28340377.cfilter(c)
 	return c:IsCode(64788463,25652259,90876561) and c:IsAbleToRemoveAsCost()
 end
--- 效果②的处理函数，执行除外并抽卡操作。
+-- 效果②的代价处理：从手卡·墓地选择「王后骑士」「卫兵骑士」「国王骑士」各最多1只（卡名各异，最多3只）作为代价除外，并将实际除外的数量记录到效果标签中。
 function c28340377.drcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 获取手牌或墓地中所有符合条件的怪兽。
+	-- 获取自己手卡·墓地中所有满足代价条件的骑士怪兽。
 	local g=Duel.GetMatchingGroup(c28340377.cfilter,tp,LOCATION_HAND+LOCATION_GRAVE,0,nil)
 	local mt=g:GetClassCount(Card.GetCode)
 	if chk==0 then return mt>0 end
 	local ct=1
 	for i=2,3 do
-		-- 判断玩家是否可以抽卡，用于确定最多可除外的怪兽数量。
+		-- 根据是否受“不能抽卡”限制，尝试将可抽数量提高到2或3。
 		if Duel.IsPlayerCanDraw(tp,i) then ct=i end
 	end
 	if mt<ct then ct=mt end
-	-- 提示玩家选择要除外的怪兽。
+	-- 提示玩家选择要除外的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
-	-- 从符合条件的怪兽中选择不重复卡名的若干张。
+	-- 从候选中选择1至ct张且卡名互不相同的骑士怪兽作为代价（以保证各最多1只）。
 	local sg=g:SelectSubGroup(tp,aux.dncheck,false,1,ct)
-	-- 将选中的怪兽除外，并记录除外数量。
+	-- 执行除外处理，并把实际除外的卡数保存到效果标签，供后续抽卡阶段使用。
 	e:SetLabel(Duel.Remove(sg,POS_FACEUP,REASON_COST))
 end
--- 设置效果②的发动条件：确认玩家是否可以抽卡。
+-- 效果②的发动目标判定：确认自己至少可以抽1张卡，设定抽卡对象为自身、抽卡数量为代价除外的张数，并登记抽卡操作信息。
 function c28340377.drtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查玩家是否可以抽卡。
+	-- 发动时确认自己是否至少能抽1张卡。
 	if chk==0 then return Duel.IsPlayerCanDraw(tp,1) end
 	local ct=e:GetLabel()
-	-- 设置效果②的目标玩家为当前玩家。
+	-- 将本次效果的抽卡对象玩家设为自己。
 	Duel.SetTargetPlayer(tp)
-	-- 设置效果②的目标参数为除外的怪兽数量。
+	-- 将本次效果的抽卡数量参数设为之前记录的除外数量。
 	Duel.SetTargetParam(ct)
-	-- 设置效果②的处理信息，表示将抽卡。
+	-- 登记抽卡操作信息，使系统及关联卡片能正确识别本次抽卡。
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,ct)
 end
--- 效果②的处理函数，执行抽卡操作。
+-- 执行效果②的抽卡处理：根据登记的目标玩家和数量进行抽卡。
 function c28340377.drop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的目标玩家和目标参数。
+	-- 从连锁信息中取出目标玩家p和抽卡数量d。
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 根据目标参数执行抽卡操作。
+	-- 让玩家p以效果原因抽取d张卡。
 	Duel.Draw(p,d,REASON_EFFECT)
 end

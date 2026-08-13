@@ -10,18 +10,18 @@ function c2833249.initial_effect(c)
 	e1:SetOperation(c2833249.operation)
 	c:RegisterEffect(e1)
 end
--- 定义发动条件检查函数：确认自己场上存在表侧表示的怪兽可作为效果对象
+-- 发动时的目标函数：确认自己场上存在表侧表示怪兽，以作为这张魔法卡可以发动的条件。
 function c2833249.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查自己场上是否存在至少1只表侧表示的怪兽
+	-- 在发动时点（chk==0）检查自己主要怪兽区是否存在至少1张表侧表示怪兽，若存在则允许发动。
 	if chk==0 then return Duel.IsExistingMatchingCard(Card.IsFaceup,tp,LOCATION_MZONE,0,1,nil) end
 end
--- 定义效果处理函数：获取场上所有表侧表示怪兽，并为每只怪兽附加龙族变化效果直至结束阶段
+-- 效果处理时，获取自己场上所有表侧表示怪兽，并逐一赋予‘直到结束阶段时变成龙族’的效果。
 function c2833249.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取自己场上所有表侧表示怪兽组成的卡片组
+	-- 获取自己场上全部表侧表示怪兽的集合，作为后续变更种族处理的对象。
 	local g=Duel.GetMatchingGroup(Card.IsFaceup,tp,LOCATION_MZONE,0,nil)
 	local tc=g:GetFirst()
 	while tc do
-		-- 全部变成龙族，直到结束阶段时为止
+		-- 直到结束阶段时为止全部变成龙族。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_CHANGE_RACE)
