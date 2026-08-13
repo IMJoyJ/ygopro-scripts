@@ -32,16 +32,16 @@ function c51452091.initial_effect(c)
 	e4:SetTarget(c51452091.distarget)
 	c:RegisterEffect(e4)
 end
--- 目标为除自身外的陷阱卡时生效
+-- 无效化目标筛选：判定对象卡不是本卡自身且为陷阱卡，即只有场上的其他陷阱卡才会被无效化。
 function c51452091.distarget(e,c)
 	return c~=e:GetHandler() and c:IsType(TYPE_TRAP)
 end
--- 连锁处理时判断是否为陷阱卡效果并使其无效
+-- 连锁处理时的无效化操作：若当前连锁是魔法与陷阱区域的陷阱卡发动且不是本卡，则将其效果发动无效，对应效果文本中“其他的陷阱卡的效果无效化”。
 function c51452091.disop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的发动位置
+	-- 获取当前正在处理的连锁的发生位置，用于确认该连锁是否从魔法与陷阱区域发动。
 	local tl=Duel.GetChainInfo(ev,CHAININFO_TRIGGERING_LOCATION)
 	if tl==LOCATION_SZONE and re:IsActiveType(TYPE_TRAP) and re:GetHandler()~=e:GetHandler() then
-		-- 使对应连锁效果无效
+		-- 使该连锁的效果无效，即对发动中的其他陷阱卡的效果进行无效。
 		Duel.NegateEffect(ev)
 	end
 end
