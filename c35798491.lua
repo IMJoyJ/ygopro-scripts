@@ -21,46 +21,46 @@ function c35798491.initial_effect(c)
 	e2:SetOperation(c35798491.disop)
 	c:RegisterEffect(e2)
 end
--- 判断是否为当前回合玩家的准备阶段
+-- 触发条件判断：仅在控制者的准备阶段才处理该效果。
 function c35798491.mtcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断当前回合玩家是否为效果持有者
+	-- 若当前回合玩家是这张卡的控制者，则条件成立。
 	return Duel.GetTurnPlayer()==tp
 end
--- 处理准备阶段支付基本分或因特殊效果免支付并可能破坏自身
+-- 准备阶段的处理：若能支付500基本分或适用「万魔殿-恶魔的巢窟-」的效果则进行支付选择；若不能支付则将此卡破坏。
 function c35798491.mtop(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查玩家是否能支付500基本分或是否受特定效果影响
+	-- 检查控制者是否能支付500基本分，或是否因「万魔殿-恶魔的巢窟-」的效果可以不支付基本分。
 	if Duel.CheckLPCost(tp,500) or Duel.IsPlayerAffectedByEffect(tp,94585852) then
-		-- 检查玩家是否未受特定效果影响
+		-- 当没有「万魔殿-恶魔的巢窟-」的效果适用时，直接进入需要支付基本分的分支。
 		if not Duel.IsPlayerAffectedByEffect(tp,94585852)
-			-- 询问玩家是否使用特定效果免支付基本分
+			-- 若有「万魔殿-恶魔的巢窟-」的效果，则询问玩家是否使用该效果免去支付；若选择不使用，则仍需支付500基本分。
 			or not Duel.SelectEffectYesNo(tp,e:GetHandler(),aux.Stringid(94585852,1)) then  --"是否使用「万魔殿-恶魔的巢窟-」的效果不支付基本分？"
-			-- 支付500基本分
+			-- 支付500基本分作为维持这张卡的控制代价。
 			Duel.PayLPCost(tp,500)
 		end
 	else
-		-- 因无法支付基本分而破坏自身
+		-- 无法支付维持代价时，将这张卡以规则代价的方式破坏。
 		Duel.Destroy(e:GetHandler(),REASON_COST)
 	end
 end
--- 定义过滤函数，用于判断目标怪兽是否为场上正面表示的恶魔族怪兽
+-- 筛选符合条件的怪兽：位于我方怪兽区、表侧表示，且为名称中含有「恶魔」字段（0x45）的怪兽。
 function c35798491.filter(c,tp)
 	return c:IsLocation(LOCATION_MZONE) and c:IsControler(tp) and c:IsFaceup() and c:IsSetCard(0x45)
 end
--- 连锁处理时判断是否满足无效条件并执行骰子判定与效果无效及破坏操作
+-- 连锁处理时的对应操作：当对方效果取对象且对象中有我方符合条件的「恶魔」怪兽时，掷骰子并可能无效该效果和破坏来源。
 function c35798491.disop(e,tp,eg,ep,ev,re,r,rp)
 	if ep==tp then return end
 	if not re:IsHasProperty(EFFECT_FLAG_CARD_TARGET) then return false end
-	-- 获取当前连锁的目标卡片组
+	-- 获取当前连锁中该效果取对象的所有卡片。
 	local tg=Duel.GetChainInfo(ev,CHAININFO_TARGET_CARDS)
-	-- 判断目标卡片组是否包含符合条件的恶魔族怪兽且连锁可被无效
+	-- 若存在取对象卡组、其中有我方符合条件的「恶魔」怪兽，并且该连锁可被无效，才继续处理。
 	if not tg or not tg:IsExists(c35798491.filter,1,nil,tp) or not Duel.IsChainDisablable(ev) then return false end
 	local rc=re:GetHandler()
-	-- 投掷一次骰子
+	-- 投掷1次骰子，得到1个1～6的点数。
 	local dc=Duel.TossDice(tp,1)
 	if dc==1 or dc==3 or dc==6 then
-		-- 使连锁效果无效并判断原卡是否仍然存在于场上
+		-- 若点数为1、3或6，则尝试无效该效果；若无效成功且效果来源卡仍与该效果关联，则继续破坏。
 		if Duel.NegateEffect(ev,true) and rc:IsRelateToEffect(re) then
-			-- 破坏连锁效果的原卡
+			-- 将被无效的效果的来源卡以效果原因破坏。
 			Duel.Destroy(rc,REASON_EFFECT)
 		end
 	end

@@ -4,7 +4,7 @@
 -- ①：自己场上有6星以上的幻想魔族或魔法师族的怪兽存在的场合，以对方场上1张卡为对象才能发动。那张卡破坏。
 -- ②：这张卡为让怪兽的效果发动而被送去墓地的场合才能发动。这张卡在自己场上盖放。
 local s,id,o=GetID()
--- 注册卡牌的两个效果：①破坏对方场上一张卡；②被送去墓地时可盖放
+-- 创建并注册此卡的两个效果：①效果为发动时选择对方场上1张卡破坏；②效果为这张卡作为怪兽效果发动的代价被送去墓地时，将自身盖放到自己场上。
 function s.initial_effect(c)
 	-- ①：自己场上有6星以上的幻想魔族或魔法师族的怪兽存在的场合，以对方场上1张卡为对象才能发动。那张卡破坏。
 	local e1=Effect.CreateEffect(c)
@@ -29,50 +29,50 @@ function s.initial_effect(c)
 	e2:SetOperation(s.setop)
 	c:RegisterEffect(e2)
 end
--- 过滤函数，用于判断场上是否存在6星以上且种族为魔法师族或幻想魔族的怪兽
+-- 过滤函数：卡需为表侧表示、等级6以上，且种族为魔法师族或幻想魔族。
 function s.cfilter(c)
 	return c:IsFaceup() and c:IsLevelAbove(6) and c:IsRace(RACE_SPELLCASTER+RACE_ILLUSION)
 end
--- 判断是否满足效果①的发动条件：自己场上有6星以上的幻想魔族或魔法师族的怪兽
+-- ①效果的发动条件：自己场上存在满足s.cfilter的怪兽。
 function s.descon(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查自己场上是否存在满足条件的怪兽
+	-- 检查自己场上是否存在至少1只表侧表示且等级6以上的魔法师族或幻想魔族怪兽。
 	return Duel.IsExistingMatchingCard(s.cfilter,tp,LOCATION_MZONE,0,1,nil)
 end
--- 效果①的发动时点处理函数，设置目标选择和操作信息
+-- ①效果的发动目标：校验对象为对方场上的卡；发动时确认存在可取对象后，提示玩家从对方场上选择1张卡，并登记破坏操作信息。
 function s.destg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(1-tp) and chkc:IsOnField() end
-	-- 检查是否满足效果①的目标选择条件：对方场上存在至少一张可破坏的卡
+	-- 效果发动时检查对方场上是否存在可以成为对象的卡。
 	if chk==0 then return Duel.IsExistingTarget(nil,tp,0,LOCATION_ONFIELD,1,nil) end
-	-- 向玩家提示选择要破坏的卡
+	-- 显示“请选择要破坏的卡”的提示消息，并缓存选择用途。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 选择对方场上的一张卡作为破坏目标
+	-- 让玩家从对方场上选择1张卡作为效果的对象（同时将该卡设为当前连锁的对象）。
 	local g=Duel.SelectTarget(tp,nil,tp,0,LOCATION_ONFIELD,1,1,nil)
-	-- 设置操作信息，表示将要破坏目标卡
+	-- 登记操作信息为破坏1张卡，目标为已选对象，用于后续连锁判定（如星尘龙）。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,1,0,0)
 end
--- 效果①的处理函数，执行破坏操作
+-- ①效果处理：取得对象卡，若该卡仍与效果关联，则将其破坏。
 function s.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁中被选择的目标卡
+	-- 获取效果发动时选择的对象卡。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 将目标卡以效果原因破坏
+		-- 以效果原因破坏对象卡。
 		Duel.Destroy(tc,REASON_EFFECT)
 	end
 end
--- 效果②的发动条件判断函数，判断是否因支付代價而被送去墓地且是怪兽效果发动
+-- ②效果的发动条件：这张卡是作为怪兽效果的发动代价被送去墓地的，且该怪兽效果属于发动效果。
 function s.setcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsReason(REASON_COST) and re:IsActivated() and re:IsActiveType(TYPE_MONSTER)
 end
--- 效果②的发动时点处理函数，设置操作信息
+-- ②效果的发动目标：自己可以盖放时才能发动，并登记操作信息为涉及离开墓地。
 function s.settg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	if chk==0 then return c:IsSSetable() end
-	-- 设置操作信息，表示将要盖放此卡
+	-- 登记操作信息：此卡将离开墓地（用于检测王家长眠之谷等影响墓地卡移动的效果）。
 	Duel.SetOperationInfo(0,CATEGORY_LEAVE_GRAVE,c,1,0,0)
 end
--- 效果②的处理函数，执行盖放操作
+-- ②效果处理：若自身仍与效果关联，则将此卡盖放到自己场上。
 function s.setop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 判断此卡是否仍存在于场上（未被其他效果移除）并执行盖放
+	-- 检查此卡仍与效果关联（未被除外或转移等），满足则将其盖放到自己场上。
 	if c:IsRelateToEffect(e) then Duel.SSet(tp,c) end
 end

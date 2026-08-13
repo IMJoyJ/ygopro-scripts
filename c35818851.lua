@@ -14,7 +14,7 @@ function c35818851.initial_effect(c)
 	e1:SetHintTiming(TIMING_DAMAGE_STEP)
 	e1:SetRange(LOCATION_MZONE)
 	e1:SetCountLimit(1,35818851)
-	-- 限制效果只能在伤害计算前的时机发动或适用
+	-- 设置①效果的发动条件为伤害步骤限制，即仅在伤害计算前或非伤害步骤才能发动，允许在对方回合发动。
 	e1:SetCondition(aux.dscon)
 	e1:SetCost(c35818851.cost)
 	e1:SetOperation(c35818851.operation)
@@ -31,33 +31,33 @@ function c35818851.initial_effect(c)
 	e2:SetOperation(c35818851.thop)
 	c:RegisterEffect(e2)
 end
--- 过滤函数，用于判断墓地中的不死族怪兽是否可以作为除外的代价
+-- ①效果的费用筛选：判断怪兽是否满足不死族且可作为代价除外。
 function c35818851.cfilter(c)
 	return c:IsRace(RACE_ZOMBIE) and c:IsAbleToRemoveAsCost()
 end
--- 效果发动时的费用支付处理，需要从墓地选择一只不死族怪兽除外
+-- ①效果的代价处理：从自己墓地选择1只不死族怪兽除外（发动代价），若不存在可选卡则不能发动。
 function c35818851.cost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否满足发动条件，即墓地是否存在符合条件的不死族怪兽
+	-- cost的合法性检查：确认自己墓地存在至少1只满足过滤条件的不死族怪兽。
 	if chk==0 then return Duel.IsExistingMatchingCard(c35818851.cfilter,tp,LOCATION_GRAVE,0,1,nil) end
-	-- 提示玩家选择要除外的卡
+	-- 给玩家显示选择提示，提示内容为“请选择要除外的卡”。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
-	-- 选择符合条件的不死族怪兽并将其除外
+	-- 玩家从自己墓地的怪兽中选择1只满足过滤条件的不死族怪兽作为代价。
 	local g=Duel.SelectMatchingCard(tp,c35818851.cfilter,tp,LOCATION_GRAVE,0,1,1,nil)
-	-- 将选中的卡从游戏中除外作为费用
+	-- 将选中的不死族怪兽以表侧表示除外，作为效果的发动代价。
 	Duel.Remove(g,POS_FACEUP,REASON_COST)
 end
--- 效果发动后的处理，提升自身攻击力并设置战斗时的除外效果
+-- ①效果的处理：本回合这张卡的攻击力上升600，并为其设置“与怪兽战斗的场合，该怪兽在伤害计算后除外”的效果。
 function c35818851.operation(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsFaceup() and c:IsRelateToEffect(e) then
-		-- 使自身攻击力上升600点
+		-- 这张卡的攻击力直到回合结束时上升600
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)
 		e1:SetValue(600)
 		e1:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_DISABLE+RESET_PHASE+PHASE_END)
 		c:RegisterEffect(e1)
-		-- 设置战斗时除外对方怪兽的效果
+		-- 这个回合这张卡和怪兽进行战斗的场合，那只怪兽在伤害计算后除外。
 		local e2=Effect.CreateEffect(c)
 		e2:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_CONTINUOUS)
 		e2:SetCode(EVENT_BATTLED)
@@ -67,36 +67,36 @@ function c35818851.operation(e,tp,eg,ep,ev,re,r,rp)
 		c:RegisterEffect(e2)
 	end
 end
--- 战斗时的处理函数，用于将对方怪兽除外
+-- ①效果的追加效果处理：伤害计算后，将这张卡进行过战斗的那只怪兽除外。
 function c35818851.rmop(e,tp,eg,ep,ev,re,r,rp)
 	local tc=e:GetHandler():GetBattleTarget()
 	if tc then
-		-- 将对方怪兽从游戏中除外
+		-- 将战斗对象怪兽以表侧表示除外。
 		Duel.Remove(tc,POS_FACEUP,REASON_EFFECT)
 	end
 end
--- 过滤函数，用于选择墓地中符合条件的「不知火」怪兽
+-- ②效果的对象的筛选条件：我方墓地的「不知火」怪兽，卡名不是「不知火的武士」，且可以被加入手卡。
 function c35818851.filter(c)
 	return c:IsSetCard(0xd9) and c:IsType(TYPE_MONSTER) and not c:IsCode(35818851) and c:IsAbleToHand()
 end
--- 发动效果时选择目标怪兽，将其加入手牌
+-- ②效果的发动与取对象：以自己墓地1只「不知火」怪兽（不含「不知火的武士」）为对象，并设置加入手卡的处理信息。
 function c35818851.thtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(tp) and chkc:IsLocation(LOCATION_GRAVE) and c35818851.filter(chkc) end
-	-- 检查是否满足发动条件，即墓地是否存在符合条件的「不知火」怪兽
+	-- 合法性检查：确认自己墓地存在至少1只满足条件且能被作为对象的「不知火」怪兽。
 	if chk==0 then return Duel.IsExistingTarget(c35818851.filter,tp,LOCATION_GRAVE,0,1,nil) end
-	-- 提示玩家选择要加入手牌的卡
+	-- 给玩家显示选择提示，提示内容为“请选择要加入手牌的卡”。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择符合条件的「不知火」怪兽
+	-- 玩家从自己墓地选择1只符合条件的「不知火」怪兽，将其设为效果对象。
 	local g=Duel.SelectTarget(tp,c35818851.filter,tp,LOCATION_GRAVE,0,1,1,nil)
-	-- 设置连锁操作信息，表明将要将目标怪兽加入手牌
+	-- 设置操作信息：本次效果处理将1张对象卡加入持有者手卡。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,1,0,0)
 end
--- 效果发动后的处理，将选中的怪兽加入手牌
+-- ②效果的处理：将对象怪兽加入持有者手卡。
 function c35818851.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁中选择的目标怪兽
+	-- 取回本次效果的对象卡。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 将目标怪兽加入手牌
+		-- 将对象卡加入持有者手卡（回手牌）。
 		Duel.SendtoHand(tc,nil,REASON_EFFECT)
 	end
 end
