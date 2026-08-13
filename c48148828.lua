@@ -12,18 +12,18 @@ function c48148828.initial_effect(c)
 	e1:SetOperation(c48148828.operation)
 	c:RegisterEffect(e1)
 end
--- 检查战斗中被破坏的怪兽是否有效且处于战斗破坏状态
+-- 发动时的条件检查：获取与这张卡战斗的怪兽，若该怪兽仍与本次战斗关联且处于战斗破坏确定状态，则允许发动并登记除外效果。
 function c48148828.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	local bc=e:GetHandler():GetBattleTarget()
 	if chk==0 then return bc and bc:IsRelateToBattle() and bc:IsStatus(STATUS_BATTLE_DESTROYED) end
-	-- 设置连锁操作信息为除外目标怪兽
+	-- 登记本次连锁要除外的对象为那只战斗对象，效果分类为除外，数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_REMOVE,bc,1,0,0)
 end
--- 执行将战斗破坏的怪兽除外的效果
+-- 效果处理时：再次获取战斗对象，若仍在本次战斗中有效关联，则将其除外。
 function c48148828.operation(e,tp,eg,ep,ev,re,r,rp)
 	local bc=e:GetHandler():GetBattleTarget()
 	if bc:IsRelateToBattle() then
-		-- 以效果为原因，正面表示除外目标怪兽
+		-- 将被战斗破坏的怪兽以表侧表示从游戏中除外。
 		Duel.Remove(bc,POS_FACEUP,REASON_EFFECT)
 	end
 end

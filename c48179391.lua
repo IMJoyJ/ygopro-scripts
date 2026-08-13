@@ -7,7 +7,7 @@
 -- ④：自己场上有表侧攻击表示怪兽2只以上存在的场合，对方不能选择自己场上的攻击力最低的怪兽作为攻击对象。
 -- ⑤：这张卡1回合只有1次不会被效果破坏。
 function c48179391.initial_effect(c)
-	-- ①：作为这张卡的发动时的效果处理，自己场上有特殊召唤的怪兽存在的场合，那些怪兽全部破坏。
+	-- 这个卡名的卡在决斗中只能发动1张。①：作为这张卡的发动时的效果处理，自己场上有特殊召唤的怪兽存在的场合，那些怪兽全部破坏。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_DESTROY)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -52,46 +52,46 @@ function c48179391.initial_effect(c)
 	e5:SetValue(c48179391.atlimit)
 	c:RegisterEffect(e5)
 end
--- 过滤出场上特殊召唤的怪兽
+-- 此过滤函数用于判断怪兽是否为特殊召唤怪兽，即召唤类型包含SUMMON_TYPE_SPECIAL。
 function c48179391.desfilter(c)
 	return c:IsSummonType(SUMMON_TYPE_SPECIAL)
 end
--- 设置发动时的处理目标为场上所有特殊召唤的怪兽
+-- 发动时的目标处理：无发动条件限制；检索自己场上所有特殊召唤的怪兽，并设置破坏这些怪兽的操作信息。
 function c48179391.acttg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 获取场上所有特殊召唤的怪兽
+	-- 获取自己场上所有特殊召唤的怪兽，存入组g。
 	local g=Duel.GetMatchingGroup(c48179391.desfilter,tp,LOCATION_MZONE,0,nil)
-	-- 设置连锁操作信息为破坏效果
+	-- 设置本次效果处理为破坏操作，对象为g中的怪兽，数量为g的怪兽数，用于连锁判定。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,g:GetCount(),0,0)
 end
--- 执行发动时的效果处理，破坏场上所有特殊召唤的怪兽
+-- 发动时的效果处理：再次获取自己场上所有特殊召唤的怪兽，若有则将其全部破坏。
 function c48179391.actop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取场上所有特殊召唤的怪兽
+	-- 获取自己场上所有特殊召唤的怪兽，存入组g。
 	local g=Duel.GetMatchingGroup(c48179391.desfilter,tp,LOCATION_MZONE,0,nil)
 	if g:GetCount()>0 then
-		-- 将场上所有特殊召唤的怪兽破坏
+		-- 以效果原因将组g中的怪兽全部破坏。
 		Duel.Destroy(g,REASON_EFFECT)
 	end
 end
--- 限制从额外卡组特殊召唤怪兽
+-- 此函数作为限制特殊召唤的目标判定：若尝试特殊召唤的怪兽位于额外卡组，则禁止该特殊召唤。
 function c48179391.sumlimit(e,c,sump,sumtype,sumpos,targetp)
 	return c:IsLocation(LOCATION_EXTRA)
 end
--- 判断是否为效果破坏
+-- 此函数判断本次破坏是否为效果破坏，若是效果破坏则允许使用1回合1次的无效破坏效果。
 function c48179391.valcon(e,re,r,rp)
 	return bit.band(r,REASON_EFFECT)~=0
 end
--- 检查自己场上有无至少2只表侧攻击表示怪兽
+-- 此函数为④的发动条件：自己场上有2只以上表侧攻击表示怪兽时满足条件。
 function c48179391.atkcon(e)
-	-- 检查自己场上有无至少2只表侧攻击表示怪兽
+	-- 检查自己场上是否存在至少2只表侧攻击表示怪兽。
 	return Duel.IsExistingMatchingCard(Card.IsPosition,e:GetHandlerPlayer(),LOCATION_MZONE,0,2,nil,POS_FACEUP_ATTACK)
 end
--- 过滤出攻击力低于指定值的表侧表示怪兽
+-- 此过滤函数用于判断怪兽是否为表侧表示且攻击力低于指定攻击力。
 function c48179391.atkfilter(c,atk)
 	return c:IsFaceup() and c:GetAttack()<atk
 end
--- 设置不能选择攻击力最低的怪兽为攻击对象
+-- 此函数作为④的限制条件：对方只能选择自己场上攻击力最低的表侧表示怪兽为攻击对象；若不存在攻击力更低的表侧攻击表示怪兽，则允许选择该怪兽。
 function c48179391.atlimit(e,c)
-	-- 判断目标怪兽是否为表侧表示且其攻击力不为场上最低
+	-- 判断c是否为表侧表示，且自己场上不存在攻击力低于c攻击力的表侧表示怪兽，即c是攻击力最低的表侧怪兽。
 	return c:IsFaceup() and not Duel.IsExistingMatchingCard(c48179391.atkfilter,e:GetHandlerPlayer(),LOCATION_MZONE,0,1,c,c:GetAttack())
 end

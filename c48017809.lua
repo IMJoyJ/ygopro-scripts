@@ -13,25 +13,25 @@ function c48017809.initial_effect(c)
 	e1:SetOperation(c48017809.activate)
 	c:RegisterEffect(e1)
 end
--- 效果适用条件：这张卡不在手卡且攻击对象是自己场上的表侧表示怪兽
+-- 发动条件：这张卡不在手卡（不能从手卡发动），且被选择作为攻击对象的怪兽是自己场上表侧表示存在的怪兽。
 function c48017809.condition(e,tp,eg,ep,ev,re,r,rp)
 	return not e:GetHandler():IsLocation(LOCATION_HAND)
 		and eg:GetFirst():IsControler(tp) and eg:GetFirst():IsFaceup()
 end
--- 效果处理目标：设定伤害对象为对方玩家，伤害值为1000
+-- 效果发动时确认可发动，并设定伤害对象为对方玩家、伤害数值为1000，同时登记伤害效果的操作信息。
 function c48017809.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置连锁处理的目标玩家为对方
+	-- 将本次连锁的对象玩家设为对方玩家，以指定伤害的承受者。
 	Duel.SetTargetPlayer(1-tp)
-	-- 设置连锁处理的目标参数为1000点伤害
+	-- 将本次连锁的对象参数设为1000，表示给予的伤害数值。
 	Duel.SetTargetParam(1000)
-	-- 设置连锁操作信息为伤害效果，影响对方玩家，伤害值为1000
+	-- 登记操作信息：伤害分类，对象为对方玩家，伤害数值为1000（不取对象），便于后续连锁的时点检测。
 	Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,1-tp,1000)
 end
--- 效果发动时的处理函数：获取连锁中的目标玩家和参数并造成相应伤害
+-- 效果处理阶段：读取连锁中记录的对象玩家与伤害数值，对对方玩家造成1000点效果伤害。
 function c48017809.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 从当前连锁中获取目标玩家和伤害值
+	-- 从当前连锁信息中取出对象玩家（伤害承受者）和对象参数（伤害数值）。
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 对目标玩家造成指定数值的伤害，伤害原因为效果
+	-- 以效果伤害的形式，向玩家p造成d点伤害。
 	Duel.Damage(p,d,REASON_EFFECT)
 end
