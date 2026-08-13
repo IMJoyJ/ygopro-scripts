@@ -26,22 +26,22 @@ function c42868711.initial_effect(c)
 	e3:SetTarget(c42868711.distg)
 	c:RegisterEffect(e3)
 end
--- 判断目标卡片是否为对方控制且被这张卡作为对象
+-- 过滤函数：筛选出由对方控制的、且以这张卡为对象的魔法·陷阱卡，作为被无效/赋予自毁效果的目标。
 function c42868711.distg(e,c)
 	return c:GetControler()~=e:GetHandlerPlayer() and c:IsHasCardTarget(e:GetHandler())
 end
--- 连锁处理时检查是否为对方的魔法或陷阱效果，且该效果有对象，若对象包含此卡则无效该效果并破坏效果来源
+-- 在连锁处理时，若对方发动的是取对象的魔法·陷阱卡且其对象包含这张卡，则无效该连锁，并在该魔法·陷阱卡仍与该连锁关联时将其破坏。
 function c42868711.disop(e,tp,eg,ep,ev,re,r,rp)
 	if rp==tp or not re:IsActiveType(TYPE_SPELL+TYPE_TRAP) then return end
 	if not re:IsHasProperty(EFFECT_FLAG_CARD_TARGET) then return end
 	if not e:GetHandler():IsRelateToEffect(re) then return end
-	-- 获取当前连锁的效果对象卡片组
+	-- 获取当前连锁中发动效果所选择的取对象卡片组，用于判断这张卡是否被选为对象。
 	local g=Duel.GetChainInfo(ev,CHAININFO_TARGET_CARDS)
 	if not g or g:GetCount()==0 then return end
 	if g:IsContains(e:GetHandler()) then
-		-- 使当前连锁效果无效并判断效果来源是否有效
+		-- 尝试无效该连锁效果；若无效成功且发动效果的那张魔法·陷阱卡仍与该连锁关联，则继续执行破坏。
 		if Duel.NegateEffect(ev,true) and re:GetHandler():IsRelateToEffect(re) then
-			-- 破坏该效果的来源卡片
+			-- 以效果为原因，将发动效果的对方魔法·陷阱卡破坏。
 			Duel.Destroy(re:GetHandler(),REASON_EFFECT)
 		end
 	end

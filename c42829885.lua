@@ -2,7 +2,7 @@
 -- 效果：
 -- 把对方手卡确认，从那之中选1张卡回到卡组。
 function c42829885.initial_effect(c)
-	-- 创建效果，设置效果类别为回卡组，类型为发动效果，具有以玩家为对象的特性，触发时点为自由时点，设置目标函数和发动函数
+	-- 把对方手卡确认，从那之中选1张卡回到卡组。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_TODECK)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -12,30 +12,30 @@ function c42829885.initial_effect(c)
 	e1:SetOperation(c42829885.activate)
 	c:RegisterEffect(e1)
 end
--- 效果的发动条件判断，检查对方手牌数量是否大于0
+-- 效果发动时的目标处理：检查对方手牌是否存在卡，将发动者设为对象玩家，并设置“回卡组”的操作信息。
 function c42829885.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断效果是否满足发动条件，即对方手牌数量大于0
+	-- 检查对方手牌是否存在至少1张卡，作为效果能否发动的条件（chk==0时返回是否满足）。
 	if chk==0 then return Duel.GetFieldGroupCount(tp,0,LOCATION_HAND)>0 end
-	-- 设置当前效果的目标玩家为玩家tp
+	-- 将当前连锁的对象玩家设为发动者tp，以便效果处理时从发动者视角获取对方手牌。
 	Duel.SetTargetPlayer(tp)
-	-- 设置当前效果的操作信息，指定将对方手牌送回卡组
+	-- 设置操作信息：效果分类为回卡组，预计处理发动者对方的手牌（数量在处理时确定，不取对象）。
 	Duel.SetOperationInfo(0,CATEGORY_TODECK,nil,0,1-tp,LOCATION_HAND)
 end
--- 效果发动时执行的操作，获取目标玩家并检索其手牌，确认手牌后选择一张送回卡组并洗切对方手牌
+-- 效果处理：确认对方手牌，让发动者选择其中1张返回持有者卡组，并洗切对方手牌。
 function c42829885.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的目标玩家
+	-- 从当前连锁信息中取出发动时设定的对象玩家（即发动者tp）。
 	local p=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER)
-	-- 获取目标玩家的手牌组
+	-- 获取以对象玩家p为视角的对方的手牌，即发动者对方的手牌集合。
 	local g=Duel.GetFieldGroup(p,0,LOCATION_HAND)
 	if g:GetCount()>0 then
-		-- 确认目标玩家的手牌
+		-- 向对象玩家p展示（确认）其对方的手牌，对应“把对方手卡确认”。
 		Duel.ConfirmCards(p,g)
-		-- 提示目标玩家选择要送回卡组的卡
+		-- 给对象玩家p显示选择提示：“请选择要返回卡组的卡”。
 		Duel.Hint(HINT_SELECTMSG,p,HINTMSG_TODECK)  --"请选择要返回卡组的卡"
 		local sg=g:Select(p,1,1,nil)
-		-- 将选择的卡送回卡组并洗牌
+		-- 将选择的卡以效果原因返回其持有者卡组，使用SEQ_DECKSHUFFLE表示回卡组后需要洗牌。
 		Duel.SendtoDeck(sg,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
-		-- 洗切目标玩家的手牌
+		-- 洗切对方（1-p）的手牌，以隐藏之前确认过的手牌顺序。
 		Duel.ShuffleHand(1-p)
 	end
 end

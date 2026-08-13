@@ -11,12 +11,12 @@ function c42883273.initial_effect(c)
 	e1:SetValue(c42883273.value)
 	c:RegisterEffect(e1)
 end
--- 过滤函数，用于判断目标怪兽是否为表侧表示的植物族怪兽
+-- 过滤器：判断怪兽是否为表侧表示且属于植物族，用于筛选场上符合条件的植物族怪兽。
 function c42883273.filter(c)
 	return c:IsFaceup() and c:IsRace(RACE_PLANT)
 end
--- 计算满足条件的怪兽数量并乘以100作为攻击力提升值
+-- 数值函数：统计场上表侧表示的植物族怪兽数量，并乘以100作为这张卡的攻击力上升数值。
 function c42883273.value(e,c)
-	-- 检索满足条件的卡片组并计算其数量
+	-- 返回场上所有表侧表示植物族怪兽的数量乘以100，即这张卡的攻击力上升值。
 	return Duel.GetMatchingGroupCount(c42883273.filter,0,LOCATION_MZONE,LOCATION_MZONE,nil)*100
 end
