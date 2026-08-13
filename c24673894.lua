@@ -4,7 +4,7 @@
 -- ●自己基本分回复用这张卡的效果把攻击无效的怪兽的攻击力一半的数值。
 -- ●给与对方基本分用这张卡的效果把攻击无效的怪兽的攻击力一半数值的伤害。
 function c24673894.initial_effect(c)
-	-- 创建一张永续魔法卡效果，条件为对方怪兽攻击宣言时发动，目标为攻击怪兽，效果为无效攻击并变守备表示，之后对方选择回复LP或受到伤害
+	-- 对方怪兽的攻击宣言时才能发动。
 	local e1=Effect.CreateEffect(c)
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -14,41 +14,41 @@ function c24673894.initial_effect(c)
 	e1:SetOperation(c24673894.activate)
 	c:RegisterEffect(e1)
 end
--- 效果条件：当前回合玩家不是攻击方
+-- 效果发动条件判定：仅当本卡的发动者不是当前回合玩家（即对方回合的攻击宣言时）才能发动。
 function c24673894.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 当前回合玩家不等于攻击方玩家
+	-- 返回当前回合玩家不是效果发动者，即满足对方回合的条件。
 	return tp~=Duel.GetTurnPlayer()
 end
--- 效果目标：选择攻击怪兽作为目标
+-- 目标选择函数：获取攻击宣言的怪兽，校验其位于怪兽区、攻击表示、可变更表示形式且可成为效果对象。
 function c24673894.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	-- 获取当前攻击怪兽
+	-- 获取正在攻击宣言的怪兽。
 	local tc=Duel.GetAttacker()
 	if chkc then return chkc==tc end
 	if chk==0 then return tc:IsLocation(LOCATION_MZONE) and tc:IsAttackPos()
 		and tc:IsCanChangePosition() and tc:IsCanBeEffectTarget(e) end
-	-- 设置攻击怪兽为效果目标
+	-- 将攻击宣言的怪兽登记为当前连锁的效果对象。
 	Duel.SetTargetCard(tc)
 end
--- 效果发动：无效攻击并变为守备表示，使该怪兽不能改变表示形式，然后让对方选择回复LP或受到伤害
+-- 效果处理：无效攻击并将攻击怪兽变为表侧守备表示，成功后附加不能变更表示形式的永续效果，再中断处理，由对方选择回复LP或给予伤害。
 function c24673894.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前攻击怪兽
+	-- 效果处理时重新获取攻击宣言的怪兽。
 	local tc=Duel.GetAttacker()
-	-- 攻击怪兽存在于场上且攻击宣言有效，且可以改变表示形式
+	-- 判断攻击怪兽仍与效果关联、攻击无效成功、且成功变为表侧守备表示，三者均满足才继续后续处理。
 	if tc:IsRelateToEffect(e) and Duel.NegateAttack() and Duel.ChangePosition(tc,POS_FACEUP_DEFENSE)~=0 then
-		-- 那只怪兽只要在场上表侧表示存在，变成不能把表示形式变更
+		-- 那只怪兽只要在场上表侧表示存在，变成不能把表示形式变更。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_CANNOT_CHANGE_POSITION)
 		e1:SetReset(RESET_EVENT+RESETS_STANDARD)
 		tc:RegisterEffect(e1)
-		-- 中断当前效果处理，使后续效果视为错时处理
+		-- 中断当前效果处理，使后续的选择和LP回复/伤害作为独立处理段进行，避免错过时点。
 		Duel.BreakEffect()
 		local val=tc:GetAttack()/2
-		-- 让对方选择回复LP或受到伤害
+		-- 由对方玩家选择要适用的效果：0为回复自己LP，1为给予对方伤害。
 		local op=Duel.SelectOption(1-tp,aux.Stringid(24673894,0),aux.Stringid(24673894,1))  --"自己基本分回复/给予对方伤害"
-		-- 对方选择回复LP，回复攻击怪兽攻击力一半的数值
+		-- 若对方选择第一个选项，则对方玩家回复攻击无效怪兽当前攻击力一半数值（向上取整）的LP。
 		if op==0 then Duel.Recover(1-tp,math.ceil(val),REASON_EFFECT)
-		-- 对方选择受到伤害，受到攻击怪兽攻击力一半的数值
+		-- 若对方选择第二个选项，则给与对方（即选择方的对手/效果发动者）造成攻击无效怪兽当前攻击力一半数值（向下取整）的伤害。
 		else Duel.Damage(tp,math.floor(val),REASON_EFFECT) end
 	end
 end

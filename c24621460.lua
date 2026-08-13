@@ -22,15 +22,15 @@ function c24621460.initial_effect(c)
 	e4:SetRange(LOCATION_MZONE)
 	e4:SetTargetRange(LOCATION_HAND+LOCATION_MZONE,0)
 	e4:SetCode(EFFECT_EXTRA_SUMMON_COUNT)
-	-- 设置效果目标为名字带有「机巧」的怪兽
+	-- 设置额外召唤次数的适用对象：只有卡名含有「机巧」（0x11）的怪兽才能使用这次追加的通常召唤。
 	e4:SetTarget(aux.TargetBoolFunction(Card.IsSetCard,0x11))
 	c:RegisterEffect(e4)
 end
--- 改变表示形式效果处理函数，将卡变为守备表示
+-- 效果处理：当这张卡被选择为攻击对象时，若其仍为表侧表示且与该效果关联，则强制变更其表示形式（表侧攻击表示与表侧守备表示互换）。
 function c24621460.posop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsFaceup() and c:IsRelateToEffect(e) then
-		-- 将目标怪兽变为守备表示
+		-- 变更这张卡的表示形式：若当前为表侧攻击表示则变为表侧守备表示，若当前为表侧守备表示则变为表侧攻击表示。
 		Duel.ChangePosition(c,POS_FACEUP_DEFENSE,0,POS_FACEUP_ATTACK,0)
 	end
 end

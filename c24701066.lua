@@ -6,7 +6,7 @@
 -- ②：这张卡战斗破坏对方怪兽时才能发动。那只怪兽作为这张卡的超量素材。
 -- ③：这张卡在墓地存在的场合，把自己场上1只机械族连接怪兽解放才能发动。这张卡守备表示特殊召唤。
 function c24701066.initial_effect(c)
-	-- 为卡片添加等级为5、需要2只怪兽进行叠放的XYZ召唤手续
+	-- 为这张卡添加超量召唤手续：以2只5星怪兽作为超量素材（对应“5星怪兽×2”）。
 	aux.AddXyzProcedure(c,nil,5,2)
 	c:EnableReviveLimit()
 	-- ①：把这张卡1个超量素材取除才能发动。从卡组选1只机械族·地属性怪兽加入手卡或送去墓地。
@@ -41,44 +41,44 @@ function c24701066.initial_effect(c)
 	e3:SetOperation(c24701066.spop)
 	c:RegisterEffect(e3)
 end
--- 效果发动时，检查是否能从场上取除1个超量素材作为费用
+-- ①效果的发动代价：判定并取除此卡的1个超量素材。
 function c24701066.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():CheckRemoveOverlayCard(tp,1,REASON_COST) end
 	e:GetHandler():RemoveOverlayCard(tp,1,1,REASON_COST)
 end
--- 过滤函数，用于筛选满足条件的机械族·地属性怪兽（可加入手卡或送去墓地）
+-- 检索或送去墓地的候选怪兽过滤条件：机械族·地属性，且能够加入手卡或送去墓地。
 function c24701066.filter(c)
 	return c:IsAttribute(ATTRIBUTE_EARTH) and c:IsRace(RACE_MACHINE) and (c:IsAbleToHand() or c:IsAbleToGrave())
 end
--- 设置效果处理时要操作的卡组中的目标卡片，包括送去手卡和送去墓地的分类
+-- ①效果的目标条件与操作信息：仅在卡组存在符合条件的机械族·地属性怪兽时可发动，并设定可能将卡加入手卡/送去墓地的操作信息。
 function c24701066.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查场上是否存在至少1张满足过滤条件的机械族·地属性怪兽
+	-- 发动条件检查：己方卡组中存在至少1只满足过滤条件的机械族·地属性怪兽。
 	if chk==0 then return Duel.IsExistingMatchingCard(c24701066.filter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置效果处理时要操作的卡组中的目标卡片为送去手卡
+	-- 设置操作信息：预计将把1张卡从卡组加入手卡。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
-	-- 设置效果处理时要操作的卡组中的目标卡片为送去墓地
+	-- 设置操作信息：预计将把1张卡从卡组送去墓地。
 	Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,nil,1,tp,LOCATION_DECK)
 end
--- 效果处理时，提示玩家选择要操作的卡，并根据选择将卡加入手卡或送去墓地
+-- ①效果处理：从卡组选择1只符合条件的机械族·地属性怪兽，根据其可处理方式及玩家选择，将其加入手卡或送去墓地，并向对方确认入手卡。
 function c24701066.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家从卡组中选择要操作的卡
+	-- 显示选择卡片的提示信息，提示玩家选择要操作的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_OPERATECARD)  --"请选择要操作的卡"
-	-- 从卡组中选择满足条件的1张机械族·地属性怪兽
+	-- 让玩家从卡组选择1只满足条件的机械族·地属性怪兽。
 	local g=Duel.SelectMatchingCard(tp,c24701066.filter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()<=0 then return end
 	local tc=g:GetFirst()
-	-- 判断是否可以将选中的卡加入手卡，若不能则选择送去墓地
+	-- 判断入手或入墓：若该卡能加入手卡，且（不能送去墓地或玩家选择选项0），则加入手卡；否则送去墓地。
 	if tc:IsAbleToHand() and (not tc:IsAbleToGrave() or Duel.SelectOption(tp,1190,1191)==0) then
-		-- 将选中的卡加入手卡
+		-- 将选中的怪兽加入其持有者的手卡。
 		Duel.SendtoHand(tc,nil,REASON_EFFECT)
-		-- 向对方确认加入手卡的卡
+		-- 向对方玩家展示加入手卡的怪兽。
 		Duel.ConfirmCards(1-tp,tc)
 	else
-		-- 将选中的卡送去墓地
+		-- 将选中的怪兽送去墓地。
 		Duel.SendtoGrave(tc,REASON_EFFECT)
 	end
 end
--- 判断战斗破坏的怪兽是否满足作为超量素材的条件
+-- ②效果发动条件：这张卡进行战斗并破坏了对方怪兽，被破坏的怪兽因战斗送去墓地（或处于可叠放状态），且可以叠放在这张卡下。
 function c24701066.xyzcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local tc=c:GetBattleTarget()
@@ -87,50 +87,50 @@ function c24701066.xyzcon(e,tp,eg,ep,ev,re,r,rp)
 	return tc and tc:IsType(TYPE_MONSTER) and tc:IsReason(REASON_BATTLE) and tc:IsCanOverlay()
 		and (tc:IsLocation(LOCATION_GRAVE) or tc:IsFaceup() and tc:IsLocation(LOCATION_EXTRA+LOCATION_REMOVED))
 end
--- 设置效果处理时要操作的卡为战斗破坏的怪兽，并设置其离开墓地的分类
+-- ②效果发动时：将被战斗破坏的对方怪兽指定为对象，并设置“离开墓地”的操作信息。
 function c24701066.xyztg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsType(TYPE_XYZ) end
 	local tc=e:GetLabelObject()
-	-- 设置当前处理的连锁对象为战斗破坏的怪兽
+	-- 将已确定的被战斗破坏的对方怪兽设为当前连锁的对象。
 	Duel.SetTargetCard(tc)
-	-- 设置效果处理时要操作的卡为战斗破坏的怪兽，并设置其离开墓地的分类
+	-- 设置操作信息：该怪兽将在效果处理时离开墓地（作为超量素材叠放）。
 	Duel.SetOperationInfo(0,CATEGORY_LEAVE_GRAVE,tc,1,0,0)
 end
--- 效果处理时，将战斗破坏的怪兽作为超量素材叠放至自身
+-- ②效果处理：若这张卡和对象怪兽仍与效果关联，且对象怪兽可以叠放，则将其作为这张卡的超量素材。
 function c24701066.xyzop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取当前处理的连锁对象卡
+	-- 获取②效果处理时锁定的对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if c:IsRelateToEffect(e) and tc:IsRelateToEffect(e) and tc:IsCanOverlay() then
-		-- 将目标怪兽作为超量素材叠放至自身
+		-- 将对象怪兽叠放在这张卡下方作为超量素材。
 		Duel.Overlay(c,tc)
 	end
 end
--- 过滤函数，用于筛选满足条件的机械族连接怪兽（可解放）
+-- ③效果的解放素材过滤：机械族连接怪兽，且解放后己方有可用的主要怪兽区。
 function c24701066.cfilter(c,tp)
-	-- 筛选条件：连接怪兽、机械族、且场上存在可用怪兽区
+	-- 判定条件：该怪兽为机械族连接怪兽，且解放它后己方场上仍有空格可特殊召唤。
 	return c:IsType(TYPE_LINK) and c:IsRace(RACE_MACHINE) and Duel.GetMZoneCount(tp,c)>0
 end
--- 效果发动时，检查是否能从场上选择1只满足条件的连接怪兽作为费用
+-- ③效果发动代价：检查并选择解放自己场上1只机械族连接怪兽。
 function c24701066.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查场上是否存在至少1只满足条件的连接怪兽
+	-- 代价检查：己方场上是否存在至少1只可解放的机械族连接怪兽。
 	if chk==0 then return Duel.CheckReleaseGroup(tp,c24701066.cfilter,1,nil,tp) end
-	-- 从场上选择1只满足条件的连接怪兽
+	-- 让玩家选择解放自己场上1只机械族连接怪兽。
 	local g=Duel.SelectReleaseGroup(tp,c24701066.cfilter,1,1,nil,tp)
-	-- 将选中的连接怪兽解放作为费用
+	-- 解放所选择的怪兽作为发动代价。
 	Duel.Release(g,REASON_COST)
 end
--- 设置效果处理时要操作的卡为自身，并设置特殊召唤的分类
+-- ③效果目标：确认墓地的这张卡可以守备表示特殊召唤，并设置特殊召唤的操作信息。
 function c24701066.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false,POS_FACEUP_DEFENSE) end
-	-- 设置效果处理时要操作的卡为自身，并设置特殊召唤的分类
+	-- 设置操作信息：将特殊召唤墓地的这张卡。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 效果处理时，将自身以守备表示特殊召唤至场上
+-- ③效果处理：若墓地的这张卡仍与效果关联，则将其表侧守备表示特殊召唤。
 function c24701066.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) then
-		-- 将自身以守备表示特殊召唤至场上
+		-- 将这张卡以表侧守备表示特殊召唤到己方场上。
 		Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP_DEFENSE)
 	end
 end

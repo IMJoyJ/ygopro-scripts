@@ -5,10 +5,10 @@
 -- ①：自己·对方的主要阶段，把这张卡解放才能发动。从手卡·卡组把1只「刻魔」怪兽特殊召唤。
 -- ②：以连接怪兽以外的自己场上1只恶魔族·光属性怪兽为对象才能发动。从自己的场上·墓地把这张卡当作攻击力上升600的装备魔法卡使用给那只自己怪兽装备。
 local s,id,o=GetID()
--- 初始化效果，设置该卡的特殊召唤限制、连接召唤手续、启用复活限制，并注册两个效果
+-- 初始化效果：设置自己对「刻魔的镇魂棺」1回合只能有1次特殊召唤，添加连接召唤手续（恶魔族·光属性怪兽1只），允许苏生限制，并注册①的诱发即时效果与②的起动效果（那个②的效果1回合只能使用1次）。
 function s.initial_effect(c)
 	c:SetSPSummonOnce(id)
-	-- 为该卡添加连接召唤手续，要求使用1~1个满足过滤条件的恶魔族·光属性怪兽作为连接素材
+	-- 为这张卡添加连接召唤手续：素材为1只恶魔族·光属性怪兽（对应“恶魔族·光属性怪兽1只”）。
 	aux.AddLinkProcedure(c,s.mfilter,1,1)
 	c:EnableReviveLimit()
 	-- ①：自己·对方的主要阶段，把这张卡解放才能发动。从手卡·卡组把1只「刻魔」怪兽特殊召唤。
@@ -36,82 +36,82 @@ function s.initial_effect(c)
 	e2:SetOperation(s.eqop)
 	c:RegisterEffect(e2)
 end
--- 连接召唤的过滤函数，筛选满足恶魔族且光属性的怪兽
+-- 连接素材过滤函数：要求怪兽为恶魔族且光属性。
 function s.mfilter(c)
 	return c:IsLinkRace(RACE_FIEND) and c:IsLinkAttribute(ATTRIBUTE_LIGHT)
 end
--- 判断是否处于主要阶段1或主要阶段2
+-- ①效果的发动条件函数：限定只能在自己·对方的主要阶段发动。
 function s.spcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断是否处于主要阶段1或主要阶段2
+	-- 返回当前阶段是否为主要阶段1或主要阶段2，用于判定①的发动时点。
 	return Duel.GetCurrentPhase()==PHASE_MAIN1 or Duel.GetCurrentPhase()==PHASE_MAIN2
 end
--- 特殊召唤效果的费用处理，检查是否可以解放此卡并确保场上存在空位
+-- ①效果的代价：解放自身；代价检查确认自身可解放，且解放后自己场上仍有空余怪兽区。
 function s.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
-	-- 检查是否可以解放此卡并确保场上存在空位
+	-- 代价检查：自身必须可解放，且解放后场上仍有可用的怪兽区域。
 	if chk==0 then return c:IsReleasable() and Duel.GetMZoneCount(tp,c)>0 end
-	-- 执行解放操作
+	-- 执行代价：将这张卡解放（REASON_COST）。
 	Duel.Release(c,REASON_COST)
 end
--- 特殊召唤目标的过滤函数，筛选「刻魔」怪兽且可特殊召唤
+-- 特殊召唤的过滤函数：卡名含有「刻魔」字段，且能够被特殊召唤。
 function s.filter(c,e,tp)
 	return c:IsSetCard(0x1b0) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 特殊召唤效果的目标设定，检查是否存在满足条件的「刻魔」怪兽
+-- ①效果的发动目标处理：确认手卡·卡组中存在可特殊召唤的「刻魔」怪兽，并设置特殊召唤的操作信息。
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否存在满足条件的「刻魔」怪兽
+	-- 检查是否存在至少1张手卡·卡组中的「刻魔」怪兽可以特殊召唤。
 	if chk==0 then return Duel.IsExistingMatchingCard(s.filter,tp,LOCATION_DECK+LOCATION_HAND,0,1,nil,e,tp) end
-	-- 设置操作信息，表示将特殊召唤1只「刻魔」怪兽
+	-- 设置操作信息：本次连锁将从手卡·卡组特殊召唤1只怪兽。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_DECK+LOCATION_HAND)
 end
--- 特殊召唤效果的处理，选择并特殊召唤符合条件的怪兽
+-- ①效果处理：从手卡·卡组选择1只「刻魔」怪兽，以表侧表示特殊召唤到自己场上。
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查场上是否有足够的怪兽区域
+	-- 处理时再次确认自己场上是否有空余的怪兽区，没有则直接结束处理。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-	-- 提示玩家选择要特殊召唤的卡
+	-- 显示选择框，提示玩家选择要特殊召唤的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 选择满足条件的「刻魔」怪兽
+	-- 实际选择手卡·卡组中1张符合条件的「刻魔」怪兽。
 	local g=Duel.SelectMatchingCard(tp,s.filter,tp,LOCATION_DECK+LOCATION_HAND,0,1,1,nil,e,tp)
 	if #g>0 then
-		-- 将选择的怪兽特殊召唤到场上
+		-- 将选择的怪兽以表侧表示特殊召唤到自己场上。
 		Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
--- 装备效果的目标过滤函数，筛选场上正面表示的恶魔族·光属性非连接怪兽
+-- ②装备对象的过滤函数：对象必须是表侧表示、恶魔族、光属性且不是连接怪兽。
 function s.eqfilter(c)
 	return c:IsFaceup() and c:IsRace(RACE_FIEND) and c:IsAttribute(ATTRIBUTE_LIGHT) and not c:IsType(TYPE_LINK)
 end
--- 装备效果的目标设定，检查场上是否存在满足条件的怪兽
+-- ②效果的发动目标函数：校验已选对象的合法性，并确认自己场上有符合条件的对象且魔陷区有空位。
 function s.eqtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and s.eqfilter(chkc) end
-	-- 检查场上是否有足够的魔法区域
+	-- 发动条件检查：自己魔陷区存在可用的区域。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_SZONE)>0
-		-- 检查场上是否存在满足条件的怪兽
+		-- 并且场上存在至少1只可成为对象的恶魔族·光属性非连接怪兽。
 		and Duel.IsExistingTarget(s.eqfilter,tp,LOCATION_MZONE,0,1,nil) end
-	-- 提示玩家选择要装备的卡
+	-- 显示选择框，提示玩家选择要装备的怪兽。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_EQUIP)  --"请选择要装备的卡"
-	-- 选择满足条件的怪兽作为装备对象
+	-- 选择自己场上1只符合条件的怪兽作为装备对象（取对象效果）。
 	Duel.SelectTarget(tp,s.eqfilter,tp,LOCATION_MZONE,0,1,1,nil)
-	-- 设置操作信息，表示将装备此卡
+	-- 设置操作信息：这次连锁包含将自己装备给对象怪兽的装备效果。
 	Duel.SetOperationInfo(0,CATEGORY_EQUIP,e:GetHandler(),1,0,0)
-	-- 设置操作信息，表示将此卡离开墓地
+	-- 设置操作信息：这张卡将从墓地/场上离开并装备，记录离开墓地的效果分类。
 	Duel.SetOperationInfo(0,CATEGORY_LEAVE_GRAVE,e:GetHandler(),1,0,0)
 end
--- 装备效果的处理，将此卡装备给目标怪兽并设置装备限制和攻击力加成
+-- ②效果处理：将这张卡作为装备魔法卡装备给对象怪兽，并赋予攻击力上升600；若条件不满足则送去墓地。
 function s.eqop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取当前连锁的目标怪兽
+	-- 获取发动时选择的对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if c:IsRelateToEffect(e) and c:IsFaceup() and c:IsControler(tp) then
-		-- 检查装备条件是否满足，包括魔法区域是否足够、目标怪兽是否正面表示、是否为己方控制、是否在怪兽区
+		-- 装备成功前的校验：若魔陷区已满、对象变为里侧、对象失去联系、控制权转移或不在怪兽区，则进入失败分支。
 		if Duel.GetLocationCount(tp,LOCATION_SZONE)<=0 or tc:IsFacedown() or not tc:IsRelateToEffect(e) or tc:IsControler(1-tp) or not tc:IsLocation(LOCATION_MZONE) then
-			-- 若装备条件不满足则将此卡送入墓地
+			-- 因装备条件不满足，将这张卡以效果原因送去墓地。
 			Duel.SendtoGrave(c,REASON_EFFECT)
 			return
 		end
-		-- 尝试将此卡装备给目标怪兽
+		-- 尝试将这张卡作为装备卡装备给对象；若装备失败则中止处理。
 		if not Duel.Equip(tp,c,tc) then return end
-		-- 设置装备限制效果，确保此卡只能装备给指定怪兽
+		-- 当作装备魔法卡使用给那只自己怪兽装备。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_EQUIP_LIMIT)
@@ -120,7 +120,7 @@ function s.eqop(e,tp,eg,ep,ev,re,r,rp)
 		e1:SetValue(s.eqlimit)
 		e1:SetReset(RESET_EVENT+RESETS_STANDARD)
 		c:RegisterEffect(e1)
-		-- 设置装备后攻击力上升600的效果
+		-- 攻击力上升600。
 		local e2=Effect.CreateEffect(c)
 		e2:SetType(EFFECT_TYPE_EQUIP)
 		e2:SetCode(EFFECT_UPDATE_ATTACK)
@@ -129,7 +129,7 @@ function s.eqop(e,tp,eg,ep,ev,re,r,rp)
 		c:RegisterEffect(e2)
 	end
 end
--- 装备限制的判断函数，确保只能装备给指定目标怪兽
+-- 装备限制判定：这张卡只能装备给标签记录的那只对象怪兽。
 function s.eqlimit(e,c)
 	return c==e:GetLabelObject()
 end

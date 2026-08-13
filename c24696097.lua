@@ -6,9 +6,9 @@
 -- ③：1回合1次，对方的攻击宣言时以攻击怪兽为对象才能发动。场上的这张卡除外，那次攻击无效。
 -- ④：这个③的效果除外的回合的结束阶段发动。这张卡特殊召唤。
 function c24696097.initial_effect(c)
-	-- 为该怪兽添加融合素材代码列表，允许使用编号为44508094的卡作为素材
+	-- 为流星龙声明其素材卡名列表中包含「星尘龙」（卡号44508094），用于辅助同调召唤条件的判定。
 	aux.AddMaterialCodeList(c,44508094)
-	-- 设置该怪兽的同调召唤条件，要求1只调整怪兽和1只编号为44508094的怪兽作为同调素材
+	-- 为流星龙添加同调召唤手续：素材为1只同调怪兽调整＋1只「星尘龙」，合计2只。
 	aux.AddSynchroProcedure(c,aux.FilterBoolFunction(Card.IsSynchroType,TYPE_SYNCHRO),aux.FilterBoolFunction(Card.IsCode,44508094),1,1)
 	c:EnableReviveLimit()
 	-- ①：1回合1次，可以发动。从自己卡组上面翻开5张并回到卡组。这个回合这张卡可以作出最多有所翻开之中的调整数量的攻击。
@@ -58,23 +58,23 @@ function c24696097.initial_effect(c)
 	c:RegisterEffect(e4)
 end
 c24696097.material_type=TYPE_SYNCHRO
--- 效果发动条件：确认是否能进入战斗阶段且自己卡组有至少5张牌
+-- ①效果的发动条件判定：当前可进入战斗阶段，且自己卡组上方至少有5张卡。
 function c24696097.mtcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 确认是否能进入战斗阶段且自己卡组有至少5张牌
+	-- 检查当前玩家可以进入战斗阶段且卡组上方剩余卡数不少于5张，作为①效果的发动条件。
 	return Duel.IsAbleToEnterBP() and Duel.GetFieldGroupCount(tp,LOCATION_DECK,0)>=5
 end
--- 效果处理：翻开卡组最上方5张牌，统计其中调整的数量并根据数量设置额外攻击次数或禁止攻击
+-- ①效果的处理：翻开卡组上方5张卡确认，统计其中调整数量后洗回卡组；若调整数量大于1，则本回合这张卡获得额外攻击次数（调整数-1）；若调整为0，则这张卡本回合不能攻击。
 function c24696097.mtop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 翻开玩家卡组最上方的5张牌
+	-- 让当前玩家确认自己卡组最上方的5张卡。
 	Duel.ConfirmDecktop(tp,5)
-	-- 获取玩家卡组最上方的5张牌组成的牌组
+	-- 取得卡组最上方的5张卡作为一组对象，用于统计调整数量。
 	local g=Duel.GetDecktopGroup(tp,5)
 	local ct=g:FilterCount(Card.IsType,nil,TYPE_TUNER)
-	-- 将玩家卡组洗牌
+	-- 将刚才翻开的5张卡洗回卡组。
 	Duel.ShuffleDeck(tp)
 	if ct>1 then
-		-- 设置该怪兽在本回合可以额外进行ct-1次攻击
+		-- 这个回合这张卡可以作出最多有所翻开之中的调整数量的攻击。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_EXTRA_ATTACK)
@@ -83,7 +83,7 @@ function c24696097.mtop(e,tp,eg,ep,ev,re,r,rp)
 		e1:SetValue(ct-1)
 		c:RegisterEffect(e1)
 	elseif ct==0 then
-		-- 设置该怪兽在本回合不能进行攻击
+		-- 这个回合这张卡可以作出最多有所翻开之中的调整数量的攻击。（翻开的调整数量为0时，即不能攻击）
 		local e2=Effect.CreateEffect(c)
 		e2:SetType(EFFECT_TYPE_SINGLE)
 		e2:SetCode(EFFECT_CANNOT_ATTACK)
@@ -92,76 +92,76 @@ function c24696097.mtop(e,tp,eg,ep,ev,re,r,rp)
 		c:RegisterEffect(e2)
 	end
 end
--- 无效破坏效果发动的条件判断
+-- ②效果的发动条件判定：若此卡已被战斗破坏或目标连锁不能被无效则不满足；若目标效果本身带有“无效”分类且是魔法·陷阱卡的发动，则也不能发动。
 function c24696097.discon(e,tp,eg,ep,ev,re,r,rp)
-	-- 若该怪兽处于战斗破坏状态或该连锁不能被无效则返回false
+	-- 若此卡已被战斗破坏，或该连锁效果不能被无效，则不满足②效果发动条件。
 	if e:GetHandler():IsStatus(STATUS_BATTLE_DESTROYED) or not Duel.IsChainNegatable(ev) then return false end
 	if re:IsHasCategory(CATEGORY_NEGATE)
-		-- 若该连锁是被无效的永续魔法效果发动则返回false
+		-- 若该连锁效果带有“无效”分类且是魔法·陷阱卡的发动，则②效果不能发动，以避免互相无效。
 		and Duel.GetChainInfo(ev-1,CHAININFO_TRIGGERING_EFFECT):IsHasType(EFFECT_TYPE_ACTIVATE) then return false end
-	-- 获取当前连锁的破坏效果信息
+	-- 获取该连锁效果中关于“破坏”的操作信息，判断其是否包含破坏场上卡的效果。
 	local ex,tg,tc=Duel.GetOperationInfo(ev,CATEGORY_DESTROY)
 	return ex and tg~=nil and tc+tg:FilterCount(Card.IsOnField,nil)-tg:GetCount()>0
 end
--- 设置无效破坏效果的目标和破坏目标
+-- ②效果的发动目标：无额外条件；处理时设置将无效该连锁效果，若其发动卡可破坏且仍与效果关联，则一并设置破坏该卡。
 function c24696097.distg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置连锁操作信息为使效果无效
+	-- 设置本次操作包含“无效效果”分类，对象为当前连锁的卡组eg，数量1。
 	Duel.SetOperationInfo(0,CATEGORY_DISABLE,eg,1,0,0)
 	if re:GetHandler():IsDestructable() and re:GetHandler():IsRelateToEffect(re) then
-		-- 设置连锁操作信息为破坏目标卡
+		-- 设置本次操作包含“破坏”分类，对象为当前连锁的卡组eg，数量1。
 		Duel.SetOperationInfo(0,CATEGORY_DESTROY,eg,1,0,0)
 	end
 end
--- 效果处理：使连锁效果无效并破坏目标卡
+-- ②效果的处理：先无效该连锁效果，若其发动卡仍与效果关联，则将其破坏。
 function c24696097.disop(e,tp,eg,ep,ev,re,r,rp)
-	-- 使连锁效果无效且目标卡存在
+	-- 若成功无效该连锁效果，且该效果的发动卡仍与效果关联，则继续执行破坏处理。
 	if Duel.NegateEffect(ev) and re:GetHandler():IsRelateToEffect(re) then
-		-- 破坏目标卡
+		-- 将对方连锁涉及的卡组eg以效果破坏。
 		Duel.Destroy(eg,REASON_EFFECT)
 	end
 end
--- 攻击宣言时的条件判断：攻击方不是自己
+-- ③效果的发动条件判定：当前攻击怪兽的控制者不是自己，即对方怪兽进行攻击宣言。
 function c24696097.dacon(e,tp,eg,ep,ev,re,r,rp)
-	-- 攻击方不是自己
+	-- 判定攻击怪兽的控制者不是自己（即对方攻击时），满足③效果发动条件。
 	return Duel.GetAttacker():GetControler()~=tp
 end
--- 设置攻击无效效果的目标和条件
+-- ③效果的发动目标：将攻击怪兽选为对象，并检查此卡可被除外且不在连锁处理中；发动时设置除外此卡。
 function c24696097.datg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	-- 若chkc存在则返回是否为目标攻击怪兽
+	-- 若在选择对象阶段校验对象，则对象必须是当前攻击怪兽。
 	if chkc then return chkc==Duel.GetAttacker() end
-	-- 判断是否满足发动条件：该怪兽可除外且攻击怪兽可成为目标
+	-- 发动时检查此卡可以被除外，且攻击怪兽能成为效果对象，并且此卡不在连锁处理中。
 	if chk==0 then return e:GetHandler():IsAbleToRemove() and Duel.GetAttacker():IsCanBeEffectTarget(e)
 		and not e:GetHandler():IsStatus(STATUS_CHAINING) end
-	-- 设置当前处理的连锁的目标为攻击怪兽
+	-- 将当前攻击怪兽设置为③效果的对象。
 	Duel.SetTargetCard(Duel.GetAttacker())
-	-- 设置连锁操作信息为除外该怪兽
+	-- 设置本次操作包含“除外”分类，将要把此卡除外，数量1。
 	Duel.SetOperationInfo(0,CATEGORY_REMOVE,e:GetHandler(),1,0,0)
 end
--- 效果处理：将该怪兽除外并无效攻击
+-- ③效果的处理：若此卡仍与效果关联且成功除外，则无效攻击，并给此卡设置标记，用于④效果在结束阶段特殊召唤。
 function c24696097.daop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 该怪兽可除外且除外成功
+	-- 若此卡仍与效果关联，并且将其表侧表示除外成功，则继续执行无效攻击和标记处理。
 	if c:IsRelateToEffect(e) and Duel.Remove(c,POS_FACEUP,REASON_EFFECT)~=0 then
-		-- 无效此次攻击
+		-- 无效当前攻击。
 		Duel.NegateAttack()
 		c:RegisterFlagEffect(24696097,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END,0,0)
 	end
 end
--- 特殊召唤的发动条件：该怪兽在被除外的回合结束阶段
+-- ④效果的发动条件判定：此卡带有③效果设置的标记，即本回合因③效果被除外过。
 function c24696097.sumcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():GetFlagEffect(24696097)>0
 end
--- 设置特殊召唤的效果目标
+-- ④效果发动时：无额外条件，设置将特殊召唤此卡。
 function c24696097.sumtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置连锁操作信息为特殊召唤该怪兽
+	-- 设置本次操作包含“特殊召唤”分类，将要把此卡特殊召唤。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 效果处理：将该怪兽特殊召唤到场上
+-- ④效果的处理：若此卡仍在除外状态且与效果关联，则将其特殊召唤。
 function c24696097.sumop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if not c:IsRelateToEffect(e) then return end
-	-- 将该怪兽以特殊召唤方式回到场上
+	-- 将这张卡以表侧表示特殊召唤到其持有者场上。
 	Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 end
