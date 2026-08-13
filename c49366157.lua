@@ -14,37 +14,37 @@ function c49366157.initial_effect(c)
 	e1:SetOperation(c49366157.activate)
 	c:RegisterEffect(e1)
 end
--- 过滤函数，用于判断是否为魔法师族且风属性的怪兽
+-- 过滤函数：判断怪兽是否为魔法师族且风属性，用于选择可解放的素材。
 function c49366157.cfilter(c)
 	return c:IsRace(RACE_SPELLCASTER) and c:IsAttribute(ATTRIBUTE_WIND)
 end
--- 检查玩家场上是否存在满足条件的怪兽并选择1只进行解放作为发动代价
+-- 代价函数：发动时从自己场上选择并解放1只魔法师族·风属性怪兽作为COST。
 function c49366157.cost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检测是否满足发动条件：场上有满足条件的怪兽数量不少于1张
+	-- 发动检查：确认自己场上是否存在至少1只可解放的魔法师族·风属性怪兽。
 	if chk==0 then return Duel.CheckReleaseGroup(tp,c49366157.cfilter,1,nil) end
-	-- 从玩家场上选择1张满足条件的怪兽
+	-- 选择代价素材：从自己场上选择1只魔法师族·风属性怪兽用于解放。
 	local g=Duel.SelectReleaseGroup(tp,c49366157.cfilter,1,1,nil)
-	-- 将选中的怪兽以代價原因进行解放
+	-- 解放所选择的怪兽，作为效果的发动代价。
 	Duel.Release(g,REASON_COST)
 end
--- 设置效果的目标为对方场上的任意1只怪兽
+-- 目标函数：让玩家选择对方场上1只怪兽作为对象，并设置本次操作的破坏信息。
 function c49366157.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(1-tp) end
-	-- 检测是否满足发动条件：对方场上存在至少1只怪兽可以成为对象
+	-- 发动检查：确认对方场上是否存在至少1只可作为对象的怪兽。
 	if chk==0 then return Duel.IsExistingTarget(aux.TRUE,tp,0,LOCATION_MZONE,1,nil) end
-	-- 提示玩家选择要破坏的卡
+	-- 弹出选择提示，提示玩家选择要破坏的卡片。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 选择对方场上1只怪兽作为效果的对象
+	-- 从对方场上的怪兽中选择1只作为效果对象。
 	local g=Duel.SelectTarget(tp,aux.TRUE,tp,0,LOCATION_MZONE,1,1,nil)
-	-- 设置连锁操作信息，表明将要进行破坏效果
+	-- 设置操作信息，标记本次处理将破坏1张卡，以便触发相关时点和检测。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,1,0,0)
 end
--- 效果发动时执行的操作：破坏选定的目标怪兽
+-- 效果处理：取得对象怪兽，若对象仍与效果关联则将其破坏。
 function c49366157.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的效果对象卡
+	-- 取出效果发动时选择的对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 以效果原因破坏目标怪兽
+		-- 将对象怪兽以效果原因破坏。
 		Duel.Destroy(tc,REASON_EFFECT)
 	end
 end

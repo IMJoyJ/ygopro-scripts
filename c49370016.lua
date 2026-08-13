@@ -19,7 +19,7 @@ function c49370016.initial_effect(c)
 	e2:SetTarget(c49370016.sptg)
 	e2:SetOperation(c49370016.spop)
 	c:RegisterEffect(e2)
-	-- ②：自己场上的念动力族怪兽为让效果发动而支付基本分的场合才能发动。自己抽1张。
+	-- 这个卡名的②的效果1回合可以使用最多2次。②：自己场上的念动力族怪兽为让效果发动而支付基本分的场合才能发动。自己抽1张。
 	local e3=Effect.CreateEffect(c)
 	e3:SetCategory(CATEGORY_DRAW)
 	e3:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
@@ -32,67 +32,67 @@ function c49370016.initial_effect(c)
 	e3:SetOperation(c49370016.drop)
 	c:RegisterEffect(e3)
 end
--- 过滤函数，检查满足条件的「朋克」卡是否存在于墓地
+-- costfilter：作为①效果代价的筛选器，要求卡是「朋克」卡且可作为代价除外。
 function c49370016.costfilter(c)
 	return c:IsSetCard(0x171) and c:IsAbleToRemoveAsCost()
 end
--- 效果处理：检索满足条件的卡片组并除外
+-- spcost：①效果的COST处理，从自己墓地选择1张符合costfilter的「朋克」卡，将其表侧表示除外作为发动代价。
 function c49370016.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查以玩家来看的指定位置是否存在至少1张满足过滤条件的卡
+	-- chk==0时（合法性检查）：确认自己墓地中存在至少1张可作为代价除外的「朋克」卡。
 	if chk==0 then return Duel.IsExistingMatchingCard(c49370016.costfilter,tp,LOCATION_GRAVE,0,1,nil) end
-	-- 提示玩家选择要除外的卡
+	-- 弹出选择提示，要求玩家选择要除外的卡（HINTMSG_REMOVE）。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
-	-- 选择满足过滤条件的1张卡
+	-- 让玩家从自己墓地选择1张「朋克」卡作为代价。
 	local g=Duel.SelectMatchingCard(tp,c49370016.costfilter,tp,LOCATION_GRAVE,0,1,1,nil)
-	-- 将目标卡除外
+	-- 将选择的卡以表侧表示除外，作为效果的发动代价（REASON_COST）。
 	Duel.Remove(g,POS_FACEUP,REASON_COST)
 end
--- 过滤函数，检查满足条件的「朋克」怪兽是否存在于手牌
+-- spfilter：①效果可特殊召唤的怪兽筛选器，要求是「朋克」怪兽且能被效果特殊召唤。
 function c49370016.spfilter(c,e,tp)
 	return c:IsSetCard(0x171) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 效果处理：判断是否可以发动并设置处理信息
+-- sptg：①效果的发动目标阶段，检查自己场上是否有空位、手卡是否存在可特殊召唤的「朋克」怪兽。
 function c49370016.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查玩家场上是否有空位
+	-- chk==0时：确认自己主要怪兽区域有空位。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查以玩家来看的指定位置是否存在至少1张满足过滤条件的卡
+		-- 同时确认手卡中存在至少1只可特殊召唤的「朋克」怪兽。
 		and Duel.IsExistingMatchingCard(c49370016.spfilter,tp,LOCATION_HAND,0,1,nil,e,tp) end
-	-- 设置当前处理的连锁的操作信息，确定要特殊召唤的怪兽数量和位置
+	-- 设置操作信息：本效果将把手卡的「朋克」怪兽特殊召唤（CATEGORY_SPECIAL_SUMMON），数量1，位置为手卡。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_HAND)
 end
--- 效果处理：检索满足条件的卡片组并特殊召唤
+-- spop：①效果处理时，选择手卡1只「朋克」怪兽表侧攻击表示特殊召唤到自己场上。
 function c49370016.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查玩家场上是否有空位
+	-- 处理时再次检查：若自己怪兽区域没有空位则效果不处理。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-	-- 提示玩家选择要特殊召唤的卡
+	-- 弹出选择提示，要求玩家选择要特殊召唤的怪兽（HINTMSG_SPSUMMON）。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 选择满足过滤条件的1只怪兽
+	-- 让玩家从手卡选择1只满足spfilter的「朋克」怪兽。
 	local g=Duel.SelectMatchingCard(tp,c49370016.spfilter,tp,LOCATION_HAND,0,1,1,nil,e,tp)
-	-- 将目标怪兽特殊召唤
+	-- 将选择的怪兽表侧攻击表示特殊召唤到自己的怪兽区域。
 	Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
 end
--- 判断是否满足发动条件，即自己场上的念动力族怪兽为让效果发动而支付基本分
+-- drcon：②效果的发动条件，检测本次支付基本分的事件是否由自己场上的念动力族怪兽为发动效果而支付。
 function c49370016.drcon(e,tp,eg,ep,ev,re,r,rp)
 	if not (tp==ep and re and re:IsActivated() and re:GetActivateLocation()==LOCATION_MZONE) then return false end
 	local rc=re:GetHandler()
 	return rc:IsRelateToEffect(re) and rc:IsRace(RACE_PSYCHO)
 		or not rc:IsRelateToEffect(re) and rc:GetPreviousRaceOnField()&RACE_PSYCHO~=0
 end
--- 效果处理：设置抽卡操作信息
+-- drtg：②效果的发动目标阶段，确认自己可以抽卡，并设置抽卡数量和对象玩家。
 function c49370016.drtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查玩家是否可以抽1张卡
+	-- chk==0时：确认自己可以抽1张卡。
 	if chk==0 then return Duel.IsPlayerCanDraw(tp,1) end
-	-- 设置当前正在处理的连锁的对象玩家
+	-- 设置本次抽卡的对象玩家为自己（tp）。
 	Duel.SetTargetPlayer(tp)
-	-- 设置当前正在处理的连锁的对象参数
+	-- 设置抽卡数量为1。
 	Duel.SetTargetParam(1)
-	-- 设置当前处理的连锁的操作信息，确定要抽卡的数量和对象
+	-- 设置操作信息：本效果进行抽卡（CATEGORY_DRAW），数量1，抽卡玩家为tp。
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,1)
 end
--- 效果处理：执行抽卡操作
+-- drop：②效果处理时，执行抽卡操作。
 function c49370016.drop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的目标玩家和目标参数
+	-- 从当前连锁信息中取出之前设置的对象玩家p和抽卡数量d。
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 让目标玩家抽指定数量的卡
+	-- 让玩家p抽取d张卡，抽卡原因记为效果（REASON_EFFECT）。
 	Duel.Draw(p,d,REASON_EFFECT)
 end

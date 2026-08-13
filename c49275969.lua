@@ -5,7 +5,7 @@
 -- ②：对方把怪兽特殊召唤之际，把自己场上1只「王战」怪兽或者幻龙族怪兽解放才能发动。那次特殊召唤无效，那些怪兽破坏。
 function c49275969.initial_effect(c)
 	c:SetUniqueOnField(1,0,49275969)
-	-- 创建效果②，为诱发即时效果，对应二速的【……才能发动】
+	-- 这个卡名的②的效果1回合只能使用1次。②：对方把怪兽特殊召唤之际，把自己场上1只「王战」怪兽或者幻龙族怪兽解放才能发动。那次特殊召唤无效，那些怪兽破坏。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(49275969,0))
 	e1:SetCategory(CATEGORY_DISABLE_SUMMON+CATEGORY_DESTROY)
@@ -19,36 +19,36 @@ function c49275969.initial_effect(c)
 	e1:SetOperation(c49275969.disop)
 	c:RegisterEffect(e1)
 end
--- 效果条件：对方把怪兽特殊召唤时且当前无连锁处理中
+-- 发动条件判定函数：仅在对方玩家进行特殊召唤，且当前没有其他连锁处理时，才满足本效果的发动时机。
 function c49275969.discon(e,tp,eg,ep,ev,re,r,rp)
-	-- 对方玩家与自己玩家不同且当前连锁序号为0
+	-- 效果发动者不是进行特殊召唤的玩家（必须是对方特召），并且当前连锁数为0，可直接对应那次特殊召唤发动。
 	return tp~=ep and Duel.GetCurrentChain()==0
 end
--- 判断解放的卡是否为「王战」怪兽或幻龙族怪兽
+-- 解放素材过滤：怪兽属于「王战」（0x134）字段或幻龙族种族时，可作为本效果的解放代价。
 function c49275969.costfilter(c)
 	return c:IsSetCard(0x134) or c:IsRace(RACE_WYRM)
 end
--- 检查是否有满足条件的卡可作为解放，并选择一张进行解放
+-- 代价处理函数：发动时从自己场上选择并解放1只符合条件的「王战」或幻龙族怪兽，以此作为发动代价。
 function c49275969.discost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查场上是否存在满足条件的可解放卡
+	-- 代价检测：确认自己场上是否存在至少1只可解放且满足「王战」/幻龙族条件的怪兽。
 	if chk==0 then return Duel.CheckReleaseGroup(tp,c49275969.costfilter,1,nil) end
-	-- 从场上选择1张满足条件的可解放卡
+	-- 实际发动时，从自己场上选择1只符合条件的可解放怪兽作为代价。
 	local g=Duel.SelectReleaseGroup(tp,c49275969.costfilter,1,1,nil)
-	-- 以代價原因解放所选卡
+	-- 将选择的怪兽解放（REASON_COST），完成发动代价的支付。
 	Duel.Release(g,REASON_COST)
 end
--- 设置连锁操作信息，确定要无效召唤和破坏的怪兽
+-- 目标处理与信息登记：本效果不取对象，发动时登记将无效这次特殊召唤并破坏那些怪兽的信息。
 function c49275969.distg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置要无效召唤的怪兽数量及对象
+	-- 登记无效召唤操作信息：将当前被特殊召唤的怪兽组（eg）作为无效召唤的对象，数量为eg中的怪兽数。
 	Duel.SetOperationInfo(0,CATEGORY_DISABLE_SUMMON,eg,eg:GetCount(),0,0)
-	-- 设置要破坏的怪兽数量及对象
+	-- 登记破坏操作信息：将这些被特殊召唤的怪兽组（eg）作为破坏对象，数量为eg中的怪兽数。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,eg,eg:GetCount(),0,0)
 end
--- 效果处理：使对方特殊召唤无效并破坏相关怪兽
+-- 效果处理函数：无效对方的那次特殊召唤，并将其中的怪兽破坏。
 function c49275969.disop(e,tp,eg,ep,ev,re,r,rp)
-	-- 使对方的特殊召唤无效
+	-- 令这些正在特殊召唤的怪兽的召唤无效，使其特殊召唤不成功。
 	Duel.NegateSummon(eg)
-	-- 以效果原因破坏相关怪兽
+	-- 以效果破坏被无效召唤的怪兽，完成“那次特殊召唤无效，那些怪兽破坏”的处理。
 	Duel.Destroy(eg,REASON_EFFECT)
 end

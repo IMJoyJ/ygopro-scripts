@@ -24,65 +24,65 @@ function c49374988.initial_effect(c)
 	e2:SetOperation(c49374988.posop)
 	c:RegisterEffect(e2)
 end
--- 判断触发效果的条件：卡片因破坏被送入墓地、破坏者为对手、且破坏前控制者为自己。
+-- 判定诱发条件：这张卡被对方（1-tp）破坏送去墓地，且破坏前控制权属于自己（IsPreviousControler(tp)）。
 function c49374988.retcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsReason(REASON_DESTROY) and e:GetHandler():GetReasonPlayer()==1-tp
 		and e:GetHandler():IsPreviousControler(tp)
 end
--- 设置效果处理时的操作信息：将自身送去卡组。
+-- 作为无对象的诱发效果，发动时直接判定为可以发动，并登记效果处理时要把这张卡返回卡组的操作信息。
 function c49374988.rettg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置操作信息中涉及的卡片为自身，数量为1，类型为CATEGORY_TODECK（回卡组）。
+	-- 登记本次效果处理时将使这张卡返回卡组的操作信息，供连锁判定及后续处理参考。
 	Duel.SetOperationInfo(0,CATEGORY_TODECK,e:GetHandler(),1,0,0)
 end
--- 执行效果处理：若卡片与当前效果相关，则将其送入卡组并洗牌。
+-- 效果处理：若这张卡仍与效果相关联，则将其返回持有者卡组并进行洗牌，完成“回到卡组”处理。
 function c49374988.retop(e,tp,eg,ep,ev,re,r,rp)
 	if e:GetHandler():IsRelateToEffect(e) then
-		-- 实际将卡片以效果原因送入卡组底部并洗牌。
+		-- 以效果原因把这张卡返回持有者卡组，并洗切卡组（SEQ_DECKSHUFFLE）。
 		Duel.SendtoDeck(e:GetHandler(),nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
 	end
 end
--- 筛选自己场上表侧攻击表示且能改变表示形式、并且种族为「魔偶甜点」的怪兽。
+-- 筛选自己场上可作为对象的“魔偶甜点”怪兽：表侧攻击表示，可以变更表示形式，且持有「魔偶甜点」字段。
 function c49374988.filter1(c)
 	return c:IsPosition(POS_FACEUP_ATTACK) and c:IsCanChangePosition() and c:IsSetCard(0x71)
 end
--- 筛选对方场上表侧攻击表示且能改变表示形式的怪兽。
+-- 筛选对方场上可作为对象的怪兽：表侧攻击表示，且可以变更表示形式。
 function c49374988.filter2(c)
 	return c:IsPosition(POS_FACEUP_ATTACK) and c:IsCanChangePosition()
 end
--- 判断是否满足发动条件：自己场上存在符合条件的怪兽，对方场上也存在符合条件的怪兽。
+-- 起动效果的目标选择函数：效果处理外不认可chkc，发动时确认自己场上与对方场上各有1只满足条件的怪兽存在，才能进行后续选择。
 function c49374988.postg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return false end
-	-- 检查自己场上是否存在符合条件的怪兽（名字带「魔偶甜点」的表侧攻击表示怪兽）。
+	-- 检查自己场上是否存在至少1只满足filter1的“魔偶甜点”怪兽可作为对象。
 	if chk==0 then return Duel.IsExistingTarget(c49374988.filter1,tp,LOCATION_MZONE,0,1,nil)
-		-- 检查对方场上是否存在符合条件的怪兽（表侧攻击表示怪兽）。
+		-- 同时检查对方场上是否存在至少1只满足filter2的怪兽可作为对象；两者都满足才允许发动。
 		and Duel.IsExistingTarget(c49374988.filter2,tp,0,LOCATION_MZONE,1,nil) end
-	-- 提示玩家选择要改变表示形式的怪兽。
+	-- 向操作者显示“选择要改变表示形式的怪兽”的提示信息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_POSCHANGE)  --"请选择要改变表示形式的怪兽"
-	-- 从自己场上选择一只符合条件的怪兽作为目标。
+	-- 令操作者选择自己场上1只满足filter1的怪兽，并将其登记为这张效果的取对象目标。
 	local g1=Duel.SelectTarget(tp,c49374988.filter1,tp,LOCATION_MZONE,0,1,1,nil)
-	-- 再次提示玩家选择要改变表示形式的怪兽。
+	-- 再次显示“选择要改变表示形式的怪兽”的提示信息，用于选择对方场上的怪兽。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_POSCHANGE)  --"请选择要改变表示形式的怪兽"
-	-- 从对方场上选择一只符合条件的怪兽作为目标。
+	-- 令操作者选择对方场上1只满足filter2的怪兽，并将其登记为这张效果的取对象目标。
 	local g2=Duel.SelectTarget(tp,c49374988.filter2,tp,0,LOCATION_MZONE,1,1,nil)
 	g1:Merge(g2)
-	-- 设置效果处理时的操作信息：将选择的两只怪兽变为守备表示。
+	-- 把两个选择目标合并为一组，并登记将变更2只怪兽表示形式的操作信息，供连锁判定使用。
 	Duel.SetOperationInfo(0,CATEGORY_POSITION,g1,2,0,0)
 end
--- 筛选参与效果处理的怪兽：必须是表侧攻击表示且与当前效果相关的怪兽。
+-- 效果处理时筛选对象怪兽：仍然处于表侧攻击表示并且与这张效果存在关联。
 function c49374988.pfilter(c,e)
 	return c:IsPosition(POS_FACEUP_ATTACK) and c:IsRelateToEffect(e)
 end
--- 执行效果处理：改变目标怪兽的表示形式为守备表示，并赋予其不能改变表示形式的效果。
+-- 效果处理：从连锁对象中筛出仍符合条件的怪兽，将它们变为表侧守备表示，并给每只怪兽附加“不能变更表示形式”的持续效果，持续到下次对方回合结束。
 function c49374988.posop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁中设定的目标卡片组，并筛选出与当前效果相关的怪兽。
+	-- 从连锁信息中取得本效果的全部对象卡，再用pfilter过滤掉不在表侧攻击表示或已失去关联的卡，得到实际处理组。
 	local g=Duel.GetChainInfo(0,CHAININFO_TARGET_CARDS):Filter(c49374988.pfilter,nil,e)
 	if g:GetCount()>0 then
-		-- 将目标怪兽全部变为表侧守备表示。
+		-- 将过滤后的对象怪兽全部变为表侧守备表示。
 		Duel.ChangePosition(g,POS_FACEUP_DEFENSE)
 		local tc=g:GetFirst()
 		while tc do
-			-- 创建一个永续效果，使目标怪兽在下次结束阶段后无法改变表示形式。
+			-- 直到下次的对方回合结束时，选择的怪兽不能把表示形式变更。
 			local e1=Effect.CreateEffect(e:GetHandler())
 			e1:SetType(EFFECT_TYPE_SINGLE)
 			e1:SetCode(EFFECT_CANNOT_CHANGE_POSITION)

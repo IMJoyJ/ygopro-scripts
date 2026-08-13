@@ -26,35 +26,35 @@ function c49394035.initial_effect(c)
 	e2:SetOperation(c49394035.mtop)
 	c:RegisterEffect(e2)
 end
--- 过滤函数，用于筛选满足条件的不死族怪兽（可作为除外的代价）
+-- 定义①的代价过滤条件：选择自己墓地里这张卡以外的不死族怪兽，且该怪兽可以作为代价除外。
 function c49394035.cfilter(c)
 	return c:IsRace(RACE_ZOMBIE) and c:IsAbleToRemoveAsCost()
 end
--- 起动效果的费用处理，检查是否满足除外1只不死族怪兽的条件并选择执行除外操作
+-- 处理①的发动代价：从自己墓地把这张卡以外的1只不死族怪兽表侧表示除外（REASON_COST），否则不能发动。
 function c49394035.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查场上是否有满足条件的不死族怪兽可用于除外作为费用
+	-- 发动①前确认：自己墓地存在至少1张满足条件（这张卡以外的不死族、可作为代价除外）的卡片。
 	if chk==0 then return Duel.IsExistingMatchingCard(c49394035.cfilter,tp,LOCATION_GRAVE,0,1,e:GetHandler()) end
-	-- 提示玩家选择要除外的卡
+	-- 弹出选卡提示，提示玩家选择要除外的卡（提示文字“请选择要除外的卡”）。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
-	-- 选择满足条件的1只不死族怪兽进行除外
+	-- 让玩家从自己墓地选择1张满足过滤条件（不死族且可作为代价除外）的卡，不能选择自身，作为发动代价。
 	local g=Duel.SelectMatchingCard(tp,c49394035.cfilter,tp,LOCATION_GRAVE,0,1,1,e:GetHandler())
-	-- 将选中的卡从游戏中除外（作为费用）
+	-- 将选择到的怪兽以表侧表示除外，作为发动①的代价。
 	Duel.Remove(g,POS_FACEUP,REASON_COST)
 end
--- 特殊召唤的发动条件判断，检查是否有足够的怪兽区域和是否可以特殊召唤
+-- ①的发动时点判定与操作信息设置：确认场上存在主要怪兽区空位、自身可被特殊召唤，若满足则登记特殊召唤操作。
 function c49394035.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查场上是否有足够的怪兽区域用于特殊召唤
+	-- 发动①时确认自己的主要怪兽区存在空位，即场上可以腾出位置特殊召唤这张卡。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置操作信息，表示即将进行特殊召唤
+	-- 登记本次连锁的处理信息：将这张卡以特殊召唤（1张）作为处理结果，供后续检测使用。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 特殊召唤的处理函数，将卡片特殊召唤到场上并注册离场时除外的效果
+-- ①的效果处理：将这张卡特殊召唤；若召唤成功，给它附加“从场上离开的场合除外”的离场替代效果。
 function c49394035.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 判断特殊召唤是否成功，并注册离场时除外的效果
+	-- 确认这张卡仍与当前效果关联且特殊召唤成功，以此决定是否继续附加离场除外的效果。
 	if c:IsRelateToEffect(e) and Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)>0 then
-		-- 创建一个效果，使该卡在离开场上时被除外
+		-- 这个效果特殊召唤的这张卡从场上离开的场合除外。②：使用场上的这张卡仪式召唤的「复仇死者」怪兽得到以下效果。●这张卡不会成为对方的效果的对象。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_LEAVE_FIELD_REDIRECT)
@@ -64,29 +64,29 @@ function c49394035.spop(e,tp,eg,ep,ev,re,r,rp)
 		c:RegisterEffect(e1,true)
 	end
 end
--- 条件函数，判断是否为仪式召唤的素材且为复仇死者族
+-- ②的触发条件：这张卡作为仪式召唤的素材被使用，且素材来源包括场上的这张卡，并且仪式召唤出的怪兽是「复仇死者」系列。
 function c49394035.mtcon(e,tp,eg,ep,ev,re,r,rp)
 	return r==REASON_RITUAL and e:GetHandler():IsPreviousLocation(LOCATION_MZONE)
 		and eg:IsExists(Card.IsSetCard,1,nil,0x106)
 end
--- 当卡片作为仪式召唤的素材时触发的效果处理，给对应的「复仇死者」怪兽添加不会成为对方效果对象的效果
+-- ②的效果处理：给仪式召唤成功的「复仇死者」怪兽赋予“不会成为对方的效果的对象”的永续效果；若该怪兽不是效果怪兽，则将其变成效果怪兽，并显示效果适用提示。
 function c49394035.mtop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local g=eg:Filter(Card.IsSetCard,nil,0x106)
 	local rc=g:GetFirst()
 	if not rc then return end
-	-- 给「复仇死者」怪兽添加不会成为对方效果对象的效果
+	-- ●这张卡不会成为对方的效果的对象。
 	local e1=Effect.CreateEffect(rc)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_CANNOT_BE_EFFECT_TARGET)
 	e1:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
 	e1:SetRange(LOCATION_MZONE)
-	-- 设置该效果为不会成为对方效果的对象（使用辅助函数）
+	-- 设置抗性效果的判定函数：只对对方发动的效果生效（即不会成为对方的效果的对象）。
 	e1:SetValue(aux.tgoval)
 	e1:SetReset(RESET_EVENT+RESETS_STANDARD)
 	rc:RegisterEffect(e1,true)
 	if not rc:IsType(TYPE_EFFECT) then
-		-- 若「复仇死者」怪兽没有效果类型，则为其添加TYPE_EFFECT类型
+		-- ②：使用场上的这张卡仪式召唤的「复仇死者」怪兽得到以下效果。●这张卡不会成为对方的效果的对象。
 		local e3=Effect.CreateEffect(c)
 		e3:SetType(EFFECT_TYPE_SINGLE)
 		e3:SetCode(EFFECT_ADD_TYPE)

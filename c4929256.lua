@@ -14,31 +14,31 @@ function c4929256.initial_effect(c)
 	e1:SetOperation(c4929256.operation)
 	c:RegisterEffect(e1)
 end
--- 效果发动时的条件判断，确保是上级召唤成功
+-- 判断这张卡的召唤类型是否为上级召唤，作为效果发动条件之一。
 function c4929256.condition(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsSummonType(SUMMON_TYPE_ADVANCE)
 end
--- 筛选场上的魔法·陷阱卡
+-- 筛选场上的魔法·陷阱卡，用于确定可被选择为对象的卡片。
 function c4929256.filter(c)
 	return c:IsType(TYPE_SPELL+TYPE_TRAP)
 end
--- 选择破坏对象，限制为1~2张场上魔法·陷阱卡
+-- 发动时的目标选择处理：确认有可选择的魔法·陷阱卡时，让玩家选择场上1~2张魔法·陷阱卡作为对象，并设置破坏的操作信息。
 function c4929256.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsOnField() and c4929256.filter(chkc) end
-	-- 检查是否有满足条件的目标卡片
+	-- 发动时检查场上是否存在至少1张满足条件的魔法·陷阱卡可作为对象。
 	if chk==0 then return Duel.IsExistingTarget(c4929256.filter,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,nil) end
-	-- 提示玩家选择要破坏的卡
+	-- 向操作者弹出选择提示信息“请选择要破坏的卡”。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 选择1到2张符合条件的场上卡片作为破坏对象
+	-- 从双方场上选择1~2张魔法·陷阱卡作为效果对象。
 	local g=Duel.SelectTarget(tp,c4929256.filter,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,2,nil)
-	-- 设置连锁操作信息，确定将要破坏的卡片数量
+	-- 将本次效果的处理信息设置为破坏所选择的对象，数量为已选对象数，用于后续破坏处理及连锁判定。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,g:GetCount(),0,0)
 end
--- 执行效果破坏操作
+-- 效果处理阶段：取得连锁中实际成为对象的卡片，过滤出仍与效果关联的卡片，并将其破坏。
 function c4929256.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁中指定的目标卡片组
+	-- 获取当前连锁中登记的效果对象卡片组。
 	local tg=Duel.GetChainInfo(0,CHAININFO_TARGET_CARDS)
 	local sg=tg:Filter(Card.IsRelateToEffect,nil,e)
-	-- 将符合条件的卡片进行破坏处理
+	-- 因效果原因破坏筛选出的对象卡片。
 	Duel.Destroy(sg,REASON_EFFECT)
 end
