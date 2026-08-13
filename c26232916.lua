@@ -39,40 +39,40 @@ function c26232916.initial_effect(c)
 	e5:SetOperation(c26232916.repop)
 	c:RegisterEffect(e5)
 end
--- 过滤函数，用于判断场上是否有「忍者」怪兽
+-- 检查触发事件中的怪兽是否为表侧表示且为我方场上的「忍者」怪兽，用于判断“自己场上有『忍者』怪兽召唤·反转召唤·特殊召唤”这一条件。
 function c26232916.thcfilter(c,tp)
 	return c:IsFaceup() and c:IsSetCard(0x2b) and c:IsControler(tp)
 end
--- 效果条件函数，判断是否满足①效果的发动条件
+-- ①效果的发动条件：当召唤/反转召唤/特殊召唤成功的怪兽组中存在满足条件的「忍者」怪兽时，本效果才能发动。
 function c26232916.thcon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c26232916.thcfilter,1,nil,tp)
 end
--- 过滤函数，用于选择可以加入手牌的墓地「忍者」怪兽或「忍法」卡
+-- 筛选可作为对象的墓地卡片：是「忍者」怪兽或「忍法」卡，且能加入手卡。
 function c26232916.thfilter(c)
 	return (c:IsType(TYPE_MONSTER) and c:IsSetCard(0x2b) or c:IsSetCard(0x61))
 		and c:IsAbleToHand()
 end
--- 效果处理函数，选择目标并设置操作信息
+-- ①效果的发动时处理：从自己墓地选择1只「忍者」怪兽或1张「忍法」卡作为对象，并设置加入手卡的操作信息。
 function c26232916.thtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and c26232916.thfilter(chkc) end
-	-- 检查是否有满足条件的墓地目标卡
+	-- 确认自己墓地存在至少1张满足条件的“忍者”怪兽或“忍法”卡，否则效果不能发动。
 	if chk==0 then return Duel.IsExistingTarget(c26232916.thfilter,tp,LOCATION_GRAVE,0,1,nil) end
-	-- 提示玩家选择要加入手牌的卡
+	-- 向玩家弹出选择提示，提示文字为“请选择要加入手牌的卡”。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择满足条件的墓地目标卡
+	-- 从自己墓地选择1张满足条件的“忍者”怪兽或“忍法”卡，并将其设为效果对象。
 	local g=Duel.SelectTarget(tp,c26232916.thfilter,tp,LOCATION_GRAVE,0,1,1,nil)
-	-- 设置操作信息，指定将卡送入手牌
+	-- 设置操作信息：本次效果将对象卡加入手卡（CATEGORY_TOHAND）。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,1,0,0)
 end
--- 效果处理函数，执行将卡送入手牌并设置不能发动同名卡效果的限制
+-- ①效果处理：对象卡加入手卡成功后，如果场地卡和对象卡仍与效果关联，则给当前玩家附加“不能发动该卡及同名卡效果”的封印。
 function c26232916.thop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取效果的目标卡
+	-- 取得效果对象卡（即被选择的墓地卡片）。
 	local tc=Duel.GetFirstTarget()
 	if c:IsRelateToEffect(e) and tc:IsRelateToEffect(e)
-		-- 判断是否成功将卡送入手牌
+		-- 判断条件：本卡和对象卡仍与效果关联，且对象卡确实加入了手卡。
 		and Duel.SendtoHand(tc,nil,REASON_EFFECT)>0 and tc:IsLocation(LOCATION_HAND) then
-		-- 创建并注册一个效果，使本回合不能发动与目标卡同名的卡
+		-- 这个回合，自己不能作这个效果加入手卡的卡以及那些同名卡的效果的发动。②：自己场上的「忍者」怪兽或者「忍法」卡被战斗或者对方的效果破坏的场合，可以作为代替把自己墓地1只「忍者」怪兽除外。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_FIELD)
 		e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
@@ -81,49 +81,49 @@ function c26232916.thop(e,tp,eg,ep,ev,re,r,rp)
 		e1:SetValue(c26232916.aclimit)
 		e1:SetLabel(tc:GetCode())
 		e1:SetReset(RESET_PHASE+PHASE_END)
-		-- 将效果注册到玩家
+		-- 将“不能发动效果”的封印效果注册给玩家tp，持续到这个回合结束。
 		Duel.RegisterEffect(e1,tp)
 	end
 end
--- 限制效果发动的判断函数，判断是否为同名卡
+-- 封印效果的判定函数：若尝试发动的卡的效果处理卡与e1记录的卡号相同（即那张卡或其同名卡），则禁止其发动。
 function c26232916.aclimit(e,re,tp)
 	return re:GetHandler():IsCode(e:GetLabel())
 end
--- 过滤函数，用于判断场上被破坏的「忍者」怪兽或「忍法」卡
+-- 代替破坏的判定条件：被破坏的卡必须是表侧表示且为我方场上的「忍者」怪兽或「忍法」卡，不是因为代替破坏而破坏，且破坏原因是战斗破坏或对方玩家的效果破坏。
 function c26232916.repfilter(c,tp)
 	return c:IsFaceup() and (c:IsType(TYPE_MONSTER) and c:IsSetCard(0x2b) or c:IsSetCard(0x61))
 		and c:IsOnField() and c:IsControler(tp) and not c:IsReason(REASON_REPLACE)
 		and (c:IsReason(REASON_BATTLE) or c:IsReason(REASON_EFFECT) and c:GetReasonPlayer()==1-tp)
 end
--- 过滤函数，用于选择可以除外的墓地「忍者」怪兽
+-- 筛选可以除外的代价卡：我方墓地中存在的「忍者」怪兽，且可以作为代价除外。
 function c26232916.rmfilter(c)
 	return c:IsSetCard(0x2b) and c:IsType(TYPE_MONSTER) and c:IsAbleToRemoveAsCost()
 end
--- 代替破坏效果的值函数，返回是否满足代替破坏条件
+-- 作为EFFECT_DESTROY_REPLACE的Value函数：判断某张卡是否满足代替破坏条件，实际调用repfilter并传入效果控制者。
 function c26232916.repval(e,c)
 	return c26232916.repfilter(c,e:GetHandlerPlayer())
 end
--- 代替破坏效果的处理函数，判断是否满足代替破坏条件
+-- ②代替破坏效果的发动条件：存在满足条件的将被破坏的卡，且我方墓地存在可除外的「忍者」怪兽；满足则进入选择是否发动及选择代价的流程。
 function c26232916.reptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return eg:IsExists(c26232916.repfilter,1,nil,tp)
-		-- 检查是否有满足条件的墓地除外卡
+		-- 额外确认墓地存在至少1只可以除外作为代替的「忍者」怪兽。
 		and Duel.IsExistingMatchingCard(c26232916.rmfilter,tp,LOCATION_GRAVE,0,1,nil) end
-	-- 询问玩家是否发动代替破坏效果
+	-- 询问玩家是否发动代替破坏效果（选择“是”则继续选择除外代价）。
 	if Duel.SelectEffectYesNo(tp,e:GetHandler(),96) then
-		-- 提示玩家选择要代替破坏的卡
+		-- 提示玩家选择用于代替破坏而除外的卡（此处从墓地选择）。
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESREPLACE)  --"请选择要代替破坏的卡"
-		-- 选择满足条件的墓地除外卡
+		-- 从自己墓地选择1只「忍者」怪兽作为代替除外的代价，并保存到效果标签中。
 		local tg=Duel.SelectMatchingCard(tp,c26232916.rmfilter,tp,LOCATION_GRAVE,0,1,1,nil)
 		e:SetLabelObject(tg:GetFirst())
 		return true
 	end
 	return false
 end
--- 代替破坏效果的处理函数，执行将卡除外
+-- 代替破坏效果处理：展示本卡，将选择的「忍者」怪兽除外，以代替原本的破坏。
 function c26232916.repop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示发动卡片的动画
+	-- 向双方展示该场地卡，宣告代替破坏效果适用。
 	Duel.Hint(HINT_CARD,0,26232916)
 	local tc=e:GetLabelObject()
-	-- 将卡以除外形式移除
+	-- 将选择的「忍者」怪兽以表侧表示除外（原因包含代替），从而代替这次破坏。
 	Duel.Remove(tc,POS_FACEUP,REASON_EFFECT+REASON_REPLACE)
 end

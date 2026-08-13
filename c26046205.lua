@@ -13,18 +13,18 @@ function c26046205.initial_effect(c)
 	e1:SetOperation(c26046205.operation)
 	c:RegisterEffect(e1)
 end
--- 效果发动条件：这张卡必须处于表侧攻击表示
+-- 判断效果拥有者（这张卡）是否为表侧攻击表示，从而满足“场上表侧攻击表示存在”的发动条件。
 function c26046205.condition(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsPosition(POS_FACEUP_ATTACK)
 end
--- 效果处理目标：设置抽卡效果的处理信息
+-- 效果发动时的目标处理：判定阶段返回 true 表示效果可以正常发动，并设置抽卡效果的操作信息，指定抽卡方为发动者 tp、抽卡数量为 1。
 function c26046205.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置抽卡效果的目标为己方玩家，抽卡数量为1
+	-- 设置本次连锁的抽卡操作信息，声明将进行 CATEGORY_DRAW 抽卡效果，抽卡玩家为 tp，抽卡数量为 1（targets 为 nil 表示不取对象）。
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,1)
 end
--- 效果处理时执行的操作：进行抽卡
+-- 效果处理阶段的实际执行函数：让发动者 tp 以效果原因抽 1 张卡。
 function c26046205.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 执行抽卡操作，抽1张卡，抽卡原因为效果
+	-- 实际执行抽卡操作：玩家 tp 抽 1 张卡，原因是效果（REASON_EFFECT）。
 	Duel.Draw(tp,1,REASON_EFFECT)
 end

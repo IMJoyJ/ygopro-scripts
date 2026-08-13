@@ -22,20 +22,20 @@ function c26082117.initial_effect(c)
 	e2:SetValue(1)
 	c:RegisterEffect(e2)
 end
--- 设置效果目标函数，用于处理等级宣言的逻辑
+-- 发动条件判定：无特殊限制即可发动；发动时提示玩家宣言等级，并将宣言的等级保存到效果标签，供处理时改变这张卡的等级。
 function c26082117.tg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
 	local lv=e:GetHandler():GetLevel()
-	-- 向玩家提示“请宣言一个等级”的选择消息
+	-- 向发动玩家发送选择提示消息，提示其宣言一个1～8的等级。
 	Duel.Hint(HINT_SELECTMSG,tp,aux.Stringid(26082117,1))  --"请宣言一个等级"
-	-- 让玩家从1到8中宣言一个等级并记录在效果标签中
+	-- 让玩家宣言1～8的任意等级，并将宣言数值存入效果的Label，作为后续改变等级时使用的数值。
 	e:SetLabel(Duel.AnnounceLevel(tp,1,8,lv))
 end
--- 设置效果发动时的处理函数，用于改变卡片等级
+-- 效果处理时，若这张卡仍表侧表示且与发动效果关联，则给它注册一个等级变更效果，使其等级变为宣言的等级，持续到回合结束，并在标准重置条件下失效。
 function c26082117.op(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsFaceup() and c:IsRelateToEffect(e) then
-		-- 将卡片等级修改为宣言的等级，并在回合结束时重置
+		-- 这张卡的等级直到回合结束时变成宣言的等级。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_CHANGE_LEVEL)

@@ -2,7 +2,7 @@
 -- 效果：
 -- 选择自己场上表侧表示存在的1只二重怪兽，变成再度召唤的状态。这个回合的结束阶段时，选择的二重怪兽回到手卡。
 function c26120084.initial_effect(c)
-	-- 效果设置为魔法卡发动，自由连锁，具有取对象效果
+	-- 选择自己场上表侧表示存在的1只二重怪兽，变成再度召唤的状态。这个回合的结束阶段时，选择的二重怪兽回到手卡。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
@@ -12,27 +12,27 @@ function c26120084.initial_effect(c)
 	c:RegisterEffect(e1)
 end
 c26120084.has_text_type=TYPE_DUAL
--- 过滤函数：选择表侧表示、二重类型且未处于再度召唤状态的怪兽
+-- 对象过滤条件：自己场上表侧表示的二重怪兽，且未处于再度召唤状态。
 function c26120084.filter(c)
 	return c:IsFaceup() and c:IsType(TYPE_DUAL) and not c:IsDualState()
 end
--- 效果处理函数：选择自己场上表侧表示存在的1只二重怪兽作为对象
+-- 发动时的取对象处理：从自己场上选择1只符合条件的二重怪兽作为效果对象。
 function c26120084.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(tp) and chkc:IsLocation(LOCATION_MZONE) and c26120084.filter(chkc) end
-	-- 检查阶段：确认场上是否存在满足条件的怪兽
+	-- 检查自己场上是否存在至少1只满足条件的二重怪兽，作为效果可否发动的判定。
 	if chk==0 then return Duel.IsExistingTarget(c26120084.filter,tp,LOCATION_MZONE,0,1,nil) end
-	-- 提示玩家选择效果对象
+	-- 向玩家显示“请选择效果对象”的提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)  --"请选择效果的对象"
-	-- 选择满足条件的1只怪兽作为效果对象
+	-- 让玩家从自己场上选择1只符合条件的二重怪兽，并将其登记为效果对象。
 	local g=Duel.SelectTarget(tp,c26120084.filter,tp,LOCATION_MZONE,0,1,1,nil)
 end
--- 效果发动处理函数：使选择的怪兽进入再度召唤状态，并在结束阶段将其送回手卡
+-- 效果处理：使对象变为再度召唤状态，并给对象注册结束阶段返回手卡的效果。
 function c26120084.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的效果对象
+	-- 取得效果处理时选择的那只对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if tc and tc:IsRelateToEffect(e) and c26120084.filter(tc) then
 		tc:EnableDualState()
-		-- 在结束阶段时，将对象怪兽送回手卡
+		-- 这个回合的结束阶段时，选择的二重怪兽回到手卡。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 		e1:SetCode(EVENT_PHASE+PHASE_END)
@@ -43,8 +43,8 @@ function c26120084.operation(e,tp,eg,ep,ev,re,r,rp)
 		tc:RegisterEffect(e1,true)
 	end
 end
--- 结束阶段处理函数：将对象怪兽送回手卡
+-- 结束阶段时的处理：使持有该效果的怪兽返回手卡。
 function c26120084.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 将对象怪兽送回手卡，原因效果
+	-- 将那只怪兽以效果原因返回持有者的手卡。
 	Duel.SendtoHand(e:GetHandler(),nil,REASON_EFFECT)
 end

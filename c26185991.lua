@@ -14,33 +14,33 @@ function c26185991.initial_effect(c)
 	e1:SetOperation(c26185991.operation)
 	c:RegisterEffect(e1)
 end
--- 检查这张卡是否从自己的场上送去墓地
+-- 发动条件判定：确认触发效果的这张卡在送去墓地之前，其控制者为发动玩家，且所在位置为场上。
 function c26185991.condition(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsPreviousControler(tp) and e:GetHandler():IsPreviousLocation(LOCATION_ONFIELD)
 end
--- 过滤手卡中满足条件的昆虫族怪兽
+-- 特殊召唤候选过滤：从手卡中筛选出昆虫族怪兽，且该怪兽能够被当前效果特殊召唤。
 function c26185991.filter(c,e,sp)
 	return c:IsRace(RACE_INSECT) and c:IsCanBeSpecialSummoned(e,0,sp,false,false)
 end
--- 判断是否满足发动条件
+-- 效果发动时的合法条件检查：只有在自己的主要怪兽区存在可用空格，且手卡中存在至少1只满足条件的昆虫族怪兽时，效果才能发动。
 function c26185991.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断自己场上是否有空位
+	-- 检查自己的主要怪兽区是否有空格。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 判断手卡中是否存在满足条件的昆虫族怪兽
+		-- 检查手卡中是否存在至少1只昆虫族且可被特殊召唤的怪兽。
 		and Duel.IsExistingMatchingCard(c26185991.filter,tp,LOCATION_HAND,0,1,nil,e,tp) end
-	-- 设置效果处理时要特殊召唤的卡的信息
+	-- 设定效果处理信息：本次连锁将进行1只昆虫族怪兽从手卡的特殊召唤，操作者为发动玩家，来源区域为手卡。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_HAND)
 end
--- 效果处理函数
+-- 效果处理：若场上仍有可用怪兽区，则选择手卡中的1只昆虫族怪兽并将其特殊召唤。
 function c26185991.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断自己场上是否还有空位
+	-- 再次确认主要怪兽区仍有空格；若没有空位则效果处理不执行。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-	-- 提示玩家选择要特殊召唤的卡
+	-- 向发动玩家弹出选择提示，提示内容为“请选择要特殊召唤的卡”。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 选择满足条件的1只昆虫族怪兽
+	-- 从手卡中选择1只满足条件的昆虫族怪兽作为特殊召唤的对象。
 	local g=Duel.SelectMatchingCard(tp,c26185991.filter,tp,LOCATION_HAND,0,1,1,nil,e,tp)
 	if g:GetCount()>0 then
-		-- 将选中的怪兽特殊召唤到场上
+		-- 将选中的怪兽以表侧表示特殊召唤到自己的主要怪兽区。
 		Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
