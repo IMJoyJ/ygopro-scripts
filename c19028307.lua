@@ -19,28 +19,28 @@ function c19028307.initial_effect(c)
 	e2:SetCode(EFFECT_NO_BATTLE_DAMAGE)
 	c:RegisterEffect(e2)
 end
--- 检索满足条件的卡片组：检查是否可以作为除外费用、是否属于兽战士族或机械族、是否在场上时为表侧表示。
+-- 素材过滤：判定怪兽是否可作为召唤素材，要求能被除外、种族为兽战士族或机械族，且在场上时必须是表侧表示。
 function c19028307.spcostfilter(c)
 	return c:IsAbleToRemoveAsCost() and c:IsRace(RACE_BEASTWARRIOR+RACE_MACHINE) and (not c:IsLocation(LOCATION_MZONE) or c:IsFaceup())
 end
--- 检查所选卡片组是否满足特殊召唤条件：是否有足够的怪兽区域、是否包含一个兽战士族和一个机械族怪兽。
+-- 素材组合检查：确认除去这些素材后我方仍有可用怪兽区，且所选两张素材的种类刚好分别为兽战士族和机械族。
 function c19028307.spcheck(sg,tp)
-	-- 检查所选卡片组是否满足特殊召唤条件：是否有足够的怪兽区域、是否包含一个兽战士族和一个机械族怪兽。
+	-- 计算移除素材后的可用怪兽区域数大于0，并利用aux.gfcheck验证两张素材分别满足兽战士族和机械族条件。
 	return Duel.GetMZoneCount(tp,sg,tp)>0 and aux.gfcheck(sg,Card.IsRace,RACE_BEASTWARRIOR,RACE_MACHINE)
 end
--- 判断特殊召唤条件是否满足：获取符合条件的卡片组并检查是否存在包含2张符合条件的卡片的子组。
+-- 规则召唤条件：当c为nil时直接放行，否则从手卡·场上·墓地中检索是否存在满足条件的2张素材组合。
 function c19028307.spcon(e,c)
 	if c==nil then return true end
 	local tp=c:GetControler()
-	-- 获取满足除外费用条件的卡片组：从场上、手牌、墓地检索符合条件的卡片。
+	-- 筛选出当前玩家手卡·场上·墓地中可作为除外素材的怪兽（不包括此卡自身）。
 	local g=Duel.GetMatchingGroup(c19028307.spcostfilter,tp,LOCATION_MZONE+LOCATION_HAND+LOCATION_GRAVE,0,c)
 	return g:CheckSubGroup(c19028307.spcheck,2,2,tp)
 end
--- 设置特殊召唤的目标选择逻辑：获取符合条件的卡片组并提示选择2张符合条件的卡片。
+-- 目标处理：让玩家选择2张素材，校验后保留选中组并存入效果LabelObject，作为后续除外操作的数据。
 function c19028307.sptg(e,tp,eg,ep,ev,re,r,rp,chk,c)
-	-- 获取满足除外费用条件的卡片组：从场上、手牌、墓地检索符合条件的卡片。
+	-- 获取当前玩家可选的素材候选组，范围是手卡·场上·墓地，且排除此卡。
 	local g=Duel.GetMatchingGroup(c19028307.spcostfilter,tp,LOCATION_MZONE+LOCATION_HAND+LOCATION_GRAVE,0,c)
-	-- 向玩家发送提示信息，提示选择要除外的卡片。
+	-- 弹出选择提示，要求玩家选择要除外的卡片。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
 	local sg=g:SelectSubGroup(tp,c19028307.spcheck,true,2,2,tp)
 	if sg then
@@ -49,10 +49,10 @@ function c19028307.sptg(e,tp,eg,ep,ev,re,r,rp,chk,c)
 		return true
 	else return false end
 end
--- 执行特殊召唤的操作：将选定的卡片除外并从手卡特殊召唤。
+-- 特殊召唤处理：取出之前选定的素材组，将其除外并作为这次规则特殊召唤的手续。
 function c19028307.spop(e,tp,eg,ep,ev,re,r,rp,c)
 	local g=e:GetLabelObject()
-	-- 将目标卡片以正面表示形式除外，作为特殊召唤的费用。
+	-- 将选定的素材以表侧表示除外，作为这次特殊召唤的COST/手续。
 	Duel.Remove(g,POS_FACEUP,REASON_SPSUMMON)
 	g:DeleteGroup()
 end

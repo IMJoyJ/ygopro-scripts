@@ -32,54 +32,54 @@ function c19139516.initial_effect(c)
 	e3:SetOperation(c19139516.thop)
 	c:RegisterEffect(e3)
 end
--- 检查这张卡是否为表侧守备表示，若是则给这张卡注册一个在战斗阶段结束前有效的标记。
+-- 被选为攻击对象时，若此卡为表侧守备表示，则给自己注册一个战斗阶段结束前有效的破坏标记，供战斗阶段结束时判定是否破坏此卡。
 function c19139516.regop(e,tp,eg,ep,ev,re,r,rp)
 	if e:GetHandler():IsDefensePos() and e:GetHandler():IsFaceup() then
 		e:GetHandler():RegisterFlagEffect(19139516,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_BATTLE,0,1)
 	end
 end
--- 检查这张卡是否带有被攻击的标记，并设置破坏自身的操作信息。
+-- 破坏效果的发动条件判定：chk==0时，检查此卡是否带有之前注册的标记；若满足，则设置破坏此卡的操作信息。
 function c19139516.destg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():GetFlagEffect(19139516)~=0 end
-	-- 设置当前连锁的操作信息为破坏这张卡。
+	-- 设置本次连锁的操作信息：声明将要破坏的对象为此卡，数量为1，使系统识别该效果属于破坏分类。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,e:GetHandler(),1,0,0)
 end
--- 若这张卡仍在场，则将其破坏。
+-- 效果处理阶段：若此卡仍与当前效果关联（未被移离或失效），则执行破坏。
 function c19139516.desop(e,tp,eg,ep,ev,re,r,rp)
 	if e:GetHandler():IsRelateToEffect(e) then
-		-- 将这张卡因效果破坏。
+		-- 以效果原因将这张卡破坏并送去墓地。
 		Duel.Destroy(e:GetHandler(),REASON_EFFECT)
 	end
 end
--- 检查这张卡是否因“废铁”卡片的效果被破坏并送去墓地。
+-- 检索效果的诱发条件：此卡是被名字带有「废铁」的卡的效果破坏送去墓地（Reason同时含破坏与效果原因，且效果持有者为「废铁」字段的卡）。
 function c19139516.thcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	return bit.band(c:GetReason(),0x41)==0x41 and re:GetOwner():IsSetCard(0x24)
 end
--- 过滤出墓地中除“废铁兽”以外的“废铁”怪兽。
+-- 检索的候选卡过滤器：满足「废铁」字段、是怪兽卡、不是「废铁兽」自身、且能够加入手牌。
 function c19139516.filter(c)
 	return c:IsSetCard(0x24) and c:IsType(TYPE_MONSTER) and not c:IsCode(19139516) and c:IsAbleToHand()
 end
--- 检查墓地是否存在合法的目标，并让玩家选择一个目标，设置加入手牌的操作信息。
+-- 检索效果的发动判定与目标选择：chk==0时确认存在合法对象；随后提示玩家选择1张符合条件的「废铁」怪兽，将其设为效果对象，并设置回手牌的操作信息。
 function c19139516.thtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and c19139516.filter(chkc) end
-	-- 发动检查：检查自己墓地是否存在满足条件的卡片。
+	-- chk==0时检查自己墓地是否存在至少1张满足过滤条件且能成为效果对象的「废铁」怪兽。
 	if chk==0 then return Duel.IsExistingTarget(c19139516.filter,tp,LOCATION_GRAVE,0,1,nil) end
-	-- 在界面上显示“请选择要加入手牌的卡”的提示信息。
+	-- 显示选择提示，让玩家选择一张要加入手牌的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 玩家选择墓地中1只满足条件的怪兽作为效果对象。
+	-- 由当前玩家从自己墓地选择1张符合条件的「废铁」怪兽作为效果对象，并自动登记为当前连锁的对象。
 	local g=Duel.SelectTarget(tp,c19139516.filter,tp,LOCATION_GRAVE,0,1,1,nil)
-	-- 设置当前连锁的操作信息为将选中的卡片加入手牌。
+	-- 设置操作信息：本次效果将把对象卡加入手牌（回手牌分类），对象为g，数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,1,0,0)
 end
--- 执行效果处理，将选中的对象卡片加入手牌并给对方确认。
+-- 效果处理时取得对象卡；若对象仍与效果关联，则将其加入持有者手牌，并向对方玩家展示该卡。
 function c19139516.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取发动时选择的效果对象。
+	-- 取得当前连锁唯一的效果对象卡。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 将目标卡片因效果加入手牌。
+		-- 将对象卡以效果原因加入其持有者的手牌（nil表示回到原本持有者手卡）。
 		Duel.SendtoHand(tc,nil,REASON_EFFECT)
-		-- 向对方玩家确认加入手牌的卡片。
+		-- 向对方玩家展示被加入手牌的卡，以确认检索获得的是哪张卡。
 		Duel.ConfirmCards(1-tp,tc)
 	end
 end
