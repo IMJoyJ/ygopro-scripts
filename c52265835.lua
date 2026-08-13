@@ -12,14 +12,14 @@ function c52265835.initial_effect(c)
 	e1:SetValue(700)
 	c:RegisterEffect(e1)
 end
--- 判断当前是否为伤害步骤且确认战斗涉及光属性怪兽
+-- 设定攻击力上升效果的发动条件：仅在伤害步骤或伤害计算时，且这张卡与光属性怪兽进行战斗的场合才生效。
 function c52265835.condtion(e)
-	-- 获取当前游戏阶段
+	-- 获取当前游戏阶段，用于判断是否处于伤害步骤或伤害计算时。
 	local ph=Duel.GetCurrentPhase()
 	if not (ph==PHASE_DAMAGE or ph==PHASE_DAMAGE_CAL) then return false end
-	-- 获取本次战斗的攻击者
+	-- 获取正在进行战斗的攻击怪兽。
 	local a=Duel.GetAttacker()
-	-- 获取本次战斗的攻击对象
+	-- 获取被攻击的怪兽（攻击对象）。
 	local d=Duel.GetAttackTarget()
 	return (a==e:GetHandler() and d and d:IsFaceup() and d:IsAttribute(ATTRIBUTE_LIGHT))
 		or (d==e:GetHandler() and a:IsAttribute(ATTRIBUTE_LIGHT))

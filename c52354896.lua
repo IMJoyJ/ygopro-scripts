@@ -4,7 +4,7 @@
 -- ①：以自己场上1只电子界族·4星怪兽为对象才能发动。那只怪兽的等级直到回合结束时变成8星。
 -- ②：这张卡被送去墓地的场合，以额外怪兽区域1只自己的电子界族怪兽为对象才能发动。那只怪兽的攻击力直到回合结束时变成2倍。
 function c52354896.initial_effect(c)
-	-- ①：以自己场上1只电子界族·4星怪兽为对象才能发动。那只怪兽的等级直到回合结束时变成8星。
+	-- 这个卡名的①②的效果1回合各能使用1次。①：以自己场上1只电子界族·4星怪兽为对象才能发动。那只怪兽的等级直到回合结束时变成8星。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_IGNITION)
 	e1:SetRange(LOCATION_MZONE)
@@ -23,26 +23,26 @@ function c52354896.initial_effect(c)
 	e2:SetOperation(c52354896.daop)
 	c:RegisterEffect(e2)
 end
--- 检索满足条件的卡片组：表侧表示、4星、电子界族
+-- 筛选条件：对象必须是表侧表示、等级为4且种族为电子界的怪兽，用于①效果选择对象时过滤合法目标。
 function c52354896.filter(c)
 	return c:IsFaceup() and c:IsLevel(4) and c:IsRace(RACE_CYBERSE)
 end
--- 选择目标：自己场上满足条件的1只怪兽
+-- ①效果的发动条件与对象选择：若有指定对象则校验其合法性；若无指定则在发动确认时检查场上是否存在合法对象；然后提示玩家选择自己场上1只表侧表示的4星电子界族怪兽，并将其设为效果对象。
 function c52354896.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and c52354896.filter(chkc) end
-	-- 检查是否有满足条件的目标怪兽
+	-- 发动合法性检查（chk==0）：确认自己场上是否存在至少1只满足条件的表侧表示4星电子界族怪兽，存在才能发动。
 	if chk==0 then return Duel.IsExistingTarget(c52354896.filter,tp,LOCATION_MZONE,0,1,nil) end
-	-- 提示玩家选择目标
+	-- 向操作玩家显示“请选择表侧表示的卡”的选择提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
-	-- 选择满足条件的1只怪兽作为效果对象
+	-- 让操作玩家从自己场上选择1只满足条件的表侧表示4星电子界族怪兽作为效果对象，并登记为当前连锁的对象。
 	Duel.SelectTarget(tp,c52354896.filter,tp,LOCATION_MZONE,0,1,1,nil)
 end
--- 处理效果①：将目标怪兽等级变为8星
+-- ①效果处理：获取发动时选择的对象，若对象仍表侧表示且与效果关联，则给它赋予一个使等级变为8的效果，该效果持续到回合结束。
 function c52354896.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的效果对象
+	-- 获取①效果发动时所选择的1只对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsFaceup() and tc:IsRelateToEffect(e) then
-		-- 设置效果：使目标怪兽等级变为8星，并在回合结束时重置
+		-- 那只怪兽的等级直到回合结束时变成8星。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
@@ -52,27 +52,27 @@ function c52354896.operation(e,tp,eg,ep,ev,re,r,rp)
 		tc:RegisterEffect(e1)
 	end
 end
--- 检索满足条件的卡片组：表侧表示、电子界族、在额外怪兽区域
+-- 筛选条件：对象必须是表侧表示、种族为电子界且位于额外怪兽区域（区域序号>=5）的怪兽，用于②效果选择对象时过滤合法目标。
 function c52354896.dafilter(c)
 	return c:IsFaceup() and c:IsRace(RACE_CYBERSE) and c:GetSequence()>=5
 end
--- 选择目标：自己场上满足条件的1只怪兽
+-- ②效果的发动条件与对象选择：若有指定对象则校验其合法性；若无指定则在发动确认时检查额外怪兽区域是否存在合法对象；然后提示玩家选择额外怪兽区域1只自己的表侧表示电子界族怪兽，并将其设为效果对象。
 function c52354896.datg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and c52354896.dafilter(chkc) end
-	-- 检查是否有满足条件的目标怪兽
+	-- 发动合法性检查（chk==0）：确认自己的额外怪兽区域是否存在至少1只满足条件的表侧表示电子界族怪兽，存在才能发动。
 	if chk==0 then return Duel.IsExistingTarget(c52354896.dafilter,tp,LOCATION_MZONE,0,1,nil) end
-	-- 提示玩家选择目标
+	-- 向操作玩家显示“请选择表侧表示的卡”的选择提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
-	-- 选择满足条件的1只怪兽作为效果对象
+	-- 让操作玩家从自己的额外怪兽区域选择1只满足条件的表侧表示电子界族怪兽作为效果对象，并登记为当前连锁的对象。
 	Duel.SelectTarget(tp,c52354896.dafilter,tp,LOCATION_MZONE,0,1,1,nil)
 end
--- 处理效果②：将目标怪兽攻击力变为2倍
+-- ②效果处理：获取发动时选择的对象，若对象仍与效果关联且表侧表示，则将它的攻击力变成当前攻击力的2倍，该效果持续到回合结束。
 function c52354896.daop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的效果对象
+	-- 获取②效果发动时所选择的1只对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) and tc:IsFaceup() then
 		local atk=tc:GetAttack()
-		-- 设置效果：使目标怪兽攻击力变为2倍，并在回合结束时重置
+		-- 那只怪兽的攻击力直到回合结束时变成2倍。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)

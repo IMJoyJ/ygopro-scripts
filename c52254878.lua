@@ -10,7 +10,7 @@ function c52254878.initial_effect(c)
 	e1:SetCode(EFFECT_INDESTRUCTABLE_BATTLE)
 	e1:SetValue(c52254878.batfilter)
 	c:RegisterEffect(e1)
-	-- ②：宣言种族和属性各1个才能发动。这张卡直到对方回合结束时变成宣言的种族·属性。
+	-- 这个卡名的②的效果1回合只能使用1次。②：宣言种族和属性各1个才能发动。这张卡直到对方回合结束时变成宣言的种族·属性。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_IGNITION)
 	e2:SetRange(LOCATION_MZONE)
@@ -19,37 +19,37 @@ function c52254878.initial_effect(c)
 	e2:SetOperation(c52254878.arop)
 	c:RegisterEffect(e2)
 end
--- 当攻击怪兽具有与自身相同属性或种族时，该怪兽无法破坏此卡。
+-- 判定战斗对象（c）是否与这张卡当前的种族或属性相同，若相同则返回真，使这张卡不被该怪兽战斗破坏。
 function c52254878.batfilter(e,c)
 	local bc=e:GetHandler()
 	return c:IsAttribute(bc:GetAttribute()) or c:IsRace(bc:GetRace())
 end
--- 选择并记录要宣言的种族和属性值。
+-- 作为②效果的发动处理：确认可以发动后，让玩家宣言1个种族和1个属性，并将宣言结果存入效果标签，供效果处理时使用。
 function c52254878.artg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 提示玩家选择要宣言的种族。
+	-- 向玩家tp显示“请选择要宣言的种族”的提示信息，用于种族宣言的选择界面。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_RACE)  --"请选择要宣言的种族"
-	-- 让玩家从所有种族中选择1个种族进行宣言。
+	-- 让玩家tp从全部种族中宣言1个种族，返回所宣言的种族值。
 	local rac=Duel.AnnounceRace(tp,1,RACE_ALL)
-	-- 提示玩家选择要宣言的属性。
+	-- 向玩家tp显示“请选择要宣言的属性”的提示信息，用于属性宣言的选择界面。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATTRIBUTE)  --"请选择要宣言的属性"
-	-- 让玩家从所有属性中选择1个属性进行宣言。
+	-- 让玩家tp从全部属性中宣言1个属性，返回所宣言的属性值。
 	local att=Duel.AnnounceAttribute(tp,1,ATTRIBUTE_ALL)
 	e:SetLabel(rac,att)
 end
--- 将卡牌的属性和种族修改为宣言的值，直到对方回合结束。
+-- 效果处理：若这张卡仍与效果关联且表侧表示，则给它赋予改变属性和改变种族的持续效果，使其直到对方回合结束时变成宣言的种族·属性。
 function c52254878.arop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local rac,att=e:GetLabel()
 	if c:IsRelateToEffect(e) and c:IsFaceup() then
-		-- 将卡牌的属性修改为宣言的属性值，直到对方回合结束。
+		-- 对应②：这张卡直到对方回合结束时变成宣言的种族·属性（此处实现改变属性的部分）。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_CHANGE_ATTRIBUTE)
 		e1:SetValue(att)
 		e1:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_DISABLE+RESET_PHASE+PHASE_END+RESET_OPPO_TURN)
 		c:RegisterEffect(e1)
-		-- 将卡牌的种族修改为宣言的种族值，直到对方回合结束。
+		-- 对应②：这张卡直到对方回合结束时变成宣言的种族·属性（此处实现改变种族的部分）。
 		local e2=Effect.CreateEffect(c)
 		e2:SetType(EFFECT_TYPE_SINGLE)
 		e2:SetCode(EFFECT_CHANGE_RACE)

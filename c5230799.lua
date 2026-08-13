@@ -10,7 +10,7 @@ function c5230799.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_QP_ACT_IN_NTPHAND)
 	e1:SetRange(LOCATION_MZONE)
-	-- 设置效果目标为拥有「魔弹」字段的卡片。
+	-- 设置该效果仅对持有「魔弹」字段的卡生效，即只有「魔弹」魔法·陷阱卡才能利用此效果从手卡发动。
 	e1:SetTarget(aux.TargetBoolFunction(Card.IsSetCard,0x108))
 	e1:SetTargetRange(LOCATION_HAND,0)
 	e1:SetValue(32841045)
@@ -18,7 +18,7 @@ function c5230799.initial_effect(c)
 	local e2=e1:Clone()
 	e2:SetCode(EFFECT_TRAP_ACT_IN_HAND)
 	c:RegisterEffect(e2)
-	-- ②：和这张卡相同纵列有魔法·陷阱卡发动的场合，从手卡丢弃1张「魔弹」卡才能发动。自己抽2张。
+	-- 这个卡名的②的效果1回合只能使用1次。②：和这张卡相同纵列有魔法·陷阱卡发动的场合，从手卡丢弃1张「魔弹」卡才能发动。自己抽2张。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(5230799,0))  --"抽滤"
 	e3:SetCategory(CATEGORY_DRAW)
@@ -33,36 +33,36 @@ function c5230799.initial_effect(c)
 	e3:SetOperation(c5230799.drop)
 	c:RegisterEffect(e3)
 end
--- 判断连锁发动的卡片是否为魔法或陷阱卡且与该卡在同一纵列。
+-- ②效果的发动条件：当处于同一纵列的魔法·陷阱卡发动时，该效果可发动。
 function c5230799.drcon(e,tp,eg,ep,ev,re,r,rp)
 	return re:IsHasType(EFFECT_TYPE_ACTIVATE) and e:GetHandler():GetColumnGroup():IsContains(re:GetHandler())
 end
--- 过滤函数，用于筛选手牌中拥有「魔弹」字段且可丢弃的卡片。
+-- 定义丢弃筛选条件：手卡中的「魔弹」卡且可以作为代价丢弃。
 function c5230799.cfilter(c)
 	return c:IsSetCard(0x108) and c:IsDiscardable()
 end
--- 检查玩家手牌是否存在满足条件的「魔弹」卡并将其丢弃1张作为发动代价。
+-- ②效果的代价：确认有可丢弃的「魔弹」卡后，从手卡丢弃1张作为发动代价。
 function c5230799.drcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检测是否满足丢弃1张「魔弹」卡的条件。
+	-- 代价检查：确认自己手卡中是否存在满足条件的「魔弹」卡。
 	if chk==0 then return Duel.IsExistingMatchingCard(c5230799.cfilter,tp,LOCATION_HAND,0,1,nil) end
-	-- 执行丢弃1张符合条件的「魔弹」卡的操作。
+	-- 实际执行代价：从手卡丢弃1张「魔弹」卡（原因记为代价和丢弃）。
 	Duel.DiscardHand(tp,c5230799.cfilter,1,1,REASON_COST+REASON_DISCARD)
 end
--- 检查玩家是否可以抽2张卡并设置抽卡效果的目标参数。
+-- ②效果的发动目标设定：检查可以抽2张，并将抽卡对象和抽卡数写入连锁。
 function c5230799.drtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检测是否满足抽卡条件。
+	-- 发动前检查自己是否能够抽2张卡（防止受到不能抽卡效果限制时发动）。
 	if chk==0 then return Duel.IsPlayerCanDraw(tp,2) end
-	-- 设置连锁处理中抽卡效果的目标玩家为当前玩家。
+	-- 将抽卡对象玩家设为自己，表示由自己抽卡。
 	Duel.SetTargetPlayer(tp)
-	-- 设置连锁处理中抽卡效果的抽卡数量为2张。
+	-- 将抽卡数量参数设为2。
 	Duel.SetTargetParam(2)
-	-- 设置连锁处理中的抽卡效果信息，包括抽卡数量和目标玩家。
+	-- 向连锁登记本次效果为抽2张卡的效果信息，以此让其他卡可以对应/检测。
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,2)
 end
--- 执行抽卡效果，从当前玩家的牌组中抽取指定数量的卡。
+-- ②效果的处理：从连锁中取出记录的对象玩家和抽卡数，执行抽卡。
 function c5230799.drop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁处理中抽卡效果的目标玩家和抽卡数量。
+	-- 取得当前连锁信息中保存的对象玩家（谁抽卡）和参数（抽卡数量）。
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 根据目标玩家和抽卡数量执行实际抽卡动作。
+	-- 让对象玩家以效果原因抽对应数量的卡，最终完成“自己抽2张”。
 	Duel.Draw(p,d,REASON_EFFECT)
 end

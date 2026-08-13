@@ -13,47 +13,47 @@ function c52340444.initial_effect(c)
 	e1:SetOperation(c52340444.activate)
 	c:RegisterEffect(e1)
 end
--- 过滤函数，检查场上是否存在怪兽（序列号小于5表示主要怪兽区）
+-- 过滤函数，用于判断卡是否位于主要怪兽区域：怪兽区域中主要怪兽区域（1-5号区域）的编号小于5，返回true。
 function c52340444.cfilter(c)
 	return c:GetSequence()<5
 end
--- 判断条件：自己的主要怪兽区域没有怪兽存在
+-- 发动条件：自己的主要怪兽区域不存在任何怪兽（即没有满足cfilter条件的卡）。
 function c52340444.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断自己场上是否没有怪兽
+	-- 检查自己主要怪兽区域是否存在满足cfilter条件的怪兽，若不存在则返回true，满足发动条件。
 	return not Duel.IsExistingMatchingCard(c52340444.cfilter,tp,LOCATION_MZONE,0,1,nil)
 end
--- 设置发动时的处理目标，包括特殊召唤衍生物和衍生物token
+-- 效果发动时的目标处理和合法性检查：计算衍生物攻击力/守备力（墓地魔法卡≥3则为1500），确认主要怪兽区域有空位且玩家可以特殊召唤该衍生物，并设置效果操作信息。
 function c52340444.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	local atk=0
-	-- 检查自己墓地魔法卡数量是否大于等于3张
+	-- 统计自己墓地的魔法卡数量，若达到3张或以上，则将本次衍生物的攻击力/守备力参数设为1500。
 	if Duel.GetMatchingGroupCount(Card.IsType,tp,LOCATION_GRAVE,0,nil,TYPE_SPELL)>=3 then
 		atk=1500
 	end
-	-- 检查自己场上是否有足够的空间进行特殊召唤
+	-- 发动合法性判定：当前主要怪兽区域是否有空余格子可供特殊召唤衍生物。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 判断玩家是否可以特殊召唤指定编号的衍生物
+		-- 并且玩家能否以表侧守备表示、1星、战士族、暗属性、攻/守为atk的衍生物参数进行特殊召唤（即满足衍生物生成条件）。
 		and Duel.IsPlayerCanSpecialSummonMonster(tp,52340445,0,TYPES_TOKEN_MONSTER,atk,atk,1,RACE_WARRIOR,ATTRIBUTE_DARK,POS_FACEUP_DEFENSE) end
-	-- 设置操作信息：衍生物token将被特殊召唤
+	-- 设置操作信息：本次效果将生成1只衍生物（CATEGORY_TOKEN），用于连锁处理后确认衍生物的生成。
 	Duel.SetOperationInfo(0,CATEGORY_TOKEN,nil,1,0,0)
-	-- 设置操作信息：衍生物将被特殊召唤
+	-- 设置操作信息：本次效果包含特殊召唤（CATEGORY_SPECIAL_SUMMON），将特殊召唤1只衍生物。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,0,0)
 end
--- 执行发动效果时的具体处理流程
+-- 效果处理时的实际操作：再次确认条件后，生成「闪刀姬衍生物」并特殊召唤，同时根据墓地魔法卡数量决定是否赋予其1500攻击力/守备力，以及赋予不能解放的效果。
 function c52340444.activate(e,tp,eg,ep,ev,re,r,rp)
 	local atk=0
-	-- 检查自己墓地魔法卡数量是否大于等于3张
+	-- 效果处理时再次统计自己墓地的魔法卡数量，若≥3则本次衍生物的攻击力/守备力参数为1500。
 	if Duel.GetMatchingGroupCount(Card.IsType,tp,LOCATION_GRAVE,0,nil,TYPE_SPELL)>=3 then
 		atk=1500
 	end
-	-- 检查场上是否有足够的空间进行特殊召唤
+	-- 若自己主要怪兽区域没有空余格子（空位≤0），则无法特殊召唤衍生物，效果处理中止。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0
-		-- 判断是否可以特殊召唤衍生物
+		-- 若玩家此时无法特殊召唤该衍生物（不满足特殊召唤条件），则效果处理中止。
 		or not Duel.IsPlayerCanSpecialSummonMonster(tp,52340445,0,TYPES_TOKEN_MONSTER,atk,atk,1,RACE_WARRIOR,ATTRIBUTE_DARK,POS_FACEUP_DEFENSE) then return end
-	-- 创建一个编号为52340445的衍生物token
+	-- 创建1只「闪刀姬衍生物」（code=52340445），用于接下来的特殊召唤步骤。
 	local token=Duel.CreateToken(tp,52340445)
-	-- 尝试将token特殊召唤到场上，若成功则继续设置其效果
+	-- 将衍生物以表侧守备表示加入特殊召唤流程（Duel.SpecialSummonStep），如果成功则继续为它赋予其他效果。
 	if Duel.SpecialSummonStep(token,0,tp,tp,false,false,POS_FACEUP_DEFENSE) then
-		-- 这衍生物不能解放。
+		-- 这衍生物不能解放。（此处设置衍生物不能作为上级召唤的祭品）
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UNRELEASABLE_SUM)
@@ -64,9 +64,9 @@ function c52340444.activate(e,tp,eg,ep,ev,re,r,rp)
 		local e2=e1:Clone()
 		e2:SetCode(EFFECT_UNRELEASABLE_NONSUM)
 		token:RegisterEffect(e2)
-		-- 检查自己墓地魔法卡数量是否大于等于3张
+		-- 效果处理中再次确认墓地魔法卡数量是否≥3，用于决定是否改变衍生物的攻击力和守备力。
 		if Duel.GetMatchingGroupCount(Card.IsType,tp,LOCATION_GRAVE,0,nil,TYPE_SPELL)>=3 then
-			-- 自己墓地有魔法卡3张以上存在的场合，那衍生物的攻击力·守备力变成1500。
+			-- 那衍生物的攻击力·守备力变成1500。（此处先设置攻击力为1500）
 			local e3=Effect.CreateEffect(e:GetHandler())
 			e3:SetType(EFFECT_TYPE_SINGLE)
 			e3:SetCode(EFFECT_SET_ATTACK)
@@ -78,6 +78,6 @@ function c52340444.activate(e,tp,eg,ep,ev,re,r,rp)
 			token:RegisterEffect(e4)
 		end
 	end
-	-- 完成特殊召唤流程
+	-- 完成所有特殊召唤步骤，正式将衍生物特殊召唤到场上，并处理特殊召唤成功的相关时点。
 	Duel.SpecialSummonComplete()
 end

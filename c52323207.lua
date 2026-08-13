@@ -22,39 +22,39 @@ function c52323207.initial_effect(c)
 	e2:SetOperation(c52323207.thop)
 	c:RegisterEffect(e2)
 end
--- 检查是否可以将此卡变为里侧守备表示，并且此卡在本回合未发动过效果
+-- 起动效果的发动条件与一回合一次限制检查：当自身可以变成里侧守备表示且本回合尚未使用过该效果时，允许发动，并注册一个直到结束阶段前有效的1回合1次使用标识，同时设置后续将改变表示形式的操作信息。
 function c52323207.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	if chk==0 then return c:IsCanTurnSet() and c:GetFlagEffect(52323207)==0 end
 	c:RegisterFlagEffect(52323207,RESET_EVENT+RESETS_STANDARD-RESET_TURN_SET+RESET_PHASE+PHASE_END,0,1)
-	-- 设置连锁操作信息为改变表示形式效果
+	-- 设置本连锁将进行“改变表示形式”的操作信息，对象为这张卡，数量为1，供相关效果检测或连锁处理使用。
 	Duel.SetOperationInfo(0,CATEGORY_POSITION,c,1,0,0)
 end
--- 执行将此卡变为里侧守备表示的操作
+-- 效果处理时的实际操作：若这张卡仍与效果相关且处于表侧表示，则将其变成里侧守备表示。
 function c52323207.operation(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) and c:IsFaceup() then
-		-- 将此卡变为里侧守备表示
+		-- 将这张卡的表示形式变为里侧守备表示。
 		Duel.ChangePosition(c,POS_FACEDOWN_DEFENSE)
 	end
 end
--- 选择对方场上1只可以送入手牌的怪兽作为目标
+-- 反转召唤成功时的诱发效果的目标处理：选择对方场上1只怪兽作为对象，要求其可以加入手卡；选择后设置将送回手卡的操作信息。
 function c52323207.thtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(1-tp) and chkc:IsAbleToHand() end
 	if chk==0 then return true end
-	-- 向玩家提示“请选择要返回手牌的卡”
+	-- 向操作玩家显示选择提示，提示文字为“请选择要返回手卡的卡”。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_RTOHAND)  --"请选择要返回手牌的卡"
-	-- 选择对方场上的1只怪兽作为目标
+	-- 让操作玩家从对方场上选择1只满足可以加入手卡的怪兽，并将其设为该效果的对象。
 	local g=Duel.SelectTarget(tp,Card.IsAbleToHand,tp,0,LOCATION_MZONE,1,1,nil)
-	-- 设置连锁操作信息为送入手牌效果
+	-- 设置本连锁将进行“返回手卡”的操作信息，目标为已选择的怪兽，数量为其张数。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,g:GetCount(),0,0)
 end
--- 执行将目标怪兽送入对方手牌的操作
+-- 效果处理时的实际操作：取出效果对象，若该对象仍与效果相关，则将其送回持有者手卡。
 function c52323207.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁处理的目标怪兽
+	-- 取得本次效果处理时选择的对象卡。
 	local tc=Duel.GetFirstTarget()
 	if tc and tc:IsRelateToEffect(e) then
-		-- 将目标怪兽送入对方手牌
+		-- 将对象怪兽以效果原因送回其持有者的手卡。
 		Duel.SendtoHand(tc,nil,REASON_EFFECT)
 	end
 end
