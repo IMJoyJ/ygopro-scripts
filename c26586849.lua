@@ -17,7 +17,7 @@ function c26586849.initial_effect(c)
 	e1:SetTarget(c26586849.sumlimit)
 	c:RegisterEffect(e1)
 end
--- 限制目标为墓地的怪兽
+-- 判断即将被特殊召唤的怪兽是否来自墓地且为怪兽，若满足则禁止该特殊召唤。
 function c26586849.sumlimit(e,c,sump,sumtype,sumpos,targetp)
 	return c:IsLocation(LOCATION_GRAVE) and c:IsType(TYPE_MONSTER)
 end

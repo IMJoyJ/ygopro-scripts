@@ -7,7 +7,7 @@ function c26640671.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- 选择自己场上表侧表示存在的1只昆虫族怪兽发动。
+	-- 1回合1次，选择自己场上表侧表示存在的1只昆虫族怪兽发动。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(26640671,0))
 	e2:SetType(EFFECT_TYPE_IGNITION)
@@ -17,14 +17,14 @@ function c26640671.initial_effect(c)
 	e2:SetTarget(c26640671.target)
 	e2:SetOperation(c26640671.operation)
 	c:RegisterEffect(e2)
-	-- 和选择的怪兽进行战斗的对方怪兽在战斗阶段结束时变成守备表示。
+	-- 和选择的怪兽进行战斗的对方怪兽
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e3:SetRange(LOCATION_SZONE)
 	e3:SetCode(EVENT_BATTLED)
 	e3:SetOperation(c26640671.regop)
 	c:RegisterEffect(e3)
-	-- 只要这张卡在场上存在不能把表示形式变更。
+	-- 在战斗阶段结束时变成守备表示
 	local e4=Effect.CreateEffect(c)
 	e4:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e4:SetRange(LOCATION_SZONE)
@@ -32,7 +32,7 @@ function c26640671.initial_effect(c)
 	e4:SetCountLimit(1)
 	e4:SetOperation(c26640671.posop)
 	c:RegisterEffect(e4)
-	-- 1回合1次，选择自己场上表侧表示存在的1只昆虫族怪兽发动。
+	-- 只要这张卡在场上存在不能把表示形式变更。
 	local e5=Effect.CreateEffect(c)
 	e5:SetType(EFFECT_TYPE_FIELD)
 	e5:SetRange(LOCATION_SZONE)
@@ -41,33 +41,33 @@ function c26640671.initial_effect(c)
 	e5:SetTarget(c26640671.postg)
 	c:RegisterEffect(e5)
 end
--- 过滤满足条件的昆虫族怪兽，即：表侧表示、未被选择为目标、且为昆虫族。
+-- 选择条件：对象必须为表侧表示、昆虫族，且没有被这张卡选为永续对象。
 function c26640671.filter(c,ec)
 	return c:IsFaceup() and not ec:IsHasCardTarget(c) and c:IsRace(RACE_INSECT)
 end
--- 设置效果目标为满足条件的昆虫族怪兽。
+-- 目标选择处理函数：发动时确认可选对象，提示玩家选择1只符合条件的昆虫族怪兽，并设为效果对象。
 function c26640671.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and c26640671.filter(chkc,e:GetHandler()) end
-	-- 检查是否存在满足条件的昆虫族怪兽作为目标。
+	-- 发动条件检查：确认自己场上存在至少1只符合条件的昆虫族怪兽可以成为对象。
 	if chk==0 then return Duel.IsExistingTarget(c26640671.filter,tp,LOCATION_MZONE,0,1,nil,e:GetHandler()) end
-	-- 提示玩家选择目标怪兽。
+	-- 向操作者显示选择提示消息（此处使用“请选择要装备的卡”的提示文本）。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_EQUIP)  --"请选择要装备的卡"
-	-- 选择满足条件的昆虫族怪兽作为目标。
+	-- 从自己场上选择1只符合条件的表侧昆虫族怪兽并设为效果对象。
 	Duel.SelectTarget(tp,c26640671.filter,tp,LOCATION_MZONE,0,1,1,nil,e:GetHandler())
 end
--- 将选择的怪兽设置为当前效果的目标。
+-- 效果处理：若这张卡和目标怪兽仍与效果关联且目标为表侧表示，则将目标怪兽作为这张卡的永续对象记录下来。
 function c26640671.operation(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取当前效果的目标怪兽。
+	-- 获取这个效果发动时选择的对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if not c:IsRelateToEffect(e) or not tc:IsRelateToEffect(e) or tc:IsFacedown() then return end
 	c:SetCardTarget(tc)
 end
--- 记录战斗中的攻击怪兽和被攻击怪兽。
+-- 战斗事件处理：若被选择的昆虫族怪兽与对方怪兽发生战斗，则给对方战斗怪兽注册标记，用于记录其与选定怪兽战斗过。
 function c26640671.regop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取此次战斗的攻击怪兽。
+	-- 获取本次战斗的攻击怪兽。
 	local a=Duel.GetAttacker()
-	-- 获取此次战斗的被攻击怪兽。
+	-- 获取本次战斗的攻击对象（被攻击的怪兽，没有则为nil）。
 	local d=Duel.GetAttackTarget()
 	if d and d:IsControler(1-tp) and e:GetHandler():IsHasCardTarget(a) then
 		d:RegisterFlagEffect(26640671,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END,0,1)
@@ -75,15 +75,15 @@ function c26640671.regop(e,tp,eg,ep,ev,re,r,rp)
 		a:RegisterFlagEffect(26640671,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END,0,1)
 	end
 end
--- 筛选出拥有标记26640671且处于攻击表示的怪兽。
+-- 过滤条件：怪兽带有“与选定昆虫战斗过”的标记，并且处于攻击表示。
 function c26640671.pfilter(c)
 	return c:GetFlagEffect(26640671)~=0 and c:IsAttackPos()
 end
--- 将符合条件的怪兽变为守备表示，并为其添加标记26640672。
+-- 战斗阶段结束时的处理：检索所有符合条件的对方怪兽，将其变为表侧守备表示，并给这些怪兽注册“不能变更表示形式”的标记（持续到离场等重置）。
 function c26640671.posop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取所有满足条件的怪兽组。
+	-- 获取对方场上所有带有战斗标记且攻击表示的怪兽。
 	local g=Duel.GetMatchingGroup(c26640671.pfilter,tp,0,LOCATION_MZONE,nil)
-	-- 将怪兽组变为守备表示。
+	-- 将这些怪兽全部变为表侧守备表示。
 	Duel.ChangePosition(g,POS_FACEUP_DEFENSE)
 	local tc=g:GetFirst()
 	while tc do
@@ -91,7 +91,7 @@ function c26640671.posop(e,tp,eg,ep,ev,re,r,rp)
 		tc=g:GetNext()
 	end
 end
--- 判断怪兽是否拥有标记26640672，用于限制其表示形式变更。
+-- 判定怪兽是否带有“不能变更表示形式”的标记，用于永续效果的过滤。
 function c26640671.postg(e,c)
 	return c:GetFlagEffect(26640672)~=0
 end

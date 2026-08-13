@@ -3,10 +3,10 @@
 -- 3星怪兽×2
 -- 自己场上的名字带有「魔人」的超量怪兽向对方怪兽攻击的伤害步骤时，把这张卡1个超量素材取除才能发动。那只攻击怪兽的攻击力直到结束阶段时变成2倍。「弦魔人 跃跃节奏」的效果1回合只能使用1次。
 function c26563200.initial_effect(c)
-	-- 添加XYZ召唤手续，使用等级为3的怪兽2只作为素材进行超量召唤
+	-- 为这张卡添加超量召唤手续：可用2只等级3的怪兽进行叠放来超量召唤。
 	aux.AddXyzProcedure(c,nil,3,2)
 	c:EnableReviveLimit()
-	-- 自己场上的名字带有「魔人」的超量怪兽向对方怪兽攻击的伤害步骤时，把这张卡1个超量素材取除才能发动。
+	-- 自己场上的名字带有「魔人」的超量怪兽向对方怪兽攻击的伤害步骤时，把这张卡1个超量素材取除才能发动。那只攻击怪兽的攻击力直到结束阶段时变成2倍。「弦魔人 跃跃节奏」的效果1回合只能使用1次。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(26563200,0))  --"攻击上升"
 	e1:SetCategory(CATEGORY_ATKCHANGE)
@@ -21,28 +21,28 @@ function c26563200.initial_effect(c)
 	e1:SetOperation(c26563200.atkop)
 	c:RegisterEffect(e1)
 end
--- 判断是否处于伤害步骤且尚未计算战斗伤害，且攻击怪兽为我方控制、参与战斗、属于「魔人」系列、为超量怪兽且存在攻击目标
+-- 效果发动条件判定：仅当处于伤害步骤且尚未进行伤害计算时，我方场上的名字带有「魔人」的超量怪兽正在向对方怪兽攻击，且该攻击怪兽仍与本次战斗关联，才允许发动。
 function c26563200.atkcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前游戏阶段
+	-- 获取当前阶段，用于判断是否处于伤害步骤。
 	local ph=Duel.GetCurrentPhase()
-	-- 若当前阶段不是伤害步骤或战斗伤害已计算，则效果不发动
+	-- 若不是伤害步骤，或已经计算过伤害，则不满足发动条件，直接返回false。
 	if ph~=PHASE_DAMAGE or Duel.IsDamageCalculated() then return false end
-	-- 获取此次战斗的攻击怪兽
+	-- 获取当前发动攻击的怪兽（即为那只攻击怪兽）。
 	local tc=Duel.GetAttacker()
-	-- 返回攻击怪兽为我方控制、参与战斗、属于「魔人」系列、为超量怪兽且存在攻击目标
+	-- 检查攻击怪兽是否为我方控制、与本次战斗关联、名字带有「魔人」的超量怪兽，并且存在对方的攻击对象（正在攻击对方怪兽）。
 	return tc:IsControler(tp) and tc:IsRelateToBattle() and tc:IsSetCard(0x6d) and tc:IsType(TYPE_XYZ) and Duel.GetAttackTarget()~=nil
 end
--- 检查并扣除1个超量素材作为发动代价
+-- 代价处理：以取除这张卡自身的1个超量素材为发动代价；check阶段先检查是否有素材可取，实际执行时取除1张。
 function c26563200.atkcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():CheckRemoveOverlayCard(tp,1,REASON_COST) end
 	e:GetHandler():RemoveOverlayCard(tp,1,1,REASON_COST)
 end
--- 将攻击怪兽的攻击力在结束阶段时变为2倍
+-- 效果处理：将那只攻击怪兽的攻击力变为原来的2倍，直到结束阶段时适用。
 function c26563200.atkop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取此次战斗的攻击怪兽
+	-- 获取攻击怪兽，用于在效果处理时对其攻击力进行翻倍。
 	local tc=Duel.GetAttacker()
 	if tc:IsRelateToBattle() and tc:IsFaceup() then
-		-- 将攻击怪兽的攻击力临时变为原本的2倍
+		-- 那只攻击怪兽的攻击力直到结束阶段时变成2倍。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_SET_ATTACK_FINAL)

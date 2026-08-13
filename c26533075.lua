@@ -2,7 +2,7 @@
 -- 效果：
 -- 对方怪兽的攻击宣言时才能发动。把那1只攻击怪兽的表示形式改变。对方的魔法·陷阱卡的效果把盖放的这张卡破坏送去墓地时，选择场上存在的1只怪兽破坏。
 function c26533075.initial_effect(c)
-	-- 创建一个永续效果，当对方怪兽攻击宣言时发动，将攻击怪兽变为守备表示
+	-- 对方怪兽的攻击宣言时才能发动。把那1只攻击怪兽的表示形式改变。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_POSITION)
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET)
@@ -12,7 +12,7 @@ function c26533075.initial_effect(c)
 	e1:SetTarget(c26533075.target)
 	e1:SetOperation(c26533075.activate)
 	c:RegisterEffect(e1)
-	-- 创建一个诱发效果，当此卡因对方魔法·陷阱卡的效果被破坏送去墓地时发动，选择场上一只怪兽破坏
+	-- 对方的魔法·陷阱卡的效果把盖放的这张卡破坏送去墓地时，选择场上存在的1只怪兽破坏。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(26533075,0))  --"场上一只怪兽破坏"
 	e2:SetCategory(CATEGORY_DESTROY)
@@ -24,55 +24,55 @@ function c26533075.initial_effect(c)
 	e2:SetOperation(c26533075.desop)
 	c:RegisterEffect(e2)
 end
--- 效果发动条件：当前回合玩家不是攻击怪兽的控制者
+-- 此函数为第1效果的发动条件：当前是对方的回合（效果控制者不是回合玩家），确保只在对方怪兽攻击宣言时才能发动。
 function c26533075.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断当前玩家是否为攻击怪兽的控制者，若不是则满足条件
+	-- 返回“效果控制者不是当前回合玩家”的布尔值，用于限定只有对方回合才满足条件。
 	return tp~=Duel.GetTurnPlayer()
 end
--- 设置效果目标为攻击怪兽，并设定操作信息为改变表示形式
+-- 此函数为第1效果的发动时选择对象：将攻击宣言的怪兽作为对象，并设置改变表示形式的操作信息。
 function c26533075.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	-- 获取当前攻击怪兽作为目标
+	-- 获取当前正在攻击宣言的怪兽，作为效果处理的对象候选。
 	local tg=Duel.GetAttacker()
 	if chkc then return chkc==tg end
 	if chk==0 then return tg:IsOnField() and tg:IsCanChangePosition() and tg:IsCanBeEffectTarget(e) end
-	-- 将攻击怪兽设置为连锁处理的目标
+	-- 将攻击宣言的怪兽设置为当前连锁的效果对象（广义对象）。
 	Duel.SetTargetCard(tg)
-	-- 设置操作信息为改变目标怪兽的表示形式
+	-- 设置操作信息：将改变表示形式的动作登记为“改变表示形式”类别，对象为攻击怪兽，数量为1，供后续连锁检测使用。
 	Duel.SetOperationInfo(0,CATEGORY_POSITION,tg,1,0,0)
 end
--- 效果处理函数：将目标怪兽变为守备表示
+-- 此函数为第1效果处理时，若对象怪兽仍与效果关联、可以攻击且攻击未被取消，则将其改为表侧守备表示。
 function c26533075.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁处理的目标怪兽
+	-- 取得当前连锁的第一个效果对象，即攻击宣言的怪兽。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) and tc:IsAttackable() and not tc:IsStatus(STATUS_ATTACK_CANCELED) then
-		-- 将目标怪兽变为表侧守备表示
+		-- 将对象怪兽的表示形式改变为表侧守备表示，从而使其攻击中止。
 		Duel.ChangePosition(tc,POS_FACEUP_DEFENSE)
 	end
 end
--- 破坏时的触发条件：被对方魔法·陷阱卡破坏且此卡原本在场上且为里侧表示
+-- 此函数为第2效果的发动条件：这张卡因对方的魔法·陷阱卡的效果被破坏并送去墓地，且破坏前在场上里侧表示。
 function c26533075.descon(e,tp,eg,ep,ev,re,r,rp)
 	return bit.band(r,REASON_DESTROY)~=0 and rp==1-tp and re:IsActiveType(TYPE_SPELL+TYPE_TRAP)
 		and e:GetHandler():IsPreviousLocation(LOCATION_ONFIELD)
 		and e:GetHandler():IsPreviousPosition(POS_FACEDOWN)
 end
--- 设置破坏效果的目标为场上任意一只怪兽
+-- 此函数为第2效果的发动时选择对象：选择场上存在的1只怪兽作为破坏对象。
 function c26533075.destg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) end
-	-- 判断场上是否存在至少一只可以成为目标的怪兽
+	-- 发动时确认场上（双方怪兽区）存在至少1只可以成为效果对象的怪兽，否则不能发动。
 	if chk==0 then return Duel.IsExistingTarget(aux.TRUE,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil) end
-	-- 提示玩家选择要破坏的怪兽
+	-- 向操作者显示“请选择要破坏的卡”的选择提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 选择场上一只怪兽作为破坏目标
+	-- 让玩家从双方怪兽区选择1只怪兽作为效果对象，并登记为当前连锁的对象。
 	local g=Duel.SelectTarget(tp,aux.TRUE,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,nil)
-	-- 设置操作信息为破坏目标怪兽
+	-- 设置操作信息：声明将破坏所选择的怪兽，破坏类别、对象为所选怪兽、数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,1,0,0)
 end
--- 破坏效果处理函数：将目标怪兽破坏
+-- 此函数为第2效果处理时，将选择的对象怪兽破坏。
 function c26533075.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁处理的目标怪兽
+	-- 取得当前连锁中登记的效果对象，即被选择要破坏的怪兽。
 	local tc=Duel.GetFirstTarget()
 	if tc and tc:IsRelateToEffect(e) then
-		-- 将目标怪兽以效果原因破坏
+		-- 以卡片效果的原因将对象怪兽破坏。
 		Duel.Destroy(tc,REASON_EFFECT)
 	end
 end

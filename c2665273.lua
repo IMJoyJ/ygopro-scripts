@@ -7,7 +7,7 @@
 -- ③：把这张卡1个超量素材取除才能发动。双方各自从卡组抽1张。那之后，抽卡的玩家选自身的手卡·场上1张卡在这张卡下面重叠作为超量素材。这个效果在对方回合也能发动。
 function c2665273.initial_effect(c)
 	c:SetUniqueOnField(1,0,2665273)
-	-- 添加XYZ召唤手续，要求满足条件的9星怪兽至少2只
+	-- 为这张卡添加超量召唤手续：使用任意9星怪兽2只（最多99只）叠放进行超量召唤
 	aux.AddXyzProcedure(c,nil,9,2,nil,nil,99)
 	c:EnableReviveLimit()
 	-- ②：这张卡的原本的攻击力·守备力变成这张卡的超量素材数量×1000。
@@ -35,43 +35,43 @@ function c2665273.initial_effect(c)
 	e3:SetOperation(c2665273.drop)
 	c:RegisterEffect(e3)
 end
--- 设置自身原本攻击力为超量素材数量乘以1000
+-- 计算这张卡的原本攻击力，数值为超量素材数量×1000，供②效果使用
 function c2665273.atkval(e,c)
 	return c:GetOverlayCount()*1000
 end
--- 支付效果代价，从自己场上移除1个超量素材
+-- 效果③的发动代价：检查并取除这张卡的1个超量素材（取除是发动COST）
 function c2665273.drcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():CheckRemoveOverlayCard(tp,1,REASON_COST) end
 	e:GetHandler():RemoveOverlayCard(tp,1,1,REASON_COST)
 end
--- 判断是否可以发动效果，检查双方是否可以抽卡
+-- 效果③的发动条件：双方玩家都能各抽1张卡时才满足发动条件
 function c2665273.drtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断自己是否可以抽卡
+	-- 发动条件检查之一：发动者（tp）可以抽1张卡
 	if chk==0 then return Duel.IsPlayerCanDraw(tp,1)
-		-- 判断对方是否可以抽卡
+		-- 发动条件检查之二：对方（1-tp）也能抽1张卡，双方都能抽才可发动
 		and Duel.IsPlayerCanDraw(1-tp,1) end
-	-- 设置连锁操作信息，指定双方各抽1张卡
+	-- 设置操作信息：预告本效果涉及双方玩家各抽1张卡，供相关卡片的连锁判定使用
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,PLAYER_ALL,1)
 end
--- 过滤函数，返回可以作为超量素材的卡，排除受效果影响的卡
+-- 筛选可叠放为超量素材的卡：可以成为超量素材，且不对此效果免疫（排除本卡自身已在调用处处理）
 function c2665273.matfilter(c,e)
 	return c:IsCanOverlay() and not (e and c:IsImmuneToEffect(e))
 end
--- 效果处理函数，执行抽卡和选择超量素材的操作
+-- 效果③的解决处理：双方各抽1张；抽到的玩家各自从手卡·场上选1张可叠放卡洗牌后选择，叠放到这张卡下；若选中卡自带超量素材则先将那些素材按规则送墓
 function c2665273.drop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 让当前玩家从卡组抽1张卡
+	-- 发动者（tp）因效果从卡组抽1张，td记录实际抽到的数量
 	local td=Duel.Draw(tp,1,REASON_EFFECT)
-	-- 让对方玩家从卡组抽1张卡
+	-- 对方（1-tp）因效果从卡组抽1张，ed记录实际抽到的数量
 	local ed=Duel.Draw(1-tp,1,REASON_EFFECT)
 	if td+ed>0 and c:IsRelateToEffect(e) then
 		local sg=Group.CreateGroup()
-		-- 获取当前玩家可以作为超量素材的卡组
+		-- 获取发动者tp的手卡和场上中可作为超量素材的候选卡组，并排除本卡自身
 		local tg1=Duel.GetMatchingGroup(c2665273.matfilter,tp,LOCATION_HAND+LOCATION_ONFIELD,0,aux.ExceptThisCard(e),e)
 		if td>0 and tg1:GetCount()>0 then
-			-- 洗切当前玩家的手卡
+			-- 洗切发动者tp的手卡，避免手卡信息泄露
 			Duel.ShuffleHand(tp)
-			-- 提示当前玩家选择作为超量素材的卡
+			-- 向tp玩家发送选择提示：请选择要作为超量素材的卡
 			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_XMATERIAL)  --"请选择要作为超量素材的卡"
 			local tc1=tg1:Select(tp,1,1,nil):GetFirst()
 			if tc1 then
@@ -79,12 +79,12 @@ function c2665273.drop(e,tp,eg,ep,ev,re,r,rp)
 				sg:AddCard(tc1)
 			end
 		end
-		-- 获取对方玩家可以作为超量素材的卡组
+		-- 获取对方（1-tp）手卡和场上中可作为超量素材的候选卡组，并排除本卡自身
 		local tg2=Duel.GetMatchingGroup(c2665273.matfilter,1-tp,LOCATION_HAND+LOCATION_ONFIELD,0,aux.ExceptThisCard(e),e)
 		if ed>0 and tg2:GetCount()>0 then
-			-- 洗切对方玩家的手卡
+			-- 洗切对方的手卡，避免手卡信息泄露
 			Duel.ShuffleHand(1-tp)
-			-- 提示对方玩家选择作为超量素材的卡
+			-- 向对方玩家发送选择提示：请选择要作为超量素材的卡
 			Duel.Hint(HINT_SELECTMSG,1-tp,HINTMSG_XMATERIAL)  --"请选择要作为超量素材的卡"
 			local tc2=tg2:Select(1-tp,1,1,nil):GetFirst()
 			if tc2 then
@@ -93,17 +93,17 @@ function c2665273.drop(e,tp,eg,ep,ev,re,r,rp)
 			end
 		end
 		if sg:GetCount()>0 then
-			-- 中断当前效果处理，使后续处理视为不同时处理
+			-- 中断当前效果处理，使后续叠放及相关送墓处理视为不同时进行，避免错过时点
 			Duel.BreakEffect()
-			-- 遍历选择的卡组，对每张卡进行处理
+			-- 遍历本次选出的所有要作为超量素材的卡
 			for tc in aux.Next(sg) do
 				local og=tc:GetOverlayGroup()
 				if og:GetCount()>0 then
-					-- 将卡的叠放组送去墓地
+					-- 将所选卡上原有超量素材按规则送去墓地（因这些素材无法随卡一起叠放）
 					Duel.SendtoGrave(og,REASON_RULE)
 				end
 			end
-			-- 将选择的卡叠放至自身卡上
+			-- 将选出的卡组sg作为超量素材叠放在这张卡（欧姆刚德王）下面
 			Duel.Overlay(c,sg)
 		end
 	end
