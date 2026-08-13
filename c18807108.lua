@@ -20,7 +20,7 @@ function c18807108.initial_effect(c)
 	e2:SetOperation(c18807108.desop)
 	c:RegisterEffect(e2)
 	e1:SetLabelObject(e2)
-	-- 选择的怪兽不能把表示形式变更。
+	-- 也不能把表示形式变更。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_TARGET)
 	e3:SetCode(EFFECT_CANNOT_CHANGE_POSITION)
@@ -30,34 +30,34 @@ function c18807108.initial_effect(c)
 	e4:SetCode(EFFECT_CANNOT_ATTACK)
 	c:RegisterEffect(e4)
 end
--- 检索满足条件的怪兽组
+-- 发动时的对象选择处理：先核实指定对象必须是对方场上怪兽区的怪兽，再确认是否有合法对象，若有则提示玩家并从中选择1只作为效果对象。
 function c18807108.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(1-tp) end
-	-- 判断是否满足选择对象的条件
+	-- 效果发动前检查：确认对方场上是否至少存在1只可以成为对象的怪兽。
 	if chk==0 then return Duel.IsExistingTarget(nil,tp,0,LOCATION_MZONE,1,nil) end
-	-- 向玩家提示“请选择效果的对象”
+	-- 向操作玩家显示选择卡片的消息提示，提示文本为“请选择效果的对象”。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)  --"请选择效果的对象"
-	-- 选择对方场上的怪兽作为效果对象
+	-- 让玩家从对方场上选择1只怪兽作为效果对象，并将选中的卡登记为当前连锁的对象。
 	Duel.SelectTarget(tp,nil,tp,0,LOCATION_MZONE,1,1,nil)
 end
--- 将选择的怪兽设置为当前卡的效果对象
+-- 效果处理时：若这张卡和对象怪兽均与效果保持关联，则将对象怪兽设为这张卡的永续对象，使其持续受到本卡的限制。
 function c18807108.operation(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取当前连锁的效果对象
+	-- 取得当前连锁中作为效果对象的怪兽。
 	local tc=Duel.GetFirstTarget()
 	if c:IsRelateToEffect(e) and tc:IsRelateToEffect(e) then
 		c:SetCardTarget(tc)
 	end
 end
--- 判断目标怪兽是否因破坏而离场
+-- 自毁触发条件的判定：这张卡未被预定破坏，且场上存在通过本卡设定的永续对象怪兽，并且该怪兽因被破坏而离场。
 function c18807108.descon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsStatus(STATUS_DESTROY_CONFIRMED) then return false end
 	local tc=e:GetHandler():GetFirstCardTarget()
 	return tc and eg:IsContains(tc) and tc:IsReason(REASON_DESTROY)
 end
--- 当满足条件时，将自身破坏
+-- 自毁效果的处理：满足条件时，将这张卡本身破坏。
 function c18807108.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 将自身以效果原因破坏
+	-- 以效果原因将这张卡送去墓地（即破坏）。
 	Duel.Destroy(e:GetHandler(),REASON_EFFECT)
 end

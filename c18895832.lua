@@ -12,30 +12,30 @@ function c18895832.initial_effect(c)
 	e1:SetOperation(c18895832.activate)
 	c:RegisterEffect(e1)
 end
--- 支付1000基本分
+-- 定义代价函数：若为合法性检查则仅检查能否支付1000基本分，否则实际支付该LP作为发动代价。
 function c18895832.cost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查玩家是否能支付1000基本分
+	-- 若处于效果发动合法性检查阶段（chk==0），则仅判定玩家能否支付1000基本分。
 	if chk==0 then return Duel.CheckLPCost(tp,1000) end
-	-- 支付1000基本分
+	-- 若通过检查，实际扣除玩家1000基本分作为发动代价。
 	Duel.PayLPCost(tp,1000)
 end
--- 定义过滤条件，筛选正面表示的机械族怪兽且可以除外的卡
+-- 筛选条件：对方场上表侧表示或墓地中的机械族怪兽，且可被除外。
 function c18895832.filter(c)
 	return c:IsFaceupEx() and c:IsRace(RACE_MACHINE) and c:IsAbleToRemove()
 end
--- 设置连锁处理的目标为对方场上和墓地的机械族怪兽
+-- 效果发动时确定对象：若对方场上·墓地存在符合条件的机械族怪兽，则获取全部此类怪兽并登记为除外对象（不取对象）。
 function c18895832.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查对方场上和墓地是否存在满足条件的机械族怪兽
+	-- 发动合法性检查：确认对方场上·墓地至少存在1只符合条件的机械族怪兽。
 	if chk==0 then return Duel.IsExistingMatchingCard(c18895832.filter,tp,0,LOCATION_MZONE+LOCATION_GRAVE,1,nil) end
-	-- 获取对方场上和墓地满足条件的机械族怪兽组
+	-- 取得对方场上表侧表示及墓地中所有符合条件的机械族怪兽。
 	local g=Duel.GetMatchingGroup(c18895832.filter,tp,0,LOCATION_MZONE+LOCATION_GRAVE,nil)
-	-- 设置操作信息，确定要除外的怪兽数量和类型
+	-- 将取得的怪兽组登记为本次连锁除外效果的操作信息，用于效果处理及时点判定。
 	Duel.SetOperationInfo(0,CATEGORY_REMOVE,g,g:GetCount(),0,0)
 end
--- 执行除外操作
+-- 效果处理：取得当前所有符合条件的对方场上·墓地机械族怪兽，并将其全部除外。
 function c18895832.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取对方场上和墓地满足条件的机械族怪兽组
+	-- 效果处理时重新取得当前所有符合条件的机械族怪兽（不取对象，处理时判定）。
 	local g=Duel.GetMatchingGroup(c18895832.filter,tp,0,LOCATION_MZONE+LOCATION_GRAVE,nil)
-	-- 将满足条件的怪兽从游戏中除外
+	-- 将这些怪兽以表侧表示从游戏中除外（除外原因：效果）。
 	Duel.Remove(g,POS_FACEUP,REASON_EFFECT)
 end

@@ -5,9 +5,9 @@
 -- ③：1回合1次，自己的「高等宝玉兽」怪兽被选择作为攻击对象时才能发动。那次攻击无效。
 -- ④：表侧表示的这张卡在怪兽区域被破坏的场合，可以不送去墓地当作永续魔法卡使用在自己的魔法与陷阱区域表侧表示放置。
 function c18847598.initial_effect(c)
-	-- 注册卡片代码列表，记录该卡与「高等暗黑结界」的关联
+	-- 登记本卡效果文本中提到的「高等暗黑结界」（卡号12644061），使相关卡名查询与关联可用。
 	aux.AddCodeList(c,12644061)
-	-- 启用全局标记，使卡片破坏时可不入连锁送入墓地
+	-- 启用全局标志GLOBALFLAG_SELF_TOGRAVE，使不入连锁的自我送墓效果（本卡①效果）可以正常处理。
 	Duel.EnableGlobalFlag(GLOBALFLAG_SELF_TOGRAVE)
 	-- ①：场地区域没有「高等暗黑结界」存在的场合这只怪兽送去墓地。
 	local e1=Effect.CreateEffect(c)
@@ -49,20 +49,20 @@ function c18847598.initial_effect(c)
 	e4:SetOperation(c18847598.atkop)
 	c:RegisterEffect(e4)
 end
--- 判断是否满足①效果的触发条件：场地区域没有「高等暗黑结界」存在
+-- 条件函数：判断当前场上是否存在「高等暗黑结界」，若不存在则①效果条件成立，自身将被送去墓地。
 function c18847598.tgcon(e)
-	-- 检查当前是否在场地区域存在「高等暗黑结界」
+	-- 检查卡号12644061的场地卡是否生效，返回其否定值；若场上没有「高等暗黑结界」，则满足自我送墓条件。
 	return not Duel.IsEnvironment(12644061)
 end
--- 判断是否满足④效果的触发条件：卡片处于正面表示、在怪兽区域、因破坏而离场
+-- 条件函数：判断这张卡是否满足④的适用条件，即表侧表示存在于主要怪兽区域且被破坏。
 function c18847598.repcon(e)
 	local c=e:GetHandler()
 	return c:IsFaceup() and c:IsLocation(LOCATION_MZONE) and c:IsReason(REASON_DESTROY)
 end
--- 将被破坏的卡片改为永续魔法卡类型并放置于魔法与陷阱区域
+-- 操作函数：将这张卡的种类变为永续魔法，使其作为永续魔法卡继续放置在魔法与陷阱区域（配合重定向效果实际转移位置）。
 function c18847598.repop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 将卡片类型更改为永续魔法卡
+	-- ④：可以不送去墓地当作永续魔法卡使用在自己的魔法与陷阱区域表侧表示放置。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCode(EFFECT_CHANGE_TYPE)
 	e1:SetType(EFFECT_TYPE_SINGLE)
@@ -71,39 +71,39 @@ function c18847598.repop(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetValue(TYPE_SPELL+TYPE_CONTINUOUS)
 	c:RegisterEffect(e1)
 end
--- 用于筛选目标卡片的过滤器函数：判断是否为己方场上的「高等宝玉兽」或「高等暗黑结界」
+-- 筛选函数：判断一张卡是否为控制者tp的表侧表示卡片，且卡名属于「高等宝玉兽」（0x5034）或为「高等暗黑结界」，用于②检查对象。
 function c18847598.tfilter(c,tp)
 	return c:IsLocation(LOCATION_ONFIELD) and (c:IsSetCard(0x5034) or c:IsCode(12644061))
 		and c:IsControler(tp) and c:IsFaceup()
 end
--- 判断是否满足②效果的触发条件：对方发动效果且目标包含己方的「高等宝玉兽」或「高等暗黑结界」
+-- 发动条件：对方发动了以我方场上「高等宝玉兽」卡或「高等暗黑结界」为对象的取对象效果，且该效果可以被无效；自身未被战斗破坏后才能发动②。
 function c18847598.discon(e,tp,eg,ep,ev,re,r,rp)
 	if rp==tp or e:GetHandler():IsStatus(STATUS_BATTLE_DESTROYED) then return false end
 	if not re:IsHasProperty(EFFECT_FLAG_CARD_TARGET) then return false end
-	-- 获取当前连锁的目标卡片组
+	-- 获取连锁ev中被取对象的效果所选中的所有对象卡片（Group对象）。
 	local tg=Duel.GetChainInfo(ev,CHAININFO_TARGET_CARDS)
-	-- 检查目标卡片组中是否存在己方的「高等宝玉兽」或「高等暗黑结界」
+	-- 若对象卡组中至少存在1张满足tfilter条件的卡（即以我方「高等宝玉兽」或「高等暗黑结界」为对象），且该连锁能够被无效，则②条件成立。
 	return tg and tg:IsExists(c18847598.tfilter,1,nil,tp) and Duel.IsChainNegatable(ev)
 end
--- 设置②效果的处理信息：将发动无效
+-- 发动时无需额外选择卡片，只要满足条件即可发动；同时登记本次效果为无效发动类别。
 function c18847598.distg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置连锁处理信息，表示将使发动无效
+	-- 设置本连锁的操作信息为「无效发动」，用于宣告将把对象效果无效化。
 	Duel.SetOperationInfo(0,CATEGORY_NEGATE,eg,1,0,0)
 end
--- 执行②效果的处理操作：使连锁发动无效
+-- 效果处理时执行无效对方那次发动的操作。
 function c18847598.disop(e,tp,eg,ep,ev,re,r,rp)
-	-- 使当前连锁发动无效
+	-- 将连锁ev的发动无效（无效对方发动的那个取对象效果）。
 	Duel.NegateActivation(ev)
 end
--- 判断是否满足③效果的触发条件：己方「高等宝玉兽」被选为攻击对象
+-- 发动条件：自己的表侧表示的「高等宝玉兽」怪兽被选择为攻击对象时，满足③的发动条件。
 function c18847598.atkcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前攻击对象
+	-- 获取当前战斗阶段被选择为攻击对象的怪兽（即攻击目标）。
 	local d=Duel.GetAttackTarget()
 	return d and d:IsControler(tp) and d:IsFaceup() and d:IsSetCard(0x5034)
 end
--- 执行③效果的处理操作：使攻击无效
+-- 效果处理时执行无效那次攻击的操作。
 function c18847598.atkop(e,tp,eg,ep,ev,re,r,rp)
-	-- 使当前攻击无效
+	-- 使当前宣言的攻击无效化。
 	Duel.NegateAttack()
 end
