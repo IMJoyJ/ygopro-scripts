@@ -24,21 +24,21 @@ function c34646691.initial_effect(c)
 	e4:SetCode(EVENT_SPSUMMON_SUCCESS)
 	c:RegisterEffect(e4)
 end
--- 设置连锁处理的目标卡片为eg，并设置操作信息为改变表示形式
+-- 效果发动时：满足条件则允许发动，将本次召唤/反转召唤/特殊召唤成功的怪兽组设为效果关联对象，并登记将改变其表示形式的操作信息。
 function c34646691.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 将当前连锁处理的对象设置为eg
+	-- 将触发本效果的怪兽组（eg）设为当前连锁的关联对象，使这些怪兽与效果建立联系，供处理阶段判断哪些怪兽仍受本效果影响。
 	Duel.SetTargetCard(eg)
-	-- 设置操作信息为改变表示形式效果，目标为eg，数量为eg的数量
+	-- 登记操作信息：本效果将处理表示形式变更（CATEGORY_POSITION），涉及对象为eg中的全部怪兽，数量为eg:GetCount()，玩家和位置参数为0（不限定）。
 	Duel.SetOperationInfo(0,CATEGORY_POSITION,eg,eg:GetCount(),0,0)
 end
--- 过滤函数，筛选满足条件的卡片：表侧表示、攻击表示且与效果相关
+-- 筛选函数：选出处理时仍与效果e相关且满足“表侧表示、攻击表示”的怪兽，用于确定实际变为守备表示的怪兽。
 function c34646691.filter(c,e)
 	return c:IsFaceup() and c:IsAttackPos() and c:IsRelateToEffect(e)
 end
--- 效果处理函数，将符合条件的怪兽改变为守备表示
+-- 效果处理时，从触发怪兽组eg中筛选出符合条件的怪兽，并将它们全部变为表侧守备表示。
 function c34646691.operation(e,tp,eg,ep,ev,re,r,rp)
 	local g=eg:Filter(c34646691.filter,nil,e)
-	-- 将目标怪兽改变为表侧守备表示
+	-- 将筛选出的怪兽组g的表示形式全部改为表侧守备表示。
 	Duel.ChangePosition(g,POS_FACEUP_DEFENSE)
 end

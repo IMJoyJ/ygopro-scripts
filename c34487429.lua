@@ -66,121 +66,121 @@ function c34487429.initial_effect(c)
 	e6:SetOperation(c34487429.rdop)
 	c:RegisterEffect(e6)
 end
--- 过滤函数，用于判断场上是否存在表侧表示的「宝玉兽」卡。
+-- 过滤函数：筛选表侧表示且持有「宝玉兽」字段的卡。
 function c34487429.filter1(c)
 	return c:IsFaceup() and c:IsSetCard(0x1034)
 end
--- 判断是否满足效果条件：场上存在至少1张「宝玉兽」卡。
+-- 「不会因效果被破坏」的发动条件：我方魔法与陷阱区域存在至少1张表侧表示的「宝玉兽」卡。
 function c34487429.desrepcon(e)
-	-- 判断是否满足效果条件：场上存在至少1张「宝玉兽」卡。
+	-- 判断我方魔法与陷阱区域是否存在至少1张表侧表示的「宝玉兽」卡。
 	return Duel.IsExistingMatchingCard(c34487429.filter1,e:GetHandler():GetControler(),LOCATION_SZONE,0,1,nil)
 end
--- 判断是否满足效果条件：对方发动的是魔法或陷阱卡，并且该连锁可以被无效，且自己场上存在至少3张「宝玉兽」卡。
+-- 「魔法·陷阱发动无效并破坏」的发动条件：对方发动魔法·陷阱卡且该连锁可被无效，并且我方魔法与陷阱区域存在至少3张「宝玉兽」卡。
 function c34487429.discon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断是否满足效果条件：对方发动的是魔法或陷阱卡，并且该连锁可以被无效。
+	-- 判定被连锁的效果是魔法·陷阱卡的发动，且该连锁可以被无效。
 	return re:IsHasType(EFFECT_TYPE_ACTIVATE) and Duel.IsChainNegatable(ev)
-		-- 判断是否满足效果条件：自己场上存在至少3张「宝玉兽」卡。
+		-- 判定我方魔法与陷阱区域存在至少3张「宝玉兽」卡。
 		and Duel.IsExistingMatchingCard(Card.IsSetCard,tp,LOCATION_SZONE,0,3,nil,0x1034)
 end
--- 过滤函数，用于判断场上是否存在表侧表示的「宝玉兽」怪兽且能送去墓地。
+-- 过滤函数：筛选表侧表示、属于「宝玉兽」系列且可以作为代价送去墓地的怪兽。
 function c34487429.filter2(c)
 	return c:IsFaceup() and c:IsSetCard(0x1034) and c:IsAbleToGraveAsCost()
 end
--- 效果处理：选择场上1只表侧表示的「宝玉兽」怪兽送去墓地作为发动代价。
+-- 效果发动代价：从我方场上选择1只表侧表示且可作为代价的「宝玉兽」怪兽送去墓地。
 function c34487429.discost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断是否满足发动条件：场上存在至少1只表侧表示的「宝玉兽」怪兽且能送去墓地。
+	-- 代价检查：确认我方场上是否存在满足代价条件的「宝玉兽」怪兽。
 	if chk==0 then return Duel.IsExistingMatchingCard(c34487429.filter2,tp,LOCATION_MZONE,0,1,nil) end
-	-- 提示玩家选择要送去墓地的卡。
+	-- 给玩家发送选择提示，提示选择要送去墓地的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
-	-- 选择场上1只表侧表示的「宝玉兽」怪兽送去墓地。
+	-- 玩家从我方场上选择1只符合条件的「宝玉兽」怪兽作为代价。
 	local g=Duel.SelectMatchingCard(tp,c34487429.filter2,tp,LOCATION_MZONE,0,1,1,nil)
-	-- 将选中的卡送去墓地。
+	-- 将选择的怪兽以代价形式送去墓地。
 	Duel.SendtoGrave(g,REASON_COST)
 end
--- 设置效果处理时的操作信息：使发动无效并破坏。
+-- 效果发动目标设定：登记无效并破坏的对象信息，若发动效果的卡可被破坏则追加破坏信息。
 function c34487429.distg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置效果处理时的操作信息：使发动无效。
+	-- 登记此次连锁的无效对象为发动的那张魔法·陷阱卡。
 	Duel.SetOperationInfo(0,CATEGORY_NEGATE,eg,1,0,0)
 	if re:GetHandler():IsDestructable() and re:GetHandler():IsRelateToEffect(re) then
-		-- 设置效果处理时的操作信息：破坏发动的卡。
+		-- 若那张卡可被破坏且仍与效果关联，则登记将其破坏的处理信息。
 		Duel.SetOperationInfo(0,CATEGORY_DESTROY,eg,1,0,0)
 	end
 end
--- 效果处理：使连锁发动无效并破坏发动的卡。
+-- 效果处理：无效该魔法·陷阱卡的发动，若成功且该卡仍关联，则将其破坏。
 function c34487429.disop(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断是否满足效果处理条件：连锁发动可以被无效且发动的卡存在。
+	-- 判定无效发动是否成功，且要被无效的卡仍与那个连锁相关。
 	if Duel.NegateActivation(ev) and re:GetHandler():IsRelateToEffect(re) then
-		-- 破坏发动的卡。
+		-- 破坏被无效的魔法·陷阱卡。
 		Duel.Destroy(eg,REASON_EFFECT)
 	end
 end
--- 判断是否满足效果条件：场上存在至少4张「宝玉兽」卡。
+-- 抽卡效果的发动条件：我方魔法与陷阱区域存在至少4张「宝玉兽」卡。
 function c34487429.drcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断是否满足效果条件：场上存在至少4张「宝玉兽」卡。
+	-- 判断我方魔法与陷阱区域是否存在至少4张表侧表示的「宝玉兽」卡。
 	return Duel.IsExistingMatchingCard(c34487429.filter1,tp,LOCATION_SZONE,0,4,nil)
 end
--- 设置效果处理时的操作信息：自己抽1张卡。
+-- 抽卡效果发动前的目标设定：确认我方可以抽卡，并登记抽卡对象玩家、数量与抽卡类别。
 function c34487429.drtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断是否满足发动条件：自己可以抽1张卡。
+	-- 检查我方玩家是否可以抽1张卡。
 	if chk==0 then return Duel.IsPlayerCanDraw(tp,1) end
-	-- 设置效果处理的目标玩家为当前玩家。
+	-- 将本次效果的抽卡玩家设为我方。
 	Duel.SetTargetPlayer(tp)
-	-- 设置效果处理的目标参数为1。
+	-- 将本次效果的抽卡数量设为1。
 	Duel.SetTargetParam(1)
-	-- 设置效果处理时的操作信息：自己抽1张卡。
+	-- 向系统登记本次操作类别为抽卡，目标玩家为我方，数量1。
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,1)
 end
--- 效果处理：自己抽1张卡。
+-- 效果处理：从我方卡组抽1张卡。
 function c34487429.drop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的目标玩家和目标参数。
+	-- 获取之前登记的目标玩家和抽卡数量。
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 让目标玩家抽指定数量的卡。
+	-- 玩家p抽d张卡，原因视为效果。
 	Duel.Draw(p,d,REASON_EFFECT)
 end
--- 判断是否满足效果条件：场上存在至少5张「宝玉兽」卡。
+-- 特殊召唤效果的发动条件：我方魔法与陷阱区域存在至少5张「宝玉兽」卡。
 function c34487429.spcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断是否满足效果条件：场上存在至少5张「宝玉兽」卡。
+	-- 判断我方魔法与陷阱区域是否存在至少5张表侧表示的「宝玉兽」卡。
 	return Duel.IsExistingMatchingCard(c34487429.filter1,tp,LOCATION_SZONE,0,5,nil)
 end
--- 过滤函数，用于判断场上是否存在表侧表示的「宝玉兽」卡且能特殊召唤。
+-- 过滤函数：筛选表侧表示、属于「宝玉兽」系列且可以被特殊召唤的卡。
 function c34487429.filter3(c,e,tp)
 	return c:IsFaceup() and c:IsSetCard(0x1034) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 设置效果处理时的操作信息：选择目标并特殊召唤。
+-- 特殊召唤效果的目标设定：检查指定对象是否是我方魔法与陷阱区域的表侧「宝玉兽」卡且可被特殊召唤；同时确认我方主要怪兽区有空位且存在合法对象。
 function c34487429.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_SZONE) and chkc:IsControler(tp) and c34487429.filter3(chkc,e,tp) end
-	-- 判断是否满足发动条件：自己场上存在至少1张「宝玉兽」卡且能特殊召唤。
+	-- 检查我方主要怪兽区域是否有空位。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 判断是否满足发动条件：自己场上存在至少1张「宝玉兽」卡且能特殊召唤。
+		-- 检查我方魔法与陷阱区域是否存在至少1张符合条件的「宝玉兽」卡可作为对象。
 		and Duel.IsExistingTarget(c34487429.filter3,tp,LOCATION_SZONE,0,1,nil,e,tp) end
-	-- 提示玩家选择要特殊召唤的卡。
+	-- 给玩家发送选择提示，提示选择要特殊召唤的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 选择场上1张「宝玉兽」卡作为特殊召唤的目标。
+	-- 玩家从我方魔法与陷阱区域选择1张符合条件的「宝玉兽」卡作为效果对象。
 	local g=Duel.SelectTarget(tp,c34487429.filter3,tp,LOCATION_SZONE,0,1,1,nil,e,tp)
-	-- 设置效果处理时的操作信息：特殊召唤目标卡。
+	-- 登记本次操作类别为特殊召唤，对象为选择的卡。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,1,0,0)
 end
--- 效果处理：将选中的卡特殊召唤。
+-- 效果处理：将对象卡以表侧攻击表示特殊召唤到我方场上。
 function c34487429.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的目标卡。
+	-- 取得本次连锁的第一个对象卡。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 将目标卡特殊召唤到场上。
+		-- 将对象卡特殊召唤到我方场上，表示形式为表侧攻击表示。
 		Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
--- 判断是否满足效果条件：自己受到战斗伤害且场上存在至少2张「宝玉兽」卡。
+-- 伤害减半效果的适用条件：受到战斗伤害的是我方、本回合本卡效果尚未使用过，且我方魔法与陷阱区域存在至少2张「宝玉兽」卡。
 function c34487429.rdcon(e,tp,eg,ep,ev,re,r,rp)
 	return ep==tp and e:GetHandler():GetFlagEffect(34487429)==0
-		-- 判断是否满足效果条件：场上存在至少2张「宝玉兽」卡。
+		-- 判断我方魔法与陷阱区域是否存在至少2张表侧表示的「宝玉兽」卡。
 		and Duel.IsExistingMatchingCard(c34487429.filter1,tp,LOCATION_SZONE,0,2,nil)
 end
--- 效果处理：选择是否将受到的战斗伤害减半。
+-- 效果处理：询问玩家是否发动伤害减半，若选择发动则将战斗伤害减半，并设置本回合已使用标记。
 function c34487429.rdop(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断是否选择发动效果：选择是否将受到的战斗伤害减半。
+	-- 询问我方玩家是否发动伤害减半效果。
 	if Duel.SelectEffectYesNo(tp,e:GetHandler()) then
-		-- 将玩家受到的战斗伤害减半。
+		-- 将我方受到的战斗伤害变为原伤害的一半（向下取整）。
 		Duel.ChangeBattleDamage(tp,math.floor(ev/2))
 		e:GetHandler():RegisterFlagEffect(34487429,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END,0,1)
 	end
