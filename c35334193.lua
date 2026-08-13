@@ -5,10 +5,10 @@
 -- ①：自己·对方回合，以对方场上1只效果怪兽为对象才能发动。那只怪兽的效果直到回合结束时无效。那之后，可以让那只对方怪兽向作为这张卡所连接区的对方的怪兽区域移动。
 -- ②：这张卡攻击的伤害步骤开始时才能发动。这张卡所连接区的怪兽全部除外。
 function c35334193.initial_effect(c)
-	-- 连接召唤手续：使用满足效果怪兽类型的怪兽作为连接素材，最少3个，最多3个
+	-- 为「治安战警队 正名者」添加连接召唤手续：需要包含「治安战警队」怪兽的效果怪兽3只作为连接素材。
 	aux.AddLinkProcedure(c,aux.FilterBoolFunction(Card.IsLinkType,TYPE_EFFECT),3,3,c35334193.lcheck)
 	c:EnableReviveLimit()
-	-- 自己不能在这张卡所连接区让怪兽出现
+	-- 自己不能在这张卡所连接区让怪兽出现。（永续效果：此卡在场上时，自己不能把怪兽出到其连接区）
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_MUST_USE_MZONE)
@@ -17,7 +17,7 @@ function c35334193.initial_effect(c)
 	e1:SetTargetRange(1,0)
 	e1:SetValue(c35334193.zonelimit)
 	c:RegisterEffect(e1)
-	-- ①：自己·对方回合，以对方场上1只效果怪兽为对象才能发动。那只怪兽的效果直到回合结束时无效。那之后，可以让那只对方怪兽向作为这张卡所连接区的对方的怪兽区域移动
+	-- ①：自己·对方回合，以对方场上1只效果怪兽为对象才能发动。那只怪兽的效果直到回合结束时无效。那之后，可以让那只对方怪兽向作为这张卡所连接区的对方的怪兽区域移动。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(35334193,0))
 	e2:SetCategory(CATEGORY_DISABLE)
@@ -30,7 +30,7 @@ function c35334193.initial_effect(c)
 	e2:SetTarget(c35334193.distg)
 	e2:SetOperation(c35334193.disop)
 	c:RegisterEffect(e2)
-	-- ②：这张卡攻击的伤害步骤开始时才能发动。这张卡所连接区的怪兽全部除外
+	-- ②：这张卡攻击的伤害步骤开始时才能发动。这张卡所连接区的怪兽全部除外。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(35334193,1))
 	e3:SetCategory(CATEGORY_REMOVE)
@@ -41,42 +41,42 @@ function c35334193.initial_effect(c)
 	e3:SetOperation(c35334193.rmop)
 	c:RegisterEffect(e3)
 end
--- 连接召唤条件：连接素材必须包含治安战警队系列的怪兽
+-- 连接素材条件：素材中至少要有1只卡名包含「治安战警队」的怪兽（0x156为该系列的setcode）。
 function c35334193.lcheck(g)
 	return g:IsExists(Card.IsLinkSetCard,1,nil,0x156)
 end
--- 区域限制函数：返回当前卡片连接区域以外的可用区域
+-- 限制自己出怪兽的区域：返回除该卡连接区以外的可用主要怪兽区域（0x7f007f为全怪兽区，按位取反连接区后禁用这些格子）。
 function c35334193.zonelimit(e)
 	return 0x7f007f & ~e:GetHandler():GetLinkedZone()
 end
--- 效果处理：选择对方场上一只效果怪兽作为对象，使其效果无效
+-- ①效果的发动条件/对象选择：选择对方场上1只表侧表示效果怪兽为对象（且该效果怪兽未被无效、可被无效）。
 function c35334193.distg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	-- 目标选择：当chkc不为空时，返回对方怪兽区中满足效果怪兽过滤条件的卡片
+	-- 连锁处理时，若指定了对象chkc，则验证该对象必须是对方场上的效果怪兽且能被无效。
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(1-tp) and aux.NegateEffectMonsterFilter(chkc) end
-	-- 条件判断：判断是否存在满足条件的对方怪兽
+	-- 发动时确认：对方场上是否存在至少1只满足条件的表侧表示效果怪兽可选。
 	if chk==0 then return Duel.IsExistingTarget(aux.NegateEffectMonsterFilter,tp,0,LOCATION_MZONE,1,nil) end
-	-- 提示信息：提示玩家选择要无效的卡
+	-- 弹出选择提示：请选择要无效的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DISABLE)  --"请选择要无效的卡"
-	-- 选择目标：选择一只对方怪兽作为效果对象
+	-- 从对方场上选择1只表侧表示效果怪兽作为对象，并将其与当前效果关联。
 	local g=Duel.SelectTarget(tp,aux.NegateEffectMonsterFilter,tp,0,LOCATION_MZONE,1,1,nil)
-	-- 设置操作信息：设置将要无效的怪兽为操作对象
+	-- 设置操作信息：本次效果涉及使效果无效（CATEGORY_DISABLE），对象为已选中的那1只怪兽。
 	Duel.SetOperationInfo(0,CATEGORY_DISABLE,g,1,0,0)
 end
--- 效果处理：使目标怪兽效果无效并可选择是否移动
+-- ①效果处理：将对象怪兽效果无效化；若此卡仍合法且对象怪兽未被免疫，可让该怪兽移动到这张卡所连接区的对方怪兽区域。
 function c35334193.disop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取目标：获取当前连锁中选择的目标怪兽
+	-- 取得①效果的对象怪兽（因为只选择了1张，直接用Duel.GetFirstTarget取回）。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsFaceup() and tc:IsRelateToEffect(e) and tc:IsCanBeDisabledByEffect(e) then
-		-- 无效连锁：使目标怪兽相关的连锁无效
+		-- 使与该怪兽相关的已发动连锁一并无效化，并设置重置条件为变里侧时重置。
 		Duel.NegateRelatedChain(tc,RESET_TURN_SET)
-		-- 效果无效：使目标怪兽效果无效
+		-- 给对象怪兽赋予效果无效化（EFFECT_DISABLE），持续到回合结束时。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_DISABLE)
 		e1:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END)
 		tc:RegisterEffect(e1)
-		-- 效果无效：使目标怪兽效果无效
+		-- 给对象怪兽赋予效果发动无效化（EFFECT_DISABLE_EFFECT），直到变里侧或回合结束重置。
 		local e2=Effect.CreateEffect(c)
 		e2:SetType(EFFECT_TYPE_SINGLE)
 		e2:SetCode(EFFECT_DISABLE_EFFECT)
@@ -84,16 +84,16 @@ function c35334193.disop(e,tp,eg,ep,ev,re,r,rp)
 		e2:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END)
 		tc:RegisterEffect(e2)
 		if not c:IsRelateToEffect(e) or c:IsFacedown() or tc:IsImmuneToEffect(e) then return end
-		-- 刷新场上状态：手动刷新场上卡片的无效状态
+		-- 立即更新场上卡片被无效化的状态，确保后续判定使用最新的无效状态。
 		Duel.AdjustInstantly()
 		local zone=bit.band(c:GetLinkedZone(1-tp),0x1f)
-		-- 条件判断：判断目标怪兽是否被无效且满足移动条件
+		-- 移动判定：对象怪兽确实被无效、控制者是对方、这张卡连接区所对应的对方怪兽区有空位，且玩家选择“是”时才执行移动。
 		if tc:IsDisabled() and tc:IsControler(1-tp) and Duel.GetLocationCount(1-tp,LOCATION_MZONE,PLAYER_NONE,0,zone)>0 and Duel.SelectYesNo(tp,aux.Stringid(35334193,2)) then  --"是否移动那只怪兽？"
 			local s=0
 			local flag=bit.bxor(zone,0xff)*0x10000
-			-- 提示信息：提示玩家选择要移动到的位置
+			-- 弹出选择提示：请选择要移动到的位置。
 			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOZONE)  --"请选择要移动到的位置"
-			-- 选择区域：选择一个可用的怪兽区域
+			-- 让玩家在指定可用格子中选1个（扣除禁用的连接区），返回该格子的位置标记并换算成序号。
 			s=Duel.SelectDisableField(tp,1,0,LOCATION_MZONE,flag)/0x10000
 			local nseq=0
 			if s==1 then nseq=0
@@ -101,30 +101,30 @@ function c35334193.disop(e,tp,eg,ep,ev,re,r,rp)
 			elseif s==4 then nseq=2
 			elseif s==8 then nseq=3
 			else nseq=4 end
-			-- 移动怪兽：将目标怪兽移动到指定区域
+			-- 将对象怪兽移动到所选的怪兽区域（该区域必须是本卡连接区内的对方区域）。
 			Duel.MoveSequence(tc,nseq)
 		end
 	end
 end
--- 触发条件：攻击开始时触发
+-- ②效果的发动条件：发动时这次的攻击者正是这张卡。
 function c35334193.rmcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 触发条件：攻击怪兽为自身
+	-- 判定本次发动时机为这张卡进行攻击的伤害步骤开始时（攻击者等于这张卡）。
 	return Duel.GetAttacker()==e:GetHandler()
 end
--- 效果处理：设置要除外的连接区怪兽
+-- ②效果发动时，取这张卡所连接区的全体怪兽，确认其中有可除外的卡，并设置操作信息为除外。
 function c35334193.rmtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local rg=e:GetHandler():GetLinkedGroup():Filter(Card.IsAbleToRemove,nil)
 	if chk==0 then return #rg>0 end
-	-- 设置操作信息：设置将要除外的怪兽为操作对象
+	-- 设置操作信息：本次效果将除外（CATEGORY_REMOVE）连接区的那些怪兽。
 	Duel.SetOperationInfo(0,CATEGORY_REMOVE,rg,#rg,0,0)
 end
--- 效果处理：将连接区的怪兽除外
+-- ②效果处理：这张卡仍表侧表示且与效果有关联时，将其所连接区的怪兽全部除外。
 function c35334193.rmop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsFaceup() and c:IsRelateToEffect(e) then
 		local rg=c:GetLinkedGroup():Filter(Card.IsAbleToRemove,nil)
 		if #rg>0 then
-			-- 除外怪兽：将指定怪兽除外
+			-- 把连接区的怪兽以表侧表示除外（除外原因视为效果）。
 			Duel.Remove(rg,POS_FACEUP,REASON_EFFECT)
 		end
 	end

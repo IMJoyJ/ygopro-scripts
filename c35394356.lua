@@ -14,7 +14,7 @@ function c35394356.initial_effect(c)
 	e1:SetRange(LOCATION_MZONE)
 	e1:SetHintTiming(0,TIMING_ATTACK+TIMING_DAMAGE_STEP)
 	e1:SetCountLimit(1,35394356)
-	-- 限制效果只能在伤害计算前的时机发动或适用
+	-- 设置①效果的发动条件：通过aux.dscon限制本效果在伤害步骤只能于伤害计算前发动。
 	e1:SetCondition(aux.dscon)
 	e1:SetCost(c35394356.atkcost)
 	e1:SetTarget(c35394356.atktg)
@@ -31,30 +31,30 @@ function c35394356.initial_effect(c)
 	e2:SetOperation(c35394356.rop)
 	c:RegisterEffect(e2)
 end
--- 支付效果代价：移除1个自身场上的超量素材
+-- ①效果的代价处理：支付'把自己场上1个超量素材取除'的代价，先检查再实际移除自己场上1个超量素材。
 function c35394356.atkcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否能移除1个自身场上的超量素材作为代价
+	-- 代价检查阶段（chk==0）确认自己场上是否存在至少1个可去除的超量素材，若不存在则不能发动。
 	if chk==0 then return Duel.CheckRemoveOverlayCard(tp,1,0,1,REASON_COST) end
-	-- 执行移除1个自身场上的超量素材作为代价
+	-- 实际支付代价：当前玩家tp从自己场上移除1个超量素材（REASON_COST）。
 	Duel.RemoveOverlayCard(tp,1,0,1,1,REASON_COST)
 end
--- 选择效果对象：对方场上的1只表侧表示怪兽
+-- ①效果的发动目标设定：选择对方场上1只表侧表示且攻击力不为0的怪兽为对象。
 function c35394356.atktg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	-- 判断选择的目标是否符合要求：对方场上的表侧表示怪兽
+	-- 效果处理前再次校验对象时，判定选中的卡是否为对方场上表侧表示且攻击力不为0的怪兽。
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(1-tp) and aux.nzatk(chkc) end
-	-- 检查是否存在符合条件的目标怪兽
+	-- 发动时检查对方场上是否存在1只表侧表示且攻击力不为0的怪兽，若不存在则不能发动。
 	if chk==0 then return Duel.IsExistingTarget(aux.nzatk,tp,0,LOCATION_MZONE,1,nil) end
-	-- 提示玩家选择目标怪兽
+	-- 给当前玩家显示'请选择表侧表示的卡'的选择提示，用于接下来的对象选择。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
-	-- 选择对方场上的1只表侧表示怪兽作为效果对象
+	-- 让当前玩家从对方场上选择1只表侧表示且攻击力不为0的怪兽，并将其设为该效果的对象。
 	Duel.SelectTarget(tp,aux.nzatk,tp,0,LOCATION_MZONE,1,1,nil)
 end
--- 效果处理：将目标怪兽的攻击力变为0
+-- ①效果发动后的处理：将对象怪兽的攻击力变为0，持续到回合结束。
 function c35394356.atkop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的效果对象
+	-- 获取①效果发动时选择的对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) and tc:IsFaceup() and tc:GetAttack()>0 then
-		-- 将目标怪兽的攻击力设置为0直到回合结束
+		-- 那只怪兽的攻击力直到回合结束时变成0。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_SET_ATTACK_FINAL)
@@ -63,14 +63,14 @@ function c35394356.atkop(e,tp,eg,ep,ev,re,r,rp)
 		tc:RegisterEffect(e1)
 	end
 end
--- 代替去除超量素材的条件判断
+-- ②效果的代替除外条件判断：在超量怪兽发动取除素材的效果时，若满足本回合非送入墓地的回合、取除作为COST、发动效果者为超量怪兽且持有足够素材、该卡可作为代价除外、操作者为卡组所有者，则允许代替。
 function c35394356.rcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断效果发动的原因是否为代价且为超量怪兽的超量素材去除
+	-- ②效果的部分条件：本回合非该卡送去墓地的回合，且被代替的取除操作是超量怪兽效果发动的COST（REASON_COST），并且该效果已被发动且属于超量怪兽。
 	return aux.exccon(e) and bit.band(r,REASON_COST)~=0 and re:IsActivated() and re:IsActiveType(TYPE_XYZ)
 		and re:GetHandler():GetOverlayCount()>=ev-1 and e:GetHandler():IsAbleToRemoveAsCost() and ep==e:GetOwnerPlayer()
 end
--- 代替去除超量素材的效果处理
+-- ②效果的代替除外操作：当条件满足时，将墓地的这张卡除外作为代替取除的超量素材。
 function c35394356.rop(e,tp,eg,ep,ev,re,r,rp)
-	-- 将此卡从墓地除外作为代替去除的超量素材
+	-- 将墓地的这张卡以表侧表示除外，作为代替去除超量素材所需的COST。
 	return Duel.Remove(e:GetHandler(),POS_FACEUP,REASON_COST)
 end

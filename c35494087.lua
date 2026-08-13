@@ -24,7 +24,7 @@ function c35494087.initial_effect(c)
 	e2:SetCode(EFFECT_INDESTRUCTABLE_BATTLE)
 	e2:SetValue(c35494087.indval)
 	c:RegisterEffect(e2)
-	-- ③：这张卡的战斗发生的对自己的战斗伤害由对方代受。
+	-- 「疾行机人 噗噗噔骷髅」的③的效果1回合只能使用1次。③：这张卡的战斗发生的对自己的战斗伤害由对方代受。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_SINGLE)
 	e3:SetCode(EFFECT_REFLECT_BATTLE_DAMAGE)
@@ -39,49 +39,49 @@ function c35494087.initial_effect(c)
 	e4:SetCondition(c35494087.sdcon)
 	c:RegisterEffect(e4)
 end
--- 检查在对方场上是否存在从额外卡组特殊召唤的怪兽
+-- ①效果的发动条件函数：检查对方场上是否存在从额外卡组特殊召唤的怪兽，若存在则满足发动条件。
 function c35494087.spcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 满足条件则返回true
+	-- 以当前玩家为视角，检查对方主要怪兽区是否存在至少1只召唤位置为额外卡组的怪兽。
 	return Duel.IsExistingMatchingCard(Card.IsSummonLocation,tp,0,LOCATION_MZONE,1,nil,LOCATION_EXTRA)
 end
--- 设置特殊召唤的处理目标
+-- ①效果发动时（chk==0）的合法性检查：确认自己主要怪兽区有空位，且这张卡能够被特殊召唤。
 function c35494087.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断场上是否有足够的召唤区域
+	-- 检查自己主要怪兽区的空位数量是否大于0，即是否有可用区域来特殊召唤这张卡。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置连锁操作信息，确定特殊召唤的卡
+	-- 登记连锁操作信息：本次效果包含特殊召唤，对象为这张卡自身，数量为1，供系统及相关卡进行效果检测。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 执行特殊召唤操作
+-- ①效果处理时：获取这张卡，如果它仍与效果关联（未被无效或离场），则将其特殊召唤到自己场上。
 function c35494087.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if not c:IsRelateToEffect(e) then return end
-	-- 将卡片特殊召唤到场上
+	-- 将这张卡以表侧表示特殊召唤到其控制者（tp）的场上，不检查召唤条件和苏生限制。
 	Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 end
--- 判断目标怪兽是否为通常召唤
+-- ②效果的判定函数：如果战斗对象是通常召唤的怪兽，则返回 true，表示这张卡不会被该怪兽战斗破坏。
 function c35494087.indval(e,c)
 	return c:IsSummonType(SUMMON_TYPE_NORMAL)
 end
--- 处理效果使用次数的逻辑，确保③的效果1回合只能使用1次
+-- ③效果的反射判定：通过卡牌自身与玩家的标识状态决定本次战斗伤害是否由对方代受；有自身标识时转移标识并反射，无标识且玩家无标识时给自身记录标识并反射，否则不反射，以此实现每回合使用次数的限制。
 function c35494087.refval(e,c)
 	if e:GetHandler():GetFlagEffect(35494087)~=0 then
-		-- 注册一个标记效果，用于记录该效果已在本回合使用过
+		-- 给这张卡的控制者注册一个到结束阶段重置的标识，用于记录该反射效果已在本回合使用过，防止后续伤害继续触发。
 		Duel.RegisterFlagEffect(e:GetHandlerPlayer(),35494087,RESET_PHASE+PHASE_END,0,1)
 		e:GetHandler():ResetFlagEffect(35494087)
 		return true
-	-- 若未使用过该效果，则注册标记
+	-- 当此卡自身没有使用标识且控制者也没有使用标识时，进入分支，表示本次可以反射，并给卡注册使用标识。
 	elseif Duel.GetFlagEffect(e:GetHandlerPlayer(),35494087)==0 then
 		e:GetHandler():RegisterFlagEffect(35494087,0,0,1)
 		return true
 	else return false end
 end
--- 过滤函数，用于筛选场上的非「疾行机人」怪兽
+-- ④效果的过滤函数：筛选表侧表示且不属于「疾行机人」系列的怪兽。
 function c35494087.sdfilter(c)
 	return c:IsFaceup() and not c:IsSetCard(0x2016)
 end
--- 判断场上的怪兽数量是否满足破坏条件
+-- ④效果的适用条件函数：检查自己场上是否有表侧表示且非「疾行机人」系列的怪兽存在；若有，则这张卡因自身效果破坏。
 function c35494087.sdcon(e)
-	-- 满足条件则返回true
+	-- 返回自己主要怪兽区是否存在至少1张满足 sdfilter 条件的怪兽。
 	return Duel.IsExistingMatchingCard(c35494087.sdfilter,e:GetHandlerPlayer(),LOCATION_MZONE,0,1,nil)
 end

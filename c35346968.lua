@@ -17,9 +17,9 @@ function c35346968.initial_effect(c)
 	e2:SetOperation(c35346968.recop)
 	c:RegisterEffect(e2)
 end
--- 检测到自己抽卡时触发效果，判断抽卡玩家是否为效果持有者，是则执行回复LP操作
+-- 当抽卡玩家不是这张卡的控制者时不处理；若是控制者本人抽卡，则回复500基本分。
 function c35346968.recop(e,tp,eg,ep,ev,re,r,rp)
 	if ep~=tp then return end
-	-- 使效果持有者回复500基本分
+	-- 以效果（REASON_EFFECT）为原因，使当前效果控制者回复500基本分。
 	Duel.Recover(tp,500,REASON_EFFECT)
 end
