@@ -12,21 +12,21 @@ function c19612721.initial_effect(c)
 	e1:SetOperation(c19612721.desop)
 	c:RegisterEffect(e1)
 end
--- 当此卡攻击守备表示且守备力2000以上的怪兽时，发动破坏效果
+-- 效果发动条件的判定：确认本卡为攻击者、攻击对象存在且为守备表示、守备力在2000以上；满足条件时设置破坏该攻击对象的操作信息。
 function c19612721.destg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 获取攻击战斗中被攻击的怪兽
+	-- 获取本次战斗的攻击对象。
 	local t=Duel.GetAttackTarget()
-	-- 检查是否为攻击怪兽攻击守备表示且守备力2000以上的怪兽
+	-- 判定攻击者为本卡、攻击对象存在且为守备表示、守备力在2000以上，满足则效果可发动。
 	if chk==0 then return Duel.GetAttacker()==e:GetHandler() and t~=nil and t:IsDefensePos() and t:IsDefenseAbove(2000) end
-	-- 设置连锁操作信息为破坏
+	-- 设置将攻击对象破坏的操作信息，数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,t,1,0,0)
 end
--- 执行破坏效果
+-- 效果处理：若攻击对象仍与本次战斗相关且不是攻击表示，则将其破坏。
 function c19612721.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取攻击战斗中被攻击的怪兽
+	-- 获取本次战斗的攻击对象。
 	local t=Duel.GetAttackTarget()
 	if t~=nil and t:IsRelateToBattle() and not t:IsAttackPos() then
-		-- 将目标怪兽以效果原因破坏
+		-- 以效果原因将攻击对象破坏。
 		Duel.Destroy(t,REASON_EFFECT)
 	end
 end

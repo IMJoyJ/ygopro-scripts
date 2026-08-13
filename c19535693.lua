@@ -27,57 +27,57 @@ function c19535693.initial_effect(c)
 	e2:SetOperation(c19535693.atkop2)
 	c:RegisterEffect(e2)
 end
--- 支付600基本分的费用处理
+-- ①效果的发动代价函数：发动时检查并支付600基本分作为COST。
 function c19535693.thcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查玩家是否能支付600基本分
+	-- 在发动合法性检查阶段（chk==0）判断玩家是否能支付600基本分，若不能则不能发动。
 	if chk==0 then return Duel.CheckLPCost(tp,600) end
-	-- 让玩家支付600基本分
+	-- 实际支付600基本分作为发动代价。
 	Duel.PayLPCost(tp,600)
 end
--- 检索条件过滤函数，筛选「朋克」怪兽且不是自身卡号的怪兽
+-- 定义①效果检索的过滤条件：需为「朋克」怪兽、不是本卡、可从卡组加入手牌。
 function c19535693.thfilter(c)
 	return c:IsSetCard(0x171) and not c:IsCode(19535693) and c:IsAbleToHand() and c:IsType(TYPE_MONSTER)
 end
--- 设置效果发动时的处理信息，准备从卡组检索一张「朋克」怪兽加入手牌
+-- ①效果的发动目标函数：发动时检查卡组中是否存在符合条件的「朋克」怪兽，并设置操作信息为从卡组检索加入手牌。
 function c19535693.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查场上是否存在满足条件的「朋克」怪兽
+	-- 在发动合法性检查阶段，确认卡组中存在至少1张满足条件的「朋克」怪兽，否则不能发动。
 	if chk==0 then return Duel.IsExistingMatchingCard(c19535693.thfilter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置连锁操作信息，表示将要从卡组检索一张怪兽加入手牌
+	-- 设置操作信息，声明该效果将把1张卡从卡组加入手牌，供连锁响应和效果检测使用。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 效果发动时的处理函数，选择并把符合条件的怪兽加入手牌
+-- ①效果处理时的操作：从卡组选择1张符合条件的「朋克」怪兽加入手牌，并向对方展示确认。
 function c19535693.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要加入手牌的卡
+	-- 弹出选择卡片提示，让玩家选择要加入手牌的卡片。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 从卡组中选择满足条件的怪兽
+	-- 让玩家从卡组中选出1张符合过滤条件的「朋克」怪兽卡。
 	local g=Duel.SelectMatchingCard(tp,c19535693.thfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的怪兽送入手牌
+		-- 将选中的卡以效果原因加入其持有者的手牌。
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 向对方确认送入手牌的卡
+		-- 将检索到的卡展示给对方玩家确认。
 		Duel.ConfirmCards(1-tp,g)
 	end
 end
--- 取对象效果的过滤函数，筛选场上表侧表示的「朋克」怪兽
+-- ②效果取对象的过滤条件：己方场上表侧表示且属于「朋克」系列的怪兽。
 function c19535693.atkfilter2(c)
 	return c:IsFaceup() and c:IsSetCard(0x171)
 end
--- 设置效果发动时的处理信息，选择场上一只「朋克」怪兽作为对象
+-- ②效果的发动目标函数：发动时选择自己场上1只表侧表示的「朋克」怪兽作为对象。
 function c19535693.atktg2(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and c19535693.atkfilter2(chkc) end
-	-- 检查场上是否存在满足条件的「朋克」怪兽作为对象
+	-- 在发动合法性检查阶段，确认自己场上存在至少1只符合条件的「朋克」怪兽可取对象，否则不能发动。
 	if chk==0 then return Duel.IsExistingTarget(c19535693.atkfilter2,tp,LOCATION_MZONE,0,1,nil) end
-	-- 提示玩家选择表侧表示的怪兽
+	-- 弹出选择卡片提示，让玩家选择表侧表示的怪兽。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
-	-- 选择场上一只「朋克」怪兽作为对象
+	-- 让玩家选择1只符合条件的「朋克」怪兽作为效果对象，并登记为当前连锁的对象。
 	Duel.SelectTarget(tp,c19535693.atkfilter2,tp,LOCATION_MZONE,0,1,1,nil)
 end
--- 效果发动时的处理函数，使对象怪兽攻击力上升600
+-- ②效果处理时的操作：给对象怪兽赋予攻击力上升600的效果。
 function c19535693.atkop2(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁效果的对象怪兽
+	-- 取得②效果发动时选择的对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsFaceup() and tc:IsRelateToEffect(e) then
-		-- 给对象怪兽增加600攻击力
+		-- 那只怪兽的攻击力上升600。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)

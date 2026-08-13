@@ -11,24 +11,24 @@ function c19613556.initial_effect(c)
 	e1:SetOperation(c19613556.activate)
 	c:RegisterEffect(e1)
 end
--- 过滤函数，用于判断卡片是否为魔法卡或陷阱卡
+-- 判断一张卡是否为魔法卡或陷阱卡，是则返回真，用于筛选场上要被破坏的魔法·陷阱卡。
 function c19613556.filter(c)
 	return c:IsType(TYPE_SPELL+TYPE_TRAP)
 end
--- 效果的发动时点处理函数，检查场上是否存在魔法·陷阱卡并设置破坏操作信息
+-- 发动时的条件判定与连锁信息登记：检查场上是否存在除自身以外的魔法·陷阱卡，若存在则登记将破坏这些卡的操作信息。
 function c19613556.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
-	-- 判断场上是否存在满足条件的魔法·陷阱卡
+	-- 在效果发动前（chk==0）检查场上是否存在至少1张除自身以外的魔法·陷阱卡，作为能否发动此卡的条件。
 	if chk==0 then return Duel.IsExistingMatchingCard(c19613556.filter,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,c) end
-	-- 获取场上所有满足条件的魔法·陷阱卡
+	-- 获取场上除自身以外的所有魔法·陷阱卡，作为之后要破坏的候选集合。
 	local sg=Duel.GetMatchingGroup(c19613556.filter,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,c)
-	-- 设置连锁操作信息，指定将要破坏的卡片组和数量
+	-- 将破坏这些候选卡的操作信息写入当前连锁，类别为破坏，目标为候选集合，数量为其张数，供其他卡片进行连锁判定。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,sg,sg:GetCount(),0,0)
 end
--- 效果发动时的处理函数，执行破坏效果
+-- 效果处理时执行破坏：再次选取场上除自身以外的所有魔法·陷阱卡，并将它们全部破坏。
 function c19613556.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取场上所有满足条件的魔法·陷阱卡（排除自身）
+	-- 处理时获取场上除自身以外的所有魔法·陷阱卡，作为本次实际破坏的对象集合。
 	local sg=Duel.GetMatchingGroup(c19613556.filter,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,aux.ExceptThisCard(e))
-	-- 将目标卡片组以效果原因进行破坏
+	-- 以效果原因将这些魔法·陷阱卡全部破坏（不取对象，不指定玩家）。
 	Duel.Destroy(sg,REASON_EFFECT)
 end
