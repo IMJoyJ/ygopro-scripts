@@ -15,17 +15,17 @@ function c43513897.initial_effect(c)
 	c:RegisterEffect(e2)
 	c43513897.star_knight_summon_effect=e1
 end
--- 过滤出场上的表侧表示的「星圣」怪兽
+-- 筛选出己方场上表侧表示且卡名带有「星圣」字段的怪兽。
 function c43513897.filter(c)
 	return c:IsFaceup() and c:IsSetCard(0x53)
 end
--- 检索满足条件的「星圣」怪兽组并给它们加上攻击力上升500的效果
+-- 效果处理时：获取己方场上全部表侧表示且名字带有「星圣」的怪兽，为每只怪兽赋予攻击力上升500的效果（该效果不会被无效，并随怪兽离场等原因重置）。
 function c43513897.atkop(e,tp,eg,ep,ev,re,r,rp)
-	-- 检索满足条件的「星圣」怪兽组
+	-- 获取己方场上所有满足filter条件的怪兽（表侧表示的「星圣」怪兽），作为本次攻击力上升的适用对象。
 	local g=Duel.GetMatchingGroup(c43513897.filter,tp,LOCATION_MZONE,0,nil)
 	local tc=g:GetFirst()
 	while tc do
-		-- 给目标怪兽加上攻击力上升500的效果
+		-- 自己场上的全部名字带有「星圣」的怪兽的攻击力上升500。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)

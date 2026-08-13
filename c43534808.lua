@@ -5,9 +5,9 @@
 -- ②：这张卡特殊召唤成功的场合发动。场上的衍生物全部破坏，这张卡的攻击力上升破坏的衍生物数量×400。
 -- ③：只要这张卡在怪兽区域存在，双方不能把衍生物特殊召唤。
 function c43534808.initial_effect(c)
-	-- 注册一个监听卡片送入墓地事件的单次持续效果，用于记录卡片是否已从墓地发动过效果
+	-- 为衍生物收集者注册“已在墓地”的标记检测效果，用于①效果在墓地时能正确判定其存在时机，并防止同一连锁内产生重复判定。
 	local e0=aux.AddThisCardInGraveAlreadyCheck(c)
-	-- ①：这张卡在手卡·墓地存在，衍生物特殊召唤的场合才能发动。这张卡特殊召唤。
+	-- 这个卡名的①的效果1回合只能使用1次。①：这张卡在手卡·墓地存在，衍生物特殊召唤的场合才能发动。这张卡特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(43534808,0))
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -41,47 +41,47 @@ function c43534808.initial_effect(c)
 	e3:SetTarget(c43534808.sumlimit)
 	c:RegisterEffect(e3)
 end
--- 过滤函数，用于判断目标卡是否为衍生物且不是由当前效果触发的召唤
+-- 过滤条件：被特殊召唤的卡是衍生物，且其特殊召唤的效果原因不是本卡①效果自身引发的情况。
 function c43534808.cfilter(c,se)
 	return c:IsType(TYPE_TOKEN) and (se==nil or c:GetReasonEffect()~=se)
 end
--- 判断是否有衍生物被特殊召唤，且该召唤不是由当前效果自身触发
+-- ①效果的发动条件：本次特殊召唤成功的衍生物中存在至少一个符合cfilter的衍生物，即存在衍生物被特殊召唤且该特殊召唤不是由本卡①效果自身引发的。
 function c43534808.spcon(e,tp,eg,ep,ev,re,r,rp)
 	local se=e:GetLabelObject():GetLabelObject()
 	return eg:IsExists(c43534808.cfilter,1,nil,se)
 end
--- 判断是否满足特殊召唤条件，包括场上是否有空位以及该卡是否可以被特殊召唤
+-- ①效果的发动时追加判定：自己主要怪兽区域有空位，且这张卡满足特殊召唤条件，可以被特殊召唤。
 function c43534808.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断场上是否有空位可用于特殊召唤
+	-- 检查自己主要怪兽区域是否存在至少1个可用空格。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置操作信息，表示将要特殊召唤此卡
+	-- 设置操作信息：本次效果将把效果持有者自身特殊召唤，数量为1，用于连锁检测和效果发动确认。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 执行特殊召唤操作，将此卡以正面表示形式特殊召唤到场上
+-- ①效果处理：若这张卡仍与发动的效果关联（没有离场或失去关联），则将其特殊召唤。
 function c43534808.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if not c:IsRelateToEffect(e) then return end
-	-- 将此卡以正面表示形式特殊召唤到场上
+	-- 将这张卡以表侧表示特殊召唤到持有者（tp）的场上。
 	Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 end
--- 设置破坏衍生物的效果目标，准备将场上所有衍生物破坏
+-- ②效果的目标判定：发动无条件满足；随后取得场上所有衍生物，并将其作为破坏对象写入操作信息。
 function c43534808.destg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 获取场上所有衍生物的卡片组
+	-- 取得双方场上所有衍生物组成的集合。
 	local g=Duel.GetMatchingGroup(Card.IsType,tp,LOCATION_MZONE,LOCATION_MZONE,nil,TYPE_TOKEN)
-	-- 设置操作信息，表示将要破坏场上所有衍生物
+	-- 设置操作信息：本次效果将破坏场上所有衍生物，数量为当前衍生物的总数。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,g:GetCount(),0,0)
 end
--- 执行破坏衍生物并提升攻击力的操作，根据破坏的衍生物数量增加攻击力
+-- ②效果实际处理：重新取得场上所有衍生物并全部破坏；若实际破坏数大于0，且这张卡仍表侧表示且与效果关联，则使这张卡的攻击力上升破坏数×400。
 function c43534808.desop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取场上所有衍生物的卡片组
+	-- 取得当前场上所有衍生物的集合。
 	local sg=Duel.GetMatchingGroup(Card.IsType,tp,LOCATION_MZONE,LOCATION_MZONE,nil,TYPE_TOKEN)
-	-- 将场上所有衍生物破坏，并返回实际破坏的数量
+	-- 以效果原因破坏这些衍生物，并返回实际破坏的数量。
 	local ct=Duel.Destroy(sg,REASON_EFFECT)
 	if ct>0 and c:IsFaceup() and c:IsRelateToEffect(e) then
-		-- 为自身增加攻击力，增加量等于破坏的衍生物数量乘以400
+		-- 这张卡的攻击力上升破坏的衍生物数量×400。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)
@@ -90,7 +90,7 @@ function c43534808.desop(e,tp,eg,ep,ev,re,r,rp)
 		c:RegisterEffect(e1)
 	end
 end
--- 限制对方不能特殊召唤衍生物
+-- ③效果的限制判定：对于准备特殊召唤的怪兽，只有当它是衍生物时才适用“不能特殊召唤”的限制。
 function c43534808.sumlimit(e,c,sump,sumtype,sumpos,targetp)
 	return c:IsType(TYPE_TOKEN)
 end

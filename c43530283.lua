@@ -14,11 +14,11 @@ function c43530283.initial_effect(c)
 	e2:SetCode(EVENT_FLIP_SUMMON_SUCCESS)
 	c:RegisterEffect(e2)
 end
--- 效果发动，将卡牌原本攻击力和守备力变为一半，然后在下次自己回合结束时变为2倍
+-- 召唤·反转召唤成功时的效果处理：若此卡仍表侧表示且与发动效果关联，则给它注册暂时改变原本攻击力和原本守备力的效果，并通过注册不同重置次数的标记来控制“变成一半”的持续时间（自己回合发动记2次自己回合结束阶段，对方回合发动记1次），之后切换为2倍。
 function c43530283.adop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsFaceup() and c:IsRelateToEffect(e) then
-		-- 将卡牌原本攻击力变为一半或两倍
+		-- 这张卡的原本的攻击力直到下次的自己回合的结束阶段时变成一半。那之后，这张卡的原本的攻击力变成2倍。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_SET_BASE_ATTACK_FINAL)
@@ -29,7 +29,7 @@ function c43530283.adop(e,tp,eg,ep,ev,re,r,rp)
 		e2:SetCode(EFFECT_SET_BASE_DEFENSE_FINAL)
 		e2:SetValue(c43530283.defval)
 		c:RegisterEffect(e2)
-		-- 判断是否为当前回合玩家，用于决定flag效果的次数
+		-- 判断当前回合玩家是否为发动效果的玩家（即此卡的控制者），以决定标记的持续结束阶段次数：自己回合为2，对方回合为1。
 		if Duel.GetTurnPlayer()==tp then
 			c:RegisterFlagEffect(43530283,RESET_EVENT+RESETS_STANDARD+RESET_DISABLE+RESET_PHASE+PHASE_END+RESET_SELF_TURN,0,2)
 		else
@@ -37,7 +37,7 @@ function c43530283.adop(e,tp,eg,ep,ev,re,r,rp)
 		end
 	end
 end
--- 根据flag效果是否为0来决定攻击力是变为2倍还是1/2
+-- 根据此卡是否存在标记来决定原本攻击力的数值：存在标记时返回原本攻击力的一半（向上取整），不存在标记时返回原本攻击力的2倍。
 function c43530283.atkval(e,c)
 	if c:GetFlagEffect(43530283)==0 then
 		return c:GetBaseAttack()*2
@@ -45,7 +45,7 @@ function c43530283.atkval(e,c)
 		return math.ceil(c:GetBaseAttack()/2)
 	end
 end
--- 根据flag效果是否为0来决定守备力是变为2倍还是1/2
+-- 根据此卡是否存在标记来决定原本守备力的数值：存在标记时返回原本守备力的一半（向上取整），不存在标记时返回原本守备力的2倍。
 function c43530283.defval(e,c)
 	if c:GetFlagEffect(43530283)==0 then
 		return c:GetBaseDefense()*2

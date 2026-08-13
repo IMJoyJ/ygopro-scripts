@@ -8,11 +8,11 @@
 -- ①：这张卡召唤·灵摆召唤的场合，以自己的灵摆区域1张卡为对象才能发动。那张卡和这张卡破坏，从卡组把1只4星以下的灵摆怪兽加入手卡。
 -- ②：怪兽区域的这张卡被破坏的场合才能发动。这张卡在自己的灵摆区域放置。
 local s,id,o=GetID()
--- 初始化卡片效果，注册灵摆属性、创建触发效果和克隆效果，设置灵摆区域的触发效果、召唤时的效果和被破坏时的效果
+-- 注册灵摆魔女全部效果：赋予灵摆召唤属性；注册①灵摆效果（融合·同调·超量怪兽被战斗或对方效果破坏时，从卡组将同原种族的灵摆怪兽表侧加入额外卡组）；注册①怪兽效果（召唤/灵摆召唤时，破坏灵摆区1张卡和自身，并从卡组将1只4星以下灵摆怪兽加入手卡）；注册②怪兽效果（怪兽区域的这张卡被破坏时，放置到灵摆区域）。
 function s.initial_effect(c)
-	-- 为卡片添加灵摆怪兽属性，使其可以进行灵摆召唤和使用灵摆卡效果
+	-- 为该卡添加灵摆怪兽的基本属性（灵摆召唤、灵摆卡发动等基础能力）。
 	aux.EnablePendulumAttribute(c)
-	-- 注册一个合并的延迟事件监听器，用于监听被破坏时的事件并统一处理
+	-- 为这张卡注册一个合并的延迟事件监听，统一监听场上怪兽被破坏的事件，返回自定义事件码custom_code，用于作为①灵摆效果的触发代码。
 	local custom_code=aux.RegisterMergedDelayedEvent_ToSingleCard(c,id,EVENT_DESTROYED)
 	-- ①：这张卡在灵摆区域存在的状态，自己场上的表侧表示的融合·同调·超量怪兽被战斗或者对方的效果破坏的场合才能发动。原本种族和那之内的1只相同的1只灵摆怪兽从卡组表侧加入额外卡组。
 	local e1=Effect.CreateEffect(c)
@@ -53,102 +53,102 @@ function s.initial_effect(c)
 	e4:SetOperation(s.pzop)
 	c:RegisterEffect(e4)
 end
--- 过滤函数，用于判断被破坏的怪兽是否满足条件：处于表侧表示、类型为融合/同调/超量、位置在场上、控制者为自己、破坏原因为战斗或对方效果，并且卡组中存在相同种族的灵摆怪兽
+-- 被破坏怪兽的过滤条件：破坏前表侧表示、场上的原种类包含融合/同调/超量、破坏前位于我方怪兽区且控制者为我方、破坏原因为战斗或对方效果（若非目标确认模式，还需卡组存在可检索的同种族灵摆怪兽）。
 function s.cfilter(c,tp,tgchk)
 	return c:IsPreviousPosition(POS_FACEUP) and c:GetPreviousTypeOnField()&(TYPE_FUSION+TYPE_SYNCHRO+TYPE_XYZ)>0
 		and c:IsPreviousLocation(LOCATION_MZONE) and c:IsPreviousControler(tp)
 		and (c:IsReason(REASON_BATTLE) or c:IsReason(REASON_EFFECT) and c:GetReasonPlayer()==1-tp)
-		-- 当tgchk为假时，检查卡组中是否存在满足条件的灵摆怪兽
+		-- 若非目标确认模式，则额外检查卡组中是否存在与被破坏怪兽原种族相同的灵摆怪兽，以保证效果处理时有可检索目标。
 		and (tgchk or Duel.IsExistingMatchingCard(s.filter,tp,LOCATION_DECK,0,1,nil,c:GetOriginalRace()))
 end
--- 过滤函数，用于筛选种族包含指定种族的灵摆怪兽
+-- 检索目标的过滤条件：是灵摆怪兽，且其原种族与指定race有重叠（按位与非0）。
 function s.filter(c,race)
 	return c:IsType(TYPE_PENDULUM) and (c:GetOriginalRace()&race)>0
 end
--- 判断是否满足灵摆效果触发条件：是否有满足cfilter条件的怪兽被破坏
+-- ①灵摆效果的发动条件：本次被破坏的怪兽集合中存在至少1只满足cfilter的怪兽（不在此步检查卡组是否有目标）。
 function s.txcon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(s.cfilter,1,nil,tp,false)
 end
--- 设置灵摆效果的目标，筛选满足条件的被破坏怪兽并计算其种族，设置操作信息为将灵摆怪兽加入额外卡组
+-- ①灵摆效果发动时的目标处理：若效果可以发动，取出所有满足条件的被破坏怪兽，把它们的原种族按位或合并后记录到效果标签，并设置操作信息为从卡组将1张卡加入额外卡组。
 function s.txtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
 	local g=eg:Filter(s.cfilter,nil,tp,true)
 	local race=0
-	-- 遍历被破坏的怪兽组，提取其种族并进行位运算合并
+	-- 遍历满足条件的被破坏怪兽，累加它们的原种族（按位或），使后续检索能够匹配其中任意一种种族。
 	for tc in aux.Next(g) do
 		race=race|tc:GetOriginalRace()
 	end
 	e:SetLabel(race)
-	-- 设置操作信息，表示将要从卡组加入额外卡组的卡
+	-- 设置操作信息，声明本次效果将从卡组把1张卡表侧加入额外卡组，用于系统检测（如星尘龙等）以及连锁处理。
 	Duel.SetOperationInfo(0,CATEGORY_TOEXTRA,nil,1,tp,LOCATION_DECK)
 end
--- 执行灵摆效果的操作，选择满足种族条件的灵摆怪兽并将其加入额外卡组
+-- ①灵摆效果处理：读取记录的原种族，让玩家从卡组选择1只相同原种族的灵摆怪兽，表侧加入额外卡组。
 function s.txop(e,tp,eg,ep,ev,re,r,rp)
 	local race=e:GetLabel()
-	-- 提示玩家选择要加入额外卡组的灵摆怪兽
+	-- 给玩家显示选择提示：请选择要加入额外卡组的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,aux.Stringid(id,3))  --"请选择要加入额外卡组的卡"
-	-- 选择满足种族条件的灵摆怪兽
+	-- 从卡组筛选出满足filter条件的卡（灵摆怪兽且原种族匹配），让玩家选择1张。
 	local tg=Duel.SelectMatchingCard(tp,s.filter,tp,LOCATION_DECK,0,1,1,nil,race)
 	if #tg>0 then
-		-- 将选中的灵摆怪兽加入额外卡组
+		-- 将选择的卡以效果原因表侧送去持有者的额外卡组。
 		Duel.SendtoExtraP(tg,nil,REASON_EFFECT)
 	end
 end
--- 过滤函数，用于筛选4星以下的灵摆怪兽
+-- 检索手牌目标的过滤条件：4星以下、灵摆怪兽、并且可以加入手卡。
 function s.sfilter(c)
 	return c:IsLevelBelow(4) and c:IsType(TYPE_PENDULUM) and c:IsAbleToHand()
 end
--- 设置召唤效果的目标，检查是否有灵摆区域的卡可作为目标，以及卡组中是否有满足条件的灵摆怪兽
+-- ①怪兽效果的发动条件与对象指定：若为对象合法性检查，则必须是我方灵摆区的卡；若为发动条件检查，则需要我方灵摆区存在至少1张可选对象，且卡组存在至少1只满足sfilter的灵摆怪兽。
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_PZONE) and chkc:IsControler(tp) end
-	-- 检查是否有灵摆区域的卡可作为目标
+	-- 检查我方灵摆区是否存在至少1张可以成为对象的卡。
 	if chk==0 then return Duel.IsExistingTarget(nil,tp,LOCATION_PZONE,0,1,nil)
-		-- 检查卡组中是否有满足条件的灵摆怪兽
+		-- 检查卡组中是否存在至少1只满足sfilter的4星以下灵摆怪兽可加入手卡。
 		and Duel.IsExistingMatchingCard(s.sfilter,tp,LOCATION_DECK,0,1,nil) end
-	-- 提示玩家选择要破坏的灵摆区域的卡
+	-- 给玩家显示“请选择要破坏的卡”的选择提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 选择灵摆区域的卡和自身作为目标
+	-- 让玩家从我方灵摆区选择1张卡作为对象，并与效果处理中的这张卡自身一起构成要破坏的卡组g；选择的对象会与当前连锁建立关联。
 	local g=Duel.SelectTarget(tp,nil,tp,LOCATION_PZONE,0,1,1,nil)+e:GetHandler()
-	-- 设置操作信息，表示将要破坏的卡
+	-- 设置操作信息：本连锁将破坏g中的2张卡（自身和对象），供系统判定。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,2,0,0)
-	-- 设置操作信息，表示将要从卡组加入手牌的卡
+	-- 设置操作信息：本连锁将把卡组中的1张卡加入手卡。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 执行召唤效果的操作，破坏目标卡和自身，然后从卡组选择灵摆怪兽加入手牌
+-- ①怪兽效果处理：从连锁中获取自身和对象，过滤出仍与连锁相关的卡；如果数量不足2或破坏没有成功2张，则终止；否则检索1只4星以下灵摆怪兽加入手卡并向对方展示。
 function s.thop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取选择的目标卡
+	-- 获取发动时选择的灵摆区对象卡。
 	local tc=Duel.GetFirstTarget()
 	local g=Group.FromCards(c,tc):Filter(Card.IsRelateToChain,nil)
-	-- 判断是否成功破坏了目标卡
+	-- 若自身和对象中仍有联系的数量不足2，或者实际破坏数量少于2，说明处理不完整，直接结束不再检索。
 	if #g<2 or Duel.Destroy(g,REASON_EFFECT)<2 then return end
-	-- 提示玩家选择要加入手牌的灵摆怪兽
+	-- 给玩家显示“请选择要加入手牌的卡”的提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择满足条件的灵摆怪兽
+	-- 从卡组选择1只满足sfilter的灵摆怪兽（4星以下可加入手卡）。
 	local sg=Duel.SelectMatchingCard(tp,s.sfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if #sg==0 then return end
-	-- 将选中的灵摆怪兽加入手牌
+	-- 将选择的卡以效果原因加入持有者的手卡。
 	Duel.SendtoHand(sg,nil,REASON_EFFECT)
-	-- 确认对方看到加入手牌的卡
+	-- 向对方玩家展示加入手卡的灵摆怪兽，完成确认。
 	Duel.ConfirmCards(1-tp,sg)
 end
--- 判断是否为灵摆召唤成功触发的召唤效果
+-- e3的额外发动条件：仅当这次特殊召唤是灵摆召唤时才允许发动，用来把“召唤·灵摆召唤”限制限定为灵摆召唤。
 function s.thcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsSummonType(SUMMON_TYPE_PENDULUM)
 end
--- 判断是否为被破坏时触发的放置效果，要求破坏前位置在场上且处于表侧表示
+-- ②效果的发动条件：这张卡被破坏前在主要怪兽区，且破坏前是表侧表示。
 function s.pzcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	return c:IsPreviousLocation(LOCATION_MZONE) and c:IsFaceupEx()
 end
--- 设置放置灵摆刻度效果的目标，检查是否有灵摆区域的空位
+-- ②效果的发动时点目标处理：只检查我方灵摆区是否有空位可放置，不取对象。
 function s.pztg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否有灵摆区域的空位
+	-- 检查我方灵摆区左、右两个区域是否存在至少一个可用空格。
 	if chk==0 then return Duel.CheckLocation(tp,LOCATION_PZONE,0) or Duel.CheckLocation(tp,LOCATION_PZONE,1) end
 end
--- 执行放置灵摆刻度效果的操作，将自身移动到灵摆区域
+-- ②效果处理：如果这张卡仍与连锁相关，则将其移动到我方灵摆区并表侧放置。
 function s.pzop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 判断自身是否与连锁相关，若相关则移动到灵摆区域
+	-- 确认这张卡仍然与当前效果连锁有关联（未被除外、回卡组等导致联系丢失），若是则移动到我方灵摆区表侧表示。
 	if c:IsRelateToChain() then Duel.MoveToField(c,tp,tp,LOCATION_PZONE,POS_FACEUP,true) end
 end

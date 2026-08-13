@@ -12,17 +12,17 @@ function c43580269.initial_effect(c)
 	e1:SetOperation(c43580269.atop)
 	c:RegisterEffect(e1)
 end
--- 检查进行战斗的怪兽和战斗破坏的怪兽是否与效果相关，且被破坏怪兽来自对方墓地且是因为战斗破坏
+-- 发动条件判定：检查这张卡是否仍与本次战斗关联，且其战斗对象怪兽处于墓地并因战斗被破坏。
 function c43580269.atcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local bc=c:GetBattleTarget()
 	return c:IsRelateToBattle() and bc:IsLocation(LOCATION_GRAVE) and bc:IsReason(REASON_BATTLE)
 end
--- 将自身攻击力上升700点
+-- 效果处理：若这张卡仍与效果关联且表侧表示，则给它赋予攻击力上升700的持续效果，该效果在离场、无效等标准重置时消失。
 function c43580269.atop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) and c:IsFaceup() then
-		-- 将自身攻击力上升700
+		-- 这张卡的攻击力上升700。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)
