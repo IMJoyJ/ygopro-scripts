@@ -29,56 +29,56 @@ function c43411769.initial_effect(c)
 	e2:SetOperation(c43411769.thop)
 	c:RegisterEffect(e2)
 end
--- 过滤函数，用于判断被送去墓地的卡是否为通常怪兽且控制者为指定玩家
+-- 过滤函数：判断一张卡是否为通常怪兽，且其控制者为发动玩家tp，用于确定“通常怪兽被送去自己墓地”事件中的被送去墓地的卡。
 function c43411769.cfilter(c,tp)
 	return c:IsType(TYPE_NORMAL) and c:IsControler(tp)
 end
--- 效果发动条件，判断是否有通常怪兽被送去墓地
+-- 发动条件：本组被送去墓地的卡eg中，存在至少1张满足cfilter（即自己场上的通常怪兽）的卡。
 function c43411769.spcon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c43411769.cfilter,1,nil,tp)
 end
--- 特殊召唤效果的发动时处理，判断是否满足特殊召唤条件
+-- 发动目标条件的检查：自己场上主要怪兽区有空位，且手卡的这张卡自身可以被特殊召唤，满足才可发动。
 function c43411769.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断场上是否有足够的特殊召唤区域
+	-- 检查自己场上的主要怪兽区是否有空位可用，作为特殊召唤的前提条件。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置特殊召唤操作信息
+	-- 设置操作信息：本次效果处理将把这张卡特殊召唤，数量为1，用于给其他效果（如星尘龙等）进行连锁判定。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 特殊召唤效果的处理函数，将卡片特殊召唤到场上
+-- 处理①效果：以效果持有者这张卡为对象，若它仍在手牌且与效果关联，则将其表侧攻击表示特殊召唤到自己场上。
 function c43411769.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) then
-		-- 执行将卡片特殊召唤到场上的操作
+		-- 将这张卡以表侧表示特殊召唤到发动玩家tp的场上，参数false表示需要检查召唤条件和苏生限制。
 		Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
--- 过滤函数，用于判断手卡中是否存在龙族怪兽且能作为代价送去墓地
+-- cost筛选函数：判断一张卡是否为龙族怪兽，且可以作为代价送去墓地，用于②效果从手卡丢弃龙族怪兽的cost。
 function c43411769.costfilter(c)
 	return c:IsRace(RACE_DRAGON) and c:IsAbleToGraveAsCost()
 end
--- 效果发动时的处理，选择并送去墓地1只龙族怪兽作为代价
+-- ②效果的发动cost处理：先验证手卡存在可丢弃的龙族怪兽，然后提示玩家选择1张手卡龙族怪兽，将其作为cost送去墓地。
 function c43411769.thcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断手卡中是否存在至少1只龙族怪兽
+	-- cost支付检查：手卡中是否存在至少1张满足costfilter的龙族怪兽，作为cost能否支付的条件。
 	if chk==0 then return Duel.IsExistingMatchingCard(c43411769.costfilter,tp,LOCATION_HAND,0,1,nil) end
-	-- 提示玩家选择要送去墓地的卡
+	-- 向玩家显示选择提示信息，提示内容为“请选择要送去墓地的卡”，为接下来的卡片选择作准备。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
-	-- 选择1只龙族怪兽送去墓地
+	-- 让发动玩家tp从手卡选择1张满足costfilter条件的龙族怪兽，结果为选中的卡片组g。
 	local g=Duel.SelectMatchingCard(tp,c43411769.costfilter,tp,LOCATION_HAND,0,1,1,nil)
-	-- 将选择的龙族怪兽送去墓地作为效果的代价
+	-- 将选择的龙族怪兽以代价（REASON_COST）送去墓地，完成cost支付。
 	Duel.SendtoGrave(g,REASON_COST)
 end
--- 效果发动时的处理，判断是否满足将卡片送回手牌的条件
+-- ②效果的目标检查与操作信息设置：若墓地的这张卡可以加入手卡，则设置效果处理时将其回手的操作信息。
 function c43411769.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsAbleToHand() end
-	-- 设置将卡片送回手牌的操作信息
+	-- 设置操作信息：本次效果处理将把这张卡加入持有者手卡，分类为CATEGORY_TOHAND。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,e:GetHandler(),1,0,0)
 end
--- 效果处理函数，将卡片送回手牌
+-- 处理②效果：获取效果持有者这张卡，若它仍与效果关联（未离开墓地），则将其加入手卡。
 function c43411769.thop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) then
-		-- 执行将卡片送回手牌的操作
+		-- 将这张卡送去其持有者的手卡，原因是效果（REASON_EFFECT）。
 		Duel.SendtoHand(c,nil,REASON_EFFECT)
 	end
 end

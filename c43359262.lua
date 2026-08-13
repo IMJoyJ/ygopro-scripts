@@ -14,24 +14,24 @@ function c43359262.initial_effect(c)
 	e1:SetOperation(c43359262.operation)
 	c:RegisterEffect(e1)
 end
--- 过滤满足条件的魔法与陷阱区域的里侧表示卡片
+-- 筛选可作为对象的卡：对方魔陷区里侧表示、不在场地魔法格（格子5）、且尚未被这张卡选为永续对象的卡。
 function c43359262.filter(c,rc)
 	return c:IsFacedown() and c:GetSequence()~=5 and not rc:IsHasCardTarget(c)
 end
--- 选择对方魔法与陷阱区域的里侧表示卡片作为对象
+-- 发动时的目标处理：先检查对方魔陷区是否存在1张符合条件的里侧盖卡；若存在则提示玩家选择其中1张作为对象，并将该卡设为效果的对象。
 function c43359262.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_SZONE) and chkc:IsControler(1-tp) and c43359262.filter(chkc,e:GetHandler()) end
-	-- 判断是否满足选择对象的条件
+	-- 效果发动的合法性检查：若对方魔陷区存在至少1张符合条件的里侧盖卡，则允许发动。
 	if chk==0 then return Duel.IsExistingTarget(c43359262.filter,tp,0,LOCATION_SZONE,1,nil,e:GetHandler()) end
-	-- 提示玩家选择里侧表示的卡片
+	-- 向发动玩家显示“请选择里侧表示的卡”的选择提示消息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEDOWN)  --"请选择里侧表示的卡"
-	-- 选择对方魔法与陷阱区域的里侧表示卡片作为对象
+	-- 让发动玩家从对方魔陷区选择1张符合条件的里侧表示盖卡，并将其登记为本效果的对象。
 	Duel.SelectTarget(tp,c43359262.filter,tp,0,LOCATION_SZONE,1,1,nil,e:GetHandler())
 end
--- 设置电力军曹获得对象卡片的限制效果
+-- 效果处理：若电力军曹仍与效果关联且目标卡仍为里侧表示并与效果关联，则将该目标卡设为电力军曹的永续对象，并注册一个永续效果使该目标卡不能发动。
 function c43359262.operation(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取当前连锁中选择的对象卡片
+	-- 获取当前连锁中登记的效果对象卡，即发动时选择的那张对方里侧魔陷。
 	local tc=Duel.GetFirstTarget()
 	if c:IsRelateToEffect(e) and tc:IsFacedown() and tc:IsRelateToEffect(e) then
 		c:SetCardTarget(tc)
@@ -47,7 +47,7 @@ function c43359262.operation(e,tp,eg,ep,ev,re,r,rp)
 		c:RegisterEffect(e1)
 	end
 end
--- 判断目标卡片是否为电力军曹的对象卡片且处于里侧表示
+-- 作为“不能发动”效果的筛选条件：若某张卡为里侧表示且被电力军曹永续指向，则该卡不能发动效果。
 function c43359262.distg(e,c)
 	return c:IsFacedown() and e:GetHandler():IsHasCardTarget(c)
 end

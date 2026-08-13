@@ -29,60 +29,60 @@ function c4334811.initial_effect(c)
 	e3:SetOperation(c4334811.drop)
 	c:RegisterEffect(e3)
 end
--- 过滤函数，用于筛选可以送去墓地的机械族怪兽
+-- 筛选函数：判断卡片是否为怪兽、机械族且可以被送去墓地，用于从卡组选择符合条件的机械族怪兽。
 function c4334811.tgfilter(c)
 	return c:IsType(TYPE_MONSTER) and c:IsRace(RACE_MACHINE) and c:IsAbleToGrave()
 end
--- 效果处理时的判断函数，检查是否满足发动条件并设置操作信息
+-- 效果①的发动条件和操作信息设置函数：检查卡组中是否存在可送去墓地的机械族怪兽，并设置“送去墓地”的操作信息。
 function c4334811.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断是否满足发动条件，即场上是否存在满足条件的卡
+	-- 发动条件检查：卡组中是否存在至少1只满足tgfilter条件的机械族怪兽，若不存在则不能发动。
 	if chk==0 then return Duel.IsExistingMatchingCard(c4334811.tgfilter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置操作信息，表示将要处理的卡为1张送去墓地的卡
+	-- 设置操作信息：本次连锁为将被选择的卡送去墓地的效果，预计从卡组送去墓地1张，操作玩家为tp。
 	Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,nil,1,tp,LOCATION_DECK)
 end
--- 效果处理函数，选择并执行将卡送去墓地的操作
+-- 效果①处理时的执行函数：实际从卡组选择1只机械族怪兽，并将其送去墓地。
 function c4334811.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要送去墓地的卡
+	-- 弹出选择提示，提示玩家从卡组选择要送去墓地的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
-	-- 选择满足条件的卡
+	-- 从己方卡组选择1张满足tgfilter条件的机械族怪兽。
 	local g=Duel.SelectMatchingCard(tp,c4334811.tgfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的卡送去墓地
+		-- 将选择的卡以效果原因送去墓地。
 		Duel.SendtoGrave(g,REASON_EFFECT)
 	end
 end
--- 过滤函数，用于筛选可以返回卡组的机械族地属性4星怪兽
+-- 筛选函数：判断墓地中的卡是否为机械族、地属性、4星怪兽，且可以作为返回卡组的代价。
 function c4334811.cfilter(c)
 	return c:IsAttribute(ATTRIBUTE_EARTH) and c:IsRace(RACE_MACHINE) and c:IsLevel(4) and c:IsAbleToDeckAsCost()
 end
--- 效果处理函数，选择并执行将卡返回卡组并抽卡的操作
+-- 效果②的发动代价函数：从自己墓地选择2只机械族·地属性·4星怪兽返回卡组并洗牌，作为发动代价。
 function c4334811.drcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断是否满足发动条件，即场上是否存在满足条件的卡
+	-- 代价合法性检查：墓地中是否存在至少2张满足cfilter条件的机械族·地属性·4星怪兽，否则不能发动。
 	if chk==0 then return Duel.IsExistingMatchingCard(c4334811.cfilter,tp,LOCATION_GRAVE,0,2,nil) end
-	-- 提示玩家选择要返回卡组的卡
+	-- 弹出选择提示，提示玩家从墓地选择要返回卡组的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TODECK)  --"请选择要返回卡组的卡"
-	-- 选择满足条件的卡
+	-- 从自己墓地选择2张满足cfilter条件的卡作为代价。
 	local g=Duel.SelectMatchingCard(tp,c4334811.cfilter,tp,LOCATION_GRAVE,0,2,2,nil)
-	-- 显示选中卡的动画效果
+	-- 显示所选卡片被选为代价的动画，并记录这些卡。
 	Duel.HintSelection(g)
-	-- 将选中的卡返回卡组并洗牌
+	-- 将选择的2张卡返回持有者卡组，洗牌，作为效果发动代价。
 	Duel.SendtoDeck(g,nil,SEQ_DECKSHUFFLE,REASON_COST)
 end
--- 效果处理时的判断函数，检查是否满足发动条件并设置操作信息
+-- 效果②的发动目标函数：确认玩家可以抽卡，并设置抽卡玩家和抽卡数量。
 function c4334811.drtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断是否满足发动条件，即玩家是否可以抽卡
+	-- 发动条件检查：玩家tp是否可以抽1张卡，若不能抽卡则不能发动。
 	if chk==0 then return Duel.IsPlayerCanDraw(tp,1) end
-	-- 设置操作对象玩家为当前玩家
+	-- 将当前连锁的对象玩家设置为tp，表示由该玩家进行抽卡。
 	Duel.SetTargetPlayer(tp)
-	-- 设置操作对象参数为1
+	-- 设置连锁对象参数为1，表示抽卡数量为1。
 	Duel.SetTargetParam(1)
-	-- 设置操作信息，表示将要处理的卡为1张抽卡
+	-- 设置操作信息：本次连锁为抽卡效果，目标玩家为tp，预期抽卡数量为1（count为0表示不指定对象卡）。
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,1)
 end
--- 效果处理函数，执行抽卡操作
+-- 效果②处理时的执行函数：根据发动时记录的目标玩家和抽卡数量执行抽卡。
 function c4334811.drop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁中的目标玩家和抽卡数量
+	-- 从当前连锁信息中取出目标玩家和参数，分别赋值给p和d。
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 执行抽卡操作
+	-- 让玩家p抽d张卡（因效果抽卡），完成抽卡效果。
 	Duel.Draw(p,d,REASON_EFFECT)
 end

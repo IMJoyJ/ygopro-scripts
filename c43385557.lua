@@ -3,7 +3,7 @@
 -- 调整＋调整以外的怪兽1只以上
 -- 自己的结束阶段时，回复自己场上表侧表示存在的念动力族怪兽数量×600的数值的基本分。
 function c43385557.initial_effect(c)
-	-- 添加同调召唤手续，要求1只调整和1只调整以外的怪兽作为素材
+	-- 为这张卡添加同调召唤手续：调整1只（不限条件）＋调整以外的怪兽1只以上，同时为后续的苏生限制做准备。
 	aux.AddSynchroProcedure(c,nil,aux.NonTuner(nil),1)
 	c:EnableReviveLimit()
 	-- 自己的结束阶段时，回复自己场上表侧表示存在的念动力族怪兽数量×600的数值的基本分。
@@ -20,31 +20,31 @@ function c43385557.initial_effect(c)
 	e1:SetOperation(c43385557.recop)
 	c:RegisterEffect(e1)
 end
--- 效果发动的条件判断函数，判断是否为当前回合玩家
+-- 定义该触发效果的发动条件函数，用于判断是否满足“自己的结束阶段”这一时点。
 function c43385557.reccon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断当前回合玩家是否为效果发动者
+	-- 返回当前回合玩家是否为效果控制者（tp），是则条件成立。
 	return Duel.GetTurnPlayer()==tp
 end
--- 过滤场上表侧表示存在的念动力族怪兽
+-- 定义过滤函数：筛选自己场上表侧表示且种族为念动力族的怪兽。
 function c43385557.filter(c)
 	return c:IsFaceup() and c:IsRace(RACE_PSYCHO)
 end
--- 设置效果的目标玩家和回复LP数量，并注册效果操作信息
+-- 定义效果发动时的目标处理函数：登记回复对象玩家、回复数值，并设置回复效果的操作信息。
 function c43385557.rectg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 统计场上表侧表示存在的念动力族怪兽数量
+	-- 计算自己场上表侧表示存在的念动力族怪兽数量，作为回复数值的计算基础。
 	local ct=Duel.GetMatchingGroupCount(c43385557.filter,tp,LOCATION_MZONE,0,nil)
-	-- 设置效果影响的玩家为当前玩家
+	-- 将当前连锁的对象玩家设置为自己（tp），表示回复对象是自己。
 	Duel.SetTargetPlayer(tp)
-	-- 设置效果回复的LP数值为念动力族怪兽数量乘以600
+	-- 将当前连锁的对象参数设置为“念动力族怪兽数量×600”，即要回复的基本分数值。
 	Duel.SetTargetParam(ct*600)
-	-- 注册效果操作信息，指定效果类别为回复LP
+	-- 设置操作信息：本次连锁处理的是回复效果，预计回复tp玩家ct×600点基本分。
 	Duel.SetOperationInfo(0,CATEGORY_RECOVER,nil,0,tp,ct*600)
 end
--- 效果的处理函数，根据场上念动力族怪兽数量回复相应LP
+-- 定义效果处理函数：在效果结算时重新计算场上表侧表示念动力族怪兽数量，并按数量×600回复基本分。
 function c43385557.recop(e,tp,eg,ep,ev,re,r,rp)
-	-- 再次统计场上表侧表示存在的念动力族怪兽数量
+	-- 在效果处理时重新获取自己场上表侧表示存在的念动力族怪兽数量（因为发动后数量可能变化）。
 	local ct=Duel.GetMatchingGroupCount(c43385557.filter,tp,LOCATION_MZONE,0,nil)
-	-- 使当前玩家回复指定数量的LP，原因来自效果
+	-- 让控制者tp回复数值为（当前念动力族怪兽数量）×600的基本分，回复原因记为效果（REASON_EFFECT）。
 	Duel.Recover(tp,ct*600,REASON_EFFECT)
 end
