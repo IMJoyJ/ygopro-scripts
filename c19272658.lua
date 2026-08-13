@@ -24,78 +24,78 @@ function c19272658.initial_effect(c)
 	e3:SetRange(LOCATION_GRAVE)
 	e3:SetProperty(EFFECT_FLAG_CARD_TARGET)
 	e3:SetHintTiming(0,TIMINGS_CHECK_MONSTER+TIMING_END_PHASE)
-	-- 将这张卡除外作为cost
+	-- 设置②效果的发动代价：把墓地中的此卡除外（aux.bfgcost为通用代价处理）。
 	e3:SetCost(aux.bfgcost)
 	e3:SetTarget(c19272658.postg)
 	e3:SetOperation(c19272658.posop)
 	c:RegisterEffect(e3)
 end
--- 过滤函数，用于判断被破坏或送去墓地的怪兽是否为对方场上从前在怪兽区的怪兽
+-- 过滤函数：判断怪兽之前由对方控制且位于怪兽区，用于确认触发事件中的怪兽来自对方场上。
 function c19272658.cfilter(c,tp)
 	return c:IsPreviousControler(1-tp) and c:IsPreviousLocation(LOCATION_MZONE)
 end
--- 效果条件，判断是否有对方场上的怪兽被战斗破坏或送去墓地
+-- 效果①的发动条件：本次触发事件（战斗破坏或送去墓地）中至少存在1只对方场上的怪兽。
 function c19272658.ovcon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c19272658.cfilter,1,nil,tp)
 end
--- 过滤函数，用于筛选自己场上的表侧表示的超量怪兽
+-- 对象选择过滤器：选择自己场上表侧表示的超量怪兽作为对象。
 function c19272658.ovfilter(c)
 	return c:IsType(TYPE_XYZ) and c:IsFaceup()
 end
--- 过滤函数，用于筛选可以作为超量素材的怪兽
+-- 素材选择过滤器：选择对方墓地中的怪兽，且该怪兽可以叠放作为超量素材。
 function c19272658.ovfilter2(c)
 	return c:IsType(TYPE_MONSTER) and c:IsCanOverlay()
 end
--- 效果的发动时点处理，判断是否满足发动条件
+-- 效果①的取目标流程：校验指定对象（己方表侧超量怪兽）合法性，并确认己方有超量怪兽可取、对方墓地有怪兽可取。
 function c19272658.ovtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and c19272658.ovfilter(chkc) end
-	-- 判断自己场上是否存在满足条件的超量怪兽
+	-- 检查自己场上是否存在至少1只表侧超量怪兽可作为效果对象。
 	if chk==0 then return Duel.IsExistingTarget(c19272658.ovfilter,tp,LOCATION_MZONE,0,1,nil)
-		-- 判断对方墓地是否存在怪兽
+		-- 检查对方墓地是否存在至少1只怪兽卡可作为超量素材。
 		and Duel.IsExistingMatchingCard(Card.IsType,tp,0,LOCATION_GRAVE,1,nil,TYPE_MONSTER) end
-	-- 提示玩家选择效果的对象
+	-- 向玩家显示选择效果对象的提示信息（HINTMSG_TARGET）。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)  --"请选择效果的对象"
-	-- 选择满足条件的超量怪兽作为效果对象
+	-- 从自己场上选择1只表侧超量怪兽作为效果对象，并记录为连锁对象。
 	Duel.SelectTarget(tp,c19272658.ovfilter,tp,LOCATION_MZONE,0,1,1,nil)
-	-- 设置效果处理信息，表示将从对方墓地检索怪兽作为超量素材
+	-- 设置操作信息：本效果会让对方墓地中的1只怪兽离开墓地（作为超量素材），用于后续时点/连锁判定。
 	Duel.SetOperationInfo(0,CATEGORY_LEAVE_GRAVE,nil,1,1-tp,LOCATION_GRAVE)
 end
--- 效果处理函数，执行将对方墓地的怪兽作为超量素材叠放至己方超量怪兽的操作
+-- 效果①处理：取对象超量怪兽；若其仍与效果关联且不免疫，则从对方墓地选择1只可叠放的怪兽，将其叠放在对象怪兽下方作为超量素材。
 function c19272658.ovop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前效果选择的目标怪兽
+	-- 取得效果发动时选择的己方场上超量怪兽对象。
 	local tc=Duel.GetFirstTarget()
-	-- 获取对方墓地中满足条件的怪兽组
+	-- 取得对方墓地中可作超量素材的怪兽组，并用王家长眠之谷过滤器排除受其影响的卡。
 	local g=Duel.GetMatchingGroup(aux.NecroValleyFilter(c19272658.ovfilter2),tp,0,LOCATION_GRAVE,nil)
 	if tc:IsRelateToEffect(e) and not tc:IsImmuneToEffect(e) and g:GetCount()>0 then
-		-- 提示玩家选择要作为超量素材的怪兽
+		-- 向玩家显示选择超量素材的提示信息（HINTMSG_XMATERIAL）。
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_XMATERIAL)  --"请选择要作为超量素材的卡"
 		local sg=g:Select(tp,1,1,nil)
-		-- 将选中的怪兽叠放至目标怪兽下方作为超量素材
+		-- 将选择的怪兽作为超量素材叠放到对象超量怪兽下方（Duel.Overlay）。
 		Duel.Overlay(tc,sg)
 	end
 end
--- 过滤函数，用于筛选从额外卡组特殊召唤的怪兽
+-- 对象选择过滤器：选择场上从额外卡组特殊召唤的、且可以变更表示形式的怪兽。
 function c19272658.posfilter(c)
 	return c:IsSummonLocation(LOCATION_EXTRA) and c:IsCanChangePosition()
 end
--- 效果的发动时点处理，判断是否满足发动条件
+-- 效果②的取目标流程：校验并选择场上1只从额外卡组特殊召唤的可变更表示形式的怪兽作为对象，并设置操作信息为变更表示形式。
 function c19272658.postg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and c19272658.posfilter(chkc) end
-	-- 判断场上是否存在满足条件的从额外卡组特殊召唤的怪兽
+	-- 检查双方场上是否存在至少1只从额外卡组特殊召唤且可变更表示形式的怪兽作为对象。
 	if chk==0 then return Duel.IsExistingTarget(c19272658.posfilter,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil) end
-	-- 提示玩家选择要改变表示形式的怪兽
+	-- 向玩家显示选择要改变表示形式的怪兽的提示信息（HINTMSG_POSCHANGE）。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_POSCHANGE)  --"请选择要改变表示形式的怪兽"
-	-- 选择满足条件的从额外卡组特殊召唤的怪兽作为效果对象
+	-- 从双方场上选择1只符合条件的怪兽作为效果对象，并记录为连锁对象。
 	local g=Duel.SelectTarget(tp,c19272658.posfilter,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,nil)
-	-- 设置效果处理信息，表示将改变目标怪兽的表示形式
+	-- 设置操作信息：本效果将变更对象怪兽的表示形式（CATEGORY_POSITION）。
 	Duel.SetOperationInfo(0,CATEGORY_POSITION,g,1,0,0)
 end
--- 效果处理函数，执行将目标怪兽的表示形式变更的操作
+-- 效果②处理：取得对象怪兽，若仍与效果关联，则将其表示形式进行变更。
 function c19272658.posop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前效果选择的目标怪兽
+	-- 取得效果发动时选择的怪兽对象。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 将目标怪兽变为表侧守备表示或表侧攻击表示
+		-- 变更对象怪兽的表示形式：表侧攻击表示改为表侧守备表示，表侧守备表示改为表侧攻击表示（里侧表示也按对应规则变更）。
 		Duel.ChangePosition(tc,POS_FACEUP_DEFENSE,POS_FACEUP_DEFENSE,POS_FACEUP_ATTACK,POS_FACEUP_ATTACK)
 	end
 end

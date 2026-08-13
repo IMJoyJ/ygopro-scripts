@@ -23,30 +23,30 @@ function c1918087.initial_effect(c)
 	e2:SetOperation(c1918087.damop)
 	c:RegisterEffect(e2)
 end
--- 判断发动条件，当对方基本分不超过3000时可以发动
+-- 效果发动条件：仅当对方基本分在3000以下时才允许发动此卡。
 function c1918087.actcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查对方基本分是否小于等于3000
+	-- 判断对方玩家当前基本分是否为3000以下（1-tp为对方玩家）。
 	return Duel.GetLP(1-tp)<=3000
 end
--- 判断伤害触发条件，确保不是在自己的准备阶段触发
+-- 触发条件：仅在对手的回合（对方的准备阶段）时才满足，即当前回合玩家不是这张卡的控制者。
 function c1918087.damcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 确保当前不是回合玩家触发该效果
+	-- 判断当前回合玩家是否不是效果控制者，即是否处于对方回合。
 	return tp~=Duel.GetTurnPlayer()
 end
--- 设置伤害效果的目标和参数信息
+-- 效果发动时的目标处理：无选择要求；将对象玩家设为对方，伤害参数设为500，并登记给与500点伤害的操作信息。
 function c1918087.damtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置连锁处理的目标玩家为对方
+	-- 将当前连锁的对象玩家设置为对方玩家（1-tp），表示伤害的对象是对方。
 	Duel.SetTargetPlayer(1-tp)
-	-- 设置连锁处理的目标参数为500点伤害
+	-- 将当前连锁的对象参数设置为500，即伤害数值。
 	Duel.SetTargetParam(500)
-	-- 设置连锁操作信息为对对方造成500点伤害
+	-- 登记操作信息：效果分类为伤害，对象玩家为对方，预计伤害数值为500（用于连锁判定和时点响应）。
 	Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,1-tp,500)
 end
--- 执行伤害效果，对指定玩家造成指定伤害
+-- 效果处理：从连锁信息中取得对象玩家和伤害数值，并对该玩家造成等量效果伤害。
 function c1918087.damop(e,tp,eg,ep,ev,re,r,rp)
-	-- 从连锁信息中获取目标玩家和伤害值
+	-- 获取当前连锁中记录的对象玩家和对象参数（伤害数值），分别存入p和d。
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 以效果原因对目标玩家造成指定伤害值
+	-- 以效果原因对玩家p造成d点伤害。
 	Duel.Damage(p,d,REASON_EFFECT)
 end

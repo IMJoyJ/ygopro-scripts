@@ -44,43 +44,43 @@ function c19301729.initial_effect(c)
 	e3:SetOperation(c19301729.efop)
 	c:RegisterEffect(e3)
 end
--- 规则层面：设置该卡不能被作为超量素材的条件，只有非昆虫族怪兽不能作为超量素材。
+-- 判定非昆虫族怪兽不能作为超量素材：当素材怪兽不是昆虫族时返回true，使这张卡不能成为该超量召唤的素材。
 function c19301729.xyzlimit(e,c)
 	if not c then return false end
 	return not c:IsRace(RACE_INSECT)
 end
--- 规则层面：判断是否为己方3星昆虫族怪兽召唤成功，满足条件才能发动效果。
+-- 发动条件：当自己成功召唤昆虫族·3星怪兽时，该召唤控制者是己方且召唤的怪兽为昆虫族·3星。
 function c19301729.spcon(e,tp,eg,ep,ev,re,r,rp)
 	local ec=eg:GetFirst()
 	return ep==tp and ec:IsLevel(3) and ec:IsRace(RACE_INSECT)
 end
--- 规则层面：判断是否可以将该卡特殊召唤，检查场上是否有空位及卡本身是否可特殊召唤。
+-- 发动时点检测：己方主要怪兽区有空位，且这张卡在手牌可以被特殊召唤。
 function c19301729.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 规则层面：检查场上是否有空位用于特殊召唤。
+	-- 检查己方主要怪兽区是否存在空闲区域。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 规则层面：将召唤成功的怪兽设为效果处理的目标。
+	-- 将召唤成功的那只昆虫族·3星怪兽设为当前效果关联的对象，便于后续处理时判断其是否仍可作为等级变更对象。
 	Duel.SetTargetCard(eg)
-	-- 规则层面：设置效果处理信息，表示要特殊召唤该卡。
+	-- 设置操作信息：本次效果将进行特殊召唤，对象为本卡，数量1，地点不特定（手牌）。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 规则层面：执行特殊召唤操作，并询问是否改变等级。
+-- 处理①效果：先特殊召唤这张卡，若特殊召唤成功且玩家选择变更等级，则中断当前连锁，将这张卡与仍关联的召唤怪兽（若还在场上且表侧表示）组成对象组，由玩家宣言5或7，然后为该组怪兽附加等级变更效果。
 function c19301729.spop(e,tp,eg,ep,ev,re,r,rp)
 	local tc=eg:GetFirst()
 	local c=e:GetHandler()
 	if not c:IsRelateToEffect(e) then return end
-	-- 规则层面：判断是否成功特殊召唤并询问是否改变等级。
+	-- 执行特殊召唤本卡，若成功且玩家选择‘是’（变更等级），则进入等级变更处理。
 	if Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)~=0 and Duel.SelectYesNo(tp,aux.Stringid(19301729,2)) then  --"是否改变等级？"
-		-- 规则层面：中断当前效果处理，使后续效果视为不同时处理。
+		-- 中断当前效果处理，使后续的等级变更效果作为独立处理，避免错过时点。
 		Duel.BreakEffect()
 		local g=Group.FromCards(c)
 		if tc:IsRelateToEffect(e) then g:AddCard(tc) end
 		g=g:Filter(Card.IsFaceup,nil)
-		-- 规则层面：让玩家宣言一个等级（5或7）。
+		-- 让玩家宣言一个数字（5或7），作为要变更的等级。
 		local lv=Duel.AnnounceNumber(tp,5,7)
-		-- 规则层面：遍历卡片组中的每张卡。
+		-- 遍历需要变更等级的怪兽组，对每只怪兽施加等级变更效果。
 		for oc in aux.Next(g) do
-			-- ●这张卡的攻击力·守备力上升1000。
+			-- 把这张卡和那只怪兽的等级变成5星或者7星。
 			local e1=Effect.CreateEffect(c)
 			e1:SetType(EFFECT_TYPE_SINGLE)
 			e1:SetCode(EFFECT_CHANGE_LEVEL)
@@ -91,40 +91,40 @@ function c19301729.spop(e,tp,eg,ep,ev,re,r,rp)
 		end
 	end
 end
--- 规则层面：判断该卡是否从手卡特殊召唤成功。
+-- ②效果的发动条件：通过判定这张卡在特殊召唤成功之前位于手牌，来确定它是从手卡特殊召唤的。
 function c19301729.poscon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsPreviousLocation(LOCATION_HAND)
 end
--- 规则层面：定义筛选场上昆虫族且可改变表示形式的怪兽的过滤函数。
+-- 选择对象的过滤条件：自己场上的表侧表示昆虫族怪兽，且该怪兽当前可以变更表示形式。
 function c19301729.posfilter(c)
 	return c:IsRace(RACE_INSECT) and c:IsFaceup() and c:IsCanChangePosition()
 end
--- 规则层面：判断是否可以选场上一只昆虫族怪兽改变表示形式。
+-- ②效果的目标检测：己方场上存在至少1只符合条件的昆虫族怪兽即可发动，并设置操作信息为变更表示形式。
 function c19301729.postg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 规则层面：检查场上是否存在满足条件的怪兽。
+	-- 发动时点检查：己方场上存在1只表侧表示且可变更表示形式的昆虫族怪兽。
 	if chk==0 then return Duel.IsExistingMatchingCard(c19301729.posfilter,tp,LOCATION_MZONE,0,1,nil) end
-	-- 规则层面：设置效果处理信息，表示要改变怪兽表示形式。
+	-- 设置操作信息：本次效果将变更1只怪兽的表示形式，所在位置为怪兽区。
 	Duel.SetOperationInfo(0,CATEGORY_POSITION,nil,1,tp,LOCATION_MZONE)
 end
--- 规则层面：执行改变表示形式的操作。
+-- 处理②效果：提示选择表示形式变更对象，选择己方场上1只昆虫族怪兽，手动标记选择动画，然后按规则切换其表示形式。
 function c19301729.posop(e,tp,eg,ep,ev,re,r,rp)
-	-- 规则层面：提示玩家选择要改变表示形式的怪兽。
+	-- 显示选择提示：请选择要改变表示形式的怪兽。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_POSCHANGE)  --"请选择要改变表示形式的怪兽"
-	-- 规则层面：选择场上一只满足条件的怪兽。
+	-- 让己方玩家从自己场上选择1只符合条件的昆虫族怪兽作为效果对象。
 	local g=Duel.SelectMatchingCard(tp,c19301729.posfilter,tp,LOCATION_MZONE,0,1,1,nil)
 	local tc=g:GetFirst()
 	if tc then
-		-- 规则层面：显示被选中的怪兽动画效果。
+		-- 手动为选中的怪兽显示被选为对象的动画，并记录这些卡被选为对象。
 		Duel.HintSelection(g)
-		-- 规则层面：将选中的怪兽改变为指定表示形式。
+		-- 变更该怪兽的表示形式：表侧攻击变表侧守备，表侧守备变里侧守备，里侧守备变表侧攻击，里侧攻击变表侧攻击。
 		Duel.ChangePosition(tc,POS_FACEUP_DEFENSE,POS_FACEDOWN_DEFENSE,POS_FACEUP_ATTACK,POS_FACEUP_ATTACK)
 	end
 end
--- 规则层面：判断该卡是否作为超量素材被使用。
+-- ③效果的触发条件：这张卡作为超量召唤的素材被使用（原因代号REASON_XYZ）。
 function c19301729.efcon(e,tp,eg,ep,ev,re,r,rp)
 	return r==REASON_XYZ
 end
--- 规则层面：为超量召唤的怪兽增加攻击力和守备力各1000点，并确保其具有效果类型。
+-- 处理③效果：给超量召唤出的怪兽赋予攻击力·守备力上升1000的效果；若该怪兽不是效果怪兽，则追加效果怪兽类型以便适用所得效果；最后附加‘电子光虫-电阻水黾效果适用中’的提示标记。
 function c19301729.efop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local rc=c:GetReasonCard()
@@ -139,7 +139,7 @@ function c19301729.efop(e,tp,eg,ep,ev,re,r,rp)
 	e2:SetCode(EFFECT_UPDATE_DEFENSE)
 	rc:RegisterEffect(e2,true)
 	if not rc:IsType(TYPE_EFFECT) then
-		-- ●这张卡的攻击力·守备力上升1000。
+		-- ③：场上的这张卡为素材作超量召唤的怪兽得到以下效果。
 		local e3=Effect.CreateEffect(c)
 		e3:SetType(EFFECT_TYPE_SINGLE)
 		e3:SetCode(EFFECT_ADD_TYPE)

@@ -14,36 +14,36 @@ function c19163116.initial_effect(c)
 	e1:SetOperation(c19163116.spop)
 	c:RegisterEffect(e1)
 end
--- 判断此卡是否由手牌送去墓地
+-- 效果发动条件：判定此卡被送去墓地前是否位于手牌，以满足“从手卡送去墓地”的场合。
 function c19163116.spcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsPreviousLocation(LOCATION_HAND)
 end
--- 筛选满足条件的墓地怪兽（4星以下、通常怪兽、可特殊召唤）
+-- 目标筛选条件：墓地中1只4星以下的通常怪兽，且能够被特殊召唤。
 function c19163116.filter(c,e,tp)
 	return c:IsLevelBelow(4) and c:IsType(TYPE_NORMAL) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 设置效果的发动条件，检查是否满足特殊召唤的条件
+-- 发动时与对象合法性判定：当有指定对象时确认其合法；在发动时检查场上空位和墓地对象是否满足。
 function c19163116.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(tp) and chkc:IsLocation(LOCATION_GRAVE) and c19163116.filter(chkc,e,tp) end
-	-- 检查玩家场上是否有足够的特殊召唤区域
+	-- 若为发动时检查（chk==0），首先确认自己场上是否有可用的怪兽区域。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查玩家墓地是否存在满足条件的怪兽
+		-- 同时确认自己墓地存在1只满足条件的通常怪兽可作为对象；若两者均满足则发动合法。
 		and Duel.IsExistingTarget(c19163116.filter,tp,LOCATION_GRAVE,0,1,nil,e,tp) end
-	-- 向玩家发送提示信息，提示选择要特殊召唤的卡
+	-- 弹出提示：请玩家选择要特殊召唤的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 选择满足条件的墓地怪兽作为效果对象
+	-- 选择自己墓地1只符合条件的通常怪兽，并将其设为效果对象。
 	local g=Duel.SelectTarget(tp,c19163116.filter,tp,LOCATION_GRAVE,0,1,1,nil,e,tp)
-	-- 设置连锁的操作信息，确定特殊召唤的怪兽数量和目标
+	-- 登记特殊召唤的操作信息，供后续效果检测使用。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,1,0,0)
 end
--- 执行特殊召唤操作
+-- 效果处理：在场上仍有空位且对象仍有效时，将对象特殊召唤。
 function c19163116.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查场上是否还有特殊召唤区域
+	-- 处理前确认：若自己场上已无可用怪兽区域，则本次处理不执行。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-	-- 获取当前连锁的效果对象
+	-- 获取发动时选择的对象卡。
 	local tc=Duel.GetFirstTarget()
 	if tc and tc:IsRelateToEffect(e) then
-		-- 将目标怪兽特殊召唤到场上
+		-- 将对象卡以表侧表示特殊召唤到自己场上（不进行召唤条件/苏生限制检查）。
 		Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP)
 	end
 end

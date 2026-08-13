@@ -40,7 +40,7 @@ function c19162134.initial_effect(c)
 	e0:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
 	e0:SetCode(EVENT_CHAINING)
 	e0:SetRange(LOCATION_FZONE)
-	-- 记录连锁发生时这张卡在场上存在
+	-- 设置该连续效果的操作函数为aux.chainreg，用于在每次效果发动（进入连锁）时给此卡记录一个标记，表明此卡在连锁发生前已在场上，供后续“连锁5以上”的判定使用。
 	e0:SetOperation(aux.chainreg)
 	c:RegisterEffect(e0)
 	local e6=e2:Clone()
@@ -72,37 +72,37 @@ function c19162134.initial_effect(c)
 	eb:SetCondition(c19162134.damcon2)
 	c:RegisterEffect(eb)
 end
--- 判断特殊召唤的怪兽数量是否为5只且等级各不相同
+-- 过滤函数：判断怪兽c是否由玩家tp召唤或特殊召唤（IsSummonPlayer），用于筛选同时特殊召唤成功的怪兽中属于哪位玩家。
 function c19162134.spfilter(c,tp)
 	return c:IsSummonPlayer(tp)
 end
--- 判断特殊召唤的怪兽是否包含自己控制的怪兽且等级各不相同
+-- 特殊召唤成功时点条件：本组同时特殊召唤成功的怪兽数量恰好为5，其中至少1只由tp玩家召唤，且5只怪兽的等级种类数为5（即等级各不相同）。满足时tp玩家完成“等级不同的怪兽5只同时特殊召唤”的条件。
 function c19162134.spcon1(e,tp,eg,ep,ev,re,r,rp)
 	return eg:GetCount()==5 and eg:IsExists(c19162134.spfilter,1,nil,tp) and eg:GetClassCount(Card.GetLevel)==5
 end
--- 判断特殊召唤的怪兽是否包含对方控制的怪兽且等级各不相同
+-- 特殊召唤成功时点条件：本组同时特殊召唤成功的怪兽数量恰好为5，其中至少1只由对方（1-tp）玩家召唤，且5只怪兽的等级种类数为5。满足时对方玩家完成“等级不同的怪兽5只同时特殊召唤”的条件。
 function c19162134.spcon2(e,tp,eg,ep,ev,re,r,rp)
 	return eg:GetCount()==5 and eg:IsExists(c19162134.spfilter,1,nil,1-tp) and eg:GetClassCount(Card.GetLevel)==5
 end
--- 自己从卡组抽2张卡
+-- tp方条件达成后的处理：展示本卡动画，随后让tp玩家从卡组抽2张卡。
 function c19162134.drop1(e,tp,eg,ep,ev,re,r,rp)
-	-- 显示娱乐决斗发动的动画提示
+	-- 向双方玩家展示卡号为19162134的卡片动画，提示“娱乐决斗”的抽卡效果正在处理。
 	Duel.Hint(HINT_CARD,0,19162134)
-	-- 让玩家tp从卡组抽2张卡
+	-- 让tp玩家以效果原因（REASON_EFFECT）抽2张卡。
 	Duel.Draw(tp,2,REASON_EFFECT)
 end
--- 对方从卡组抽2张卡
+-- 对方条件达成后的处理：展示本卡动画，随后让对方玩家从卡组抽2张卡。
 function c19162134.drop2(e,tp,eg,ep,ev,re,r,rp)
-	-- 显示娱乐决斗发动的动画提示
+	-- 向双方玩家展示卡号为19162134的卡片动画，提示“娱乐决斗”的抽卡效果正在处理。
 	Duel.Hint(HINT_CARD,0,19162134)
-	-- 让对方玩家从卡组抽2张卡
+	-- 让对方玩家（1-tp）以效果原因抽2张卡。
 	Duel.Draw(1-tp,2,REASON_EFFECT)
 end
--- ●自身1只怪兽进行5次战斗。
+-- 伤害计算后，统计tp方怪兽的战斗次数：若攻击者为对方则改取攻击对象，得到本次战斗中tp方控制的那只怪兽，为其累加1次战斗标记；当该怪兽累计战斗次数达到5时，tp方达成“自身1只怪兽进行5次战斗”的条件。
 function c19162134.btcon1(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前攻击怪兽
+	-- 获取当前战斗的攻击怪兽。
 	local a=Duel.GetAttacker()
-	-- 获取当前攻击目标怪兽
+	-- 获取当前战斗的攻击对象（被攻击怪兽）。
 	local d=Duel.GetAttackTarget()
 	if a:IsControler(1-tp) then a,d=d,a end
 	if a then
@@ -110,11 +110,11 @@ function c19162134.btcon1(e,tp,eg,ep,ev,re,r,rp)
 		return a:GetFlagEffect(19162134)==5
 	else return false end
 end
--- ●自身1只怪兽进行5次战斗。
+-- 伤害计算后，统计对方（1-tp）怪兽的战斗次数：若攻击者为tp方则改取攻击对象，得到本次战斗中对方控制的那只怪兽，为其累加1次战斗标记；当该怪兽累计战斗次数达到5时，对方达成“自身1只怪兽进行5次战斗”的条件。
 function c19162134.btcon2(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前攻击怪兽
+	-- 获取当前战斗的攻击怪兽。
 	local a=Duel.GetAttacker()
-	-- 获取当前攻击目标怪兽
+	-- 获取当前战斗的攻击对象（被攻击怪兽）。
 	local d=Duel.GetAttackTarget()
 	if a:IsControler(tp) then a,d=d,a end
 	if a then
@@ -122,17 +122,17 @@ function c19162134.btcon2(e,tp,eg,ep,ev,re,r,rp)
 		return a:GetFlagEffect(19162134)==5
 	else return false end
 end
--- ●连锁5以上把卡的效果发动。
+-- 连锁处理时，判断tp方是否达成“连锁5以上把卡的效果发动”：本次连锁由tp方发动、当前连锁数≥5，且本卡在连锁发生前已在场上。满足则tp方完成该条件。
 function c19162134.chcon1(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断发动效果的玩家是否为当前玩家且当前连锁数大于等于5
+	-- 条件为：连锁的发动者为tp（rp==tp），当前连锁数不低于5，并且本卡带有FLAG_ID_CHAINING标记（表示本卡在连锁开始前已在场上）。
 	return rp==tp and Duel.GetCurrentChain()>=5 and e:GetHandler():GetFlagEffect(FLAG_ID_CHAINING)>0
 end
--- ●连锁5以上把卡的效果发动。
+-- 连锁处理时，判断对方是否达成“连锁5以上把卡的效果发动”：本次连锁由对方发动、当前连锁数≥5，且本卡在连锁发生前已在场上。满足则对方完成该条件。
 function c19162134.chcon2(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断发动效果的玩家是否为对方玩家且当前连锁数大于等于5
+	-- 条件为：连锁的发动者为对方（rp==1-tp），当前连锁数不低于5，并且本卡带有FLAG_ID_CHAINING标记。
 	return rp==1-tp and Duel.GetCurrentChain()>=5 and e:GetHandler():GetFlagEffect(FLAG_ID_CHAINING)>0
 end
--- 处理抛硬币结果，记录次数并满足条件时触发抽卡效果
+-- 投掷硬币结果产生后的累计处理：根据抛硬币的玩家，在该场地卡上累计该玩家的投掷次数；当某玩家累计（硬币+骰子）次数达到5且本回合尚未用此条件抽过牌时，让该玩家抽2张，并标记其已抽过牌。
 function c19162134.tossop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if ep==tp then
@@ -153,7 +153,7 @@ function c19162134.tossop(e,tp,eg,ep,ev,re,r,rp)
 		c:RegisterFlagEffect(19162138,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END,0,1)
 	end
 end
--- 处理掷骰子结果，记录次数并满足条件时触发抽卡效果
+-- 掷骰子结果产生后的累计处理：ev低位/高位分别包含双方掷骰子次数，按ep归属累计到对应玩家的总投掷次数（与硬币次数共用同一计数）；达到5次且未抽过牌时让该玩家抽2张，并标记已抽。
 function c19162134.diceop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local ct1=bit.band(ev,0xffff)
@@ -182,13 +182,13 @@ function c19162134.diceop(e,tp,eg,ep,ev,re,r,rp)
 		c:RegisterFlagEffect(19162138,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END,0,1)
 	end
 end
--- ●受到让自身基本分变成500以下的伤害。
+-- 伤害发生时的条件判断：受到伤害的是tp玩家，且伤害后tp的LP在1~500之间（即变成500以下但不为0），满足“受到让自身基本分变成500以下的伤害”的条件。
 function c19162134.damcon1(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断受到伤害的玩家是否为当前玩家且基本分小于等于500
+	-- 条件为：本次伤害的受害者是tp（ep==tp），并且伤害处理后tp的LP小于等于500且大于0。
 	return ep==tp and Duel.GetLP(tp)<=500 and Duel.GetLP(tp)>0
 end
--- ●受到让自身基本分变成500以下的伤害。
+-- 伤害发生时的条件判断：受到伤害的是对方（1-tp），且伤害后对方LP在1~500之间，满足“受到让自身基本分变成500以下的伤害”的条件。
 function c19162134.damcon2(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断受到伤害的玩家是否为对方玩家且基本分小于等于500
+	-- 条件为：本次伤害的受害者是对方（ep==1-tp），并且伤害处理后对方LP小于等于500且大于0。
 	return ep==1-tp and Duel.GetLP(1-tp)<=500 and Duel.GetLP(1-tp)>0
 end
