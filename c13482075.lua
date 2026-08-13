@@ -33,61 +33,61 @@ function c13482075.initial_effect(c)
 	e3:SetCode(EVENT_REMOVE)
 	c:RegisterEffect(e3)
 end
--- 判断连锁是否可以被无效
+-- 发动条件判定：本卡不处于战斗破坏确定状态且该连锁可以被无效；同时避免对带有无效分类的魔法·陷阱卡的发动进行连锁（防止循环）。
 function c13482075.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 若此卡已在战斗破坏状态或连锁不能被无效则效果不发动
+	-- 若本卡因战斗破坏确定而无法发动，或目标连锁不能被无效，则满足条件不成立。
 	if e:GetHandler():IsStatus(STATUS_BATTLE_DESTROYED) or not Duel.IsChainNegatable(ev) then return false end
 	if re:IsHasCategory(CATEGORY_NEGATE)
-		-- 若连锁效果为无效效果且其发动为永续魔法则不发动
+		-- 若目标效果自身带有无效分类且其前一连锁是魔法·陷阱卡的发动，则本卡也不能发动。
 		and Duel.GetChainInfo(ev-1,CHAININFO_TRIGGERING_EFFECT):IsHasType(EFFECT_TYPE_ACTIVATE) then return false end
-	-- 获取连锁的破坏效果信息
+	-- 获取该连锁中关于破坏效果的操作信息，用于判断是否满足“要让场上的卡破坏的魔法·陷阱·怪兽的效果发动时”这一时机条件。
 	local ex,tg,tc=Duel.GetOperationInfo(ev,CATEGORY_DESTROY)
 	return ex and tg~=nil and tc+tg:FilterCount(Card.IsOnField,nil)-tg:GetCount()>0
 end
--- 过滤器函数：检查墓地是否有不死族怪兽
+-- 代价滤卡条件：该卡是不死族怪兽且可以除外作为代价。
 function c13482075.cfilter(c)
 	return c:IsRace(RACE_ZOMBIE) and c:IsAbleToRemoveAsCost()
 end
--- 支付效果代价：从墓地除外1只不死族怪兽
+-- 发动代价处理：从自己墓地选择1只不死族怪兽除外；无法支付则不能发动。
 function c13482075.cost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否满足支付代价条件
+	-- 检查自己墓地是否存在至少1只满足条件的不死族怪兽作为代价。
 	if chk==0 then return Duel.IsExistingMatchingCard(c13482075.cfilter,tp,LOCATION_GRAVE,0,1,nil) end
-	-- 提示玩家选择要除外的卡片
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)
-	-- 选择1只不死族怪兽
+	-- 弹出选择提示，要求玩家选择要除外的卡。
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
+	-- 从自己墓地选择1只不死族怪兽作为除外代价。
 	local g=Duel.SelectMatchingCard(tp,c13482075.cfilter,tp,LOCATION_GRAVE,0,1,1,nil)
-	-- 将选中的不死族怪兽除外作为代价
+	-- 将选择的怪兽表侧除外，作为发动代价。
 	Duel.Remove(g,POS_FACEUP,REASON_COST)
 end
--- 设置效果处理目标
+-- 发动时设定操作信息：确定要无效的连锁及需要破坏的卡；若目标卡可被破坏且仍与效果关联，则一并设定破坏对象。
 function c13482075.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置连锁无效的操作信息
+	-- 设置操作信息：将当前连锁效果（eg）标记为要无效的对象，数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_NEGATE,eg,1,0,0)
 	if re:GetHandler():IsDestructable() and re:GetHandler():IsRelateToEffect(re) then
-		-- 设置连锁破坏的操作信息
+		-- 设置操作信息：若被无效的卡可以被破坏且仍与效果关联，则将其标记为破坏对象。
 		Duel.SetOperationInfo(0,CATEGORY_DESTROY,eg,1,0,0)
 	end
 end
--- 效果处理函数
+-- 效果处理：无效对应连锁的发动，并将其关联卡破坏。
 function c13482075.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 使连锁发动无效并判断是否可以破坏对象
+	-- 当无效成功且该卡仍与效果关联时，才执行后续破坏处理。
 	if Duel.NegateActivation(ev) and re:GetHandler():IsRelateToEffect(re) then
-		-- 破坏连锁对象
+		-- 以效果原因破坏被无效发动的卡。
 		Duel.Destroy(eg,REASON_EFFECT)
 	end
 end
--- 判断此卡是否因仪式召唤而被解放或除外
+-- 触发条件判定：本卡被解放或除外的原因必须是用于仪式召唤（REASON_RITUAL）。
 function c13482075.atkcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsReason(REASON_RITUAL)
 end
--- 效果处理函数：使对方场上所有表侧表示怪兽攻击力守备力下降500
+-- ②效果处理：对方场上的全部表侧表示怪兽的攻击力·守备力各下降500。
 function c13482075.atkop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取对方场上所有表侧表示怪兽
+	-- 选取对方场上全部表侧表示怪兽。
 	local g=Duel.GetMatchingGroup(Card.IsFaceup,tp,0,LOCATION_MZONE,nil)
-	-- 遍历所有表侧表示怪兽
+	-- 遍历该怪兽组，对每只表侧表示怪兽依次赋予攻守下降效果。
 	for tc in aux.Next(g) do
-		-- 给目标怪兽攻击力下降500
+		-- 对方场上的全部怪兽的攻击力·守备力下降500。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)

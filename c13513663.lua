@@ -35,37 +35,37 @@ function c13513663.initial_effect(c)
 	e3:SetOperation(c13513663.spop)
 	c:RegisterEffect(e3)
 end
--- 过滤函数，检查自己墓地是否存在满足条件的龙族怪兽（可作为除外的代价）
+-- 定义②效果代价的过滤函数：筛选自己墓地里满足龙族且可以作为代价除外的怪兽卡。
 function c13513663.cfilter(c)
 	return c:IsRace(RACE_DRAGON) and c:IsAbleToRemoveAsCost()
 end
--- 效果发动时的处理：检索满足条件的龙族怪兽并除外作为代价
+-- ②效果的代价处理：发动前检查墓地是否存在符合条件的龙族怪兽；发动时由玩家从墓地选择1只龙族怪兽除外作为代价。
 function c13513663.cost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查自己墓地是否存在至少1张满足条件的龙族怪兽
+	-- 在发动时点（chk==0）检查自己墓地是否存在至少1只满足过滤条件的龙族怪兽，以此判断是否可以支付代价发动。
 	if chk==0 then return Duel.IsExistingMatchingCard(c13513663.cfilter,tp,LOCATION_GRAVE,0,1,nil) end
-	-- 向玩家提示“请选择要除外的卡”
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)
-	-- 选择满足条件的1张龙族怪兽从墓地除外
+	-- 向发动玩家显示“请选择要除外的卡”的选择提示。
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
+	-- 让发动玩家从自己墓地选择1只满足过滤条件的龙族怪兽，作为将要除外的代价卡。
 	local rg=Duel.SelectMatchingCard(tp,c13513663.cfilter,tp,LOCATION_GRAVE,0,1,1,nil)
-	-- 将选中的卡以正面表示形式除外作为发动代价
+	-- 将选中的龙族怪兽以表侧表示除外，完成效果的发动代价。
 	Duel.Remove(rg,POS_FACEUP,REASON_COST)
 end
--- 效果发动时选择对象：选择自己场上1只表侧表示怪兽作为对象
+-- ②效果的取对象处理：进行发动时选择自己场上1只表侧表示怪兽为对象；若为连锁中的对象合法性确认，则检查该卡是否为己方场上表侧表示怪兽。
 function c13513663.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(tp) and chkc:IsLocation(LOCATION_MZONE) and chkc:IsFaceup() end
-	-- 检查自己场上是否存在至少1只表侧表示怪兽
+	-- 在发动时点检查自己场上是否存在至少1只表侧表示怪兽可以作为效果对象。
 	if chk==0 then return Duel.IsExistingTarget(Card.IsFaceup,tp,LOCATION_MZONE,0,1,nil) end
-	-- 向玩家提示“请选择效果的对象”
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)
-	-- 选择自己场上1只表侧表示怪兽作为对象
+	-- 向发动玩家显示“请选择效果的对象”的选择提示。
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)  --"请选择效果的对象"
+	-- 让发动玩家选择自己场上1只表侧表示怪兽，并将其登记为这张卡效果的对象。
 	Duel.SelectTarget(tp,Card.IsFaceup,tp,LOCATION_MZONE,0,1,1,nil)
 end
--- 效果处理：使目标怪兽的攻击力上升700点直到回合结束
+-- ②效果处理：获取对象怪兽，若对象仍存在于场上、与效果关联且为表侧表示，则为其附加攻击力上升700的持续效果。
 function c13513663.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁效果的目标怪兽
+	-- 获取这张卡发动时选择的对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if tc and tc:IsRelateToEffect(e) and tc:IsFaceup() then
-		-- 使目标怪兽的攻击力上升700点直到回合结束
+		-- 那只怪兽的攻击力直到回合结束时上升700。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)
@@ -74,34 +74,34 @@ function c13513663.operation(e,tp,eg,ep,ev,re,r,rp)
 		tc:RegisterEffect(e1)
 	end
 end
--- 判断此卡是否从场上以正面表示形式送去墓地
+-- ③效果的发动条件：这张卡从场上表侧表示状态被送去墓地。
 function c13513663.spcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsPreviousLocation(LOCATION_ONFIELD) and e:GetHandler():IsPreviousPosition(POS_FACEUP)
 end
--- 过滤函数，检查目标是否为龙族且可特殊召唤
+-- 定义③效果对象的过滤条件：选择除外区中表侧表示、种族为龙族且能够被特殊召唤的自己的怪兽。
 function c13513663.spfilter(c,e,tp)
 	return c:IsFaceup() and c:IsRace(RACE_DRAGON) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 效果发动时的处理：检索满足条件的除外龙族怪兽并选择作为对象
+-- ③效果的取对象处理：需要自己主要怪兽区有空位，并从除外区的自己的龙族怪兽中选择1只作为特殊召唤对象；同时处理对象合法性确认。
 function c13513663.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(tp) and chkc:IsLocation(LOCATION_REMOVED) and c13513663.spfilter(chkc,e,tp) end
-	-- 检查玩家场上是否有可用空间
+	-- 在发动时点检查自己主要怪兽区是否存在可用空格，确保有特殊召唤的位置。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查自己除外区是否存在至少1只满足条件的龙族怪兽
+		-- 同时检查除外区是否存在至少1只满足过滤条件且可以作为对象的自己的龙族怪兽。
 		and Duel.IsExistingTarget(c13513663.spfilter,tp,LOCATION_REMOVED,0,1,nil,e,tp) end
-	-- 向玩家提示“请选择要特殊召唤的卡”
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
-	-- 选择满足条件的1只除外龙族怪兽作为特殊召唤对象
+	-- 向发动玩家显示“请选择要特殊召唤的卡”的选择提示。
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
+	-- 让发动玩家从除外区选择1只满足过滤条件的自己的龙族怪兽，并将其登记为效果对象。
 	local g=Duel.SelectTarget(tp,c13513663.spfilter,tp,LOCATION_REMOVED,0,1,1,nil,e,tp)
-	-- 设置操作信息：确定特殊召唤的卡和数量
+	-- 向系统登记本次效果含有特殊召唤操作，并指定要特殊召唤的卡组为已选择的对象。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,1,0,0)
 end
--- 效果处理：将选中的除外龙族怪兽特殊召唤到场上
+-- ③效果处理时：获取对象怪兽，若对象仍与效果关联，则将其以表侧表示特殊召唤到自己的主要怪兽区。
 function c13513663.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁效果的目标怪兽
+	-- 获取③效果发动时选择的对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if tc and tc:IsRelateToEffect(e) then
-		-- 将目标怪兽以正面表示形式特殊召唤到场上
+		-- 将对象怪兽以表侧表示特殊召唤到发动玩家的场上（不检查召唤条件与苏生限制）。
 		Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
