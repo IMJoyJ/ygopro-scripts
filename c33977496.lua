@@ -13,24 +13,24 @@ function c33977496.initial_effect(c)
 	e1:SetOperation(c33977496.operation)
 	c:RegisterEffect(e1)
 end
--- 当此卡为对方怪兽攻击目标且此卡为守备表示，且对方攻击怪兽攻击力低于此卡守备力时发动
+-- 判断效果能否发动：攻击对象为这张卡、这张卡为守备表示，且攻击怪兽的攻击力小于这张卡的守备力。
 function c33977496.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 当此卡为对方怪兽攻击目标且此卡为守备表示
+	-- 检查攻击对象是否为这张卡且这张卡处于守备表示。
 	return Duel.GetAttackTarget()==e:GetHandler() and e:GetHandler():IsDefensePos()
-		-- 且对方攻击怪兽攻击力低于此卡守备力
+		-- 检查攻击怪兽的攻击力小于这张卡的守备力。
 		and Duel.GetAttacker():GetAttack()<e:GetHandler():GetDefense()
 end
--- 设置连锁处理信息，确定将要破坏的攻击怪兽
+-- 效果发动时的目标处理：直接返回true以允许发动，并设置破坏攻击怪兽的操作信息。
 function c33977496.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置将要破坏的攻击怪兽为当前攻击怪兽
+	-- 设置本次连锁将破坏攻击怪兽1只，操作分类为破坏效果（用于给其他卡响应时点提供信息）。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,Duel.GetAttacker(),1,0,0)
 end
--- 执行破坏效果，破坏攻击怪兽
+-- 效果处理：获取攻击怪兽，若该怪兽仍与本次战斗关联，则以效果将其破坏。
 function c33977496.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前攻击怪兽
+	-- 获取当前攻击的怪兽并存入变量a。
 	local a=Duel.GetAttacker()
 	if not a:IsRelateToBattle() then return end
-	-- 将攻击怪兽因效果破坏
+	-- 以效果原因将攻击怪兽破坏。
 	Duel.Destroy(a,REASON_EFFECT)
 end
