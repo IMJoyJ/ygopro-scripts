@@ -10,13 +10,13 @@ function c31461282.initial_effect(c)
 	e0:SetType(EFFECT_TYPE_ACTIVATE)
 	e0:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e0)
-	-- ②：自己场上的魔法师族怪兽的攻击力·守备力上升自己场上的「占卜魔女」怪兽种类×500。
+	-- ②：自己场上的魔法师族怪兽的攻击力上升自己场上的「占卜魔女」怪兽种类×500。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_UPDATE_ATTACK)
 	e1:SetRange(LOCATION_SZONE)
 	e1:SetTargetRange(LOCATION_MZONE,0)
-	-- 设置效果目标为场上所有魔法师族怪兽。
+	-- 设置该永续效果的影响对象为魔法师族怪兽（我方场上的魔法师族怪兽）。
 	e1:SetTarget(aux.TargetBoolFunction(Card.IsRace,RACE_SPELLCASTER))
 	e1:SetValue(c31461282.atkval)
 	c:RegisterEffect(e1)
@@ -37,39 +37,39 @@ function c31461282.initial_effect(c)
 	e3:SetOperation(c31461282.drop)
 	c:RegisterEffect(e3)
 end
--- 判断目标怪兽是否为表侧表示且为「占卜魔女」系列。
+-- 定义筛选函数：卡牌须为表侧表示且属于「占卜魔女」系列（0x12e）。
 function c31461282.atkfilter(c)
 	return c:IsFaceup() and c:IsSetCard(0x12e)
 end
--- 计算场上「占卜魔女」怪兽数量并乘以500作为攻击力提升值。
+-- 定义攻击力提升数值的计算函数：将我方场上满足过滤条件的「占卜魔女」怪兽按不同卡名计数，种数×500。
 function c31461282.atkval(e,c)
-	-- 获取场上符合条件的「占卜魔女」怪兽组。
+	-- 获取我方场上所有表侧表示的「占卜魔女」怪兽（用于统计种类数）。
 	local g=Duel.GetMatchingGroup(c31461282.atkfilter,e:GetHandlerPlayer(),LOCATION_MZONE,0,nil)
 	return g:GetClassCount(Card.GetCode)*500
 end
--- 判断攻击怪兽或防守怪兽是否为「占卜魔女」系列。
+-- 定义③效果的发动条件：攻击宣言时，攻击怪兽是我方控制的「占卜魔女」怪兽，或被攻击怪兽是我方控制的表侧表示「占卜魔女」怪兽。
 function c31461282.drcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取此次战斗的攻击怪兽。
+	-- 获取攻击宣言的攻击怪兽。
 	local a=Duel.GetAttacker()
-	-- 获取此次战斗的防守怪兽。
+	-- 获取攻击宣言的被攻击怪兽（若为直接攻击则为nil）。
 	local d=Duel.GetAttackTarget()
 	return (a:IsControler(tp) and a:IsSetCard(0x12e)) or (d and d:IsControler(tp) and d:IsFaceup() and d:IsSetCard(0x12e))
 end
--- 设置抽卡效果的目标玩家和抽卡数量。
+-- 定义③效果的发动时目标处理：检查可抽1张卡，并将抽卡玩家与张数存入连锁信息。
 function c31461282.drtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查玩家是否可以抽卡。
+	-- 在发动合法性判定时，若为确认能否发动，则返回玩家tp是否可以抽1张卡。
 	if chk==0 then return Duel.IsPlayerCanDraw(tp,1) end
-	-- 设置连锁处理的目标玩家为当前玩家。
+	-- 将当前连锁的对象玩家设为tp，表示抽卡者。
 	Duel.SetTargetPlayer(tp)
-	-- 设置连锁处理的目标参数为抽卡数量1。
+	-- 将当前连锁的对象参数设为1，表示抽卡张数。
 	Duel.SetTargetParam(1)
-	-- 设置连锁操作信息为抽卡效果。
+	-- 设置操作信息：该效果属于抽卡分类，不取对象，由tp抽1张。
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,1)
 end
--- 执行抽卡效果。
+-- 定义③效果处理时的操作：取出连锁中记录的对象玩家与张数并实际抽卡。
 function c31461282.drop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁处理的目标玩家和抽卡数量。
+	-- 从当前连锁信息中取出对象玩家（抽卡者）和对象参数（抽卡张数）。
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 让目标玩家从卡组抽指定数量的卡。
+	-- 让玩家p以效果原因（REASON_EFFECT）抽d张卡，完成抽卡。
 	Duel.Draw(p,d,REASON_EFFECT)
 end
