@@ -4,7 +4,7 @@
 -- ①：从手卡把这张卡以外的1只「机甲」怪兽丢弃才能发动。这张卡从手卡特殊召唤。
 -- ②：对方回合，以自己场上1只机械族怪兽为对象才能发动。和那只怪兽卡名不同并持有那只怪兽的等级以下的等级的1只「机甲」怪兽从卡组特殊召唤，作为对象的怪兽破坏。
 function c23469398.initial_effect(c)
-	-- ①：从手卡把这张卡以外的1只「机甲」怪兽丢弃才能发动。这张卡从手卡特殊召唤。
+	-- 这个卡名的①②的效果1回合各能使用1次。①：从手卡把这张卡以外的1只「机甲」怪兽丢弃才能发动。这张卡从手卡特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(23469398,0))
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -30,77 +30,77 @@ function c23469398.initial_effect(c)
 	e2:SetOperation(c23469398.spop2)
 	c:RegisterEffect(e2)
 end
--- 过滤函数，用于判断手卡中是否存在满足条件的「机甲」怪兽（必须是怪兽卡、可丢弃）
+-- 筛选条件：是「机甲」系列且为怪兽卡，并且可以作为代价丢弃。
 function c23469398.cfilter(c)
 	return c:IsSetCard(0x36) and c:IsType(TYPE_MONSTER) and c:IsDiscardable()
 end
--- 效果发动时的费用支付处理，丢弃手卡中满足条件的1只「机甲」怪兽
+-- 代价处理：检查手牌存在可丢弃的「机甲」怪兽后，选择并丢弃1张（除自身外）作为发动代价。
 function c23469398.spcost1(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查手卡中是否存在满足条件的「机甲」怪兽（用于费用支付的判定）
+	-- 发动合法性检查：确认手牌中存在至少1张除自身外可作为代价丢弃的「机甲」怪兽。
 	if chk==0 then return Duel.IsExistingMatchingCard(c23469398.cfilter,tp,LOCATION_HAND,0,1,e:GetHandler()) end
-	-- 执行丢弃手卡中满足条件的1只「机甲」怪兽的操作
+	-- 实际执行丢弃：从手卡丢弃1张符合条件的「机甲」怪兽，丢弃原因同时标记为代价与丢弃。
 	Duel.DiscardHand(tp,c23469398.cfilter,1,1,REASON_COST+REASON_DISCARD,e:GetHandler())
 end
--- 效果发动时的处理，判断是否满足特殊召唤的条件
+-- ①效果的目标阶段：检查主要怪兽区空位及自身可否特殊召唤，并设置特殊召唤的操作信息。
 function c23469398.sptg1(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查场上是否有足够的位置进行特殊召唤
+	-- 检查自己主要怪兽区是否有可用空格。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置连锁操作信息，表示将要特殊召唤此卡
+	-- 设置操作信息：本次效果将自身特殊召唤，数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 效果发动时的处理，将此卡特殊召唤到场上
+-- ①效果处理：若自身仍与效果关联，则以表侧表示特殊召唤自身。
 function c23469398.spop1(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if not c:IsRelateToEffect(e) then return end
-	-- 执行将此卡特殊召唤到场上的操作
+	-- 执行特殊召唤：将自身以表侧表示特殊召唤到自己的主要怪兽区。
 	Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 end
--- 效果发动的条件判断，判断是否为对方回合
+-- ②效果的发动条件：当前回合必须是对方回合。
 function c23469398.spcon2(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断当前回合玩家是否为对方玩家
+	-- 判断当前回合玩家是否为对方（1-tp 即对手）。
 	return Duel.GetTurnPlayer()==1-tp
 end
--- 过滤函数，用于判断场上是否存在满足条件的机械族怪兽（必须正面表示、是机械族、且卡组中存在符合条件的「机甲」怪兽）
+-- 选择对象的过滤条件：表侧表示、机械族，并且卡组中存在可特殊召唤且满足条件的「机甲」怪兽。
 function c23469398.desfilter(c,e,tp)
-	-- 判断目标怪兽是否正面表示、是否为机械族、且卡组中存在符合条件的「机甲」怪兽
+	-- 对象需表侧表示且为机械族，同时卡组中存在与对象卡名不同、等级不超过对象的「机甲」怪兽可被特殊召唤。
 	return c:IsFaceup() and c:IsRace(RACE_MACHINE) and Duel.IsExistingMatchingCard(c23469398.spfilter,tp,LOCATION_DECK,0,1,nil,e,tp,c:GetCode(),c:GetLevel())
 end
--- 过滤函数，用于判断卡组中是否存在满足条件的「机甲」怪兽（必须是「机甲」卡、卡名不同、等级不超过目标怪兽等级）
+-- 卡组中可特招的「机甲」怪兽条件：属于「机甲」系列、与对象卡名不同、等级不大于对象、且能被效果特殊召唤。
 function c23469398.spfilter(c,e,tp,code,lv)
 	return c:IsSetCard(0x36) and not c:IsCode(code) and c:IsLevelBelow(lv) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 效果发动时的处理，判断是否满足特殊召唤和破坏的条件
+-- ②效果的目标阶段：选择自己场上1只表侧机械族怪兽为对象，并检查空位和对象合法性，同时设置操作信息。
 function c23469398.sptg2(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and c23469398.desfilter(chkc,e,tp) end
-	-- 检查场上是否有足够的位置进行特殊召唤
+	-- 检查自己主要怪兽区是否有可用空格。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查场上是否存在满足条件的机械族怪兽作为对象
+		-- 检查是否存在满足条件的机械族怪兽可以作为取对象的目标。
 		and Duel.IsExistingTarget(c23469398.desfilter,tp,LOCATION_MZONE,0,1,nil,e,tp) end
-	-- 提示玩家选择要破坏的怪兽
+	-- 向玩家显示“请选择要破坏的卡”的提示消息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 选择场上满足条件的机械族怪兽作为对象
+	-- 玩家选择自己场上1只满足条件的机械族怪兽作为效果对象。
 	local g=Duel.SelectTarget(tp,c23469398.desfilter,tp,LOCATION_MZONE,0,1,1,nil,e,tp)
-	-- 设置连锁操作信息，表示将要从卡组特殊召唤「机甲」怪兽
+	-- 设置操作信息：本次效果包含从自己卡组特殊召唤1只怪兽。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_DECK)
-	-- 设置连锁操作信息，表示将要破坏目标怪兽
+	-- 设置操作信息：本次效果包含破坏对象怪兽（数量1）。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,1,0,0)
 end
--- 效果发动时的处理，选择目标怪兽并特殊召唤符合条件的「机甲」怪兽，随后破坏目标怪兽
+-- ②效果处理：若对象仍相关且表侧，则从卡组选择并特殊召唤1只符合条件的「机甲」怪兽；若成功特招则破坏对象。
 function c23469398.spop2(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取当前连锁处理的目标怪兽
+	-- 获取效果连锁中选择的机械族对象怪兽。
 	local tc=Duel.GetFirstTarget()
-	-- 检查场上是否有足够的位置进行特殊召唤
+	-- 若自己主要怪兽区没有可用空格，则本次效果处理中止。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
 	if tc:IsRelateToEffect(e) and tc:IsFaceup() then
-		-- 提示玩家选择要特殊召唤的「机甲」怪兽
+		-- 向玩家显示“请选择要特殊召唤的卡”的提示消息。
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-		-- 从卡组中选择满足条件的「机甲」怪兽
+		-- 从卡组选择1只满足条件的「机甲」怪兽（与对象卡名不同、等级不超过对象）。
 		local g=Duel.SelectMatchingCard(tp,c23469398.spfilter,tp,LOCATION_DECK,0,1,1,nil,e,tp,tc:GetCode(),tc:GetLevel())
-		-- 判断是否成功特殊召唤了怪兽，并执行后续处理
+		-- 若已选择怪兽且特殊召唤成功，则继续执行破坏；否则不破坏。
 		if g:GetCount()>0 and Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)~=0 then
-			-- 执行破坏目标怪兽的操作
+			-- 以效果原因将对象怪兽破坏。
 			Duel.Destroy(tc,REASON_EFFECT)
 		end
 	end

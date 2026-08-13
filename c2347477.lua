@@ -26,20 +26,20 @@ function c2347477.initial_effect(c)
 	e3:SetOperation(c2347477.thop)
 	c:RegisterEffect(e3)
 end
--- 过滤函数：检查场上是否存在电子界族怪兽
+-- 筛选并检查是否存在我方场上的电子界族怪兽，用于判断手卡的这张卡能否作为「码语者」的连接素材。
 function c2347477.mfilter(c,tp)
 	return c:IsLocation(LOCATION_MZONE) and c:IsRace(RACE_CYBERSE) and c:IsControler(tp)
 end
--- 过滤函数：检查手牌中是否存在微码编码员
+-- 检查当前连接素材中是否已经包含手卡的这张卡，用于防止重复使用同名卡作为素材。
 function c2347477.exmfilter(c)
 	return c:IsLocation(LOCATION_HAND) and c:IsCode(2347477)
 end
--- 连接素材判断函数：判断是否可以将手牌的微码编码员作为连接素材
+-- 判定手卡的这张卡是否可作为「码语者」怪兽的连接素材：连接怪兽需为「码语者」，素材中存在我方场上的电子界族怪兽，且不重复使用手卡的这张卡。
 function c2347477.matval(e,lc,mg,c,tp)
 	if not lc:IsSetCard(0x101) then return false,nil end
 	return true,not mg or mg:IsExists(c2347477.mfilter,1,nil,tp) and not mg:IsExists(c2347477.exmfilter,1,nil)
 end
--- 发动条件判断函数：判断是否满足作为码语者怪兽连接素材被送去墓地的条件
+-- 触发条件判定：这张卡作为「码语者」怪兽的连接素材从手卡或场上送去墓地；若从场上送去墓地则标记Label为1并注册‘从场上送去墓地’的客户端提示。
 function c2347477.thcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	e:SetLabel(0)
@@ -53,27 +53,27 @@ function c2347477.thcon(e,tp,eg,ep,ev,re,r,rp)
 		return false
 	end
 end
--- 检索过滤函数：判断卡组中是否存在电脑网魔法/陷阱卡或电子界族4星怪兽
+-- 筛选检索对象：chk为0时选择「电脑网」魔法·陷阱卡，chk为1时选择电子界族·4星怪兽，且目标必须能够加入手牌。
 function c2347477.thfilter(c,chk)
 	return ((c:IsSetCard(0x118) and c:IsType(TYPE_SPELL+TYPE_TRAP)) or (chk==1 and c:IsRace(RACE_CYBERSE) and c:IsLevel(4))) and c:IsAbleToHand()
 end
--- 效果处理准备函数：设置效果处理时需要检索的卡组中的卡
+-- 效果发动时检查卡组是否存在对应的检索对象，并设置‘从卡组加入手牌’的操作信息。
 function c2347477.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 效果处理准备函数：判断是否满足检索条件
+	-- 在发动时检查卡组是否存在1张满足检索条件的卡片，作为发动合法性判定。
 	if chk==0 then return Duel.IsExistingMatchingCard(c2347477.thfilter,tp,LOCATION_DECK,0,1,nil,e:GetLabel()) end
-	-- 效果处理准备函数：设置效果处理时的卡组检索操作信息
+	-- 设置本次效果将执行从卡组把1张卡加入手牌的操作信息，供相关卡片和时点检测使用。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 效果处理函数：执行从卡组检索并加入手牌的操作
+-- 效果处理：提示选择后从卡组选择1张符合条件的卡加入手牌，并展示给对方玩家确认。
 function c2347477.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示函数：提示玩家选择要加入手牌的卡
+	-- 弹出选择卡片的提示消息，内容为‘请选择要加入手牌的卡’。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择函数：从卡组中选择满足条件的卡
+	-- 以检索选择模式从卡组中选择1张满足条件的卡，具体条件由e:GetLabel()区分是「电脑网」魔陷还是电子界·4星怪兽。
 	local g=Duel.SelectMatchingCard(tp,c2347477.thfilter,tp,LOCATION_DECK,0,1,1,nil,e:GetLabel())
 	if g:GetCount()>0 then
-		-- 操作函数：将选中的卡加入手牌
+		-- 将选择的卡片以效果原因加入玩家tp的手牌。
 		Duel.SendtoHand(g,tp,REASON_EFFECT)
-		-- 操作函数：确认对方手牌中被加入手牌的卡
+		-- 将加入手牌的卡片展示给对方玩家确认。
 		Duel.ConfirmCards(1-tp,g)
 	end
 end

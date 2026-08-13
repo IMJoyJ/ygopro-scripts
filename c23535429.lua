@@ -16,25 +16,25 @@ function c23535429.initial_effect(c)
 	e1:SetOperation(c23535429.operation)
 	c:RegisterEffect(e1)
 end
--- 判断是否满足发动条件，即当前为伤害步骤且未计算战斗伤害，且攻击目标为己方守备表示怪兽。
+-- 定义发动条件：当前必须处于伤害步骤且尚未进行伤害计算，并且被攻击的怪兽是我方场上守备表示的怪兽。
 function c23535429.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前游戏阶段
+	-- 获取当前游戏阶段。
 	local phase=Duel.GetCurrentPhase()
-	-- 若当前阶段不是伤害步骤或伤害已计算，则无法发动
+	-- 若当前不是伤害阶段或已经计算过战斗伤害，则条件不满足，不能发动。
 	if phase~=PHASE_DAMAGE or Duel.IsDamageCalculated() then return false end
-	-- 获取攻击目标怪兽
+	-- 获取当前被攻击的怪兽（攻击目标）。
 	local d=Duel.GetAttackTarget()
 	return d and d:IsControler(tp) and d:IsDefensePos()
 end
--- 设置发动时的费用，将自身送去墓地
+-- 定义代价函数：确认此卡可以从手卡作为代价送去墓地；若可以，则实际将其送去墓地。
 function c23535429.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsAbleToGraveAsCost() end
-	-- 将自身送去墓地作为费用
+	-- 将此卡从手卡作为代价送去墓地。
 	Duel.SendtoGrave(e:GetHandler(),REASON_COST)
 end
--- 设置效果发动后的处理，为攻击目标怪兽增加1500守备力直到结束阶段
+-- 定义效果处理：确认被攻击怪兽仍与本次战斗关联，然后使其守备力直到结束阶段上升1500。
 function c23535429.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取攻击目标怪兽
+	-- 获取当前被攻击的怪兽（攻击目标）。
 	local d=Duel.GetAttackTarget()
 	if not d:IsRelateToBattle() then return end
 	-- 进行那次战斗的自己怪兽的守备力直到结束阶段时上升1500。

@@ -9,7 +9,7 @@ function c23442438.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- ①：自己把「战士」、「同调士」、「星尘」同调怪兽同调召唤的场合，以作为那次同调召唤的素材的自己墓地1只怪兽为对象才能发动。那只怪兽守备表示特殊召唤。
+	-- 这个卡名的①的效果1回合只能使用1次。①：自己把「战士」、「同调士」、「星尘」同调怪兽同调召唤的场合，以作为那次同调召唤的素材的自己墓地1只怪兽为对象才能发动。那只怪兽守备表示特殊召唤。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(23442438,0))
 	e2:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -30,51 +30,51 @@ function c23442438.initial_effect(c)
 	e3:SetOperation(c23442438.ccop)
 	c:RegisterEffect(e3)
 end
--- 筛选满足条件的同调召唤怪兽，即为同调召唤且种族为战士、同调士或星尘的怪兽
+-- 筛选条件：怪兽须为同调召唤成功、卡名属于「战士」「同调士」「星尘」字段之一的同调怪兽。
 function c23442438.cfilter(c)
 	return c:IsSummonType(SUMMON_TYPE_SYNCHRO) and c:IsType(TYPE_SYNCHRO) and c:IsSetCard(0x66,0x1017,0xa3)
 end
--- 筛选满足条件的墓地怪兽，即为墓地且控制者为玩家tp且能成为效果对象且能守备表示特殊召唤的怪兽
+-- 筛选条件：该怪兽在自己墓地且由自己控制，可作为当前效果对象，并能够被效果以表侧守备表示特殊召唤。
 function c23442438.spfilter(c,e,tp)
 	return c:IsLocation(LOCATION_GRAVE) and c:IsControler(tp) and c:IsCanBeEffectTarget(e) and c:IsCanBeSpecialSummoned(e,0,tp,false,false,POS_FACEUP_DEFENSE)
 end
--- 判断是否满足发动条件，即为存在满足条件的同调召唤怪兽且为玩家tp发动
+-- 触发条件：同调召唤成功的怪兽组中存在满足cfilter的怪兽，且这次同调召唤是由己方执行的。
 function c23442438.spcon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c23442438.cfilter,1,nil) and rp==tp
 end
--- 设置效果目标，即为选择满足条件的墓地怪兽作为特殊召唤对象
+-- 目标处理：取出触发效果的同调怪兽所使用的素材组；若为选对象时则检查所选卡是否在素材中且合法；发动判定时检查自己主要怪兽区有空位且素材中存在合法对象。
 function c23442438.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	local mg=eg:Filter(c23442438.cfilter,nil):GetFirst():GetMaterial()
 	if chkc then return mg:IsContains(chkc) and c23442438.spfilter(chkc,e,tp) end
-	-- 判断是否满足发动条件，即为玩家tp场上存在空位且满足条件的墓地怪兽存在
+	-- 检查自己主要怪兽区域是否存在空位，以确定能否进行特殊召唤。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and mg:IsExists(c23442438.spfilter,1,nil,e,tp) end
-	-- 向玩家tp发送提示信息，提示选择要特殊召唤的卡
+	-- 给玩家弹出选择提示，要求选择一张要特殊召唤的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
 	local g=mg:FilterSelect(tp,c23442438.spfilter,1,1,nil,e,tp)
-	-- 设置当前处理的连锁的对象为g
+	-- 将选择的卡设置为当前连锁效果的对象。
 	Duel.SetTargetCard(g)
-	-- 设置当前处理的连锁的操作信息为特殊召唤
+	-- 设置操作信息：本效果将把选择的那1张卡特殊召唤，用于连锁判定和效果记录。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,1,0,0)
 end
--- 处理效果操作，即为将目标怪兽特殊召唤
+-- 效果处理：取得对象卡，若对象仍与效果关联，则将其以表侧守备表示特殊召唤到自己场上。
 function c23442438.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前处理的连锁的对象
+	-- 取得当前连锁效果处理时的对象卡。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 将目标怪兽以守备表示特殊召唤到玩家tp场上
+		-- 将对象怪兽以表侧守备表示特殊召唤到己方场上，不检查召唤条件且不检查苏生限制。
 		Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP_DEFENSE)
 	end
 end
--- 处理连锁限制效果，即为设置连锁限制函数
+-- ②效果的不入连锁持续监视：每当有玩家发动效果时，若该效果是己方发动的同步怪兽效果，且该怪兽原本卡名包含「战士」「同调士」「星尘」字段之一，则设置连锁限制。
 function c23442438.ccop(e,tp,eg,ep,ev,re,r,rp)
 	local tc=re:GetHandler()
 	if ep==tp and re:IsActiveType(TYPE_MONSTER) and tc:IsType(TYPE_SYNCHRO) and tc:IsOriginalSetCard(0x66,0x1017,0xa3) then
-		-- 设置连锁限制，使对方不能对应特定同调怪兽的效果发动魔法·陷阱·怪兽效果
+		-- 设置连锁限制条件：本次连锁中对方不能对应发动魔法·陷阱·怪兽效果。
 		Duel.SetChainLimit(c23442438.chainlm)
 	end
 end
--- 连锁限制函数，返回值为true表示允许连锁，false表示禁止连锁
+-- 连锁限制判定：仅允许发动该效果的一方玩家进行连锁，从而阻止对方连锁。json
 function c23442438.chainlm(e,rp,tp)
 	return tp==rp
 end
