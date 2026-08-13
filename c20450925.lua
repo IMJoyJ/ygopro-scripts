@@ -12,15 +12,15 @@ function c20450925.initial_effect(c)
 	e1:SetOperation(c20450925.operation)
 	c:RegisterEffect(e1)
 end
--- 检查是否可以丢弃此卡作为发动代价
+-- 代价函数：若为检查阶段(chk==0)，则判断手牌的这张卡能否作为代价丢弃；若为执行阶段，则将其丢弃。
 function c20450925.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsDiscardable() end
-	-- 将此卡丢入墓地作为发动代价
+	-- 将这张卡从手卡丢弃送去墓地，作为发动效果的代价（REASON_COST+REASON_DISCARD）。
 	Duel.SendtoGrave(e:GetHandler(),REASON_COST+REASON_DISCARD)
 end
--- 将效果伤害变为0并使玩家不受效果伤害
+-- 效果处理：在场上登记一个针对己方玩家的领域效果，将本回合自己受到的效果伤害改为0，并另设一个标记效果。
 function c20450925.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 使玩家在本回合内受到的效果伤害归零
+	-- 这个回合，自己受到的效果伤害变成0。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_CHANGE_DAMAGE)
@@ -28,15 +28,15 @@ function c20450925.operation(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetTargetRange(1,0)
 	e1:SetValue(c20450925.damval)
 	e1:SetReset(RESET_PHASE+PHASE_END)
-	-- 注册效果伤害变更效果
+	-- 将伤害变更效果e1注册给玩家tp，使其本回合受到效果伤害时调用damval进行计算。
 	Duel.RegisterEffect(e1,tp)
 	local e2=e1:Clone()
 	e2:SetCode(EFFECT_NO_EFFECT_DAMAGE)
 	e2:SetReset(RESET_PHASE+PHASE_END)
-	-- 注册玩家不受效果伤害效果
+	-- 将EFFECT_NO_EFFECT_DAMAGE标记效果注册给玩家tp，表示本回合已适用效果伤害变成0的防护。
 	Duel.RegisterEffect(e2,tp)
 end
--- 判断伤害是否由效果造成，若是则伤害归零
+-- 伤害值变更函数：若伤害来源含REASON_EFFECT（效果伤害），则把伤害改为0；否则保留原伤害值。
 function c20450925.damval(e,re,val,r,rp,rc)
 	if bit.band(r,REASON_EFFECT)~=0 then return 0
 	else return val end
