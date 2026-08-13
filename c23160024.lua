@@ -15,7 +15,7 @@ function c23160024.initial_effect(c)
 	e2:SetCode(EFFECT_UPDATE_ATTACK)
 	e2:SetRange(LOCATION_FZONE)
 	e2:SetTargetRange(LOCATION_MZONE,LOCATION_MZONE)
-	-- 选择满足条件的怪兽（「无形噬体」怪兽）作为目标
+	-- 指定攻击力上升效果的对象：场上所有持有「无形噬体」字段（0xe0）的怪兽。
 	e2:SetTarget(aux.TargetBoolFunction(Card.IsSetCard,0xe0))
 	e2:SetValue(300)
 	c:RegisterEffect(e2)
@@ -32,31 +32,31 @@ function c23160024.initial_effect(c)
 	e4:SetCondition(c23160024.drcon)
 	e4:SetOperation(c23160024.drop)
 	c:RegisterEffect(e4)
-	-- 为卡片添加仪式召唤效果，仪式怪兽的等级必须等于素材等级之和
+	-- 为这张卡添加③的仪式召唤效果：从手卡·场上把等级合计直到8的灵摆怪兽解放，从手卡把「虚龙魔王 无形矢·心灵」仪式召唤；此处先以辅助函数生成效果框架并设定素材须为灵摆怪兽。
 	local e5=aux.AddRitualProcEqualCode(c,98287529,nil,nil,c23160024.mfilter,true)
 	e5:SetType(EFFECT_TYPE_IGNITION)
 	e5:SetCode(0)
 	e5:SetRange(LOCATION_GRAVE)
-	-- 将此卡从墓地除外作为费用
+	-- 设置③效果发动COST：把墓地中的这张卡除外。
 	e5:SetCost(aux.bfgcost)
 	c:RegisterEffect(e5)
 end
--- 判断被解放的怪兽是否为「无形噬体」怪兽且为我方怪兽
+-- 判断解放事件中的某张卡是否为满足条件的「无形噬体」怪兽：其解放前属于「无形噬体」字段（0xe0）、因解放而离场、离场前在怪兽区域、且控制者为使用此效果的玩家tp。
 function c23160024.cfilter(c,tp)
 	return c:IsPreviousSetCard(0xe0) and c:IsReason(REASON_RELEASE) and c:IsPreviousLocation(LOCATION_MZONE) and c:IsPreviousControler(tp)
 end
--- 判断是否有满足条件的怪兽被解放
+-- 抽卡效果的发动条件：本次解放事件中存在至少1张自己场上被解放的「无形噬体」怪兽。
 function c23160024.drcon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c23160024.cfilter,1,nil,tp)
 end
--- 让玩家从卡组抽1张卡
+-- 抽卡效果的处理：展示卡片动画后，让控制者tp从卡组抽1张卡。
 function c23160024.drop(e,tp,eg,ep,ev,re,r,rp)
-	-- 向玩家显示此卡被发动的动画
+	-- 向双方展示效果持有者（无形阵·假面）的卡片动画，提示该效果正在处理。
 	Duel.Hint(HINT_CARD,0,e:GetHandler():GetCode())
-	-- 让玩家从卡组抽1张卡
+	-- 控制者tp从卡组抽1张卡，抽卡原因标记为效果。
 	Duel.Draw(tp,1,REASON_EFFECT)
 end
--- 判断卡片是否为灵摆怪兽
+-- 仪式素材过滤条件：要求解放的怪兽必须是灵摆怪兽。
 function c23160024.mfilter(c)
 	return c:IsType(TYPE_PENDULUM)
 end

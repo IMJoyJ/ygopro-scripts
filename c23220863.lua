@@ -4,7 +4,7 @@
 -- 【怪兽效果】
 -- ①：这张卡只要在怪兽区域存在，不受灵摆怪兽以外的怪兽发动的效果影响。
 function c23220863.initial_effect(c)
-	-- 为该卡添加灵摆怪兽属性，使其可以进行灵摆召唤和灵摆卡的发动
+	-- 为该灵摆怪兽赋予灵摆召唤与灵摆卡发动等灵摆怪兽基本属性（默认同时注册灵摆卡的发动效果）。
 	aux.EnablePendulumAttribute(c)
 	-- ①：这张卡只要在怪兽区域存在，不受灵摆怪兽以外的怪兽发动的效果影响。
 	local e1=Effect.CreateEffect(c)
@@ -15,7 +15,7 @@ function c23220863.initial_effect(c)
 	e1:SetValue(c23220863.efilter)
 	c:RegisterEffect(e1)
 end
--- 定义效果过滤器函数，用于判断是否免疫某个效果：当效果来源是怪兽类型且已发动，并且其拥有者不是灵摆怪兽时，则免疫该效果
+-- 免疫判定过滤函数：当待判定效果te是怪兽效果且为发动的效果，并且该效果持有者不是灵摆怪兽时，返回true，使这张卡不受该效果影响；即只免疫“灵摆怪兽以外的怪兽发动的效果”。
 function c23220863.efilter(e,te)
 	return te:IsActiveType(TYPE_MONSTER) and te:IsActivated() and not te:GetOwner():IsType(TYPE_PENDULUM)
 end

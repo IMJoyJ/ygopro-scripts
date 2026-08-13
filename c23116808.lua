@@ -47,84 +47,84 @@ function c23116808.initial_effect(c)
 	e4:SetOperation(c23116808.atkop)
 	c:RegisterEffect(e4)
 end
--- 定义过滤函数，用于检测场上是否存在炎属性的表侧表示怪兽。
+-- 过滤函数：判断怪兽是否为表侧表示的炎属性怪兽，用于确认场上存在符合条件的炎属性怪兽。
 function c23116808.spfilter(c)
 	return c:IsFaceup() and c:IsAttribute(ATTRIBUTE_FIRE)
 end
--- 判断是否满足特殊召唤条件，即己方场上存在炎属性怪兽且有空场。
+-- 规则特殊召唤条件：当c为nil表示询问是否能从手牌规则特召；否则需满足自己场上存在空位、且场上有表侧炎属性怪兽，才能以①的效果从手牌特殊召唤。
 function c23116808.spcon(e,c)
 	if c==nil then return true end
-	-- 检查己方场上是否有空位可以放置怪兽。
+	-- 检查该怪兽控制者场上是否存在可用的主要怪兽区空格。
 	return Duel.GetLocationCount(c:GetControler(),LOCATION_MZONE)>0
-		-- 检查己方场上是否存在至少1只炎属性的表侧表示怪兽。
+		-- 检查该怪兽控制者场上是否存在至少1只表侧表示的炎属性怪兽（用于满足①的手牌特殊召唤条件）。
 		and Duel.IsExistingMatchingCard(c23116808.spfilter,c:GetControler(),LOCATION_MZONE,0,1,nil)
 end
--- 判断该卡是否通过特殊召唤方式（①）成功召唤。
+-- ②效果的诱发条件：判定这张卡是否是以①的方法（SUMMON_TYPE_SPECIAL+SUMMON_VALUE_SELF）特殊召唤成功的场合。
 function c23116808.descon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():GetSummonType()==SUMMON_TYPE_SPECIAL+SUMMON_VALUE_SELF
 end
--- 定义过滤函数，用于检测场上是否存在炎属性的表侧表示怪兽。
+-- 过滤函数：选择对象时的筛选条件，要求是自己场上的表侧炎属性怪兽。
 function c23116808.desfilter(c)
 	return c:IsFaceup() and c:IsAttribute(ATTRIBUTE_FIRE)
 end
--- 设置破坏效果的目标选择逻辑，选择己方场上的炎属性怪兽。
+-- ②效果的发动目标处理：取对象效果，选择自己场上1只表侧炎属性怪兽作为破坏对象，并设置破坏的操作信息。
 function c23116808.destg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and c23116808.desfilter(chkc) end
 	if chk==0 then return true end
-	-- 提示玩家选择要破坏的怪兽。
+	-- 向玩家显示“请选择要破坏的卡”的提示信息，用于选择对象。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 选择目标怪兽并将其加入操作信息。
+	-- 让当前玩家从自己场上选择1只表侧炎属性怪兽作为效果对象，并登记为当前连锁的对象。
 	local g=Duel.SelectTarget(tp,c23116808.desfilter,tp,LOCATION_MZONE,0,1,1,nil)
-	-- 设置操作信息，表明将要破坏目标怪兽。
+	-- 设置本次连锁将产生“破坏”操作信息，目标为已选对象，数量为对象数，供其他效果连锁时判断。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,g:GetCount(),0,0)
 end
--- 执行破坏操作，将目标怪兽破坏。
+-- ②效果处理：取得对象怪兽，若其仍与该效果关联，则将其破坏（效果破坏）。
 function c23116808.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁中被选择的目标怪兽。
+	-- 取回发动时选择的对象卡（目标怪兽）。
 	local tc=Duel.GetFirstTarget()
 	if tc and tc:IsRelateToEffect(e) then
-		-- 将目标怪兽以效果原因破坏。
+		-- 以‘效果’为破坏原因将该对象怪兽破坏。
 		Duel.Destroy(tc,REASON_EFFECT)
 	end
 end
--- 判断是否为己方准备阶段。
+-- ④效果的发动条件：仅在己方准备阶段且当前回合玩家为自己时满足。
 function c23116808.tkcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断当前回合玩家是否为效果发动者。
+	-- 判断当前回合玩家是否为自己，即处于自己的准备阶段。
 	return Duel.GetTurnPlayer()==tp
 end
--- 设置衍生物特殊召唤的效果信息。
+-- ④效果的发动目标设定：无取对象，效果处理时只需设置特殊召唤衍生物及特殊召唤的操作信息。
 function c23116808.tktg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置操作信息，表明将要特殊召唤衍生物。
+	-- 设置本次连锁将产生衍生物的操作信息。
 	Duel.SetOperationInfo(0,CATEGORY_TOKEN,nil,1,0,0)
-	-- 设置操作信息，表明将要特殊召唤衍生物。
+	-- 设置本次连锁将进行特殊召唤的操作信息。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,0,0)
 end
--- 执行衍生物的特殊召唤。
+-- ④效果处理：若自己场上空位足够且可特殊召唤火之玉衍生物，则生成该衍生物并守备表示特殊召唤到自己场上。
 function c23116808.tkop(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查己方场上是否有空位可以放置怪兽。
+	-- 检查自己场上是否有空余的主要怪兽区，若没有则无法特殊召唤衍生物，效果处理终止。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<1 then return end
-	-- 检查是否可以特殊召唤衍生物。
+	-- 检查自己是否能够将“火之玉衍生物”（炎族·炎·1星·攻/守100）以守备表示特殊召唤到场上。
 	if not Duel.IsPlayerCanSpecialSummonMonster(tp,23116809,0,TYPES_TOKEN_MONSTER,100,100,1,RACE_PYRO,ATTRIBUTE_FIRE,POS_FACEUP_DEFENSE) then return end
-	-- 创建火之玉衍生物。
+	-- 生成1只「火之玉衍生物」Token，持有者为自己。
 	local token=Duel.CreateToken(tp,23116809)
-	-- 将火之玉衍生物以守备表示特殊召唤到己方场上。
+	-- 将生成的衍生物以守备表示特殊召唤到自己场上（不视为效果特殊召唤，sumtype为0）。
 	Duel.SpecialSummon(token,0,tp,tp,false,false,POS_FACEUP_DEFENSE)
 end
--- 设置攻击上升效果的费用支付逻辑。
+-- ③效果的发动代价：必须将这张卡以外的自己场上1只炎属性怪兽解放作为cost，才能发动。
 function c23116808.atkcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否可以解放1只炎属性怪兽作为费用。
+	-- 在发动前确认自己场上是否存在除这张卡以外可解放的炎属性怪兽。
 	if chk==0 then return Duel.CheckReleaseGroup(tp,Card.IsAttribute,1,e:GetHandler(),ATTRIBUTE_FIRE) end
-	-- 选择并解放1只炎属性怪兽作为费用。
+	-- 让玩家从自己场上选择除这张卡以外的1只炎属性怪兽，作为解放的代价。
 	local g=Duel.SelectReleaseGroup(tp,Card.IsAttribute,1,1,e:GetHandler(),ATTRIBUTE_FIRE)
-	-- 将选中的怪兽解放。
+	-- 将所选怪兽以代价原因（REASON_COST）解放，完成发动cost。
 	Duel.Release(g,REASON_COST)
 end
--- 设置攻击力上升效果。
+-- ③效果处理：为这张卡附加一个直到回合结束时攻击力上升500的增益效果（仅表侧表示且与效果关联时适用）。
 function c23116808.atkop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsFaceup() and c:IsRelateToEffect(e) then
-		-- 设置攻击力上升效果的数值和持续时间。
+		-- 这张卡的攻击力直到回合结束时上升500。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)

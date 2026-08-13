@@ -12,11 +12,11 @@ function c23168060.initial_effect(c)
 	e1:SetOperation(c23168060.operation)
 	c:RegisterEffect(e1)
 end
--- 检查自身是否不是3星等级
+-- 发动条件：这张卡的等级不是3星时才能发动。
 function c23168060.condition(e,tp,eg,ep,ev,re,r,rp)
 	return not e:GetHandler():IsLevel(3)
 end
--- 将自身等级变为3星直到结束阶段
+-- 效果处理：这张卡仍与效果相关且表侧表示时，赋予其等级变为3星的效果，持续到这个回合的结束阶段。
 function c23168060.operation(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) and c:IsFaceup() then
