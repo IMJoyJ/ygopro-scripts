@@ -29,7 +29,7 @@ end
 -- 执行发动代价：解放自身和场上1只「自然」怪兽，或者适用「自然茶花女」的效果从卡组送墓2张卡
 function c7478431.discost(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
-	-- 检查玩家是否受到「自然茶花女」代替解放效果的影响
+	-- 检测【自然山茶】(29942771)的效果是否生效中。若在生效中，自己为让「自然」怪兽的效果发动而把怪兽解放的场合，可以作为代替从自己卡组上面把2张卡送去墓地。
 	local fe=Duel.IsPlayerAffectedByEffect(tp,29942771)
 	-- 检查是否可以适用「自然茶花女」的效果，将卡组最上方2张卡送去墓地作为代替代价
 	local b1=fe and Duel.IsPlayerCanDiscardDeckAsCost(tp,2)
