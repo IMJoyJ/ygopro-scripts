@@ -29,51 +29,51 @@ function c3825890.initial_effect(c)
 	e3:SetTarget(c3825890.desreptg)
 	c:RegisterEffect(e3)
 end
--- 过滤函数：返回名字带有「守墓」且在场上或由玩家控制的怪兽
+-- 过滤可作为解放召唤祭品的怪兽：必须为名字带有「守墓」的怪兽，且为我方控制或表侧表示。
 function c3825890.otfilter(c,tp)
 	return c:IsSetCard(0x2e) and (c:IsControler(tp) or c:IsFaceup())
 end
--- 判断召唤条件：满足等级7以上、最少祭品为1、且场上存在满足条件的祭品
+-- 召唤规则效果的发动条件：这张卡等级不低于7，需要解放1只怪兽，且场上存在满足条件的「守墓」怪兽可作为祭品。
 function c3825890.otcon(e,c,minc)
 	if c==nil then return true end
 	local tp=c:GetControler()
-	-- 获取满足条件的场上怪兽数组
+	-- 获取双方场上满足解放条件（名字带有「守墓」且为我方控制或表侧表示）的怪兽集合，作为可选祭品。
 	local mg=Duel.GetMatchingGroup(c3825890.otfilter,tp,LOCATION_MZONE,LOCATION_MZONE,nil,tp)
-	-- 返回是否满足召唤条件
+	-- 判定是否满足上级召唤手续：这张卡等级在7以上，所需祭品数不超过1，并且存在1只可解放的「守墓」怪兽。
 	return c:IsLevelAbove(7) and minc<=1 and Duel.CheckTribute(c,1,1,mg)
 end
--- 处理召唤操作：选择并解放1只满足条件的怪兽
+-- 召唤规则效果处理：从可选祭品中选择1只「守墓」怪兽，将其设定为素材并解放，以完成上级召唤。
 function c3825890.otop(e,tp,eg,ep,ev,re,r,rp,c)
-	-- 获取满足条件的场上怪兽数组
+	-- 获取双方场上满足解放条件（名字带有「守墓」且为我方控制或表侧表示）的怪兽集合，作为可选祭品。
 	local mg=Duel.GetMatchingGroup(c3825890.otfilter,tp,LOCATION_MZONE,LOCATION_MZONE,nil,tp)
-	-- 选择1只满足条件的怪兽作为祭品
+	-- 让玩家从符合条件的「守墓」怪兽中选择1只作为这次上级召唤的祭品。
 	local sg=Duel.SelectTribute(tp,c,1,1,mg)
 	c:SetMaterial(sg)
-	-- 将选中的怪兽解放
+	-- 将选择的祭品怪兽解放，解放原因记为上级召唤的素材。
 	Duel.Release(sg,REASON_SUMMON+REASON_MATERIAL)
 end
--- 过滤函数：返回名字带有「守墓」的怪兽
+-- 过滤条件：卡名含有「守墓」且为怪兽卡，用于检查墓地或手牌中可被利用的「守墓」怪兽。
 function c3825890.filter(c)
 	return c:IsSetCard(0x2e) and c:IsType(TYPE_MONSTER)
 end
--- 计算攻击力增加量：根据墓地中的「守墓」怪兽数量乘以200
+-- 攻击力上升值的计算函数：根据自己墓地存在的「守墓」怪兽数量决定攻击力上升数值。
 function c3825890.atkval(e,c)
-	-- 返回墓地中「守墓」怪兽数量乘以200作为攻击力增加量
+	-- 返回自己墓地中名字带有「守墓」的怪兽数量乘以200，作为这张卡的攻击力上升值。
 	return Duel.GetMatchingGroupCount(c3825890.filter,c:GetControler(),LOCATION_GRAVE,0,nil)*200
 end
--- 判断是否可以发动代替破坏效果：检查手牌中是否存在「守墓」怪兽
+-- 代替破坏效果的发动条件判定：这张卡将要被破坏，且不是由代替破坏的效果触发，同时手牌中存在「守墓」怪兽可以丢弃。
 function c3825890.desreptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	if chk==0 then return not c:IsReason(REASON_REPLACE)
-		-- 检查手牌中是否存在至少1张「守墓」怪兽
+		-- 追加条件：手牌中存在至少1只名字带有「守墓」的怪兽可供丢弃。
 		and Duel.IsExistingMatchingCard(c3825890.filter,tp,LOCATION_HAND,0,1,nil) end
-	-- 询问玩家是否发动代替破坏效果
+	-- 询问玩家是否发动代替破坏效果，选择丢弃手牌中的「守墓」怪兽来取代这张卡的破坏。
 	if Duel.SelectEffectYesNo(tp,c,96) then
-		-- 提示玩家选择要丢弃的手牌
+		-- 给出选择提示，要求玩家从手牌中选择要丢弃的卡牌。
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DISCARD)  --"请选择要丢弃的手牌"
-		-- 选择1张手牌中的「守墓」怪兽
+		-- 玩家从手牌中选择1只名字带有「守墓」的怪兽，作为代替破坏的丢弃代价。
 		local g=Duel.SelectMatchingCard(tp,c3825890.filter,tp,LOCATION_HAND,0,1,1,nil)
-		-- 将选中的怪兽丢入墓地
+		-- 将所选的「守墓」怪兽送入墓地，以此作为这张卡被破坏的代替处理。
 		Duel.SendtoGrave(g,REASON_EFFECT+REASON_REPLACE)
 		return true
 	else return false end
