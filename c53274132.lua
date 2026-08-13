@@ -26,34 +26,34 @@ function c53274132.initial_effect(c)
 	e2:SetOperation(c53274132.spop)
 	c:RegisterEffect(e2)
 end
--- 判断本次战斗破坏是否有效，即己方怪兽参与战斗且对方怪兽在墓地，且为战斗破坏且为怪兽。
+-- 战斗破坏判定：此卡仍与战斗相关且表侧表示，其战斗对象在墓地且因战斗被破坏且为怪兽，满足‘战斗破坏怪兽送去墓地时’的发动条件。
 function c53274132.damcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local bc=c:GetBattleTarget()
 	return c:IsRelateToBattle() and c:IsFaceup() and bc:IsLocation(LOCATION_GRAVE)
 		and bc:IsReason(REASON_BATTLE) and bc:IsType(TYPE_MONSTER)
 end
--- 设置连锁处理时的目标玩家为对方玩家，目标参数为300，操作信息为造成300点伤害。
+-- 伤害效果的目标处理：无需选择卡片对象，将对象玩家设为对方，伤害数值设为300，并登记伤害操作信息。
 function c53274132.damtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 将当前连锁的目标玩家设置为对方玩家。
+	-- 将当前连锁的对象玩家设为对方（1-tp），即伤害的承受者。
 	Duel.SetTargetPlayer(1-tp)
-	-- 将当前连锁的目标参数设置为300。
+	-- 将当前连锁的对象参数设为300，用于保存伤害数值。
 	Duel.SetTargetParam(300)
-	-- 设置当前处理的连锁的操作信息为造成300点伤害。
+	-- 登记操作信息：本次效果将造成伤害，对象为对方玩家（1-tp），数值为300；因为没有对象卡，targets设为nil。
 	Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,1-tp,300)
 end
--- 执行伤害效果，对目标玩家造成300点伤害。
+-- 伤害效果处理：取得连锁中记录的对象玩家和伤害数值，对对方造成对应的效果伤害。
 function c53274132.damop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的目标玩家和目标参数。
+	-- 取得当前连锁中存储的对象玩家和对象参数，分别赋给p和d。
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 以效果原因对指定玩家造成指定数值的伤害。
+	-- 以效果原因对p玩家造成d点伤害。
 	Duel.Damage(p,d,REASON_EFFECT)
 end
--- 设置此卡在本回合不能攻击的效果。
+-- 作为发动代价：检查本回合此卡尚未进行过攻击宣言；随后给自己附加‘不能攻击’的誓约效果，持续到回合结束，且该效果不能被无效。
 function c53274132.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():GetAttackAnnouncedCount()==0 end
-	-- 使此卡在本回合不能攻击，该效果为誓约效果且无法无效。
+	-- 这个效果发动的回合这张卡不能攻击。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_CANNOT_ATTACK)
@@ -61,31 +61,31 @@ function c53274132.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	e1:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END)
 	e:GetHandler():RegisterEffect(e1)
 end
--- 筛选满足条件的墓地怪兽：等级4以下、名字带有「链」、不是此卡本身、可以特殊召唤。
+-- 特殊召唤候选过滤：等级4以下、卡名属于‘链’系列（0x25）、不是「链·修理工」自身、并且可以被当前效果特殊召唤（不检查召唤条件，检查苏生限制）。
 function c53274132.spfilter(c,e,tp)
 	return c:IsLevelBelow(4) and c:IsSetCard(0x25) and not c:IsCode(53274132) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 判断是否满足特殊召唤的条件，即场上存在可特殊召唤的墓地目标怪兽。
+-- 特殊召唤效果的目标处理：连锁确认时检查候选卡是否在墓地且属于自己并满足过滤条件；发动时需要自己场上有可用怪兽区空格且墓地存在满足条件的对象。
 function c53274132.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and c53274132.spfilter(chkc,e,tp) end
-	-- 判断己方场上的可用怪兽区域数量是否大于0。
+	-- 效果发动条件：自己场上存在可用的主要怪兽区空格（可用空格数大于0）。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 判断己方墓地中是否存在符合条件的目标怪兽。
+		-- 并且自己墓地存在满足特殊召唤条件的怪兽，才能作为对象发动。
 		and Duel.IsExistingTarget(c53274132.spfilter,tp,LOCATION_GRAVE,0,1,nil,e,tp) end
-	-- 提示选择要特殊召唤的卡。
+	-- 向玩家显示‘请选择要特殊召唤的卡’的选择提示消息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 从己方墓地中选择一个符合条件的怪兽作为目标。
+	-- 让玩家从自己墓地选择1只满足条件的怪兽作为效果对象，并建立对象关联。
 	local g=Duel.SelectTarget(tp,c53274132.spfilter,tp,LOCATION_GRAVE,0,1,1,nil,e,tp)
-	-- 设置当前处理的连锁的操作信息为特殊召唤。
+	-- 登记操作信息：本次效果为特殊召唤，对象为已选择的1只怪兽。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,1,0,0)
 end
--- 执行特殊召唤效果，将目标怪兽特殊召唤到场上。
+-- 特殊召唤处理：获取效果对象怪兽，若其仍与效果关联，则将其表侧表示特殊召唤到自己场上。
 function c53274132.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取当前连锁的目标怪兽。
+	-- 获取当前连锁的第一个（也是唯一一个）效果对象卡。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 将目标怪兽以指定方式特殊召唤到己方场上。
+		-- 将对象怪兽以表侧表示特殊召唤到自己场上，不检查召唤条件，不检查苏生限制。
 		Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP)
 	end
 end

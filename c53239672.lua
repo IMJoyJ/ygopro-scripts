@@ -17,8 +17,8 @@ function c53239672.initial_effect(c)
 	e2:SetCondition(c53239672.condition)
 	c:RegisterEffect(e2)
 end
--- 检查自己场上是否存在怪兽
+-- 条件函数：用于判断“自己场上是否存在怪兽”，只有满足此条件时该永续效果才适用。
 function c53239672.condition(e)
-	-- 判断我方主要怪兽区是否有怪兽数量大于0
+	-- 返回效果持有者（这张卡的控制者）场上主要怪兽区的怪兽数量是否大于0，即自己场上是否存在怪兽。
 	return Duel.GetFieldGroupCount(e:GetHandlerPlayer(),LOCATION_MZONE,0)>0
 end

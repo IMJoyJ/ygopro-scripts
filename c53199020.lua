@@ -22,7 +22,7 @@ function c53199020.initial_effect(c)
 	e2:SetCondition(c53199020.chcon1)
 	e2:SetOperation(c53199020.chop1)
 	c:RegisterEffect(e2)
-	-- ①：只要这张卡在怪兽区域存在，对方把通常魔法卡发动的场合，1回合只有1次让那个效果变成「对方选1张手卡丢弃」。
+	-- 让那个效果变成「对方选1张手卡丢弃」。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e3:SetCode(EVENT_CHAIN_SOLVING)
@@ -32,53 +32,53 @@ function c53199020.initial_effect(c)
 	e3:SetOperation(c53199020.chop2)
 	c:RegisterEffect(e3)
 end
--- 过滤函数：返回名字带有「魔轰神」且处于场上或由玩家控制的怪兽
+-- 筛选可作为解放素材的「魔轰神」怪兽：必须是「魔轰神」字段，且是自己控制或表侧表示（允许选择对方场上表侧的魔轰神）。
 function c53199020.otfilter(c,tp)
 	return c:IsSetCard(0x35) and (c:IsControler(tp) or c:IsFaceup())
 end
--- 上级召唤条件判断：检查是否满足等级7以上、只需1个祭品、并且能从场上选择符合条件的祭品
+-- 上级召唤的召唤条件：此卡等级为7以上，解放数量要求为1只，且场上存在可用的「魔轰神」祭品。
 function c53199020.otcon(e,c,minc)
 	if c==nil then return true end
 	local tp=c:GetControler()
-	-- 获取满足条件的祭品怪兽组（包括自己场上的和对方场上的）
+	-- 从双方场上获取满足条件的「魔轰神」怪兽群（自己控制或对方表侧表示），作为候选祭品。
 	local mg=Duel.GetMatchingGroup(c53199020.otfilter,tp,LOCATION_MZONE,LOCATION_MZONE,nil,tp)
-	-- 返回是否满足上级召唤条件：等级≥7，所需祭品数≤1，且能从mg中找到合适的祭品
+	-- 判定召唤是否可行：这张卡等级不低于7，所需祭品数不超过1，且通过Duel.CheckTribute确认场上存在符合的祭品。
 	return c:IsLevelAbove(7) and minc<=1 and Duel.CheckTribute(c,1,1,mg)
 end
--- 上级召唤操作函数：选择并解放1只符合条件的祭品怪兽
+-- 上级召唤的处理操作：从候选祭品中选择1只「魔轰神」怪兽，设定为召唤素材并解放，完成表侧攻击表示的上级召唤。
 function c53199020.otop(e,tp,eg,ep,ev,re,r,rp,c)
-	-- 获取满足条件的祭品怪兽组（包括自己场上的和对方场上的）
+	-- 在执行召唤时重新获取双方场上可用的「魔轰神」怪兽群，用于让玩家选择解放素材。
 	local mg=Duel.GetMatchingGroup(c53199020.otfilter,tp,LOCATION_MZONE,LOCATION_MZONE,nil,tp)
-	-- 从mg中选择1个祭品怪兽
+	-- 让玩家选择1只「魔轰神」怪兽作为这次上级召唤的解放素材。
 	local sg=Duel.SelectTribute(tp,c,1,1,mg)
 	c:SetMaterial(sg)
-	-- 将选中的祭品怪兽解放，用于上级召唤
+	-- 解放选中的祭品，解放原因记为召唤和作为上级召唤素材。
 	Duel.Release(sg,REASON_SUMMON+REASON_MATERIAL)
 end
--- 连锁发动时的条件判断：判断是否为对方发动通常魔法卡
+-- 触发条件：对方发动通常魔法卡（ep为对方，卡类型为通常魔法且作为魔法卡发动）。
 function c53199020.chcon1(e,tp,eg,ep,ev,re,r,rp)
 	return ep==1-tp and re:GetHandler():GetType()==TYPE_SPELL and re:IsHasType(EFFECT_TYPE_ACTIVATE)
 end
--- 连锁发动时的操作函数：给被发动的魔法卡注册一个标记，表示该效果已被处理过
+-- 给这张通常魔法卡注册一个53199020编号的标记，重置时机为连锁结束，数量1，用于在解决阶段识别该卡。
 function c53199020.chop1(e,tp,eg,ep,ev,re,r,rp)
 	re:GetHandler():RegisterFlagEffect(53199020,RESET_CHAIN,0,1)
 end
--- 连锁处理开始时的条件判断：判断被发动的魔法卡是否有标记
+-- 触发条件：当前连锁中解决的效果正是刚才被标记过的对方通常魔法卡效果。
 function c53199020.chcon2(e,tp,eg,ep,ev,re,r,rp)
 	return re:GetHandler():GetFlagEffect(53199020)>0
 end
--- 连锁处理开始时的操作函数：将该连锁的目标改为无目标，并替换其处理函数为丢弃手卡的效果
+-- 效果解决时的处理：将原效果的对象改为空，并把连锁处理函数替换为让对手丢弃手卡的效果。
 function c53199020.chop2(e,tp,eg,ep,ev,re,r,rp)
 	local g=Group.CreateGroup()
-	-- 将连锁的目标改为无目标
+	-- 把该连锁当前选择的对象卡改为空组，即取消原通常魔法可能拥有的取对象。
 	Duel.ChangeTargetCard(ev,g)
-	-- 将连锁效果的处理函数替换为丢弃手卡的函数
+	-- 将连锁的效果处理函数替换为c53199020.rep_op，从而让该通常魔法的效果变为「对方选1张手卡丢弃」。
 	Duel.ChangeChainOperation(ev,c53199020.rep_op)
 end
--- 替代效果处理函数：提示对方丢弃1张手卡
+-- 替换后的效果处理：展示此卡，并令对方玩家丢弃1张手卡。
 function c53199020.rep_op(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示对方发动了魔轰神狄阿尼拉的效果
+	-- 向双方提示卡号53199020，显示狄阿尼拉的效果发动动画/提示。
 	Duel.Hint(HINT_CARD,0,53199020)
-	-- 让对方丢弃1张手卡
+	-- 让对方玩家从手卡选出1张卡丢弃，丢弃原因包括效果和丢弃。
 	Duel.DiscardHand(1-tp,aux.TRUE,1,1,REASON_EFFECT+REASON_DISCARD)
 end

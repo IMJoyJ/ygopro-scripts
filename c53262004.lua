@@ -6,7 +6,7 @@
 -- ②：这张卡以外的怪兽的效果·魔法·陷阱卡发动时才能发动。从自己的额外卡组（表侧）让1只灵摆怪兽回到卡组，那个发动无效并破坏。
 function c53262004.initial_effect(c)
 	c:EnableReviveLimit()
-	-- 添加融合召唤手续，使用满足「异色眼」属性和灵摆怪兽类型的怪兽各1只为融合素材
+	-- 为这张卡添加融合召唤手续，素材为1只「异色眼」怪兽与1只灵摆怪兽。
 	aux.AddFusionProcFun2(c,aux.FilterBoolFunction(Card.IsFusionSetCard,0x99),aux.FilterBoolFunction(Card.IsFusionType,TYPE_PENDULUM),true)
 	-- ①：这张卡特殊召唤时，以对方场上1只表侧攻击表示怪兽为对象才能发动。那只怪兽回到手卡。
 	local e1=Effect.CreateEffect(c)
@@ -31,67 +31,67 @@ function c53262004.initial_effect(c)
 	e2:SetOperation(c53262004.disop)
 	c:RegisterEffect(e2)
 end
--- 定义过滤函数，用于判断目标怪兽是否为表侧攻击表示且能送入手牌
+-- 定义①效果可选对象的筛选条件：对方场上表侧攻击表示且能够被加入手卡的怪兽。
 function c53262004.filter(c)
 	return c:IsPosition(POS_FACEUP_ATTACK) and c:IsAbleToHand()
 end
--- 设置效果目标选择函数，检查是否存在满足条件的对方场上的表侧攻击表示怪兽作为目标
+-- ①效果的发动处理：特殊召唤成功时，选择对方场上1只表侧攻击表示怪兽为对象，并设置将该对象返回手牌的操作信息。
 function c53262004.thtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(1-tp) and c53262004.filter(chkc) end
-	-- 检查是否存在满足条件的对方场上的表侧攻击表示怪兽作为目标
+	-- 检查是否存在满足条件的对方场上表侧攻击表示怪兽作为取对象目标。
 	if chk==0 then return Duel.IsExistingTarget(c53262004.filter,tp,0,LOCATION_MZONE,1,nil) end
-	-- 向玩家提示选择要返回手牌的卡
+	-- 给玩家显示“请选择要返回手牌的卡”的选择提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_RTOHAND)  --"请选择要返回手牌的卡"
-	-- 选择满足条件的对方场上的1只表侧攻击表示怪兽作为效果对象
+	-- 让玩家选择对方场上1只表侧攻击表示怪兽，并将其登记为当前连锁的效果对象。
 	local g=Duel.SelectTarget(tp,c53262004.filter,tp,0,LOCATION_MZONE,1,1,nil)
-	-- 设置效果处理信息，指定将目标怪兽送入手牌
+	-- 设置本次连锁的操作信息：将1张对象卡返回持有者手牌。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,1,0,0)
 end
--- 定义效果处理函数，将选定的目标怪兽送入手牌
+-- ①效果处理：取得对象卡，若对象仍与效果关联，则将其返回持有者手牌。
 function c53262004.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的效果对象卡
+	-- 取得①效果发动时选择的对象卡。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 将目标怪兽送入手牌
+		-- 将对象卡以效果原因返回其持有者的手牌。
 		Duel.SendtoHand(tc,nil,REASON_EFFECT)
 	end
 end
--- 定义连锁无效化条件函数，判断是否满足发动条件
+-- ②效果的发动条件：本卡以外的怪兽效果或魔法·陷阱卡发动时，且本卡没有被战斗破坏确定，才能发动。
 function c53262004.discon(e,tp,eg,ep,ev,re,r,rp)
 	return re:GetHandler()~=e:GetHandler() and not e:GetHandler():IsStatus(STATUS_BATTLE_DESTROYED)
-		-- 判断发动的卡是否为怪兽效果或魔法/陷阱卡且该连锁可被无效
+		-- 进一步确认该发动是怪兽效果或魔法·陷阱卡的发动，且该连锁可以被无效化。
 		and (re:IsActiveType(TYPE_MONSTER) or re:IsHasType(EFFECT_TYPE_ACTIVATE)) and Duel.IsChainNegatable(ev)
 end
--- 定义过滤函数，用于判断额外卡组中的灵摆怪兽是否能返回卡组
+-- 定义②效果中从额外卡组返回卡组的卡的筛选条件：表侧表示的灵摆怪兽且能够返回卡组。
 function c53262004.disfilter(c)
 	return c:IsFaceup() and c:IsType(TYPE_PENDULUM) and c:IsAbleToDeck()
 end
--- 设置连锁无效化效果的目标选择函数，检查是否存在满足条件的灵摆怪兽
+-- ②效果的发动判定与操作信息设置：确认额外卡组存在符合条件的表侧灵摆怪兽，并设置回卡组、无效、破坏的操作信息。
 function c53262004.distg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否存在满足条件的灵摆怪兽
+	-- 检查自己的额外卡组是否存在至少1张表侧表示的灵摆怪兽且能返回卡组。
 	if chk==0 then return Duel.IsExistingMatchingCard(c53262004.disfilter,tp,LOCATION_EXTRA,0,1,nil) end
-	-- 设置效果处理信息，指定将1只灵摆怪兽送入卡组
+	-- 设置操作信息：预计从自己的额外卡组将1张卡返回卡组（不指定具体卡）。
 	Duel.SetOperationInfo(0,CATEGORY_TODECK,nil,1,tp,LOCATION_EXTRA)
-	-- 设置效果处理信息，指定使发动无效
+	-- 设置操作信息：将当前连锁中的那个发动无效化。
 	Duel.SetOperationInfo(0,CATEGORY_NEGATE,eg,1,0,0)
 	if re:GetHandler():IsDestructable() and re:GetHandler():IsRelateToEffect(re) then
-		-- 设置效果处理信息，指定破坏发动的卡
+		-- 若被无效的发动卡能够被破坏且仍与连锁关联，则设置操作信息：将其破坏。
 		Duel.SetOperationInfo(0,CATEGORY_DESTROY,eg,1,0,0)
 	end
 end
--- 定义连锁无效化效果的处理函数，选择并返回灵摆怪兽到卡组，然后使发动无效并破坏
+-- ②效果处理：选择1张额外卡组表侧灵摆怪兽返回卡组，若成功则无效对方的发动，并破坏那张卡。
 function c53262004.disop(e,tp,eg,ep,ev,re,r,rp)
-	-- 向玩家提示选择要返回卡组的卡
+	-- 给玩家显示“请选择要返回卡组的卡”的选择提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TODECK)  --"请选择要返回卡组的卡"
-	-- 从额外卡组中选择1只满足条件的灵摆怪兽作为对象
+	-- 从自己的额外卡组选择1张表侧表示的灵摆怪兽。
 	local g=Duel.SelectMatchingCard(tp,c53262004.disfilter,tp,LOCATION_EXTRA,0,1,1,nil)
-	-- 显示所选灵摆怪兽被选为对象的动画效果
+	-- 展示选中的卡并记录其为当前效果的对象，播放选中动画。
 	Duel.HintSelection(g)
-	-- 将选中的灵摆怪兽送入卡组并洗牌
+	-- 将选中的卡返回卡组并洗切；若实际返回数量不为0，才继续无效并破坏处理。
 	if Duel.SendtoDeck(g,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)~=0 then
-		-- 使连锁发动无效，并判断发动的卡是否能被破坏
+		-- 若该连锁发动被成功无效，且被无效的那张卡仍与效果关联，则继续执行破坏。
 		if Duel.NegateActivation(ev) and re:GetHandler():IsRelateToEffect(re) then
-			-- 破坏发动的卡
+			-- 以效果原因破坏被无效发动的卡片。
 			Duel.Destroy(eg,REASON_EFFECT)
 		end
 	end
