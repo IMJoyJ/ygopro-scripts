@@ -27,62 +27,62 @@ function c36577931.initial_effect(c)
 	e3:SetProperty(EFFECT_FLAG_CARD_TARGET)
 	e3:SetRange(LOCATION_GRAVE)
 	e3:SetCountLimit(1,36577931)
-	-- 将此卡除外作为cost
+	-- 设置②效果的发动代价为把墓地中的这张卡除外（作为发动COST）。
 	e3:SetCost(aux.bfgcost)
 	e3:SetTarget(c36577931.settg)
 	e3:SetOperation(c36577931.setop)
 	c:RegisterEffect(e3)
 end
--- 效果发动的发动条件为：此卡因效果或改变去向而送去墓地
+-- ①效果的发动条件：这张卡被效果送去墓地，或因效果被除外（含被效果处理改变去向）的场合才能发动。
 function c36577931.thcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsReason(REASON_EFFECT+REASON_REDIRECT)
 end
--- 检索满足条件的「死狱乡」怪兽（非此卡本身）
+-- 检索过滤条件：卡名属于「死狱乡」字段、不是「悲剧之死狱乡演员」自身、是怪兽卡、并且能被加入手卡。
 function c36577931.thfilter(c)
 	return c:IsSetCard(0x164) and not c:IsCode(36577931) and c:IsType(TYPE_MONSTER) and c:IsAbleToHand()
 end
--- 设置效果处理时要检索的卡组中的满足条件的卡
+-- ①效果发动时的合法性检查与操作信息登记：chk==0时检查卡组是否存在满足检索条件的怪兽；存在则登记从卡组将1张卡加入手卡的操作信息。
 function c36577931.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否满足条件：卡组中是否存在满足条件的卡
+	-- 发动合法性检查：确认卡组中存在至少1张满足检索条件的「死狱乡」怪兽。
 	if chk==0 then return Duel.IsExistingMatchingCard(c36577931.thfilter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置效果处理时要检索的卡组中的满足条件的卡
+	-- 登记当前连锁的操作信息：效果处理时将把1张卡从卡组加入手卡，用于连锁判定。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 选择并执行将满足条件的卡加入手牌的效果
+-- ①效果处理：提示玩家选择要加入手卡的卡，从卡组选1张满足条件的「死狱乡」怪兽加入手卡，并向对方确认。
 function c36577931.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要加入手牌的卡
+	-- 显示选择提示“请选择要加入手牌的卡”，供玩家在选择卡组卡片时作为提示文字。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择满足条件的卡
+	-- 玩家从自己卡组选择1张满足检索条件的「死狱乡」怪兽（不取对象，效果处理时选择）。
 	local g=Duel.SelectMatchingCard(tp,c36577931.thfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的卡加入手牌
+		-- 将选择的卡加入其持有者的手卡，原因为效果。
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 向对方确认加入手牌的卡
+		-- 让对方玩家确认加入手卡的卡，以公开检索到的卡片信息。
 		Duel.ConfirmCards(1-tp,g)
 	end
 end
--- 检索满足条件的「烙印」魔法·陷阱卡
+-- ②效果的对象过滤条件：自己墓地中卡名属于「烙印」字段、是魔法·陷阱卡、并且可以盖放到魔法与陷阱区域的卡。
 function c36577931.setfilter(c)
 	return c:IsSetCard(0x15d) and c:IsType(TYPE_SPELL+TYPE_TRAP) and c:IsSSetable()
 end
--- 设置效果处理时要选择的满足条件的墓地中的卡
+-- ②效果发动时的取对象处理：检查墓地是否存在合法对象；提示选择；选择1张作为对象；并登记涉及墓地卡片离开墓地的操作信息。
 function c36577931.settg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(tp) and chkc:IsLocation(LOCATION_GRAVE) and c36577931.setfilter(chkc) end
-	-- 检查是否满足条件：墓地中是否存在满足条件的卡
+	-- 发动合法性检查：确认自己墓地存在至少1张满足条件的「烙印」魔法·陷阱卡可以作为对象。
 	if chk==0 then return Duel.IsExistingTarget(c36577931.setfilter,tp,LOCATION_GRAVE,0,1,nil) end
-	-- 提示玩家选择要盖放的卡
+	-- 显示选择提示“请选择要盖放的卡”，供玩家选择对象时作为提示文字。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SET)  --"请选择要盖放的卡"
-	-- 选择满足条件的卡
+	-- 从自己墓地选择1张符合条件的「烙印」魔法·陷阱卡作为对象（取对象）。
 	local g=Duel.SelectTarget(tp,c36577931.setfilter,tp,LOCATION_GRAVE,0,1,1,nil)
-	-- 设置效果处理时要盖放的卡
+	-- 登记当前连锁将处理墓地的卡离开墓地的操作信息，用于相关卡片或规则（如王家长眠之谷）的连锁判定。
 	Duel.SetOperationInfo(0,CATEGORY_LEAVE_GRAVE,g,1,0,0)
 end
--- 选择并执行将满足条件的卡在自己场上盖放的效果
+-- ②效果处理：取得对象卡，若该卡仍与效果关联，则将那张卡盖放到自己场上。
 function c36577931.setop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁中被选择的目标卡
+	-- 取得效果处理时最初选择的对象卡。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 将目标卡在自己场上盖放
+		-- 将对象卡盖放（Set）到自己魔法与陷阱区域。
 		Duel.SSet(tp,tc)
 	end
 end

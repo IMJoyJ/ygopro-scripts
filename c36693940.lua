@@ -12,31 +12,31 @@ function c36693940.initial_effect(c)
 	e1:SetOperation(c36693940.activate)
 	c:RegisterEffect(e1)
 end
--- 筛选满足条件的墓地怪兽（锋利小鬼或毛绒动物），并判断其能否特殊召唤。
+-- 过滤函数：检查怪兽是否属于「毛绒动物」或「锋利小鬼」字段，且可以被当前效果特殊召唤。
 function c36693940.filter(c,e,tp)
 	return c:IsSetCard(0xa9,0xc3) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 判断是否满足发动条件，包括是否有足够的怪兽区域和目标怪兽。
+-- 取对象合法性判定：若是指定对象则为己方墓地且符合过滤条件的怪兽；发动条件检查为场上存在可用怪兽区域且墓地存在符合条件的对象。
 function c36693940.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(tp) and chkc:IsLocation(LOCATION_GRAVE) and c36693940.filter(chkc,e,tp) end
-	-- 检查玩家场上是否有足够的怪兽区域用于特殊召唤。
+	-- 发动条件：己方主要怪兽区存在空格，用于后续特殊召唤。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查玩家墓地中是否存在符合条件的怪兽。
+		-- 发动条件：墓地存在至少1只符合过滤条件且能成为效果对象的怪兽。
 		and Duel.IsExistingTarget(c36693940.filter,tp,LOCATION_GRAVE,0,1,nil,e,tp) end
-	-- 向玩家发送提示信息，提示其选择要特殊召唤的卡。
+	-- 向操作者显示“请选择要特殊召唤的卡”的选择提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 选择符合条件的墓地怪兽作为效果的对象。
+	-- 让操作者从自己墓地选择1只符合条件的怪兽作为效果对象，并登记为连锁对象。
 	local g=Duel.SelectTarget(tp,c36693940.filter,tp,LOCATION_GRAVE,0,1,1,nil,e,tp)
-	-- 设置连锁操作信息，表明将要特殊召唤怪兽。
+	-- 设置本次连锁的操作信息：将进行1只怪兽的特殊召唤，供其他卡的效果参考。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,1,0,0)
 end
--- 那只怪兽特殊召唤。把这个效果特殊召唤的怪兽作为融合素材的场合，可以当作「魔玩具」怪兽使用。
+-- 效果处理：若对象卡仍与效果关联则将其表侧表示特殊召唤；若特殊召唤成功，给那只怪兽附加可当作「魔玩具」使用的效果。
 function c36693940.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁效果的目标怪兽。
+	-- 取得效果发动时选择的对象卡。
 	local tc=Duel.GetFirstTarget()
-	-- 判断目标怪兽是否仍然存在于场上，并尝试将其特殊召唤。
+	-- 确认对象卡仍与效果关联且特殊召唤成功，才执行后续赋予字段效果的处理。
 	if tc:IsRelateToEffect(e) and Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP)~=0 then
-		-- 为特殊召唤的怪兽添加效果，使其在作为融合素材时可视为魔玩具怪兽。
+		-- 把这个效果特殊召唤的怪兽作为融合素材的场合，可以当作「魔玩具」怪兽使用。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetDescription(aux.Stringid(36693940,0))  --"「魔玩具改造」效果适用中"
 		e1:SetProperty(EFFECT_FLAG_CLIENT_HINT)

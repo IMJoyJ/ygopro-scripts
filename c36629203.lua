@@ -12,24 +12,24 @@ function c36629203.initial_effect(c)
 	e1:SetOperation(c36629203.desop)
 	c:RegisterEffect(e1)
 end
--- 检查攻击怪兽是否为光属性怪兽，是则设置破坏目标
+-- 目标函数：检查与这张卡战斗的怪兽是否为表侧表示光属性；若满足，登记破坏该怪兽的操作信息，并允许效果发动。
 function c36629203.destg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
-	-- 获取当前战斗中的攻击怪兽
+	-- 获取当前战斗的攻击怪兽。
 	local tc=Duel.GetAttacker()
-	-- 如果攻击怪兽是自己，则获取防守怪兽
+	-- 若攻击怪兽是本卡，则将战斗对象改为攻击目标怪兽，从而取得与这张卡战斗的对方怪兽。
 	if tc==c then tc=Duel.GetAttackTarget() end
 	if chk==0 then return tc and tc:IsFaceup() and tc:IsAttribute(ATTRIBUTE_LIGHT) end
-	-- 设置连锁操作信息为破坏效果
+	-- 登记本次效果将破坏的对象（tc）及数量为1，用于系统判定连锁和效果处理。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,tc,1,0,0)
 end
--- 执行破坏效果，将符合条件的光属性怪兽破坏
+-- 处理函数：效果处理时，重新确定与这张卡战斗的对方怪兽；若该怪兽仍与本次战斗关联，则将其破坏，从而不进行伤害计算。
 function c36629203.desop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取当前战斗中的攻击怪兽
+	-- 在效果处理时，获取当前战斗的攻击怪兽。
 	local tc=Duel.GetAttacker()
-	-- 如果攻击怪兽是自己，则获取防守怪兽
+	-- 若攻击怪兽是本卡，则将战斗对象改为攻击目标怪兽，确定与这张卡战斗的对方怪兽。
 	if tc==c then tc=Duel.GetAttackTarget() end
-	-- 确认怪兽仍在战斗中后将其破坏
+	-- 若该怪兽仍与本次战斗关联，则将其以效果破坏；由于战斗对象已被破坏，本次战斗不再进行伤害计算。
 	if tc:IsRelateToBattle() then Duel.Destroy(tc,REASON_EFFECT) end
 end
