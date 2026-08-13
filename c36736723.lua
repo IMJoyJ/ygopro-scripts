@@ -23,33 +23,33 @@ function c36736723.initial_effect(c)
 	e2:SetRange(LOCATION_GRAVE)
 	e2:SetProperty(EFFECT_FLAG_CARD_TARGET)
 	e2:SetCountLimit(1,36736724)
-	-- 效果发动时把这张卡除外作为费用
+	-- 设置②效果的发动代价为把墓地的这张卡除外。
 	e2:SetCost(aux.bfgcost)
 	e2:SetTarget(c36736723.thtg)
 	e2:SetOperation(c36736723.thop)
 	c:RegisterEffect(e2)
 end
--- 效果发动时判断是否满足发动条件：攻击怪兽是否为战士族同调怪兽
+-- 判断①效果的发动条件：自己的「战士」同调怪兽和对方怪兽进行战斗的伤害计算时，且该怪兽仍与战斗相关。
 function c36736723.atkcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前战斗中攻击方的防守怪兽
+	-- 取得当前战斗的攻击对象（被攻击的怪兽）。
 	local tc=Duel.GetAttackTarget()
 	if not tc then return false end
-	-- 如果防守怪兽是对方控制，则获取攻击方怪兽
+	-- 若攻击对象是对方怪兽，则将参考对象改为攻击怪兽，确保取到的是己方进行战斗的怪兽。
 	if tc:IsControler(1-tp) then tc=Duel.GetAttacker() end
 	e:SetLabelObject(tc)
 	return tc and tc:IsRelateToBattle() and tc:IsSetCard(0x66) and tc:IsType(TYPE_SYNCHRO)
 end
--- 效果发动时的费用处理：将自身送去墓地
+-- ①效果的代价处理：从手卡把这张卡送去墓地才能发动；chk==0时检查能否作为代价送去墓地，可以则执行。
 function c36736723.atkcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsAbleToGraveAsCost() end
-	-- 将自身送去墓地作为费用
+	-- 将这张卡从手卡送去墓地，作为①效果的发动代价。
 	Duel.SendtoGrave(e:GetHandler(),REASON_COST)
 end
--- 效果发动时执行的操作：将攻击怪兽攻击力变为2倍
+-- ①效果的处理：把那只进行战斗的自己怪兽的攻击力变成2倍，直到那次伤害计算时结束。
 function c36736723.atkop(e,tp,eg,ep,ev,re,r,rp)
 	local tc=e:GetLabelObject()
 	if tc:IsFaceup() and tc:IsRelateToBattle() then
-		-- 将攻击怪兽的攻击力变为2倍
+		-- 那只进行战斗的自己怪兽的攻击力只在那次伤害计算时变成2倍。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_SET_ATTACK_FINAL)
@@ -58,28 +58,28 @@ function c36736723.atkop(e,tp,eg,ep,ev,re,r,rp)
 		tc:RegisterEffect(e1)
 	end
 end
--- 筛选墓地中的「同调士」怪兽的过滤条件
+-- ②效果的过滤条件：自己墓地1只「同调士」怪兽且能够加入手卡。
 function c36736723.filter(c)
 	return c:IsSetCard(0x1017) and c:IsType(TYPE_MONSTER) and c:IsAbleToHand()
 end
--- 效果发动时的处理：选择目标怪兽
+-- ②效果的发动目标选择：取对象，从自己墓地选择1只符合条件的「同调士」怪兽，并设置操作信息为加入手卡。
 function c36736723.thtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(tp) and chkc:IsLocation(LOCATION_GRAVE) and c36736723.filter(chkc) end
-	-- 判断是否满足发动条件：自己墓地是否存在符合条件的怪兽
+	-- 发动时确认自己墓地是否存在至少1只符合条件的「同调士」怪兽且能成为效果对象。
 	if chk==0 then return Duel.IsExistingTarget(c36736723.filter,tp,LOCATION_GRAVE,0,1,nil) end
-	-- 提示玩家选择要加入手牌的卡
+	-- 弹出“请选择要加入手卡的卡”的选择提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择目标怪兽
+	-- 玩家从自己墓地选择1只符合条件的「同调士」怪兽作为效果对象，并登记为本次连锁的对象。
 	local g=Duel.SelectTarget(tp,c36736723.filter,tp,LOCATION_GRAVE,0,1,1,nil)
-	-- 设置效果处理信息：将目标怪兽加入手牌
+	-- 设置本次连锁的操作信息：将所选择的卡加入手卡（CATEGORY_TOHAND），数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,1,0,0)
 end
--- 效果发动时执行的操作：将目标怪兽加入手牌
+-- ②效果的处理：取得对象怪兽，若仍与效果关联则将其加入手卡。
 function c36736723.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁效果选择的目标怪兽
+	-- 取得②效果发动时选择的对象卡。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 将目标怪兽加入手牌
+		-- 将对象怪兽加入其持有者的手卡，理由为效果。
 		Duel.SendtoHand(tc,nil,REASON_EFFECT)
 	end
 end

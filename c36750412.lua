@@ -11,15 +11,15 @@ function c36750412.initial_effect(c)
 	e1:SetOperation(c36750412.atkop)
 	c:RegisterEffect(e1)
 end
--- 效果发动条件：造成战斗伤害的玩家不是自己
+-- 判断造成战斗伤害的玩家是否为对方（即这张卡给与对方战斗伤害），满足发动条件。
 function c36750412.atkcon(e,tp,eg,ep,ev,re,r,rp)
 	return ep~=tp
 end
--- 效果处理：若此卡表侧表示且存在于场上，则使其攻击力上升200
+-- 在效果处理时，若这张卡仍与效果关联且处于表侧表示，则给予这张卡攻击力上升200的永续效果。
 function c36750412.atkop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) and c:IsFaceup() then
-		-- 使此卡攻击力上升200
+		-- 这张卡的攻击力上升200。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)

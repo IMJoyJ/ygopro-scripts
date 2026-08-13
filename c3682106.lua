@@ -19,28 +19,28 @@ c3682106.collection={
 	[90464188]=true;[03370104]=true;[88989706]=true;[20529766]=true;[53347303]=true;
 	[06150044]=true;[49868263]=true;[51447164]=true;[44155002]=true;[74593218]=true;
 }
--- 检索满足条件的卡片组：表侧表示且在collection列表中的卡。
+-- 过滤条件：对象必须是场上表侧表示，且卡号属于预定义的含有“使陷阱效果无效化的效果”的卡片列表。
 function c3682106.filter(c)
 	return c:IsFaceup() and c3682106.collection[c:GetCode()]
 end
--- 选择场上满足条件的1张卡作为对象。
+-- 发动时的目标选择处理：检查是否存在合法对象，提示玩家选择1张符合条件的场上表侧表示卡作为对象，并设置破坏操作信息。
 function c3682106.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsOnField() and c3682106.filter(chkc) end
-	-- 检查场上是否存在满足条件的卡。
+	-- 效果发动时检查：场上是否存在至少1张满足过滤条件且不是本卡的卡片，作为能否发动的判定依据。
 	if chk==0 then return Duel.IsExistingTarget(c3682106.filter,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,e:GetHandler()) end
-	-- 向玩家提示选择要破坏的卡。
+	-- 给玩家显示“请选择要破坏的卡”的选择提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 选择满足条件的1张卡作为破坏对象。
+	-- 玩家从双方场上选择1张满足过滤条件的表侧表示卡作为效果对象，并自动登记为当前连锁的对象。
 	local g=Duel.SelectTarget(tp,c3682106.filter,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,1,e:GetHandler())
-	-- 设置操作信息，确定要破坏的卡。
+	-- 将本次操作的类别设置为破坏，目标为已选择的卡，数量为1，供后续效果检测使用。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,1,0,0)
 end
--- 执行破坏操作。
+-- 效果处理时的操作：取得连锁对象，若该对象仍在场上表侧表示且与本效果有联系，则将其破坏。
 function c3682106.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的破坏对象。
+	-- 取得本效果连锁处理时的对象卡。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsFaceup() and tc:IsRelateToEffect(e) then
-		-- 以效果破坏对象卡。
+		-- 以效果原因将对象卡破坏送去墓地。
 		Duel.Destroy(tc,REASON_EFFECT)
 	end
 end
