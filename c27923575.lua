@@ -25,63 +25,63 @@ function c27923575.initial_effect(c)
 	e2:SetOperation(c27923575.setop)
 	c:RegisterEffect(e2)
 end
--- 判断是否满足①效果的发动条件，即自己在本次战斗中受到的伤害大于0。
+-- ①效果的发动条件：自己在伤害计算时将要受到的战斗伤害大于0时才能发动。
 function c27923575.atcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 返回玩家在本次战斗中受到的伤害是否大于0。
+	-- 判断自己即将受到的战斗伤害是否大于0。
 	return Duel.GetBattleDamage(tp)>0
 end
--- 创建一个影响全场的永续效果，使玩家在本次战斗中不会受到战斗伤害。
+-- ①效果处理：给己方玩家赋予本次伤害步骤中防止战斗伤害的效果，使那次对自己的战斗伤害变成0。
 function c27923575.atop(e,tp,eg,ep,ev,re,r,rp)
-	-- 将效果注册到玩家的全局环境，使其生效。
+	-- ①：那次战斗发生的对自己的战斗伤害变成0。②：盖放的这张卡被对方的效果破坏送去墓地的场合，以「蠢贼游戏」以外的自己墓地最多2张通常陷阱卡为对象才能发动。那些卡在自己场上盖放。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_AVOID_BATTLE_DAMAGE)
 	e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
 	e1:SetTargetRange(1,0)
 	e1:SetReset(RESET_PHASE+PHASE_DAMAGE)
-	-- 判断盖放的此卡被对方效果破坏送去墓地时是否满足②效果的发动条件。
+	-- 将免伤效果注册给玩家tp，在其持续期间内免疫对自己造成的战斗伤害。
 	Duel.RegisterEffect(e1,tp)
 end
--- 筛选墓地中满足条件的通常陷阱卡（非蠢贼游戏且可盖放）。
+-- ②效果的发动条件：这张卡原本控制者为自己，里侧表示在场上被对方效果破坏并送去墓地。
 function c27923575.setcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	return bit.band(r,REASON_DESTROY+REASON_EFFECT)==REASON_DESTROY+REASON_EFFECT and rp==1-tp and c:IsPreviousControler(tp)
 		and c:IsPreviousLocation(LOCATION_ONFIELD) and c:IsPreviousPosition(POS_FACEDOWN)
 end
--- 设置选择目标时的筛选条件，即选择墓地中的通常陷阱卡。
+-- 筛选对象：是陷阱卡、不是「蠢贼游戏」、且可以盖放到场上的卡（对应效果原文中的通常陷阱卡）。
 function c27923575.setfilter(c)
 	return c:GetType()==TYPE_TRAP and not c:IsCode(27923575) and c:IsSSetable()
 end
--- 提示玩家选择要盖放的卡，并根据场上空位数量限制选择数量。
+-- ②效果的发动目标处理：从自己墓地选择1～最多2张满足条件的通常陷阱卡作为对象，数量不超过魔陷区可用的空格数。
 function c27923575.settg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and c27923575.setfilter(chkc) end
-	-- 检查是否有满足条件的卡可以作为对象。
+	-- 发动时检查自己墓地是否存在至少1张满足条件的通常陷阱卡。
 	if chk==0 then return Duel.IsExistingTarget(c27923575.setfilter,tp,LOCATION_GRAVE,0,1,nil) end
-	-- 向玩家发送提示信息，提示选择要盖放的卡。
+	-- 显示选择提示，让玩家选择要盖放的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SET)  --"请选择要盖放的卡"
-	-- 计算玩家场上可盖放陷阱卡的最大数量。
+	-- 计算可选择数量：取魔陷区空位数与效果上限2中的较小值，作为可选择的卡片张数。
 	local ct=math.min((Duel.GetLocationCount(tp,LOCATION_SZONE)),2)
-	-- 根据计算出的数量选择目标卡。
+	-- 让玩家从自己墓地选择1～ct张满足条件的陷阱卡，并将这些卡设为效果对象。
 	local g=Duel.SelectTarget(tp,c27923575.setfilter,tp,LOCATION_GRAVE,0,1,ct,nil)
 end
--- 处理②效果的发动，将选中的卡盖放到场上。
+-- ②效果处理：获取对象卡，若对象仍与效果相关且魔陷区有空位，则选择要放置的卡并盖放到场上，同时赋予这些卡在盖放回合也能发动效果的能力。
 function c27923575.setop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁中被选择的目标卡组。
+	-- 获取当前连锁中②效果选择的对象卡组。
 	local g=Duel.GetChainInfo(0,CHAININFO_TARGET_CARDS)
 	local tg=g:Filter(Card.IsRelateToEffect,nil,e)
-	-- 获取玩家场上可用的陷阱卡区域数量。
+	-- 获取自己场上魔陷区可用的空格数，用于判断能否盖放及可盖放数量。
 	local ft=Duel.GetLocationCount(tp,LOCATION_SZONE)
 	if #tg==0 or ft<=0 then return end
 	if #tg>ft then
-		-- 向玩家发送提示信息，提示选择要放置到场上的卡。
+		-- 提示玩家选择要放置到场上的卡（用于处理对象数超过魔陷区空位时的选择）。
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOFIELD)  --"请选择要放置到场上的卡"
 		tg=tg:Select(tp,1,ft,nil)
 	end
-	-- 将选中的卡盖放到场上。
+	-- 将选中的对象卡以里侧表示盖放到自己场上。
 	Duel.SSet(tp,tg)
-	-- 遍历所有盖放的卡，为每张卡添加效果。
+	-- 遍历所有被盖放的卡，逐一为它们赋予“盖放回合也能发动”的效果。
 	for tc in aux.Next(tg) do
-		-- 为盖放的卡添加效果，使其在盖放的回合也能发动。
+		-- 这个效果盖放的卡在盖放的回合也能发动。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetDescription(aux.Stringid(27923575,2))  --"适用「蠢贼游戏」的效果来发动"
 		e1:SetType(EFFECT_TYPE_SINGLE)

@@ -16,29 +16,29 @@ function c27827903.initial_effect(c)
 	e1:SetOperation(c27827903.desop)
 	c:RegisterEffect(e1)
 end
--- 判断召唤成功的怪兽是否为同属性且控制者为自己且不是自身
+-- 判定效果发动条件：当有怪兽召唤成功时，该怪兽不是这张卡自身、控制者是这张卡的控制者，且属性与这张卡相同。
 function c27827903.descon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:GetFirst()~=e:GetHandler() and eg:GetFirst():GetControler()==e:GetHandler():GetControler()
 		and eg:GetFirst():IsAttribute(e:GetHandler():GetAttribute())
 end
--- 设置效果目标选择逻辑，确保选择对方场上的卡
+-- 效果发动时的取对象处理：确认对方场上有可选择的卡后，提示玩家选择对方场上1张卡作为对象，并设置破坏1张卡的操作信息。
 function c27827903.destg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsOnField() and chkc:IsControler(1-tp) end
-	-- 检查是否有满足条件的目标卡
+	-- 效果发动合法性检查：对方场上存在任意1张可作为对象的卡时，该效果才满足发动条件。
 	if chk==0 then return Duel.IsExistingTarget(aux.TRUE,tp,0,LOCATION_ONFIELD,1,nil) end
-	-- 向玩家提示选择要破坏的卡
+	-- 向玩家显示“请选择要破坏的卡”的提示信息，用于选择卡片的操作。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 选择对方场上的1张卡作为效果对象
+	-- 令玩家选择对方场上1张卡作为效果对象（不限制卡种），并将该卡登记为本连锁的对象。
 	local g=Duel.SelectTarget(tp,aux.TRUE,tp,0,LOCATION_ONFIELD,1,1,nil)
-	-- 设置连锁操作信息，表明将要破坏卡
+	-- 设置本次连锁的操作信息，标明要破坏的对象卡及数量，供相关卡牌效果（如星尘龙等）进行连锁判定。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,1,0,0)
 end
--- 处理效果的破坏操作
+-- 效果处理时的执行动作：取得之前选择的对象卡，若该卡仍与效果关联且仍在对方场上，则将其破坏。
 function c27827903.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的效果目标卡
+	-- 获取本连锁中已选择的那张对象卡。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) and tc:IsControler(1-tp) then
-		-- 以效果原因破坏目标卡
+		-- 以卡的效果为缘由破坏该对象卡。
 		Duel.Destroy(tc,REASON_EFFECT)
 	end
 end

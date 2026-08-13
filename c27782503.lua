@@ -22,61 +22,61 @@ function c27782503.initial_effect(c)
 	e2:SetOperation(c27782503.desrepop)
 	c:RegisterEffect(e2)
 end
--- 过滤函数：检查场上是否存在名字带有「六武众」且不是伊郎的表侧表示怪兽
+-- 定义筛选函数：检查怪兽是否为表侧表示、是否属于「六武众」字段（0x103d）且不是这张卡自身，用于确认场上是否存在这张卡以外的表侧表示「六武众」怪兽。
 function c27782503.cfilter(c)
 	return c:IsFaceup() and c:IsSetCard(0x103d) and not c:IsCode(27782503)
 end
--- 效果条件：确认攻击怪兽是自己，攻击目标是里侧守备表示怪兽，并且自己场上有其他六武众怪兽
+-- 第一个效果的发动条件：本卡是攻击宣言的怪兽，攻击对象为里侧守备表示怪兽，且自己场上存在这张卡以外的表侧表示「六武众」怪兽。
 function c27782503.descon(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取攻击目标怪兽
+	-- 获取当前战斗的攻击对象怪兽，用于判定是否为里侧守备表示。
 	local d=Duel.GetAttackTarget()
-	-- 判断攻击怪兽是否为自身，且攻击目标为里侧守备表示
+	-- 判定触发条件：效果持有者（这张卡）是攻击怪兽，攻击对象存在且为里侧守备表示。
 	return e:GetHandler()==Duel.GetAttacker() and d and d:IsFacedown() and d:IsDefensePos()
-		-- 判断自己场上是否存在其他六武众怪兽
+		-- 追加条件：自己场上存在至少1张满足筛选条件的卡，即这张卡以外的表侧表示「六武众」怪兽。
 		and Duel.IsExistingMatchingCard(c27782503.cfilter,tp,LOCATION_MZONE,0,1,nil)
 end
--- 设置破坏效果的目标为攻击目标怪兽
+-- 第一个效果的目标处理：确认攻击对象仍与本次战斗关联，并登记效果将破坏的对象为攻击对象（那只里侧守备表示怪兽）。
 function c27782503.destg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断攻击目标是否与战斗相关
+	-- 合法性检查：攻击对象必须仍然与本次战斗相关（未被移出战斗或离场），否则效果不适用。
 	if chk==0 then return Duel.GetAttackTarget():IsRelateToBattle() end
-	-- 设置连锁操作信息，指定将要破坏的怪兽
+	-- 将本次连锁的效果操作信息登记为：以效果破坏攻击对象1只，用于后续卡片的响应和效果检测。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,Duel.GetAttackTarget(),1,0,0)
 end
--- 执行破坏操作，将攻击目标怪兽破坏
+-- 第一个效果的处理：在伤害计算前，将仍与本次战斗关联的攻击对象（里侧守备表示怪兽）以效果破坏，不进行伤害计算。
 function c27782503.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取攻击目标怪兽
+	-- 重新获取当前攻击对象，用于效果处理时确认对象。
 	local d=Duel.GetAttackTarget()
 	if d:IsRelateToBattle() then
-		-- 将目标怪兽以效果原因破坏
+		-- 以效果原因破坏攻击对象，实现不进行伤害计算直接破坏里侧守备表示怪兽。
 		Duel.Destroy(d,REASON_EFFECT)
 	end
 end
--- 代替破坏的过滤函数：检查场上名字带有「六武众」且可被破坏的表侧表示怪兽
+-- 定义可代替破坏的候选怪兽条件：表侧表示、属于「六武众」字段、能够被该效果破坏，且尚未处于预定破坏或战斗破坏确定状态。
 function c27782503.repfilter(c,e)
 	return c:IsFaceup() and c:IsSetCard(0x103d)
 		and c:IsDestructable(e) and not c:IsStatus(STATUS_DESTROY_CONFIRMED+STATUS_BATTLE_DESTROYED)
 end
--- 代替破坏效果的触发条件：确认自身在场且表侧表示，并且存在可代替破坏的六武众怪兽
+-- 代替破坏效果的Target函数：获取效果持有者，并在chk=0时验证发动条件——该卡不处于代替破坏流程、表侧表示在场，且场上存在可代替破坏的「六武众」候选怪兽。
 function c27782503.desreptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	if chk==0 then return not c:IsReason(REASON_REPLACE) and c:IsOnField() and c:IsFaceup()
-		-- 检查场上是否存在可代替破坏的六武众怪兽
+		-- 并列条件：确认场上存在满足repfilter的候选怪兽（排除自身），同时结束发动条件的判断。
 		and Duel.IsExistingMatchingCard(c27782503.repfilter,tp,LOCATION_MZONE,0,1,c,e) end
-	-- 询问玩家是否发动代替破坏效果
+	-- 询问玩家是否发动代替破坏效果（选择是则进行后续选卡）。
 	if Duel.SelectEffectYesNo(tp,c,96) then
-		-- 提示玩家选择代替破坏的怪兽
+		-- 显示选择提示，提示玩家选择要代替破坏的卡片。
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESREPLACE)  --"请选择要代替破坏的卡"
-		-- 选择场上满足条件的六武众怪兽作为代替破坏对象
+		-- 从符合条件的怪兽中选择1张作为代替破坏的对象，并记录在效果中。
 		local g=Duel.SelectMatchingCard(tp,c27782503.repfilter,tp,LOCATION_MZONE,0,1,1,c,e)
 		e:SetLabelObject(g:GetFirst())
 		g:GetFirst():SetStatus(STATUS_DESTROY_CONFIRMED,true)
 		return true
 	else return false end
 end
--- 执行代替破坏操作，将选中的怪兽破坏
+-- 代替破坏效果的处理：取出选定的代替破坏怪兽，解除其预定破坏标记，并以效果+代替原因将其破坏，从而代替这张卡被破坏。
 function c27782503.desrepop(e,tp,eg,ep,ev,re,r,rp)
 	local tc=e:GetLabelObject()
 	tc:SetStatus(STATUS_DESTROY_CONFIRMED,false)
-	-- 将选中的怪兽以效果和代替原因破坏
+	-- 以效果破坏原因并附加代替原因（REASON_REPLACE）破坏代替怪兽，使其替代原卡片被破坏。
 	Duel.Destroy(tc,REASON_EFFECT+REASON_REPLACE)
 end
