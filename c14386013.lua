@@ -23,83 +23,83 @@ function c14386013.initial_effect(c)
 	e2:SetRange(LOCATION_GRAVE)
 	e2:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
 	e2:SetCountLimit(1,14386014)
-	-- 效果发动时，检查是否为这张卡送去墓地的回合，若是则效果不能发动。
+	-- 设置②效果的发动条件：通过aux.exccon限定这张卡送去墓地的回合不能发动该效果。
 	e2:SetCondition(aux.exccon)
-	-- 效果发动时，将此卡从墓地除外作为费用。
+	-- 设置②效果的发动代价：通过aux.bfgcost将墓地中的这张卡除外作为发动代价。
 	e2:SetCost(aux.bfgcost)
 	e2:SetTarget(c14386013.drtg)
 	e2:SetOperation(c14386013.drop)
 	c:RegisterEffect(e2)
 end
--- 效果的费用处理函数，用于处理丢弃手卡的费用。
+-- 定义①效果的代价函数：确认手牌中有可丢弃的卡后，丢弃1张手卡作为发动代价。
 function c14386013.cost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查玩家手牌中是否存在可丢弃的卡。
+	-- 代价检查阶段：确认自己手牌存在至少1张可丢弃的卡（且不包含这张卡自身）。
 	if chk==0 then return Duel.IsExistingMatchingCard(Card.IsDiscardable,tp,LOCATION_HAND,0,1,e:GetHandler()) end
-	-- 执行丢弃1张手卡的操作，丢弃原因包含费用和丢弃。
+	-- 执行代价：从手牌选1张可丢弃的卡丢弃（作为发动代价）。
 	Duel.DiscardHand(tp,Card.IsDiscardable,1,1,REASON_COST+REASON_DISCARD)
 end
--- 检索满足条件的卡的过滤函数，用于判断是否为「通灵盘」或恶魔族8星怪兽。
+-- 定义①效果的检索过滤器：可加入手卡，且是「通灵盘」或恶魔族·8星怪兽。
 function c14386013.thfilter(c)
 	return c:IsAbleToHand() and (c:IsCode(94212438) or (c:IsRace(RACE_FIEND) and c:IsLevel(8)))
 end
--- 效果的发动时处理函数，用于设置效果发动时的处理目标。
+-- 定义①效果的发动目标函数：确认卡组·墓地存在符合条件的卡，并设定加入手卡的操作信息。
 function c14386013.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查玩家的卡组和墓地是否存在满足条件的卡。
+	-- 发动条件检查：确认自己卡组·墓地存在至少1张符合条件的卡（「通灵盘」或恶魔族·8星怪兽）。
 	if chk==0 then return Duel.IsExistingMatchingCard(c14386013.thfilter,tp,LOCATION_DECK+LOCATION_GRAVE,0,1,nil) end
-	-- 设置连锁处理信息，表示将要处理1张来自卡组或墓地的卡加入手牌。
+	-- 设定操作信息：本次效果将1张卡从卡组·墓地加入手牌（用于后续检测）。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK+LOCATION_GRAVE)
 end
--- 效果的发动处理函数，用于处理效果的发动。
+-- 定义①效果处理函数：让玩家从卡组·墓地选择1张符合条件的卡加入手牌，并向对方展示。
 function c14386013.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要加入手牌的卡。
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)
-	-- 从卡组和墓地中选择满足条件的1张卡。
+	-- 显示“请选择要加入手牌的卡”的选择提示。
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
+	-- 让玩家从自己的卡组·墓地选择1张符合条件的卡（受王家长眠之谷影响的卡不可选）。
 	local g=Duel.SelectMatchingCard(tp,aux.NecroValleyFilter(c14386013.thfilter),tp,LOCATION_DECK+LOCATION_GRAVE,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的卡加入手牌。
+		-- 将选择的卡加入其持有者的手牌。
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 向对方确认加入手牌的卡。
+		-- 将加入手牌的卡展示给对方玩家确认。
 		Duel.ConfirmCards(1-tp,g)
 	end
 end
--- 检索满足条件的卡的过滤函数，用于判断是否为「通灵盘」或「死之信息」卡。
+-- 定义②效果的过滤器：是「通灵盘」或「死之信息」字段的卡，且可以返回卡组。
 function c14386013.drfilter(c)
 	return (c:IsCode(94212438) or c:IsSetCard(0x1c)) and c:IsAbleToDeck()
 end
--- 效果的发动时处理函数，用于设置效果发动时的处理目标。
+-- 定义②效果的发动目标函数：确认自己可以抽卡，且手牌·墓地存在符合条件的卡。
 function c14386013.drtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查玩家是否可以抽卡。
+	-- 发动条件检查：确认自己可以进行抽卡。
 	if chk==0 then return Duel.IsPlayerCanDraw(tp)
-		-- 检查玩家手牌和墓地中是否存在满足条件的卡。
+		-- 同时确认手牌·墓地存在至少1张符合条件的「通灵盘」或「死之信息」卡。
 		and Duel.IsExistingMatchingCard(c14386013.drfilter,tp,LOCATION_HAND+LOCATION_GRAVE,0,1,nil) end
-	-- 设置效果的目标玩家为当前玩家。
+	-- 将效果的对象玩家设为自己，用于后续抽卡。
 	Duel.SetTargetPlayer(tp)
-	-- 设置连锁处理信息，表示将要处理1张来自手牌或墓地的卡回到卡组。
+	-- 设定操作信息：本次效果将有卡返回卡组（用于后续检测）。
 	Duel.SetOperationInfo(0,CATEGORY_TODECK,nil,1,tp,LOCATION_HAND+LOCATION_GRAVE)
 end
--- 效果的发动处理函数，用于处理效果的发动。
+-- 定义②效果处理函数：选择任意数量符合条件的卡放回卡组底，然后抽取相同数量的卡。
 function c14386013.drop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的目标玩家。
+	-- 获取效果对象玩家（即自己）。
 	local p=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER)
-	-- 获取满足条件的卡组，包括手牌和墓地中的卡。
+	-- 获取自己手牌·墓地中所有符合条件的「通灵盘」/「死之信息」卡（排除王家长眠之谷影响）。
 	local g=Duel.GetMatchingGroup(aux.NecroValleyFilter(c14386013.drfilter),p,LOCATION_HAND+LOCATION_GRAVE,0,nil)
-	-- 提示玩家选择要回到卡组的卡。
-	Duel.Hint(HINT_SELECTMSG,p,HINTMSG_TODECK)
-	-- 设置额外的卡名检查条件，确保所选卡名不重复。
+	-- 显示“请选择要返回卡组的卡”的选择提示。
+	Duel.Hint(HINT_SELECTMSG,p,HINTMSG_TODECK)  --"请选择要返回卡组的卡"
+	-- 设置额外检查函数，要求所选卡的卡名互不相同（同名卡最多1张）。
 	aux.GCheckAdditional=aux.dncheck
-	-- 从满足条件的卡中选择任意数量的卡，确保卡名不重复。
+	-- 从符合条件的卡中选择任意数量（至少1张，且卡名各不相同，数量上限为卡组张数）。
 	local sg=g:SelectSubGroup(p,aux.TRUE,false,1,Duel.GetFieldGroupCount(p,LOCATION_DECK,0))
-	-- 取消设置额外的卡名检查条件。
+	-- 清除额外检查函数，避免影响后续选择。
 	aux.GCheckAdditional=nil
 	if sg then
-		-- 向对方确认选中的卡。
+		-- 将选择返回卡组的卡展示给对方玩家确认。
 		Duel.ConfirmCards(1-p,sg)
-		-- 将选中的卡放回卡组底部。
+		-- 将选择的卡按玩家喜欢的顺序放回卡组底，并返回实际放回的数量。
 		local ct=aux.PlaceCardsOnDeckBottom(p,sg)
 		if ct==0 then return end
-		-- 中断当前效果处理，使后续处理视为不同时处理。
+		-- 中断当前效果，使随后的抽卡处理与返回卡组分开，避免错失时点。
 		Duel.BreakEffect()
-		-- 从卡组抽选中卡的数量的卡。
+		-- 自己抽取与返回卡组数量相同的卡。
 		Duel.Draw(p,ct,REASON_EFFECT)
 	end
 end

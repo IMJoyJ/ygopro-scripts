@@ -14,24 +14,24 @@ function c14344682.initial_effect(c)
 	e1:SetOperation(c14344682.operation)
 	c:RegisterEffect(e1)
 end
--- 效果处理时的Target函数定义
+-- 效果发动时的取对象处理：确认对象为对方场上守备表示怪兽，提示玩家选择1只，并将该怪兽登记为效果对象，同时设置变更表示形式的操作信息。
 function c14344682.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(1-tp) and chkc:IsDefensePos() end
-	-- 检查是否满足选择目标的条件，即对方场上是否存在守备表示的怪兽
+	-- 发动合法性检查：确认对方场上存在至少1只可被选择为对象的守备表示怪兽。
 	if chk==0 then return Duel.IsExistingTarget(Card.IsDefensePos,tp,0,LOCATION_MZONE,1,nil) end
-	-- 向玩家提示选择守备表示的怪兽
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DEFENSE)
-	-- 选择对方场上1只守备表示的怪兽作为效果对象
+	-- 向操作玩家显示“请选择守备表示的怪兽”的选择提示。
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DEFENSE)  --"请选择守备表示的怪兽"
+	-- 让玩家从对方场上选择1只守备表示怪兽，并将其锁定为本效果的对象。
 	local g=Duel.SelectTarget(tp,Card.IsDefensePos,tp,0,LOCATION_MZONE,1,1,nil)
-	-- 设置效果处理时的操作信息，指定将要改变表示形式的怪兽
+	-- 登记操作信息，声明本效果将变更对象怪兽的表示形式（CATEGORY_POSITION），数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_POSITION,g,1,0,0)
 end
--- 效果处理时的Operation函数定义
+-- 效果处理函数：获取效果对象，确认其仍与该效果相关且仍为守备表示后，将其变成表侧攻击表示。
 function c14344682.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁效果所选择的目标怪兽
+	-- 获取本连锁中登记的对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) and tc:IsDefensePos() then
-		-- 将目标怪兽变为表侧攻击表示
+		-- 将对象怪兽的表示形式变更为表侧攻击表示。
 		Duel.ChangePosition(tc,POS_FACEUP_ATTACK)
 	end
 end

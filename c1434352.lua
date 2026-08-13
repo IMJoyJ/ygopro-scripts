@@ -11,8 +11,8 @@ function c1434352.initial_effect(c)
 	e1:SetValue(c1434352.atkval)
 	c:RegisterEffect(e1)
 end
--- 计算攻击力时调用的函数
+-- 计算该卡控制者墓地里存在的怪兽卡数量并乘以300，作为该卡当前的攻击力数值。
 function c1434352.atkval(e,c)
-	-- 检索自己墓地中怪兽卡的数量并乘以300作为攻击力
+	-- 统计该卡控制者墓地中的怪兽卡数量，并乘以300得到攻击力数值。
 	return Duel.GetMatchingGroupCount(Card.IsType,c:GetControler(),LOCATION_GRAVE,0,nil,TYPE_MONSTER)*300
 end
