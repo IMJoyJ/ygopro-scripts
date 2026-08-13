@@ -46,104 +46,104 @@ function c3734202.initial_effect(c)
 	e4:SetOperation(c3734202.thop)
 	c:RegisterEffect(e4)
 end
--- 用于判断是否可以解放的怪兽条件：昆虫族·地属性且场上怪兽区有空位
+-- 定义①效果的解放素材过滤函数：选择自己场上1只昆虫族·地属性怪兽，并确认解放后自己怪兽区仍有空位。
 function c3734202.cfilter1(c,tp)
-	-- 昆虫族·地属性且场上怪兽区有空位
+	-- 判断该怪兽是否为昆虫族·地属性，且解放它后自己场上仍有可用怪兽区。
 	return c:IsRace(RACE_INSECT) and c:IsAttribute(ATTRIBUTE_EARTH) and Duel.GetMZoneCount(tp,c)>0
 end
--- 效果发动时的费用支付处理：检查是否可以解放满足条件的怪兽
+-- ①效果的代价处理：检查自己场上是否存在符合条件的昆虫族·地属性怪兽，然后选择其中1只解放作为发动代价。
 function c3734202.spcost1(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否可以解放满足条件的怪兽
+	-- 在代价检测阶段：确认自己场上存在至少1只满足cfilter1条件的可解放怪兽。
 	if chk==0 then return Duel.CheckReleaseGroup(tp,c3734202.cfilter1,1,nil,tp) end
-	-- 选择要解放的怪兽
+	-- 让玩家从自己场上选择1只满足cfilter1条件的怪兽作为解放代价。
 	local g=Duel.SelectReleaseGroup(tp,c3734202.cfilter1,1,1,nil,tp)
-	-- 将选中的怪兽解放作为费用
+	-- 将选择的怪兽解放，解放原因标记为COST。
 	Duel.Release(g,REASON_COST)
 end
--- 用于判断卡组中是否有满足条件的怪兽：4星以下、植物族·地属性且可特殊召唤
+-- 定义①效果可特殊召唤的怪兽过滤条件：必须是4星以下、植物族·地属性的怪兽，且能被当前效果特殊召唤。
 function c3734202.spfilter1(c,e,tp)
 	return c:IsLevelBelow(4) and c:IsRace(RACE_PLANT) and c:IsAttribute(ATTRIBUTE_EARTH)
 		and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 效果发动时的处理：检查卡组中是否存在满足条件的怪兽
+-- ①效果的发动条件与操作信息设置：确认卡组中存在符合条件的怪兽，并登记本次特殊召唤的处理信息。
 function c3734202.sptg1(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查卡组中是否存在满足条件的怪兽
+	-- 在发动合法检测阶段：确认卡组存在至少1只满足spfilter1条件的怪兽。
 	if chk==0 then return Duel.IsExistingMatchingCard(c3734202.spfilter1,tp,LOCATION_DECK,0,1,nil,e,tp) end
-	-- 设置效果处理信息：准备特殊召唤怪兽
+	-- 设置本次效果处理为特殊召唤，目标来自卡组的1只怪兽（不取对象）。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_DECK)
 end
--- 效果处理：若场上怪兽区有空位则选择并特殊召唤怪兽
+-- ①效果的实际处理：若自己怪兽区有空位，则从卡组选择1只符合条件的植物族·地属性怪兽，以表侧表示特殊召唤。
 function c3734202.spop1(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查场上怪兽区是否还有空位
+	-- 若自己怪兽区没有空位，则效果处理时直接终止，不进行特殊召唤。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-	-- 提示玩家选择要特殊召唤的怪兽
+	-- 向玩家显示请选择要特殊召唤卡片的提示消息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 从卡组中选择满足条件的怪兽
+	-- 从自己卡组选择1只满足spfilter1条件的怪兽（用于特殊召唤）。
 	local g=Duel.SelectMatchingCard(tp,c3734202.spfilter1,tp,LOCATION_DECK,0,1,1,nil,e,tp)
 	if g:GetCount()>0 then
-		-- 将选中的怪兽特殊召唤到场上
+		-- 将选择的怪兽以表侧表示特殊召唤到自己场上。
 		Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
--- 用于判断是否可以解放的怪兽条件：植物族·地属性且场上怪兽区有空位
+-- 定义②效果的解放素材过滤函数：选择自己场上1只植物族·地属性怪兽，并确认解放后自己怪兽区仍有空位。
 function c3734202.cfilter2(c,tp)
-	-- 植物族·地属性且场上怪兽区有空位
+	-- 判断该怪兽是否为植物族·地属性，且解放它后自己场上仍有可用怪兽区。
 	return c:IsRace(RACE_PLANT) and c:IsAttribute(ATTRIBUTE_EARTH) and Duel.GetMZoneCount(tp,c)>0
 end
--- 效果发动时的费用支付处理：检查是否可以解放满足条件的怪兽
+-- ②效果的代价处理：检查自己场上是否存在符合条件的植物族·地属性怪兽，然后选择其中1只解放作为发动代价。
 function c3734202.spcost2(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否可以解放满足条件的怪兽
+	-- 在代价检测阶段：确认自己场上存在至少1只满足cfilter2条件的可解放怪兽。
 	if chk==0 then return Duel.CheckReleaseGroup(tp,c3734202.cfilter2,1,nil,tp) end
-	-- 选择要解放的怪兽
+	-- 让玩家从自己场上选择1只满足cfilter2条件的怪兽作为解放代价。
 	local g=Duel.SelectReleaseGroup(tp,c3734202.cfilter2,1,1,nil,tp)
-	-- 将选中的怪兽解放作为费用
+	-- 将选择的怪兽解放，解放原因标记为COST。
 	Duel.Release(g,REASON_COST)
 end
--- 用于判断卡组中是否有满足条件的怪兽：4星以下、昆虫族·地属性且可特殊召唤
+-- 定义②效果可特殊召唤的怪兽过滤条件：必须是4星以下、昆虫族·地属性的怪兽，且能被当前效果特殊召唤。
 function c3734202.spfilter2(c,e,tp)
 	return c:IsLevelBelow(4) and c:IsRace(RACE_INSECT) and c:IsAttribute(ATTRIBUTE_EARTH)
 		and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 效果发动时的处理：检查卡组中是否存在满足条件的怪兽
+-- ②效果的发动条件与操作信息设置：确认卡组中存在符合条件的怪兽，并登记本次特殊召唤的处理信息。
 function c3734202.sptg2(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查卡组中是否存在满足条件的怪兽
+	-- 在发动合法检测阶段：确认卡组存在至少1只满足spfilter2条件的怪兽。
 	if chk==0 then return Duel.IsExistingMatchingCard(c3734202.spfilter2,tp,LOCATION_DECK,0,1,nil,e,tp) end
-	-- 设置效果处理信息：准备特殊召唤怪兽
+	-- 设置本次效果处理为特殊召唤，目标来自卡组的1只怪兽（不取对象）。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_DECK)
 end
--- 效果处理：若场上怪兽区有空位则选择并特殊召唤怪兽
+-- ②效果的实际处理：若自己怪兽区有空位，则从卡组选择1只符合条件的昆虫族·地属性怪兽，以表侧表示特殊召唤。
 function c3734202.spop2(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查场上怪兽区是否还有空位
+	-- 若自己怪兽区没有空位，则效果处理时直接终止，不进行特殊召唤。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-	-- 提示玩家选择要特殊召唤的怪兽
+	-- 向玩家显示请选择要特殊召唤卡片的提示消息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 从卡组中选择满足条件的怪兽
+	-- 从自己卡组选择1只满足spfilter2条件的怪兽（用于特殊召唤）。
 	local g=Duel.SelectMatchingCard(tp,c3734202.spfilter2,tp,LOCATION_DECK,0,1,1,nil,e,tp)
 	if g:GetCount()>0 then
-		-- 将选中的怪兽特殊召唤到场上
+		-- 将选择的怪兽以表侧表示特殊召唤到自己场上。
 		Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
--- 用于判断卡组中是否有满足条件的卡：属于「自然」系列且不是本卡
+-- 定义③效果的检索过滤条件：必须是「自然」字段的卡、不是「自然的神星树」本身、且可以加入手卡。
 function c3734202.thfilter(c)
 	return c:IsSetCard(0x2a) and not c:IsCode(3734202) and c:IsAbleToHand()
 end
--- 效果发动时的处理：设置检索卡组的处理信息
+-- ③效果的发动条件与操作信息设置：无特殊发动条件，登记从卡组加入手卡的处理信息。
 function c3734202.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置效果处理信息：准备将卡加入手牌
+	-- 设置本次效果处理为从卡组将1张卡加入手卡（不取对象）。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 效果处理：从卡组中选择满足条件的卡加入手牌并确认
+-- ③效果的实际处理：从卡组选择1张符合条件的「自然」卡加入手卡，并向对方展示。
 function c3734202.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要加入手牌的卡
+	-- 向玩家显示请选择要加入手牌卡片的提示消息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 从卡组中选择满足条件的卡
+	-- 从自己卡组选择1张满足thfilter条件的卡（用于加入手卡）。
 	local g=Duel.SelectMatchingCard(tp,c3734202.thfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的卡加入手牌
+		-- 将选择的卡以效果原因加入持有者的手卡。
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 向对方确认选中的卡
+		-- 向对方玩家确认展示加入手卡的卡。
 		Duel.ConfirmCards(1-tp,g)
 	end
 end

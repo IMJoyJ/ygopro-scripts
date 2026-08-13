@@ -2,7 +2,7 @@
 -- 效果：
 -- 这张卡从场上送去墓地时，可以选择自己墓地存在的「自然茄子」以外的1只名字带有「自然」的怪兽加入手卡。
 function c37349495.initial_effect(c)
-	-- 诱发选发效果，满足条件时可以从墓地将名字带有「自然」的怪兽加入手牌
+	-- 这张卡从场上送去墓地时，可以选择自己墓地存在的「自然茄子」以外的1只名字带有「自然」的怪兽加入手卡。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(37349495,0))  --"加入手牌"
 	e1:SetCategory(CATEGORY_TOHAND)
@@ -14,34 +14,34 @@ function c37349495.initial_effect(c)
 	e1:SetOperation(c37349495.thop)
 	c:RegisterEffect(e1)
 end
--- 这张卡从场上送去墓地时才能发动
+-- 发动条件：这张卡从场上送去墓地，即这张卡此前所在位置是场上。
 function c37349495.thcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsPreviousLocation(LOCATION_ONFIELD)
 end
--- 筛选墓地里名字带有「自然」的怪兽（不包括自己）
+-- 过滤条件：选择自己墓地存在的「自然茄子」以外的1只名字带有「自然」的怪兽，且该怪兽可以加入手卡。
 function c37349495.filter(c)
 	return c:IsSetCard(0x2a) and c:IsType(TYPE_MONSTER) and not c:IsCode(37349495) and c:IsAbleToHand()
 end
--- 选择目标：从自己墓地选择1只符合条件的怪兽
+-- 发动目标：从自己墓地的「自然茄子」以外的名字带有「自然」的怪兽中选择1只作为对象，并设定将对象加入手牌的处理信息。
 function c37349495.thtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and c37349495.filter(chkc) end
-	-- 检查是否有符合条件的怪兽可以作为目标
+	-- 发动时判定：自己墓地是否存在至少1只符合条件的名字带有「自然」的怪兽可以成为对象。
 	if chk==0 then return Duel.IsExistingTarget(c37349495.filter,tp,LOCATION_GRAVE,0,1,nil) end
-	-- 提示玩家选择要加入手牌的卡
+	-- 显示选择提示：让操作者选择要加入手牌的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择1只符合条件的怪兽作为效果对象
+	-- 选择对象：从自己墓地挑选1只符合条件的名字带有「自然」的怪兽作为本次效果的对象。
 	local g=Duel.SelectTarget(tp,c37349495.filter,tp,LOCATION_GRAVE,0,1,1,nil)
-	-- 设置效果处理信息，准备将目标怪兽加入手牌
+	-- 设定操作信息：本次效果处理将把选择的对象加入手牌，处理数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,1,0,0)
 end
--- 将选中的怪兽加入手牌并确认对方看到
+-- 效果处理：若选择的对象仍与效果关联，则将其加入持有者手牌，并让对方确认该卡。
 function c37349495.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前效果选择的目标怪兽
+	-- 获取发动时选择的对象卡。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 将目标怪兽以效果原因加入手牌
+		-- 将对象卡以效果原因送去其持有者的手卡。
 		Duel.SendtoHand(tc,nil,REASON_EFFECT)
-		-- 向对方确认看到被加入手牌的怪兽
+		-- 向对方玩家确认被加入手卡的卡片。
 		Duel.ConfirmCards(1-tp,tc)
 	end
 end
