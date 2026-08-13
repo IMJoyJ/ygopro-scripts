@@ -14,11 +14,11 @@ function c19451302.initial_effect(c)
 	e2:SetRange(LOCATION_SZONE)
 	e2:SetTargetRange(0,LOCATION_MZONE)
 	e2:SetTarget(c19451302.indtg)
-	-- 设置效果值为判断目标是否为名字带有「爬虫妖」的怪兽
+	-- 设置效果值为过滤器，检查战斗对象是否属于「爬虫妖」系列（0x3c），即仅当与「爬虫妖」怪兽进行战斗时，目标怪兽才适用此战斗破坏免疫。
 	e2:SetValue(aux.TargetBoolFunction(Card.IsSetCard,0x3c))
 	c:RegisterEffect(e2)
 end
--- 定义目标筛选函数，用于判断目标怪兽是否为攻击力为0且攻击表示
+-- 目标筛选函数：仅当怪兽是攻击力为0且表侧攻击表示时才成为该效果的适用对象，即对应原文中“对方场上表侧攻击表示存在的攻击力是0的怪兽”。
 function c19451302.indtg(e,c)
 	return c:IsAttack(0) and c:IsAttackPos()
 end

@@ -7,13 +7,13 @@ function c19384334.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- 全部的炎属性的怪兽攻击力上升500
+	-- 全部的炎属性的怪兽攻击力上升500。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD)
 	e2:SetRange(LOCATION_FZONE)
 	e2:SetTargetRange(LOCATION_MZONE,LOCATION_MZONE)
 	e2:SetCode(EFFECT_UPDATE_ATTACK)
-	-- 检索满足条件的炎属性怪兽组
+	-- 设置效果的影响对象为场上所有炎属性的怪兽，仅对这些怪兽适用攻击力增减效果。
 	e2:SetTarget(aux.TargetBoolFunction(Card.IsAttribute,ATTRIBUTE_FIRE))
 	e2:SetValue(500)
 	c:RegisterEffect(e2)

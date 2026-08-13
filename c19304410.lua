@@ -7,9 +7,9 @@
 -- ●「护宝炮妖」怪兽
 -- ●「阿不思的落胤」或者有那个卡名记述的怪兽
 local s,id,o=GetID()
--- 创建效果，注册两个效果：①从手卡特殊召唤；②被送去墓地时从墓地特殊召唤
+-- 初始化此卡效果：注册①从手卡特殊召唤的起动效果和②被送去墓地时从自己墓地特殊召唤的诱发效果，两个效果同名卡1回合各能用1次。
 function s.initial_effect(c)
-	-- 记录该卡具有「阿不思的落胤」的卡名记述
+	-- 登记卡名：将卡号68468459（阿不思的落胤）记入此卡的记述卡名，使此卡也被视为“有阿不思的落胤卡名记述的怪兽”。
 	aux.AddCodeList(c,68468459)
 	-- ①：自己场上有「铁兽炎工 姬特」以外的，「铁兽」怪兽或「护宝炮妖」怪兽存在的场合才能发动。这张卡从手卡特殊召唤。
 	local e1=Effect.CreateEffect(c)
@@ -22,7 +22,7 @@ function s.initial_effect(c)
 	e1:SetTarget(s.sptg)
 	e1:SetOperation(s.spop)
 	c:RegisterEffect(e1)
-	-- ②：这张卡被送去墓地的场合才能发动。除「铁兽炎工 姬特」外的以下怪兽之内1只从自己墓地守备表示特殊召唤。●「铁兽」怪兽●「护宝炮妖」怪兽●「阿不思的落胤」或者有那个卡名记述的怪兽
+	-- ②：这张卡被送去墓地的场合才能发动。除「铁兽炎工 姬特」外的以下怪兽之内1只从自己墓地守备表示特殊召唤。●「铁兽」怪兽 ●「护宝炮妖」怪兽 ●「阿不思的落胤」或者有那个卡名记述的怪兽
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(id,1))  --"从墓地特殊召唤"
 	e2:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -34,57 +34,57 @@ function s.initial_effect(c)
 	e2:SetOperation(s.spop2)
 	c:RegisterEffect(e2)
 end
--- 过滤函数，用于判断场上是否存在「铁兽」或「护宝炮妖」怪兽且不是姬特本身
+-- 定义①效果的过滤条件：怪兽需属于「铁兽」或「护宝炮妖」系列、表侧表示且卡名不是「铁兽炎工 姬特」。
 function s.cfilter(c)
 	return c:IsSetCard(0x14d,0x155) and c:IsFaceup() and not c:IsCode(id)
 end
--- 效果条件函数，判断是否满足①效果的发动条件
+-- ①效果的发动条件：自己场上存在至少1只满足s.cfilter的怪兽（「铁兽」或「护宝炮妖」表侧怪兽且非此卡自身）。
 function s.spcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查自己场上是否存在满足cfilter条件的怪兽
+	-- 返回自己场上是否存在满足条件的表侧「铁兽」/「护宝炮妖」怪兽（非此卡自身）。
 	return Duel.IsExistingMatchingCard(s.cfilter,tp,LOCATION_MZONE,0,1,nil)
 end
--- ①效果的发动时点处理函数，判断是否可以发动
+-- ①效果的发动合法性检测：自己主要怪兽区域有空位，且此卡自身可以特殊召唤。
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查自己场上是否有空位
+	-- 检查自己场上主要怪兽区域是否有空位。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置效果处理信息，告知对方此效果将特殊召唤一张卡
+	-- 设置操作信息：此效果要把这张卡自身特殊召唤，数量为1，供连锁处理时判定（如星尘龙等）使用。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- ①效果的处理函数，将自身从手卡特殊召唤
+-- ①效果处理：若此卡仍与当前连锁相关，则将其以表侧攻击表示特殊召唤到自己场上。
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToChain() then
-		-- 执行特殊召唤操作
+		-- 执行特殊召唤：将此卡以表侧攻击表示特殊召唤到自己场上。
 		Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
--- 过滤函数，用于筛选墓地中可特殊召唤的怪兽
+-- 定义②效果选择墓地怪兽的过滤条件：不是此卡自身，属于「铁兽」或「护宝炮妖」系列，或是「阿不思的落胤」或有该卡名记述的怪兽，且可以表侧守备表示特殊召唤。
 function s.spfilter(c,e,tp)
 	return not c:IsCode(id)
-		-- 判断怪兽是否为「铁兽」或「护宝炮妖」，或是否记述了「阿不思的落胤」
+		-- 筛选条件：目标属于「铁兽」/「护宝炮妖」系列，或是「阿不思的落胤」或者有那个卡名记述的怪兽。
 		and (c:IsSetCard(0x14d,0x155) or aux.IsCodeOrListed(c,68468459))
 		and c:IsCanBeSpecialSummoned(e,0,tp,false,false,POS_FACEUP_DEFENSE)
 end
--- ②效果的发动时点处理函数，判断是否可以发动
+-- ②效果发动合法性检查：自己主要怪兽区域有空位，且自己墓地存在满足s.spfilter条件的怪兽（可供特殊召唤）。
 function s.sptg2(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查自己场上是否有空位
+	-- 检查自己场上主要怪兽区域是否有空位。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查自己墓地是否存在满足spfilter条件的怪兽
+		-- 检查自己墓地是否存在至少1张满足s.spfilter的怪兽作为特殊召唤候选。
 		and Duel.IsExistingMatchingCard(s.spfilter,tp,LOCATION_GRAVE,0,1,nil,e,tp) end
-	-- 设置效果处理信息，告知对方此效果将从墓地特殊召唤一张卡
+	-- 设置操作信息：本效果将不取对象地从自己墓地特殊召唤1只怪兽，目标在效果处理时选择。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_GRAVE)
 end
--- ②效果的处理函数，从墓地选择一只怪兽特殊召唤
+-- ②效果处理：若场上空格足够，则从自己墓地选择1只符合条件且不受王家长眠之谷影响的怪兽，以表侧守备表示特殊召唤到自己场上。
 function s.spop2(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查自己场上是否有空位
+	-- 若自己场上没有可用的主要怪兽区域空格，则结束效果处理。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-	-- 提示玩家选择要特殊召唤的卡
+	-- 发送选择提示消息，要求玩家选择要特殊召唤的怪兽。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 从墓地中选择一只满足条件的怪兽
+	-- 玩家在自己墓地选择1张满足过滤条件且不受王家长眠之谷影响的怪兽卡作为特殊召唤对象。
 	local g=Duel.SelectMatchingCard(tp,aux.NecroValleyFilter(s.spfilter),tp,LOCATION_GRAVE,0,1,1,nil,e,tp)
 	if g:GetCount()>0 then
-		-- 执行特殊召唤操作
+		-- 将选择的怪兽以表侧守备表示特殊召唤到自己场上。
 		Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP_DEFENSE)
 	end
 end

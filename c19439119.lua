@@ -14,31 +14,31 @@ function c19439119.initial_effect(c)
 	e1:SetOperation(c19439119.spop)
 	c:RegisterEffect(e1)
 end
--- 判断此卡是否由手牌丢弃进入墓地
+-- 判断触发条件：该卡从手牌被丢弃送去墓地（之前位置为手牌且丢弃原因包含REASON_DISCARD）。
 function c19439119.spcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsPreviousLocation(LOCATION_HAND) and bit.band(r,REASON_DISCARD)~=0
 end
--- 筛选满足等级4以下、魔轰神卡名、可特殊召唤条件的墓地怪兽
+-- 定义可选怪兽的筛选条件：自己墓地1只其他的4星以下的「魔轰神」怪兽且能被特殊召唤。
 function c19439119.filter(c,e,tp)
 	return c:IsLevelBelow(4) and c:IsSetCard(0x35) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 设置选择目标为满足条件的墓地怪兽，并设置操作信息为特殊召唤
+-- 特殊召唤效果的发动时处理：选择自己墓地1只符合条件的「魔轰神」怪兽（不能选自身）作为效果对象，并设置特殊召唤的操作信息。
 function c19439119.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and c19439119.filter(chkc,e,tp) and chkc~=e:GetHandler() end
 	if chk==0 then return true end
-	-- 向玩家提示“请选择要特殊召唤的卡”
+	-- 向玩家提示选择要特殊召唤的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 选择满足条件的1只墓地怪兽作为目标
+	-- 从自己墓地选择1只满足条件的「魔轰神」怪兽（不能选择自身）作为效果对象。
 	local g=Duel.SelectTarget(tp,c19439119.filter,tp,LOCATION_GRAVE,0,1,1,e:GetHandler(),e,tp)
-	-- 设置连锁操作信息为特殊召唤1只怪兽
+	-- 将本次操作信息设置为特殊召唤，目标为已选对象，数量1。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,1,0,0)
 end
--- ①：这张卡从手卡丢弃去墓地的场合，以自己墓地1只其他的4星以下的「魔轰神」怪兽为对象发动。那只怪兽特殊召唤。
+-- 特殊召唤效果的结算：取回对象卡，若与效果关联，则将其以表侧攻击表示特殊召唤。
 function c19439119.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的目标怪兽
+	-- 取得效果处理时选择的第1张对象卡。
 	local tc=Duel.GetFirstTarget()
 	if tc and tc:IsRelateToEffect(e) then
-		-- 将目标怪兽特殊召唤到场上
+		-- 将对象怪兽以表侧表示特殊召唤到持有者（自己）场上。
 		Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP)
 	end
 end

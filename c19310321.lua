@@ -9,51 +9,51 @@ function c19310321.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_IGNITION)
 	e1:SetRange(LOCATION_GRAVE)
 	e1:SetCountLimit(1,19310321)
-	-- 将此卡从游戏中除外作为费用
+	-- 为效果设置发动COST：将墓地的这张卡从游戏中除外作为发动代价。
 	e1:SetCost(aux.bfgcost)
 	e1:SetTarget(c19310321.target)
 	e1:SetOperation(c19310321.activate)
 	c:RegisterEffect(e1)
 end
--- 过滤条件：场上表侧表示的超量怪兽且没有超量素材
+-- 筛选条件：自己场上表侧表示的超量怪兽，且没有超量素材。
 function c19310321.filter1(c)
 	return c:IsFaceup() and c:IsType(TYPE_XYZ) and c:GetOverlayCount()==0
 end
--- 过滤条件：墓地名字带有「纹章兽」的怪兽且可以被叠放
+-- 筛选条件：自己墓地中名字带有「纹章兽」（0x76）的怪兽，且可作为超量素材。
 function c19310321.filter2(c)
 	return c:IsSetCard(0x76) and c:IsCanOverlay()
 end
--- 效果处理时的条件判断：确认场上存在1只符合条件的超量怪兽和墓地存在2只符合条件的怪兽
+-- 效果发动目标判定：若chkc不为nil则直接返回false（不进行外部对象检查）；在chk==0时检查是否存在符合条件的超量怪兽和墓地纹章兽，以判断效果可否发动。
 function c19310321.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return false end
-	-- 确认场上存在1只符合条件的超量怪兽
+	-- 检查自己场上是否存在1只表侧表示且没有超量素材的超量怪兽，若不存在则效果不能发动。
 	if chk==0 then return Duel.IsExistingTarget(c19310321.filter1,tp,LOCATION_MZONE,0,1,nil)
-		-- 确认墓地存在2只符合条件的怪兽
+		-- 检查自己墓地是否存在2只名字带有「纹章兽」且可作为超量素材的怪兽（排除此卡自身），若不足则效果不能发动。
 		and Duel.IsExistingTarget(c19310321.filter2,tp,LOCATION_GRAVE,0,2,e:GetHandler()) end
-	-- 提示玩家选择一只没有超量素材的超量怪兽
+	-- 发送选择提示，让玩家从符合条件的怪兽中选择1只没有超量素材的超量怪兽。
 	Duel.Hint(HINT_SELECTMSG,tp,aux.Stringid(19310321,1))  --"请选择一只没有素材的超量怪兽"
-	-- 选择场上符合条件的1只超量怪兽作为效果对象
+	-- 选择自己场上1只满足filter1的超量怪兽作为效果对象。
 	local g1=Duel.SelectTarget(tp,c19310321.filter1,tp,LOCATION_MZONE,0,1,1,nil)
 	e:SetLabelObject(g1:GetFirst())
-	-- 提示玩家选择作为超量素材的卡
+	-- 发送选择提示，让玩家选择要作为超量素材的墓地怪兽。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_XMATERIAL)  --"请选择要作为超量素材的卡"
-	-- 选择墓地符合条件的2只怪兽作为效果对象
+	-- 选择自己墓地2只满足filter2的纹章兽作为效果对象。
 	local g2=Duel.SelectTarget(tp,c19310321.filter2,tp,LOCATION_GRAVE,0,2,2,nil)
-	-- 设置效果处理信息：将2张卡从墓地离开
+	-- 设置操作信息，登记这些墓地怪兽将因本效果离开墓地，数量为2。
 	Duel.SetOperationInfo(0,CATEGORY_LEAVE_GRAVE,g2,2,0,0)
 end
--- 过滤条件：与效果相关且可以被叠放的卡
+-- 处理阶段的筛选条件：检查对象怪兽仍与此效果关联且可以作为超量素材。
 function c19310321.ovfilter(c,e)
 	return c:IsRelateToEffect(e) and c:IsCanOverlay()
 end
--- 效果处理函数：将选中的墓地怪兽叠放至场上目标超量怪兽下方
+-- 效果处理：取出之前选择的超量怪兽，若其已里侧表示、或与效果失去关联、或对此效果免疫则终止；否则从连锁对象中筛选出仍然有效的墓地纹章兽并叠放为超量素材。
 function c19310321.activate(e,tp,eg,ep,ev,re,r,rp)
 	local tc=e:GetLabelObject()
 	if tc:IsFacedown() or not tc:IsRelateToEffect(e) or tc:IsImmuneToEffect(e) then return end
-	-- 获取连锁中被选择的卡片组，并筛选出与效果相关的可叠放卡
+	-- 从当前连锁记录的取对象卡片中，筛选出仍与此效果关联且可作为超量素材的墓地怪兽。
 	local g=Duel.GetChainInfo(0,CHAININFO_TARGET_CARDS):Filter(c19310321.ovfilter,tc,e)
 	if g:GetCount()>0 then
-		-- 将筛选出的卡片叠放至目标怪兽下方
+		-- 将选中的墓地怪兽叠放在目标超量怪兽下方，作为其超量素材。
 		Duel.Overlay(tc,g)
 	end
 end
