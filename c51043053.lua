@@ -10,7 +10,7 @@ function c51043053.initial_effect(c)
 	e1:SetTargetRange(0,LOCATION_MZONE)
 	e1:SetCondition(c51043053.atcon)
 	c:RegisterEffect(e1)
-	-- 1回合1次，自己场上有龙族·8星怪兽存在的场合才能发动。这张卡的等级直到结束阶段时变成8星。
+	-- 此外，1回合1次，自己场上有龙族·8星怪兽存在的场合才能发动。这张卡的等级直到结束阶段时变成8星。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(51043053,0))  --"等级变化"
 	e2:SetType(EFFECT_TYPE_IGNITION)
@@ -20,28 +20,28 @@ function c51043053.initial_effect(c)
 	e2:SetOperation(c51043053.operation)
 	c:RegisterEffect(e2)
 end
--- 检查是否满足效果发动条件：自己场上只有这张卡且对方手牌少于5张。
+-- 效果1的适用条件：判断自己场上怪兽只有这张卡且对方手卡为4张以下时才允许封锁对方攻击宣言。
 function c51043053.atcon(e)
-	-- 检查自己场上是否只有1只怪兽。
+	-- 统计该效果控制者自己场上怪兽区的卡数，判定是否只有这张卡（数量为1）。
 	return Duel.GetFieldGroupCount(e:GetHandlerPlayer(),LOCATION_MZONE,0)==1
-		-- 检查对方手牌数量是否少于5张。
+		-- 统计对方手牌数量，判定是否在4张以下（小于5）。
 		and Duel.GetFieldGroupCount(e:GetHandlerPlayer(),0,LOCATION_HAND)<5
 end
--- 过滤函数，用于筛选场上表侧表示的8星龙族怪兽。
+-- 定义筛选器：用于检查怪兽是否表侧表示、等级为8且种族为龙族，作为“龙族·8星怪兽”的判定条件。
 function c51043053.filter(c)
 	return c:IsFaceup() and c:IsLevel(8) and c:IsRace(RACE_DRAGON)
 end
--- 检查是否满足等级变化效果发动条件：当前等级不是8星且自己场上存在至少1只8星龙族怪兽。
+-- 效果2的发动条件：这张卡自身当前不是8星，且自己场上有满足filter的龙族·8星怪兽存在。
 function c51043053.condition(e,tp,eg,ep,ev,re,r,rp)
 	return not e:GetHandler():IsLevel(8)
-		-- 检查自己场上是否存在至少1只8星龙族怪兽。
+		-- 检查自己场上是否存在至少1只表侧表示·等级8·龙族的怪兽，即满足“自己场上有龙族·8星怪兽存在”。
 		and Duel.IsExistingMatchingCard(c51043053.filter,tp,LOCATION_MZONE,0,1,nil)
 end
--- 执行等级变化效果：将自身等级变为8星并设置在结束阶段重置。
+-- 效果2处理：若这张卡仍在场上且表侧表示，赋予它一个将等级变成8的临时效果，该效果持续到结束阶段并随离场等情况重置。
 function c51043053.operation(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) and c:IsFaceup() then
-		-- 设置自身等级变为8星的效果，并在结束阶段重置。
+		-- 这张卡的等级直到结束阶段时变成8星。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_CHANGE_LEVEL)

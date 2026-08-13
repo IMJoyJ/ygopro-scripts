@@ -17,11 +17,11 @@ function c50939127.initial_effect(c)
 	e2:SetValue(c50939127.ind2)
 	c:RegisterEffect(e2)
 end
--- 判断效果是否作用于魔法或陷阱卡且该效果未指定对象。
+-- 该判断函数用于效果破坏免疫：当来袭效果不取对象（不具有EFFECT_FLAG_CARD_TARGET标志）且为魔法/陷阱卡效果时返回true，使此卡不会被其效果破坏。
 function c50939127.ind1(e,re,rp,c)
 	return not re:IsHasProperty(EFFECT_FLAG_CARD_TARGET) and re:IsActiveType(TYPE_SPELL+TYPE_TRAP)
 end
--- 判断自身攻击力是否低于1900。
+-- 该判断函数用于战斗破坏免疫：当与这张卡进行战斗的怪兽攻击力在1900以下时返回true，使此卡不会被该怪兽战斗破坏。
 function c50939127.ind2(e,c)
 	return c:IsAttackBelow(1900)
 end
