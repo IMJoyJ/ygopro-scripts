@@ -10,12 +10,12 @@ function c29267084.initial_effect(c)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET+EFFECT_FLAG_DAMAGE_STEP+EFFECT_FLAG_CONTINUOUS_TARGET)
 	e1:SetHintTiming(TIMING_DAMAGE_STEP)
-	-- 限制效果只能在伤害计算前的时机发动或适用。
+	-- 设置发动条件为伤害步骤限制：只能在伤害步骤且伤害计算前发动。
 	e1:SetCondition(aux.dscon)
 	e1:SetTarget(c29267084.target)
 	e1:SetOperation(c29267084.operation)
 	c:RegisterEffect(e1)
-	-- 作为对象的怪兽的攻击力下降700，
+	-- 作为对象的怪兽不能攻击。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_TARGET)
 	e2:SetCode(EFFECT_CANNOT_ATTACK)
@@ -38,34 +38,34 @@ function c29267084.initial_effect(c)
 	e5:SetOperation(c29267084.desop)
 	c:RegisterEffect(e5)
 end
--- 选择对方场上的1只表侧表示怪兽作为对象。
+-- 效果发动时的目标处理：仅在对方怪兽区存在表侧表示怪兽时，选择其中1只作为对象。
 function c29267084.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(1-tp) and chkc:IsFaceup() end
-	-- 检查是否满足选择对象的条件。
+	-- 检查对方场上是否存在至少1只表侧表示怪兽，若不存在则效果无法发动。
 	if chk==0 then return Duel.IsExistingTarget(Card.IsFaceup,tp,0,LOCATION_MZONE,1,nil) end
-	-- 提示玩家选择表侧表示的怪兽。
+	-- 向玩家显示“请选择表侧表示的卡”的提示信息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
-	-- 选择对方场上的1只表侧表示怪兽作为对象。
+	-- 选择对方场上的1只表侧表示怪兽作为效果对象，并登记为当前连锁的取对象目标。
 	Duel.SelectTarget(tp,Card.IsFaceup,tp,0,LOCATION_MZONE,1,1,nil)
 end
--- 将选择的怪兽设为这张卡的效果对象。
+-- 效果处理时，若这张卡和对象怪兽均仍然与效果关联，则将对象怪兽设置为这张卡的永续对象，以便后续持续施加影响。
 function c29267084.operation(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取当前连锁的效果对象怪兽。
+	-- 获取发动时选择的对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if c:IsRelateToEffect(e) and tc:IsRelateToEffect(e) then
 		c:SetCardTarget(tc)
 	end
 end
--- 判断对象怪兽是否已离开场上的条件。
+-- 破坏效果的触发条件：这张卡未被预定破坏时，若其永续对象怪兽从场上离开，则返回真。
 function c29267084.descon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsStatus(STATUS_DESTROY_CONFIRMED) then return false end
 	local tc=c:GetFirstCardTarget()
 	return tc and eg:IsContains(tc)
 end
--- 当对象怪兽离开场上时，将此卡破坏。
+-- 破坏效果处理：将这张卡本身破坏。
 function c29267084.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 将此卡因效果而破坏
+	-- 以效果原因将这张卡破坏。
 	Duel.Destroy(e:GetHandler(),REASON_EFFECT)
 end
