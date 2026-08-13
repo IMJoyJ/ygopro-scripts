@@ -1,12 +1,17 @@
 --燦幻封炉
+-- 效果：
+-- 这个卡名的②的效果1回合只能使用1次。
+-- ①：1回合1次，自己的龙族·炎属性怪兽的战斗让怪兽被破坏时，以那1只破坏的怪兽为对象才能发动。那只怪兽在自己场上守备表示特殊召唤。
+-- ②：对方结束阶段，支付1000基本分，以自己墓地1张「灿幻」魔法·陷阱卡为对象才能发动。那张卡在自己场上盖放。这个效果盖放的卡从场上离开的场合除外。
 local s,id,o=GetID()
+-- 初始化卡片效果：注册一个允许这张永续陷阱卡自由时点发动的空效果；注册①效果（龙族·炎属性怪兽战斗破坏怪兽时诱发、取对象、1回合1次的特殊召唤效果）；注册②效果（对方结束阶段诱发、取对象、同名1回合1次的盖放效果）
 function s.initial_effect(c)
-	--Activate
+	-- 永续魔陷/场地卡通用的“允许发动”空效果，无此效果则无法发动
 	local e0=Effect.CreateEffect(c)
 	e0:SetType(EFFECT_TYPE_ACTIVATE)
 	e0:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e0)
-	--special summon
+	-- ①：1回合1次，自己的龙族·炎属性怪兽的战斗让怪兽被破坏时，以那1只破坏的怪兽为对象才能发动。那只怪兽在自己场上守备表示特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
@@ -18,9 +23,9 @@ function s.initial_effect(c)
 	e1:SetTarget(s.sptg)
 	e1:SetOperation(s.spop)
 	c:RegisterEffect(e1)
-	--set
+	-- ②：对方结束阶段，支付1000基本分，以自己墓地1张「灿幻」魔法·陷阱卡为对象才能发动。那张卡在自己场上盖放。这个效果盖放的卡从场上离开的场合除外。
 	local e2=Effect.CreateEffect(c)
-	e2:SetDescription(aux.Stringid(id,1))
+	e2:SetDescription(aux.Stringid(id,1))  --"盖放"
 	e2:SetCategory(CATEGORY_SSET)
 	e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
 	e2:SetCode(EVENT_PHASE+PHASE_END)
@@ -33,54 +38,80 @@ function s.initial_effect(c)
 	e2:SetOperation(s.setop)
 	c:RegisterEffect(e2)
 end
+-- ①效果的发动条件：自己场上（或离场前在自己场上）的龙族·炎属性怪兽正处于战斗中，即本次战斗破坏是自己那只怪兽的战斗造成的
 function s.spcon(e,tp,eg,ep,ev,re,r,rp)
+	-- 取得自己操控的正处于战斗中的怪兽
 	local a=Duel.GetBattleMonster(tp)
 	return a and (a:IsLocation(LOCATION_MZONE) and a:IsRace(RACE_DRAGON) and a:IsAttribute(ATTRIBUTE_FIRE)
 		or not a:IsLocation(LOCATION_MZONE) and a:IsPreviousControler(tp)
 			and a:GetPreviousRaceOnField()&RACE_DRAGON~=0
 			and a:GetPreviousAttributeOnField()&ATTRIBUTE_FIRE~=0)
 end
+-- 对象筛选条件：不是衍生物、表侧表示的怪兽卡，能成为效果对象，且能以守备表示特殊召唤到自己场上
 function s.tgfilter(c,e,tp)
 	return not c:IsType(TYPE_TOKEN) and c:IsFaceupEx() and c:IsType(TYPE_MONSTER)
 		and c:IsCanBeEffectTarget(e) and c:IsCanBeSpecialSummoned(e,0,tp,false,false,POS_FACEUP_DEFENSE)
 end
+-- ①效果的对象选择：从被战斗破坏的怪兽中筛出满足条件的卡，确认自己怪兽区有空位且有可特殊召唤的对象，多于1只时由玩家选择1只，将其设为效果对象并登记特殊召唤的操作信息
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return false end
 	local g=eg:Filter(s.tgfilter,nil,e,tp)
+	-- 发动可行性检查：自己主要怪兽区有空位，且被战斗破坏的怪兽中存在满足条件的可特殊召唤对象
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0 and g:GetCount()>0 end
 	local bc=g:GetFirst()
 	if g:GetCount()>1 then
 		bc=g:FilterSelect(tp,s.tgfilter,1,1,nil,e,tp):GetFirst()
 	end
+	-- 把选出的被战斗破坏的怪兽设置为当前连锁的效果对象
 	Duel.SetTargetCard(bc)
+	-- 登记操作信息：此连锁确定要把作为对象的1只怪兽特殊召唤
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,bc,1,0,0)
 end
+-- ①效果的处理：取得对象怪兽，若它仍与本效果关联且不受王家长眠之谷影响，则在自己场上守备表示特殊召唤
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
+	-- 取得当前连锁的对象卡（被破坏的那只怪兽）
 	local tc=Duel.GetFirstTarget()
+	-- 确认对象怪兽仍与本效果关联，且不受王家长眠之谷影响
 	if tc:IsRelateToEffect(e) and aux.NecroValleyFilter()(tc) then
+		-- 把对象怪兽在自己场上以表侧守备表示特殊召唤
 		Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP_DEFENSE)
 	end
 end
+-- ②效果的发动条件：当前是对方的回合（即对方结束阶段）
 function s.setcon(e,tp,eg,ep,ev,re,r,rp)
+	-- 判定当前回合玩家是否为对方玩家
 	return Duel.GetTurnPlayer()==1-tp
 end
+-- ②效果的发动代价：确认自己能支付1000基本分，发动时支付1000基本分
 function s.setcost(e,tp,eg,ep,ev,re,r,rp,chk)
+	-- 代价可行性检查：确认自己能支付1000基本分
 	if chk==0 then return Duel.CheckLPCost(tp,1000) end
+	-- 支付1000基本分作为发动代价
 	Duel.PayLPCost(tp,1000)
 end
+-- 对象筛选条件：自己墓地可以盖放的「灿幻」魔法·陷阱卡（卡片系列0x1a9）
 function s.sfilter(c)
 	return c:IsSetCard(0x1a9) and c:IsType(TYPE_SPELL+TYPE_TRAP) and c:IsSSetable()
 end
+-- ②效果的对象选择：以自己墓地1张可盖放的「灿幻」魔法·陷阱卡为对象，并登记那张卡离开墓地的操作信息
 function s.settg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and s.sfilter(chkc) end
+	-- 发动可行性检查：自己墓地存在能成为对象的「灿幻」魔法·陷阱卡
 	if chk==0 then return Duel.IsExistingTarget(s.sfilter,tp,LOCATION_GRAVE,0,1,nil) end
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SET)
+	-- 向玩家显示「请选择要盖放的卡」的选择提示
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SET)  --"请选择要盖放的卡"
+	-- 让自己玩家从自己墓地选择1张满足条件的「灿幻」魔法·陷阱卡作为效果对象
 	local g=Duel.SelectTarget(tp,s.sfilter,tp,LOCATION_GRAVE,0,1,1,nil)
+	-- 登记操作信息：此连锁确定要让作为对象的1张卡离开墓地
 	Duel.SetOperationInfo(0,CATEGORY_LEAVE_GRAVE,g,1,0,0)
 end
+-- ②效果的处理：把对象的「灿幻」魔法·陷阱卡在自己场上盖放，并给它附加离场时除外的永续效果
 function s.setop(e,tp,eg,ep,ev,re,r,rp)
+	-- 取得当前连锁的对象卡（墓地的那张「灿幻」魔法·陷阱卡）
 	local tc=Duel.GetFirstTarget()
+	-- 确认对象卡仍与本效果关联、不受王家长眠之谷影响，并成功在自己场上盖放
 	if tc:IsRelateToEffect(e) and aux.NecroValleyFilter()(tc) and Duel.SSet(tp,tc)>0 then
+		-- 这个效果盖放的卡从场上离开的场合除外。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_LEAVE_FIELD_REDIRECT)
