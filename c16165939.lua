@@ -35,64 +35,64 @@ function c16165939.initial_effect(c)
 	e3:SetOperation(c16165939.spop)
 	c:RegisterEffect(e3)
 end
--- 过滤函数，用于判断是否为表侧表示且不是效果怪兽的怪兽
+-- 过滤条件：判断怪兽是否为表侧表示且不是效果怪兽，用于识别“效果怪兽以外的怪兽表侧表示特殊召唤”。
 function c16165939.cfilter(c)
 	return c:IsFaceup() and not c:IsType(TYPE_EFFECT)
 end
--- 效果发动的条件函数，判断是否有满足条件的怪兽被特殊召唤
+-- 发动条件：本次特殊召唤成功的怪兽集合中是否存在至少1只满足cfilter的怪兽（即包含效果怪兽以外的表侧表示怪兽）。
 function c16165939.descon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c16165939.cfilter,1,nil)
 end
--- 效果的发动选择目标阶段，选择对方场上的1张卡作为破坏对象
+-- 效果①的目标选择：取对方场上1张卡为对象；发动时确认有可选对象，选择1张对方场上的卡并设置破坏的操作信息。
 function c16165939.destg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsOnField() and chkc:IsControler(1-tp) end
-	-- 判断是否满足发动条件，检查对方场上是否存在至少1张卡
+	-- 发动时判定：检查对方场上是否存在至少1张能够成为效果对象的卡（aux.TRUE表示任意卡，但仍需可被取对象）。
 	if chk==0 then return Duel.IsExistingTarget(aux.TRUE,tp,0,LOCATION_ONFIELD,1,nil) end
-	-- 提示玩家选择要破坏的卡
+	-- 弹出发动时选择提示：请选择要破坏的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 选择对方场上的1张卡作为破坏对象
+	-- 玩家从对方场上选择1张卡作为效果对象，同时将该卡登记为本次连锁的对象。
 	local g=Duel.SelectTarget(tp,aux.TRUE,tp,0,LOCATION_ONFIELD,1,1,nil)
-	-- 设置效果处理信息，确定要破坏的卡的数量
+	-- 设置操作信息：本连锁将破坏所选择的卡，数量为选择数。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,g:GetCount(),0,0)
 end
--- 效果的发动处理阶段，对选中的卡进行破坏
+-- 效果①处理时的操作：取出对象卡，若其仍与该效果关联，则将其破坏。
 function c16165939.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁中选择的目标卡
+	-- 取得当前连锁第一个效果对象卡（此处即破坏对象）。
 	local tc=Duel.GetFirstTarget()
 	if tc and tc:IsRelateToEffect(e) then
-		-- 将目标卡以效果原因破坏
+		-- 以“效果”为原因将对象卡破坏。
 		Duel.Destroy(tc,REASON_EFFECT)
 	end
 end
--- 判断此卡是否被对方效果破坏并处于魔法与陷阱区域
+-- 效果②的发动条件：这张卡原本在魔法与陷阱区域，且被对方玩家的效果破坏时才能发动（同时要求破坏前控制权为己方）。
 function c16165939.spcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	return c:IsPreviousLocation(LOCATION_SZONE) and c:IsPreviousControler(tp)
 		and rp==1-tp and c:IsReason(REASON_EFFECT)
 end
--- 过滤函数，用于筛选可以特殊召唤的效果怪兽以外的怪兽
+-- 可特殊召唤的怪兽的过滤条件：不是效果怪兽，且能够被效果特殊召唤（检查召唤条件和苏生限制）。
 function c16165939.spfilter(c,e,tp)
 	return not c:IsType(TYPE_EFFECT) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 特殊召唤效果的发动选择目标阶段，检查是否有满足条件的怪兽可特殊召唤
+-- 效果②的目标选择条件：发动时确认自己主要怪兽区有空格，且手卡·卡组·墓地中存在满足条件的怪兽。
 function c16165939.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断是否满足发动条件，检查玩家场上是否有空位
+	-- 判定自己主要怪兽区是否有可用的空格。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 判断是否满足发动条件，检查手卡·卡组·墓地是否存在满足条件的怪兽
+		-- 判定手卡·卡组·墓地中是否存在至少1只满足spfilter的效果怪兽以外的怪兽。
 		and Duel.IsExistingMatchingCard(c16165939.spfilter,tp,LOCATION_HAND+LOCATION_DECK+LOCATION_GRAVE,0,1,nil,e,tp) end
-	-- 设置效果处理信息，确定要特殊召唤的怪兽数量及来源
+	-- 设置操作信息：本连锁将从手卡·卡组·墓地特殊召唤1只怪兽。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_HAND+LOCATION_DECK+LOCATION_GRAVE)
 end
--- 特殊召唤效果的发动处理阶段，从手卡·卡组·墓地选择怪兽进行特殊召唤
+-- 效果②处理时的操作：自己主要怪兽区有空位时，从手卡·卡组·墓地选1只效果怪兽以外的怪兽（并受王家长眠之谷影响过滤）以表侧表示特殊召唤。
 function c16165939.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断是否满足发动条件，检查玩家场上是否有空位
+	-- 处理时再次确认自己主要怪兽区有空位；若无空格则直接结束处理。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-	-- 提示玩家选择要特殊召唤的卡
+	-- 弹出特殊召唤选择提示：请选择要特殊召唤的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 从手卡·卡组·墓地选择满足条件的怪兽
+	-- 从手卡·卡组·墓地选择1只效果怪兽以外的怪兽（过滤王家长眠之谷影响）作为特殊召唤对象。
 	local g=Duel.SelectMatchingCard(tp,aux.NecroValleyFilter(c16165939.spfilter),tp,LOCATION_HAND+LOCATION_DECK+LOCATION_GRAVE,0,1,1,nil,e,tp)
 	if g:GetCount()>0 then
-		-- 将选中的怪兽以特殊召唤方式召唤到场上
+		-- 将选择的怪兽以表侧表示特殊召唤到自己场上。注意nocheck=false,nolimit=false，即会正常检查召唤条件与苏生限制。
 		Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
