@@ -3,7 +3,7 @@
 -- 调整＋调整以外的怪兽1只以上
 -- 这张卡攻击守备表示怪兽时，若攻击力超过那个守备力，给与对方基本分那个数值的战斗伤害。每次这张卡给与对方基本分战斗伤害，这张卡的攻击力上升300。
 function c53714009.initial_effect(c)
-	-- 添加同调召唤手续，要求1只调整和1只调整以外的怪兽参与同调
+	-- 为这张卡添加同调召唤手续：需要“调整＋调整以外的怪兽1只以上”（此处调整和调整以外的怪兽均无额外限制）。
 	aux.AddSynchroProcedure(c,nil,aux.NonTuner(nil),1)
 	c:EnableReviveLimit()
 	-- 这张卡攻击守备表示怪兽时，若攻击力超过那个守备力，给与对方基本分那个数值的战斗伤害。
@@ -21,15 +21,15 @@ function c53714009.initial_effect(c)
 	e2:SetOperation(c53714009.atkop)
 	c:RegisterEffect(e2)
 end
--- 判断造成战斗伤害的玩家是否与这张卡的控制者不同
+-- 条件判断：本次战斗伤害是由这张卡给与对方基本分（ep≠tp，即受到伤害的玩家不是这张卡的控制者）时，效果才满足发动条件。
 function c53714009.atkcon(e,tp,eg,ep,ev,re,r,rp)
 	return ep~=tp
 end
--- 使这张卡的攻击力上升300点
+-- 效果处理：若这张卡仍表侧表示且与所发动效果保持关联，则赋予其攻击力上升300的效果，该效果会在离场、效果被无效等标准重置时机消失。
 function c53714009.atkop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsFacedown() or not c:IsRelateToEffect(e) then return end
-	-- 将攻击力上升300的效果注册给这张卡，并在标准重置条件下重置
+	-- 这张卡的攻击力上升300。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_UPDATE_ATTACK)

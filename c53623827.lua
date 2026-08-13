@@ -8,7 +8,7 @@ function c53623827.initial_effect(c)
 	e1:SetRange(LOCATION_MZONE)
 	e1:SetTargetRange(LOCATION_MZONE,0)
 	e1:SetCode(EFFECT_UPDATE_ATTACK)
-	-- 设置效果目标为场上表侧表示存在的同调怪兽
+	-- 限定该效果适用对象为己方场上的同调怪兽，使攻击力上升效果只作用于同调怪兽。
 	e1:SetTarget(aux.TargetBoolFunction(Card.IsType,TYPE_SYNCHRO))
 	e1:SetValue(600)
 	c:RegisterEffect(e1)

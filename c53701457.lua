@@ -4,21 +4,21 @@
 -- ①：自己场上没有其他怪兽存在的场合，这张卡可以直接攻击。那次直接攻击给与对方的战斗伤害变成一半。
 -- ②：这张卡给与对方战斗伤害时，把这张卡1个超量素材取除才能发动。给与对方为对方手卡数量×500伤害。
 function c53701457.initial_effect(c)
-	-- 添加XYZ召唤手续，使用等级为7的怪兽进行2只叠放
+	-- 为这张卡添加XYZ召唤手续：需要2只等级7的怪兽作为超量素材（对应效果原文‘7星怪兽×2’）。
 	aux.AddXyzProcedure(c,nil,7,2)
 	c:EnableReviveLimit()
-	-- 自己场上没有其他怪兽存在的场合，这张卡可以直接攻击
+	-- ①：自己场上没有其他怪兽存在的场合，这张卡可以直接攻击。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_DIRECT_ATTACK)
 	e1:SetCondition(c53701457.dircon)
 	c:RegisterEffect(e1)
-	-- 这张卡给与对方战斗伤害时，把这张卡1个超量素材取除才能发动。给与对方为对方手卡数量×500伤害。
+	-- 那次直接攻击给与对方的战斗伤害变成一半。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_SINGLE)
 	e2:SetCode(EFFECT_CHANGE_BATTLE_DAMAGE)
 	e2:SetCondition(c53701457.rdcon)
-	-- 将给与对方的战斗伤害变为一半
+	-- 设置战斗伤害变更数值：将这张卡给与对方的战斗伤害变为一半（HALF_DAMAGE）。
 	e2:SetValue(aux.ChangeBattleDamage(1,HALF_DAMAGE))
 	c:RegisterEffect(e2)
 	-- ②：这张卡给与对方战斗伤害时，把这张卡1个超量素材取除才能发动。给与对方为对方手卡数量×500伤害。
@@ -33,50 +33,50 @@ function c53701457.initial_effect(c)
 	e3:SetOperation(c53701457.damop)
 	c:RegisterEffect(e3)
 end
--- 设置该卡的XYZ编号为28
+-- 注册这张卡的XYZ编号为28，用于《No.》相关效果判定。
 aux.xyz_number[53701457]=28
--- 判断自己场上是否只有这张卡或没有其他怪兽
+-- 定义直接攻击条件函数：自己场上没有其他怪兽存在时（即场上怪兽数量≤1，包含自身），允许这张卡直接攻击。
 function c53701457.dircon(e)
-	-- 判断自己场上怪兽数量是否小于等于1
+	-- 检查自己场上怪兽区域卡数是否≤1，满足直接攻击条件（自己场上没有其他怪兽）。
 	return Duel.GetFieldGroupCount(e:GetHandlerPlayer(),LOCATION_MZONE,0)<=1
 end
--- 判断是否为直接攻击且攻击怪兽未被攻击过
+-- 定义战斗伤害减半条件函数：当这张卡进行直接攻击（无攻击目标）且对方场上存在怪兽（本卡允许在对方有怪兽时直接攻击），并且没有多个直接攻击效果叠加时，将这次直接攻击给与对方的战斗伤害变为一半。
 function c53701457.rdcon(e)
 	local c=e:GetHandler()
 	local tp=e:GetHandlerPlayer()
-	-- 判断攻击目标是否为空
+	-- 判断攻击目标为空，即本次攻击是直接攻击。
 	return Duel.GetAttackTarget()==nil
-		-- 判断攻击怪兽的直接攻击效果次数小于2且自己场上有怪兽
+		-- 确认这张卡的直接攻击效果未重复叠加（效果数量<2），且对方场上存在怪兽（符合本卡在对方有怪兽时仍可直接攻击的场景）。
 		and c:GetEffectCount(EFFECT_DIRECT_ATTACK)<2 and Duel.GetFieldGroupCount(tp,0,LOCATION_MZONE)>0
 end
--- 判断造成战斗伤害的玩家是否为对方
+-- 定义②的触发条件：对方受到战斗伤害（ep≠tp），即这张卡给与对方战斗伤害时。
 function c53701457.damcon(e,tp,eg,ep,ev,re,r,rp)
 	return ep~=tp
 end
--- 支付1个超量素材作为代价
+-- 定义②的发动代价：取除这张卡1个超量素材（先检查能否取除，再实际取除）。
 function c53701457.damcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():CheckRemoveOverlayCard(tp,1,REASON_COST) end
 	e:GetHandler():RemoveOverlayCard(tp,1,1,REASON_COST)
 end
--- 设置伤害计算的目标玩家和伤害值
+-- 定义②的发动目标：获取对方手卡数并计算伤害值，指定伤害对象玩家为对方，并设置对应操作信息。
 function c53701457.damtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 获取对方手牌数量
+	-- 取得对方手卡数量（tp为这张卡控制者，0代表对方），用于计算伤害。
 	local ct=Duel.GetFieldGroupCount(tp,0,LOCATION_HAND)
 	if chk==0 then return ct>0 end
-	-- 设置连锁处理的目标玩家为对方
+	-- 设置连锁的目标玩家为对手（1-tp），即伤害的承受方。
 	Duel.SetTargetPlayer(1-tp)
 	local dam=ct*500
-	-- 设置连锁处理的目标参数为计算出的伤害值
+	-- 把计算出的伤害值（手卡数×500）保存为连锁目标参数。
 	Duel.SetTargetParam(dam)
-	-- 设置连锁操作信息为伤害效果
+	-- 设置本次操作信息：效果分类为伤害，对象为对方玩家，伤害数值为dam（用于连锁判定与发动时点）。
 	Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,1-tp,dam)
 end
--- 执行伤害计算并造成伤害
+-- 定义②的伤害处理：从连锁信息取得目标玩家，按该玩家当前手牌数×500造成伤害。
 function c53701457.damop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁中设定的目标玩家
+	-- 获取连锁记录的目标玩家，确定伤害对象。
 	local p=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER)
-	-- 计算目标玩家手牌数量并乘以500作为伤害值
+	-- 以目标玩家当前手牌数×500计算实际伤害值。
 	local dam=Duel.GetFieldGroupCount(p,LOCATION_HAND,0)*500
-	-- 对目标玩家造成指定伤害
+	-- 以效果原因（REASON_EFFECT）对该玩家造成伤害。
 	Duel.Damage(p,dam,REASON_EFFECT)
 end
