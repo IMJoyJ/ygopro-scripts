@@ -6,9 +6,9 @@
 -- ②：只要对方场上有里侧表示怪兽存在，超量怪兽以外的自己的「迷拟宝箱鬼」怪兽可以直接攻击。
 -- ③：把这张卡1个超量素材取除，以最多有对方场上的里侧表示怪兽数量的场上的表侧表示卡为对象才能发动。那些卡破坏，给与对方破坏数量×1000伤害。
 local s,id,o=GetID()
--- 初始化效果函数，添加超量召唤手续、启用复活限制，并注册三个效果
+-- 初始化怪兽效果：设置1星×2的超量召唤手续和苏生限制，并注册②直接攻击、①超量召唤时检索、③取除素材破坏并给予伤害三个效果，且①③各自1回合1次。
 function s.initial_effect(c)
-	-- 为该卡添加超量召唤手续，使用1星怪兽2只进行叠放
+	-- 为这张卡添加超量召唤手续：用2只1星怪兽叠放进行超量召唤（不限制素材种族/属性/卡名）。
 	aux.AddXyzProcedure(c,nil,1,2)
 	c:EnableReviveLimit()
 	-- ②：只要对方场上有里侧表示怪兽存在，超量怪兽以外的自己的「迷拟宝箱鬼」怪兽可以直接攻击。
@@ -45,72 +45,72 @@ function s.initial_effect(c)
 	e3:SetOperation(s.desop)
 	c:RegisterEffect(e3)
 end
--- 判断对方场上是否存在里侧表示的怪兽
+-- 直接攻击效果的适用条件：对方场上存在里侧守备表示怪兽时才允许直接攻击。
 function s.dircon(e)
-	-- 检查对方场上是否存在至少1只里侧表示的怪兽
+	-- 检查对方场上是否存在至少1只里侧守备表示的怪兽。
 	return Duel.IsExistingMatchingCard(Card.IsPosition,e:GetHandlerPlayer(),0,LOCATION_MZONE,1,nil,POS_FACEDOWN_DEFENSE)
 end
--- 设置效果目标，筛选自己场上的「迷拟宝箱鬼」非超量怪兽
+-- 直接攻击效果的适用对象过滤：仅限自己场上卡名属于「迷拟宝箱鬼」且不是超量怪兽的怪兽获得直接攻击能力。
 function s.dirtg(e,c)
 	return c:IsSetCard(0x1b7) and not c:IsType(TYPE_XYZ)
 end
--- 判断此卡是否为超量召唤
+-- ①效果的发动条件：这张卡以超量召唤方式特殊召唤成功。
 function s.thcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsSummonType(SUMMON_TYPE_XYZ)
 end
--- 检索过滤器，筛选「迷拟宝箱鬼」卡且能加入手牌
+-- 检索的卡片过滤条件：卡名属于「迷拟宝箱鬼」字段且能够加入手卡。
 function s.thfilter(c)
 	return c:IsSetCard(0x1b7) and c:IsAbleToHand()
 end
--- 设置检索效果的处理信息，确定要检索的卡
+-- ①效果的目标操作：发动时检查卡组是否存在可检索的「迷拟宝箱鬼」卡，并设置将1张卡加入手卡的操作信息。
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否满足检索条件，即卡组中是否存在符合条件的「迷拟宝箱鬼」卡
+	-- 发动条件判定：自己卡组中存在至少1张符合检索过滤条件的「迷拟宝箱鬼」卡。
 	if chk==0 then return Duel.IsExistingMatchingCard(s.thfilter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置检索效果的处理信息，指定检索卡牌数量和位置
+	-- 设置本次连锁的操作信息：效果处理时从己方卡组把1张卡加入手卡。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 检索效果的处理函数，选择并加入手牌
+-- ①效果的处理：选择1张符合条件的「迷拟宝箱鬼」卡加入手卡，并给对方确认。
 function s.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要加入手牌的卡
+	-- 弹出选择提示，要求玩家选择要加入手卡的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 从卡组中选择一张符合条件的「迷拟宝箱鬼」卡
+	-- 让玩家从卡组中选出1张符合s.thfilter过滤条件的卡。
 	local g=Duel.SelectMatchingCard(tp,s.thfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的卡送入手牌
+		-- 将选中的卡以效果原因加入其持有者的手卡。
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 确认对方查看送入手牌的卡
+		-- 将加入手卡的卡展示给对方玩家确认。
 		Duel.ConfirmCards(1-tp,g)
 	end
 end
--- 破坏效果的费用处理函数，移除1个超量素材
+-- ③效果的发动代价：作为cost从这张卡上取除1个超量素材；先检查是否有素材可取，实际处理时取除1个。
 function s.descost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():CheckRemoveOverlayCard(tp,1,REASON_COST) end
 	e:GetHandler():RemoveOverlayCard(tp,1,1,REASON_COST)
 end
--- 破坏效果的目标选择函数，根据对方里侧怪兽数量选择目标卡
+-- ③效果的目标选择：以对方场上里侧守备表示怪兽数量为最大可选数，选择场上表侧表示卡为对象，并设置破坏和伤害的操作信息。
 function s.destg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	-- 获取对方场上里侧表示怪兽数量
+	-- 计算对方场上里侧守备表示怪兽的数量，作为可选的破坏对象数量上限。
 	local ct=Duel.GetMatchingGroupCount(Card.IsPosition,tp,0,LOCATION_MZONE,nil,POS_FACEDOWN_DEFENSE)
 	if chkc then return chkc:IsOnField() and chkc:IsFaceup() end
-	-- 检查是否满足破坏效果发动条件，即对方场上有里侧怪兽且场上存在可破坏的表侧表示卡
+	-- 发动合法性检查：对方场上存在里侧守备表示怪兽（使数量上限至少为1）且场上存在可选的表侧表示卡。
 	if chk==0 then return ct>0 and Duel.IsExistingTarget(Card.IsFaceup,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,nil) end
-	-- 提示玩家选择要破坏的卡
+	-- 弹出选择提示，要求玩家选择要破坏的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 选择最多对方里侧怪兽数量的场上表侧表示卡作为破坏对象
+	-- 选择场上1到ct张表侧表示卡作为效果对象，并登记为当前连锁的对象。
 	local sg=Duel.SelectTarget(tp,Card.IsFaceup,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,ct,nil)
-	-- 设置破坏效果的处理信息，指定破坏卡牌数量
+	-- 设置操作信息：本次效果将破坏选择的对象卡。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,sg,sg:GetCount(),0,0)
-	-- 设置伤害效果的处理信息，指定给与对方的伤害值
+	-- 设置操作信息：给对方造成对象数量×1000的伤害。
 	Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,1-tp,sg:GetCount()*1000)
 end
--- 破坏效果的处理函数，执行破坏并造成伤害
+-- ③效果的处理：从连锁对象中取出仍与效果相关的表侧表示卡，全部破坏，并给与对方对应伤害。
 function s.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁中指定的目标卡组，并筛选与当前效果相关的卡
+	-- 取得当前连锁的对象卡，并过滤出仍然与效果相关的卡（排除已被转移/离场导致联系重置的卡）。
 	local tg=Duel.GetChainInfo(0,CHAININFO_TARGET_CARDS):Filter(Card.IsRelateToEffect,nil,e)
 	if tg:GetCount()>0 then
-		-- 将目标卡组破坏
+		-- 用效果破坏这些对象卡，返回实际破坏数量。
 		local dp=Duel.Destroy(tg,REASON_EFFECT)
-		-- 给与对方破坏数量×1000的伤害
+		-- 给对方造成破坏数量×1000的效果伤害。
 		Duel.Damage(1-tp,dp*1000,REASON_EFFECT)
 	end
 end
