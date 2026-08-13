@@ -12,39 +12,39 @@ function c27450400.initial_effect(c)
 	e1:SetOperation(c27450400.spop)
 	c:RegisterEffect(e1)
 end
--- 判断是否可以发动此效果，条件为己方场上存在空位、对方场上存在怪兽且己方可以特殊召唤衍生物。
+-- 效果发动的合法条件检查函数（Target）：确认自己主要怪兽区有空位、对方场上有怪兽存在，并且自己能够特殊召唤「钟摆衍生物」。
 function c27450400.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断己方场上是否存在空位。
+	-- 检查自己场上主要怪兽区有可用空格，且对方场上有怪兽（作为可特殊召唤数量的依据）。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0 and Duel.GetFieldGroupCount(tp,0,LOCATION_MZONE)>0
-		-- 判断己方是否可以特殊召唤指定的衍生物。
+		-- 检查自己玩家是否能够特殊召唤「钟摆衍生物」（机械族·地·1星·攻/守0的衍生物）。
 		and Duel.IsPlayerCanSpecialSummonMonster(tp,27450401,0,TYPES_TOKEN_MONSTER,0,0,1,RACE_MACHINE,ATTRIBUTE_EARTH) end
-	-- 设置连锁操作信息，表示将要特殊召唤衍生物。
+	-- 设置本次连锁的操作信息：包含衍生物生成的类别，数量暂定1，实际数量在效果处理时确定，因此目标为nil。
 	Duel.SetOperationInfo(0,CATEGORY_TOKEN,nil,1,0,0)
-	-- 设置连锁操作信息，表示将要特殊召唤衍生物。
+	-- 设置本次连锁的操作信息：包含特殊召唤的类别，数量暂定1，实际数量在效果处理时确定，因此目标为nil。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,0,0)
 end
--- 处理特殊召唤衍生物的逻辑，包括计算可召唤数量、处理青眼精灵龙限制、循环召唤并询问是否继续。
+-- 效果处理时的操作函数：根据对方场上的怪兽数量和自己的可用怪兽区数量决定特殊召唤token的数量（取较小值）；若「青眼精灵龙」的效果生效中则最多只能特殊召唤1只；随后逐只生成token并特殊召唤，玩家可中途选择停止，最后完成特殊召唤。
 function c27450400.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取己方场上可用的怪兽区域数量。
+	-- 获取自己场上主要怪兽区的可用空格数量，作为本次可特殊召唤token的数量上限。
 	local ft=Duel.GetLocationCount(tp,LOCATION_MZONE)
-	-- 获取对方场上的怪兽数量。
+	-- 获取对方场上的怪兽数量，作为本次特殊召唤token数量的上限。
 	local ct=Duel.GetFieldGroupCount(tp,0,LOCATION_MZONE)
 	if ft>ct then ft=ct end
 	if ft<=0 then return end
 	-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中。禁止双方同时特殊召唤2只以上怪兽
 	if Duel.IsPlayerAffectedByEffect(tp,59822133) then ft=1 end
-	-- 判断己方是否可以特殊召唤指定的衍生物。
+	-- 特殊召唤前再次确认自己仍能特殊召唤该衍生物，若不能则终止处理。
 	if not Duel.IsPlayerCanSpecialSummonMonster(tp,27450401,0,TYPES_TOKEN_MONSTER,0,0,1,RACE_MACHINE,ATTRIBUTE_EARTH) then return end
 	local ctn=true
 	while ft>0 and ctn do
-		-- 创建一个指定编号的衍生物。
+		-- 生成一张「钟摆衍生物」(27450401) 的衍生物卡。
 		local token=Duel.CreateToken(tp,27450401)
-		-- 将创建的衍生物特殊召唤到己方场上。
+		-- 将生成的衍生物以表侧表示特殊召唤到自己场上（批量特殊召唤的中间步骤，暂不完成召唤）。
 		Duel.SpecialSummonStep(token,0,tp,tp,false,false,POS_FACEUP)
 		ft=ft-1
-		-- 判断是否继续召唤衍生物，若无空位或玩家选择否则停止召唤。
+		-- 如果已召唤数量达到上限或玩家选择“否”，则停止继续特殊召唤；否则继续询问是否生成下一只。
 		if ft<=0 or not Duel.SelectYesNo(tp,aux.Stringid(27450400,1)) then ctn=false end  --"是否继续特殊召唤「钟摆衍生物」？"
 	end
-	-- 完成所有特殊召唤操作。
+	-- 结束批量特殊召唤处理，将之前通过SpecialSummonStep累积的特殊召唤统一完成。
 	Duel.SpecialSummonComplete()
 end

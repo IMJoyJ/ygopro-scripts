@@ -31,64 +31,64 @@ function c2759860.initial_effect(c)
 	e3:SetOperation(c2759860.thop)
 	c:RegisterEffect(e3)
 end
--- 过滤函数，用于判断是否为场上表侧表示的灰篮卡
+-- 定义①效果中“自己场上表侧表示的「灰篮」卡”的筛选条件，用于选择破坏对象。
 function c2759860.desfilter(c)
 	return c:IsFaceup() and c:IsSetCard(0xd1)
 end
--- 效果发动时的取对象处理，检查是否满足破坏效果的对象条件
+-- ①效果发动时的取对象处理：先确认自己场上存在此卡以外的表侧表示「灰篮」卡，且对方场上有可选的卡。
 function c2759860.destg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return false end
-	-- 检查自己场上是否存在至少1张灰篮卡
+	-- 检查自己场上是否存在1张此卡以外的表侧表示「灰篮」卡作为对象候选。
 	if chk==0 then return Duel.IsExistingTarget(c2759860.desfilter,tp,LOCATION_ONFIELD,0,1,e:GetHandler())
-		-- 检查对方场上是否存在至少1张卡
+		-- 检查对方场上是否存在1张可以作为对象（任意卡）的卡。
 		and Duel.IsExistingTarget(aux.TRUE,tp,0,LOCATION_ONFIELD,1,nil) end
-	-- 提示玩家选择要破坏的卡
+	-- 向操作者显示“请选择要破坏的卡”的提示信息，准备进行对象选择。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 选择自己场上的1张灰篮卡作为破坏对象
+	-- 选择自己场上1张符合条件的「灰篮」卡（此卡以外）作为①效果的对象。
 	local g1=Duel.SelectTarget(tp,c2759860.desfilter,tp,LOCATION_ONFIELD,0,1,1,e:GetHandler())
-	-- 提示玩家选择要破坏的卡
+	-- 向操作者显示“请选择要破坏的卡”的提示信息，准备选择对方场上的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 选择对方场上的1张卡作为破坏对象
+	-- 选择对方场上1张卡（任意卡）作为①效果的另一个对象。
 	local g2=Duel.SelectTarget(tp,aux.TRUE,tp,0,LOCATION_ONFIELD,1,1,nil)
 	g1:Merge(g2)
-	-- 设置效果处理时要破坏的卡组信息
+	-- 将本次连锁的处理信息设置为“破坏2张对象卡”，供后续连锁判定使用。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g1,2,0,0)
 end
--- 效果处理函数，执行破坏操作
+-- ①效果处理时，取出取对象阶段选择的卡，若仍与效果相关则将其破坏。
 function c2759860.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁中被指定的对象卡组，并筛选出与该效果相关的卡
+	-- 获取连锁中记录的对象卡，并筛选出仍与本次效果相关的卡（未被无效、未离场等）。
 	local g=Duel.GetChainInfo(0,CHAININFO_TARGET_CARDS):Filter(Card.IsRelateToEffect,nil,e)
 	if g:GetCount()>0 then
-		-- 将符合条件的卡组进行破坏处理
+		-- 将筛选出的对象卡以效果原因破坏。
 		Duel.Destroy(g,REASON_EFFECT)
 	end
 end
--- 检索效果发动条件，判断是否为自己的回合
+-- ②效果的发动条件：自己结束阶段（当前回合玩家是自己）。
 function c2759860.thcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断当前回合玩家是否为效果发动者
+	-- 检查当前回合玩家是否为这张卡的控制者（即自己的结束阶段）。
 	return Duel.GetTurnPlayer()==tp
 end
--- 过滤函数，用于判断是否为可加入手牌的灰篮卡
+-- 定义卡组中可检索的「灰篮」卡的筛选条件：卡名含有「灰篮」且可以被加入手卡。
 function c2759860.filter(c)
 	return c:IsSetCard(0xd1) and c:IsAbleToHand()
 end
--- 检索效果发动时的处理函数，检查卡组中是否存在满足条件的卡
+-- ②效果发动前的目标判定：确认卡组中存在符合条件的「灰篮」卡，并设置处理信息为“从卡组检索加入手卡”。
 function c2759860.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查卡组中是否存在至少1张灰篮卡
+	-- 检查自己卡组中是否存在至少1张满足条件的「灰篮」卡。
 	if chk==0 then return Duel.IsExistingMatchingCard(c2759860.filter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置效果处理时要加入手牌的卡组信息
+	-- 设置操作信息：本次效果将执行从卡组将1张「灰篮」卡加入手卡的处理。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 检索效果处理函数，执行将卡加入手牌的操作
+-- ②效果处理时，从卡组挑选1张「灰篮」卡加入手牌，并向对方确认。
 function c2759860.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要加入手牌的卡
+	-- 显示“请选择要加入手牌的卡”的提示信息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 从卡组中选择1张灰篮卡作为加入手牌的对象
+	-- 从卡组中选择1张满足条件的「灰篮」卡。
 	local g=Duel.SelectMatchingCard(tp,c2759860.filter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的卡加入手牌
+		-- 将选中的卡加入持有者的手卡。
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 向对方确认所选的卡
+		-- 让对方确认加入手牌的卡。
 		Duel.ConfirmCards(1-tp,g)
 	end
 end

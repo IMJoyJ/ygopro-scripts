@@ -17,7 +17,7 @@ function c27581098.initial_effect(c)
 	e2:SetTarget(c27581098.splimit)
 	c:RegisterEffect(e2)
 end
--- 禁止融合召唤的特殊召唤手续
+-- 判定特殊召唤是否为融合召唤（sumtp中含有SUMMON_TYPE_FUSION），若是则返回true，从而禁止该融合召唤。
 function c27581098.splimit(e,c,tp,sumtp,sumpos)
 	return bit.band(sumtp,SUMMON_TYPE_FUSION)==SUMMON_TYPE_FUSION
 end
