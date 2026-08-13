@@ -22,25 +22,25 @@ function c32907538.initial_effect(c)
 	e2:SetOperation(c32907538.mtop)
 	c:RegisterEffect(e2)
 end
--- 选择对方场上存在的1只怪兽作为效果对象。
+-- 召唤成功时的诱发选发效果的目标处理：首先判断连锁处理时是否在核对对象（chkc），若是则要求对象为对方场上的怪兽；在发动时点（chk==0）检查对方场上是否存在至少1只可选怪兽；随后提示玩家选择对象并选定对方场上1只怪兽作为效果对象。
 function c32907538.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(1-tp) end
-	-- 检查是否满足选择对方场上怪兽的条件。
+	-- 在效果发动时点检查对方场上是否存在至少1只满足条件的怪兽（即能够成为效果对象的对方场上怪兽）。
 	if chk==0 then return Duel.IsExistingTarget(nil,tp,0,LOCATION_MZONE,1,nil) end
-	-- 提示玩家选择效果的对象。
+	-- 显示选择对象的提示消息，告知玩家正在选择效果对象。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)  --"请选择效果的对象"
-	-- 从对方场上选择1只怪兽作为效果对象。
+	-- 让控制者从对方场上选择1只怪兽作为效果对象，并将该卡登记为当前连锁的对象。
 	Duel.SelectTarget(tp,nil,tp,0,LOCATION_MZONE,1,1,nil)
 end
--- 将被选择的怪兽设置为不能攻击且不能解放。
+-- 效果处理时，若这张卡仍与效果关联、所选对象仍表侧表示且与效果关联，且对象不免疫此效果，则将对象设置为这张卡的永续对象，并给对象赋予不能攻击、不能作为上级召唤的解放、不能作为上级召唤以外的解放的效果。
 function c32907538.operation(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取当前连锁效果选择的目标怪兽。
+	-- 取得效果处理时当前连锁选择的怪兽（即发动时选择的那只对方怪兽）。
 	local tc=Duel.GetFirstTarget()
 	if c:IsRelateToEffect(e) and tc:IsFaceup() and tc:IsRelateToEffect(e)
 		and not tc:IsImmuneToEffect(e) then
 		c:SetCardTarget(tc)
-		-- 使目标怪兽不能攻击。
+		-- 只要这张卡在场上表侧表示存在，选择的怪兽不能攻击也不能解放。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_CANNOT_ATTACK)
@@ -56,23 +56,23 @@ function c32907538.operation(e,tp,eg,ep,ev,re,r,rp)
 		tc:RegisterEffect(e3)
 	end
 end
--- 判断目标怪兽是否仍被该效果影响。
+-- 该效果的适用条件：以效果拥有者（造墙者）是否仍将效果持有卡（被限制的怪兽）作为永续对象来判断，若造墙者不再以该怪兽为对象则效果不适用。
 function c32907538.rcon(e)
 	return e:GetOwner():IsHasCardTarget(e:GetHandler())
 end
--- 判断是否为当前玩家的结束阶段。
+-- 维持费用的效果条件：仅在造墙者的控制者的结束阶段（当前回合玩家等于控制者）时才处理。
 function c32907538.mtcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断当前回合玩家是否为效果持有者。
+	-- 判断当前回合玩家是否就是这张卡的控制者，即是否是自己回合的结束阶段。
 	return Duel.GetTurnPlayer()==tp
 end
--- 在结束阶段询问玩家是否支付500基本分以维持卡片存在。
+-- 结束阶段时的维持处理：若控制者能够支付500基本分并选择支付，则支付500基本分；否则不支付并破坏这张卡。
 function c32907538.mtop(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查玩家是否能支付500基本分并询问是否支付。
+	-- 先检查控制者是否有足够支付500基本分的LP，并弹出是否支付500基本分维持造墙者的选择。
 	if Duel.CheckLPCost(tp,500) and Duel.SelectYesNo(tp,aux.Stringid(32907538,0)) then  --"是否要支付500基本分维持「造墙者」？"
-		-- 支付500基本分。
+		-- 支付500基本分作为维持造墙者的费用。
 		Duel.PayLPCost(tp,500)
 	else
-		-- 因未支付费用而破坏此卡。
+		-- 当控制者不支付维持费用时，以代价（REASON_COST）的方式破坏这张卡。
 		Duel.Destroy(e:GetHandler(),REASON_COST)
 	end
 end

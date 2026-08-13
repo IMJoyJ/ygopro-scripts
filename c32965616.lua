@@ -5,7 +5,7 @@
 -- ②：对方把怪兽特殊召唤之际，把自己墓地3只怪兽除外才能发动。那次特殊召唤无效，那些怪兽破坏。
 function c32965616.initial_effect(c)
 	c:EnableReviveLimit()
-	-- 这张卡不能通常召唤。
+	-- 这张卡不能通常召唤。自己·对方的墓地的怪兽属性是6种类以上的场合才能特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
@@ -43,54 +43,54 @@ function c32965616.initial_effect(c)
 	e5:SetOperation(c32965616.disop)
 	c:RegisterEffect(e5)
 end
--- 检查场上是否有足够的位置以及墓地是否有6种以上属性的怪兽。
+-- 判断这张卡是否满足从手牌特殊召唤的条件：自己主要怪兽区有空位，且双方墓地的怪兽属性种类数达到6种以上。
 function c32965616.spcon(e,c)
 	if c==nil then return true end
 	local tp=c:GetControler()
-	-- 检查场上是否有足够的位置。
+	-- 检查自己场上是否还有可用的主要怪兽区，若无空位则不能进行特殊召唤，返回false以阻止这次特殊召唤手续。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<1 then return end
-	-- 获取墓地中所有怪兽的属性种类数。
+	-- 获取双方墓地的所有怪兽卡，用于后续统计属性种类数。
 	local g=Duel.GetMatchingGroup(Card.IsType,tp,LOCATION_GRAVE,LOCATION_GRAVE,nil,TYPE_MONSTER)
 	return g:GetClassCount(Card.GetAttribute)>=6
 end
--- 获取墓地中所有怪兽的属性种类数并乘以500作为攻击力加成。
+-- 计算这张卡的攻击力上升数值：统计双方墓地怪兽的属性种类数并乘以500。
 function c32965616.atkval(e,c)
-	-- 获取墓地中所有怪兽的属性种类数。
+	-- 获取双方墓地的所有怪兽卡，用于统计属性种类数以计算攻守上升值。
 	local g=Duel.GetMatchingGroup(Card.IsType,e:GetHandlerPlayer(),LOCATION_GRAVE,LOCATION_GRAVE,nil,TYPE_MONSTER)
 	return g:GetClassCount(Card.GetAttribute)*500
 end
--- 判断是否为对方特殊召唤且当前无连锁处理。
+-- ②效果的发动条件判定：仅在对方进行特殊召唤之际且当前连锁为空时，才允许发动。
 function c32965616.discon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断是否为对方特殊召唤且当前无连锁处理。
+	-- 发动条件：特殊召唤的玩家不是自己（即对方特殊召唤），且当前没有其他连锁在结算中，确保是在特殊召唤之际即时发动。
 	return tp~=ep and Duel.GetCurrentChain()==0
 end
--- 定义除外卡的过滤条件：必须是怪兽且能作为费用除外。
+-- 定义代价筛选函数：选择自己墓地里可以被除外作为代价的怪兽卡。
 function c32965616.discfilter(c)
 	return c:IsType(TYPE_MONSTER) and c:IsAbleToRemoveAsCost()
 end
--- 检查是否满足除外3张怪兽的费用条件，并选择并除外这些卡。
+-- 执行②效果发动代价：从自己墓地选择3只怪兽除外；chk==0时只检查是否存在足够代价。
 function c32965616.discost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否满足除外3张怪兽的费用条件。
+	-- 代价检测阶段：确认自己墓地是否存在至少3只满足除外条件的怪兽卡。
 	if chk==0 then return Duel.IsExistingMatchingCard(c32965616.discfilter,tp,LOCATION_GRAVE,0,3,nil) end
-	-- 提示玩家选择要除外的卡。
+	-- 弹出选择提示，告知玩家需要选择要除外的卡片，并准备选择界面。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
-	-- 选择3张满足条件的卡。
+	-- 让玩家从自己墓地选择3只符合条件的怪兽作为发动代价，并将这些卡设置为代价对象。
 	local g=Duel.SelectMatchingCard(tp,c32965616.discfilter,tp,LOCATION_GRAVE,0,3,3,nil)
-	-- 将选中的卡除外作为费用。
+	-- 将选择的3张怪兽卡以表侧表示除外，作为效果的发动代价。
 	Duel.Remove(g,POS_FACEUP,REASON_COST)
 end
--- 设置效果处理时的操作信息，包括无效召唤和破坏。
+-- ②效果的目标设定：该效果不取对象，直接对正在特殊召唤的怪兽群生效；登记无效召唤与破坏的操作信息。
 function c32965616.distg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置无效召唤的操作信息。
+	-- 向系统登记本次操作包含“无效特殊召唤”的分类，目标为当前正在特殊召唤的那些怪兽。
 	Duel.SetOperationInfo(0,CATEGORY_DISABLE_SUMMON,eg,eg:GetCount(),0,0)
-	-- 设置破坏的操作信息。
+	-- 向系统登记本次操作包含“破坏”的分类，目标为当前正在特殊召唤的那些怪兽。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,eg,eg:GetCount(),0,0)
 end
--- 执行效果操作：使召唤无效并破坏相关怪兽。
+-- ②效果处理：将对方的那次特殊召唤无效，并将那些怪兽破坏。
 function c32965616.disop(e,tp,eg,ep,ev,re,r,rp)
-	-- 使召唤无效。
+	-- 使当前正在进行的特殊召唤无效，阻止那些怪兽特殊召唤成功。
 	Duel.NegateSummon(eg)
-	-- 破坏相关怪兽。
+	-- 将因特殊召唤无效而被除去的那些怪兽立即破坏送去墓地，破坏原因记为效果破坏。
 	Duel.Destroy(eg,REASON_EFFECT)
 end

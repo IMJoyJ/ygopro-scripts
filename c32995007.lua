@@ -3,7 +3,7 @@
 -- 调整＋调整以外的怪兽1只以上
 -- 场上存在的这张卡被破坏送去墓地时，选择对方场上表侧表示存在的1只怪兽发动。选择的怪兽的攻击力下降2400。
 function c32995007.initial_effect(c)
-	-- 添加同调召唤手续，要求1只调整和1只调整以外的怪兽参与同调
+	-- 为“天狼王 苍狼星”添加同调召唤手续：需要任意1只调整怪兽＋1只以上调整以外的怪兽作为素材。
 	aux.AddSynchroProcedure(c,nil,aux.NonTuner(nil),1)
 	c:EnableReviveLimit()
 	-- 场上存在的这张卡被破坏送去墓地时，选择对方场上表侧表示存在的1只怪兽发动。选择的怪兽的攻击力下降2400。
@@ -18,26 +18,26 @@ function c32995007.initial_effect(c)
 	e1:SetOperation(c32995007.atkop)
 	c:RegisterEffect(e1)
 end
--- 效果发动的条件：卡片从场上被破坏送去墓地
+-- 效果发动条件：这张卡从场上被破坏并送去墓地（此前位置为场上且破坏原因）。
 function c32995007.atkcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsPreviousLocation(LOCATION_ONFIELD) and e:GetHandler():IsReason(REASON_DESTROY)
 end
--- 选择目标：对方场上表侧表示存在的1只怪兽
+-- 效果发动时的取对象处理：选择对方场上表侧表示存在的1只怪兽作为对象。
 function c32995007.atktg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(1-tp) and chkc:IsFaceup() end
-	-- 检查是否有满足条件的目标怪兽
+	-- 发动前检查：对方场上存在至少1只表侧表示怪兽且能成为效果对象，否则不能发动。
 	if chk==0 then return Duel.IsExistingTarget(Card.IsFaceup,tp,0,LOCATION_MZONE,1,nil) end
-	-- 提示玩家选择表侧表示的怪兽
+	-- 给玩家显示选择提示“请选择表侧表示的卡”。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
-	-- 选择对方场上表侧表示存在的1只怪兽作为目标
+	-- 让玩家从对方场上选择1只表侧表示怪兽，并将其设置为当前连锁的对象。
 	Duel.SelectTarget(tp,Card.IsFaceup,tp,0,LOCATION_MZONE,1,1,nil)
 end
--- 效果处理：对目标怪兽的攻击力下降2400
+-- 效果处理：将对象怪兽的攻击力下降2400，并在对象上附加永续的攻击力增减效果，随标准重置条件失效。
 function c32995007.atkop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁效果的目标怪兽
+	-- 获取当前连锁中本效果选择的对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) and tc:IsFaceup() then
-		-- 使目标怪兽的攻击力下降2400
+		-- 选择的怪兽的攻击力下降2400。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)

@@ -22,7 +22,7 @@ function c33015627.initial_effect(c)
 	e2:SetCode(EFFECT_SUMMON_PROC)
 	e2:SetCondition(c33015627.ntcon)
 	c:RegisterEffect(e2)
-	-- 这张卡不会被战斗·效果破坏
+	-- 这张卡不会被战斗破坏。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_SINGLE)
 	e3:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
@@ -33,13 +33,13 @@ function c33015627.initial_effect(c)
 	local e4=e3:Clone()
 	e4:SetCode(EFFECT_INDESTRUCTABLE_EFFECT)
 	c:RegisterEffect(e4)
-	-- 这张卡的战斗发生的双方的战斗伤害变成0
+	-- 这张卡的战斗发生的对方的战斗伤害变成0。
 	local e5=Effect.CreateEffect(c)
 	e5:SetType(EFFECT_TYPE_SINGLE)
 	e5:SetCode(EFFECT_NO_BATTLE_DAMAGE)
 	e5:SetValue(1)
 	c:RegisterEffect(e5)
-	-- 这张卡的战斗发生的双方的战斗伤害变成0
+	-- 这张卡的战斗发生的自己的战斗伤害变成0。
 	local e8=Effect.CreateEffect(c)
 	e8:SetType(EFFECT_TYPE_SINGLE)
 	e8:SetCode(EFFECT_AVOID_BATTLE_DAMAGE)
@@ -71,54 +71,54 @@ function c33015627.initial_effect(c)
 	e7:SetOperation(c33015627.tdop)
 	c:RegisterEffect(e7)
 end
--- 检查召唤条件：等级5以上、自己场上无怪兽、对方场上有怪兽、自己主要怪兽区有空位
+-- 不用解放作召唤的召唤规则条件：c为nil时表示该手续可用；否则需满足无解放（minc==0）且等级在5以上、自己场上无怪兽、对方场上有怪兽、自己主要怪兽区有空位。
 function c33015627.ntcon(e,c,minc)
 	if c==nil then return true end
 	return minc==0 and c:IsLevelAbove(5)
-		-- 检查自己场上怪兽数量是否为0
+		-- 自己的主要怪兽区没有怪兽（自己场上无怪兽）。
 		and Duel.GetFieldGroupCount(c:GetControler(),LOCATION_MZONE,0)==0
-		-- 检查对方场上怪兽数量是否大于0
+		-- 对方的主要怪兽区存在怪兽（对方场上有怪兽）。
 		and Duel.GetFieldGroupCount(c:GetControler(),0,LOCATION_MZONE)>0
-		-- 检查自己主要怪兽区是否有可用的空位
+		-- 自己的主要怪兽区有空余格子可供召唤。
 		and Duel.GetLocationCount(c:GetControler(),LOCATION_MZONE)>0
 end
--- 检查这张卡在本回合是否进行过战斗（GetBattledGroupCount>0）
+-- ④的发动条件：这张卡在本战斗阶段进行过战斗（存在与这张卡战斗过的怪兽）。
 function c33015627.damcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():GetBattledGroupCount()>0
 end
--- 设置伤害效果的目标玩家为对方，伤害数值为2000，并记录操作信息
+-- ④发动时的目标处理：先通过合法性检查；在chk==1时，将对方玩家设为伤害对象，伤害值为2000，并登记伤害效果信息。
 function c33015627.damtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 将效果对象玩家设置为对方玩家（1-tp）
+	-- 将当前连锁的对象玩家设置为对方（1-tp），即伤害的承受者。
 	Duel.SetTargetPlayer(1-tp)
-	-- 将效果参数设置为2000（伤害数值）
+	-- 将当前连锁的对象参数设置为2000，即伤害数值。
 	Duel.SetTargetParam(2000)
-	-- 设置连锁操作信息：效果分类为伤害，目标玩家为对方，数值为2000
+	-- 登记操作信息：本效果为不取对象的伤害效果，目标玩家为对方，伤害值为2000。
 	Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,1-tp,2000)
 end
--- 执行伤害效果处理，给予对方2000点伤害
+-- ④效果处理：根据连锁登记的目标玩家和伤害参数，给对方造成2000点效果伤害。
 function c33015627.damop(e,tp,eg,ep,ev,re,r,rp)
-	-- 从当前连锁信息中获取目标玩家和伤害数值参数
+	-- 获取当前连锁中登记的目标玩家和伤害参数。
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 以效果原因给予目标玩家2000点伤害
+	-- 以效果伤害形式，对玩家p造成d点伤害。
 	Duel.Damage(p,d,REASON_EFFECT)
 end
--- 检查当前是否为发动玩家的准备阶段
+-- ⑤的发动条件：当前回合玩家是这张卡的控制者（即自己的准备阶段）。
 function c33015627.tdcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前回合玩家并检查是否等于发动玩家
+	-- 判断当前回合玩家是否为本效果的控制者（tp）。
 	return Duel.GetTurnPlayer()==tp
 end
--- 设置回卡组效果的操作信息，对象为这张卡
+-- ⑤发动时的目标处理：通过合法性检查后，将这张卡本身设为回卡组的目标，并登记回卡组操作信息。
 function c33015627.tdtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置连锁操作信息：效果分类为回卡组，对象为这张卡，数量1
+	-- 登记操作信息：本效果将使这张卡自身返回持有者卡组，属于回卡组效果。
 	Duel.SetOperationInfo(0,CATEGORY_TODECK,e:GetHandler(),1,0,0)
 end
--- 将这张卡返回持有者卡组并洗切
+-- ⑤效果处理：若这张卡仍与效果相关（未被无效且未离场），将其返回持有者卡组并洗牌。
 function c33015627.tdop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) then
-		-- 将这张卡以效果原因返回持有者卡组并洗切（SEQ_DECKSHUFFLE表示洗切）
+		-- 以效果原因将c送回持有者卡组，并洗切卡组。
 		Duel.SendtoDeck(c,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
 	end
 end

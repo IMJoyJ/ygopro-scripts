@@ -4,7 +4,7 @@
 -- ①：1回合1次，以自己的场上·墓地的卡或者除外的自己的卡为对象的魔法·陷阱·怪兽的效果由对方发动时，把这张卡1个超量素材取除才能发动。那个发动无效并破坏。
 function c3292267.initial_effect(c)
 	c:EnableReviveLimit()
-	-- 为卡片添加等级为8、需要2只怪兽进行XYZ召唤的手续
+	-- 为这张卡添加超量召唤手续：使用2只8星怪兽叠放来超量召唤。
 	aux.AddXyzProcedure(c,nil,8,2)
 	-- ①：1回合1次，以自己的场上·墓地的卡或者除外的自己的卡为对象的魔法·陷阱·怪兽的效果由对方发动时，把这张卡1个超量素材取除才能发动。那个发动无效并破坏。
 	local e1=Effect.CreateEffect(c)
@@ -21,39 +21,39 @@ function c3292267.initial_effect(c)
 	e1:SetOperation(c3292267.disop)
 	c:RegisterEffect(e1)
 end
--- 定义目标卡片过滤器，用于判断卡片是否在场上、墓地或除外区且属于当前玩家控制
+-- 筛选条件：卡位于场上·墓地·除外区且控制者为发动者tp，即属于“自己的场上·墓地的卡或者除外的自己的卡”。
 function c3292267.tfilter(c,tp)
 	return c:IsLocation(LOCATION_ONFIELD+LOCATION_GRAVE+LOCATION_REMOVED) and c:IsControler(tp)
 end
--- 效果发动条件函数，判断是否满足发动条件：对方发动效果、效果有对象、对象卡片存在且属于己方、连锁可无效
+-- 发动条件：对方发动以自己场上·墓地·除外区的卡为对象的魔法·陷阱·怪兽效果，且此卡未被战斗破坏确定，且该连锁能够被无效。
 function c3292267.discon(e,tp,eg,ep,ev,re,r,rp)
 	if rp==tp or e:GetHandler():IsStatus(STATUS_BATTLE_DESTROYED) then return false end
 	if not re:IsHasProperty(EFFECT_FLAG_CARD_TARGET) then return false end
-	-- 获取当前连锁的对象卡片组
+	-- 获取该连锁效果所取的对象卡组，用于检查对象中是否存在符合条件的自己的卡。
 	local tg=Duel.GetChainInfo(ev,CHAININFO_TARGET_CARDS)
-	-- 判断对象卡片组中是否存在满足过滤条件的卡片且连锁可无效
+	-- 判断对象卡组中存在至少1张符合tfilter的自己的卡，并且该效果的发动可以被无效。
 	return tg and tg:IsExists(c3292267.tfilter,1,nil,tp) and Duel.IsChainNegatable(ev)
 end
--- 效果发动的费用支付函数，消耗1个超量素材作为代价
+-- 发动代价：从这张卡上取除1个超量素材来作为发动费用的cost。
 function c3292267.discost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():CheckRemoveOverlayCard(tp,1,REASON_COST) end
 	e:GetHandler():RemoveOverlayCard(tp,1,1,REASON_COST)
 end
--- 效果发动时的目标设定函数，设置连锁无效和破坏的处理信息
+-- 发动时的目标处理：声明可以发动，并设置“无效发动”与“破坏”相关的操作信息。
 function c3292267.distg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置连锁无效的处理信息
+	-- 设置操作信息：本次效果处理包含使对方效果发动无效的分类CATEGORY_NEGATE。
 	Duel.SetOperationInfo(0,CATEGORY_NEGATE,eg,1,0,0)
 	if re:GetHandler():IsDestructable() and re:GetHandler():IsRelateToEffect(re) then
-		-- 设置连锁破坏的处理信息
+		-- 设置操作信息：若对方效果的那张卡可被破坏且仍与效果相关，则本次处理包含将其破坏的分类CATEGORY_DESTROY。
 		Duel.SetOperationInfo(0,CATEGORY_DESTROY,eg,1,0,0)
 	end
 end
--- 效果发动时的处理函数，使连锁无效并破坏对象卡片
+-- 效果处理：先无效对方效果的发动，若该卡仍与效果相关则将其破坏。
 function c3292267.disop(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断连锁是否成功无效且对象卡片有效存在
+	-- 检查是否成功无效了对方效果的发动，且发动效果的那张卡仍与效果存在联系，避免处理已经离场或无关的对象。
 	if Duel.NegateActivation(ev) and re:GetHandler():IsRelateToEffect(re) then
-		-- 破坏对象卡片
+		-- 将对方发动的效果的那张卡以效果破坏。
 		Duel.Destroy(eg,REASON_EFFECT)
 	end
 end

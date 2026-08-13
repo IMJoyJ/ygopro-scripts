@@ -26,29 +26,29 @@ function c32918479.initial_effect(c)
 	e4:SetCode(EVENT_SPSUMMON_SUCCESS)
 	c:RegisterEffect(e4)
 end
--- 判断是否为直接攻击且对方玩家受到战斗伤害
+-- 判定抽卡效果的发动条件：是否这张卡直接攻击给予对方战斗伤害（伤害玩家为对方且攻击目标为空）。
 function c32918479.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 对方玩家不是当前处理效果的玩家且攻击对象为空
+	-- 确认受到战斗伤害的是对方玩家（ep≠tp）且本次攻击没有攻击对象（直接攻击）。
 	return ep~=tp and Duel.GetAttackTarget()==nil
 end
--- 设置抽卡效果的目标玩家和抽卡数量
+-- 抽卡效果发动时登记目标：设定抽卡玩家为自己、抽1张卡，并登记抽卡类别操作信息。
 function c32918479.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置效果的目标玩家为当前玩家
+	-- 设定当前连锁的对象玩家为这张卡的控制者，即抽卡玩家。
 	Duel.SetTargetPlayer(tp)
-	-- 设置效果的目标参数为1（抽1张卡）
+	-- 设定当前连锁的对象参数为1，表示抽卡数量为1张。
 	Duel.SetTargetParam(1)
-	-- 设置操作信息为抽卡效果，目标玩家为当前玩家，抽卡数量为1
+	-- 登记操作信息：将本次效果标记为抽卡效果，抽卡玩家为tp，抽卡数量为1（用于连锁时点检测）。
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,0,0,tp,1)
 end
--- 执行抽卡操作
+-- 抽卡效果的实际处理：读取连锁中记录的目标玩家和抽卡数，执行抽卡。
 function c32918479.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁中目标玩家和目标参数
+	-- 获取当前连锁中记录的目标玩家和目标参数（抽卡数）。
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 让目标玩家抽指定数量的卡
+	-- 以效果原因让玩家p抽d张卡。
 	Duel.Draw(p,d,REASON_EFFECT)
 end
--- 注册在召唤成功时触发的效果
+-- 当这张卡召唤/反转召唤/特殊召唤成功时，为这张卡注册一个结束阶段将自己送去墓地的诱发效果（不可被无效，仅当回合结束阶段发动一次）。
 function c32918479.regop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	-- 这张卡在召唤·反转召唤·特殊召唤的回合的结束阶段时，这张卡送去墓地。
@@ -64,17 +64,17 @@ function c32918479.regop(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetReset(RESET_EVENT+0xc6c0000)
 	c:RegisterEffect(e1)
 end
--- 设置送去墓地效果的目标卡片
+-- 送去墓地效果的目标处理：无特别条件，登记将这张卡自身送去墓地的操作信息。
 function c32918479.tgtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置操作信息为送去墓地效果，目标为当前卡片
+	-- 登记操作信息：将效果持有者（这张卡）自身作为送去墓地的对象（数量为1）。
 	Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,e:GetHandler(),1,0,0)
 end
--- 执行送去墓地操作
+-- 送去墓地效果的实际处理：若这张卡仍与效果关联且表侧表示，则将其送去墓地。
 function c32918479.tgop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) and c:IsFaceup() then
-		-- 将卡片送去墓地
+		-- 以效果原因将这张卡送去墓地。
 		Duel.SendtoGrave(c,REASON_EFFECT)
 	end
 end

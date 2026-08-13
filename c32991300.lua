@@ -5,12 +5,12 @@
 -- ●装备怪兽的攻击力上升给自身装备的连接怪兽的连接标记合计×600。
 -- ●装备怪兽向守备表示怪兽攻击的场合，给与对方为攻击力超过那个守备力的数值的战斗伤害。
 local s,id,o=GetID()
--- 初始化效果，设置连接召唤手续、启用复活限制并注册诱发效果
+-- 初始化该卡的效果：注册连接召唤手续（2~3只素材，其中至少1只光属性·恶魔族的连接怪兽），并注册①效果——自己·对方回合1次，以连接怪兽以外的自己墓地1只恶魔族·光属性怪兽为对象才能发动，将其特殊召唤并把这张卡当作装备卡装备给那只怪兽。
 function s.initial_effect(c)
-	-- 添加连接召唤手续，要求使用2到3只满足条件的怪兽作为连接素材
+	-- 为该卡添加连接召唤手续，要求用2~3只怪兽作为素材，且素材中至少包含1只光属性·恶魔族的连接怪兽（由lcheck检查）。
 	aux.AddLinkProcedure(c,nil,2,3,s.lcheck)
 	c:EnableReviveLimit()
-	-- 效果描述：选择1只恶魔族·光属性怪兽特殊召唤，自己场上的这张卡当作装备魔法卡使用给那只怪兽装备
+	-- ①：自己·对方回合1次，以连接怪兽以外的自己墓地1只恶魔族·光属性怪兽为对象才能发动。那只怪兽特殊召唤，自己场上的这张卡当作持有以下效果的装备魔法卡使用给那只怪兽装备。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(id,0))  --"特殊召唤"
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_EQUIP)
@@ -24,52 +24,52 @@ function s.initial_effect(c)
 	e1:SetOperation(s.spop)
 	c:RegisterEffect(e1)
 end
--- 连接怪兽过滤函数，判断是否存在满足条件的连接怪兽
+-- 连接素材检查函数：判定作为连接素材的怪兽组中是否存在至少1只满足s.lmfilter的怪兽。
 function s.lcheck(g,lc)
 	return g:IsExists(s.lmfilter,1,nil)
 end
--- 连接怪兽属性与种族过滤函数，判断是否为光属性恶魔族怪兽
+-- 素材过滤函数：判定怪兽是否为光属性·恶魔族的连接怪兽。
 function s.lmfilter(c)
 	return c:IsLinkAttribute(ATTRIBUTE_LIGHT) and c:IsLinkRace(RACE_FIEND)
 end
--- 特殊召唤过滤函数，判断是否为光属性恶魔族怪兽且可特殊召唤且非连接怪兽
+-- 对象过滤函数：筛选自己墓地中满足光属性、恶魔族、不是连接怪兽且可以特殊召唤的怪兽。
 function s.spfilter(c,e,tp)
 	return c:IsAttribute(ATTRIBUTE_LIGHT) and c:IsRace(RACE_FIEND) and c:IsCanBeSpecialSummoned(e,0,tp,false,false,POS_FACEUP)
 		and not c:IsType(TYPE_LINK)
 end
--- 效果的发动条件判断，检查是否有满足条件的目标怪兽
+-- 效果发动条件与取对象处理：先验证连锁处理中选定的对象合法（在墓地、属于自己且满足spfilter）；在发动时检查自己魔陷区与怪兽区均有空位，并且墓地存在符合条件的对象。
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and s.spfilter(chkc,e,tp) end
-	-- 检查场上是否有足够的魔法陷阱区域和怪兽区域
+	-- 发动条件检查：必须自己魔陷区有空位（用于放置装备后的这张卡）且怪兽区有空位（用于特殊召唤对象怪兽）。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_SZONE)>0 and Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查墓地是否存在满足条件的怪兽
+		-- 发动条件补充：同时墓地存在至少1只满足spfilter的怪兽可以作为效果对象。
 		and Duel.IsExistingTarget(s.spfilter,tp,LOCATION_GRAVE,0,1,nil,e,tp) end
-	-- 提示玩家选择要特殊召唤的卡
+	-- 向玩家发出选择提示信息，提示需要选择要特殊召唤的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 选择目标怪兽
+	-- 让玩家从自己墓地选择1只满足spfilter的非连接恶魔族·光属性怪兽作为效果对象，并将其登记为本连锁的对象。
 	local g=Duel.SelectTarget(tp,s.spfilter,tp,LOCATION_GRAVE,0,1,1,nil,e,tp)
-	-- 设置操作信息，确定特殊召唤的怪兽
+	-- 设置操作信息：本连锁处理包含1只怪兽的特殊召唤（对象为g）。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,1,0,0)
-	-- 设置操作信息，确定装备的卡
+	-- 设置操作信息：本连锁处理包含装备动作，装备卡为效果发动者自身（这张卡）。
 	Duel.SetOperationInfo(0,CATEGORY_EQUIP,e:GetHandler(),1,0,0)
 end
--- 效果处理函数，执行特殊召唤和装备操作
+-- 效果处理：将对象怪兽表侧特殊召唤；若特殊召唤成功且这张卡仍在自己场上并为自己控制，则把这张卡当作装备卡装备给那只怪兽，并注册装备限制、攻击力上升、贯穿伤害三个效果；若魔陷区无空位或对象怪兽不在怪兽区，则将这张卡送去墓地。
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取效果的目标怪兽
+	-- 获取效果处理中锁定的对象怪兽（之前选择的目标）。
 	local tc=Duel.GetFirstTarget()
-	-- 判断目标怪兽是否有效且可特殊召唤，且未受王家长眠之谷影响
+	-- 判断对象怪兽仍与效果关联且不受王家长眠之谷影响，然后以表侧表示将其特殊召唤；若特殊召唤成功（返回值不为0）才继续后续处理。
 	if tc:IsRelateToEffect(e) and aux.NecroValleyFilter()(tc) and Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP)~=0
 		and c:IsRelateToEffect(e) and c:IsFaceup() and c:IsControler(tp) then
-		-- 判断装备区域是否足够或目标怪兽是否仍在场上
+		-- 检查装备前提：若自己魔陷区没有空位，或对象怪兽不在怪兽区，则无法继续装备。
 		if Duel.GetLocationCount(tp,LOCATION_SZONE)<=0 or not tc:IsLocation(LOCATION_MZONE) then
-			-- 将自身送入墓地
+			-- 因无法装备而将这张卡本身以效果原因送去墓地。
 			Duel.SendtoGrave(c,REASON_EFFECT)
 			return
 		end
-		-- 尝试将自身装备给目标怪兽
+		-- 尝试把这张卡作为装备卡装备给对象怪兽；若装备失败则终止后续处理。
 		if not Duel.Equip(tp,c,tc) then return end
-		-- 设置装备限制效果，确保只能装备给特定怪兽
+		-- 自己场上的这张卡当作持有以下效果的装备魔法卡使用给那只怪兽装备。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_EQUIP_LIMIT)
@@ -78,14 +78,14 @@ function s.spop(e,tp,eg,ep,ev,re,r,rp)
 		e1:SetValue(s.eqlimit)
 		e1:SetReset(RESET_EVENT+RESETS_STANDARD)
 		c:RegisterEffect(e1)
-		-- 设置装备怪兽攻击力上升效果，上升值为装备的连接怪兽连接标记合计×600
+		-- ●装备怪兽的攻击力上升给自身装备的连接怪兽的连接标记合计×600。
 		local e2=Effect.CreateEffect(c)
 		e2:SetType(EFFECT_TYPE_EQUIP)
 		e2:SetCode(EFFECT_UPDATE_ATTACK)
 		e2:SetValue(s.value)
 		e2:SetReset(RESET_EVENT+RESETS_STANDARD)
 		c:RegisterEffect(e2)
-		-- 设置装备怪兽攻击时无视守备力的效果
+		-- ●装备怪兽向守备表示怪兽攻击的场合，给与对方为攻击力超过那个守备力的数值的战斗伤害。
 		local e3=Effect.CreateEffect(c)
 		e3:SetType(EFFECT_TYPE_EQUIP)
 		e3:SetCode(EFFECT_PIERCE)
@@ -93,11 +93,11 @@ function s.spop(e,tp,eg,ep,ev,re,r,rp)
 		c:RegisterEffect(e3)
 	end
 end
--- 装备限制函数，确保只能装备给指定怪兽
+-- 装备限制函数：这张装备卡仅能装备给e:GetLabelObject()所记录的那只被特殊召唤的怪兽。
 function s.eqlimit(e,c)
 	return c==e:GetLabelObject()
 end
--- 攻击力上升值计算函数，根据装备的连接怪兽连接标记合计计算
+-- 攻击力上升值计算：取得装备怪兽及其装备的全部卡，将其中所有装备卡的连接标记合计乘以600，作为攻击力上升数值。
 function s.value(e,c)
 	local tc=e:GetHandler():GetEquipTarget()
 	local g=tc:GetEquipGroup()
