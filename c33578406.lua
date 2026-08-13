@@ -13,7 +13,7 @@ function c33578406.initial_effect(c)
 	e1:SetTarget(c33578406.target)
 	e1:SetOperation(c33578406.operation)
 	c:RegisterEffect(e1)
-	-- ①：装备怪兽的攻击力上升0。
+	-- 装备怪兽的攻击力上升0。
 	local e2=Effect.CreateEffect(c)
 	e2:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
 	e2:SetType(EFFECT_TYPE_SINGLE)
@@ -42,85 +42,85 @@ function c33578406.initial_effect(c)
 	e4:SetOperation(c33578406.eqop)
 	c:RegisterEffect(e4)
 end
--- 装备魔法发动时的目标选择函数：检查是否存在表侧表示怪兽作为装备对象，让玩家选择一只怪兽，并设置装备操作信息。
+-- 装备效果发动时的目标选择函数：检查是否存在表侧表示怪兽可作为装备对象，并选择1只对象，同时设置操作信息为装备本卡。
 function c33578406.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsFaceup() end
-	-- 在目标选择阶段，检查双方场上是否存在至少一只表侧表示怪兽可以作为装备对象。
+	-- 效果发动合法性检查：场上必须存在至少1只表侧表示怪兽才能作为装备对象发动。
 	if chk==0 then return Duel.IsExistingTarget(Card.IsFaceup,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil) end
-	-- 向玩家发送选择提示，提示选择要装备的怪兽。
+	-- 向玩家显示“请选择要装备的卡”的提示信息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_EQUIP)  --"请选择要装备的卡"
-	-- 让玩家选择一只表侧表示怪兽作为效果的对象（装备目标）。
+	-- 选择场上1只表侧表示怪兽作为本卡的装备对象（取对象效果）。
 	Duel.SelectTarget(tp,Card.IsFaceup,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,nil)
-	-- 设置操作信息，表明效果处理时将进行装备操作，装备卡是当前卡片，数量为1。
+	-- 登记操作信息：本连锁处理中执行将这张卡装备给对象怪兽的操作。
 	Duel.SetOperationInfo(0,CATEGORY_EQUIP,e:GetHandler(),1,0,0)
 end
--- 装备魔法发动后的效果处理函数：获取选择的目标，如果卡片和目标都有效，则将卡片装备到目标怪兽上。
+-- 装备处理的执行函数：装备魔法发动成功且关联有效时，将这张卡装备给选择的怪兽。
 function c33578406.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁中第一个也是唯一的目标怪兽（装备对象）。
+	-- 取得效果发动时选择的对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if e:GetHandler():IsRelateToEffect(e) and tc:IsRelateToEffect(e) and tc:IsFaceup() then
-		-- 将当前卡片装备到目标怪兽上。
+		-- 将这张装备卡装备给对象怪兽。
 		Duel.Equip(tp,e:GetHandler(),tc)
 	end
 end
--- 破坏效果的触发条件函数：检查是否满足直接攻击给与战斗伤害的条件。
+-- ②效果的发动条件函数：仅当装备怪兽直接攻击并造成战斗伤害时满足条件。
 function c33578406.descon(e,tp,eg,ep,ev,re,r,rp)
-	-- 条件判断：攻击目标为空（直接攻击）且造成战斗伤害的怪兽是这张卡的装备怪兽。
+	-- 判定本次战斗伤害来自直接攻击，且造成伤害的怪兽正是这张卡装备的怪兽。
 	return Duel.GetAttackTarget()==nil and eg:GetFirst()==e:GetHandler():GetEquipTarget()
 end
--- 破坏效果的目标设置函数：检查对方场上是否有怪兽，获取所有对方怪兽，并设置破坏操作信息。
+-- ②效果的目标处理：确认对方场上有怪兽可破坏，并设置破坏对象为对方场上全部怪兽。
 function c33578406.destg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 在目标设置阶段，检查对方场上是否存在至少一只怪兽。
+	-- 发动合法性检查：对方场上必须至少存在1只怪兽才能发动。
 	if chk==0 then return Duel.IsExistingMatchingCard(aux.TRUE,tp,0,LOCATION_MZONE,1,nil) end
-	-- 获取对方场上所有的怪兽。
+	-- 获取对方场上当前全部怪兽，作为破坏对象集合。
 	local g=Duel.GetMatchingGroup(aux.TRUE,tp,0,LOCATION_MZONE,nil)
-	-- 设置操作信息，表明效果处理时将破坏这些怪兽，数量为获取的怪兽数量。
+	-- 登记操作信息：本次效果将破坏g中的所有怪兽（数量为g:GetCount()）。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,g:GetCount(),0,0)
 end
--- 破坏效果的效果处理函数：获取对方场上所有怪兽，并将其破坏。
+-- ②效果的破坏处理：获取对方场上怪兽并全部破坏。
 function c33578406.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取对方场上所有的怪兽。
+	-- 处理时再次获取对方场上当前全部怪兽（不取对象，以处理时的场上情况为准）。
 	local g=Duel.GetMatchingGroup(aux.TRUE,tp,0,LOCATION_MZONE,nil)
-	-- 以效果原因破坏这些怪兽。
+	-- 以效果原因（REASON_EFFECT）将对方场上全部怪兽破坏。
 	Duel.Destroy(g,REASON_EFFECT)
 end
--- 替换装备效果的成本函数：检查卡片是否可以送去墓地作为成本，然后将其送去墓地。
+-- ③效果的代价函数：以将装备中的这张卡送去墓地为代价发动。
 function c33578406.eqcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	if chk==0 then return c:IsAbleToGraveAsCost() end
-	-- 将卡片送去墓地作为发动成本。
+	-- 将这张卡从魔陷区送去墓地（作为发动代价，不视为效果破坏）。
 	Duel.SendtoGrave(c,REASON_COST)
 end
--- 过滤函数：定义从卡组选择符合条件的“竹光”装备魔法卡的条件（是“竹光”卡、不是“真刀竹光”、是装备魔法、可唯一存在、不被禁止，且存在可装备的怪兽）。
+-- ③效果的卡组检索过滤器：筛选卡组中的‘竹光’装备魔法卡，要求不是「真刀竹光」本身、场上没有同名卡、未被禁止，并且场上存在能装备它的表侧表示怪兽。
 function c33578406.filter(c,tp)
 	return c:IsSetCard(0x60) and not c:IsCode(33578406) and c:IsType(TYPE_EQUIP)
 		and c:CheckUniqueOnField(tp) and not c:IsForbidden()
-		-- 检查是否存在至少一只表侧表示怪兽可以装备指定的“竹光”卡。
+		-- 追加条件：场上至少要存在1只表侧表示怪兽能够装备该检索出的装备卡。
 		and Duel.IsExistingMatchingCard(c33578406.eqfilter,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil,c)
 end
--- 过滤函数：检查怪兽是否表侧表示且可以装备指定的装备卡。
+-- 装备目标的过滤器：判断场上怪兽是否表侧表示且可装备所选择的装备卡。
 function c33578406.eqfilter(c,tc)
 	return c:IsFaceup() and tc:CheckEquipTarget(c)
 end
--- 替换装备效果的目标设置函数：检查魔陷区有空位且卡组有符合条件的“竹光”装备魔法卡。
+-- ③效果发动合法性：魔陷区存在可装备的空间，且卡组中有符合条件的‘竹光’装备魔法卡可检索。
 function c33578406.eqtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查玩家自己的魔陷区是否有空位（包括被装备卡占据的位置）。
+	-- 发动条件之一：自己的魔陷区有空位（或本卡送墓后空出位置），能放置装备卡。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_SZONE)>-1
-		-- 检查卡组中是否存在至少一张符合条件的“竹光”装备魔法卡。
+		-- 发动条件之二：卡组中存在至少1张符合filter条件的‘竹光’装备魔法卡。
 		and Duel.IsExistingMatchingCard(c33578406.filter,tp,LOCATION_DECK,0,1,nil,tp) end
 end
--- 替换装备效果的效果处理函数：让玩家从卡组选择一张“竹光”装备魔法卡，然后选择一只表侧表示怪兽，将装备卡装备到该怪兽上。
+-- ③效果的处理函数：从卡组选择1张符合条件的‘竹光’装备魔法卡，再选择场上1只表侧表示怪兽并装备。
 function c33578406.eqop(e,tp,eg,ep,ev,re,r,rp)
-	-- 向玩家发送选择提示，提示选择要装备的卡（从卡组）。
+	-- 提示玩家从卡组选择要装备的‘竹光’装备魔法卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_EQUIP)  --"请选择要装备的卡"
-	-- 让玩家从卡组选择一张符合条件的“竹光”装备魔法卡。
+	-- 从卡组中选出1张符合条件的‘竹光’装备魔法卡，结果存入g1。
 	local g1=Duel.SelectMatchingCard(tp,c33578406.filter,tp,LOCATION_DECK,0,1,1,nil,tp)
 	local tc=g1:GetFirst()
 	if not tc then return end
-	-- 向玩家发送选择提示，提示选择表侧表示的怪兽（作为装备对象）。
+	-- 提示玩家选择要装备给的表侧表示怪兽。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
-	-- 让玩家选择一只表侧表示怪兽可以装备之前选择的装备卡。
+	-- 选择场上1只表侧表示怪兽作为装备对象（该怪兽必须能够装备所选的装备卡）。
 	local g2=Duel.SelectMatchingCard(tp,c33578406.eqfilter,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,nil,tc)
-	-- 将选择的装备卡装备到选择的怪兽上。
+	-- 将选择的‘竹光’装备魔法卡装备给选中的怪兽。
 	Duel.Equip(tp,tc,g2:GetFirst())
 end

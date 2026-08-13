@@ -26,34 +26,34 @@ function c33460840.initial_effect(c)
 	e3:SetOperation(c33460840.spop)
 	c:RegisterEffect(e3)
 end
--- 过滤函数，用于筛选7·8星的龙族怪兽且未被禁止的卡。
+-- 筛选可作为装备卡的怪兽：龙族、等级7或8、且不是禁止装备的卡。
 function c33460840.filter(c,ec)
 	return c:IsRace(RACE_DRAGON) and c:IsLevel(7,8) and not c:IsForbidden()
 end
--- 效果处理时的判断条件，检查是否有足够的魔法陷阱区域以及手牌或墓地是否存在满足条件的卡。
+-- ①效果的发动条件：自己魔陷区有空位，且手卡·墓地存在至少1只满足filter的7·8星龙族怪兽。
 function c33460840.eqtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断当前玩家的魔法陷阱区域是否还有空位。
+	-- 检查自己魔陷区是否有空位，用于放置装备魔法卡（若没有空位则不能发动）。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_SZONE)>0
-		-- 判断当前玩家的手牌或墓地是否存在至少一张满足条件的卡。
+		-- 检查自己手卡·墓地是否存在满足filter条件的7·8星龙族怪兽（至少1只）。
 		and Duel.IsExistingMatchingCard(c33460840.filter,tp,LOCATION_HAND+LOCATION_GRAVE,0,1,nil,e:GetHandler()) end
 end
--- 装备效果的处理函数，负责选择并装备符合条件的卡，并设置攻击力和守备力提升效果。
+-- ①效果的处理：从手卡·墓地选择1只符合条件的龙族怪兽装备给这张卡，并在装备成功后根据该怪兽的攻击力/守备力为这张卡设置对应的数值提升效果。
 function c33460840.eqop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 判断是否满足装备条件，包括魔法陷阱区域是否为空、卡片是否正面表示且与效果相关。
+	-- 处理前再次确认：魔陷区仍有空位、此卡表侧表示且仍与此效果关联，否则终止处理。
 	if Duel.GetLocationCount(tp,LOCATION_SZONE)<=0 or c:IsFacedown() or not c:IsRelateToEffect(e) then return end
-	-- 提示玩家选择要装备的卡。
+	-- 弹出选择提示，让玩家选择要装备的怪兽（显示“请选择要装备的卡”）。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_EQUIP)  --"请选择要装备的卡"
-	-- 从手牌或墓地选择一张满足条件的卡作为装备卡。
+	-- 从自己手卡·墓地选择1只满足filter且不受“王家长眠之谷”影响的7·8星龙族怪兽（不选择此卡自身）。
 	local g=Duel.SelectMatchingCard(tp,aux.NecroValleyFilter(c33460840.filter),tp,LOCATION_HAND+LOCATION_GRAVE,0,1,1,nil,c)
 	local tc=g:GetFirst()
-	-- 尝试将选中的卡装备给当前卡片，若失败则返回。
+	-- 若未选择到怪兽或装备失败，则终止处理。
 	if not (tc and Duel.Equip(tp,tc,c)) then return end
 	local atk=math.ceil(tc:GetTextAttack()/2)
 	local def=math.ceil(tc:GetTextDefense()/2)
 	if atk<0 then atk=0 end
 	if def<0 then def=0 end
-	-- 设置装备限制效果，确保只有装备卡能装备给该卡。
+	-- ①：从自己的手卡·墓地选1只7·8星的龙族怪兽当作装备卡使用给这张卡装备。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_EQUIP_LIMIT)
@@ -62,7 +62,7 @@ function c33460840.eqop(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetValue(c33460840.eqlimit)
 	tc:RegisterEffect(e1)
 	if atk>0 then
-		-- 设置装备卡的攻击力提升效果，提升值为其攻击力的一半（向上取整）。
+		-- ②：这张卡的攻击力·守备力上升这张卡的效果装备的怪兽的各自数值的一半。
 		local e2=Effect.CreateEffect(c)
 		e2:SetType(EFFECT_TYPE_EQUIP)
 		e2:SetProperty(EFFECT_FLAG_IGNORE_IMMUNE+EFFECT_FLAG_OWNER_RELATE)
@@ -72,7 +72,7 @@ function c33460840.eqop(e,tp,eg,ep,ev,re,r,rp)
 		tc:RegisterEffect(e2)
 	end
 	if def>0 then
-		-- 设置装备卡的守备力提升效果，提升值为其守备力的一半（向上取整）。
+		-- ②：这张卡的攻击力·守备力上升这张卡的效果装备的怪兽的各自数值的一半。
 		local e3=Effect.CreateEffect(c)
 		e3:SetType(EFFECT_TYPE_EQUIP)
 		e3:SetProperty(EFFECT_FLAG_IGNORE_IMMUNE+EFFECT_FLAG_OWNER_RELATE)
@@ -82,45 +82,45 @@ function c33460840.eqop(e,tp,eg,ep,ev,re,r,rp)
 		tc:RegisterEffect(e3)
 	end
 end
--- 装备限制效果的判断函数，确保只有装备卡能装备给该卡。
+-- 定义装备限制条件：只有效果的所有者（这张守护骑士）才能装备该卡，防止装备卡被转移到其他怪兽身上。
 function c33460840.eqlimit(e,c)
 	return e:GetOwner()==c
 end
--- 筛选函数，用于判断墓地中的卡是否为7·8星的龙族且可特殊召唤。
+-- 筛选③效果的特殊召唤对象：自己墓地的7·8星龙族怪兽，且可以被玩家tp以效果e特殊召唤（满足召唤条件与苏生限制）。
 function c33460840.spfilter(c,e,tp)
 	return c:IsRace(RACE_DRAGON) and c:IsLevel(7,8) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 特殊召唤效果的费用处理函数，需要解放一张卡作为费用。
+-- ③的发动代价：解放这张卡和场上另外1只怪兽作为COST，随后从墓地选择对象进行特殊召唤。
 function c33460840.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
-	-- 判断是否满足特殊召唤的费用条件，即当前卡可解放且场上存在可解放的卡。
+	-- 检查代价可行性：此卡本身可以被解放，并且自己场上存在至少1只其他可解放的怪兽。
 	if chk==0 then return c:IsReleasable() and Duel.CheckReleaseGroup(tp,nil,1,c) end
-	-- 选择场上一张可解放的卡。
+	-- 选择自己场上1只除这张卡以外的可解放怪兽，作为解放代价的一部分。
 	local rg=Duel.SelectReleaseGroup(tp,nil,1,1,c)
 	rg:AddCard(c)
-	-- 将选中的卡进行解放操作。
+	-- 将选择的怪兽与这张卡一起解放（REASON_COST），作为发动③的代价。
 	Duel.Release(rg,REASON_COST)
 end
--- 特殊召唤效果的目标选择函数，用于选择墓地中的目标卡。
+-- ③的发动条件与对象选择：因解放会空出2个怪兽区，因此检查怪兽区可用空间，并选择自己墓地1只7·8星龙族怪兽作为特殊召唤对象。
 function c33460840.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(tp) and chkc:IsLocation(LOCATION_GRAVE) and c33460840.spfilter(chkc,e,tp) end
-	-- 判断当前玩家的怪兽区域是否还有足够的空间。
+	-- 检查怪兽区可用空间：发动时会解放这张卡和另1只怪兽，解放后至少空出2个位置，因此允许可用数大于-2。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>-2
-		-- 判断当前玩家的墓地中是否存在至少一张满足条件的卡。
+		-- 检查自己墓地是否存在1只满足spfilter的龙族怪兽，作为特殊召唤的对象候选。
 		and Duel.IsExistingTarget(c33460840.spfilter,tp,LOCATION_GRAVE,0,1,nil,e,tp) end
-	-- 提示玩家选择要特殊召唤的卡。
+	-- 弹出提示，让玩家选择要特殊召唤的墓地怪兽（显示“请选择要特殊召唤的卡”）。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 从墓地中选择一张满足条件的卡作为特殊召唤的目标。
+	-- 从自己墓地选择1只满足spfilter的龙族怪兽，并将其设为效果对象（取对象）。
 	local g=Duel.SelectTarget(tp,c33460840.spfilter,tp,LOCATION_GRAVE,0,1,1,nil,e,tp)
-	-- 设置操作信息，表明本次效果将特殊召唤一张卡。
+	-- 设置连锁操作信息：本次效果将进行特殊召唤，对象为已选择的g，数量1，由玩家tp控制。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,1,0,0)
 end
--- 特殊召唤效果的处理函数，将目标卡特殊召唤到场上。
+-- ③的效果处理：将取得对象的墓地龙族怪兽表侧攻击表示特殊召唤到自己场上。
 function c33460840.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁效果的目标卡。
+	-- 获取效果处理时当前连锁中选择的对象卡（即目标墓地怪兽）。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 将目标卡以特殊召唤方式放入场上。
+		-- 将目标怪兽以表侧攻击表示特殊召唤到自己场上，并遵守召唤条件与苏生限制。
 		Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
