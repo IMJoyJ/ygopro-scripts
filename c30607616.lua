@@ -7,7 +7,7 @@
 -- ③：这张卡从墓地的特殊召唤成功的场合才能发动。这个回合，自己怪兽不会被战斗破坏。
 function c30607616.initial_effect(c)
 	c:SetUniqueOnField(1,0,30607616)
-	-- 为卡片添加同调召唤手续，要求1只调整和1只调整以外的怪兽参与同调召唤
+	-- 为这张卡添加同调召唤手续：需要1只调整＋调整以外的怪兽1只以上。
 	aux.AddSynchroProcedure(c,nil,aux.NonTuner(nil),1)
 	c:EnableReviveLimit()
 	-- ③：这张卡从墓地的特殊召唤成功的场合才能发动。这个回合，自己怪兽不会被战斗破坏。
@@ -34,58 +34,58 @@ function c30607616.initial_effect(c)
 	e2:SetOperation(c30607616.spop)
 	c:RegisterEffect(e2)
 end
--- 判断该卡是否从墓地被特殊召唤成功
+-- 发动条件：这张卡是位于墓地时被特殊召唤成功，即之前位置为墓地。
 function c30607616.condition(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsPreviousLocation(LOCATION_GRAVE)
 end
--- 使自己场上所有怪兽在该回合内不会被战斗破坏
+-- ③效果处理：给己方场上的所有怪兽附加不会被战斗破坏的效果，持续到回合结束。
 function c30607616.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 创建一个效果，使自己场上所有怪兽在该回合内不会被战斗破坏
+	-- ②：这张卡在墓地存在，原本等级是5星的自己的同调怪兽被战斗或者对方的效果破坏的场合才能发动。从自己墓地把1只其他的不死族怪兽除外，这张卡特殊召唤。③：这张卡从墓地的特殊召唤成功的场合才能发动。这个回合，自己怪兽不会被战斗破坏。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_INDESTRUCTABLE_BATTLE)
 	e1:SetTargetRange(LOCATION_MZONE,0)
 	e1:SetReset(RESET_PHASE+PHASE_END)
 	e1:SetValue(1)
-	-- 将效果注册到玩家的全局环境
+	-- 将‘不会被战斗破坏’效果注册到场上，影响玩家tp控制的主要怪兽区怪兽。
 	Duel.RegisterEffect(e1,tp)
 end
--- 过滤满足条件的被破坏的同调怪兽：必须是5星等级、同调类型、被战斗或对方效果破坏
+-- 判定被破坏的怪兽是否满足②发动条件：破坏前表侧表示且由自己控制、是同调怪兽、原本等级为5，并且是被战斗破坏或对方的效果破坏。
 function c30607616.spfilter(c,tp)
 	return c:IsPreviousPosition(POS_FACEUP) and c:IsPreviousControler(tp) and c:GetPreviousTypeOnField()&TYPE_SYNCHRO~=0
 		and c:GetOriginalLevel()==5 and (c:IsReason(REASON_BATTLE) or c:IsReason(REASON_EFFECT) and c:GetReasonPlayer()==1-tp)
 end
--- 判断是否有满足条件的被破坏的同调怪兽
+-- ②发动条件：被破坏的怪兽集合中不包含这张卡自身，且存在至少1只满足条件的自己的同调怪兽被战斗/对方效果破坏。
 function c30607616.spcon(e,tp,eg,ep,ev,re,r,rp)
 	return not eg:IsContains(e:GetHandler()) and eg:IsExists(c30607616.spfilter,1,nil,tp)
 end
--- 过滤满足条件的不死族怪兽：可以除外、种族为不死族
+-- 除外过滤：选择墓地中1只不死族怪兽且该卡能够被除外。
 function c30607616.rmfilter(c)
 	return c:IsAbleToRemove() and c:IsRace(RACE_ZOMBIE)
 end
--- 设置特殊召唤和除外的条件：场上存在空位、该卡可以特殊召唤、墓地存在符合条件的不死族怪兽
+-- 发动目标检测：自己主要怪兽区有空位、这张卡可以特殊召唤、且墓地存在1只除外的其他不死族怪兽（这张卡自身除外）。
 function c30607616.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
-	-- 检查场上是否有空位
+	-- 检查自己场上主要怪兽区是否有可用的空位。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
-		-- 检查墓地是否存在符合条件的不死族怪兽
+		-- 检查墓地是否存在1张符合除外条件的不死族怪兽（除这张卡自身外）。
 		and Duel.IsExistingMatchingCard(c30607616.rmfilter,tp,LOCATION_GRAVE,0,1,c) end
-	-- 设置操作信息：特殊召唤该卡
+	-- 设置操作信息：将要特殊召唤的对象为这张卡，数量1。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,c,1,0,0)
-	-- 设置操作信息：除外1只不死族怪兽
+	-- 设置操作信息：将从墓地除外1张卡（具体卡在处理时选择）。
 	Duel.SetOperationInfo(0,CATEGORY_REMOVE,nil,1,tp,LOCATION_GRAVE)
 end
--- 处理特殊召唤效果：选择并除外1只不死族怪兽，然后将该卡特殊召唤
+-- ②效果处理：从自己墓地选择1只其他不死族怪兽除外，成功后特殊召唤这张卡。
 function c30607616.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 提示玩家选择要除外的卡
+	-- 给玩家显示‘请选择要除外的卡’的提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
-	-- 选择满足条件的不死族怪兽进行除外
+	-- 从自己墓地选择1只满足条件的不死族怪兽（不受王家长眠之谷影响），且不能选择这张卡自身。
 	local g=Duel.SelectMatchingCard(tp,aux.NecroValleyFilter(c30607616.rmfilter),tp,LOCATION_GRAVE,0,1,1,c)
-	-- 判断是否成功除外卡并确认该卡仍在场上
+	-- 如果成功选择了卡并除外成功，且这张卡仍与效果关联，则继续处理。
 	if #g>0 and Duel.Remove(g,POS_FACEUP,REASON_EFFECT)>0 and c:IsRelateToEffect(e) then
-		-- 将该卡以正面表示形式特殊召唤到场上
+		-- 将这张卡以表侧表示特殊召唤到自己场上。
 		Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 	end
 end

@@ -27,15 +27,15 @@ function c30606547.initial_effect(c)
 	e3:SetLabelObject(e2)
 	c:RegisterEffect(e3)
 end
--- 判断当前卡是否已注册标识效果，用于控制攻击次数限制的触发条件。
+-- 判定条件：本卡已记录过首次攻击宣言（拥有30606547标志）时，限制效果才适用。
 function c30606547.atkcon(e)
 	return e:GetHandler():GetFlagEffect(30606547)~=0
 end
--- 目标怪兽若其FieldID与效果标签不一致，则视为可被攻击宣言的怪兽。
+-- 限制对象：当攻击宣言怪兽的FieldID不是已记录的首次攻击怪兽的FieldID时，该怪兽不能攻击宣言。
 function c30606547.atktg(e,c)
 	return c:GetFieldID()~=e:GetLabel()
 end
--- 记录攻击宣言的怪兽FieldID，并注册标识效果以防止后续攻击宣言。
+-- 记录首次攻击宣言：若本卡尚未记录，则取得第一只攻击宣言怪兽的FieldID，将其写入限制效果的Label，并为本卡添加直到结束阶段重置的标志，使后续攻击宣言被禁止。
 function c30606547.checkop(e,tp,eg,ep,ev,re,r,rp)
 	if e:GetHandler():GetFlagEffect(30606547)~=0 then return end
 	local fid=eg:GetFirst():GetFieldID()
