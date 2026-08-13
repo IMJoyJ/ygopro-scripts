@@ -3,7 +3,7 @@
 -- 这个卡名的卡在1回合只能发动1张。
 -- ①：从自己墓地把1只「堕天使」怪兽守备表示特殊召唤。
 function c14517422.initial_effect(c)
-	-- ①：从自己墓地把1只「堕天使」怪兽守备表示特殊召唤。
+	-- 这个卡名的卡在1回合只能发动1张。①：从自己墓地把1只「堕天使」怪兽守备表示特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -13,29 +13,29 @@ function c14517422.initial_effect(c)
 	e1:SetOperation(c14517422.spop)
 	c:RegisterEffect(e1)
 end
--- 过滤函数，用于判断墓地中的怪兽是否为堕天使族且可以被特殊召唤到守备表示
+-- 过滤函数，判断墓地中的卡是否为「堕天使」怪兽，且该卡能够以表侧守备表示被特殊召唤。
 function c14517422.filter(c,e,tp)
 	return c:IsSetCard(0xef) and c:IsCanBeSpecialSummoned(e,0,tp,false,false,POS_FACEUP_DEFENSE)
 end
--- 效果的发动时点处理函数，用于判断是否满足发动条件
+-- 效果发动的条件检测：自己主要怪兽区有空位，并且墓地存在至少1只满足特殊召唤条件的「堕天使」怪兽。
 function c14517422.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查玩家场上是否有足够的怪兽区域
+	-- 检测自己主要怪兽区是否存在可用的空位。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查玩家墓地是否存在至少1只符合条件的堕天使族怪兽
+		-- 检测墓地中是否存在至少1只满足特殊召唤条件的「堕天使」怪兽。
 		and Duel.IsExistingMatchingCard(c14517422.filter,tp,LOCATION_GRAVE,0,1,nil,e,tp) end
-	-- 设置效果处理时将要特殊召唤的卡片信息
+	-- 设置本次效果处理的信息：从墓地特殊召唤1只怪兽，不取对象。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_GRAVE)
 end
--- 效果的发动处理函数，用于执行特殊召唤操作
+-- 效果处理函数：进行从墓地选择并特殊召唤「堕天使」怪兽的具体操作。
 function c14517422.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查玩家场上是否有足够的怪兽区域用于特殊召唤
+	-- 效果处理时再次确认自己主要怪兽区仍有空位，若无空位则效果不处理。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-	-- 向玩家提示选择要特殊召唤的卡片
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
-	-- 从玩家墓地中选择1只符合条件的堕天使族怪兽
+	-- 给玩家显示选择提示，提示内容为“请选择要特殊召唤的卡”。
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
+	-- 从自己墓地选择1只满足过滤条件且可被特殊召唤的「堕天使」怪兽。
 	local g=Duel.SelectMatchingCard(tp,c14517422.filter,tp,LOCATION_GRAVE,0,1,1,nil,e,tp)
 	if g:GetCount()>0 then
-		-- 将选中的怪兽以守备表示特殊召唤到场上
+		-- 将选中的「堕天使」怪兽以表侧守备表示特殊召唤到自己的主要怪兽区。
 		Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP_DEFENSE)
 	end
 end
