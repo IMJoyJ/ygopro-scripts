@@ -10,13 +10,13 @@ function c21417692.initial_effect(c)
 	e1:SetOperation(c21417692.atop)
 	c:RegisterEffect(e1)
 end
--- 检查玩家是否能支付1000基本分作为攻击代价
+-- 攻击代价的支付条件函数：检查当前玩家是否能支付1000基本分。
 function c21417692.atcost(e,c,tp)
-	-- 检查玩家是否能支付1000基本分
+	-- 检查玩家tp是否能支付1000点基本分，若能则攻击代价条件成立。
 	return Duel.CheckLPCost(tp,1000)
 end
--- 支付1000基本分作为攻击代价
+-- 攻击代价的支付执行函数：实际扣除1000基本分。
 function c21417692.atop(e,tp,eg,ep,ev,re,r,rp)
-	-- 让玩家支付1000基本分
+	-- 让玩家tp支付1000点基本分作为攻击代价。
 	Duel.PayLPCost(tp,1000)
 end

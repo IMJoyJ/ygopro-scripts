@@ -5,7 +5,7 @@
 -- ②：这张卡战斗破坏对方怪兽送去墓地时才能发动。这张卡只再1次可以继续向对方怪兽攻击。
 -- ③：自己准备阶段以对方场上1只表侧表示怪兽为对象才能发动。那只怪兽的攻击力变成一半，给与对方那个数值的伤害。
 function c21435914.initial_effect(c)
-	-- 添加同调召唤手续，需要1只暗属性调整和1只调整以外的龙族怪兽作为素材
+	-- 为这张卡添加同调召唤手续：需要1只暗属性调整＋1只调整以外的龙族怪兽作为素材。
 	aux.AddSynchroProcedure(c,aux.FilterBoolFunction(Card.IsAttribute,ATTRIBUTE_DARK),aux.NonTuner(Card.IsRace,RACE_DRAGON),1,1)
 	c:EnableReviveLimit()
 	-- ①：这张卡不会被战斗破坏。
@@ -34,19 +34,19 @@ function c21435914.initial_effect(c)
 	e3:SetOperation(c21435914.damop)
 	c:RegisterEffect(e3)
 end
--- 判断是否满足效果②的发动条件：战斗中破坏的怪兽在墓地且为怪兽，自身可以进行连锁攻击，且处于与对方怪兽战斗的状态
+-- 判定条件：这张卡在战斗破坏对方怪兽并将其送去墓地时，且战斗对象为对方怪兽、满足再攻击条件。
 function c21435914.atcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local bc=c:GetBattleTarget()
 	return bc:IsLocation(LOCATION_GRAVE) and bc:IsType(TYPE_MONSTER) and c:IsChainAttackable(2,true) and c:IsStatus(STATUS_OPPO_BATTLE)
 end
--- 执行效果②的操作：使自身可以再进行1次攻击，并设置不能直接攻击的效果
+-- 处理：如果这张卡仍与战斗相关，则让这张卡可以再攻击一次，并给它附加“不能直接攻击”的效果，直到战斗阶段结束。
 function c21435914.atop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if not c:IsRelateToBattle() then return end
-	-- 使攻击卡可以再进行1次攻击
+	-- 使这张卡可以再1次进行攻击。
 	Duel.ChainAttack()
-	-- 设置自身不能直接攻击的效果
+	-- ②：这张卡只再1次可以继续向对方怪兽攻击。（通过禁止直接攻击来限制只能攻击怪兽）
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_CANNOT_DIRECT_ATTACK)
@@ -54,39 +54,39 @@ function c21435914.atop(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_BATTLE)
 	c:RegisterEffect(e1)
 end
--- 判断是否满足效果③的发动条件：当前回合玩家为发动者
+-- 条件：当前回合玩家是自己，即自己的准备阶段。
 function c21435914.damcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 当前回合玩家为发动者
+	-- 当前回合玩家为这张卡的控制者（自己准备阶段）。
 	return Duel.GetTurnPlayer()==tp
 end
--- 设置效果③的发动目标：选择对方场上1只表侧表示的怪兽作为目标
+-- 取对象效果：选择对方场上的1只表侧表示且攻击力不为0的怪兽为对象；需要存在满足条件的对象，选定后记录其攻击力并设置将造成的伤害信息。
 function c21435914.damtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	-- 判断目标是否满足效果③的发动条件：目标为对方场上表侧表示的怪兽
+	-- 检查选定的对象是否位于怪兽区、由对方控制、表侧表示且攻击力不为0。
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(1-tp) and aux.nzatk(chkc) end
-	-- 判断是否满足效果③的发动条件：对方场上存在表侧表示的怪兽
+	-- 发动时确认对方场上有满足条件的表侧表示且攻击力不为0的怪兽存在。
 	if chk==0 then return Duel.IsExistingTarget(aux.nzatk,tp,0,LOCATION_MZONE,1,nil) end
-	-- 提示发动者选择对方场上表侧表示的怪兽
+	-- 弹出选择提示，要求玩家选择1只表侧表示的怪兽。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
-	-- 选择对方场上1只表侧表示的怪兽作为目标
+	-- 选择对方场上的1只表侧表示且攻击力不为0的怪兽作为效果对象。
 	local g=Duel.SelectTarget(tp,aux.nzatk,tp,0,LOCATION_MZONE,1,1,nil)
 	local atk=g:GetFirst():GetAttack()
-	-- 设置效果③的处理信息：给与对方相当于目标怪兽攻击力一半的伤害
+	-- 设置操作信息：将给对方造成伤害，伤害数值为选择怪兽当前攻击力的一半（向上取整）。
 	Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,1-tp,math.ceil(atk/2))
 end
--- 执行效果③的操作：将目标怪兽的攻击力减半，并给与对方相应数值的伤害
+-- 处理：取对象怪兽，若其仍表侧表示且与效果相关且不免疫此效果，则把其攻击力改为原攻击力的一半（最终攻击力），并给对方造成相同数值的伤害。
 function c21435914.damop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取效果③的目标怪兽
+	-- 取得效果处理时的对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsFaceup() and tc:IsRelateToEffect(e) and not tc:IsImmuneToEffect(e) then
 		local atk=tc:GetAttack()
-		-- 设置目标怪兽的攻击力为原来的一半
+		-- ③：那只怪兽的攻击力变成一半。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_SET_ATTACK_FINAL)
 		e1:SetReset(RESET_EVENT+RESETS_STANDARD)
 		e1:SetValue(math.ceil(atk/2))
 		tc:RegisterEffect(e1)
-		-- 给与对方相当于目标怪兽攻击力一半的伤害
+		-- 给对方造成与对象怪兽攻击力一半数值相等的伤害。
 		Duel.Damage(1-tp,math.ceil(atk/2),REASON_EFFECT)
 	end
 end

@@ -2,7 +2,7 @@
 -- 效果：
 -- 1回合1次，自己的主要阶段时才能发动。从手卡把「雷电妈妈」以外的1只雷族·光属性·4星的怪兽召唤。
 function c21524779.initial_effect(c)
-	-- 1回合1次，自己的主要阶段时才能发动。从手卡把「雷电妈妈」以外的1只雷族·光属性·4星的怪兽召唤。
+	-- 对应效果原文：1回合1次，自己的主要阶段时才能发动。从手卡把「雷电妈妈」以外的1只雷族·光属性·4星的怪兽召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(21524779,0))  --"召唤"
 	e1:SetCategory(CATEGORY_SUMMON)
@@ -13,27 +13,27 @@ function c21524779.initial_effect(c)
 	e1:SetOperation(c21524779.operation)
 	c:RegisterEffect(e1)
 end
--- 检索满足条件的卡片组：雷族、光属性、4星、不是雷电妈妈、可以通常召唤的怪兽
+-- 筛选手卡中满足雷族·光属性·4星、卡名不是「雷电妈妈」且可进行通常召唤的怪兽。
 function c21524779.filter(c)
 	return c:IsRace(RACE_THUNDER) and c:IsAttribute(ATTRIBUTE_LIGHT) and c:IsLevel(4)
 		and not c:IsCode(21524779) and c:IsSummonable(true,nil)
 end
--- 检查是否满足发动条件并设置连锁操作信息
+-- 效果发动的目标判定：确认手牌存在符合条件的怪兽，并设置“召唤”的操作信息。
 function c21524779.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查手牌中是否存在满足条件的怪兽
+	-- 发动合法性检查：确认手牌存在至少1张满足条件的“雷族·光属性·4星”且非「雷电妈妈」的怪兽。
 	if chk==0 then return Duel.IsExistingMatchingCard(c21524779.filter,tp,LOCATION_HAND,0,1,nil) end
-	-- 设置连锁操作信息为召唤类别
+	-- 设置操作信息：将本效果标记为包含1次“召唤”处理（用于后续连锁判定等）。
 	Duel.SetOperationInfo(0,CATEGORY_SUMMON,nil,1,0,0)
 end
--- 处理效果发动后的操作
+-- 效果处理：从手牌选择1只符合条件的怪兽进行通常召唤（不占用通常召唤次数）。
 function c21524779.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要召唤的卡
+	-- 向操作玩家显示“请选择要召唤的卡”的提示信息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SUMMON)  --"请选择要召唤的卡"
-	-- 从手牌中选择满足条件的1张怪兽卡
+	-- 从手卡中选择1只满足条件的雷族·光属性·4星且非「雷电妈妈」的怪兽。
 	local g=Duel.SelectMatchingCard(tp,c21524779.filter,tp,LOCATION_HAND,0,1,1,nil)
 	local tc=g:GetFirst()
 	if tc then
-		-- 将选中的怪兽通常召唤
+		-- 将选择的怪兽进行通常召唤（本次召唤不计入每回合的通常召唤次数限制）。
 		Duel.Summon(tp,tc,true,nil)
 	end
 end
