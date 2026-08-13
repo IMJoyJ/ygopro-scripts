@@ -6,7 +6,7 @@
 -- ●4个以上：这张卡不会成为对方的卡的效果的对象。
 -- ●5个：这张卡不会被卡的效果破坏。
 function c23776077.initial_effect(c)
-	-- 添加XYZ召唤手续，要求使用1只以上炎属性怪兽作为素材进行召唤，最少需要2只，最多5只
+	-- 为这张卡添加XYZ召唤手续：以炎属性6星怪兽2只以上（最多5只）为超量素材进行XYZ召唤。
 	aux.AddXyzProcedure(c,aux.FilterBoolFunction(Card.IsAttribute,ATTRIBUTE_FIRE),6,2,nil,nil,5)
 	c:EnableReviveLimit()
 	-- 1回合1次，把这张卡1个超量素材取除才能发动。选择对方的场上·墓地1只怪兽从游戏中除外。
@@ -40,7 +40,7 @@ function c23776077.initial_effect(c)
 	e4:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
 	e4:SetRange(LOCATION_MZONE)
 	e4:SetCondition(c23776077.tgcon)
-	-- 设置效果值为aux.tgoval函数，用于判断是否成为对方效果的对象
+	-- 设置该效果的价值函数，使这张卡不会成为对方的卡的效果的对象。
 	e4:SetValue(aux.tgoval)
 	c:RegisterEffect(e4)
 	-- ●5个：这张卡不会被卡的效果破坏。
@@ -53,54 +53,54 @@ function c23776077.initial_effect(c)
 	e5:SetValue(1)
 	c:RegisterEffect(e5)
 end
--- 支付1个超量素材作为cost，从自己场上移除1个超量素材
+-- 支付发动代价：先检查能否从这张卡上取除1个超量素材，若可以则实际取除1个超量素材作为发动cost。
 function c23776077.rmcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():CheckRemoveOverlayCard(tp,1,REASON_COST) end
 	e:GetHandler():RemoveOverlayCard(tp,1,1,REASON_COST)
 end
--- 筛选可以除外的怪兽，必须是怪兽卡且可以被除外
+-- 定义选择过滤条件：对象必须是怪兽，并且可以被除外（不受到不能除外等限制）。
 function c23776077.rmfilter(c)
 	return c:IsType(TYPE_MONSTER) and c:IsAbleToRemove()
 end
--- 设置效果目标，选择对方场上或墓地的1只怪兽作为目标
+-- 发动时的取对象处理：确认对象合法性，提示玩家从对方场上·墓地选择1只怪兽，优先选择场上的怪兽；并根据对象所在位置（墓地/场上）登记对应的除外操作信息。
 function c23776077.rmtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(1-tp) and chkc:IsLocation(LOCATION_MZONE+LOCATION_GRAVE) and c23776077.rmfilter(chkc) end
-	-- 检查是否存在符合条件的目标怪兽
+	-- 发动条件检查：确认对方场上或墓地存在至少1张满足条件的怪兽（且能被除外）可以作为效果对象。
 	if chk==0 then return Duel.IsExistingTarget(c23776077.rmfilter,tp,0,LOCATION_MZONE+LOCATION_GRAVE,1,nil) end
-	-- 提示玩家选择要除外的卡
+	-- 发送选择提示，让玩家选择要除外的卡片。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
-	-- 优先从场上选择目标，若场上无足够目标则从墓地选择
+	-- 调用选择辅助函数从对方场上·墓地选择1张符合条件的怪兽作为对象；若场上合法目标不足则从墓地补足，并将所选卡片设为连锁对象。
 	local g=aux.SelectTargetFromFieldFirst(tp,c23776077.rmfilter,tp,0,LOCATION_MZONE+LOCATION_GRAVE,1,1,nil)
 	if g:GetFirst():IsLocation(LOCATION_GRAVE) then
-		-- 设置操作信息，指定要除外的卡来自对方墓地
+		-- 登记操作信息：对象位于墓地时，标记为将对方墓地的1张怪兽除外，共1张，供连锁判定使用。
 		Duel.SetOperationInfo(0,CATEGORY_REMOVE,g,1,1-tp,LOCATION_GRAVE)
 	else
-		-- 设置操作信息，指定要除外的卡来自对方场上
+		-- 登记操作信息：对象位于场上时，标记为将对方场上的1张怪兽除外，共1张，供连锁判定使用。
 		Duel.SetOperationInfo(0,CATEGORY_REMOVE,g,1,0,0)
 	end
 end
--- 执行效果，将目标怪兽从游戏中除外
+-- 效果处理：获取连锁对象，若对象仍与效果关联，则将其除外。
 function c23776077.rmop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的效果目标
+	-- 获取本次效果发动时选择的目标怪兽。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 将目标怪兽从游戏中除外
+		-- 将目标怪兽从游戏中表侧表示除外（除外原因：效果）。
 		Duel.Remove(tc,POS_FACEUP,REASON_EFFECT)
 	end
 end
--- 判断当前超量素材数量是否大于等于3
+-- 攻击力·守备力上升效果的适用条件：这张卡的超量素材数量为3个以上。
 function c23776077.adcon(e)
 	return e:GetHandler():GetOverlayCount()>=3
 end
--- 设置攻击力增加量为当前超量素材数量乘以200
+-- 计算攻击力·守备力的上升数值：超量素材数量×200。
 function c23776077.adval(e,c)
 	return e:GetHandler():GetOverlayCount()*200
 end
--- 判断当前超量素材数量是否大于等于4
+-- 不会成为对方效果对象的效果的适用条件：超量素材数量为4个以上。
 function c23776077.tgcon(e)
 	return e:GetHandler():GetOverlayCount()>=4
 end
--- 判断当前超量素材数量是否等于5
+-- 不会被效果破坏的效果的适用条件：超量素材数量正好为5个。
 function c23776077.indcon(e)
 	return e:GetHandler():GetOverlayCount()==5
 end

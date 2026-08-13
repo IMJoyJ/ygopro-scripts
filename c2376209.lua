@@ -10,7 +10,7 @@ function c2376209.initial_effect(c)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET+EFFECT_FLAG_DAMAGE_STEP)
 	e1:SetHintTiming(TIMING_DAMAGE_STEP)
-	-- 限制效果只能在伤害计算前的时机发动或适用
+	-- 设置①效果在伤害步骤中仅能在伤害计算前发动（伤害计算后不能发动）。
 	e1:SetCondition(aux.dscon)
 	e1:SetTarget(c2376209.target)
 	e1:SetOperation(c2376209.operation)
@@ -28,22 +28,22 @@ function c2376209.initial_effect(c)
 	e2:SetOperation(c2376209.spop)
 	c:RegisterEffect(e2)
 end
--- 设置选择对象的条件为场上表侧表示的怪兽
+-- ①效果的发动时选择对象：从双方场上选择1只表侧表示怪兽作为对象。
 function c2376209.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsFaceup() end
-	-- 判断是否满足选择对象的条件，即场上是否存在表侧表示的怪兽
+	-- 效果发动合法性检查：确认场上存在至少1只表侧表示怪兽可供选择。
 	if chk==0 then return Duel.IsExistingTarget(Card.IsFaceup,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil) end
-	-- 向玩家提示选择表侧表示的卡
+	-- 向操作玩家发出选择表侧表示怪兽的提示信息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
-	-- 选择场上表侧表示的怪兽作为对象
+	-- 选择场上1只表侧表示怪兽作为效果对象。
 	Duel.SelectTarget(tp,Card.IsFaceup,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,nil)
 end
--- 对选中的怪兽增加500攻击力和500守备力
+-- ①效果处理：使对象怪兽的攻击力和守备力直到回合结束时上升500。
 function c2376209.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁中的目标怪兽
+	-- 获取效果对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) and tc:IsFaceup() then
-		-- 为选中的怪兽增加500攻击力
+		-- 那只怪兽的攻击力·守备力直到回合结束时上升500。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)
@@ -55,31 +55,31 @@ function c2376209.operation(e,tp,eg,ep,ev,re,r,rp)
 		tc:RegisterEffect(e2)
 	end
 end
--- 判断连锁发动的是否为陷阱卡的发动
+-- ②效果的发动条件：有陷阱卡发动时，连锁该陷阱卡的发动才可在墓地发动此效果。
 function c2376209.spcon(e,tp,eg,ep,ev,re,r,rp)
 	return re:IsActiveType(TYPE_TRAP) and re:IsHasType(EFFECT_TYPE_ACTIVATE)
 end
--- 判断是否满足特殊召唤的条件，即是否有足够的怪兽区域和是否可以特殊召唤该怪兽
+-- ②效果发动时检查：自己怪兽区域有空位，且自己可以将这张卡作为通常怪兽特殊召唤。
 function c2376209.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
-	-- 判断场上是否有足够的怪兽区域
+	-- 效果发动合法性检查：自己主要怪兽区域有空位。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 判断玩家是否可以特殊召唤该怪兽
+		-- 且允许自己特殊召唤这张卡（作为水族·水·2星·攻1200/守0的通常怪兽）。
 		and Duel.IsPlayerCanSpecialSummonMonster(tp,2376209,0xd4,TYPES_NORMAL_TRAP_MONSTER,1200,0,2,RACE_AQUA,ATTRIBUTE_WATER) end
-	-- 设置操作信息，表示将要特殊召唤这张卡
+	-- 设置操作信息：本次连锁处理包含特殊召唤这张卡（供相关效果查询）。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,c,1,0,0)
 end
--- 执行特殊召唤操作，将卡以通常怪兽形式特殊召唤到场上
+-- ②效果处理：在满足条件时，将这张卡变成通常怪兽特殊召唤，并附加“不受怪兽效果影响”和“离场除外”。
 function c2376209.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断场上是否有足够的怪兽区域
+	-- 效果处理时如果自己怪兽区域没有空位，则直接终止处理。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
 	local c=e:GetHandler()
-	-- 判断卡是否与效果相关联且是否可以特殊召唤
+	-- 确认这张卡仍与效果关联（没有离场），且自己仍可特殊召唤它。
 	if c:IsRelateToEffect(e) and Duel.IsPlayerCanSpecialSummonMonster(tp,2376209,0xd4,TYPES_NORMAL_TRAP_MONSTER,1200,0,2,RACE_AQUA,ATTRIBUTE_WATER) then
 		c:AddMonsterAttribute(TYPE_NORMAL)
-		-- 将卡以通常怪兽形式特殊召唤到场上
+		-- 将这张卡以表侧表示特殊召唤到自己怪兽区域（分步特殊召唤中的一步）。
 		Duel.SpecialSummonStep(c,0,tp,tp,true,false,POS_FACEUP)
-		-- 使特殊召唤的卡不受怪兽的效果影响
+		-- 这个效果特殊召唤的这张卡不受怪兽的效果影响。
 		local e2=Effect.CreateEffect(c)
 		e2:SetType(EFFECT_TYPE_SINGLE)
 		e2:SetCode(EFFECT_IMMUNE_EFFECT)
@@ -88,7 +88,7 @@ function c2376209.spop(e,tp,eg,ep,ev,re,r,rp)
 		e2:SetValue(c2376209.efilter)
 		e2:SetReset(RESET_EVENT+RESETS_STANDARD)
 		c:RegisterEffect(e2,true)
-		-- 使特殊召唤的卡在离开场上时被移除
+		-- 从场上离开的场合除外。
 		local e3=Effect.CreateEffect(c)
 		e3:SetType(EFFECT_TYPE_SINGLE)
 		e3:SetCode(EFFECT_LEAVE_FIELD_REDIRECT)
@@ -96,11 +96,11 @@ function c2376209.spop(e,tp,eg,ep,ev,re,r,rp)
 		e3:SetReset(RESET_EVENT+RESETS_REDIRECT)
 		e3:SetValue(LOCATION_REMOVED)
 		c:RegisterEffect(e3,true)
-		-- 完成特殊召唤流程
+		-- 完成分步特殊召唤，结算特殊召唤成功。
 		Duel.SpecialSummonComplete()
 	end
 end
--- 效果过滤器，用于判断是否免疫怪兽效果
+-- 免疫效果的过滤函数：仅当效果发动者为怪兽时返回真，从而实现“不受怪兽的效果影响”。
 function c2376209.efilter(e,re)
 	return re:IsActiveType(TYPE_MONSTER)
 end

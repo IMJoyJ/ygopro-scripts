@@ -4,9 +4,9 @@
 -- ●表：自己的结束阶段时可以把自己场上存在的2只怪兽送去墓地让下次的对方回合跳过。
 -- ●里：对方的抽卡阶段时把对方墓地最上面1张卡加入对方手卡。
 function c23846921.initial_effect(c)
-	-- 为卡片注册一个在召唤·反转召唤·特殊召唤成功时强制进行硬币投掷的效果
+	-- 为这张卡注册秘仪之力通用的抛硬币判定，在通常召唤·反转召唤·特殊召唤成功时强制抛硬币，并根据正反设置标志（表=1/里=0）。
 	aux.EnableArcanaCoin(c,EVENT_SUMMON_SUCCESS,EVENT_FLIP_SUMMON_SUCCESS,EVENT_SPSUMMON_SUCCESS)
-	-- ●表：自己的结束阶段时可以把自己场上存在的2只怪兽送去墓地让下次的对方回合跳过。
+	-- 自己结束阶段，把自己场上2只怪兽送去墓地才能发动。下次的对方回合跳过。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(23846921,1))  --"跳过对方回合"
 	e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
@@ -18,7 +18,7 @@ function c23846921.initial_effect(c)
 	e1:SetTarget(c23846921.skiptg)
 	e1:SetOperation(c23846921.skipop)
 	c:RegisterEffect(e1)
-	-- ●里：对方的抽卡阶段时把对方墓地最上面1张卡加入对方手卡。
+	-- 对方抽卡阶段发动。对方墓地最上面的卡加入对方手卡。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(23846921,2))  --"回收"
 	e2:SetCategory(CATEGORY_TOHAND)
@@ -31,60 +31,60 @@ function c23846921.initial_effect(c)
 	e2:SetOperation(c23846921.thop)
 	c:RegisterEffect(e2)
 end
--- 判断是否为表效果（硬币投掷结果为正面）且当前为自己的结束阶段
+-- 判定当前是否为本方结束阶段（ep==tp），且此卡在硬币中为表（标志为1），满足表效果才能发动。
 function c23846921.skipcon(e,tp,eg,ep,ev,re,r,rp)
 	return ep==tp and e:GetHandler():GetFlagEffectLabel(FLAG_ID_ARCANA_COIN)==1
 end
--- 支付效果代价：选择2只场上怪兽送去墓地
+-- 表效果的代价处理：检查并支付把自己场上2只怪兽送去墓地的代价，选择符合条件的怪兽后将其以代价形式送入墓地。
 function c23846921.skipcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否满足支付代价的条件（场上至少有2只怪兽）
+	-- 代价检查：确认自己场上是否存在至少2只可以作为代价送去墓地的怪兽，若不足则不能发动。
 	if chk==0 then return Duel.IsExistingMatchingCard(Card.IsAbleToGraveAsCost,tp,LOCATION_MZONE,0,2,nil) end
-	-- 提示玩家选择要送去墓地的怪兽
+	-- 弹出“请选择要送去墓地的卡”的选卡提示，引导玩家选择要作为代价的怪兽。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
-	-- 选择满足条件的2只怪兽
+	-- 从自己场上选择正好2只可以作为代价的怪兽，作为发动表效果的祭品。
 	local g=Duel.SelectMatchingCard(tp,Card.IsAbleToGraveAsCost,tp,LOCATION_MZONE,0,2,2,nil)
-	-- 将选中的怪兽送去墓地作为代价
+	-- 将选择的2只怪兽以“代价”（REASON_COST）形式送去墓地，完成代价支付。
 	Duel.SendtoGrave(g,REASON_COST)
 end
--- 设置跳过回合效果的目标判定条件
+-- 发动条件检查：确认对方当前没有受到“跳过回合”效果影响；若对方已被跳过回合，则此效果不能发动。
 function c23846921.skiptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否可以发动跳过回合效果（对方未被跳过回合）
+	-- 确认对方没有获得“跳过回合”效果，避免让对方连续跳过回合；若已存在则不可发动。
 	if chk==0 then return not Duel.IsPlayerAffectedByEffect(1-tp,EFFECT_SKIP_TURN) end
 end
--- 执行跳过对方回合的效果
+-- 创建并注册一个影响对方玩家的“跳过回合”永续效果，使其下一次对方回合被跳过，效果持续到对方回合结束时重置。
 function c23846921.skipop(e,tp,eg,ep,ev,re,r,rp)
-	-- 创建并注册跳过对方回合的效果
+	-- 自己结束阶段，把自己场上2只怪兽送去墓地才能发动。下次的对方回合跳过。对方抽卡阶段发动。对方墓地最上面的卡加入对方手卡。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
 	e1:SetCode(EFFECT_SKIP_TURN)
 	e1:SetTargetRange(0,1)
 	e1:SetReset(RESET_PHASE+PHASE_END+RESET_OPPO_TURN)
-	-- 将跳过回合效果注册到游戏环境
+	-- 将生成的“跳过对方回合”效果正式注册到场上，控制者为发动效果的本方，作用目标是对方玩家。
 	Duel.RegisterEffect(e1,tp)
 end
--- 判断是否为里效果（硬币投掷结果为反面）且当前为对方的抽卡阶段
+-- 判定当前是对方的抽卡阶段（ep不为本方）且此卡在硬币中为里（标志为0），满足里效果的强制发动条件。
 function c23846921.thcon(e,tp,eg,ep,ev,re,r,rp)
 	return ep~=tp and e:GetHandler():GetFlagEffectLabel(FLAG_ID_ARCANA_COIN)==0
 end
--- 设置回收效果的目标判定条件
+-- 里效果的发动/目标处理：取对方墓地最上面那张卡作为将要加入对方手卡的对象，并登记操作信息。
 function c23846921.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 获取对方墓地最上面的1张卡
+	-- 取得对方墓地中位于最上方（即最后进入墓地）的那张卡。
 	local tc=Duel.GetFieldCard(1-tp,LOCATION_GRAVE,Duel.GetFieldGroupCount(1-tp,LOCATION_GRAVE,0)-1)
 	if tc then
-		-- 设置连锁操作信息，指定要回收的卡
+		-- 将这张卡登记为本次效果要送回手卡的对象，用于连锁判定和效果处理。
 		Duel.SetOperationInfo(0,CATEGORY_TOHAND,tc,1,0,0)
 	end
 end
--- 执行回收效果
+-- 处理里效果：将对方墓地最上面的卡加入对方手卡，并向本方玩家展示那张卡。
 function c23846921.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取对方墓地最上面的1张卡
+	-- 处理阶段再次从对方墓地取得最上面那张卡，用于实际移动。
 	local tc=Duel.GetFieldCard(1-tp,LOCATION_GRAVE,Duel.GetFieldGroupCount(1-tp,LOCATION_GRAVE,0)-1)
 	if tc then
-		-- 将对方墓地最上面的卡加入对方手卡
+		-- 将这张卡以效果原因（REASON_EFFECT）加入对方手卡，完成“回收”。
 		Duel.SendtoHand(tc,nil,REASON_EFFECT)
-		-- 向玩家确认对方手卡的卡
+		-- 让本方玩家确认已加入对方手卡的那张卡，以完成效果处理及信息公开。
 		Duel.ConfirmCards(tp,tc)
 	end
 end
