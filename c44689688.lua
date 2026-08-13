@@ -14,29 +14,29 @@ function c44689688.initial_effect(c)
 	e1:SetOperation(c44689688.spop)
 	c:RegisterEffect(e1)
 end
--- 规则层面：判断是否为1只怪兽被战斗破坏送入墓地，且该怪兽是由这张卡造成的破坏。
+-- 触发条件判定：本次被战斗破坏送去墓地的怪兽只有1只，且该怪兽是被这张卡战斗破坏并因此送去墓地；满足则条件成立。
 function c44689688.spcon(e,tp,eg,ep,ev,re,r,rp)
 	local tc=eg:GetFirst()
 	return eg:GetCount()==1 and tc:GetReasonCard()==e:GetHandler()
 		and tc:IsLocation(LOCATION_GRAVE) and tc:IsReason(REASON_BATTLE)
 end
--- 规则层面：设置连锁处理信息，表示将特殊召唤1只衍生物。
+-- 发动准备：无取对象效果；在发动时允许发动，并设置本次处理涉及特殊召唤和衍生物生成的操作信息。
 function c44689688.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 规则层面：设置连锁处理信息，表示将特殊召唤1只衍生物。
+	-- 设置操作信息：本次效果将进行特殊召唤，预定数量为1；因具体怪兽在效果处理时才确定，所以对象记为nil。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,0,0)
-	-- 规则层面：设置连锁处理信息，表示将生成1个棘龙衍生物。
+	-- 设置操作信息：本次效果将生成衍生物，预定数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_TOKEN,nil,1,0,0)
 end
--- 规则层面：检查对方场上是否有空位，以及是否可以特殊召唤该衍生物。
+-- 效果处理：先检查对方怪兽区域是否有可用空格以及能否特殊召唤衍生物；若可以，则生成「棘龙衍生物」并攻击表示特殊召唤到对方场上。
 function c44689688.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 规则层面：如果对方场上没有空位则不执行效果。
+	-- 检查对方场上主要怪兽区域是否有空格；若无空格则无法特殊召唤，直接终止处理。
 	if Duel.GetLocationCount(1-tp,LOCATION_MZONE,tp)<=0 then return end
-	-- 规则层面：检查玩家是否可以特殊召唤该衍生物。
+	-- 检查玩家tp能否将一只恐龙族·炎属性·1星·攻击力300/守备力0的「棘龙衍生物」以表侧攻击表示特殊召唤到对方（1-tp）场上。
 	if Duel.IsPlayerCanSpecialSummonMonster(tp,44689689,0,TYPES_TOKEN_MONSTER,300,0,1,RACE_DINOSAUR,ATTRIBUTE_FIRE,POS_FACEUP_ATTACK,1-tp) then
-		-- 规则层面：创建一个棘龙衍生物。
+		-- 创建1只卡号为44689689的「棘龙衍生物」衍生物，控制者为tp。
 		local token=Duel.CreateToken(tp,44689689)
-		-- 规则层面：将创建的棘龙衍生物以攻击表示特殊召唤到对方场上。
+		-- 将生成的衍生物以表侧攻击表示特殊召唤到对方（1-tp）场上，由tp作为特殊召唤玩家。
 		Duel.SpecialSummon(token,0,tp,1-tp,false,false,POS_FACEUP_ATTACK)
 	end
 end

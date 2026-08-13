@@ -26,23 +26,23 @@ function c44656491.initial_effect(c)
 	e3:SetOperation(c44656491.mtop)
 	c:RegisterEffect(e3)
 end
--- 判断目标怪兽是否攻击力大于等于1500
+-- 作为不能攻击宣言的过滤条件：筛选出攻击力1500以上的怪兽（含表侧表示限制，因为该永续效果只影响场上表侧表示怪兽）。
 function c44656491.atktarget(e,c)
 	return c:GetAttack()>=1500
 end
--- 判断是否为当前回合玩家
+-- 判断效果触发时是否为这张卡控制者自己的准备阶段。
 function c44656491.mtcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断是否为当前回合玩家
+	-- 当前回合玩家等于这张卡的控制者（tp）时条件成立，即正处于控制者的准备阶段。
 	return Duel.GetTurnPlayer()==tp
 end
--- 执行准备阶段的支付或破坏操作
+-- 在控制者的准备阶段，先检查能否支付100基本分并让控制者选择；若选择支付则支付100基本分，否则将这张卡破坏。
 function c44656491.mtop(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查玩家是否能支付100基本分并询问是否支付
+	-- 检查控制者能否支付100基本分，并弹出是否支付100基本分维持这张卡的确认提示。
 	if Duel.CheckLPCost(tp,100) and Duel.SelectYesNo(tp,aux.Stringid(44656491,0)) then  --"是否要支付100基本分维持「和平使者」？"
-		-- 支付100基本分
+		-- 控制者支付100基本分作为维持费用。
 		Duel.PayLPCost(tp,100)
 	else
-		-- 因支付代价不足而破坏此卡
+		-- 控制者不支付维持费用时，以代价形式将这张卡破坏。
 		Duel.Destroy(e:GetHandler(),REASON_COST)
 	end
 end

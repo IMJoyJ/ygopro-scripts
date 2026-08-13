@@ -2,7 +2,7 @@
 -- 效果：
 -- 1回合1次，把手卡1只风属性怪兽给对方观看才能发动。直到下次的对方的主要阶段1结束时，双方玩家不能把比给人观看的怪兽等级高的怪兽的效果发动。
 function c44663232.initial_effect(c)
-	-- 1回合1次，把手卡1只风属性怪兽给对方观看才能发动。直到下次的对方的主要阶段1结束时，双方玩家不能把比给人观看的怪兽等级高的怪兽的效果发动。
+	-- ①：1回合1次，把手卡1只风属性怪兽给对方观看才能发动。直到下次的对方主要阶段1结束时，双方不能把比给人观看的怪兽等级高的怪兽的效果发动。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(44663232,0))  --"效果抑制"
 	e2:SetType(EFFECT_TYPE_IGNITION)
@@ -12,27 +12,27 @@ function c44663232.initial_effect(c)
 	e2:SetOperation(c44663232.operation)
 	c:RegisterEffect(e2)
 end
--- 过滤函数，检查手卡中是否存在风属性且未公开的怪兽
+-- 定义过滤函数：选择手卡中满足条件的卡——风属性且非公开状态的怪兽。
 function c44663232.cfilter(c)
 	return c:IsAttribute(ATTRIBUTE_WIND) and not c:IsPublic()
 end
--- 效果发动时的费用处理，检索满足条件的风属性手卡怪兽并确认给对方观看
+-- 发动代价的处理：检查是否存在可展示的风属性手卡怪兽；若有则让玩家选择1张给对方确认，记录其等级，并洗切手卡。
 function c44663232.cost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查手卡中是否存在满足条件的风属性怪兽
+	-- 在代价合法性检查（chk==0）时，确认自己手卡是否存在至少1张满足风属性且非公开状态的怪兽。
 	if chk==0 then return Duel.IsExistingMatchingCard(c44663232.cfilter,tp,LOCATION_HAND,0,1,nil) end
-	-- 向玩家提示“请选择给对方确认的卡”
+	-- 给玩家发送选择提示，要求选择一张要展示给对方确认的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_CONFIRM)  --"请选择给对方确认的卡"
-	-- 选择满足条件的1张手卡怪兽
+	-- 从自己手卡中选择1只符合条件（风属性且非公开状态）的怪兽。
 	local g=Duel.SelectMatchingCard(tp,c44663232.cfilter,tp,LOCATION_HAND,0,1,1,nil)
-	-- 将选择的怪兽确认给对方观看
+	-- 将选择的卡展示给对方玩家确认。
 	Duel.ConfirmCards(1-tp,g)
 	e:SetLabel(g:GetFirst():GetLevel())
-	-- 将手卡洗切
+	-- 由于手卡中的一张被公开确认，洗切自己的手卡以隐藏手牌顺序信息。
 	Duel.ShuffleHand(tp)
 end
--- 效果发动时，创建一个永续效果，使双方玩家不能发动比已确认怪兽等级高的怪兽效果
+-- 效果处理：创建一个持续到下次对方主要阶段1结束的领域效果，在该效果适用期间，双方不能发动等级高于所展示怪兽的怪兽效果。
 function c44663232.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 创建一个影响对方玩家的永续效果，禁止发动效果
+	-- 直到下次的对方主要阶段1结束时，双方不能把比给人观看的怪兽等级高的怪兽的效果发动。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
@@ -41,10 +41,10 @@ function c44663232.operation(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetLabel(e:GetLabel()+1)
 	e1:SetReset(RESET_PHASE+PHASE_MAIN1+RESET_OPPO_TURN)
 	e1:SetValue(c44663232.val)
-	-- 将效果e1注册给玩家tp
+	-- 将上述领域禁止效果注册到场上，使其开始适用。
 	Duel.RegisterEffect(e1,tp)
 end
--- 判断效果是否为怪兽卡类型且其等级高于设定值
+-- 禁止效果的判定函数：若试图发动的效果是怪兽效果，且该怪兽的等级高于展示怪兽的等级，则禁止发动。
 function c44663232.val(e,re,tp)
 	return re:IsActiveType(TYPE_MONSTER) and re:GetHandler():IsLevelAbove(e:GetLabel())
 end

@@ -45,78 +45,78 @@ function c44586426.initial_effect(c)
 	e5:SetOperation(c44586426.nmop)
 	c:RegisterEffect(e5)
 end
--- 检索满足条件的雷族怪兽（可送去墓地）
+-- 过滤出卡组中雷族且可以送去墓地的怪兽。
 function c44586426.tgfilter(c)
 	return c:IsRace(RACE_THUNDER) and c:IsAbleToGrave()
 end
--- 设置效果处理时要送去墓地的卡
+-- 效果发动时的目标判定：检查卡组是否存在满足条件的雷族怪兽，并设置送去墓地的操作信息。
 function c44586426.tgtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否满足条件：场上存在满足过滤条件的卡
+	-- 若发动时存在满足条件的卡，则效果可以发动。
 	if chk==0 then return Duel.IsExistingMatchingCard(c44586426.tgfilter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置效果处理时要送去墓地的卡
+	-- 设置本次效果处理为从卡组把1张卡送去墓地。
 	Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,nil,1,tp,LOCATION_DECK)
 end
--- 选择并把满足条件的卡送去墓地
+-- 效果处理时，从卡组选择1只雷族怪兽送去墓地。
 function c44586426.tgop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要送去墓地的卡
+	-- 向玩家提示选择要送去墓地的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
-	-- 选择满足条件的卡
+	-- 从卡组选择1张符合条件的雷族怪兽。
 	local g=Duel.SelectMatchingCard(tp,c44586426.tgfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的卡送去墓地
+		-- 将选择的卡以效果原因送去墓地。
 		Duel.SendtoGrave(g,REASON_EFFECT)
 	end
 end
--- 过滤满足条件的雷族怪兽（在场上）
+-- 判断怪兽是否为表侧表示的雷族怪兽。
 function c44586426.tkcfilter(c)
 	return c:IsFaceup() and c:IsRace(RACE_THUNDER)
 end
--- 判断是否满足条件：有雷族怪兽被召唤或特殊召唤
+-- ②效果的发动条件：雷族怪兽召唤·特殊召唤成功时，且该怪兽不是这张卡自身。
 function c44586426.tkcon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c44586426.tkcfilter,1,nil) and not eg:IsContains(e:GetHandler())
 end
--- 设置效果处理时要特殊召唤的衍生物
+-- ②效果的目标判定：没有取对象需求，同时设置衍生物特殊召唤的操作信息。
 function c44586426.tktg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置效果处理时要特殊召唤的衍生物
+	-- 设置将衍生物特殊召唤到场的操作信息。
 	Duel.SetOperationInfo(0,CATEGORY_TOKEN,nil,1,0,0)
-	-- 设置效果处理时要特殊召唤的衍生物
+	-- 设置特殊召唤的操作信息。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,0,0)
 end
--- 判断是否满足条件：场上是否有空位且可以特殊召唤衍生物
+-- ②效果处理：检查能否特殊召唤衍生物，能则生成衍生物并特殊召唤。
 function c44586426.tkop(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断是否满足条件：场上是否有空位
+	-- 检查我方主要怪兽区是否有空位。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0
-		-- 判断是否满足条件：玩家是否可以特殊召唤衍生物
+		-- 检查我方是否能特殊召唤「电池人衍生物」（雷族·光·1星·攻/守0）。
 		or not Duel.IsPlayerCanSpecialSummonMonster(tp,44586427,0,TYPES_TOKEN_MONSTER,0,0,1,RACE_THUNDER,ATTRIBUTE_LIGHT) then return end
-	-- 创建一个电池人衍生物
+	-- 在场上生成「电池人衍生物」（雷族·光·1星·攻/守0）。
 	local token=Duel.CreateToken(tp,44586427)
-	-- 将创建的衍生物特殊召唤到场上
+	-- 将衍生物以表侧攻击表示特殊召唤到我方场上。
 	Duel.SpecialSummon(token,0,tp,tp,false,false,POS_FACEUP)
 end
--- 过滤满足条件的电池人效果怪兽（在场上或墓地）
+-- ③效果的对象筛选：选择我方场上表侧表示或墓地的「电池人」效果怪兽，且不能是这张卡自身。
 function c44586426.nmfilter(c,cd)
 	return (c:IsFaceup() or c:IsLocation(LOCATION_GRAVE)) and c:IsType(TYPE_EFFECT)
 		and c:IsSetCard(0x28) and not c:IsCode(cd)
 end
--- 设置效果处理时要选择的对象
+-- ③效果的目标选择：从我方场上·墓地选择1只符合条件的「电池人」效果怪兽作为对象。
 function c44586426.nmtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	local cd=e:GetHandler():GetCode()
 	if chkc then return chkc:IsLocation(LOCATION_MZONE+LOCATION_GRAVE) and chkc:IsControler(tp) and c44586426.nmfilter(chkc,cd) end
-	-- 检查是否满足条件：场上或墓地存在满足过滤条件的卡
+	-- 若存在符合条件的对象，则效果可以发动。
 	if chk==0 then return Duel.IsExistingTarget(c44586426.nmfilter,tp,LOCATION_MZONE+LOCATION_GRAVE,0,1,nil,cd) end
-	-- 提示玩家选择效果的对象
+	-- 向玩家提示选择效果的对象。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)  --"请选择效果的对象"
-	-- 选择满足条件的卡作为效果对象
+	-- 选择对象并将其登记为效果对象。
 	Duel.SelectTarget(tp,c44586426.nmfilter,tp,LOCATION_MZONE+LOCATION_GRAVE,0,1,1,nil,cd)
 end
--- 将自身变成目标卡的同名卡
+-- ③效果处理：让这张卡获得复制对象卡名的效果，直到结束阶段。
 function c44586426.nmop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取当前效果处理的目标卡
+	-- 取得选择的对象卡。
 	local tc=Duel.GetFirstTarget()
 	if c:IsRelateToEffect(e) and c:IsFaceup() and tc:IsRelateToEffect(e) and (tc:IsLocation(LOCATION_GRAVE) or tc:IsFaceup()) then
-		-- 使自身变成目标卡的同名卡
+		-- 直到结束阶段，这张卡当作那同名卡使用。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
