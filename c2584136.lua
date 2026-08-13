@@ -12,27 +12,27 @@ function c2584136.initial_effect(c)
 	e1:SetOperation(c2584136.eqop)
 	c:RegisterEffect(e1)
 end
--- 检查触发条件，确认此卡在战斗破坏时进入墓地且战斗对象为对方表侧表示怪兽。
+-- 发动条件判定：自身因战斗被破坏后位于墓地，攻击怪兽为对方怪兽（rp==1-tp），且战斗对象怪兽仍表侧表示并和本次战斗关联。
 function c2584136.eqcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local bc=c:GetBattleTarget()
 	return c:IsLocation(LOCATION_GRAVE) and c:IsReason(REASON_BATTLE) and rp==1-tp
 		and bc:IsFaceup() and bc:IsRelateToBattle()
 end
--- 限制装备对象，只能装备给拥有此效果的卡。
+-- 装备限制函数：仅允许这张章鲛作为装备卡装备给原来的战斗对象怪兽（e:GetOwner()即该对象怪兽）。
 function c2584136.eqlimit(e,c)
 	return e:GetOwner()==c
 end
--- 执行装备操作，将此卡装备给对方怪兽并设置其装备限制、攻击力变为0及不能改变表示形式。
+-- 效果处理：先确认魔陷区有空位，再确认章鲛仍在墓地且效果关联、战斗对象仍表侧且与战斗关联；成功后执行装备，并给章鲛附加装备限制、攻击力变0、不能变更表示形式的永续效果。
 function c2584136.eqop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 判断装备区域是否足够，若无则不执行装备。
+	-- 若我方魔陷区没有可用区域，则无法进行装备，结束处理。
 	if Duel.GetLocationCount(tp,LOCATION_SZONE)<=0 then return end
 	local tc=c:GetBattleTarget()
 	if c:IsRelateToEffect(e) and tc:IsFaceup() and tc:IsRelateToBattle() then
-		-- 将此卡作为装备卡装备给对方怪兽。
+		-- 将章鲛作为装备卡装备给战斗对象怪兽tc。
 		Duel.Equip(tp,c,tc)
-		-- 用这个效果把这张卡装备的怪兽攻击力变成0，不能把表示形式变更。
+		-- 给那只对方怪兽装备。
 		local e1=Effect.CreateEffect(tc)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_EQUIP_LIMIT)
@@ -40,14 +40,14 @@ function c2584136.eqop(e,tp,eg,ep,ev,re,r,rp)
 		e1:SetReset(RESET_EVENT+RESETS_STANDARD)
 		e1:SetValue(c2584136.eqlimit)
 		c:RegisterEffect(e1)
-		-- 用这个效果把这张卡装备的怪兽攻击力变成0，不能把表示形式变更。
+		-- 用这个效果把这张卡装备的怪兽攻击力变成0。
 		local e2=Effect.CreateEffect(c)
 		e2:SetType(EFFECT_TYPE_EQUIP)
 		e2:SetCode(EFFECT_SET_ATTACK)
 		e2:SetValue(0)
 		e2:SetReset(RESET_EVENT+RESETS_STANDARD)
 		c:RegisterEffect(e2)
-		-- 用这个效果把这张卡装备的怪兽攻击力变成0，不能把表示形式变更。
+		-- 不能把表示形式变更。
 		local e3=Effect.CreateEffect(c)
 		e3:SetType(EFFECT_TYPE_EQUIP)
 		e3:SetCode(EFFECT_CANNOT_CHANGE_POSITION)

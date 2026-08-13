@@ -12,14 +12,14 @@ function c25771826.initial_effect(c)
 	e1:SetValue(200)
 	c:RegisterEffect(e1)
 end
--- 判断是否满足效果发动条件，包括当前阶段是否为伤害步骤或伤害计算时，以及攻击怪兽或防守怪兽是否为光属性。
+-- 判定当前是否处于伤害步骤或伤害计算时，并检查本卡是否正与表侧表示的光属性怪兽进行战斗（自身为攻击方或攻击对象时均可），以此作为攻击力上升效果的发动条件。
 function c25771826.condtion(e)
-	-- 获取当前游戏阶段
+	-- 获取当前游戏阶段，用于判断是否处于伤害步骤或伤害计算时。
 	local ph=Duel.GetCurrentPhase()
 	if not (ph==PHASE_DAMAGE or ph==PHASE_DAMAGE_CAL) then return false end
-	-- 获取此次战斗的攻击怪兽
+	-- 获取当前战斗的攻击怪兽，用于判断是否为本卡与光属性怪兽战斗。
 	local a=Duel.GetAttacker()
-	-- 获取此次战斗的防守怪兽
+	-- 获取当前战斗的被攻击怪兽（攻击对象），用于判断对方是否为表侧表示的光属性怪兽。
 	local d=Duel.GetAttackTarget()
 	return (a==e:GetHandler() and d and d:IsFaceup() and d:IsAttribute(ATTRIBUTE_LIGHT))
 		or (d==e:GetHandler() and a:IsAttribute(ATTRIBUTE_LIGHT))

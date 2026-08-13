@@ -14,7 +14,7 @@ function c25796442.initial_effect(c)
 	e2:SetCode(EFFECT_AVOID_BATTLE_DAMAGE)
 	e2:SetRange(LOCATION_SZONE)
 	e2:SetTargetRange(LOCATION_MZONE,0)
-	-- 检索满足条件的卡片组，即自己场上的仪式怪兽
+	-- 设置效果的影响范围：仅当对象为仪式怪兽时，减少自己的战斗伤害。
 	e2:SetTarget(aux.TargetBoolFunction(Card.IsType,TYPE_RITUAL))
 	e2:SetValue(1)
 	c:RegisterEffect(e2)
@@ -28,11 +28,11 @@ function c25796442.initial_effect(c)
 	e4:SetValue(c25796442.efilter)
 	c:RegisterEffect(e4)
 end
--- 效果原文中对应②的内容，用于判断是否为效果类型，从而决定是否生效
+-- 作为②效果“不会成为效果对象”的判定函数：若发动方效果为怪兽的效果，则不能成为对象。
 function c25796442.tgval(e,re,rp)
 	return re:IsActiveType(TYPE_EFFECT)
 end
--- 效果原文中对应②的内容，用于判断是否为效果类型，从而决定是否生效
+-- 作为②效果“不会被效果破坏”的判定函数：若破坏方效果为怪兽的效果，则不会被破坏。
 function c25796442.efilter(e,re)
 	return re:IsActiveType(TYPE_EFFECT)
 end
