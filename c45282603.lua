@@ -14,29 +14,29 @@ function c45282603.initial_effect(c)
 	e1:SetOperation(c45282603.spop)
 	c:RegisterEffect(e1)
 end
--- 过滤函数，用于判断手卡中是否存在等级与当前怪兽相同且可以特殊召唤的怪兽。
+-- 筛选手牌中的怪兽：要求等级与发动效果的这张卡相同，且能被当前效果特殊召唤。
 function c45282603.filter(c,lv,e,tp)
 	return c:IsLevel(lv) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 效果的发动时点处理函数，用于判断是否满足发动条件。
+-- 效果发动条件的判定：自己主要怪兽区有空位，且手牌中存在满足条件的怪兽时才能发动。
 function c45282603.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查玩家场上是否有足够的怪兽区域用于特殊召唤。
+	-- 检查自己场上主要怪兽区是否存在可用的空格。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查玩家手卡中是否存在满足条件的怪兽（等级相同且可特殊召唤）。
+		-- 检查手牌中是否存在至少1只等级与这张卡相同且可被特殊召唤的怪兽。
 		and Duel.IsExistingMatchingCard(c45282603.filter,tp,LOCATION_HAND,0,1,nil,e:GetHandler():GetLevel(),e,tp) end
-	-- 设置效果处理时的操作信息，表明将要特殊召唤1只怪兽。
+	-- 设置本次效果处理的信息：预定从手牌特殊召唤1只怪兽。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_HAND)
 end
--- 效果的处理函数，执行特殊召唤操作。
+-- 效果处理阶段：确认条件后选择并特殊召唤手牌中符合条件的怪兽。
 function c45282603.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 再次检查场上是否还有空位，若无则直接返回。
+	-- 效果处理时再次确认自己主要怪兽区仍有空格，若无空格则效果不处理。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-	-- 提示玩家选择要特殊召唤的怪兽。
+	-- 向玩家显示选择提示，要求选择要特殊召唤的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 从手卡中选择满足条件的怪兽（等级相同且可特殊召唤）。
+	-- 从手牌中选择1只满足等级相同且可被特殊召唤条件的怪兽。
 	local g=Duel.SelectMatchingCard(tp,c45282603.filter,tp,LOCATION_HAND,0,1,1,nil,e:GetHandler():GetLevel(),e,tp)
 	if g:GetCount()>0 then
-		-- 将选中的怪兽以正面表示的形式特殊召唤到场上。
+		-- 将选择的怪兽以表侧表示特殊召唤到自己场上。
 		Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
 	end
 end

@@ -17,11 +17,11 @@ function c45425051.initial_effect(c)
 	e2:SetValue(500)
 	c:RegisterEffect(e2)
 end
--- 效果条件：判断自身是否处于守备表示
+-- 效果条件：判定效果持有者（这张卡）是否为守备表示，即只要这张卡在怪兽区域守备表示存在时，该永续效果才适用。
 function c45425051.con(e)
 	return e:GetHandler():IsDefensePos()
 end
--- 效果目标：筛选场上属于植物族的怪兽
+-- 效果适用对象筛选：仅选择自己场上的植物族怪兽，使其受到攻击力·守备力上升的效果。
 function c45425051.tg(e,c)
 	return c:IsRace(RACE_PLANT)
 end
