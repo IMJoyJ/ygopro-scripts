@@ -14,24 +14,24 @@ function c11324436.initial_effect(c)
 	e1:SetOperation(c11324436.drop)
 	c:RegisterEffect(e1)
 end
--- 效果发动的条件判断函数
+-- 触发条件判定：这只怪兽在被对方发动的效果处理中，从手卡被丢弃送去墓地（之前位置在手卡，丢弃原因同时包含效果与丢弃，且效果发动者为对方玩家）。
 function c11324436.drcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsPreviousLocation(LOCATION_HAND) and bit.band(r,0x4040)==0x4040 and rp==1-tp
 end
--- 效果的对象选择函数
+-- 发动时的目标处理：无需选择卡片，直接记录目标玩家为当前玩家、抽卡数量为2，并登记抽卡的效果信息。
 function c11324436.drtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置效果的目标玩家为当前玩家
+	-- 将当前连锁处理的对象玩家设置为效果发动者自己（即抽卡的玩家）。
 	Duel.SetTargetPlayer(tp)
-	-- 设置效果的目标参数为2
+	-- 将当前连锁处理的对象参数设置为2，表示抽卡数量为2张。
 	Duel.SetTargetParam(2)
-	-- 设置连锁操作信息为抽卡效果，抽2张卡
+	-- 登记操作信息：本效果属于抽卡效果，预期由当前玩家抽2张卡（目标卡未知，所以目标组为空，数量参数为2）。
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,2)
 end
--- 效果的处理函数
+-- 效果处理时的操作：从当前连锁信息中取出之前记录的对象玩家和抽卡数量，令该玩家以效果原因抽相应数量的卡。
 function c11324436.drop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁中设定的目标玩家和参数
+	-- 取得当前连锁信息中记录的对象玩家和对象参数，分别存入p和d，p为抽卡玩家，d为抽卡张数。
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 使目标玩家从卡组抽卡
+	-- 让玩家p以卡片效果的原因抽d张卡。
 	Duel.Draw(p,d,REASON_EFFECT)
 end

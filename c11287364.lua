@@ -14,25 +14,25 @@ function c11287364.initial_effect(c)
 	e1:SetOperation(c11287364.atkop)
 	c:RegisterEffect(e1)
 end
--- 效果条件函数，判断卡片是否在墓地且因同调召唤被送入墓地
+-- 判断此卡是否因同调怪兽的同调召唤被使用并送去墓地（当前位于墓地且原因为同调召唤）。
 function c11287364.atkcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsLocation(LOCATION_GRAVE) and r==REASON_SYNCHRO
 end
--- 效果目标选择函数，选择对方场上表侧表示的1只怪兽
+-- 取对象效果：选择对方场上表侧表示的1只怪兽作为对象；发动时无需其他条件，若检查已选对象则需满足位于主要怪兽区、对方场上且表侧表示。
 function c11287364.atktg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(1-tp) and chkc:IsFaceup() end
 	if chk==0 then return true end
-	-- 向玩家提示选择“表侧表示”的卡
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)
-	-- 选择对方场上表侧表示的1只怪兽作为效果对象
+	-- 给玩家显示选择提示信息，要求选择表侧表示的怪兽。
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
+	-- 从对方场上（主要怪兽区）选择1只表侧表示怪兽作为效果对象。
 	Duel.SelectTarget(tp,Card.IsFaceup,tp,0,LOCATION_MZONE,1,1,nil)
 end
--- 效果发动时的处理函数，对目标怪兽造成攻击力下降效果
+-- 处理效果：若对象仍与效果关联且为表侧表示，则对其赋予攻击力下降500的持续效果。
 function c11287364.atkop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁中选择的目标怪兽
+	-- 获取效果处理时选择的对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if tc and tc:IsRelateToEffect(e) and tc:IsFaceup() then
-		-- 使目标怪兽的攻击力下降500
+		-- 对方场上表侧表示存在的1只怪兽的攻击力下降500。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)
