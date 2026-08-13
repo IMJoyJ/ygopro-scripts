@@ -9,7 +9,7 @@ function c38479725.initial_effect(c)
 	e1:SetValue(c38479725.condition)
 	c:RegisterEffect(e1)
 end
--- 当参与祭品召唤的怪兽属于地属性时，该怪兽可作为2个祭品使用
+-- 判断用于祭品召唤的怪兽是否为地属性：若为地属性怪兽，则本卡可作为2只份的祭品使用；否则不能适用双重祭品效果。
 function c38479725.condition(e,c)
 	return c:IsAttribute(ATTRIBUTE_EARTH)
 end

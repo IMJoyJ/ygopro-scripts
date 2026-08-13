@@ -2,7 +2,7 @@
 -- 效果：
 -- 把自己场上存在的2只怪兽解放发动。只要这张卡在场上存在，对方若不从卡组把1张魔法卡送去墓地则不能把魔法卡发动。
 function c38318146.initial_effect(c)
-	-- 卡片效果：把自己场上存在的2只怪兽解放发动。
+	-- 把自己场上存在的2只怪兽解放发动。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
@@ -21,41 +21,41 @@ function c38318146.initial_effect(c)
 	e2:SetOperation(c38318146.acop)
 	c:RegisterEffect(e2)
 end
--- 检查玩家是否可以解放2只怪兽作为发动代价
+-- 作为发动代价，从自己场上选择2只怪兽解放。
 function c38318146.cost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查玩家是否可以解放2只怪兽作为发动代价
+	-- 代价检测：确认自己场上是否存在至少2只可解放的怪兽。
 	if chk==0 then return Duel.CheckReleaseGroup(tp,nil,2,nil) end
-	-- 选择2只怪兽进行解放
+	-- 选择自己要解放的2只怪兽。
 	local rg=Duel.SelectReleaseGroup(tp,nil,2,2,nil)
-	-- 将选中的怪兽解放作为发动代价
+	-- 将选择的2只怪兽作为代价解放。
 	Duel.Release(rg,REASON_COST)
 end
--- 设置效果的发动条件，用于控制是否触发效果
+-- 效果适用条件：每次检查时重置已送墓标记为false，并返回true使效果适用。
 function c38318146.accon(e)
 	c38318146[0]=false
 	return true
 end
--- 定义魔法卡的过滤条件，用于判断卡组中是否存在可作为代价送去墓地的魔法卡
+-- 过滤函数：选择卡组中的魔法卡，且该卡可以作为代价送去墓地。
 function c38318146.acfilter(c)
 	return c:IsType(TYPE_SPELL) and c:IsAbleToGraveAsCost()
 end
--- 设置效果的目标过滤条件，用于判断是否为魔法卡的发动
+-- 目标判定：对方发动的效果必须是魔法卡的发动才适用此代价。
 function c38318146.actarget(e,te,tp)
 	return te:IsActiveType(TYPE_SPELL) and te:IsHasType(EFFECT_TYPE_ACTIVATE)
 end
--- 检查对方是否可以从卡组中选择一张魔法卡送去墓地作为发动代价
+-- 附加代价检测：确认对方卡组中是否存在至少1张可作为代价送去墓地的魔法卡。
 function c38318146.accost(e,te,tp)
-	-- 检查对方是否可以从卡组中选择一张魔法卡送去墓地作为发动代价
+	-- 检查对方卡组中是否存在至少1张满足acfilter的魔法卡。
 	return Duel.IsExistingMatchingCard(c38318146.acfilter,tp,LOCATION_DECK,0,1,nil)
 end
--- 当对方发动魔法卡时，若未满足代价则强制从卡组选择一张魔法卡送去墓地
+-- 实际执行代价：若尚未执行过此代价，则对方从卡组选择1张魔法卡送去墓地并设置标记，避免重复处理。
 function c38318146.acop(e,tp,eg,ep,ev,re,r,rp)
 	if c38318146[0] then return end
-	-- 提示玩家选择要送去墓地的魔法卡
+	-- 向对方玩家显示‘请选择要送去墓地的卡’的提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
-	-- 选择一张魔法卡从卡组送去墓地
+	-- 对方从自己的卡组中选择1张满足条件的魔法卡。
 	local g=Duel.SelectMatchingCard(tp,c38318146.acfilter,tp,LOCATION_DECK,0,1,1,nil)
-	-- 将选中的魔法卡送去墓地
+	-- 将选择的魔法卡送去墓地，作为对方发动魔法卡的代价。
 	Duel.SendtoGrave(g,REASON_COST)
 	c38318146[0]=true
 end
