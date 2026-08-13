@@ -9,9 +9,9 @@ function c20700531.initial_effect(c)
 	e1:SetValue(c20700531.indes)
 	c:RegisterEffect(e1)
 end
--- 判断当前卡是否满足不被战斗破坏的条件，即攻击怪兽攻击力不低于1900或守备力不低于1900
+-- 效果值函数：根据战斗对象（攻击怪兽）的表示形式，以其攻击力或（守备表示攻击时的）守备力是否≥1900，决定此卡是否适用不会被战斗破坏的耐性。
 function c20700531.indes(e,c)
-	-- 判断当前卡是否处于守备表示且正作为攻击怪兽参与战斗
+	-- 判断战斗对象是否为攻击者且处于守备表示（即以守备表示进行攻击），以选用其守备力还是攻击力进行判定。
 	if c:IsDefensePos() and Duel.GetAttacker()==c then
 		return c:IsDefenseAbove(1900)
 	else

@@ -4,11 +4,11 @@
 -- ①：自己主要阶段才能发动。自己场上1张卡破坏，从卡组把1只恐龙族怪兽送去墓地。那之后，可以直到等级合计变成和从卡组送去墓地的怪兽相同为止从手卡·卡组把「朱罗纪剑龙」以外的「朱罗纪」怪兽无视召唤条件特殊召唤。这个回合，自己不是恐龙族怪兽不能特殊召唤。
 -- ②：这张卡被战斗破坏时才能发动。场上1张表侧表示卡回到手卡。
 local s,id,o=GetID()
--- 初始化卡片效果，注册两个效果：①破坏并送去墓地；②被战斗破坏时回到手卡
+-- 给这张卡注册两个效果：①是起动效果，可在自己主要阶段破坏自己场上1张卡、从卡组送墓1只恐龙族怪兽，之后可选特殊召唤「朱罗纪」怪兽并附加自肃；②是战斗破坏时的诱发效果，可将场上1张表侧表示卡弹回手牌。
 function s.initial_effect(c)
-	-- 记录该卡为「朱罗纪剑龙」，用于后续效果识别
+	-- 将自身卡号记录为这张卡效果文本中记载的卡名（「朱罗纪剑龙」），以便相关判定中识别并排除这张卡。
 	aux.AddCodeList(c,id)
-	-- ①：自己主要阶段才能发动。自己场上1张卡破坏，从卡组把1只恐龙族怪兽送去墓地。那之后，可以直到等级合计变成和从卡组送去墓地的怪兽相同为止从手卡·卡组把「朱罗纪剑龙」以外的「朱罗纪」怪兽无视召唤条件特殊召唤。这个回合，自己不是恐龙族怪兽不能特殊召唤。
+	-- 这个卡名的①的效果1回合只能使用1次。①：自己主要阶段才能发动。自己场上1张卡破坏，从卡组把1只恐龙族怪兽送去墓地。那之后，可以直到等级合计变成和从卡组送去墓地的怪兽相同为止从手卡·卡组把「朱罗纪剑龙」以外的「朱罗纪」怪兽无视召唤条件特殊召唤。这个回合，自己不是恐龙族怪兽不能特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(id,0))  --"破坏并送去墓地"
 	e1:SetCategory(CATEGORY_DESTROY|CATEGORY_TOGRAVE|CATEGORY_SPECIAL_SUMMON|CATEGORY_DECKDES)
@@ -28,68 +28,68 @@ function s.initial_effect(c)
 	e2:SetOperation(s.thop)
 	c:RegisterEffect(e2)
 end
--- 过滤函数：返回等级大于等于1且为恐龙族且能送去墓地的怪兽
+-- 从卡组选择“等级1以上、恐龙族、可以送去墓地”的怪兽作为送墓候选的过滤条件。
 function s.tgfilter(c,e,tp)
 	return c:IsLevelAbove(1) and c:IsRace(RACE_DINOSAUR) and c:IsAbleToGrave()
 end
--- 过滤函数：返回不是本卡且为朱罗纪卡组且等级大于等于1且为怪兽卡且能特殊召唤的怪兽
+-- 从手卡·卡组选择可特殊召唤候选：不是「朱罗纪剑龙」、属于「朱罗纪」字段、等级1以上、怪兽，且能够无视召唤条件特殊召唤。
 function s.spfilter(c,e,tp)
 	return not c:IsCode(id) and c:IsSetCard(0x22) and c:IsLevelAbove(1) and c:IsType(TYPE_MONSTER) and c:IsCanBeSpecialSummoned(e,0,tp,true,false)
 end
--- 检查函数：返回给定怪兽组的等级总和是否等于指定等级
+-- 判定所选一组怪兽的等级合计是否等于指定等级（即之前送去墓地的怪兽的等级）。
 function s.gcheck(g,lv)
 	return g:GetSum(Card.GetLevel)==lv
 end
--- 效果①的发动时点处理函数，检查是否有可破坏的场上卡和可送去墓地的恐龙族怪兽
+-- ①效果的发动条件与操作信息设定：自己场上需要有可破坏的卡且卡组有可送墓的恐龙族怪兽；发动时预设置破坏自己场上1张卡、从卡组送墓1只恐龙族怪兽。
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 获取玩家场上所有可破坏的卡
+	-- 取得自己场上全部卡，用于确认是否存在可破坏的对象以及设置破坏操作信息。
 	local g=Duel.GetMatchingGroup(nil,tp,LOCATION_ONFIELD,0,nil,e,tp)
-	-- 若未满足发动条件则返回false
+	-- 发动时合法性检查：自己场上存在至少1张卡，且卡组存在符合条件的恐龙族怪兽。
 	if chk==0 then return #g>0 and Duel.IsExistingMatchingCard(s.tgfilter,tp,LOCATION_DECK,0,1,nil,e,tp) end
-	-- 设置连锁操作信息：破坏场上卡
+	-- 设置“破坏自己场上1张卡”的操作信息，将场上所有自军卡作为可能破坏对象，数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,1,0,0)
-	-- 设置连锁操作信息：从卡组送去墓地
+	-- 设置“从自己卡组把1只恐龙族怪兽送去墓地”的操作信息，对象暂不确定，数量1。
 	Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,nil,1,tp,LOCATION_DECK)
 end
--- 效果①的发动处理函数，执行破坏、送去墓地、特殊召唤等操作
+-- ①效果处理：先选择并破坏自己场上1张卡；若成功，从卡组选1只恐龙族怪兽送去墓地；随后若送墓成功且有空位，可自愿从手卡·卡组选等级合计相同的「朱罗纪」怪兽（不含自身）无视召唤条件特殊召唤；最后给己方附加本回合只能特殊召唤恐龙族怪兽的限制。
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要破坏的卡
+	-- 提示操作者选择要破坏的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 选择场上1张卡进行破坏
+	-- 效果处理时选择自己场上1张卡进行破坏（不取对象）。
 	local g=Duel.SelectMatchingCard(tp,nil,tp,LOCATION_ONFIELD,0,1,1,nil,e,tp)
-	-- 显示选卡动画
+	-- 将被选择的卡显示为对象动画，并记录为与当前效果关联的卡。
 	Duel.HintSelection(g)
-	-- 执行破坏操作
+	-- 实际执行破坏，只有破坏了至少1张卡才继续后续送墓和特殊召唤处理。
 	if Duel.Destroy(g,REASON_EFFECT)>0 then
-		-- 获取玩家场上可用的怪兽区域数量
+		-- 获取自己主怪兽区可用空格数量，作为这次特殊召唤可召唤数量的上限。
 		local ft=Duel.GetLocationCount(tp,LOCATION_MZONE)
-		-- 提示玩家选择要送去墓地的卡
+		-- 提示操作者选择要送去墓地的卡。
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
-		-- 选择1只恐龙族怪兽从卡组送去墓地
+		-- 从卡组选择1只满足条件的恐龙族怪兽送去墓地（效果处理时选择，不取对象）。
 		local sg=Duel.SelectMatchingCard(tp,s.tgfilter,tp,LOCATION_DECK,0,1,1,nil,e,tp)
 		local gc=sg:GetFirst()
-		-- 若送去墓地成功且场上还有召唤区域，则继续处理特殊召唤
+		-- 确认送墓成功且怪兽仍在墓地，并且主怪兽区有空格，才接下来处理特殊召唤部分。
 		if gc and Duel.SendtoGrave(gc,REASON_EFFECT)~=0 and gc:IsLocation(LOCATION_GRAVE) and ft>0 then
 			local lv=gc:GetLevel()
 			-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中。禁止双方同时特殊召唤2只以上怪兽
 			if ft>1 and Duel.IsPlayerAffectedByEffect(tp,59822133) then ft=1 end
-			-- 获取玩家手牌和卡组中符合条件的怪兽
+			-- 从手牌·卡组中筛选出所有可被特殊召唤的「朱罗纪」怪兽（不含「朱罗纪剑龙」）作为候选组。
 			local tg=Duel.GetMatchingGroup(s.spfilter,tp,LOCATION_HAND+LOCATION_DECK,0,nil,e,tp)
-			-- 检查是否满足特殊召唤条件并询问玩家是否发动
+			-- 检查候选组中是否存在等级合计等于送墓怪兽等级的一组（1到ft张），并让玩家选择是否发动特殊召唤。
 			if tg:CheckSubGroup(s.gcheck,1,ft,lv) and Duel.SelectYesNo(tp,aux.Stringid(id,2)) then  --"是否特殊召唤？"
-				-- 提示玩家选择要特殊召唤的卡
+				-- 提示操作者选择要特殊召唤的卡。
 				Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
 				local ssg=tg:SelectSubGroup(tp,s.gcheck,false,1,ft,lv)
 				if ssg:GetCount()>0 then
-					-- 中断当前效果处理，使后续效果不同时处理
+					-- 中断当前效果链，使后续特殊召唤作为不同时处理，以免错失时点。
 					Duel.BreakEffect()
-					-- 将符合条件的怪兽无视召唤条件特殊召唤
+					-- 将选择的怪兽无视召唤条件、以正面表示特殊召唤到己方怪兽区。
 					Duel.SpecialSummon(ssg,0,tp,tp,true,false,POS_FACEUP)
 				end
 			end
 		end
 	end
-	-- 设置永续效果：本回合不能特殊召唤非恐龙族怪兽
+	-- 这个回合，自己不是恐龙族怪兽不能特殊召唤。②：这张卡被战斗破坏时才能发动。场上1张表侧表示卡回到手卡。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
@@ -97,30 +97,30 @@ function s.spop(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetTargetRange(1,0)
 	e1:SetTarget(s.splimit)
 	e1:SetReset(RESET_PHASE+PHASE_END)
-	-- 注册该永续效果给玩家
+	-- 将“己方本回合不能特殊召唤非恐龙族怪兽”的自肃效果注册到场上，持续到回合结束。
 	Duel.RegisterEffect(e1,tp)
 end
--- 限制特殊召唤效果的判断函数：非恐龙族怪兽不能特殊召唤
+-- 限制逻辑：不是恐龙族怪兽的卡不能进行特殊召唤。
 function s.splimit(e,c)
 	return not c:IsRace(RACE_DINOSAUR)
 end
--- 效果②的发动时点处理函数，检查是否有可返回手牌的表侧表示卡
+-- ②效果的发动条件和操作信息：双方场上存在表侧表示且能加入手卡的卡才能发动；设置将场上1张表侧表示卡回手的效果信息。
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 若未满足发动条件则返回false
+	-- ②效果发动时检查：场上（双方）存在至少1张表侧表示且可以加入手卡的卡。
 	if chk==0 then return Duel.IsExistingMatchingCard(aux.AND(Card.IsFaceup,Card.IsAbleToHand),tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,nil) end
-	-- 设置连锁操作信息：将卡返回手牌
+	-- 设置“场上1张表侧表示卡返回手卡”的操作信息，数量1，位置为场上。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_ONFIELD)
 end
--- 效果②的发动处理函数，执行将卡返回手牌的操作
+-- ②效果处理：选择场上1张表侧表示卡，将其返回持有者手卡。
 function s.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要返回手牌的卡
+	-- 提示操作者选择要返回手牌的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_RTOHAND)  --"请选择要返回手牌的卡"
-	-- 选择1张表侧表示卡返回手牌
+	-- 效果处理时选择场上1张表侧表示且可以加入手卡的卡（不取对象）。
 	local g=Duel.SelectMatchingCard(tp,aux.AND(Card.IsFaceup,Card.IsAbleToHand),tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,1,nil)
 	if g:GetCount()>0 then
-		-- 显示选卡动画
+		-- 显示选中动画并记录为与效果关联的卡。
 		Duel.HintSelection(g)
-		-- 将选中的卡返回手牌
+		-- 将选中的卡返回持有者手卡。
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
 	end
 end
