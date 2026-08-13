@@ -3,7 +3,7 @@
 -- 「锋利小鬼·锯子」的效果1回合只能使用1次。
 -- ①：这张卡召唤成功时，把手卡1只「毛绒动物」怪兽送去墓地才能发动。自己从卡组抽2张，那之后，选1张手卡回到卡组最上面或者最下面。
 function c34688023.initial_effect(c)
-	-- ①：这张卡召唤成功时，把手卡1只「毛绒动物」怪兽送去墓地才能发动。自己从卡组抽2张，那之后，选1张手卡回到卡组最上面或者最下面。
+	-- 「锋利小鬼·锯子」的效果1回合只能使用1次。①：这张卡召唤成功时，把手卡1只「毛绒动物」怪兽送去墓地才能发动。自己从卡组抽2张，那之后，选1张手卡回到卡组最上面或者最下面。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(34688023,0))  --"抽2张卡"
 	e1:SetCategory(CATEGORY_DRAW)
@@ -15,47 +15,47 @@ function c34688023.initial_effect(c)
 	e1:SetOperation(c34688023.operation)
 	c:RegisterEffect(e1)
 end
--- 过滤函数，用于筛选手卡中满足「毛绒动物」种族、怪兽类型且能作为墓地代价的卡片。
+-- 定义过滤条件：持有「毛绒动物」字段、是怪兽且可以作为代价送去墓地。
 function c34688023.cfilter(c)
 	return c:IsSetCard(0xa9) and c:IsType(TYPE_MONSTER) and c:IsAbleToGraveAsCost()
 end
--- 效果发动的费用处理，检查手卡是否存在满足条件的卡片并将其丢弃至墓地。
+-- 作为发动代价，从手卡丢弃1只满足条件的「毛绒动物」怪兽。
 function c34688023.cost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查手卡是否存在至少1张满足条件的卡片。
+	-- 检查是否存在至少1张可供丢弃的「毛绒动物」怪兽作为代价。
 	if chk==0 then return Duel.IsExistingMatchingCard(c34688023.cfilter,tp,LOCATION_HAND,0,1,nil) end
-	-- 从手卡丢弃1张满足条件的卡片作为发动费用。
+	-- 玩家从手卡选择1张「毛绒动物」怪兽作为代价丢弃。
 	Duel.DiscardHand(tp,c34688023.cfilter,1,1,REASON_COST)
 end
--- 效果发动时的处理目标设置，确认玩家可以抽2张卡并设置连锁操作信息。
+-- 设定效果对象为自己，抽卡数量为2，并将本次操作信息登记为抽卡效果。
 function c34688023.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查玩家是否可以抽2张卡。
+	-- 检查自己是否能够抽2张卡。
 	if chk==0 then return Duel.IsPlayerCanDraw(tp,2) end
-	-- 设置连锁效果的目标玩家为当前处理效果的玩家。
+	-- 将效果处理时的对象玩家设为自己。
 	Duel.SetTargetPlayer(tp)
-	-- 设置连锁效果的目标参数为2（表示抽2张卡）。
+	-- 将效果处理时的对象参数设为2（抽卡数量）。
 	Duel.SetTargetParam(2)
-	-- 设置连锁操作信息为抽卡效果，目标玩家为当前玩家，抽卡数量为2。
+	-- 登记本次操作信息：效果类别为抽卡，预计处理时让自己抽2张。
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,2)
 end
--- 效果发动时的处理操作，执行抽卡并选择将手卡返回卡组顶端或底端。
+-- 效果处理时先抽2张，若成功则再选择1张手卡放回卡组最上面或最下面。
 function c34688023.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的目标玩家和目标参数（抽卡数量）。
+	-- 取得此前设置的对象玩家和抽卡参数。
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 执行抽卡操作，若实际抽卡数不足2则中断效果处理。
+	-- 让自己抽2张；若实际抽卡数不足2张，则不再进行后续返回卡组的处理。
 	if Duel.Draw(p,d,REASON_EFFECT)<2 then return end
-	-- 提示玩家选择将手卡返回卡组顶端或底端。
+	-- 提示玩家选择要返回卡组的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TODECK)  --"请选择要返回卡组的卡"
-	-- 选择手卡中1张可送回卡组的卡片。
+	-- 从自己的手卡中选择1张可以返回卡组的卡。
 	local g=Duel.SelectMatchingCard(tp,Card.IsAbleToDeck,tp,LOCATION_HAND,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 中断当前效果处理，使后续处理视为错时点。
+		-- 中断当前效果，使之后返回卡组的处理视为不同时处理，避免错时点。
 		Duel.BreakEffect()
-		-- 让玩家选择将卡片送回卡组顶端或底端。
+		-- 让玩家选择将选中的卡返回卡组最上面还是最下面，选择0代表返回最上面。
 		if Duel.SelectOption(tp,aux.Stringid(34688023,1),aux.Stringid(34688023,2))==0 then  --"回卡组最上面/回卡组最下面"
-			-- 将选中的卡片送回卡组顶端。
+			-- 将选中的卡返回卡组最上面。
 			Duel.SendtoDeck(g,nil,SEQ_DECKTOP,REASON_EFFECT)
 		else
-			-- 将选中的卡片送回卡组底端。
+			-- 将选中的卡返回卡组最下面。
 			Duel.SendtoDeck(g,nil,SEQ_DECKBOTTOM,REASON_EFFECT)
 		end
 	end

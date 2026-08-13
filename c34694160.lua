@@ -7,7 +7,7 @@ function c34694160.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- 对方把手卡持续公开
+	-- 只要这张卡在场上存在，对方把手卡持续公开。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD)
 	e2:SetCode(EFFECT_PUBLIC)
@@ -28,25 +28,25 @@ function c34694160.initial_effect(c)
 	e3:SetOperation(c34694160.recop)
 	c:RegisterEffect(e3)
 end
--- 判断是否为对方的准备阶段且对方手卡存在魔法卡
+-- 回复效果的发动条件：仅在对方回合的准备阶段，且对方手牌中存在至少1张魔法卡时才满足。
 function c34694160.reccon(e,tp,eg,ep,ev,re,r,rp)
-	-- 对方为非当前回合玩家且对方手卡存在魔法卡
+	-- 判定当前回合玩家不是本卡控制者（即为对方回合），并且对方手牌中存在魔法卡。
 	return Duel.GetTurnPlayer()~=tp and Duel.IsExistingMatchingCard(Card.IsType,tp,0,LOCATION_HAND,1,nil,TYPE_SPELL)
 end
--- 设置回复效果的目标玩家和参数
+-- 回复效果发动时的目标设定：将回复对象指定为对方玩家，回复数值设为1000，并登记对应的回复操作信息。
 function c34694160.rectg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置效果的目标玩家为对方
+	-- 将本次连锁的对象玩家设为对方玩家（1-tp），表示回复的是对方的基本分。
 	Duel.SetTargetPlayer(1-tp)
-	-- 设置效果的目标参数为1000
+	-- 将本次连锁的对象参数设为1000，表示回复的数值为1000。
 	Duel.SetTargetParam(1000)
-	-- 设置连锁操作信息为回复效果
+	-- 登记效果处理信息：该效果属于回复（CATEGORY_RECOVER），目标玩家为对方，回复数值为1000。
 	Duel.SetOperationInfo(0,CATEGORY_RECOVER,nil,0,1-tp,1000)
 end
--- 执行回复效果
+-- 回复效果的实际处理：从连锁信息中取出目标玩家和回复数值，并让该玩家回复相应基本分。
 function c34694160.recop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁中设置的目标玩家和参数
+	-- 获取当前连锁中记录的对象玩家和对象参数，分别作为回复对象和回复数值。
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 使目标玩家回复指定数值的基本分
+	-- 以效果原因（REASON_EFFECT）让玩家p回复d点基本分，完成回复处理。
 	Duel.Recover(p,d,REASON_EFFECT)
 end
