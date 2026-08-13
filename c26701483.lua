@@ -14,24 +14,24 @@ function c26701483.initial_effect(c)
 	e1:SetOperation(c26701483.rmop)
 	c:RegisterEffect(e1)
 end
--- 检索满足条件的对方墓地的可除外卡片组
+-- 效果的发动时点与目标选择处理函数：确认能否选择对方墓地的卡，提示并让玩家选择1张符合条件的卡作为对象，同时设置除外相关的操作信息。
 function c26701483.rmtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(1-tp) and chkc:IsAbleToRemove() end
-	-- 检查是否存在满足条件的对方墓地卡片
+	-- 在发动时检查对方墓地是否存在至少1张可以被除外的卡。
 	if chk==0 then return Duel.IsExistingTarget(Card.IsAbleToRemove,tp,0,LOCATION_GRAVE,1,nil) end
-	-- 向玩家提示“请选择要除外的卡”
+	-- 向当前玩家显示“请选择要除外的卡”的提示信息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
-	-- 选择1张对方墓地的可除外卡片作为效果对象
+	-- 让玩家从对方墓地选择1张可以被除外的卡，并将其登记为本次效果的对象。
 	local g=Duel.SelectTarget(tp,Card.IsAbleToRemove,tp,0,LOCATION_GRAVE,1,1,nil)
-	-- 设置本次效果操作信息为除外
+	-- 设置本次连锁的操作信息：将对象卡从对方墓地除外，数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_REMOVE,g,1,1-tp,LOCATION_GRAVE)
 end
--- 处理效果的执行函数
+-- 效果处理函数：取得已选择的目标，确认其仍与效果关联后将其除外。
 function c26701483.rmop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁效果的目标卡片
+	-- 取得本次效果处理时选择的目标卡。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 将目标卡片以正面表示的形式除外
+		-- 将该卡以表侧表示从游戏中除外，除外原因记为效果。
 		Duel.Remove(tc,POS_FACEUP,REASON_EFFECT)
 	end
 end
