@@ -13,7 +13,7 @@ function c425934.initial_effect(c)
 	e1:SetValue(1)
 	c:RegisterEffect(e1)
 end
--- 判断效果是否因丢弃手卡作为发动代价而触发
+-- 作为效果判定函数，检查丢弃手牌的原因；仅当该丢弃是作为代价（REASON_COST）时判定为禁止丢弃，从而达成“不能以丢弃手卡为代价发动效果”的限制。
 function c425934.target(e,dc,re,r)
 	return r&REASON_COST==REASON_COST
 end

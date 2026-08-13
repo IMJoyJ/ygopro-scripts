@@ -13,22 +13,22 @@ function c42562690.initial_effect(c)
 	e1:SetOperation(c42562690.operation)
 	c:RegisterEffect(e1)
 end
--- 效果发动条件：这张卡必须处于攻击表示
+-- 效果发动条件：判断这张卡是否为攻击表示，对应“攻击表示的这张卡被选择作为攻击对象时才能发动”中的“攻击表示”条件。
 function c42562690.condition(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsAttackPos()
 end
--- 效果处理目标：将自身变为表侧守备表示
+-- 效果发动时的目标处理：无选择对象，直接允许发动，并设置效果处理时将要进行的是变更表示形式的操作信息。
 function c42562690.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置连锁操作信息：将自身变为表侧守备表示
+	-- 设置操作信息：把本次效果处理分类标记为改变表示形式（CATEGORY_POSITION），对象为这张卡，数量为1，用于满足相关效果检测。
 	Duel.SetOperationInfo(0,CATEGORY_POSITION,e:GetHandler(),1,0,0)
 end
--- 效果处理流程：检查自身是否仍在场上，若在则变为表侧守备表示并无效攻击
+-- 效果处理：获取这张卡，若其仍与效果关联，则先将其变为表侧守备表示，若变更成功则再无效那次攻击。
 function c42562690.operation(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 检查自身是否与效果相关且成功变为表侧守备表示
+	-- 判断这张卡是否仍与效果关联，且能否被成功变为表侧守备表示；只有变更成功后才继续无效攻击。
 	if c:IsRelateToEffect(e) and Duel.ChangePosition(c,POS_FACEUP_DEFENSE)~=0 then
-		-- 无效此次攻击
+		-- 无效此次攻击，对应“那次攻击无效”。
 		Duel.NegateAttack()
 	end
 end

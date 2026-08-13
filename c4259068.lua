@@ -17,7 +17,7 @@ function c4259068.initial_effect(c)
 	e2:SetValue(c4259068.costchange)
 	c:RegisterEffect(e2)
 end
--- 若效果的发动者为魔法卡的发动且该卡不是《神之宣告》或《神圣防护罩》则不支付基本分
+-- 作为永续效果，当自己发动魔法卡需要支付基本分时，将所需支付的基本分变为0；但存在例外：卡号为9236985（遗式的写魂镜）和57496978（相互碰撞的灵魂）的卡发动时不适用此效果，仍按原费用支付。
 function c4259068.costchange(e,re,rp,val)
 	if re and re:IsHasType(EFFECT_TYPE_ACTIVATE) and re:GetHandler():IsType(TYPE_SPELL) and not re:GetHandler():IsCode(9236985,57496978) then
 		return 0
