@@ -4,7 +4,7 @@
 -- ①：把手卡1张「游乐设施」陷阱卡给对方观看才能发动。这张卡从手卡特殊召唤。
 -- ②：从手卡以及自己场上的表侧表示的卡之中把1张「游乐设施」陷阱卡送去墓地才能发动。从卡组选1张「游乐设施」陷阱卡在自己的魔法与陷阱区域盖放。
 function c22662014.initial_effect(c)
-	-- ①：把手卡1张「游乐设施」陷阱卡给对方观看才能发动。这张卡从手卡特殊召唤。
+	-- 这个卡名的①②的效果1回合各能使用1次。①：把手卡1张「游乐设施」陷阱卡给对方观看才能发动。这张卡从手卡特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(22662014,0))
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -27,73 +27,73 @@ function c22662014.initial_effect(c)
 	e2:SetOperation(c22662014.setop)
 	c:RegisterEffect(e2)
 end
--- 过滤函数，用于判断手卡中是否存在1张未公开的「游乐设施」陷阱卡。
+-- 定义①的cost检索过滤器：筛选手牌中非公开状态的「游乐设施」陷阱卡。
 function c22662014.cfilter(c)
 	return c:IsSetCard(0x15c) and c:IsType(TYPE_TRAP) and not c:IsPublic()
 end
--- 效果处理函数，检查手卡中是否存在满足条件的「游乐设施」陷阱卡，若存在则提示对方确认该卡并洗切手牌。
+-- ①的cost函数：检查手牌存在符合条件的「游乐设施」陷阱卡，选择1张给对方确认，然后洗切手牌。
 function c22662014.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查手卡中是否存在至少1张满足条件的「游乐设施」陷阱卡。
+	-- cost合法性检查：自己手牌中是否存在至少1张符合条件的「游乐设施」陷阱卡（非公开状态）。
 	if chk==0 then return Duel.IsExistingMatchingCard(c22662014.cfilter,tp,LOCATION_HAND,0,1,nil) end
-	-- 提示玩家选择要给对方确认的卡。
+	-- 弹出“请选择给对方确认的卡”的选择提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_CONFIRM)  --"请选择给对方确认的卡"
-	-- 选择满足条件的1张「游乐设施」陷阱卡。
+	-- 从手牌选择1张符合条件的「游乐设施」陷阱卡作为展示cost。
 	local g=Duel.SelectMatchingCard(tp,c22662014.cfilter,tp,LOCATION_HAND,0,1,1,nil)
-	-- 向对方确认所选的卡。
+	-- 将选择的卡展示给对方玩家确认。
 	Duel.ConfirmCards(1-tp,g)
-	-- 将玩家的手牌洗切。
+	-- 展示后洗切自己的手牌（因为展示了手牌，需要重新随机化手牌顺序）。
 	Duel.ShuffleHand(tp)
 end
--- 效果处理函数，检查是否满足特殊召唤条件。
+-- ①的发动目标条件：自己主要怪兽区有空位，且这张卡自身可以被特殊召唤。
 function c22662014.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查玩家场上是否有足够的怪兽区域。
+	-- 检查自己场上是否有可用的主要怪兽区域空格。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置操作信息，表示将特殊召唤此卡。
+	-- 设置效果处理信息，声明此次效果将进行1只怪兽的特殊召唤（对象为这张卡）。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 效果处理函数，将此卡特殊召唤到场上。
+-- ①的效果处理：若这张卡仍与效果关联，则将其表侧攻击表示特殊召唤到自己场上。
 function c22662014.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if not c:IsRelateToEffect(e) then return end
-	-- 将此卡以正面表示形式特殊召唤到玩家场上。
+	-- 将这张卡以表侧攻击表示特殊召唤到自己的主要怪兽区。
 	Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 end
--- 过滤函数，用于判断手卡或场上的「游乐设施」陷阱卡是否可以作为发动代价送去墓地。
+-- 定义②的cost过滤器：从手牌或自己场上表侧表示的卡中选出「游乐设施」陷阱卡且可作cost送墓；若魔陷区无空格，则只能选位于魔陷区的表侧表示的卡，送墓后可空出格子用于盖放。
 function c22662014.costfilter(c,ft)
 	return (c:IsLocation(LOCATION_HAND) or c:IsFaceup()) and c:IsType(TYPE_TRAP) and c:IsSetCard(0x15c) and c:IsAbleToGraveAsCost()
 		and (ft>0 or c:IsLocation(LOCATION_SZONE) and ft>-1)
 end
--- 效果处理函数，检查场上或手卡中是否存在满足条件的「游乐设施」陷阱卡，若存在则选择并将其送去墓地。
+-- ②的cost函数：检查并选择1张符合条件的「游乐设施」陷阱卡（手牌或自己场上表侧表示）作为cost送去墓地。
 function c22662014.setcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 获取玩家魔法与陷阱区域的可用空格数。
+	-- 获取自己魔法与陷阱区域当前可用的空格数。
 	local ft=Duel.GetLocationCount(tp,LOCATION_SZONE)
-	-- 检查玩家手卡或场上的「游乐设施」陷阱卡中是否存在至少1张可以作为代价送去墓地的卡。
+	-- 检查手牌以及自己场上的表侧表示的卡中是否存在至少1张符合条件的「游乐设施」陷阱卡可作为cost。
 	if chk==0 then return Duel.IsExistingMatchingCard(c22662014.costfilter,tp,LOCATION_HAND+LOCATION_ONFIELD,0,1,nil,ft) end
-	-- 提示玩家选择要送去墓地的卡。
+	-- 弹出“请选择要送去墓地的卡”的选择提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
-	-- 选择满足条件的1张「游乐设施」陷阱卡。
+	-- 从手牌和自己场上表侧表示的卡中选择1张符合条件的「游乐设施」陷阱卡作为cost。
 	local g=Duel.SelectMatchingCard(tp,c22662014.costfilter,tp,LOCATION_HAND+LOCATION_ONFIELD,0,1,1,nil,ft)
-	-- 将所选的卡以代价形式送去墓地。
+	-- 将选择的卡作为cost送去墓地。
 	Duel.SendtoGrave(g,REASON_COST)
 end
--- 过滤函数，用于判断卡组中是否存在可以盖放的「游乐设施」陷阱卡。
+-- 定义②的效果处理检索过滤器：从卡组选出可以盖放的「游乐设施」陷阱卡。
 function c22662014.setfilter(c,chk)
 	return c:IsSetCard(0x15c) and c:IsType(TYPE_TRAP) and c:IsSSetable(chk)
 end
--- 效果处理函数，检查卡组中是否存在满足条件的「游乐设施」陷阱卡。
+-- ②的发动条件：卡组中存在至少1张可以无视魔陷区空格限制盖放的「游乐设施」陷阱卡。
 function c22662014.settg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查卡组中是否存在至少1张可以盖放的「游乐设施」陷阱卡。
+	-- 检查卡组是否存在至少1张符合条件的「游乐设施」陷阱卡（用ignore_field=true确认存在性，不实际占用空格）。
 	if chk==0 then return Duel.IsExistingMatchingCard(c22662014.setfilter,tp,LOCATION_DECK,0,1,nil,true) end
 end
--- 效果处理函数，从卡组中选择1张「游乐设施」陷阱卡并盖放到玩家场上。
+-- ②的效果处理：从卡组选1张「游乐设施」陷阱卡盖放到自己的魔法与陷阱区域。
 function c22662014.setop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要盖放的卡。
+	-- 弹出“请选择要盖放的卡”的选择提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SET)  --"请选择要盖放的卡"
-	-- 从卡组中选择1张满足条件的「游乐设施」陷阱卡。
+	-- 从卡组选择1张符合条件的「游乐设施」陷阱卡（此时ignore_field=false，确保实际可以盖放）。
 	local g=Duel.SelectMatchingCard(tp,c22662014.setfilter,tp,LOCATION_DECK,0,1,1,nil,false)
 	if g:GetCount()>0 then
-		-- 将所选的卡盖放到玩家场上。
+		-- 将选择的「游乐设施」陷阱卡盖放到自己的魔法与陷阱区域。
 		Duel.SSet(tp,g:GetFirst())
 	end
 end

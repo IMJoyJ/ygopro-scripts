@@ -5,9 +5,9 @@
 -- ②：这张卡特殊召唤的场合才能发动。从卡组把1张「魔女术」魔法·陷阱卡或「次元魔法」加入手卡。
 -- ③：只要自己的场上或墓地有「圣月之皇太子 雷古勒斯」存在，这张卡的攻击力上升2300。
 local s,id,o=GetID()
--- 初始化效果函数，注册三个效果并设置计数器
+-- 定义这张卡的所有效果：注册①起动效果（手牌特殊召唤）、②诱发选发效果（特殊召唤成功时检索）、③永续攻击力上升效果，并注册自定义连锁计数器记录魔法卡效果发动。
 function s.initial_effect(c)
-	-- 将卡名28553439和96228804添加到该卡的代码列表中，使其在规则上也当作「魔女术」卡使用
+	-- 通过代码列表记录本卡与「次元魔法」（28553439）和「圣月之皇太子 雷古勒斯」（96228804）的卡名关联，用于规则上视为「魔女术」以及相关效果判定。
 	aux.AddCodeList(c,28553439,96228804)
 	-- ①：魔法卡的效果发动的回合的自己主要阶段才能发动。这张卡从手卡特殊召唤。
 	local e1=Effect.CreateEffect(c)
@@ -40,65 +40,65 @@ function s.initial_effect(c)
 	e3:SetCondition(s.atkcon)
 	e3:SetValue(2300)
 	c:RegisterEffect(e3)
-	-- 设置一个计数器，用于记录该卡在每回合发动的连锁次数
+	-- 注册一个以ACTIVITY_CHAIN为计数类型的自定义计数器，当玩家发动魔法卡效果时计数器增加，用于①效果的发动条件判定。
 	Duel.AddCustomActivityCounter(id,ACTIVITY_CHAIN,s.chainfilter)
 end
--- 计数器过滤函数，用于判断是否为魔法卡的连锁
+-- 计数器过滤函数：若当前发动的效果不是魔法卡效果则返回true（不计数），是魔法卡效果则返回false（使计数器+1）。
 function s.chainfilter(re,tp,cid)
 	return not re:IsActiveType(TYPE_SPELL)
 end
--- ①效果的发动条件：在魔法卡的效果发动的回合的自己主要阶段才能发动
+-- ①效果的发动条件：本回合内自己或对方发动过魔法卡效果（通过自定义计数器的计数判断）。
 function s.spcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断是否在当前回合或对方回合有发动过魔法卡的连锁
+	-- 检查本回合自己或对方发动魔法卡效果的自定义计数是否大于0，任一大于0即满足条件。
 	return Duel.GetCustomActivityCount(id,tp,ACTIVITY_CHAIN)>0 or Duel.GetCustomActivityCount(id,1-tp,ACTIVITY_CHAIN)>0
 end
--- ①效果的发动时点处理函数，检查是否满足特殊召唤条件
+-- ①效果的target函数：在发动合法性检查时，确认自己主要怪兽区有空位，并且这张卡能够被特殊召唤。
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查场上是否有足够的召唤区域
+	-- 检查自己的主要怪兽区是否有可用的空格。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置效果处理时的操作信息，表示将特殊召唤此卡
+	-- 设置本连锁的操作信息：将这张卡特殊召唤，数量为1，用于后续相关效果检测。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- ①效果的发动处理函数，将此卡特殊召唤到场上
+-- ①效果处理：若这张卡仍与当前连锁相关，则将其从手卡特殊召唤。
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToChain() then
-		-- 执行特殊召唤操作，将此卡以正面表示特殊召唤到场上
+		-- 将这张卡以表侧表示特殊召唤到自己场上（不检查额外条件）。
 		Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
--- 检索效果的过滤函数，用于筛选「魔女术」魔法·陷阱卡或「次元魔法」
+-- ②检索的过滤条件：卡片属于「魔女术」系列的魔法·陷阱卡，或卡号为28553439的「次元魔法」，且可以加入手卡。
 function s.thfilter(c)
 	return (c:IsSetCard(0x128) and c:IsType(TYPE_SPELL+TYPE_TRAP) or c:IsCode(28553439)) and c:IsAbleToHand()
 end
--- ②效果的发动时点处理函数，检查是否满足检索条件
+-- ②效果的target函数：检查卡组中是否存在1张符合条件的卡；若存在，设置操作信息为从卡组将1张卡加入手卡。
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查卡组中是否存在满足条件的卡
+	-- 检查卡组中是否存在至少1张满足s.thfilter的卡片。
 	if chk==0 then return Duel.IsExistingMatchingCard(s.thfilter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置效果处理时的操作信息，表示将从卡组检索卡加入手牌
+	-- 设置操作信息：从卡组将1张卡加入手卡（不取对象，数量预计为1）。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- ②效果的发动处理函数，选择并检索卡牌
+-- ②效果处理：提示选择后从卡组选1张符合条件的卡，将其加入手卡，并向对手展示。
 function s.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要加入手牌的卡
+	-- 向操作玩家发送选择提示，要求选择1张要加入手卡的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择满足条件的卡
+	-- 让玩家从卡组中选择1张满足s.thfilter的卡。
 	local g=Duel.SelectMatchingCard(tp,s.thfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的卡加入手牌
+		-- 将选择的卡以效果原因加入其持有者的手卡。
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 向对方确认加入手牌的卡
+		-- 将检索到的卡展示给对手确认。
 		Duel.ConfirmCards(1-tp,g)
 	end
 end
--- 攻击力上升效果的过滤函数，用于判断是否为「圣月之皇太子 雷古勒斯」
+-- ③攻击力上升的判定过滤器：卡片为表侧表示（含墓地区域）且卡名为「圣月之皇太子 雷古勒斯」。
 function s.atkfilter(c)
 	return c:IsFaceupEx() and c:IsCode(96228804)
 end
--- ③效果的发动条件函数，判断场上或墓地是否存在「圣月之皇太子 雷古勒斯」
+-- ③永续效果的条件：这张卡的控制者场上或墓地存在1张满足s.atkfilter的「圣月之皇太子 雷古勒斯」。
 function s.atkcon(e)
 	local c=e:GetHandler()
-	-- 检查场上或墓地是否存在「圣月之皇太子 雷古勒斯」
+	-- 检查这张卡的控制者场上或墓地是否存在至少1张符合条件的「圣月之皇太子 雷古勒斯」。
 	return Duel.IsExistingMatchingCard(s.atkfilter,c:GetControler(),LOCATION_ONFIELD+LOCATION_GRAVE,0,1,nil)
 end

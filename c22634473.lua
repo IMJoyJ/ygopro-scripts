@@ -3,9 +3,9 @@
 -- 这个卡名的卡在1回合只能发动1张。
 -- ①：自己场上有「青眼白龙」或「黑魔术师」存在的场合才能发动。对方场上的全部表侧表示怪兽的效果直到回合结束时无效化。
 function c22634473.initial_effect(c)
-	-- 记录该卡牌效果中涉及的「青眼白龙」和「黑魔术师」的卡片密码
+	-- 记录这张卡上记载了「青眼白龙」（89631139）和「黑魔术师」（46986414）的卡名，用于相关联动判定。
 	aux.AddCodeList(c,89631139,46986414)
-	-- ①：自己场上有「青眼白龙」或「黑魔术师」存在的场合才能发动。对方场上的全部表侧表示怪兽的效果直到回合结束时无效化。
+	-- 这个卡名的卡在1回合只能发动1张。①：自己场上有「青眼白龙」或「黑魔术师」存在的场合才能发动。对方场上的全部表侧表示怪兽的效果直到回合结束时无效化。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_DISABLE)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -17,39 +17,39 @@ function c22634473.initial_effect(c)
 	e1:SetOperation(c22634473.activate)
 	c:RegisterEffect(e1)
 end
--- 定义用于筛选场上的「青眼白龙」或「黑魔术师」的过滤函数
+-- 定义筛选函数：判断怪兽是否为表侧表示且卡名为「青眼白龙」（89631139）或「黑魔术师」（46986414）。
 function c22634473.cfilter(c)
 	return c:IsFaceup() and c:IsCode(89631139,46986414)
 end
--- 判断自己场上有「青眼白龙」或「黑魔术师」存在的条件函数
+-- 定义发动条件函数：检查自己场上是否存在至少1张满足cfilter的「青眼白龙」或「黑魔术师」。
 function c22634473.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查自己场地上是否存在至少1张「青眼白龙」或「黑魔术师」
+	-- 执行条件判定：以自己方视角检索自己场上（LOCATION_ONFIELD）至少1张满足cfilter的卡，存在则条件成立。
 	return Duel.IsExistingMatchingCard(c22634473.cfilter,tp,LOCATION_ONFIELD,0,1,nil)
 end
--- 设置发动时的目标选择逻辑，确认对方场上存在可被无效化的怪兽
+-- 定义发动时目标选择与信息设置函数：检查对方场上存在可无效的表侧效果怪兽，并获取所有此类怪兽，设定本次处理将无效它们的效果。
 function c22634473.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查对方场上是否存在至少1张可被无效化的怪兽
+	-- 在效果发动合法性检查时，确认对方场上存在至少1只满足aux.NegateMonsterFilter（表侧且可被无效）的效果怪兽。
 	if chk==0 then return Duel.IsExistingMatchingCard(aux.NegateMonsterFilter,tp,0,LOCATION_MZONE,1,nil) end
-	-- 获取对方场上所有可被无效化的怪兽组成的卡片组
+	-- 获取对方场上所有满足aux.NegateMonsterFilter的怪兽群组，作为无效化处理的对象集合。
 	local g=Duel.GetMatchingGroup(aux.NegateMonsterFilter,tp,0,LOCATION_MZONE,nil)
-	-- 设置连锁操作信息，指定本次效果将使对方怪兽效果无效
+	-- 将本次连锁的操作信息登记为：对g中的所有卡执行CATEGORY_DISABLE（效果无效），数量为g中的卡数。
 	Duel.SetOperationInfo(0,CATEGORY_DISABLE,g,g:GetCount(),0,0)
 end
--- 设置效果发动后的处理逻辑，对对方场上所有怪兽施加效果无效化
+-- 定义效果处理函数：处理时重新获取对方场上所有可无效的表侧效果怪兽，对每只怪兽将其效果无效，并让该无效状态持续到回合结束，同时使相关连锁无效化。
 function c22634473.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取对方场上所有可被无效化的怪兽组成的卡片组
+	-- 在效果处理时再次获取对方场上全部可被无效的表侧效果怪兽，以处理时场上存在的怪兽为准。
 	local g=Duel.GetMatchingGroup(aux.NegateMonsterFilter,tp,0,LOCATION_MZONE,nil)
 	local tc=g:GetFirst()
 	while tc do
-		-- 使目标怪兽相关的连锁效果无效化并重置
+		-- 使与这只怪兽相关的连锁（已发动效果）无效化，并在该怪兽变里侧时重置此无效状态（RESET_TURN_SET）。
 		Duel.NegateRelatedChain(tc,RESET_TURN_SET)
-		-- 使目标怪兽的效果无效
+		-- 对方场上的全部表侧表示怪兽的效果
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_DISABLE)
 		e1:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END)
 		tc:RegisterEffect(e1)
-		-- 使目标怪兽的效果无效化效果在回合结束时解除
+		-- 直到回合结束时无效化。
 		local e2=Effect.CreateEffect(e:GetHandler())
 		e2:SetType(EFFECT_TYPE_SINGLE)
 		e2:SetCode(EFFECT_DISABLE_EFFECT)
