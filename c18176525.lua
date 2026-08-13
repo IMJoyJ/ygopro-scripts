@@ -4,9 +4,9 @@
 -- ①：这张卡召唤·特殊召唤的场合或者这张卡被解放的场合才能发动。从卡组把1张「巳剑」魔法·陷阱卡加入手卡。
 -- ②：自己场上的其他的爬虫类族怪兽被战斗·效果破坏的场合，可以作为代替把场上的这张卡解放。
 local s,id,o=GetID()
--- 创建并注册三个诱发效果，分别对应召唤成功、特殊召唤成功和解放时的检索效果
+-- 初始化效果注册：为①效果创建召唤/特殊召唤/解放时触发的检索效果，为②效果创建代替破坏的永续效果，并设置各自1回合1次限制。
 function s.initial_effect(c)
-	-- ①：这张卡召唤·特殊召唤的场合或者这张卡被解放的场合才能发动。从卡组把1张「巳剑」魔法·陷阱卡加入手卡。
+	-- 对应①效果：这张卡召唤·特殊召唤的场合或者这张卡被解放的场合才能发动。从卡组把1张「巳剑」魔法·陷阱卡加入手卡。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(id,0))  --"检索"
 	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
@@ -23,7 +23,7 @@ function s.initial_effect(c)
 	local e3=e1:Clone()
 	e3:SetCode(EVENT_RELEASE)
 	c:RegisterEffect(e3)
-	-- ②：自己场上的其他的爬虫类族怪兽被战斗·效果破坏的场合，可以作为代替把场上的这张卡解放。
+	-- 对应②效果原文：自己场上的其他的爬虫类族怪兽被战斗·效果破坏的场合，可以作为代替把场上的这张卡解放。
 	local e4=Effect.CreateEffect(c)
 	e4:SetType(EFFECT_TYPE_CONTINUOUS+EFFECT_TYPE_FIELD)
 	e4:SetCode(EFFECT_DESTROY_REPLACE)
@@ -34,51 +34,51 @@ function s.initial_effect(c)
 	e4:SetOperation(s.repop)
 	c:RegisterEffect(e4)
 end
--- 定义检索过滤器，用于筛选「巳剑」魔法·陷阱卡
+-- 定义①效果的检索过滤器：筛选持有「巳剑」字段的魔法·陷阱卡且该卡能够加入手卡。
 function s.thfilter(c)
 	return c:IsSetCard(0x1c3) and c:IsType(TYPE_SPELL+TYPE_TRAP) and c:IsAbleToHand()
 end
--- 设置检索效果的目标，检查卡组中是否存在满足条件的卡
+-- ①效果的发动条件检查和操作信息登记：若卡组存在符合条件的「巳剑」魔法·陷阱卡则允许发动，并将“加入手卡”的操作信息登记为从卡组选1张。
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查卡组中是否存在满足条件的卡
+	-- 效果发动时点检查自己卡组是否存在至少1张满足s.thfilter的「巳剑」魔法·陷阱卡，作为发动条件。
 	if chk==0 then return Duel.IsExistingMatchingCard(s.thfilter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置连锁操作信息，指定将要从卡组检索的卡的类别为手牌
+	-- 登记效果处理时将执行的“加入手卡”操作信息，用于连锁判定等场合。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 执行检索效果的操作，选择并把卡加入手牌
+-- ①效果处理：从卡组选择1张符合条件的「巳剑」魔法·陷阱卡加入手卡，并展示给对方确认。
 function s.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要加入手牌的卡
+	-- 向玩家弹出选择提示“请选择要加入手牌的卡”，用于检索选择。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 从卡组中选择满足条件的卡
+	-- 让玩家从自己卡组中选出1张满足s.thfilter的「巳剑」魔法·陷阱卡。
 	local g=Duel.SelectMatchingCard(tp,s.thfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的卡送入手牌
+		-- 将选中的卡加入其持有者的手卡。
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 向对方确认送入手牌的卡
+		-- 将加入手卡的卡展示给对方玩家确认。
 		Duel.ConfirmCards(1-tp,g)
 	end
 end
--- 定义代替破坏的过滤器，用于判断是否为爬虫类族怪兽被战斗或效果破坏
+-- 定义②效果的适用对象过滤器：被破坏的卡须为表侧表示、自己场上、爬虫类族、位于怪兽区域，且破坏原因是战斗/效果，并非由代替破坏造成。
 function s.repfilter(c,tp)
 	return c:IsFaceup() and c:IsControler(tp) and c:IsLocation(LOCATION_MZONE) and c:IsRace(RACE_REPTILE)
 		and c:IsReason(REASON_BATTLE+REASON_EFFECT) and not c:IsReason(REASON_REPLACE)
 end
--- 设置代替破坏效果的触发条件，检查是否有满足条件的怪兽被破坏且该卡可被解放
+-- ②效果发动时点判定：存在将被战斗/效果破坏的其他爬虫类族怪兽，且这张卡可被效果解放、未被预定破坏。
 function s.reptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	if chk==0 then return eg:IsExists(s.repfilter,1,c,tp)
 		and c:IsReleasableByEffect() and not c:IsStatus(STATUS_DESTROY_CONFIRMED) end
-	-- 询问玩家是否发动代替破坏效果
+	-- 询问玩家是否将这张卡解放以代替其他爬虫类族怪兽被破坏。
 	return Duel.SelectEffectYesNo(tp,c,96)
 end
--- 设置代替破坏效果的值，返回是否满足代替条件
+-- 代替破坏效果的判定回调：确认实际被破坏的卡是否符合②的替代条件，返回true表示可用这张卡代替。
 function s.repval(e,c)
 	return s.repfilter(c,e:GetHandlerPlayer())
 end
--- 执行代替破坏效果的操作，将该卡解放
+-- ②效果处理：展示这张卡的动画，并将这张卡解放作为代替破坏。
 function s.repop(e,tp,eg,ep,ev,re,r,rp)
-	-- 向所有玩家显示该卡被解放的动画
+	-- 向双方展示这张卡的卡图动画，提示正在发动②效果。
 	Duel.Hint(HINT_CARD,0,id)
-	-- 将该卡解放
+	-- 解放这张卡，代替其他爬虫类族怪兽被破坏。
 	Duel.Release(e:GetHandler(),REASON_EFFECT)
 end

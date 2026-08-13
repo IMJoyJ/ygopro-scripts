@@ -22,37 +22,37 @@ function c1802450.initial_effect(c)
 	e2:SetOperation(c1802450.operation)
 	c:RegisterEffect(e2)
 end
--- 过滤函数，用于判断场上是否存在满足条件的可解放地属性怪兽
+-- 定义过滤器：筛选表侧表示且属性为地属性的怪兽，用于作为解放代价的候选。
 function c1802450.cfilter(c)
 	return c:IsFaceup() and c:IsAttribute(ATTRIBUTE_EARTH)
 end
--- 检查是否满足解放条件并选择1只地属性怪兽进行解放
+-- 代价处理：从自己场上选择并解放1只表侧表示的地属性怪兽作为发动代价。
 function c1802450.cost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查场上是否存在满足条件的可解放地属性怪兽
+	-- 检查是否满足发动代价：自己场上是否存在至少1只可解放的表侧地属性怪兽。
 	if chk==0 then return Duel.CheckReleaseGroup(tp,c1802450.cfilter,1,nil) end
-	-- 选择1只满足条件的可解放地属性怪兽
+	-- 选择1只表侧表示的地属性怪兽作为解放对象。
 	local cg=Duel.SelectReleaseGroup(tp,c1802450.cfilter,1,1,nil)
-	-- 将选中的怪兽以支付代价的方式进行解放
+	-- 将选择的怪兽解放，作为发动效果的COST。
 	Duel.Release(cg,REASON_COST)
 end
--- 选择对方墓地存在的最多2张可除外的卡作为效果对象
+-- 发动时选择对象：从对方墓地选择1~2张可除外的卡作为效果对象，并设置除外相关操作信息。
 function c1802450.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(1-tp) and chkc:IsAbleToRemove() end
-	-- 检查对方墓地是否存在至少1张可除外的卡
+	-- 检查是否满足发动条件：对方墓地是否存在至少1张可除外的卡。
 	if chk==0 then return Duel.IsExistingTarget(Card.IsAbleToRemove,tp,0,LOCATION_GRAVE,1,nil) end
-	-- 提示玩家选择要除外的卡
+	-- 弹出选择提示，提示玩家选择要除外的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
-	-- 选择对方墓地存在的1到2张可除外的卡
+	-- 从对方墓地选择1~2张可除外的卡，并将其登记为效果对象。
 	local g=Duel.SelectTarget(tp,Card.IsAbleToRemove,tp,0,LOCATION_GRAVE,1,2,nil)
-	-- 设置效果处理时要除外的卡组及数量信息
+	-- 设置操作信息，记录本次效果将除外这些卡片。
 	Duel.SetOperationInfo(0,CATEGORY_REMOVE,g,g:GetCount(),1-tp,LOCATION_GRAVE)
 end
--- 执行效果，将选中的卡从游戏中除外
+-- 效果处理：获取连锁中确定的对象卡，并将仍然与效果相关的卡除外。
 function c1802450.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁中已选定的效果对象卡组
+	-- 获取当前连锁中记录的效果对象卡组。
 	local g=Duel.GetChainInfo(0,CHAININFO_TARGET_CARDS)
 	if not g then return end
 	g=g:Filter(Card.IsRelateToEffect,nil,e)
-	-- 将符合条件的卡从游戏中除外
+	-- 将对象卡以表侧表示从墓地除外，完成除外处理。
 	Duel.Remove(g,POS_FACEUP,REASON_EFFECT)
 end

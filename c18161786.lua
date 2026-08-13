@@ -13,7 +13,7 @@ function c18161786.initial_effect(c)
 	e2:SetRange(LOCATION_FZONE)
 	e2:SetTargetRange(LOCATION_MZONE,LOCATION_MZONE)
 	e2:SetCode(EFFECT_UPDATE_ATTACK)
-	-- 将目标设为暗属性怪兽
+	-- 设置效果的影响对象为场上所有暗属性怪兽（作为攻击力增减效果的适用对象筛选条件）
 	e2:SetTarget(aux.TargetBoolFunction(Card.IsAttribute,ATTRIBUTE_DARK))
 	e2:SetValue(500)
 	c:RegisterEffect(e2)

@@ -22,41 +22,41 @@ function c18235309.initial_effect(c)
 	e3:SetOperation(c18235309.activate)
 	c:RegisterEffect(e3)
 end
--- 判断是否满足发动条件，即当前回合玩家不是自己，且当前阶段为对方的主要阶段1、主要阶段2或战斗阶段。
+-- 效果发动条件：仅当当前为对方回合且处于主要阶段1、主要阶段2或战斗阶段（开始步骤至结束步骤）时，该效果才满足发动条件。
 function c18235309.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前回合玩家的玩家编号。
+	-- 获取当前回合玩家，用于判断当前是否为对方回合，以满足“对方的主要阶段以及战斗阶段才能发动”的时点要求。
 	local tn=Duel.GetTurnPlayer()
-	-- 获取当前游戏阶段。
+	-- 获取当前所处阶段，用于判断是否处于对方的主要阶段或战斗阶段。
 	local ph=Duel.GetCurrentPhase()
 	return tn~=tp and (ph==PHASE_MAIN1 or ph==PHASE_MAIN2 or (ph>=PHASE_BATTLE_START and ph<=PHASE_BATTLE))
 end
--- 定义过滤函数，用于筛选可以通常召唤或盖放的怪兽。
+-- 筛选条件：手牌中的怪兽能够以至少1只怪兽作为解放进行上级召唤（包括表侧攻击表示通常召唤或里侧守备表示覆盖），且不检查通常召唤次数限制。
 function c18235309.filter(c)
 	return c:IsSummonable(true,nil,1) or c:IsMSetable(true,nil,1)
 end
--- 设置效果的目标，检查手牌中是否存在满足条件的怪兽。
+-- 效果发动时的目标处理：若自己手牌中存在至少1只满足上级召唤条件的怪兽则允许发动，并将本次效果的操作信息标记为“召唤”。
 function c18235309.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查手牌中是否存在至少一张可以通常召唤或盖放的怪兽。
+	-- 在发动合法性检查（chk==0）时，确认自己手牌中是否存在至少1只满足 c18235309.filter 条件的怪兽；若存在则返回 true，否则不能发动。
 	if chk==0 then return Duel.IsExistingMatchingCard(c18235309.filter,tp,LOCATION_HAND,0,1,nil) end
-	-- 设置连锁操作信息，表示将要处理一个上级召唤的效果。
+	-- 设置本次效果处理时的操作信息为 CATEGORY_SUMMON，表示效果处理时将进行1只怪兽的上级召唤；因具体召唤哪只怪兽要到处理时选择，所以目标卡设为 nil，数量设为1。
 	Duel.SetOperationInfo(0,CATEGORY_SUMMON,nil,1,0,0)
 end
--- 处理效果发动时的执行逻辑，包括提示选择、选取目标怪兽并进行通常召唤或盖放。
+-- 效果处理：从手牌中选择1只满足条件的怪兽，再根据玩家选择的表示形式，将其表侧攻击表示上级召唤或里侧守备表示覆盖到场上。
 function c18235309.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 向玩家发送提示信息，提示其选择要召唤的怪兽。
+	-- 向操作玩家显示“请选择要召唤的卡”的选择提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SUMMON)  --"请选择要召唤的卡"
-	-- 从手牌中选择一张满足条件的怪兽作为目标。
+	-- 从手牌中选出1只满足上级召唤条件的怪兽，作为本次效果要召唤的卡片。
 	local g=Duel.SelectMatchingCard(tp,c18235309.filter,tp,LOCATION_HAND,0,1,1,nil)
 	local tc=g:GetFirst()
 	if tc then
 		local s1=tc:IsSummonable(true,nil,1)
 		local s2=tc:IsMSetable(true,nil,1)
-		-- 判断是否选择攻击表示进行通常召唤，若可通常召唤且可盖放，则由玩家选择表示形式。
+		-- 若该怪兽既能表侧攻击表示上级召唤又能里侧守备表示覆盖，则让玩家选择表示形式；若玩家选择表侧攻击表示或该怪兽不能里侧覆盖，则执行表侧上级召唤，否则执行里侧覆盖。
 		if (s1 and s2 and Duel.SelectPosition(tp,tc,POS_FACEUP_ATTACK+POS_FACEDOWN_DEFENSE)==POS_FACEUP_ATTACK) or not s2 then
-			-- 执行通常召唤操作，将目标怪兽通常召唤。
+			-- 以不占用每回合通常召唤次数的方式，将选择的怪兽进行表侧攻击表示的上级召唤，至少解放1只怪兽。
 			Duel.Summon(tp,tc,true,nil,1)
 		else
-			-- 执行盖放操作，将目标怪兽以守备表示盖放。
+			-- 以不占用每回合通常召唤次数的方式，将选择的怪兽进行里侧守备表示的上级召唤（覆盖），至少解放1只怪兽。
 			Duel.MSet(tp,tc,true,nil,1)
 		end
 	end
