@@ -13,49 +13,49 @@ function c17427333.initial_effect(c)
 	e1:SetOperation(c17427333.operation)
 	c:RegisterEffect(e1)
 end
--- 设置cost标签为100，表示进入cost阶段
+-- 发动时点检查代价：将效果标签标记为100以表明后续可以选择并支付解放代价，返回true；实际解放操作在目标选择阶段完成。
 function c17427333.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then
 		e:SetLabel(100)
 		return true
 	end
 end
--- 过滤满足条件的机械族怪兽，包括控制者或表侧表示，攻击力至少1000，并且场上存在可选择的目标
+-- 筛选可作为解放的机械族怪兽：必须是机械族，且（由自己控制或表侧表示），原本攻击力至少1000，并且场上还存在其他可成为破坏对象的卡。
 function c17427333.costfilter(c,tp)
 	return c:IsRace(RACE_MACHINE) and (c:IsControler(tp) or c:IsFaceup()) and c:GetTextAttack()>=1000
-		-- 检查场上是否存在满足条件的目标卡片
+		-- 确认场上存在至少1张除这张解放怪兽以外的卡能够成为破坏对象（保证有对象可选）。
 		and Duel.IsExistingTarget(aux.TRUE,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,c)
 end
--- 判断是否满足发动条件，选择并解放符合条件的机械族怪兽，根据攻击力计算可破坏卡片数量，并选择目标卡片
+-- 目标选择处理：确认代价标记后，选择要解放的机械族怪兽，以其原本攻击力每1000决定最多可选破坏数量，并选择场上对应数量的卡作为效果对象，同时设置破坏信息。
 function c17427333.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsOnField() end
 	if chk==0 then
 		if e:GetLabel()~=100 then return false end
 		e:SetLabel(0)
-		-- 检查玩家场上是否存在满足costfilter条件的可解放怪兽
+		-- 检查自己场上是否存在至少1只满足costfilter条件的可解放机械族怪兽作为代价。
 		return Duel.CheckReleaseGroup(tp,c17427333.costfilter,1,nil,tp)
 	end
-	-- 从玩家场上选择1只满足costfilter条件的怪兽进行解放
+	-- 从自己场上选择1只满足costfilter条件的机械族怪兽作为解放代价。
 	local g=Duel.SelectReleaseGroup(tp,c17427333.costfilter,1,1,nil,tp)
 	local atk=g:GetFirst():GetTextAttack()
-	-- 以代價原因解放选择的怪兽
+	-- 将选择的怪兽解放，作为效果发动的代价（REASON_COST）。
 	Duel.Release(g,REASON_COST)
 	local ct=math.floor(atk/1000)
 	local exc=nil
 	if not e:GetHandler():IsStatus(STATUS_EFFECT_ENABLED) then exc=e:GetHandler() end
-	-- 提示玩家选择要破坏的卡片
+	-- 向玩家显示“请选择要破坏的卡”的提示框。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 选择满足条件的目标卡片，数量为根据攻击力计算出的最多数量
+	-- 在场上选择1到ct张卡作为效果对象（ct为解放怪兽原本攻击力每1000可破坏的数量；若本卡效果未生效则排除本卡）。
 	local g1=Duel.SelectTarget(tp,aux.TRUE,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,ct,exc)
-	-- 设置操作信息，记录将要破坏的卡片组和数量
+	-- 设置本次连锁将要进行的破坏操作信息，目标为已选择的g1，数量为g1的卡数，分类为破坏。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g1,g1:GetCount(),0,0)
 end
--- 处理连锁效果，获取目标卡片并进行破坏
+-- 效果处理时，取得当前连锁的对象中仍与效果关联的卡，并将它们全部破坏。
 function c17427333.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁中目标卡片，并筛选出与当前效果相关的卡片
+	-- 取得当前连锁的效果对象，并筛选出仍与该效果存在关联的卡（离场等导致联系重置的卡会被排除）。
 	local g=Duel.GetChainInfo(0,CHAININFO_TARGET_CARDS):Filter(Card.IsRelateToEffect,nil,e)
 	if g:GetCount()>0 then
-		-- 以效果原因破坏符合条件的卡片
+		-- 将筛选出的卡以效果原因（REASON_EFFECT）破坏。
 		Duel.Destroy(g,REASON_EFFECT)
 	end
 end
