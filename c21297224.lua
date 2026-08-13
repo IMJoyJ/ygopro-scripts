@@ -14,29 +14,29 @@ function c21297224.initial_effect(c)
 	e1:SetOperation(c21297224.operation)
 	c:RegisterEffect(e1)
 end
--- 检查并选择2只怪兽进行解放作为效果的代价
+-- 代价函数：选择自己场上2只怪兽作为祭品并解放，以作为发动效果的代价。
 function c21297224.cost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查玩家场上是否存在至少2张可解放的怪兽
+	-- 代价检查阶段：确认自己场上是否存在至少2只可解放的怪兽。
 	if chk==0 then return Duel.CheckReleaseGroup(tp,nil,2,nil) end
-	-- 选择2只满足条件的怪兽作为解放对象
+	-- 让玩家从自己场上选择2只怪兽作为解放对象。
 	local g=Duel.SelectReleaseGroup(tp,nil,2,2,nil)
-	-- 将选中的怪兽从场上解放并视为效果的代价
+	-- 将选择的2只怪兽作为代价解放。
 	Duel.Release(g,REASON_COST)
 end
--- 设置效果的目标玩家和回复的LP值
+-- 对象设定函数：不取对象，设定回复目标玩家与回复数值，并登记操作信息。
 function c21297224.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置连锁处理时的目标玩家为效果使用者
+	-- 设定回复对象为发动玩家自身。
 	Duel.SetTargetPlayer(tp)
-	-- 设置连锁处理时的目标参数为1000点LP
+	-- 设定回复数值为1000。
 	Duel.SetTargetParam(1000)
-	-- 设置效果操作信息为回复LP效果，目标为使用者，回复1000点
+	-- 登记操作信息，声明本连锁包含回复效果，回复对象为发动玩家，预定回复数值为1000。
 	Duel.SetOperationInfo(0,CATEGORY_RECOVER,nil,0,tp,1000)
 end
--- 执行效果的处理函数，使玩家回复指定点数的LP
+-- 效果处理函数：实际执行基本分回复。
 function c21297224.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的目标玩家和目标参数（回复LP值）
+	-- 从当前连锁信息中取出之前设定的目标玩家与回复数值。
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 使目标玩家回复指定数量的LP，原因设为效果
+	-- 使目标玩家回复对应数值的基本分，回复原因视为效果。
 	Duel.Recover(p,d,REASON_EFFECT)
 end

@@ -20,21 +20,21 @@ function c21340051.initial_effect(c)
 	e2:SetValue(-1000)
 	c:RegisterEffect(e2)
 end
--- 设置效果处理时的连锁操作信息，指定将要破坏的卡片为自身
+-- 召唤成功时必发效果的发动判定与操作信息设置：chk==0时直接返回true允许发动，并登记将破坏这张卡。
 function c21340051.destg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置当前连锁操作为破坏效果，并将自身设为破坏目标
+	-- 设置本次连锁的操作信息，登记破坏效果的对象为这张卡自身，数量为1，使其他卡能正确连锁响应。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,e:GetHandler(),1,0,0)
 end
--- 执行破坏效果，若自身存在于场上则进行破坏
+-- 效果处理时的执行操作：若这张卡仍与当前效果关联（未因离场等重置），则将其破坏。
 function c21340051.desop(e,tp,eg,ep,ev,re,r,rp)
 	if e:GetHandler():IsRelateToEffect(e) then
-		-- 将自身从游戏中破坏
+		-- 以效果原因（REASON_EFFECT）破坏这张卡。
 		Duel.Destroy(e:GetHandler(),REASON_EFFECT)
 	end
 end
--- 判断对方场上是否存在怪兽
+-- 攻击力增减效果的发动条件：检测对方场上是否存在至少1只怪兽。
 function c21340051.con(e)
-	-- 判断对方场上怪兽数量是否大于0
+	-- 返回对方场上怪兽区的怪兽数量是否大于0。
 	return Duel.GetFieldGroupCount(e:GetHandlerPlayer(),0,LOCATION_MZONE)>0
 end

@@ -13,30 +13,30 @@ function c2130625.initial_effect(c)
 	e1:SetOperation(c2130625.recop)
 	c:RegisterEffect(e1)
 end
--- 伤害步骤时，只有自己受到伤害才能发动。
+-- 发动条件判断：仅当受到伤害的玩家是自己（ep==tp）时，该效果才满足发动条件。
 function c2130625.reccon(e,tp,eg,ep,ev,re,r,rp)
 	return ep==tp
 end
--- 设置效果目标为自身，设置效果参数为1000，设置操作信息为回复1000基本分。
+-- 发动时目标处理：效果必定可发动；发动时记录回复对象为自己，回复数值为1000，并设置操作信息为回复效果。
 function c2130625.rectg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置当前连锁的效果对象玩家为处理该效果的玩家。
+	-- 将当前连锁效果的对象玩家设为自己，即回复基本分的对象。
 	Duel.SetTargetPlayer(tp)
-	-- 设置当前连锁的效果参数为1000。
+	-- 将当前连锁效果的对象参数设为1000，用于表示本次回复的数值。
 	Duel.SetTargetParam(1000)
-	-- 设置当前连锁的操作信息为回复基本分。
+	-- 设置操作信息：本效果分类为回复（CATEGORY_RECOVER），对象玩家为自己，预计回复数值为1000，供其他效果检测或对应。
 	Duel.SetOperationInfo(0,CATEGORY_RECOVER,nil,0,tp,1000)
 end
--- 效果处理函数，先回复1000基本分，再判断墓地是否有「白衣天使」，若有则再回复相应数量的500基本分。
+-- 效果处理：根据连锁中记录的对象玩家与回复数值执行回复，并额外统计自己墓地「白衣天使」的数量，每有1张再追加回复500基本分。
 function c2130625.recop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的目标玩家和目标参数。
+	-- 从当前连锁信息中取出对象玩家和回复数值，分别赋给变量p和d。
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 使目标玩家回复目标参数数量的基本分。
+	-- 让玩家p回复d点基本分，回复原因记为效果（REASON_EFFECT）。
 	Duel.Recover(p,d,REASON_EFFECT)
-	-- 统计目标玩家墓地中「白衣天使」的数量。
+	-- 统计玩家p墓地中卡名「白衣天使」（卡号2130625）的数量，结果存入gc。
 	local gc=Duel.GetMatchingGroupCount(Card.IsCode,p,LOCATION_GRAVE,0,nil,2130625)
 	if gc>0 then
-		-- 使目标玩家回复500乘以「白衣天使」数量的基本分。
+		-- 如果墓地存在「白衣天使」，则玩家p追加回复500×gc点基本分，回复原因记为效果（REASON_EFFECT）。
 		Duel.Recover(p,500*gc,REASON_EFFECT)
 	end
 end

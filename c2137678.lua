@@ -21,31 +21,31 @@ function c2137678.initial_effect(c)
 	e2:SetOperation(c2137678.operation)
 	c:RegisterEffect(e2)
 end
--- 过滤函数，用于筛选场上表侧表示且名字带有「机皇」的怪兽。
+-- 过滤场上表侧表示且名字带有「机皇」（0x13）的怪兽卡。
 function c2137678.atkfilter(c)
 	return c:IsFaceup() and c:IsSetCard(0x13)
 end
--- 计算场上除自身外的「机皇」怪兽数量，并乘以100作为攻击力提升值。
+-- 计算这张卡以外的场上表侧表示的名字带有「机皇」的怪兽数量，再乘以100作为攻击力上升数值。
 function c2137678.val(e,c)
-	-- 返回场上除自身外的「机皇」怪兽数量乘以100的结果。
+	-- 统计全场（双方怪兽区域）中除自身以外表侧表示且持有「机皇」字段的怪兽数量，并乘100作为攻击力增加值。
 	return Duel.GetMatchingGroupCount(c2137678.atkfilter,0,LOCATION_MZONE,LOCATION_MZONE,c)*100
 end
--- 设置选择目标时的处理函数，用于选择对方场上表侧表示的怪兽。
+-- 诱发选发效果的发动条件和对象选择处理：进行取对象判定，从对方场上选择1只表侧表示怪兽作为效果对象。
 function c2137678.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(1-tp) and chkc:IsFaceup() and chkc:IsLocation(LOCATION_MZONE) end
-	-- 检查是否满足选择目标的条件，即对方场上是否存在表侧表示的怪兽。
+	-- 发动条件检查：对方场上是否存在1只以上表侧表示且能成为效果对象的怪兽。
 	if chk==0 then return Duel.IsExistingTarget(Card.IsFaceup,tp,0,LOCATION_MZONE,1,nil) end
-	-- 向玩家提示选择表侧表示的卡。
+	-- 向玩家tp发送选择提示，提示内容为“请选择表侧表示的卡”。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
-	-- 选择对方场上的一只表侧表示怪兽作为目标。
+	-- 让玩家tp从对方场上选择1只表侧表示怪兽，并将其设定为当前连锁的效果对象。
 	Duel.SelectTarget(tp,Card.IsFaceup,tp,0,LOCATION_MZONE,1,1,nil)
 end
--- 设置效果发动时的处理函数，用于将目标怪兽的攻击力变为一半。
+-- 效果处理：取得对象怪兽，若其仍在场上表侧表示且与效果关联，则使其攻击力直到结束阶段变为一半。
 function c2137678.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁效果选择的目标怪兽。
+	-- 获取发动效果时选择的唯一对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsFaceup() and tc:IsRelateToEffect(e) then
-		-- 将目标怪兽的攻击力设置为原来的一半，并在结束阶段重置。
+		-- 那只怪兽的攻击力直到结束阶段时变成一半。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_SET_ATTACK_FINAL)
