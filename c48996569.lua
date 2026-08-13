@@ -4,20 +4,20 @@
 -- 让自己场上的上记的卡回到卡组的场合才能从额外卡组特殊召唤（不需要「融合」魔法卡）。1回合1次，可以选择对方场上1只怪兽回到持有者手卡。此外，结束阶段时，这张卡回到额外卡组。
 function c48996569.initial_effect(c)
 	c:EnableReviveLimit()
-	-- 添加融合召唤手续，使用卡号为89943723和80344569的两只怪兽作为融合素材
+	-- 为这张卡注册以“元素英雄 新宇侠”（89943723）和“新空间侠·大地鼹鼠”（80344569）为素材的融合召唤手续，使其满足正规出场条件。
 	aux.AddFusionProcCode2(c,89943723,80344569,false,false)
-	-- 添加接触融合特殊召唤规则，要求自己场上的符合条件的卡回到卡组作为召唤条件
+	-- 注册接触融合特殊召唤手续：将己方场上满足条件的上述素材卡作为Cost返回卡组·额外卡组，然后从额外卡组特殊召唤这张卡；素材处理采用默认的回卡组并洗牌的操作。
 	aux.AddContactFusionProcedure(c,Card.IsAbleToDeckOrExtraAsCost,LOCATION_ONFIELD,0,aux.ContactFusionSendToDeck(c))
-	-- 设置该卡不能从额外卡组特殊召唤（即必须通过接触融合方式特殊召唤）
+	-- 「元素英雄 新宇侠」＋「新空间侠·大地鼹鼠」让自己场上的上记的卡回到卡组·额外卡组的场合才能从额外卡组特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
 	e1:SetCode(EFFECT_SPSUMMON_CONDITION)
 	e1:SetValue(c48996569.splimit)
 	c:RegisterEffect(e1)
-	-- 注册结束阶段返回卡组效果，使该卡在结束阶段回到额外卡组
+	-- 注册“新空间”融合怪兽共通效果：在自己·对方的结束阶段时，这张卡回到额外卡组，并执行retop作为回额外卡组的具体处理。
 	aux.EnableNeosReturn(c,c48996569.retop)
-	-- 1回合1次，可以选择对方场上1只怪兽回到持有者手卡
+	-- ①：1回合1次，以对方场上1只怪兽为对象才能发动。那只对方怪兽回到手卡。
 	local e5=Effect.CreateEffect(c)
 	e5:SetDescription(aux.Stringid(48996569,1))  --"返回手牌"
 	e5:SetCategory(CATEGORY_TOHAND)
@@ -30,38 +30,38 @@ function c48996569.initial_effect(c)
 	c:RegisterEffect(e5)
 end
 c48996569.material_setcode=0x8
--- 限制该卡不能从额外卡组特殊召唤，必须通过接触融合方式特殊召唤
+-- 特殊召唤限制的判定函数：仅允许从额外卡组进行的特殊召唤，禁止从墓地、除外或手卡等额外卡组以外的区域特殊召唤这张卡。
 function c48996569.splimit(e,se,sp,st)
 	return not e:GetHandler():IsLocation(LOCATION_EXTRA)
 end
--- 结束阶段时，若该卡存在且为表侧表示，则将其送回卡组
+-- 结束阶段回额外卡组的处理函数：若这张卡仍与效果关联且不是里侧表示，则将其返回卡组（融合怪兽实际回到额外卡组）并洗牌。
 function c48996569.retop(e,tp,eg,ep,ev,re,r,rp)
 	if not e:GetHandler():IsRelateToEffect(e) or e:GetHandler():IsFacedown() then return end
-	-- 将该卡送回卡组并洗牌
+	-- 将这张卡以效果原因送回持有者卡组并洗牌；作为额外卡组怪兽，实际处理为回到持有者的额外卡组。
 	Duel.SendtoDeck(e:GetHandler(),nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
 end
--- 定义返回手牌的过滤函数，判断目标怪兽是否可以回到手牌
+-- 回手牌效果的过滤函数：判断卡片是否能被送回手牌，即不受“不能加入手卡”等效果限制。
 function c48996569.filter(c)
 	return c:IsAbleToHand()
 end
--- 设置效果目标选择函数，选择对方场上一只可回到手牌的怪兽
+-- ①效果的发动条件与取对象处理：选择对方场上1只符合回手牌条件的怪兽，并设置本次操作信息为回手牌效果。
 function c48996569.thtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(1-tp) and c48996569.filter(chkc) end
-	-- 检查是否有符合条件的目标怪兽
+	-- 在效果发动合法性检查时，确认对方场上是否存在至少1只满足回手牌条件的怪兽，作为能否发动的条件。
 	if chk==0 then return Duel.IsExistingTarget(c48996569.filter,tp,0,LOCATION_MZONE,1,nil) end
-	-- 提示玩家选择要送回手牌的卡
+	-- 向操作玩家发出选择提示，提示内容为“请选择要返回手牌的卡”。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_RTOHAND)  --"请选择要返回手牌的卡"
-	-- 选择对方场上一只可回到手牌的怪兽作为目标
+	-- 让玩家从对方场上选择1只满足回手牌条件的怪兽，并将其设为当前连锁的效果对象（取对象）。
 	local g=Duel.SelectTarget(tp,c48996569.filter,tp,0,LOCATION_MZONE,1,1,nil)
-	-- 设置连锁操作信息，指定将目标怪兽送回手牌
+	-- 设置当前连锁的操作信息：将选中的对象标记为回手牌（CATEGORY_TOHAND），以便后续处理及相关判定。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,1,0,0)
 end
--- 设置效果处理函数，将选中的怪兽送回手牌
+-- 效果处理时的操作：取出对象怪兽，若其仍与效果关联，则将其返回持有者手卡，实现“那只对方怪兽回到手卡”。
 function c48996569.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁中被选择的目标怪兽
+	-- 取得当前连锁所登记的第一个效果对象，也就是之前选择的那只对方怪兽。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 将目标怪兽送回手牌
+		-- 以效果原因将对象怪兽返回其持有者的手卡。
 		Duel.SendtoHand(tc,nil,REASON_EFFECT)
 	end
 end

@@ -5,7 +5,7 @@
 -- ①：以对方墓地1只炎属性怪兽为对象才能发动。那只怪兽在作为这张卡所连接区的自己场上特殊召唤。
 -- ②：连接召唤的这张卡被战斗或者对方的效果破坏的场合才能发动。从卡组把1只守备力1500以下的炎属性怪兽加入手卡。
 function c48815792.initial_effect(c)
-	-- 为卡片添加连接召唤手续，要求使用2只包含炎属性怪兽的怪兽作为连接素材
+	-- 为这张卡添加连接召唤手续：素材必须是2只怪兽，且素材组中须包含至少1只炎属性怪兽。
 	aux.AddLinkProcedure(c,nil,2,2,c48815792.lcheck)
 	c:EnableReviveLimit()
 	-- ①：以对方墓地1只炎属性怪兽为对象才能发动。那只怪兽在作为这张卡所连接区的自己场上特殊召唤。
@@ -32,67 +32,67 @@ function c48815792.initial_effect(c)
 	e2:SetOperation(c48815792.thop)
 	c:RegisterEffect(e2)
 end
--- 连接素材中必须包含至少1只炎属性怪兽
+-- 连接素材检查函数：确认用于连接召唤的素材组中是否存在至少1只炎属性怪兽。
 function c48815792.lcheck(g)
 	return g:IsExists(Card.IsLinkAttribute,1,nil,ATTRIBUTE_FIRE)
 end
--- 过滤满足条件的怪兽，使其可以被特殊召唤到场上
+-- 特殊召唤对象过滤条件：对象必须是炎属性怪兽，并且能够以表侧表示特殊召唤到这张卡连接区对应的自己场上区域。
 function c48815792.spfilter(c,e,tp,zone)
 	return c:IsAttribute(ATTRIBUTE_FIRE) and c:IsCanBeSpecialSummoned(e,0,tp,false,false,POS_FACEUP,tp,zone)
 end
--- 设置效果目标为对方墓地的1只炎属性怪兽
+-- ①效果的目标设定函数：计算这张卡当前可用的连接区域，并校验对象是否位于对方墓地且满足特殊召唤条件；发动判定时还需确认自己场上存在空位且有可选的炎属性对象。
 function c48815792.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	local zone=bit.band(e:GetHandler():GetLinkedZone(tp),0x1f)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(1-tp) and c48815792.spfilter(chkc,e,tp,zone) end
-	-- 检查是否有足够的怪兽区用于特殊召唤
+	-- 效果发动条件判定：确认自己场上存在可用的主要怪兽区域空位，用于后续特殊召唤。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查对方墓地是否存在满足条件的怪兽
+		-- 效果发动条件判定：确认对方墓地存在至少1只满足特殊召唤条件的炎属性怪兽，可以作为效果对象。
 		and Duel.IsExistingTarget(c48815792.spfilter,tp,0,LOCATION_GRAVE,1,nil,e,tp,zone) end
-	-- 提示玩家选择要特殊召唤的怪兽
+	-- 向操作玩家发出“选择要特殊召唤的卡”的提示消息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 选择满足条件的怪兽作为效果目标
+	-- 让操作玩家从对方墓地选择1只符合条件的炎属性怪兽，并将其登记为这个效果的对象。
 	local g=Duel.SelectTarget(tp,c48815792.spfilter,tp,0,LOCATION_GRAVE,1,1,nil,e,tp,zone)
-	-- 设置操作信息，表示将特殊召唤怪兽
+	-- 设置当前连锁的操作信息为“特殊召唤1只对象怪兽”，供其他卡效果进行联动检测。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,1,0,0)
 end
--- 执行特殊召唤操作
+-- ①效果处理：若这张卡仍与效果关联且对象仍与该效果关联，则计算新的连接区域，并将对象怪兽特殊召唤到这张卡连接区对应的自己场上。
 function c48815792.spop(e,tp,eg,ep,ev,re,r,rp)
 	if not e:GetHandler():IsRelateToEffect(e) then return end
-	-- 获取当前连锁的效果目标怪兽
+	-- 取出发动时选择的效果对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	local zone=bit.band(e:GetHandler():GetLinkedZone(tp),0x1f)
 	if tc:IsRelateToEffect(e) and zone~=0 then
-		-- 将目标怪兽特殊召唤到场上
+		-- 将对象怪兽以表侧表示特殊召唤到这张卡连接区对应的自己场上区域。
 		Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP,zone)
 	end
 end
--- 判断此卡是否因战斗或对方效果被破坏且在主要怪兽区被召唤过
+-- ②效果的发动条件判定：这张卡必须是连接召唤出场，且在场上被战斗破坏，或被对方控制者的效果所破坏。
 function c48815792.thcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	return (c:IsReason(REASON_BATTLE) or (c:IsReason(REASON_EFFECT) and c:GetReasonPlayer()==1-tp and c:IsPreviousControler(tp)))
 		and c:IsPreviousLocation(LOCATION_MZONE) and c:IsSummonType(SUMMON_TYPE_LINK)
 end
--- 过滤满足条件的怪兽，使其守备力不超过1500且为炎属性
+-- 检索过滤条件：满足守备力1500以下、炎属性且能够加入手卡的怪兽。
 function c48815792.thfilter(c)
 	return c:IsDefenseBelow(1500) and c:IsAttribute(ATTRIBUTE_FIRE) and c:IsAbleToHand()
 end
--- 设置效果目标为从卡组检索1只符合条件的怪兽
+-- ②效果的目标设定：发动时检查卡组是否存在符合条件的炎属性怪兽，并登记“从卡组检索加入手牌”的操作信息。
 function c48815792.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查卡组中是否存在满足条件的怪兽
+	-- 发动条件判定：确认卡组中存在至少1只满足检索条件的炎属性怪兽。
 	if chk==0 then return Duel.IsExistingMatchingCard(c48815792.thfilter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置操作信息，表示将怪兽加入手牌
+	-- 设置当前连锁的操作信息为“从卡组将1张卡加入手牌”，供相关效果检测使用。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 执行检索并加入手牌的操作
+-- ②效果处理：从卡组选择1只符合条件的炎属性怪兽加入手牌，并展示给对方玩家确认。
 function c48815792.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要加入手牌的怪兽
+	-- 向操作玩家发出“选择要加入手牌的卡”的提示消息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 从卡组中选择1只符合条件的怪兽
+	-- 让操作玩家从卡组选择1只满足条件的炎属性怪兽（处理时选择，不取对象）。
 	local g=Duel.SelectMatchingCard(tp,c48815792.thfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的怪兽加入手牌
+		-- 将选择的怪兽以效果原因加入其持有者的手牌。
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 向对方确认加入手牌的怪兽
+		-- 将加入手牌的那张怪兽展示给对方玩家确认，以证明检索的真实性。
 		Duel.ConfirmCards(1-tp,g)
 	end
 end

@@ -17,15 +17,15 @@ function c49003716.initial_effect(c)
 	e2:SetCode(EFFECT_PIERCE)
 	c:RegisterEffect(e2)
 end
--- 过滤函数，用于检查场上是否存在满足条件的「黑羽」怪兽（非自身）
+-- 过滤函数：检查卡片是否为表侧表示、属于「黑羽」字段（0x33）且不是卡名「黑羽-黑枪之布拉斯特」自身，用于检索满足①条件所需的「黑羽」怪兽。
 function c49003716.filter(c)
 	return c:IsFaceup() and c:IsSetCard(0x33) and not c:IsCode(49003716)
 end
--- 特殊召唤条件函数，判断是否满足特殊召唤的条件
+-- 特殊召唤规则的条件函数：c为空时表示允许规则发动本身；否则要求这张卡的控制者场上存在可用的主要怪兽区空格，且自己场上存在满足filter的「黑羽」怪兽，从而允许这张卡从手卡进行规则特殊召唤。
 function c49003716.spcon(e,c)
 	if c==nil then return true end
-	-- 判断玩家场上是否有足够的怪兽区域可用于特殊召唤
+	-- 判定这张卡的控制者场上是否仍有可用的主要怪兽区空格。
 	return Duel.GetLocationCount(c:GetControler(),LOCATION_MZONE)>0 and
-		-- 判断玩家场上是否存在至少1只满足过滤条件的「黑羽」怪兽
+		-- 检查自己场上是否存在至少1只满足filter条件的「黑羽」怪兽（表侧表示、黑羽字段、非黑枪自身）。
 		Duel.IsExistingMatchingCard(c49003716.filter,c:GetControler(),LOCATION_MZONE,0,1,nil)
 end

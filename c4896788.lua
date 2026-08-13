@@ -13,17 +13,17 @@ function c4896788.initial_effect(c)
 	e2:SetOperation(c4896788.drop)
 	c:RegisterEffect(e2)
 end
--- 检查触发效果的卡是否为「强欲之壶」的发动，且当前精灵怪兽处于攻击表示
+-- 条件判断：只有这张卡在怪兽区域表侧攻击表示，且连锁的效果是「强欲之壶」作为魔法卡的发动时，本效果的条件才成立。
 function c4896788.drcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsAttackPos()
 		and re:IsHasType(EFFECT_TYPE_ACTIVATE) and re:GetHandler():IsCode(55144522)
 end
--- 判断精灵怪兽是否仍存在于场上且处于攻击表示，若满足条件则询问玩家是否使用效果抽卡
+-- 效果处理：先确认这张卡仍在怪兽区域表侧攻击表示且与连锁效果仍有关联，然后让发动「强欲之壶」的玩家（rp）选择是否抽1张卡。
 function c4896788.drop(e,tp,eg,ep,ev,re,r,rp)
 	if not e:GetHandler():IsAttackPos() or not e:GetHandler():IsRelateToEffect(e) then return end
-	-- 检查目标玩家是否可以抽卡并由其选择是否使用「强欲之壶的精灵」的效果抽卡
+	-- 若该玩家可以抽卡且选择“是”，则进行抽卡处理；若不能抽卡或选择“否”，则本效果不抽卡。
 	if Duel.IsPlayerCanDraw(rp,1) and Duel.SelectYesNo(rp,aux.Stringid(4896788,0)) then  --"是否使用「强欲之壶的精灵」的效果抽卡？"
-		-- 执行让指定玩家抽一张卡的效果
+		-- 令发动「强欲之壶」的玩家以效果原因抽1张卡。
 		Duel.Draw(rp,1,REASON_EFFECT)
 	end
 end
