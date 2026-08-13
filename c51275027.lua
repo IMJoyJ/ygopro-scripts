@@ -11,12 +11,12 @@ function c51275027.initial_effect(c)
 	e1:SetOperation(c51275027.operation)
 	c:RegisterEffect(e1)
 end
--- 检查触发效果的卡是否在墓地且因战斗破坏而离场
+-- 判断此卡是否满足“被战斗破坏送去墓地”的条件：当前卡片位于墓地且破坏原因为战斗破坏。
 function c51275027.condition(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsLocation(LOCATION_GRAVE) and e:GetHandler():IsReason(REASON_BATTLE)
 end
--- 跳过当前回合玩家的战斗阶段
+-- 效果处理：跳过当前回合玩家的战斗阶段，即让战斗阶段结束。
 function c51275027.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 跳过指定玩家的战斗阶段并重置相关步骤
+	-- 跳过当前回合玩家的战斗阶段，并以战斗阶段结束为重置时机，完成“战斗阶段结束”的处理。
 	Duel.SkipPhase(Duel.GetTurnPlayer(),PHASE_BATTLE,RESET_PHASE+PHASE_BATTLE_STEP,1)
 end
