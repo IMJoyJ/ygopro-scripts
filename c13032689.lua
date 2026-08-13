@@ -2,7 +2,7 @@
 -- 效果：
 -- 超量怪兽才能装备。装备怪兽的攻击力上升装备怪兽的阶级×200的数值。此外，自己场上的装备怪兽把超量素材取除来让效果发动的场合，这张卡可以当作取除的超量素材中的1个使用。
 function c13032689.initial_effect(c)
-	-- 装备怪兽的攻击力上升装备怪兽的阶级×200的数值。
+	-- 超量怪兽才能装备。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_EQUIP)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -11,7 +11,7 @@ function c13032689.initial_effect(c)
 	e1:SetTarget(c13032689.target)
 	e1:SetOperation(c13032689.operation)
 	c:RegisterEffect(e1)
-	-- 此外，自己场上的装备怪兽把超量素材取除来让效果发动的场合，这张卡可以当作取除的超量素材中的1个使用。
+	-- 装备怪兽的攻击力上升装备怪兽的阶级×200的数值。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_EQUIP)
 	e2:SetCode(EFFECT_UPDATE_ATTACK)
@@ -24,7 +24,7 @@ function c13032689.initial_effect(c)
 	e3:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
 	e3:SetValue(c13032689.eqlimit)
 	c:RegisterEffect(e3)
-	-- 是否要使用「超量组件」的效果？
+	-- 此外，自己场上的装备怪兽把超量素材取除来让效果发动的场合，这张卡可以当作取除的超量素材中的1个使用。
 	local e4=Effect.CreateEffect(c)
 	e4:SetDescription(aux.Stringid(13032689,0))  --"是否要使用「超量组件」的效果？"
 	e4:SetType(EFFECT_TYPE_CONTINUOUS+EFFECT_TYPE_FIELD)
@@ -34,46 +34,46 @@ function c13032689.initial_effect(c)
 	e4:SetOperation(c13032689.rop)
 	c:RegisterEffect(e4)
 end
--- 设置装备对象为超量怪兽
+-- 判定装备对象是否满足超量怪兽的限制，作为EFFECT_EQUIP_LIMIT的判定函数：只有超量怪兽才能装备此卡。
 function c13032689.eqlimit(e,c)
 	return c:IsType(TYPE_XYZ)
 end
--- 筛选场上正面表示的超量怪兽
+-- 过滤函数，用于选择装备对象：必须是表侧表示的超量怪兽。
 function c13032689.filter(c)
 	return c:IsFaceup() and c:IsType(TYPE_XYZ)
 end
--- 设置效果目标为场上正面表示的超量怪兽
+-- 发动时的目标选择处理：确认存在可装备的超量怪兽，选择1只表侧表示超量怪兽作为装备对象，并设置操作信息为装备此卡。
 function c13032689.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and c13032689.filter(chkc) end
-	-- 判断是否满足装备目标条件
+	-- 发动前检查场上是否存在至少1只表侧表示的超量怪兽，若无则不能发动。
 	if chk==0 then return Duel.IsExistingTarget(c13032689.filter,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil) end
-	-- 提示玩家选择装备目标
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_EQUIP)
-	-- 选择场上正面表示的超量怪兽作为装备目标
+	-- 显示选择提示信息，提示玩家“请选择要装备的卡”。
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_EQUIP)  --"请选择要装备的卡"
+	-- 让玩家从双方怪兽区选择1只表侧表示的超量怪兽作为装备对象，并登记为效果的对象。
 	Duel.SelectTarget(tp,c13032689.filter,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,nil)
-	-- 设置效果处理信息为装备
+	-- 设置操作信息：本次操作将装备此卡，目标为此卡自身，数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_EQUIP,e:GetHandler(),1,0,0)
 end
--- 执行装备操作
+-- 效果处理：取回装备对象，若此卡仍可与效果关联且对象仍关联且表侧表示，则将此卡装备给对象怪兽。
 function c13032689.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前效果的目标怪兽
+	-- 获取效果发动时选择的对象卡。
 	local tc=Duel.GetFirstTarget()
 	if e:GetHandler():IsRelateToEffect(e) and tc:IsRelateToEffect(e) and tc:IsFaceup() then
-		-- 将装备卡装备给目标怪兽
+		-- 将此卡作为装备卡装备给对象怪兽。
 		Duel.Equip(tp,e:GetHandler(),tc)
 	end
 end
--- 计算装备怪兽攻击力提升值
+-- 计算装备怪兽的攻击力上升值：装备怪兽的阶级×200。
 function c13032689.atkval(e,c)
 	return c:GetRank()*200
 end
--- 判断是否满足代替去除超量素材条件
+-- 代替去除超量素材效果的发动条件：自己场上的装备怪兽为了发动效果而取除超量素材作为代价时，若该效果是超量怪兽效果的发动、当前叠放素材足以支付所需数量（除本卡外至少ev-1个），且此卡正装备在那只怪兽上。
 function c13032689.rcon(e,tp,eg,ep,ev,re,r,rp)
 	return bit.band(r,REASON_COST)~=0 and re:IsActivated() and re:IsActiveType(TYPE_XYZ)
 		and ep==e:GetOwnerPlayer() and e:GetHandler():GetEquipTarget()==re:GetHandler() and re:GetHandler():GetOverlayCount()>=ev-1
 end
--- 执行代替去除超量素材的操作
+-- 代替去除超量素材的实际效果处理：将此卡送去墓地，以充当被取除的超量素材之一。
 function c13032689.rop(e,tp,eg,ep,ev,re,r,rp)
-	-- 将装备卡送入墓地作为代替去除的超量素材
+	-- 将此卡以代价形式送去墓地，完成代替去除超量素材的操作。
 	return Duel.SendtoGrave(e:GetHandler(),REASON_COST)
 end

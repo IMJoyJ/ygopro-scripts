@@ -15,33 +15,33 @@ function c13026402.initial_effect(c)
 	e1:SetOperation(c13026402.activate)
 	c:RegisterEffect(e1)
 end
--- 效果发动时的条件判断
+-- 发动条件判定：此卡未处于战斗破坏确定状态，且连锁由对方发动，对方发动的是陷阱卡的发动，且该连锁可以被无效。
 function c13026402.condition(e,tp,eg,ep,ev,re,r,rp)
 	return not e:GetHandler():IsStatus(STATUS_BATTLE_DESTROYED) and rp==1-tp
-		-- 对方发动的是陷阱卡且可以被无效
+		-- 进一步确认对方连锁发动的效果是陷阱卡的发动，且该连锁可以被无效。
 		and re:IsActiveType(TYPE_TRAP) and re:IsHasType(EFFECT_TYPE_ACTIVATE) and Duel.IsChainNegatable(ev)
 end
--- 支付效果代价时的处理
+-- 代价函数：若此卡可作为解放代价，则以解放此卡作为发动代价（否则无法发动）。
 function c13026402.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsReleasable() end
-	-- 将自身解放作为代价
+	-- 将表侧表示的这张卡解放作为发动代价（因为属于代价，不受其他效果影响）。
 	Duel.Release(e:GetHandler(),REASON_COST)
 end
--- 设置效果发动时的目标
+-- 目标设定：此效果不取对象；登记将对方发动的那张陷阱卡（连锁中的卡 eg）无效，并在其可被破坏且仍与效果关联时登记破坏。
 function c13026402.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置使连锁无效的操作信息
+	-- 登记无效操作信息：将连锁中的陷阱卡（eg）设为无效类别操作的对象，数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_NEGATE,eg,1,0,0)
 	if re:GetHandler():IsDestructable() and re:GetHandler():IsRelateToEffect(re) then
-		-- 设置破坏对方陷阱卡的操作信息
+		-- 登记破坏操作信息：当该陷阱卡可被效果破坏且仍与当前效果关联时，将其设为破坏类别操作的对象。
 		Duel.SetOperationInfo(0,CATEGORY_DESTROY,eg,1,0,0)
 	end
 end
--- 效果发动时的具体处理
+-- 效果处理：先无效对方陷阱的发动；若无效成功且该陷阱卡仍与此效果关联，则将其破坏。
 function c13026402.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 使连锁无效并确认对方陷阱卡是否存在
+	-- 判断无效发动是否成功，且被无效的陷阱卡是否仍与当前效果保持关联（防止破坏离场等不相关卡）。
 	if Duel.NegateActivation(ev) and re:GetHandler():IsRelateToEffect(re) then
-		-- 破坏对方陷阱卡
+		-- 以效果原因破坏连锁中的那张陷阱卡（即被无效发动的陷阱）。
 		Duel.Destroy(eg,REASON_EFFECT)
 	end
 end

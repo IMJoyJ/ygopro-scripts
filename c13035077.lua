@@ -9,13 +9,13 @@ function c13035077.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- ①：场上的「真龙」怪兽的攻击力·守备力上升300。
+	-- ①：场上的「真龙」怪兽的攻击力·守备力上升300。（本行实现攻击力上升部分）
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD)
 	e2:SetCode(EFFECT_UPDATE_ATTACK)
 	e2:SetRange(LOCATION_FZONE)
 	e2:SetTargetRange(LOCATION_MZONE,LOCATION_MZONE)
-	-- 筛选满足「真龙」种族且在主要怪兽区的怪兽
+	-- 设置攻击力增减效果的作用对象为场上表侧表示的「真龙」怪兽。
 	e2:SetTarget(aux.TargetBoolFunction(Card.IsSetCard,0xf9))
 	e2:SetValue(300)
 	c:RegisterEffect(e2)
@@ -42,49 +42,49 @@ function c13035077.initial_effect(c)
 	e5:SetOperation(c13035077.desop)
 	c:RegisterEffect(e5)
 end
--- 筛选满足上级召唤且为「真龙」种族的怪兽
+-- 判断怪兽是否为上级召唤的「真龙」怪兽，作为②效果的保护对象筛选条件。
 function c13035077.indtg(e,c)
 	return c:IsSummonType(SUMMON_TYPE_ADVANCE) and c:IsSetCard(0xf9)
 end
--- 若破坏原因为战斗，则返回1次不会被破坏，否则返回0次
+-- 若破坏原因是战斗破坏，则返回1，为该怪兽提供1次不会被战斗破坏的机会；否则返回0。
 function c13035077.indct(e,re,r,rp)
 	if bit.band(r,REASON_BATTLE)~=0 then
 		return 1
 	else return 0 end
 end
--- 筛选满足「真龙」种族且可以加入手卡的卡
+-- 从卡组检索「真龙」卡的过滤条件：持有「真龙」字段且可以加入手卡。
 function c13035077.thfilter(c)
 	return c:IsSetCard(0xf9) and c:IsAbleToHand()
 end
--- 判断发动条件：自己手卡或场上的卡至少1张，卡组中至少1张「真龙」卡
+-- ③的发动条件与操作信息登记：检查存在可破坏的这张卡以外的手卡·场上卡以及可检索的「真龙」卡，并登记破坏1张、检索1张的预操作。
 function c13035077.destg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断发动条件：自己手卡或场上的卡至少1张
+	-- 发动时（chk==0）检查自己手牌·场上是否存在至少1张这张卡以外的卡可作为破坏对象。
 	if chk==0 then return Duel.IsExistingMatchingCard(nil,tp,LOCATION_HAND+LOCATION_ONFIELD,0,1,e:GetHandler())
-		-- 判断发动条件：卡组中至少1张「真龙」卡
+		-- 同时检查卡组中是否存在至少1张「真龙」卡可以加入手卡。
 		and Duel.IsExistingMatchingCard(c13035077.thfilter,tp,LOCATION_DECK,0,1,nil) end
-	-- 获取满足条件的自己手卡或场上的卡
+	-- 获取自己手牌·场上除这张卡以外的所有卡，作为破坏对象候选集合。
 	local g=Duel.GetMatchingGroup(nil,tp,LOCATION_HAND+LOCATION_ONFIELD,0,e:GetHandler())
-	-- 设置连锁操作信息：将1张卡破坏
+	-- 登记本次效果将破坏1张卡的操作信息，目标候选为集合g。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,1,0,0)
-	-- 设置连锁操作信息：将1张卡加入手卡
+	-- 登记从卡组将1张卡加入手卡的操作信息，目标玩家为发动者。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 效果处理：选择1张手卡或场上的卡破坏，然后从卡组检索1张「真龙」卡加入手卡
+-- ③效果处理：选择并破坏这张卡以外的手卡·场上1张卡，若破坏成功则从卡组选1张「真龙」卡加入手卡并向对方展示。
 function c13035077.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要破坏的卡
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)
-	-- 选择1张手卡或场上的卡作为破坏对象
+	-- 显示“请选择要破坏的卡”的选择提示。
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
+	-- 玩家从自己的手牌·场上选择1张这张卡以外的卡作为破坏对象。
 	local g=Duel.SelectMatchingCard(tp,nil,tp,LOCATION_HAND+LOCATION_ONFIELD,0,1,1,aux.ExceptThisCard(e))
-	-- 确认选择的卡被破坏成功
+	-- 若成功选择到卡并将其效果破坏成功，则继续执行检索处理。
 	if g:GetCount()>0 and Duel.Destroy(g,REASON_EFFECT)~=0 then
-		-- 提示玩家选择要加入手卡的「真龙」卡
-		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)
-		-- 从卡组中选择1张「真龙」卡
+		-- 显示“请选择要加入手牌的卡”的选择提示。
+		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
+		-- 玩家从卡组选择1张满足「真龙」且可加入手卡条件的卡。
 		local g=Duel.SelectMatchingCard(tp,c13035077.thfilter,tp,LOCATION_DECK,0,1,1,nil)
 		if g:GetCount()>0 then
-			-- 将选中的「真龙」卡加入手卡
+			-- 将选择的「真龙」卡加入其持有者的手卡，原因为效果。
 			Duel.SendtoHand(g,nil,REASON_EFFECT)
-			-- 向对方确认加入手卡的卡
+			-- 将加入手卡的卡展示给对方玩家确认。
 			Duel.ConfirmCards(1-tp,g)
 		end
 	end
