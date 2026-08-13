@@ -11,7 +11,7 @@ function c19747827.initial_effect(c)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
 	e1:SetCode(EFFECT_SPSUMMON_CONDITION)
 	c:RegisterEffect(e1)
-	-- ①：这张卡特殊召唤成功的场合，以这张卡以外的场上1只怪兽为对象发动。这张卡当作攻击力上升1000的装备卡使用给那只怪兽装备。
+	-- ①：这张卡特殊召唤成功的场合，以这张卡以外的场上1只怪兽为对象发动。这张卡当作攻击力上升1000的装备卡使用给那只怪兽装备。②：用这张卡的效果把这张卡装备的怪兽的攻击力·守备力上升双方的场上·墓地的龙族怪兽数量×500。
 	local e2=Effect.CreateEffect(c)
 	e2:SetCategory(CATEGORY_EQUIP)
 	e2:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_F)
@@ -22,31 +22,31 @@ function c19747827.initial_effect(c)
 	c:RegisterEffect(e2)
 end
 c19747827.material_race=RACE_DRAGON
--- 选择装备对象，从对方场上选择1只表侧表示怪兽作为装备对象。
+-- ①效果发动时的取对象处理：若正在检查对象，则校验对象是场上表侧表示且不是这张卡；在发动时无条件允许，随后提示并选择1只表侧表示怪兽作为对象（不能选择自身）。
 function c19747827.eqtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsFaceup() and chkc~=e:GetHandler() end
 	if chk==0 then return true end
-	-- 向玩家提示“请选择要装备的卡”
+	-- 向操作者显示“请选择要装备的卡”的选择提示信息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_EQUIP)  --"请选择要装备的卡"
-	-- 选择1只对方场上的表侧表示怪兽作为装备对象。
+	-- 从双方场上选择1只表侧表示怪兽作为装备对象，且不能选择这张卡自身，并将选择结果设为当前连锁的对象。
 	Duel.SelectTarget(tp,Card.IsFaceup,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,e:GetHandler())
 end
--- 装备处理流程，包括检查装备条件、执行装备、设置装备限制和攻击力加成效果。
+-- ①效果处理：获取对象怪兽；若这张卡已不关联或处于魔陷区/里侧，或对象里侧/不关联/自身魔陷区无空位，则将这张卡送去墓地；否则将其装备给对象怪兽，并注册只能装备给该怪兽的限制、攻击力上升1000以及②的攻防上升效果。
 function c19747827.eqop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁中选择的装备目标怪兽。
+	-- 取得发动时选择的装备对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if not tc then return end
 	local c=e:GetHandler()
 	if not c:IsRelateToEffect(e) or c:IsLocation(LOCATION_SZONE) or c:IsFacedown() then return end
-	-- 判断装备条件是否满足，若不满足则将装备卡送入墓地。
+	-- 判定装备条件：自身魔陷区是否有空位、对象怪兽是否仍表侧表示且与效果仍有关联；任一不满足则进入装备失败处理。
 	if Duel.GetLocationCount(tp,LOCATION_SZONE)<=0 or tc:IsFacedown() or not tc:IsRelateToEffect(e) then
-		-- 将装备卡送入墓地。
+		-- 装备条件不满足时，将这张卡以效果原因送去墓地。
 		Duel.SendtoGrave(c,REASON_EFFECT)
 		return
 	end
-	-- 将装备卡装备给目标怪兽。
+	-- 将这张卡作为装备卡装备给选择的对象怪兽。
 	Duel.Equip(tp,c,tc)
-	-- 装备对象限制效果，确保只有指定的怪兽能装备此卡。
+	-- 给那只怪兽装备。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_EQUIP_LIMIT)
@@ -55,14 +55,14 @@ function c19747827.eqop(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetLabelObject(tc)
 	e1:SetReset(RESET_EVENT+RESETS_STANDARD)
 	c:RegisterEffect(e1)
-	-- 装备卡的攻击力上升1000效果。
+	-- 攻击力上升1000。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_EQUIP)
 	e2:SetCode(EFFECT_UPDATE_ATTACK)
 	e2:SetValue(1000)
 	e2:SetReset(RESET_EVENT+RESETS_STANDARD)
 	c:RegisterEffect(e2)
-	-- ②：用这张卡的效果把这张卡装备的怪兽的攻击力·守备力上升双方的场上·墓地的龙族怪兽数量×500。
+	-- ②：用这张卡的效果把这张卡装备的怪兽的攻击力·守备力上升双方的场上·墓地的龙族怪兽数量×500（此段实现攻击力部分，守备力部分由克隆效果实现）。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_EQUIP)
 	e3:SetCode(EFFECT_UPDATE_ATTACK)
@@ -73,16 +73,16 @@ function c19747827.eqop(e,tp,eg,ep,ev,re,r,rp)
 	e4:SetCode(EFFECT_UPDATE_DEFENSE)
 	c:RegisterEffect(e4)
 end
--- 装备对象限制函数，确保只有指定的怪兽能装备此卡。
+-- 装备限制判定函数：仅当对象卡与效果记录的目标（LabelObject）相同才允许装备，即只能装备给选择的那只怪兽。
 function c19747827.eqlimit(e,c)
 	return c==e:GetLabelObject()
 end
--- 过滤函数，用于筛选场上或墓地中的龙族怪兽。
+-- 计数过滤条件：用于筛选双方场上·墓地中表侧表示的龙族怪兽。
 function c19747827.cfilter(c)
 	return c:IsFaceup() and c:IsRace(RACE_DRAGON)
 end
--- 计算双方场上和墓地中龙族怪兽的数量，并乘以500作为攻击力和守备力的加成。
+-- ②的攻防上升值计算函数：统计双方场上·墓地表侧表示龙族怪兽数量并乘以500，作为攻击力（或守备力）上升数值。
 function c19747827.atkval(e,c)
-	-- 返回双方场上和墓地中龙族怪兽数量乘以500的结果。
+	-- 返回龙族怪兽数量×500的数值，作为攻防上升量。
 	return Duel.GetMatchingGroupCount(c19747827.cfilter,0,LOCATION_MZONE+LOCATION_GRAVE,LOCATION_MZONE+LOCATION_GRAVE,nil)*500
 end

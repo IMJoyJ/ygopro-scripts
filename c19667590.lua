@@ -2,7 +2,7 @@
 -- 效果：
 -- 这张卡在墓地存在，自己对名字带有「隆隆隆」的怪兽的特殊召唤成功的场合，这张卡可以从墓地表侧守备表示特殊召唤。「隆隆隆巨灵」的效果1回合只能使用1次，这个效果发动的回合，自己不能进行战斗阶段。
 function c19667590.initial_effect(c)
-	-- 创建一个触发效果，当自己对名字带有「隆隆隆」的怪兽特殊召唤成功时发动，将此卡从墓地表侧守备表示特殊召唤
+	-- 这张卡在墓地存在，自己对名字带有「隆隆隆」的怪兽的特殊召唤成功的场合，这张卡可以从墓地表侧守备表示特殊召唤。「隆隆隆巨灵」的效果1回合只能使用1次，这个效果发动的回合，自己不能进行战斗阶段。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(19667590,0))  --"特殊召唤"
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -17,41 +17,41 @@ function c19667590.initial_effect(c)
 	e1:SetOperation(c19667590.spop)
 	c:RegisterEffect(e1)
 end
--- 检查场上是否存在自己召唤过的、名字带有「隆隆隆」的怪兽
+-- 过滤函数：用于筛选特殊召唤成功的怪兽中是否存在表侧表示、由效果持有者特殊召唤、且卡名带有「隆隆隆」的怪兽。
 function c19667590.cfilter(c,tp)
 	return c:IsFaceup() and c:IsSummonPlayer(tp) and c:IsSetCard(0x59)
 end
--- 判断是否满足特殊召唤成功的条件，即存在自己召唤过的「隆隆隆」怪兽
+-- 效果发动条件：当特殊召唤成功的怪兽组中存在满足条件的「隆隆隆」怪兽时，本卡在墓地可以发动。
 function c19667590.spcon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c19667590.cfilter,1,nil,tp)
 end
--- 设置发动cost，确保发动回合内不能进行战斗阶段
+-- 发动代价（含誓约）：只有本回合尚未进入过战斗阶段才能发动；发动后为本回合自己附加“不能进行战斗阶段”的限制，该限制持续到回合结束。
 function c19667590.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查自己在该回合是否已经进入过战斗阶段
+	-- 发动条件之一：本回合自己尚未进入过战斗阶段（否则不能发动）。
 	if chk==0 then return Duel.GetActivityCount(tp,ACTIVITY_BATTLE_PHASE)==0 end
-	-- 创建一个使自己不能进入战斗阶段的效果并注册
+	-- 这张卡可以从墓地表侧守备表示特殊召唤。这个效果发动的回合，自己不能进行战斗阶段。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_CANNOT_BP)
 	e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET+EFFECT_FLAG_OATH)
 	e1:SetTargetRange(1,0)
 	e1:SetReset(RESET_PHASE+PHASE_END)
-	-- 将不能进入战斗阶段的效果注册给玩家
+	-- 将“自己不能进行战斗阶段”的誓约效果注册给玩家tp，从此刻起本回合内生效。
 	Duel.RegisterEffect(e1,tp)
 end
--- 设置特殊召唤的条件，确保有足够怪兽区域且此卡可以特殊召唤
+-- 效果发动时的合法性检查：要求自己场上有可用的主要怪兽区空位，且墓地的这张卡可以被特殊召唤为表侧守备表示；满足时登记特殊召唤本卡的操作信息。
 function c19667590.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查场上是否有可用的怪兽区域
+	-- 发动条件之一：自己场上存在可用的主要怪兽区空位。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false,POS_FACEUP_DEFENSE) end
-	-- 设置连锁操作信息，确定特殊召唤的卡为自身
+	-- 登记本次连锁将特殊召唤本卡的操作信息，数量为1，不取对象。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 执行特殊召唤操作，将此卡以表侧守备表示特殊召唤到场上
+-- 效果处理时，若这张卡仍与发动时的效果保持关联，则将其以表侧守备表示特殊召唤到自己场上。
 function c19667590.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) then
-		-- 执行特殊召唤，将此卡以表侧守备表示特殊召唤到玩家场上
+		-- 实际执行特殊召唤：将这张卡以表侧守备表示特殊召唤到自己场上。
 		Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP_DEFENSE)
 	end
 end

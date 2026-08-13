@@ -15,7 +15,7 @@ function c19771459.initial_effect(c)
 	e1:SetTarget(c19771459.sptg1)
 	e1:SetOperation(c19771459.spop1)
 	c:RegisterEffect(e1)
-	-- ②：这张卡被对方的效果从怪兽区域送去墓地的场合才能发动。从手卡·卡组把1只5星以上的「战吼」怪兽特殊召唤。
+	-- 这个卡名的②的效果1回合只能使用1次。②：这张卡被对方的效果从怪兽区域送去墓地的场合才能发动。从手卡·卡组把1只5星以上的「战吼」怪兽特殊召唤。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(19771459,1))
 	e2:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -28,57 +28,57 @@ function c19771459.initial_effect(c)
 	e2:SetOperation(c19771459.spop2)
 	c:RegisterEffect(e2)
 end
--- 规则层面：定义一个过滤函数，用于判断场上是否存在己方的正面表示的战士族地属性怪兽。
+-- 筛选函数：判断召唤成功的怪兽是否为表侧表示、地属性、战士族且为我方控制。
 function c19771459.cfilter(c,tp)
 	return c:IsFaceup() and c:IsAttribute(ATTRIBUTE_EARTH) and c:IsRace(RACE_WARRIOR) and c:IsControler(tp)
 end
--- 规则层面：判断是否有己方的战士族地属性怪兽被成功召唤。
+-- ①效果发动条件：本次召唤成功的怪兽组中存在至少1只满足上述筛选条件的怪兽。
 function c19771459.spcon1(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c19771459.cfilter,1,nil,tp)
 end
--- 规则层面：设置效果的发动条件检查函数，判断是否满足特殊召唤的条件。
+-- ①效果的发动目标判定：自己主要怪兽区有空位，且这张卡本身能够被特殊召唤，满足条件才能发动。
 function c19771459.sptg1(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 规则层面：检查场上是否有足够的怪兽区域用于特殊召唤。
+	-- 检查自己主要怪兽区是否有空余格子，避免无法特殊召唤。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 规则层面：设置连锁处理信息，表明将要特殊召唤一张卡。
+	-- 登记本次操作信息为特殊召唤这张卡，用于后续效果检测与连锁判定。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 规则层面：定义效果发动后的处理函数，执行将卡特殊召唤的操作。
+-- ①效果处理：若这张卡仍与效果保持关联（未离场或未失去目标），则将这张卡特殊召唤。
 function c19771459.spop1(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if not c:IsRelateToEffect(e) then return end
-	-- 规则层面：执行将卡特殊召唤到己方场上的操作。
+	-- 将这张卡以表侧表示形式特殊召唤到自己场上，不检查召唤条件与苏生限制。
 	Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 end
--- 规则层面：判断该卡是否因对方效果从怪兽区域被送去墓地。
+-- ②效果发动条件：这张卡是被对方玩家的效果从怪兽区域送去墓地，且原本控制者为自己、之前位于怪兽区域、送去墓地的原因为效果。
 function c19771459.spcon2(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	return rp==1-tp and c:IsPreviousControler(tp) and c:IsPreviousLocation(LOCATION_MZONE) and c:IsReason(REASON_EFFECT)
 end
--- 规则层面：定义一个过滤函数，用于筛选5星以上且为「战吼」族的怪兽。
+-- 特殊召唤候选卡筛选：等级5以上、持有「战吼」（0x15f）字段、并且能够被当前效果特殊召唤。
 function c19771459.spfilter2(c,e,tp)
 	return c:IsLevelAbove(5) and c:IsSetCard(0x15f) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 规则层面：设置效果的发动条件检查函数，判断是否满足特殊召唤的条件。
+-- ②效果发动目标判定：自己主要怪兽区有空位，且手卡·卡组中存在至少1张满足筛选条件的怪兽。
 function c19771459.sptg2(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 规则层面：检查场上是否有足够的怪兽区域用于特殊召唤。
+	-- 检查自己主要怪兽区是否有空余格子，防止无法特殊召唤。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 规则层面：检查手牌或卡组中是否存在满足条件的怪兽。
+		-- 检查从手卡·卡组中是否存在至少1张满足筛选条件的可特殊召唤怪兽。
 		and Duel.IsExistingMatchingCard(c19771459.spfilter2,tp,LOCATION_DECK+LOCATION_HAND,0,1,nil,e,tp) end
-	-- 规则层面：设置连锁处理信息，表明将要从手牌或卡组特殊召唤一张卡。
+	-- 登记本次操作信息：从手卡·卡组进行1只怪兽的特殊召唤，用于效果检测与连锁判定。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_DECK+LOCATION_HAND)
 end
--- 规则层面：定义效果发动后的处理函数，执行选择并特殊召唤怪兽的操作。
+-- ②效果处理：若场上没有空位则直接结束；否则提示玩家选择要特殊召唤的卡，从手卡·卡组中选出1张符合条件的怪兽并特殊召唤。
 function c19771459.spop2(e,tp,eg,ep,ev,re,r,rp)
-	-- 规则层面：检查场上是否有足够的怪兽区域用于特殊召唤。
+	-- 如果自己主要怪兽区没有空余格子，则无法特殊召唤，直接终止处理。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-	-- 规则层面：向玩家发送提示信息，提示选择要特殊召唤的卡。
+	-- 显示“请选择要特殊召唤的卡”的提示，供玩家进行选择。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 规则层面：从手牌或卡组中选择一张满足条件的怪兽。
+	-- 让玩家从自己的手卡·卡组中选出1张满足 spfilter2 条件的「战吼」怪兽。
 	local g=Duel.SelectMatchingCard(tp,c19771459.spfilter2,tp,LOCATION_DECK+LOCATION_HAND,0,1,1,nil,e,tp)
 	if #g>0 then
-		-- 规则层面：执行将选中的怪兽特殊召唤到己方场上的操作。
+		-- 将选中的怪兽以表侧表示特殊召唤到自己场上，不检查召唤条件与苏生限制。
 		Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
 	end
 end

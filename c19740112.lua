@@ -12,7 +12,7 @@ function c19740112.initial_effect(c)
 	e1:SetTarget(c19740112.sumlimit)
 	c:RegisterEffect(e1)
 end
--- 判断怪兽属性是否为地属性，若不是则禁止其特殊召唤
+-- 作为效果的目标判定函数：当被特殊召唤的怪兽不是地属性时返回 true，使得该特殊召唤被禁止，从而实现对双方“不是地属性怪兽不能特殊召唤”的限制。
 function c19740112.sumlimit(e,c,sump,sumtype,sumpos,targetp)
 	return c:GetAttribute()~=ATTRIBUTE_EARTH
 end
