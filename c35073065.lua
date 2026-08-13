@@ -17,30 +17,30 @@ function c35073065.initial_effect(c)
 	e2:SetCode(EVENT_MSET)
 	c:RegisterEffect(e2)
 end
--- 判断是否为自己的上级召唤成功
+-- 效果发动条件：自己场上有怪兽上级召唤成功（召唤成功的怪兽的控制者为发动者，且召唤类型为上级召唤）。
 function c35073065.spcon(e,tp,eg,ep,ev,re,r,rp)
 	local ec=eg:GetFirst()
 	return ep==tp and ec:IsSummonType(SUMMON_TYPE_ADVANCE)
 end
--- 检测是否满足特殊召唤条件
+-- 发动效果前合法检查：确认自己的主要怪兽区有空位，且手卡的这张卡能够被特殊召唤。
 function c35073065.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断场上是否有足够空间
+	-- 检查自己的主要怪兽区是否有空余位置。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 将上级召唤的怪兽设为连锁对象
+	-- 将诱发效果的上级召唤成功的那只怪兽设为本效果的对象，以确保后续处理时能获取该怪兽的状态。
 	Duel.SetTargetCard(eg)
-	-- 设置特殊召唤的操作信息
+	-- 设置操作信息：本效果将特殊召唤手卡的这张卡，数量为1，供其他卡在连锁中判断。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 处理特殊召唤及后续种族、属性、等级变更
+-- 效果处理：将这张卡从手卡特殊召唤到己方场上；若召唤成功且上级召唤的那只怪兽仍与效果关联且表侧表示，则让这张卡的种族、属性、等级分别变成那只怪兽当前的种族、属性、等级。
 function c35073065.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local ec=eg:GetFirst()
 	if not c:IsRelateToEffect(e) then return end
-	-- 执行特殊召唤步骤
+	-- 以特殊召唤步骤将这张卡以表侧表示特殊召唤到自己场上（成功后继续赋予变化效果）。
 	if Duel.SpecialSummonStep(c,0,tp,tp,false,false,POS_FACEUP) then
 		if ec:IsRelateToEffect(e) and ec:IsFaceup() then
-			-- 这个效果特殊召唤的这张卡的种族·属性·等级变成和上级召唤的那只怪兽相同。
+			-- 这个效果特殊召唤的这张卡的种族变成和上级召唤的那只怪兽相同。
 			local e1=Effect.CreateEffect(c)
 			e1:SetType(EFFECT_TYPE_SINGLE)
 			e1:SetCode(EFFECT_CHANGE_RACE)
@@ -51,7 +51,7 @@ function c35073065.spop(e,tp,eg,ep,ev,re,r,rp)
 			end
 			e1:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_DISABLE)
 			c:RegisterEffect(e1)
-			-- 这个效果特殊召唤的这张卡的种族·属性·等级变成和上级召唤的那只怪兽相同。
+			-- 这个效果特殊召唤的这张卡的属性变成和上级召唤的那只怪兽相同。
 			local e2=Effect.CreateEffect(c)
 			e2:SetType(EFFECT_TYPE_SINGLE)
 			e2:SetCode(EFFECT_CHANGE_ATTRIBUTE)
@@ -62,7 +62,7 @@ function c35073065.spop(e,tp,eg,ep,ev,re,r,rp)
 			end
 			e2:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_DISABLE)
 			c:RegisterEffect(e2)
-			-- 这个效果特殊召唤的这张卡的种族·属性·等级变成和上级召唤的那只怪兽相同。
+			-- 这个效果特殊召唤的这张卡的等级变成和上级召唤的那只怪兽相同。
 			local e3=Effect.CreateEffect(c)
 			e3:SetType(EFFECT_TYPE_SINGLE)
 			e3:SetCode(EFFECT_CHANGE_LEVEL)
@@ -71,6 +71,6 @@ function c35073065.spop(e,tp,eg,ep,ev,re,r,rp)
 			c:RegisterEffect(e3)
 		end
 	end
-	-- 完成特殊召唤流程
+	-- 完成特殊召唤处理，结束特殊召唤步骤，使本次连锁中的特殊召唤正式生效。
 	Duel.SpecialSummonComplete()
 end

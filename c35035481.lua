@@ -24,56 +24,56 @@ function c35035481.initial_effect(c)
 	e2:SetOperation(c35035481.spop)
 	c:RegisterEffect(e2)
 end
--- 过滤魔法·陷阱卡
+-- 作为①的破坏对象筛选条件：对象必须是场上的魔法·陷阱卡。
 function c35035481.filter(c)
 	return c:IsType(TYPE_SPELL+TYPE_TRAP)
 end
--- 选择场上1张魔法·陷阱卡作为对象
+-- ①的发动时点处理：检查是否存在合法的取对象目标，让玩家选择1张场上的魔法·陷阱卡作为对象，并登记破坏信息。
 function c35035481.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsOnField() and c35035481.filter(chkc) and chkc~=e:GetHandler() end
-	-- 判断是否满足选择对象的条件
+	-- 发动合法性判定：确认场上存在除自身以外、可以被选择为对象的魔法·陷阱卡，否则不能发动。
 	if chk==0 then return Duel.IsExistingTarget(c35035481.filter,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,e:GetHandler()) end
-	-- 提示选择要破坏的卡
+	-- 向操作玩家显示“请选择要破坏的卡”的选择提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 选择场上1张魔法·陷阱卡作为对象
+	-- 让玩家从双方场上选择1张魔法·陷阱卡（不能选这张卡自身）作为①的破坏对象，并建立对象关联。
 	local g=Duel.SelectTarget(tp,c35035481.filter,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,1,e:GetHandler())
-	-- 设置破坏效果的操作信息
+	-- 登记操作信息：记录本次效果将破坏1张卡，供后续连锁与效果判定使用。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,1,0,0)
 end
--- 处理破坏效果
+-- ①的效果处理：取得对象卡，若对象卡仍与效果关联，则将其破坏。
 function c35035481.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的对象卡
+	-- 取得①发动时选择的对象卡。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 将对象卡破坏
+		-- 以“效果”的原因将对象卡破坏。
 		Duel.Destroy(tc,REASON_EFFECT)
 	end
 end
--- 判断是否满足特殊召唤的条件
+-- ②的发动条件：当前连锁中发动的效果确实是陷阱卡的“发动”（即发动中的卡为陷阱卡且拥有发动效果类型）。
 function c35035481.spcon(e,tp,eg,ep,ev,re,r,rp)
 	return re:IsActiveType(TYPE_TRAP) and re:IsHasType(EFFECT_TYPE_ACTIVATE)
 end
--- 判断是否满足特殊召唤的条件
+-- ②的发动时点处理：确认自己怪兽区有空位且可以特殊召唤这张陷阱怪兽；若满足则登记特殊召唤信息。
 function c35035481.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
-	-- 判断场上是否有足够的特殊召唤区域
+	-- 发动合法性判定：自己场上有空余的主要怪兽区域可供特殊召唤。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 判断是否可以特殊召唤此卡
+		-- 发动合法性判定：自己能够以水族·水·2星·攻1200/守0的通常怪兽形式特殊召唤这张卡。
 		and Duel.IsPlayerCanSpecialSummonMonster(tp,35035481,0xd4,TYPES_NORMAL_TRAP_MONSTER,1200,0,2,RACE_AQUA,ATTRIBUTE_WATER) end
-	-- 设置特殊召唤的操作信息
+	-- 登记操作信息：记录本次效果将特殊召唤这张卡，供连锁判定使用。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,c,1,0,0)
 end
--- 处理特殊召唤效果
+-- ②的效果处理：实际把这张卡变成通常怪兽特殊召唤，并赋予其“不受怪兽的效果影响”和“从场上离开时除外”的效果。
 function c35035481.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断场上是否有足够的特殊召唤区域
+	-- 效果处理时再次确认：若自己场上已无空余的主要怪兽区域，则终止处理。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
 	local c=e:GetHandler()
-	-- 判断是否可以特殊召唤此卡
+	-- 效果处理时确认：这张卡仍在墓地且与本效果关联，并且玩家仍具备特殊召唤该陷阱怪兽的能力，才继续处理。
 	if c:IsRelateToEffect(e) and Duel.IsPlayerCanSpecialSummonMonster(tp,35035481,0xd4,TYPES_NORMAL_TRAP_MONSTER,1200,0,2,RACE_AQUA,ATTRIBUTE_WATER) then
 		c:AddMonsterAttribute(TYPE_NORMAL)
-		-- 特殊召唤此卡
+		-- 将这张卡以表侧攻击表示特殊召唤到自己的主要怪兽区（作为通常怪兽，不当作陷阱卡）。
 		Duel.SpecialSummonStep(c,0,tp,tp,true,false,POS_FACEUP)
-		-- 此效果特殊召唤的这张卡不受怪兽的效果影响
+		-- 这个效果特殊召唤的这张卡不受怪兽的效果影响
 		local e2=Effect.CreateEffect(c)
 		e2:SetType(EFFECT_TYPE_SINGLE)
 		e2:SetCode(EFFECT_IMMUNE_EFFECT)
@@ -82,7 +82,7 @@ function c35035481.spop(e,tp,eg,ep,ev,re,r,rp)
 		e2:SetValue(c35035481.efilter)
 		e2:SetReset(RESET_EVENT+RESETS_STANDARD)
 		c:RegisterEffect(e2)
-		-- 从场上离开时移至除外区
+		-- 从场上离开的场合除外。
 		local e3=Effect.CreateEffect(c)
 		e3:SetType(EFFECT_TYPE_SINGLE)
 		e3:SetCode(EFFECT_LEAVE_FIELD_REDIRECT)
@@ -90,11 +90,11 @@ function c35035481.spop(e,tp,eg,ep,ev,re,r,rp)
 		e3:SetReset(RESET_EVENT+RESETS_REDIRECT)
 		e3:SetValue(LOCATION_REMOVED)
 		c:RegisterEffect(e3,true)
-		-- 完成特殊召唤流程
+		-- 完成特殊召唤流程，使本次特殊召唤正式生效。
 		Duel.SpecialSummonComplete()
 	end
 end
--- 效果适用对象为怪兽效果
+-- 免疫判定函数：只有“怪兽的效果”才会被免疫。
 function c35035481.efilter(e,re)
 	return re:IsActiveType(TYPE_MONSTER)
 end
