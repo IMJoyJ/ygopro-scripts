@@ -13,26 +13,26 @@ function c12624008.initial_effect(c)
 	e1:SetOperation(c12624008.operation)
 	c:RegisterEffect(e1)
 end
--- 判断触发效果的条件是否满足，即此卡是否因战斗破坏而进入墓地
+-- 判定触发条件：这张卡被战斗破坏后确实位于墓地，且破坏原因是战斗破坏。
 function c12624008.condition(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsLocation(LOCATION_GRAVE) and e:GetHandler():IsReason(REASON_BATTLE)
 end
--- 过滤函数，用于筛选场上的怪兽，条件为里侧表示或非光属性
+-- 筛选条件：场上表侧表示存在且属性不是光属性的怪兽，或里侧表示的怪兽（里侧表示怪兽属性未知，也视为非光属性怪兽以外）。
 function c12624008.filter(c)
 	return (c:IsFacedown() or c:GetAttribute()~=ATTRIBUTE_LIGHT)
 end
--- 设置连锁处理的目标，确定要破坏的怪兽数量和对象
+-- 效果发动时仅需确认可发动，随后检索场上所有符合条件的怪兽，并设置将要破坏的操作信息。
 function c12624008.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 获取满足条件的场上怪兽组，即非光属性且表侧表示的怪兽
+	-- 在效果发动时，检索双方主要怪兽区中符合条件（非表侧光属性）的怪兽，得到对象集合g。
 	local g=Duel.GetMatchingGroup(c12624008.filter,tp,LOCATION_MZONE,LOCATION_MZONE,nil)
-	-- 设置当前连锁的操作信息，包括破坏效果的处理对象和数量
+	-- 将本次连锁的操作信息登记为破坏效果，目标为刚检索到的怪兽集合g，数量为g的数量。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,g:GetCount(),0,0)
 end
--- 定义效果发动后的处理函数，执行破坏操作
+-- 效果处理时再次检索场上符合条件的怪兽，并将其全部破坏。
 function c12624008.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 再次获取满足条件的场上怪兽组，准备进行破坏处理
+	-- 在效果处理阶段，重新获取双方主要怪兽区中符合条件（非表侧光属性）的怪兽，确保处理时仍存在的目标。
 	local g=Duel.GetMatchingGroup(c12624008.filter,tp,LOCATION_MZONE,LOCATION_MZONE,nil)
-	-- 将符合条件的怪兽全部破坏，破坏原因为效果
+	-- 将检索到的所有符合条件的怪兽以效果破坏送去墓地。
 	Duel.Destroy(g,REASON_EFFECT)
 end

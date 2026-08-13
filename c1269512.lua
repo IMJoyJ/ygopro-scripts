@@ -38,50 +38,50 @@ function c1269512.initial_effect(c)
 	e3:SetOperation(c1269512.atop)
 	c:RegisterEffect(e3)
 end
--- 过滤函数：检查手牌中是否存在魔法·陷阱卡
+-- 筛选手卡中可以作为超量召唤手续代价丢弃的魔法·陷阱卡。
 function c1269512.cfilter(c)
 	return c:IsType(TYPE_SPELL+TYPE_TRAP) and c:IsDiscardable()
 end
--- 过滤函数：检查场上是否存在4阶以下的表侧表示怪兽
+-- 筛选可以作为此次超量召唤叠放对象的表侧表示且阶级在4阶以下的超量怪兽。
 function c1269512.ovfilter(c)
 	return c:IsFaceup() and c:IsRankBelow(4)
 end
--- XYZ召唤时的处理函数：检查是否满足条件并丢弃手牌中的魔法·陷阱卡
+-- 自定义超量召唤手续的操作：若本回合尚未使用过该召唤方式且手卡有可丢弃的魔法·陷阱卡，则丢弃1张魔法·陷阱卡并注册誓约标志，以限制1回合1次。
 function c1269512.xyzop(e,tp,chk)
-	-- 判断是否满足XYZ召唤条件：检查玩家是否未使用过此效果且手牌中存在魔法·陷阱卡
+	-- 检查当前玩家尚未使用过该召唤方式（flag为0）且手卡存在可丢弃的魔法·陷阱卡。
 	if chk==0 then return Duel.GetFlagEffect(tp,1269512)==0 and Duel.IsExistingMatchingCard(c1269512.cfilter,tp,LOCATION_HAND,0,1,nil) end
-	-- 执行丢弃手牌中的魔法·陷阱卡操作
+	-- 丢弃1张手卡的魔法·陷阱卡作为超量召唤手续的代价。
 	Duel.DiscardHand(tp,c1269512.cfilter,1,1,REASON_COST+REASON_DISCARD)
-	-- 注册标识效果：标记玩家在本回合已使用过此效果
+	-- 为玩家注册一个直到结束阶段有效的誓约标志，使本回合不能再使用该特殊召唤方式。
 	Duel.RegisterFlagEffect(tp,1269512,RESET_PHASE+PHASE_END,EFFECT_FLAG_OATH,1)
 end
--- 过滤函数：检查是否为可被无效化的攻击表示怪兽
+-- 筛选对方场上攻击表示且可被无效化的效果怪兽。
 function c1269512.filter(c)
-	-- 判断是否为可被无效化的攻击表示怪兽：检查怪兽是否为攻击表示且未被无效化
+	-- 判断怪兽为表侧表示、攻击表示、效果未被无效且为效果怪兽，满足可被无效化条件。
 	return aux.NegateMonsterFilter(c) and c:IsAttackPos()
 end
--- 设置无效化效果的目标函数：检查是否存在可无效化的怪兽
+-- 效果②的发动条件与对象设定：战斗阶段开始时，若对方场上有符合条件的攻击表示怪兽，则将其全部设为无效化对象，并设置操作信息。
 function c1269512.distg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断是否满足无效化效果发动条件：检查场上是否存在可无效化的攻击表示怪兽
+	-- 发动时检测对方怪兽区是否存在至少1只满足无效化条件的攻击表示怪兽。
 	if chk==0 then return Duel.IsExistingMatchingCard(c1269512.filter,tp,0,LOCATION_MZONE,1,nil) end
-	-- 获取满足条件的攻击表示怪兽组
+	-- 获取对方场上所有满足条件的攻击表示怪兽。
 	local g=Duel.GetMatchingGroup(c1269512.filter,tp,0,LOCATION_MZONE,nil)
-	-- 设置连锁操作信息：将要处理的怪兽组和数量设置为无效化效果的目标
+	-- 设置本次处理为无效这些怪兽，数量为符合条件的怪兽总数，供连锁判定使用。
 	Duel.SetOperationInfo(0,CATEGORY_DISABLE,g,g:GetCount(),0,0)
 end
--- 无效化效果的处理函数：对目标怪兽施加无效化和无效化效果
+-- 效果处理时，对对方场上所有攻击表示且可无效的怪兽分别赋予效果无效和效果效果无效状态。
 function c1269512.disop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取满足条件的攻击表示怪兽组
+	-- 处理时重新获取对方场上满足条件的攻击表示怪兽，避免因时点变化导致遗漏。
 	local g=Duel.GetMatchingGroup(c1269512.filter,tp,0,LOCATION_MZONE,nil)
 	local tc=g:GetFirst()
 	while tc do
-		-- 为怪兽施加无效化效果
+		-- 对方场上的全部攻击表示怪兽的效果无效化。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_DISABLE)
 		e1:SetReset(RESET_EVENT+RESETS_STANDARD)
 		tc:RegisterEffect(e1)
-		-- 为怪兽施加无效化效果
+		-- 对方场上的全部攻击表示怪兽的效果无效化。
 		local e2=Effect.CreateEffect(e:GetHandler())
 		e2:SetType(EFFECT_TYPE_SINGLE)
 		e2:SetCode(EFFECT_DISABLE_EFFECT)
@@ -91,19 +91,19 @@ function c1269512.disop(e,tp,eg,ep,ev,re,r,rp)
 		tc=g:GetNext()
 	end
 end
--- 判断是否满足再次攻击条件：检查是否为攻击怪兽、是否因战斗破坏且是否可连锁攻击
+-- 效果③的发动条件：本卡为攻击怪兽、与对方怪兽战斗并破坏了对方怪兽，且本卡可以进行连续攻击。
 function c1269512.atcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 判断是否满足再次攻击条件：检查是否为攻击怪兽、是否因战斗破坏且是否可连锁攻击
+	-- 满足“攻击者是本卡、本卡参与了与对方怪兽的战斗并破坏、且本卡可以继续攻击”三个条件。
 	return Duel.GetAttacker()==c and aux.bdocon(e,tp,eg,ep,ev,re,r,rp) and c:IsChainAttackable()
 end
--- 支付再次攻击代价的函数：检查并移除1个超量素材
+-- 效果③的发动代价：取除本卡1个超量素材；chk==0时检查是否有素材可取。
 function c1269512.atcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():CheckRemoveOverlayCard(tp,1,REASON_COST) end
 	e:GetHandler():RemoveOverlayCard(tp,1,1,REASON_COST)
 end
--- 再次攻击效果的处理函数：使攻击怪兽可再进行1次攻击
+-- 效果③的处理：使本卡获得再次攻击的机会。
 function c1269512.atop(e,tp,eg,ep,ev,re,r,rp)
-	-- 执行再次攻击操作
+	-- 让当前攻击怪兽（本卡）可以再发动一次攻击。
 	Duel.ChainAttack()
 end
