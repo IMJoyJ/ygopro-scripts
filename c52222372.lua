@@ -8,7 +8,7 @@ function c52222372.initial_effect(c)
 	e1:SetCode(EFFECT_UPDATE_ATTACK)
 	e1:SetRange(LOCATION_MZONE)
 	e1:SetTargetRange(LOCATION_MZONE,0)
-	-- 设置效果目标为场上所有「次世代」怪兽
+	-- 设置效果的影响对象为持有「次世代」字段的怪兽。
 	e1:SetTarget(aux.TargetBoolFunction(Card.IsSetCard,0x2))
 	e1:SetValue(400)
 	c:RegisterEffect(e1)

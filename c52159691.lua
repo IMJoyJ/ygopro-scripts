@@ -5,7 +5,7 @@
 -- ②：持有这张卡作为素材中的原本属性是暗属性的超量怪兽得到以下效果。
 -- ●这张卡不会成为对方的效果的对象。
 function c52159691.initial_effect(c)
-	-- ①：这张卡在手卡·墓地存在的场合，把自己场上的暗属性超量怪兽1个超量素材取除才能发动。这张卡特殊召唤。这个效果特殊召唤的这张卡从场上离开的场合除外。
+	-- 这个卡名的①的效果1回合只能使用1次。①：这张卡在手卡·墓地存在的场合，把自己场上的暗属性超量怪兽1个超量素材取除才能发动。这张卡特殊召唤。这个效果特殊召唤的这张卡从场上离开的场合除外。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(52159691,0))
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -23,40 +23,40 @@ function c52159691.initial_effect(c)
 	e2:SetRange(LOCATION_MZONE)
 	e2:SetCode(EFFECT_CANNOT_BE_EFFECT_TARGET)
 	e2:SetCondition(c52159691.xmatcon)
-	-- 设置效果值为过滤函数aux.tgoval，用于判断是否不会成为对方效果的对象
+	-- 将e2的Value属性设为aux.tgoval，即用该封装函数判定“不会成为对方的效果的对象”抗性是否生效；满足条件时，该卡不能被对方的效果选为对象。
 	e2:SetValue(aux.tgoval)
 	c:RegisterEffect(e2)
 end
--- 过滤函数：检查场上是否存在正面表示、暗属性、超量类型的怪兽，并且可以取除1个超量素材
+-- 定义选择要取除超量素材的怪兽的过滤函数：要求怪兽表侧表示、暗属性、超量（XYZ）类型，并且当前玩家tp能够以代价（REASON_COST）理由从它上面取除1个超量素材。
 function c52159691.cfilter(c,tp)
 	return c:IsFaceup() and c:IsAttribute(ATTRIBUTE_DARK) and c:IsType(TYPE_XYZ)
 		and c:CheckRemoveOverlayCard(tp,1,REASON_COST)
 end
--- 费用处理函数：检查场上是否存在满足条件的怪兽，若存在则提示选择并取除其1个超量素材
+-- ①效果的发动代价处理：检查阶段先确认场上存在符合条件的暗属性超量怪兽；随后提示玩家选择1只，并从那只怪兽身上取除1个超量素材作为发动代价。
 function c52159691.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查场上是否存在至少1张满足cfilter条件的怪兽
+	-- 在代价检查阶段（chk==0）时，判断自己场上是否存在至少1张满足cfilter（表侧暗属性超量且可去掉1个素材）的怪兽，以确认能否支付发动代价。
 	if chk==0 then return Duel.IsExistingMatchingCard(c52159691.cfilter,tp,LOCATION_MZONE,0,1,nil,tp) end
-	-- 向玩家提示“请选择要取除超量素材的怪兽”
+	-- 向玩家tp发送选择提示，提示文字为“请选择要取除超量素材的怪兽”，并设置选择用途，供后续选择卡片时显示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DEATTACHFROM)  --"请选择要取除超量素材的怪兽"
-	-- 选择满足条件的怪兽并获取该怪兽对象
+	-- 让tp玩家从自己场上的表侧暗属性超量怪兽中选出1张，作为要取除超量素材的怪兽；GetFirst()取得被选中的唯一一张卡。
 	local c=Duel.SelectMatchingCard(tp,c52159691.cfilter,tp,LOCATION_MZONE,0,1,1,nil,tp):GetFirst()
 	c:RemoveOverlayCard(tp,1,1,REASON_COST)
 end
--- 特殊召唤的发动时点处理函数：判断是否可以将此卡特殊召唤
+-- ①效果的目标/发动条件定义：e:GetHandler()获取这张卡自身；在检查阶段确认我方主要怪兽区有空位，且这张卡能够被特殊召唤。
 function c52159691.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
-	-- 检查玩家场上是否有足够的位置进行特殊召唤
+	-- 检查我方主要怪兽区是否存在可用空格，用于判断能否特殊召唤这张卡。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and c:IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置操作信息为特殊召唤类别，用于连锁检测和效果处理
+	-- 将当前连锁的操作信息登记为“特殊召唤”，对象为这张卡，数量为1；供本次效果处理及相关判定使用。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,c,1,0,0)
 end
--- 特殊召唤的效果处理函数：若满足条件则将此卡特殊召唤并设置其离场时除外的效果
+-- ①效果处理：若这张卡仍与该效果关联，则将其从手卡/墓地以表侧表示特殊召唤到己方场上；特殊召唤成功时，再给这张卡附加一个“从场上离开的场合改为除外”的持续效果，且该效果不会被无效。
 function c52159691.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 判断此卡是否与当前效果相关联且成功特殊召唤
+	-- 判断这张卡是否仍在效果处理范围内（IsRelateToEffect），并尝试以表侧表示将其特殊召唤；只有特殊召唤成功（返回值>0）才继续执行离场除外的附加效果。
 	if c:IsRelateToEffect(e) and Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)>0 then
-		-- 创建一个永续效果，使该卡从场上离开时被除外
+		-- 这个效果特殊召唤的这张卡从场上离开的场合除外。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
@@ -66,7 +66,7 @@ function c52159691.spop(e,tp,eg,ep,ev,re,r,rp)
 		c:RegisterEffect(e1,true)
 	end
 end
--- 条件函数：判断此卡作为超量素材时其原本属性是否为暗属性
+-- ②效果的适用条件：判断持有这张卡作为超量素材的超量怪兽的原本属性是否为暗属性；只有原本属性为暗属性时，该超量怪兽才能获得“不会成为对方的效果的对象”的效果。
 function c52159691.xmatcon(e)
 	return e:GetHandler():GetOriginalAttribute()==ATTRIBUTE_DARK
 end

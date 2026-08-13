@@ -9,9 +9,9 @@ function c52077741.initial_effect(c)
 	e1:SetValue(c52077741.indes)
 	c:RegisterEffect(e1)
 end
--- 判断该卡是否因战斗而不会被破坏，若为守备表示且攻击怪兽是自身，则判断其守备力是否不低于1900，否则判断其攻击力是否不低于1900。
+-- 定义战斗破坏免疫的判定回调：若被判定怪兽处于守备表示且为攻击怪兽，则检查其守备力是否≥1900；否则检查其攻击力是否≥1900，满足条件则不会被那次战斗破坏。
 function c52077741.indes(e,c)
-	-- 当此卡处于守备表示且作为攻击怪兽时的条件判断
+	-- 判断当前被判定对象是否处于守备表示，并且同时是此次战斗的攻击怪兽（若满足则进入守备力判定分支）。
 	if c:IsDefensePos() and Duel.GetAttacker()==c then
 		return c:IsDefenseAbove(1900)
 	else
