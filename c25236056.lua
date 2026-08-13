@@ -10,7 +10,7 @@ function c25236056.initial_effect(c)
 	e1:SetValue(c25236056.splimit)
 	c:RegisterEffect(e1)
 end
--- 效果满足条件时才能特殊召唤
+-- 判定特殊召唤的来源效果是否为触发型/主动效果（EFFECT_TYPE_ACTIONS），即是否由卡的效果进行特殊召唤，从而限制只能用卡的效果特殊召唤。
 function c25236056.splimit(e,se,sp,st)
 	return se:IsHasType(EFFECT_TYPE_ACTIONS)
 end

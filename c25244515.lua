@@ -34,31 +34,31 @@ function c25244515.initial_effect(c)
 	e3:SetOperation(c25244515.regop)
 	c:RegisterEffect(e3)
 end
--- 判断是否处于伤害步骤且尚未计算战斗伤害，同时确认攻击怪兽是否为妖仙兽且参与战斗。
+-- 判定①的发动条件：当前必须在伤害步骤且尚未计算伤害，存在我方「妖仙兽」怪兽与对方怪兽的战斗；将我方那只「妖仙兽」怪兽存入效果标签。
 function c25244515.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前游戏阶段
+	-- 获取当前阶段，用于判断是否处于伤害阶段。
 	local phase=Duel.GetCurrentPhase()
-	-- 若当前阶段不是伤害步骤或伤害已计算，则效果不满足发动条件
+	-- 如果不是伤害阶段，或已经进行过伤害计算，则不满足①的发动时机（只能在伤害步骤开始到伤害计算前发动）。
 	if phase~=PHASE_DAMAGE or Duel.IsDamageCalculated() then return false end
-	-- 获取当前攻击怪兽
+	-- 取得当前进行战斗的攻击怪兽。
 	local tc=Duel.GetAttacker()
-	-- 若攻击怪兽不是自己控制，则获取防守怪兽
+	-- 若攻击怪兽是对方控制的，则把判定对象改为攻击目标，即我方参与战斗的怪兽。
 	if tc:IsControler(1-tp) then tc=Duel.GetAttackTarget() end
 	e:SetLabelObject(tc)
-	-- 返回是否满足发动条件：攻击怪兽为妖仙兽、参与战斗、且存在防守怪兽
+	-- 确认该怪兽仍参与战斗、是「妖仙兽」怪兽，并且存在对战中的攻击目标，满足①的全部发动条件。
 	return tc and tc:IsSetCard(0xb3) and tc:IsRelateToBattle() and Duel.GetAttackTarget()~=nil
 end
--- 支付效果代价：将此卡从手牌丢弃至墓地
+-- ①的代价：检查这张卡是否可以从手卡丢弃，并将丢弃作为发动代价。
 function c25244515.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsDiscardable() end
-	-- 将此卡从手牌丢弃至墓地作为效果的代价
+	-- 将这张卡从手卡送去墓地，作为发动①的丢弃代价。
 	Duel.SendtoGrave(e:GetHandler(),REASON_COST+REASON_DISCARD)
 end
--- 使目标怪兽的攻击力上升1000点，持续到回合结束
+-- ①的效果处理：给记录的己方「妖仙兽」怪兽附加攻击力上升1000的效果，持续到回合结束。
 function c25244515.operation(e,tp,eg,ep,ev,re,r,rp)
 	local tc=e:GetLabelObject()
 	if tc:IsRelateToBattle() and tc:IsFaceup() and tc:IsControler(tp) then
-		-- 使目标怪兽的攻击力上升1000点，持续到回合结束
+		-- 那只自己怪兽的攻击力直到回合结束时上升1000。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)
@@ -67,26 +67,26 @@ function c25244515.operation(e,tp,eg,ep,ev,re,r,rp)
 		tc:RegisterEffect(e1)
 	end
 end
--- 筛选场上表侧表示的妖仙兽怪兽
+-- ②的对象过滤：选择表侧表示且为「妖仙兽」怪兽的卡。
 function c25244515.filter(c)
 	return c:IsFaceup() and c:IsSetCard(0xb3)
 end
--- 选择场上一只表侧表示的妖仙兽怪兽作为效果对象
+-- ②的发动目标处理：从双方场上选择1只表侧表示「妖仙兽」怪兽作为对象。
 function c25244515.atktg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and c25244515.filter(chkc) end
-	-- 检测是否存在符合条件的妖仙兽怪兽作为目标
+	-- 发动时检查双方场上是否存在至少1只表侧表示的「妖仙兽」怪兽，以判断是否可以发动。
 	if chk==0 then return Duel.IsExistingTarget(c25244515.filter,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil) end
-	-- 提示玩家选择目标怪兽
+	-- 显示选择提示，提示玩家选择表侧表示的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
-	-- 选择一只表侧表示的妖仙兽怪兽作为效果对象
+	-- 让玩家从双方场上选择1只表侧表示「妖仙兽」怪兽，并登记为效果对象。
 	Duel.SelectTarget(tp,c25244515.filter,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,nil)
 end
--- 使目标怪兽的攻击力上升1000点，持续到回合结束
+-- ②的效果处理：若对象仍然合法，则赋予其攻击力上升1000的效果，直到回合结束。
 function c25244515.atkop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁效果的目标怪兽
+	-- 取得②选择的对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsFaceup() and tc:IsRelateToEffect(e) then
-		-- 使目标怪兽的攻击力上升1000点，持续到回合结束
+		-- 那只怪兽的攻击力直到回合结束时上升1000。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_UPDATE_ATTACK)
@@ -96,10 +96,10 @@ function c25244515.atkop(e,tp,eg,ep,ev,re,r,rp)
 		tc:RegisterEffect(e1)
 	end
 end
--- 在召唤成功后注册结束阶段触发效果
+-- 召唤成功时触发：为这张卡注册一个结束阶段回手的效果，且该注册效果不会被无效。
 function c25244515.regop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 在结束阶段发动，使此卡返回手牌
+	-- 这张卡回到持有者手卡。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_TOHAND)
 	e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_F)
@@ -111,17 +111,17 @@ function c25244515.regop(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetReset(RESET_EVENT+0x1ec0000+RESET_PHASE+PHASE_END)
 	c:RegisterEffect(e1)
 end
--- 设置效果操作信息，准备将此卡送回手牌
+-- ③回手效果的发动条件：必发效果，满足条件即可发动，并登记回手操作信息。
 function c25244515.rettg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置操作信息，指定将此卡送回手牌
+	-- 向系统登记本次效果为“将这张卡加入手卡”的操作信息。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,e:GetHandler(),1,0,0)
 end
--- 执行将此卡送回手牌的操作
+-- ③的效果处理：若这张卡仍与效果相关，则将其返回持有者手卡。
 function c25244515.retop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) then
-		-- 将此卡送回持有者手牌
+		-- 将这张卡送回持有者手卡。
 		Duel.SendtoHand(c,nil,REASON_EFFECT)
 	end
 end

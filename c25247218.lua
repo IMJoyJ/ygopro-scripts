@@ -11,13 +11,13 @@ function c25247218.initial_effect(c)
 	e1:SetCondition(c25247218.ntcon)
 	c:RegisterEffect(e1)
 end
--- 检索满足条件的卡片组，将目标怪兽特殊召唤
+-- 该函数是“不用解放作召唤”这一规则召唤效果的召唤条件判定：若传入的怪兽c为空（用于规则效果自身存在性询问）则直接允许；否则须满足不解放、等级5以上、自己主要怪兽区有空位、自己场上无怪兽且对方场上有怪兽。
 function c25247218.ntcon(e,c,minc)
 	if c==nil then return true end
-	-- 判断召唤所需最少解放数为0且怪兽等级大于等于5且自身所在玩家的怪兽区域存在空位
+	-- 判定本次召唤的解放数量要求为0（即不解放），并且这张卡的等级在5以上，且自己主要怪兽区存在可用的空格。
 	return minc==0 and c:IsLevelAbove(5) and Duel.GetLocationCount(c:GetControler(),LOCATION_MZONE)>0
-		-- 判断自身所在玩家的场上怪兽区没有怪兽
+		-- 判定自己场上没有怪兽（主要怪兽区怪兽数量为0），满足“自己场上没有怪兽存在”的条件。
 		and Duel.GetFieldGroupCount(c:GetControler(),LOCATION_MZONE,0)==0
-		-- 判断对方玩家的场上怪兽区存在怪兽
+		-- 判定对方场上有怪兽（对方主要怪兽区怪兽数量大于0），满足“对方场上有怪兽存在”的条件。
 		and Duel.GetFieldGroupCount(c:GetControler(),0,LOCATION_MZONE)>0
 end

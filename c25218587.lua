@@ -4,9 +4,9 @@
 -- ①：以最多有自己场上的「光道」怪兽数量的对方场上的表侧表示卡为对象才能发动。那些卡的效果直到回合结束时无效。
 -- ②：这张卡从卡组送去墓地的场合才能发动。这张卡在自己场上盖放。
 local s,id,o=GetID()
--- 创建两个效果，分别对应卡片效果①和②的发动条件与处理
+-- 定义卡片的初始效果：为这张卡注册①的发动效果（无效对方表侧表示卡）和②的诱发效果（从卡组送去墓地时自身盖放），并分别设置1回合1次的次数限制。
 function s.initial_effect(c)
-	-- 效果①：以最多有自己场上的「光道」怪兽数量的对方场上的表侧表示卡为对象才能发动。那些卡的效果直到回合结束时无效。
+	-- 这个卡名的①②的效果1回合各能使用1次。①：以最多有自己场上的「光道」怪兽数量的对方场上的表侧表示卡为对象才能发动。那些卡的效果直到回合结束时无效。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(id,0))  --"无效"
 	e1:SetCategory(CATEGORY_DISABLE)
@@ -17,7 +17,7 @@ function s.initial_effect(c)
 	e1:SetTarget(s.target)
 	e1:SetOperation(s.activate)
 	c:RegisterEffect(e1)
-	-- 效果②：这张卡从卡组送去墓地的场合才能发动。这张卡在自己场上盖放。
+	-- 这个卡名的①②的效果1回合各能使用1次。②：这张卡从卡组送去墓地的场合才能发动。这张卡在自己场上盖放。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(id,1))  --"在场上盖放"
 	e2:SetCategory(CATEGORY_SSET)
@@ -30,43 +30,43 @@ function s.initial_effect(c)
 	e2:SetOperation(s.setop)
 	c:RegisterEffect(e2)
 end
--- 筛选场上表侧表示的「光道」怪兽数量
+-- 筛选自己场上表侧表示且属于「光道」系列的怪兽，用于计算①效果可选对象的数量上限。
 function s.filter(c)
 	return c:IsSetCard(0x38) and c:IsFaceup()
 end
--- 设定效果①的目标选择条件，确保选择的是对方场上的表侧表示卡
+-- ①效果的目标处理：计算自己场上表侧表示「光道」怪兽数量作为可选对象上限，检查对方场上有可无效的表侧表示卡，选择1~上限张对方表侧表示卡为对象，并登记无效效果的操作信息。
 function s.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	-- 计算己方场上「光道」怪兽数量
+	-- 获取自己场上表侧表示「光道」怪兽的数量，作为可选择对方卡的数量上限。
 	local ct=Duel.GetFieldGroup(tp,LOCATION_MZONE,0):FilterCount(s.filter,nil)
-	-- 判断是否为效果①的目标选择阶段，确保目标为对方场上的卡
+	-- 若当前是连锁处理中的对象合法性检查，则判断该卡是否为对方场上可被无效的表侧表示卡。
 	if chkc then return chkc:IsOnField() and chkc:IsControler(1-tp) and aux.NegateAnyFilter(chkc) end
-	-- 判断效果①是否可以发动，确保有符合条件的对方场上卡且己方有「光道」怪兽
+	-- 发动条件检查：对方场上有可无效的表侧表示卡且自己场上有「光道」怪兽（ct>0）时才可发动。
 	if chk==0 then return Duel.IsExistingTarget(aux.NegateAnyFilter,tp,0,LOCATION_ONFIELD,1,nil) and ct>0 end
-	-- 提示玩家选择要无效的卡
+	-- 向玩家显示“请选择要无效的卡”的选择提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DISABLE)  --"请选择要无效的卡"
-	-- 选择最多等于己方「光道」怪兽数量的对方场上表侧表示卡
+	-- 让玩家从对方场上选择1~ct张可无效的表侧表示卡作为对象。
 	local g=Duel.SelectTarget(tp,aux.NegateAnyFilter,tp,0,LOCATION_ONFIELD,1,ct,nil)
-	-- 设置效果①的处理信息，将选择的卡加入处理列表
+	-- 登记本次连锁处理的无效效果操作信息，处理对象为已选择的卡，数量为选择张数。
 	Duel.SetOperationInfo(0,CATEGORY_DISABLE,g,g:GetCount(),0,0)
 end
--- 处理效果①的发动，使选中的卡效果无效
+-- ①效果处理：对对象卡逐一进行无效化，包括使相关连锁无效、赋予效果无效和效果无效化状态，若为陷阱怪兽还使其陷阱怪兽效果无效，持续到回合结束。
 function s.activate(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取与当前连锁相关的卡组
+	-- 获取当前连锁中所有仍与此效果关联的卡（通常是发动时选择的对象）。
 	local tg=Duel.GetTargetsRelateToChain()
-	-- 遍历所有与当前连锁相关的卡
+	-- 遍历这些对象卡，逐一处理。
 	for tc in aux.Next(tg) do
 		if tc:IsFaceup() and tc:IsRelateToEffect(e) and tc:IsCanBeDisabledByEffect(e,false) then
-			-- 使选中卡的连锁无效
+			-- 使与该对象卡相关的连锁效果无效，并设定为变里侧时重置。
 			Duel.NegateRelatedChain(tc,RESET_TURN_SET)
-			-- 使选中卡效果无效
+			-- 那些卡的效果直到回合结束时无效。
 			local e1=Effect.CreateEffect(c)
 			e1:SetType(EFFECT_TYPE_SINGLE)
 			e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
 			e1:SetCode(EFFECT_DISABLE)
 			e1:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END)
 			tc:RegisterEffect(e1)
-			-- 使选中卡的效果无效化
+			-- 那些卡的效果直到回合结束时无效。
 			local e2=Effect.CreateEffect(c)
 			e2:SetType(EFFECT_TYPE_SINGLE)
 			e2:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
@@ -75,7 +75,7 @@ function s.activate(e,tp,eg,ep,ev,re,r,rp)
 			e2:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END)
 			tc:RegisterEffect(e2)
 			if tc:IsType(TYPE_TRAPMONSTER) then
-				-- 使选中陷阱怪兽无效化
+				-- 那些卡的效果直到回合结束时无效。
 				local e3=Effect.CreateEffect(c)
 				e3:SetType(EFFECT_TYPE_SINGLE)
 				e3:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
@@ -86,21 +86,21 @@ function s.activate(e,tp,eg,ep,ev,re,r,rp)
 		end
 	end
 end
--- 判断效果②是否可以发动，确保此卡是从卡组送去墓地
+-- ②效果的发动条件：这张卡从卡组送去墓地（之前所在位置为卡组）时才能发动。
 function s.setcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsPreviousLocation(LOCATION_DECK)
 end
--- 设定效果②的目标选择条件，确保此卡可以盖放
+-- ②效果的目标判定：检查这张卡可以被盖放，并登记其从墓地离开并盖放到场上的操作信息。
 function s.settg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsSSetable() end
-	-- 设置效果②的处理信息，将此卡加入处理列表
+	-- 登记操作信息：将这张卡从墓地离开（盖放）作为处理对象，数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_LEAVE_GRAVE,e:GetHandler(),1,0,0)
 end
--- 处理效果②的发动，将此卡盖放
+-- ②效果处理：若这张卡仍与效果相关，则将其盖放到自己场上。
 function s.setop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) then
-		-- 将此卡盖放到场上
+		-- 将这张卡在自己场上里侧表示盖放。
 		Duel.SSet(tp,c)
 	end
 end

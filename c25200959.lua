@@ -5,7 +5,7 @@
 -- ①：这张卡同调召唤成功的场合才能发动。从自己的手卡·墓地选1只电子界族调整守备表示特殊召唤。这个效果的发动后，直到回合结束时自己不是电子界族怪兽不能特殊召唤。
 -- ②：同调召唤的这张卡被送去墓地的场合才能发动。自己从卡组抽1张。
 function c25200959.initial_effect(c)
-	-- 为卡片添加同调召唤手续，要求1只调整和1只调整以外的怪兽参与同调
+	-- 为这张卡添加同调召唤手续：1只调整（任意）＋1只以上调整以外的怪兽。
 	aux.AddSynchroProcedure(c,nil,aux.NonTuner(nil),1)
 	c:EnableReviveLimit()
 	-- ①：这张卡同调召唤成功的场合才能发动。从自己的手卡·墓地选1只电子界族调整守备表示特殊召唤。这个效果的发动后，直到回合结束时自己不是电子界族怪兽不能特殊召唤。
@@ -33,37 +33,37 @@ function c25200959.initial_effect(c)
 	e2:SetOperation(c25200959.drop)
 	c:RegisterEffect(e2)
 end
--- 判断此卡是否为同调召唤成功
+-- ①效果的发动条件：这张卡以同调召唤方式成功召唤。
 function c25200959.spcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsSummonType(SUMMON_TYPE_SYNCHRO)
 end
--- 过滤满足条件的电子界族调整怪兽，用于特殊召唤
+-- 筛选条件：电子界族调整怪兽，且可以被效果以表侧守备表示特殊召唤。
 function c25200959.spfilter(c,e,tp)
 	return c:IsRace(RACE_CYBERSE) and c:IsType(TYPE_TUNER) and c:IsCanBeSpecialSummoned(e,0,tp,false,false,POS_FACEUP_DEFENSE)
 end
--- 判断是否满足特殊召唤条件，包括场上是否有空位和手牌/墓地是否存在符合条件的怪兽
+-- ①效果的发动目标检查：确认自己主要怪兽区有空位，且手卡·墓地存在符合条件的电子界族调整怪兽。
 function c25200959.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断场上是否有空位
+	-- 发动时判定自己主要怪兽区是否有可用空位。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 判断手牌或墓地是否存在符合条件的怪兽
+		-- 发动时判定手卡·墓地是否至少存在1只满足spfilter条件的电子界族调整怪兽。
 		and Duel.IsExistingMatchingCard(c25200959.spfilter,tp,LOCATION_HAND+LOCATION_GRAVE,0,1,nil,e,tp) end
-	-- 设置特殊召唤操作信息
+	-- 设置操作信息：本连锁将从手卡·墓地特殊召唤1只怪兽。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_HAND+LOCATION_GRAVE)
 end
--- 处理特殊召唤效果，选择并特殊召唤符合条件的怪兽，并设置后续不能特殊召唤非电子界族怪兽的效果
+-- 执行①效果：从手卡·墓地选1只电子界族调整守备表示特殊召唤；随后给自己附加直到结束阶段不能特殊召唤非电子界族怪兽的自肃效果。
 function c25200959.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断场上是否有空位
+	-- 处理时再次确认自己主要怪兽区是否有可用空位。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)>0 then
-		-- 提示玩家选择要特殊召唤的卡
+		-- 显示选择提示：请选择要特殊召唤的卡。
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-		-- 选择满足条件的电子界族调整怪兽
+		-- 从自己的手卡·墓地选择1只符合条件的电子界族调整怪兽（并过滤王家长眠之谷影响）。
 		local g=Duel.SelectMatchingCard(tp,aux.NecroValleyFilter(c25200959.spfilter),tp,LOCATION_HAND+LOCATION_GRAVE,0,1,1,nil,e,tp)
 		if g:GetCount()>0 then
-			-- 将选中的怪兽特殊召唤到场上
+			-- 将选择的怪兽以表侧守备表示特殊召唤到自己场上。
 			Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP_DEFENSE)
 		end
 	end
-	-- 设置并注册不能特殊召唤非电子界族怪兽的效果
+	-- 这个效果的发动后，直到回合结束时自己不是电子界族怪兽不能特殊召唤。②：同调召唤的这张卡被送去墓地的场合才能发动。自己从卡组抽1张。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_CANNOT_SPECIAL_SUMMON)
@@ -71,33 +71,33 @@ function c25200959.spop(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetTargetRange(1,0)
 	e1:SetTarget(c25200959.splimit)
 	e1:SetReset(RESET_PHASE+PHASE_END)
-	-- 将效果注册到玩家环境中
+	-- 将自肃效果注册到场上，对玩家tp（自己）生效，持续到结束阶段。
 	Duel.RegisterEffect(e1,tp)
 end
--- 设置不能特殊召唤非电子界族怪兽的限制条件
+-- 自肃判定：不允许特殊召唤非电子界族怪兽。
 function c25200959.splimit(e,c)
 	return not c:IsRace(RACE_CYBERSE)
 end
--- 判断此卡是否为同调召唤且从场上送去墓地
+-- ②效果的发动条件：这张卡从主要怪兽区被送去墓地，且此前是以同调召唤方式召唤的。
 function c25200959.drcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	return c:IsPreviousLocation(LOCATION_MZONE) and c:IsSummonType(SUMMON_TYPE_SYNCHRO)
 end
--- 设置抽卡操作信息
+-- ②效果的目标处理：检查自己能否抽1张卡，并设定抽卡玩家为自己、抽卡数量为1。
 function c25200959.drtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断玩家是否可以抽卡
+	-- ②效果发动时判定：自己是否可以抽1张卡。
 	if chk==0 then return Duel.IsPlayerCanDraw(tp,1) end
-	-- 设置抽卡的目标玩家
+	-- 设置连锁对象玩家为自己（抽卡玩家）。
 	Duel.SetTargetPlayer(tp)
-	-- 设置抽卡数量
+	-- 设置连锁对象参数为1（抽卡数量）。
 	Duel.SetTargetParam(1)
-	-- 设置抽卡操作信息
+	-- 设置操作信息：本连锁将进行抽1张卡的处理。
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,1)
 end
--- 处理抽卡效果
+-- 执行②效果：从当前连锁信息中取出目标玩家和数量，实际进行抽卡。
 function c25200959.drop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁中的目标玩家和抽卡数量
+	-- 读取当前连锁中之前设置的目标玩家和参数（抽卡玩家与抽卡数量）。
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 让目标玩家从卡组抽指定数量的卡
+	-- 令玩家p因效果抽取d张卡。
 	Duel.Draw(p,d,REASON_EFFECT)
 end
