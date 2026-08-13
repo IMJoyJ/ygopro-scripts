@@ -13,13 +13,13 @@ function c15960641.initial_effect(c)
 	e1:SetValue(c15960641.aclimit)
 	c:RegisterEffect(e1)
 end
--- 判断当前是否处于战斗阶段（战斗阶段开始到战斗阶段结束）
+-- 效果发动条件：检查当前是否为战斗阶段（从战斗阶段开始到战斗阶段结束之间）。
 function c15960641.con(e)
-	-- 获取当前游戏阶段
+	-- 获取当前游戏阶段。
 	local ph=Duel.GetCurrentPhase()
 	return ph>=PHASE_BATTLE_START and ph<=PHASE_BATTLE
 end
--- 限制对方发动陷阱卡效果
+-- 判定对方试图发动的效果是否为陷阱卡的卡牌发动（排除陷阱效果的发动，仅限陷阱卡的发动）。
 function c15960641.aclimit(e,re,tp)
 	return re:GetHandler():IsType(TYPE_TRAP) and re:IsHasType(EFFECT_TYPE_ACTIVATE)
 end

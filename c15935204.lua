@@ -8,7 +8,7 @@ function c15935204.initial_effect(c)
 	e1:SetRange(LOCATION_MZONE)
 	e1:SetCode(EFFECT_SEND_REPLACE)
 	e1:SetTarget(c15935204.reptg)
-	-- 设置效果值为假，表示该效果不执行替换动作，仅用于触发条件判断。
+	-- 将EFFECT_SEND_REPLACE的Value设置为aux.FALSE（恒为假），使该替换效果本身不直接提供新的卡片去向；实际改送去卡组的操作由reptg中为对象怪兽注册的离场重定向效果完成。
 	e1:SetValue(aux.FALSE)
 	c:RegisterEffect(e1)
 	-- 这张卡被卡的效果破坏时，这张卡的控制者受到这张卡的攻击力数值的伤害。
@@ -22,20 +22,20 @@ function c15935204.initial_effect(c)
 	e2:SetOperation(c15935204.dmop)
 	c:RegisterEffect(e2)
 end
--- 筛选满足条件的被战斗破坏且非衍生物、对方控制、来自念动力族怪兽、未被送去卡组的怪兽。
+-- 筛选符合条件的战斗破坏的对方怪兽：该怪兽处于战斗破坏确定状态、不是衍生物、控制者为对方、是被念动力族怪兽战斗破坏且该念动力族怪兽不是风暴召唤师自身、尚未被其他效果指定离场去向且原本不是送去卡组（即原本会送去墓地）。
 function c15935204.repfilter(c,e,tp)
 	return c:IsStatus(STATUS_BATTLE_DESTROYED) and not c:IsType(TYPE_TOKEN)
 		and c:IsControler(1-tp) and c:IsReason(REASON_BATTLE) and c:GetReasonCard():IsRace(RACE_PSYCHO) and c:GetReasonCard()~=e:GetHandler()
 		and c:GetLeaveFieldDest()==0 and c:GetDestination()~=LOCATION_DECK
 end
--- 判断是否选择使用「风暴召唤师」的效果，若选择则为符合条件的怪兽设置离开场上的重定向效果。
+-- 处理第一个效果的置换判定：当场上出现被战斗破坏的对方怪兽且满足repfilter时，先确认条件成立；随后询问玩家是否发动，若发动则从符合条件的怪兽中选择一只，为其注册离场时改送去卡组的效果，并返回true使置换生效。
 function c15935204.reptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	if chk==0 then return r&REASON_BATTLE~=0 and eg:IsExists(c15935204.repfilter,1,nil,e,tp) end
-	-- 提示玩家是否使用「风暴召唤师」的效果。
+	-- 弹出YES/NO选择框，询问当前玩家是否使用“风暴召唤师”的效果，将该怪兽不送去墓地而放到对方卡组顶。
 	if Duel.SelectYesNo(tp,aux.Stringid(15935204,1)) then  --"是否要使用「风暴召唤师」的效果？"
 		local tc=eg:Filter(c15935204.repfilter,nil,e,tp):GetFirst()
-		-- 只要这张卡在自己场上表侧表示存在，可以让这张卡以外的念动力族怪兽战斗破坏的对方怪兽不送去墓地，在对方卡组最上面放置。
+		-- 不送去墓地，在对方卡组最上面放置。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_LEAVE_FIELD_REDIRECT)
@@ -46,30 +46,30 @@ function c15935204.reptg(e,tp,eg,ep,ev,re,r,rp,chk)
 		return true
 	else return false end
 end
--- 判断怪兽是否因战斗离开场上的状态且去向为墓地。
+-- 离场重定向效果的条件：目标怪兽当前预定要去的场所是墓地、且破坏原因为战斗破坏时，才将其去向改为卡组。
 function c15935204.recon(e)
 	local c=e:GetHandler()
 	return c:GetDestination()==LOCATION_GRAVE and c:IsReason(REASON_BATTLE)
 end
--- 判断该卡不是因战斗被破坏。
+-- 第二个效果的发动条件：这张卡被破坏时不是战斗破坏，即对应效果原文中“被卡的效果破坏时”的条件。
 function c15935204.dmcon(e,tp,eg,ep,ev,re,r,rp)
 	return not e:GetHandler():IsReason(REASON_BATTLE)
 end
--- 设置伤害效果的目标玩家和伤害值。
+-- 伤害效果的目标处理：无取对象要求，直接通过；随后将目标玩家设为这张卡破坏前的控制者，目标参数设为这张卡的攻击力，并登记本次连锁的伤害操作信息。
 function c15935204.dmtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
 	local c=e:GetHandler()
-	-- 设置伤害效果的目标玩家为该卡之前的控制者。
+	-- 将本次连锁的伤害对象玩家设置为这张卡在被破坏前的控制者（即效果原文中的“这张卡的控制者”）。
 	Duel.SetTargetPlayer(c:GetPreviousControler())
-	-- 设置伤害效果的伤害值为该卡的攻击力。
+	-- 将伤害数值设置为这张卡的攻击力值，作为后续造成伤害时使用的参数。
 	Duel.SetTargetParam(c:GetAttack())
-	-- 设置连锁操作信息为伤害效果，目标为该卡的攻击力。
+	-- 向系统登记本次连锁将产生伤害（CATEGORY_DAMAGE），目标玩家为原控制者，预计伤害值为这张卡的攻击力，以便其他卡进行发动时点检测。
 	Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,c:GetPreviousControler(),c:GetAttack())
 end
--- 执行伤害效果，对目标玩家造成指定伤害。
+-- 伤害效果的解决操作：从当前连锁信息中取出之前登记的目标玩家和伤害值，并对其造成相应数值的效果伤害。
 function c15935204.dmop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁中目标玩家和目标参数（即伤害值）。
+	-- 从当前连锁信息中获取登记的目标玩家和伤害参数，分别赋值给p和d。
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 以效果原因对指定玩家造成指定伤害值。
+	-- 以效果伤害（REASON_EFFECT）的方式给予玩家p数额为d的伤害。
 	Duel.Damage(p,d,REASON_EFFECT)
 end

@@ -19,18 +19,18 @@ function c15894048.initial_effect(c)
 	e3:SetValue(1)
 	c:RegisterEffect(e3)
 end
--- 判断是否处于战斗阶段且为当前玩家的回合
+-- 该条件函数用于判断①效果的发动条件：当前必须是战斗阶段，且本卡的控制者为当前回合玩家，即满足“自己战斗阶段”的要求。
 function c15894048.cacon(e)
-	-- 判断是否处于战斗阶段且为当前玩家的回合
+	-- 检查当前是否为战斗阶段，并且本卡的控制者是否是当前回合玩家（确保是自己回合的战斗阶段）。
 	return Duel.IsBattlePhase() and Duel.IsTurnPlayer(e:GetHandlerPlayer())
 end
--- 设定效果目标为非究极恐兽且存在可攻击的究极恐兽
+-- 这是EFFECT_CANNOT_ATTACK的Target函数，决定哪些怪兽不能攻击：若c不是「究极恐兽」，且己方场上存在至少1只可以攻击的「究极恐兽」，则c不能攻击。
 function c15894048.catg(e,c)
 	return not c:IsCode(15894048)
-		-- 检查场上是否存在可攻击的究极恐兽
+		-- 进一步确认己方场上存在至少1只满足cfilter条件的「究极恐兽」（即可以攻击的「究极恐兽」），作为禁止其他怪兽攻击的前提。
 		and Duel.IsExistingMatchingCard(c15894048.cfilter,e:GetHandlerPlayer(),LOCATION_MZONE,0,1,c)
 end
--- 检查该究极恐兽是否可以攻击并具有攻击目标
+-- 过滤函数：判断一张卡是否为可以攻击的「究极恐兽」——卡名必须是「究极恐兽」，本身处于可攻击状态，并且拥有可攻击的目标或可以直接攻击。用于判断场上是否存在“可以攻击的「究极恐兽」”。
 function c15894048.cfilter(c)
 	if not (c:IsCode(15894048) and c:IsAttackable()) then return false end
 	local ag,direct=c:GetAttackableTarget()

@@ -5,7 +5,7 @@
 -- ②：1回合1次，把这张卡1个超量素材取除才能发动。场上的魔法·陷阱卡全部破坏。这个效果在对方回合也能发动。
 -- ③：把这张卡1个超量素材取除，以自己墓地1张「契约书」魔法·陷阱卡为对象才能发动。那张卡在自己场上盖放。
 function c15939229.initial_effect(c)
-	-- 为卡片添加超量召唤手续，使用满足「DD」卡组条件的8星怪兽作为素材进行超量召唤，需要2个素材
+	-- 为这张卡添加超量召唤手续：以2只等级8且卡名含有「DD」（0xaf）的怪兽作为超量素材进行超量召唤。
 	aux.AddXyzProcedure(c,aux.FilterBoolFunction(Card.IsSetCard,0xaf),8,2)
 	c:EnableReviveLimit()
 	-- ①：这张卡超量召唤成功的回合，这张卡以外的场上的卡的效果不能发动并无效化。
@@ -38,11 +38,11 @@ function c15939229.initial_effect(c)
 	e3:SetOperation(c15939229.setop)
 	c:RegisterEffect(e3)
 end
--- 当此卡超量召唤成功时，为该卡添加3个效果：1.禁止对方发动场上卡的效果；2.使场上卡的效果无效；3.使连锁处理时无效化对方发动的效果
+-- 超量召唤成功时的处理：仅当以超量召唤方式特殊召唤成功时，给己方注册压制效果——禁止双方发动场上其他卡的效果、无效场上其他卡的效果，并在连锁处理时无效场上其他卡已发动的效果；同时给这张卡附加标志用于区分“这张卡以外”的卡，所有效果持续到结束阶段。
 function c15939229.sumsuc(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if not c:IsSummonType(SUMMON_TYPE_XYZ) then return end
-	-- 创建一个禁止对方发动场上卡效果的效果
+	-- ①：这张卡以外的场上的卡的效果不能发动
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_CANNOT_ACTIVATE)
@@ -51,9 +51,9 @@ function c15939229.sumsuc(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetValue(c15939229.aclimit)
 	e1:SetReset(RESET_PHASE+PHASE_END)
 	e1:SetLabel(c:GetFieldID())
-	-- 将该禁止发动效果注册给玩家
+	-- 将禁止效果发动的效果注册给当前玩家，使双方在该回合内不能发动这张卡以外的场上卡的效果。
 	Duel.RegisterEffect(e1,tp)
-	-- 创建一个使场上卡效果无效的效果
+	-- 并无效化
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD)
 	e2:SetCode(EFFECT_DISABLE)
@@ -61,9 +61,9 @@ function c15939229.sumsuc(e,tp,eg,ep,ev,re,r,rp)
 	e2:SetTarget(c15939229.disable)
 	e2:SetReset(RESET_PHASE+PHASE_END)
 	e2:SetLabel(c:GetFieldID())
-	-- 将该使效果无效的效果注册给玩家
+	-- 将场上卡片效果无效化的效果注册到全场，使场上这张卡以外的魔法·陷阱卡和效果怪兽的效果无效，持续到回合结束。
 	Duel.RegisterEffect(e2,tp)
-	-- 创建一个连锁处理时无效化对方发动效果的效果，并注册给玩家
+	-- ①：这张卡超量召唤成功的回合，这张卡以外的场上的卡的效果不能发动并无效化；②：1回合1次，把这张卡1个超量素材取除才能发动。场上的魔法·陷阱卡全部破坏。这个效果在对方回合也能发动；③：把这张卡1个超量素材取除，以自己墓地1张「契约书」魔法·陷阱卡为对象才能发动。那张卡在自己场上盖放。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e3:SetCode(EVENT_CHAIN_SOLVING)
@@ -71,80 +71,80 @@ function c15939229.sumsuc(e,tp,eg,ep,ev,re,r,rp)
 	e3:SetOperation(c15939229.disop)
 	e3:SetReset(RESET_PHASE+PHASE_END)
 	e3:SetLabel(c:GetFieldID())
-	-- 将该连锁无效化效果注册给玩家
+	-- 将连锁无效效果注册到场上，使得在连锁处理时，若场上其他卡发动效果，则将该效果无效。
 	Duel.RegisterEffect(e3,tp)
 	c:RegisterFlagEffect(15939229,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END,0,1,c:GetFieldID())
 end
--- 判断是否为对方发动的效果，且该效果不是来自本卡
+-- 判定效果来源是否为“这张卡以外的场上卡”：效果持有者在场上，且不是本卡（通过卡上标志与效果标签比较）时返回true，表示应禁止该效果的发动。
 function c15939229.aclimit(e,re,tp)
 	local rc=re:GetHandler()
 	return rc:IsOnField() and rc:GetFlagEffectLabel(15939229)~=e:GetLabel()
 end
--- 判断是否为场上卡，且该卡不是来自本卡
+-- 判定需要被无效化的卡：不是本卡，且是魔法·陷阱卡或效果怪兽（原本类型包含效果怪兽）时返回true，使这些卡的效果被无效。
 function c15939229.disable(e,c)
 	return c:GetFlagEffectLabel(15939229)~=e:GetLabel() and (not c:IsType(TYPE_MONSTER) or (c:IsType(TYPE_EFFECT) or bit.band(c:GetOriginalType(),TYPE_EFFECT)==TYPE_EFFECT))
 end
--- 判断连锁是否来自场上，且该连锁不是来自本卡
+-- 判定连锁中的效果是否属于“这张卡以外的场上卡的效果”：效果来源卡在场上且不是本卡时返回true，作为连锁处理时发动无效的条件。
 function c15939229.discon(e,tp,eg,ep,ev,re,r,rp)
 	local rc=re:GetHandler()
-	-- 获取当前连锁的触发位置
+	-- 获取触发连锁的效果发生的位置（场上/手卡/墓地等），用于后续判断是否为场上发动的效果。
 	local loc=Duel.GetChainInfo(ev,CHAININFO_TRIGGERING_LOCATION)
 	return bit.band(loc,LOCATION_ONFIELD)~=0 and rc:GetFlagEffectLabel(15939229)~=e:GetLabel()
 end
--- 使当前连锁的效果无效
+-- 将当前满足条件的连锁效果无效，使该效果不处理。
 function c15939229.disop(e,tp,eg,ep,ev,re,r,rp)
-	-- 使当前连锁的效果无效
+	-- 直接使连锁序号为ev的那个效果无效化。
 	Duel.NegateEffect(ev)
 end
--- 消耗1个超量素材作为发动成本
+-- ②③共用的代价：检查这张卡是否有1个超量素材可作为代价，若有则取除1个素材。
 function c15939229.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():CheckRemoveOverlayCard(tp,1,REASON_COST) end
 	e:GetHandler():RemoveOverlayCard(tp,1,1,REASON_COST)
 end
--- 定义破坏目标过滤器，筛选魔法或陷阱类型卡片
+-- ②的破坏对象筛选条件：场上的魔法·陷阱卡（不包括怪兽卡）。
 function c15939229.desfilter(c)
 	return c:IsType(TYPE_SPELL+TYPE_TRAP)
 end
--- 设置破坏效果的目标，检查场上是否存在魔法或陷阱卡
+-- ②的发动条件和目标设定：检查场上是否存在魔法·陷阱卡；若存在，则获取场上全部魔法·陷阱卡并登记为将被破坏的对象信息。
 function c15939229.destg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查场上是否存在魔法或陷阱卡
+	-- 效果发动合法性检查：场上存在至少1张魔法·陷阱卡才可发动。
 	if chk==0 then return Duel.IsExistingMatchingCard(c15939229.desfilter,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,nil) end
-	-- 获取场上所有魔法或陷阱卡的卡片组
+	-- 获取场上所有魔法·陷阱卡，作为本次破坏效果将要影响的卡组。
 	local g=Duel.GetMatchingGroup(c15939229.desfilter,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,nil)
-	-- 设置操作信息，指定破坏效果的处理对象
+	-- 登记操作信息：本次效果将破坏上述魔法·陷阱卡，破坏数量为获取到的卡片总数，供相关连锁判定使用。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,g:GetCount(),0,0)
 end
--- 执行破坏操作，将目标魔法或陷阱卡破坏
+-- ②的效果处理：效果处理时重新获取场上所有魔法·陷阱卡，并将其全部破坏。
 function c15939229.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取场上所有魔法或陷阱卡的卡片组
+	-- 效果处理时重新获取场上所有魔法·陷阱卡（因为处理时场上情况可能已变化）。
 	local g=Duel.GetMatchingGroup(c15939229.desfilter,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,nil)
-	-- 执行破坏操作，将目标魔法或陷阱卡破坏
+	-- 以效果原因将这些魔法·陷阱卡全部破坏。
 	Duel.Destroy(g,REASON_EFFECT)
 end
--- 定义盖放目标过滤器，筛选「契约书」卡组的魔法或陷阱卡
+-- ③的对象筛选条件：自己墓地的「契约书」魔法·陷阱卡，且可以进行盖放（Set）才能选择。
 function c15939229.setfilter(c)
 	return c:IsSetCard(0xae) and c:IsType(TYPE_SPELL+TYPE_TRAP) and c:IsSSetable()
 end
--- 设置盖放效果的目标，检查墓地是否存在符合条件的卡
+-- ③的发动条件与取对象：检查自己魔法·陷阱区是否有空位，且墓地存在符合条件的「契约书」卡；若条件满足，则提示玩家选择其中1张作为对象。
 function c15939229.settg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(tp) and chkc:IsLocation(LOCATION_GRAVE) and c15939229.setfilter(chkc) end
-	-- 检查玩家场上是否有空位
+	-- 发动合法性检查：自己魔法与陷阱区域存在空位，否则不能发动。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_SZONE)>0
-		-- 检查墓地是否存在符合条件的卡
+		-- 并且墓地存在至少1张符合条件的「契约书」卡可供选择为对象，才能发动。
 		and Duel.IsExistingTarget(c15939229.setfilter,tp,LOCATION_GRAVE,0,1,nil) end
-	-- 提示玩家选择要盖放的卡
+	-- 弹出提示，让玩家选择要盖放的卡（提示文字为“请选择要盖放的卡”）。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SET)  --"请选择要盖放的卡"
-	-- 选择目标卡
+	-- 玩家从自己墓地选择1张符合条件的「契约书」卡作为对象，并记录为效果对象。
 	local g=Duel.SelectTarget(tp,c15939229.setfilter,tp,LOCATION_GRAVE,0,1,1,nil)
-	-- 设置操作信息，指定盖放效果的处理对象
+	-- 登记操作信息：该对象卡将离开墓地（被盖放到场上），数量为1，供连锁判定使用。
 	Duel.SetOperationInfo(0,CATEGORY_LEAVE_GRAVE,g,1,0,0)
 end
--- 执行盖放操作，将目标卡盖放在玩家场上
+-- ③的效果处理：取得对象卡，若对象卡仍与效果相关联，则将其盖放到自己场上。
 function c15939229.setop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的目标卡
+	-- 获取这个效果选择的对象卡（第一个目标）。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 将目标卡盖放在玩家场上
+		-- 将对象卡在自己的魔法·陷阱区域盖放。
 		Duel.SSet(tp,tc)
 	end
 end

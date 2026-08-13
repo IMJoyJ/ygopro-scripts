@@ -27,57 +27,57 @@ function c15808381.initial_effect(c)
 	e3:SetRange(LOCATION_GRAVE)
 	e3:SetCountLimit(1,15808382)
 	e3:SetCondition(c15808381.descon)
-	-- 将此卡从游戏中除外作为cost的处理
+	-- 设置②效果的发动代价：把墓地的这张卡除外（由aux.bfgcost实现检查并除外）。
 	e3:SetCost(aux.bfgcost)
 	e3:SetTarget(c15808381.destg)
 	e3:SetOperation(c15808381.desop)
 	c:RegisterEffect(e3)
 end
--- 检索满足条件的卡片组：4星以下、@火灵天星系列、怪兽卡、非本卡、可加入手牌
+-- 检索过滤条件：4星以下、@火灵天星系列怪兽、卡名不是「辣辣妖@火灵天星」且能加入手卡的卡。
 function c15808381.thfilter(c)
 	return c:IsLevelBelow(4) and c:IsSetCard(0x135) and c:IsType(TYPE_MONSTER) and not c:IsCode(15808381) and c:IsAbleToHand()
 end
--- 设置效果处理时的连锁信息：准备从卡组检索1张卡加入手牌
+-- ①效果的发动条件判定与操作信息设定：确认卡组存在符合条件的「@火灵天星」怪兽，并设定检索加入手卡的类别信息。
 function c15808381.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断是否满足发动条件：检查自己卡组是否存在满足条件的卡片
+	-- 发动时确认卡组中是否存在至少1张满足thfilter过滤条件的怪兽卡。
 	if chk==0 then return Duel.IsExistingMatchingCard(c15808381.thfilter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置效果处理时的连锁信息：准备从卡组检索1张卡加入手牌
+	-- 将本次连锁的操作信息设定为：由tp玩家从卡组把1张卡加入手卡（供后续发动检测使用）。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 效果处理：提示选择卡组中的卡并将其加入手牌
+-- ①效果处理：从卡组选1只符合条件的「@火灵天星」怪兽加入手卡，并让对方确认。
 function c15808381.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要加入手牌的卡
+	-- 给当前玩家显示“请选择要加入手牌的卡”的提示消息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择满足条件的1张卡加入手牌
+	-- 从卡组挑选1张满足thfilter过滤条件的怪兽卡（不取对象，处理时选择）。
 	local g=Duel.SelectMatchingCard(tp,c15808381.thfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的卡加入手牌
+		-- 把选择的怪兽加入持有者手卡（REASON_EFFECT为效果原因）。
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 向对方确认加入手牌的卡
+		-- 向对方玩家展示本次加入手卡的卡。
 		Duel.ConfirmCards(1-tp,g)
 	end
 end
--- 判断是否满足发动条件：确认攻击怪兽为电子界族
+-- ②效果的发动条件：战斗的伤害步骤开始时，我方场上有表侧表示的电子界族怪兽正在参与战斗（攻击方或攻击对象），并将该怪兽存入效果LabelObject备用。
 function c15808381.descon(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前攻击怪兽
+	-- 获取此次战斗的攻击怪兽赋值给tc。
 	local tc=Duel.GetAttacker()
-	-- 若攻击怪兽为对方控制，则获取攻击目标怪兽
+	-- 若攻击怪兽是对方的，则改取攻击对象作为我方参与战斗的电子界族怪兽。
 	if tc:IsControler(1-tp) then tc=Duel.GetAttackTarget() end
 	e:SetLabelObject(tc)
 	return tc and tc:IsFaceup() and tc:IsRace(RACE_CYBERSE)
 end
--- 设置效果处理时的连锁信息：准备破坏指定的怪兽
+-- ②效果的对象确认：获取descon记录的战斗怪兽作为破坏对象，并设定破坏的操作信息。
 function c15808381.destg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local bc=e:GetLabelObject()
 	if chk==0 then return bc end
-	-- 设置效果处理时的连锁信息：准备破坏指定的怪兽
+	-- 将本次连锁的操作信息设定为：破坏那只战斗怪兽（1张），供连锁检测使用。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,bc,1,0,0)
 end
--- 效果处理：破坏指定的怪兽
+-- ②效果处理：若记录的战斗怪兽仍与本次战斗相关且由我方控制，则将其破坏。
 function c15808381.desop(e,tp,eg,ep,ev,re,r,rp)
 	local bc=e:GetLabelObject()
 	if bc:IsRelateToBattle() and bc:IsControler(tp) then
-		-- 将指定的怪兽破坏
+		-- 以效果原因破坏那只自己怪兽。
 		Duel.Destroy(bc,REASON_EFFECT)
 	end
 end

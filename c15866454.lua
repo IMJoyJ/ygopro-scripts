@@ -12,28 +12,28 @@ function c15866454.initial_effect(c)
 	e1:SetOperation(c15866454.activate)
 	c:RegisterEffect(e1)
 end
--- 检索满足条件的对方场上的魔法·陷阱卡
+-- 定义对象筛选条件：卡片必须是魔法·陷阱卡且能够加入手卡（不处于不能回手牌的限制下）。
 function c15866454.filter(c)
 	return c:IsAbleToHand() and c:IsType(TYPE_SPELL+TYPE_TRAP)
 end
--- 选择对方场上的1张魔法·陷阱卡作为对象
+-- 效果发动时的目标选择处理：确认可行后，从对方场上选择1张符合条件的魔法·陷阱卡作为对象，并登记回手牌的操作信息。
 function c15866454.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsOnField() and chkc:IsControler(1-tp) and c15866454.filter(chkc) end
-	-- 判断是否满足发动条件：对方场上存在满足条件的魔法·陷阱卡
+	-- 发动合法性检查：确认对方场上是否存在至少1张可供选择且符合条件的魔法·陷阱卡。
 	if chk==0 then return Duel.IsExistingTarget(c15866454.filter,tp,0,LOCATION_ONFIELD,1,nil) end
-	-- 向玩家提示选择要返回手牌的卡
+	-- 弹出选择提示，让操作者选择要返回手牌的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_RTOHAND)  --"请选择要返回手牌的卡"
-	-- 选择满足条件的对方场上的1张魔法·陷阱卡作为对象
+	-- 实际选择对方场上1张满足条件的魔法·陷阱卡，并将其设为当前连锁的效果对象。
 	local g=Duel.SelectTarget(tp,c15866454.filter,tp,0,LOCATION_ONFIELD,1,1,nil)
-	-- 设置操作信息：将选择的卡送回手牌
+	-- 记录连锁处理信息：本连锁将执行‘返回手牌’分类的处理，目标为选中的那张卡，数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,1,0,0)
 end
--- 将对象卡送回持有者手卡
+-- 效果处理时的操作：取得效果对象，若对象仍与效果关联，则将其送回持有者手卡。
 function c15866454.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的效果对象卡
+	-- 取得当前连锁的第一个对象卡（即发动时选择的那张卡）。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 将对象卡以效果原因送回手牌
+		-- 将对象卡以效果原因送回其持有者手卡。
 		Duel.SendtoHand(tc,nil,REASON_EFFECT)
 	end
 end

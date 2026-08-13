@@ -5,7 +5,7 @@
 -- ②：1回合1次，这张卡和对方怪兽进行战斗的伤害计算时，把这张卡所连接区1只自己怪兽解放才能发动。这张卡的攻击力只在那次伤害计算时变成原本攻击力的2倍。
 function c15844566.initial_effect(c)
 	c:EnableReviveLimit()
-	-- 添加连接召唤手续，需要3只连接素材
+	-- 为力码语者添加连接召唤手续：使用任意3只怪兽作为连接素材（对应原效果文本中的“怪兽3只”）。
 	aux.AddLinkProcedure(c,nil,3,3)
 	-- ①：1回合1次，以场上1只表侧表示怪兽为对象才能发动。那只怪兽的效果直到回合结束时无效。
 	local e1=Effect.CreateEffect(c)
@@ -31,35 +31,35 @@ function c15844566.initial_effect(c)
 	e2:SetOperation(c15844566.atkop)
 	c:RegisterEffect(e2)
 end
--- 定义效果①的目标选择函数，检查场上是否存在可无效的怪兽
+-- ①效果的发动条件判断与取对象处理：检查场上是否存在表侧表示且效果未被无效的效果怪兽，并让玩家选择1只作为对象。
 function c15844566.distg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	-- 判断目标是否为场上怪兽且符合被无效化条件
+	-- 连锁处理时验证对象：对象必须位于怪兽区，且是表侧表示、效果未被无效的效果怪兽。
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and aux.NegateMonsterFilter(chkc) end
-	-- 检查是否满足发动条件，即场上存在可无效的怪兽
+	-- 发动时检查场上是否存在至少1只满足条件的表侧表示效果怪兽可以作为对象。
 	if chk==0 then return Duel.IsExistingTarget(aux.NegateMonsterFilter,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil) end
-	-- 向玩家发送提示信息，提示选择要无效的卡
+	-- 给操作玩家显示“请选择要无效的卡”的选择提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DISABLE)  --"请选择要无效的卡"
-	-- 选择一个满足条件的场上怪兽作为目标
+	-- 让玩家从双方怪兽区选择1只满足条件的效果怪兽，并将它登记为这张卡效果的对象。
 	local g=Duel.SelectTarget(tp,aux.NegateMonsterFilter,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,nil)
-	-- 设置效果处理信息，指定将要无效的怪兽
+	-- 设置操作信息：声明本效果将把这1只对象怪兽的效果无效。
 	Duel.SetOperationInfo(0,CATEGORY_DISABLE,g,1,0,0)
 end
--- 定义效果①的处理函数，使目标怪兽效果无效
+-- ①效果处理：若对象怪兽仍在场上且表侧表示，则无效该怪兽的怪兽效果及相关的效果文本，直到回合结束时适用。
 function c15844566.disop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取当前连锁效果的目标怪兽
+	-- 取得本效果发动时选择的1只对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsFaceup() and tc:IsRelateToEffect(e) then
-		-- 使目标怪兽相关的连锁效果无效化
+		-- 使与该对象怪兽相关的连锁效果无效化，并在回合结束时重置。
 		Duel.NegateRelatedChain(tc,RESET_TURN_SET)
-		-- 使目标怪兽的效果无效
+		-- 那只怪兽的效果直到回合结束时无效。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
 		e1:SetCode(EFFECT_DISABLE)
 		e1:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END)
 		tc:RegisterEffect(e1)
-		-- 使目标怪兽的效果无效化效果在回合结束时解除
+		-- 那只怪兽的效果直到回合结束时无效。
 		local e2=Effect.CreateEffect(c)
 		e2:SetType(EFFECT_TYPE_SINGLE)
 		e2:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
@@ -69,30 +69,30 @@ function c15844566.disop(e,tp,eg,ep,ev,re,r,rp)
 		tc:RegisterEffect(e2)
 	end
 end
--- 判断是否满足效果②的发动条件，即此卡正在与对方怪兽战斗
+-- ②效果的发动条件：这张卡与对方怪兽进行战斗并进入伤害计算阶段。
 function c15844566.atkcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():GetBattleTarget()~=nil
 end
--- 筛选连接区怪兽的过滤函数，排除已被战斗破坏的怪兽
+-- 过滤函数：选择这张卡所连接区、且没有被战斗破坏确定的自己怪兽作为可解放的卡。
 function c15844566.cfilter(c,g)
 	return g:IsContains(c) and not c:IsStatus(STATUS_BATTLE_DESTROYED)
 end
--- 定义效果②的费用支付函数，选择并解放连接区的怪兽
+-- ②效果的代价：从这张卡所连接区选择1只满足条件的自己怪兽解放作为发动代价。
 function c15844566.atkcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	local lg=e:GetHandler():GetLinkedGroup()
-	-- 检查是否满足解放怪兽的条件
+	-- 发动时检查场上是否存在至少1只位于这张卡所连接区、可解放且未被战斗破坏的自己的怪兽。
 	if chk==0 then return Duel.CheckReleaseGroup(tp,c15844566.cfilter,1,nil,lg) end
-	-- 选择一个满足条件的连接区怪兽进行解放
+	-- 让玩家从自己场上选择1只位于这张卡所连接区的自己怪兽作为解放对象。
 	local g=Duel.SelectReleaseGroup(tp,c15844566.cfilter,1,1,nil,lg)
-	-- 将选中的怪兽从场上解放作为费用
+	-- 将选择的怪兽解放，作为发动②效果的代价。
 	Duel.Release(g,REASON_COST)
 end
--- 定义效果②的处理函数，使此卡攻击力变为原本的2倍
+-- ②效果处理：这张卡仍存在于怪兽区且表侧表示时，将其攻击力变成原本攻击力的2倍，仅在那次伤害计算时适用。
 function c15844566.atkop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) and c:IsFaceup() then
 		local atk=c:GetBaseAttack()
-		-- 设置此卡攻击力变为原本的2倍的效果
+		-- 这张卡的攻击力只在那次伤害计算时变成原本攻击力的2倍。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_SET_ATTACK_FINAL)
