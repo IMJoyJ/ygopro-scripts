@@ -15,26 +15,26 @@ function c14824019.initial_effect(c)
 	e2:SetCode(EVENT_FLIP)
 	c:RegisterEffect(e2)
 end
--- 过滤函数，用于筛选满足条件的卡片
+-- 过滤卡组中满足以下条件的卡片：卡名含有「魔导书」字段的魔法卡，且该卡能够被加入手卡。
 function c14824019.filter(c)
 	return c:IsSetCard(0x106e) and c:IsType(TYPE_SPELL) and c:IsAbleToHand()
 end
--- 设置效果处理时的目标，用于检索满足条件的卡片组
+-- 效果发动时的目标判定：若为发动时点检查（chk==0）则直接允许发动；同时将本次操作信息登记为从卡组检索1张卡加入手卡。
 function c14824019.shtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置当前处理的连锁的操作信息，指定将从卡组检索1张魔法卡加入手牌
+	-- 设置本次效果的操作信息：效果分类为回手牌与检索，预计从卡组将1张卡加入手卡。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 效果处理函数，执行检索并加入手牌的操作
+-- 效果处理时执行的操作：先弹出选择提示，再从己方卡组选择1张符合条件的「魔导书」魔法卡加入手卡，并让对方确认。
 function c14824019.shop(e,tp,eg,ep,ev,re,r,rp)
-	-- 向玩家提示选择要加入手牌的卡
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)
-	-- 从卡组中选择满足条件的1张魔法卡
+	-- 弹出选择提示，提示当前玩家选择一张要加入手牌的卡。
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
+	-- 在己方卡组中检索并选择1张满足c14824019.filter条件的卡（即「魔导书」魔法卡且可加入手牌）。
 	local g=Duel.SelectMatchingCard(tp,c14824019.filter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的卡片加入手牌
+		-- 将选择的卡加入其持有者的手卡，原因为效果。
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 确认对方查看了加入手牌的卡片
+		-- 让对方玩家确认加入手卡的卡片。
 		Duel.ConfirmCards(1-tp,g)
 	end
 end
