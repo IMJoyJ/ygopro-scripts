@@ -11,18 +11,18 @@ function c46918794.initial_effect(c)
 	e1:SetOperation(c46918794.activate)
 	c:RegisterEffect(e1)
 end
--- 效果处理时点判断，设置连锁操作信息为伤害效果并指定伤害值为500
+-- 效果发动时的目标处理：无特定选取对象，只要在可发动条件下即返回 true，并登记本效果将造成伤害的操作信息。
 function c46918794.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置当前连锁操作信息为CATEGORY_DAMAGE类型，影响双方玩家，伤害值为500
+	-- 登记本次连锁的操作信息为伤害效果，目标玩家为双方玩家，伤害数值参数为 500，用于相关时点和连锁的判定。
 	Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,PLAYER_ALL,500)
 end
--- 效果发动时执行的处理函数，对对方造成1000伤害，对自己造成500伤害
+-- 效果处理函数：依次让对方受到 1000 点伤害、自己受到 500 点伤害，并在处理完毕后完成伤害相关时点的触发。
 function c46918794.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 对对方玩家造成1000点伤害，伤害原因为效果
+	-- 以效果原因给予对方（1-tp）1000 点伤害，is_step=true 表示作为过程性伤害，暂不触发时点。
 	Duel.Damage(1-tp,1000,REASON_EFFECT,true)
-	-- 对自己玩家造成500点伤害，伤害原因为效果
+	-- 以效果原因给予自己（tp）500 点伤害，is_step=true 表示作为过程性伤害，暂不触发时点。
 	Duel.Damage(tp,500,REASON_EFFECT,true)
-	-- 完成伤害处理的时点触发
+	-- 调用 Duel.RDComplete()，完成伤害/回复的 LP 变化过程，并触发因伤害产生的时点。
 	Duel.RDComplete()
 end

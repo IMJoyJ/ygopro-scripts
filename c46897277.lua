@@ -11,13 +11,13 @@ function c46897277.initial_effect(c)
 	e1:SetOperation(c46897277.operation)
 	c:RegisterEffect(e1)
 end
--- 判断是否为对方破坏且自己曾控制过此卡
+-- 判断是否满足触发条件：破坏者是对方（rp==1-tp），且这张卡在被破坏前由我方控制（IsPreviousControler(tp)），即被对方破坏。
 function c46897277.condition(e,tp,eg,ep,ev,re,r,rp)
 	return rp==1-tp and e:GetHandler():IsPreviousControler(tp)
 end
--- 创建并注册两个效果：对方不能发动效果和对方不能特殊召唤怪兽
+-- 效果处理：向对方玩家附加两项限制——不能发动魔法·陷阱·效果怪兽的效果，也不能特殊召唤怪兽，这些限制持续到这个回合结束。
 function c46897277.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 对方不能发动效果
+	-- 不能把魔法·陷阱·效果怪兽的效果发动。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
@@ -25,15 +25,15 @@ function c46897277.operation(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetTargetRange(0,1)
 	e1:SetValue(1)
 	e1:SetReset(RESET_PHASE+PHASE_END)
-	-- 将效果e1注册给玩家tp
+	-- 将“对方不能发动效果”的限制效果注册到对方玩家，持续到回合结束。
 	Duel.RegisterEffect(e1,tp)
-	-- 对方不能特殊召唤怪兽
+	-- 不能作怪兽的特殊召唤。
 	local e2=Effect.CreateEffect(e:GetHandler())
 	e2:SetType(EFFECT_TYPE_FIELD)
 	e2:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
 	e2:SetCode(EFFECT_CANNOT_SPECIAL_SUMMON)
 	e2:SetReset(RESET_PHASE+PHASE_END)
 	e2:SetTargetRange(0,1)
-	-- 将效果e2注册给玩家tp
+	-- 将“对方不能特殊召唤怪兽”的限制效果注册到对方玩家，持续到回合结束。
 	Duel.RegisterEffect(e2,tp)
 end

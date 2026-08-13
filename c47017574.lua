@@ -6,7 +6,7 @@
 -- ③：这张卡有「No.92 伪骸神龙 心地心龙」在作为超量素材的场合，得到以下效果。
 -- ●1回合1次，把这张卡1个超量素材取除才能发动。对方场上的全部表侧表示的卡的效果直到回合结束时无效化。这个效果的发动和效果不会被无效化。
 function c47017574.initial_effect(c)
-	-- 添加XYZ召唤手续，使用等级为10且数量为4的怪兽进行叠放
+	-- 为这张卡添加XYZ召唤手续：需要等级10的怪兽4只作为超量素材。
 	aux.AddXyzProcedure(c,nil,10,4)
 	c:EnableReviveLimit()
 	-- ①：这张卡不会被战斗破坏。
@@ -41,64 +41,64 @@ function c47017574.initial_effect(c)
 	e3:SetOperation(c47017574.disop)
 	c:RegisterEffect(e3)
 end
--- 设置该卡为No.92系列怪兽
+-- 注册这张卡的No.编号为92，用于识别No.怪兽及相关规则。
 aux.xyz_number[47017574]=92
--- 判断是否为己方怪兽对敌方造成战斗伤害
+-- 回复效果的发动条件：我方怪兽给与对方战斗伤害（受到伤害的是对方，造成伤害的怪兽属于自己）。
 function c47017574.reccon(e,tp,eg,ep,ev,re,r,rp)
 	return ep~=tp and eg:GetFirst():IsControler(tp)
 end
--- 设置LP回复效果的目标玩家和回复数值
+-- 回复效果的发动目标设定：必定发动，设置回复受益玩家为自己、回复数值为当时的战斗伤害值，并注册回复操作信息。
 function c47017574.rectg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置连锁处理的目标玩家为当前玩家
+	-- 将当前连锁的目标玩家设为回复基本分的玩家（自己）。
 	Duel.SetTargetPlayer(tp)
-	-- 设置连锁处理的目标参数为造成的战斗伤害值
+	-- 将当前连锁的目标参数设置为受到的战斗伤害数值，作为回复基本分的数值。
 	Duel.SetTargetParam(ev)
-	-- 设置连锁操作信息，指定将要进行LP回复效果
+	-- 登记回复效果的操作信息：效果分类为回复，目标玩家为自己，回复量为本次战斗伤害值。
 	Duel.SetOperationInfo(0,CATEGORY_RECOVER,nil,0,tp,ev)
 end
--- 执行LP回复效果，使目标玩家回复对应数值的LP
+-- 回复效果的实际处理：取出记录的目标玩家和回复数值，执行基本分回复。
 function c47017574.recop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁中设定的目标玩家和目标参数
+	-- 从当前连锁信息中取得之前保存的目标玩家和回复参数，分别赋给p和d。
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 使指定玩家回复对应数值的LP
+	-- 以效果原因让玩家p回复d点基本分。
 	Duel.Recover(p,d,REASON_EFFECT)
 end
--- 判断该卡是否叠放了No.92伪骸神龙 心地心龙作为超量素材
+-- ③效果的发动条件：这张卡的超量素材中存在「No.92 伪骸神龙 心地心龙」（卡号97403510）。
 function c47017574.discon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():GetOverlayGroup():IsExists(Card.IsCode,1,nil,97403510)
 end
--- 消耗1个超量素材作为发动代价
+-- 发动代价：取除这张卡的1个超量素材；检查时可取除则返回true，实际发动时取除1个超量素材。
 function c47017574.discost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():CheckRemoveOverlayCard(tp,1,REASON_COST) end
 	e:GetHandler():RemoveOverlayCard(tp,1,1,REASON_COST)
 end
--- 检查对方场上是否存在可被无效化的卡片
+-- ③效果的目标条件：检查对方场上是否存在至少1张表侧表示且可被无效化的卡。
 function c47017574.distg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查对方场上是否存在可被无效化的卡片
+	-- 若在发动判定阶段（chk==0）且对方场上没有满足aux.NegateAnyFilter的表侧表示卡，则不能发动。
 	if chk==0 then return Duel.IsExistingMatchingCard(aux.NegateAnyFilter,tp,0,LOCATION_ONFIELD,1,nil) end
 end
--- 对对方场上的所有表侧表示的卡施加效果无效化
+-- 效果处理：取对方场上所有可无效化的表侧表示卡，依次赋予其效果无效化状态，直到回合结束时失效；若对象是陷阱怪兽，还额外将其陷阱怪兽效果无效化。
 function c47017574.disop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取对方场上的所有表侧表示的卡组成的卡片组
+	-- 取得对方场上所有满足可无效化条件的表侧表示卡，构成集合g。
 	local g=Duel.GetMatchingGroup(aux.NegateAnyFilter,tp,0,LOCATION_ONFIELD,nil)
 	local tc=g:GetFirst()
 	while tc do
-		-- 使目标卡片的效果无效
+		-- 对方场上的全部表侧表示的卡的效果直到回合结束时无效化。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_DISABLE)
 		e1:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END)
 		tc:RegisterEffect(e1)
-		-- 使目标卡片的效果无效化
+		-- 对方场上的全部表侧表示的卡的效果直到回合结束时无效化。
 		local e2=Effect.CreateEffect(c)
 		e2:SetType(EFFECT_TYPE_SINGLE)
 		e2:SetCode(EFFECT_DISABLE_EFFECT)
 		e2:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END)
 		tc:RegisterEffect(e2)
 		if tc:IsType(TYPE_TRAPMONSTER) then
-			-- 使目标陷阱怪兽无法发动其效果
+			-- 对方场上的全部表侧表示的卡的效果直到回合结束时无效化。
 			local e3=Effect.CreateEffect(c)
 			e3:SetType(EFFECT_TYPE_SINGLE)
 			e3:SetCode(EFFECT_DISABLE_TRAPMONSTER)

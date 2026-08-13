@@ -15,9 +15,9 @@ function c47013502.initial_effect(c)
 	e2:SetOperation(c47013502.sumsuc)
 	c:RegisterEffect(e2)
 end
--- 在怪兽通常召唤成功时，将一个永续效果注册给对方玩家，使对方不能发动反击陷阱卡。
+-- 这张卡召唤成功时触发，创建一个影响全场的永续效果，使对方玩家在本回合内不能发动反击陷阱卡，该效果在结束阶段重置。
 function c47013502.sumsuc(e,tp,eg,ep,ev,re,r,rp)
-	-- 使对方玩家不能发动类型为反击的陷阱卡。
+	-- 这张卡召唤成功的回合，对方不能把反击陷阱卡发动。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_CANNOT_ACTIVATE)
@@ -25,10 +25,10 @@ function c47013502.sumsuc(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetTargetRange(0,1)
 	e1:SetValue(c47013502.actlimit)
 	e1:SetReset(RESET_PHASE+PHASE_END)
-	-- 将效果e1注册给玩家tp。
+	-- 将上述“对方不能发动反击陷阱卡”的限制效果e1注册到当前玩家tp的场上，使其对对方玩家生效。
 	Duel.RegisterEffect(e1,tp)
 end
--- 判断被发动的效果是否为反击类型的陷阱卡。
+-- 作为限制效果的判定函数，检查对手发动的效果所在卡是否属于反击陷阱，若是则禁止发动。
 function c47013502.actlimit(e,te,tp)
 	return te:GetHandler():IsType(TYPE_COUNTER)
 end

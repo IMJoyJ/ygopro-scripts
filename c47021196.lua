@@ -32,42 +32,42 @@ function c47021196.initial_effect(c)
 	e3:SetOperation(c47021196.operation)
 	c:RegisterEffect(e3)
 end
--- 过滤函数，用于筛选满足条件的「超级运动员」怪兽（表侧表示、自己召唤的）
+-- ①效果的触发条件过滤器：确认被召唤/特殊召唤成功的怪兽是表侧表示、属于「超级运动员」字段，且召唤玩家为自己。
 function c47021196.cfilter(c,tp)
 	return c:IsFaceup() and c:IsSetCard(0xb2) and c:IsSummonPlayer(tp)
 end
--- 判断是否有满足条件的「超级运动员」怪兽被召唤或特殊召唤成功
+-- ①效果的触发条件：本次召唤/特殊召唤成功的事件中存在至少1只满足cfilter条件的「超级运动员」怪兽。
 function c47021196.spcon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c47021196.cfilter,1,nil,tp)
 end
--- 设置特殊召唤的处理信息，准备将此卡特殊召唤到场上
+-- ①效果的发动处理：在检查发动合法性时，确认自己主要怪兽区有空位且手卡的这张卡能够被特殊召唤；合法后设置特殊召唤的操作信息。
 function c47021196.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否满足特殊召唤的条件：场上存在空位且此卡可以被特殊召唤
+	-- ①效果发动合法性检查：自己主要怪兽区存在可用空格，且这张卡满足特殊召唤条件。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0 and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置操作信息，表示此效果会将此卡特殊召唤
+	-- ①效果的操作信息：将该效果登记为特殊召唤1只怪兽（即手卡中的这张卡）的操作。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 执行特殊召唤的操作函数
+-- ①效果处理：若自己主要怪兽区仍有空位且这张卡仍与此效果关联，则将其表侧攻击表示特殊召唤。
 function c47021196.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查场上是否有足够的空间进行特殊召唤
+	-- ①效果处理前确认：如果自己主要怪兽区没有可用空格，则终止处理。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) then
-		-- 将此卡以正面表示形式特殊召唤到场上
+		-- ①效果处理：将这张卡从手卡以表侧表示特殊召唤到自己的主要怪兽区。
 		Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
--- 过滤函数，用于筛选满足条件的非「超级运动员」怪兽（表侧表示、未被无效化）
+-- ②效果中“效果无效”选项的怪物过滤器：选择可被无效且未被无效的表侧效果怪兽，并且该怪兽不是「超级运动员」字段怪兽。
 function c47021196.negfilter(c)
-	-- 判断一个怪兽是否为表侧表示、未被无效化且不是「超级运动员」怪兽
+	-- ②效果无效选项的筛选条件：怪兽必须是表侧表示的效果怪兽（可被无效），且不属于「超级运动员」字段。
 	return aux.NegateMonsterFilter(c) and not c:IsSetCard(0xb2)
 end
--- 设置选择效果的处理信息，准备让玩家选择破坏或无效的效果
+-- ②效果的目标/选择处理：根据场上是否有可破坏的卡或可无效的怪兽来决定显示哪些选项，让玩家选择“破坏”或“无效”；选择破坏时指定取对象破坏，选择无效时设置无效分类。
 function c47021196.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsOnField() end
-	-- 获取场上所有表侧表示的卡（用于破坏效果）
+	-- ②效果中“破坏”选项的可用性判断：获取场上所有卡的集合，用于确认是否存在可以选择的破坏对象。
 	local b1=Duel.GetMatchingGroup(aux.TRUE,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,nil)
-	-- 获取场上所有满足条件的非「超级运动员」怪兽（用于无效效果）
+	-- ②效果中“无效”选项的可用性判断：获取双方怪兽区中满足negfilter的怪兽，用于确认是否存在可以无效的怪兽。
 	local b2=Duel.GetMatchingGroup(c47021196.negfilter,tp,LOCATION_MZONE,LOCATION_MZONE,nil)
 	if chk==0 then return #b1>0 or #b2>0 end
 	local off=1
@@ -83,46 +83,46 @@ function c47021196.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 		opval[off]=1
 		off=off+1
 	end
-	-- 让玩家从可选效果中选择一个
+	-- ②效果发动时让玩家选择要适用的效果分支（0或1），加1转为Lua数组下标，得到实际选择值。
 	local op=Duel.SelectOption(tp,table.unpack(ops))+1
 	local sel=opval[op]
 	e:SetLabel(sel)
 	if sel==0 then
 		e:SetCategory(CATEGORY_DESTROY)
 		e:SetProperty(EFFECT_FLAG_DELAY+EFFECT_FLAG_CARD_TARGET)
-		-- 提示玩家选择要破坏的卡
+		-- ②效果选择破坏分支时，向玩家显示“请选择要破坏的卡”的提示。
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-		-- 选择一张场上卡作为破坏目标
+		-- ②效果破坏分支：选择场上1张卡作为效果对象。
 		local g=Duel.SelectTarget(tp,aux.TRUE,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,1,nil)
-		-- 设置操作信息，表示此效果会破坏目标卡
+		-- ②效果破坏分支的操作信息：登记将破坏选中的对象。
 		Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,1,0,0)
 	else
 		e:SetCategory(CATEGORY_DISABLE)
 		e:SetProperty(EFFECT_FLAG_DELAY)
 	end
 end
--- 执行选择的效果操作函数
+-- ②效果处理：根据发动时选择的分支执行。若选择破坏，则破坏所选对象；若选择无效，则对场上所有非「超级运动员」表侧效果怪兽无效化其效果直到回合结束。
 function c47021196.operation(e,tp,eg,ep,ev,re,r,rp)
 	if e:GetLabel()==0 then
-		-- 获取当前连锁的目标卡
+		-- ②效果破坏分支：取得发动时选择的对象卡。
 		local tc=Duel.GetFirstTarget()
 		if tc:IsRelateToEffect(e) then
-			-- 以效果原因破坏目标卡
+			-- ②效果破坏分支：因效果破坏该对象卡。
 			Duel.Destroy(tc,REASON_EFFECT)
 		end
 	else
 		local c=e:GetHandler()
-		-- 获取场上所有满足条件的非「超级运动员」怪兽（用于无效效果）
+		-- ②效果无效分支：重新获取当前场上非「超级运动员」且可被无效的表侧效果怪兽，用于逐个无效化。
 		local b2=Duel.GetMatchingGroup(c47021196.negfilter,tp,LOCATION_MZONE,LOCATION_MZONE,nil)
 		local nc=b2:GetFirst()
 		while nc do
-			-- 创建一个使目标怪兽效果无效的EFFECT_DISABLE效果
+			-- 「超级运动员」怪兽以外的场上的全部表侧表示怪兽的效果直到回合结束时无效。
 			local e1=Effect.CreateEffect(c)
 			e1:SetType(EFFECT_TYPE_SINGLE)
 			e1:SetCode(EFFECT_DISABLE)
 			e1:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END)
 			nc:RegisterEffect(e1)
-			-- 创建一个使目标怪兽效果无效化的EFFECT_DISABLE_EFFECT效果
+			-- 「超级运动员」怪兽以外的场上的全部表侧表示怪兽的效果直到回合结束时无效。
 			local e2=Effect.CreateEffect(c)
 			e2:SetType(EFFECT_TYPE_SINGLE)
 			e2:SetCode(EFFECT_DISABLE_EFFECT)
