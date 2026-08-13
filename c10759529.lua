@@ -13,43 +13,43 @@ function c10759529.initial_effect(c)
 	e1:SetOperation(c10759529.activate)
 	c:RegisterEffect(e1)
 end
--- 判断是否为对方攻击时发动
+-- 发动条件函数：判断当前时点是否满足发动条件，即必须为对方回合（自己不是回合玩家）时才能发动。
 function c10759529.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 当前回合玩家不是发动者时才能发动
+	-- 返回当前玩家不是回合玩家，因此该效果只能在对方回合（我方不是回合玩家）中满足条件。
 	return tp~=Duel.GetTurnPlayer()
 end
--- 支付费用时的处理
+-- 代价函数：从自己场上选择并解放1只「英雄小子」（卡号32679370）作为发动代价。
 function c10759529.cost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查场上是否存在1只「英雄小子」可解放
+	-- 代价检测：检查自己场上是否存在至少1只可作为代价解放的「英雄小子」，存在时才可发动。
 	if chk==0 then return Duel.CheckReleaseGroup(tp,Card.IsCode,1,nil,32679370) end
-	-- 选择1只「英雄小子」进行解放
+	-- 选择自己场上的1只「英雄小子」作为要解放的代价。
 	local g=Duel.SelectReleaseGroup(tp,Card.IsCode,1,1,nil,32679370)
-	-- 将选中的怪兽解放作为费用
+	-- 将选择的「英雄小子」解放，作为发动效果的COST。
 	Duel.Release(g,REASON_COST)
 end
--- 检索条件过滤函数
+-- 检索过滤器：筛选既是名字带有「元素英雄」的怪兽，又满足可以加入手卡的卡。
 function c10759529.filter(c)
 	return c:IsSetCard(0x3008) and c:IsType(TYPE_MONSTER) and c:IsAbleToHand()
 end
--- 设定连锁处理的目标
+-- 发动时的目标处理：确认卡组中存在满足条件的「元素英雄」怪兽，并设定本次效果为检索加入手牌。
 function c10759529.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查卡组中是否存在满足条件的怪兽
+	-- 检查卡组中是否存在至少1张满足条件的「元素英雄」怪兽，若没有则不能发动。
 	if chk==0 then return Duel.IsExistingMatchingCard(c10759529.filter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置连锁处理信息为检索怪兽加入手牌
+	-- 设定操作信息：本次效果处理时要从卡组将1张卡加入手牌（CATEGORY_TOHAND），不取对象，所以目标参数为nil。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 发动时的处理
+-- 效果处理：无效对方怪兽的攻击，然后检索1只「元素英雄」怪兽加入手牌，并展示给对方玩家确认。
 function c10759529.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 无效对方的攻击
+	-- 无效当前那次攻击宣言的攻击。
 	Duel.NegateAttack()
-	-- 提示选择要加入手牌的卡
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)
-	-- 从卡组选择1只满足条件的怪兽
+	-- 给玩家显示选择卡片加入手牌的提示消息（HINTMSG_ATOHAND）。
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
+	-- 从自己卡组中选择1张满足条件的「元素英雄」怪兽。
 	local g=Duel.SelectMatchingCard(tp,c10759529.filter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的怪兽加入手牌
+		-- 将选中的卡加入其持有者的手牌（即自己手牌），处理原因为效果。
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 确认对方手牌中加入手牌的怪兽
+		-- 将加入手牌的卡展示给对方玩家确认。
 		Duel.ConfirmCards(1-tp,g)
 	end
 end
