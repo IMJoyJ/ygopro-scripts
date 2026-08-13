@@ -13,31 +13,31 @@ function c45547649.initial_effect(c)
 	e1:SetOperation(c45547649.operation)
 	c:RegisterEffect(e1)
 end
--- 规则层面：检查触发效果的卡是否在墓地且是因为战斗破坏被送去墓地
+-- 判定触发条件：此卡处于墓地且是被战斗破坏送墓的。
 function c45547649.condition(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsLocation(LOCATION_GRAVE) and e:GetHandler():IsReason(REASON_BATTLE)
 end
--- 规则层面：过滤函数，用于筛选卡号为76812113（鹰身女郎）且可以加入手牌的卡
+-- 检索过滤条件：卡名是「鹰身女郎」（卡号76812113）且可以被加入手卡。
 function c45547649.filter(c)
 	return c:IsCode(76812113) and c:IsAbleToHand()
 end
--- 规则层面：设置效果目标，检查卡组中是否存在满足条件的卡，并设置操作信息为检索效果
+-- 效果发动时的目标处理：确认卡组存在符合条件的「鹰身女郎」，并设置本次操作信息为从卡组将1张卡加入手卡。
 function c45547649.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 规则层面：判断是否满足发动条件，即卡组中是否存在至少1张符合条件的「鹰身女郎」
+	-- 若为发动合法性检查（chk==0），确认自己卡组中存在至少1张可加入手卡的「鹰身女郎」。
 	if chk==0 then return Duel.IsExistingMatchingCard(c45547649.filter,tp,LOCATION_DECK,0,1,nil) end
-	-- 规则层面：设置连锁操作信息，指定效果分类为CATEGORY_TOHAND（回手牌）和CATEGORY_SEARCH（检索）
+	-- 设置操作信息：本次效果将执行从卡组将1张卡加入手卡的处理，用于后续时点与效果判定。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 规则层面：执行效果处理，提示选择卡牌并将其加入手牌，同时确认对方查看该卡
+-- 效果处理：玩家从卡组选择1张「鹰身女郎」加入手卡，并向对方展示该卡。
 function c45547649.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 规则层面：向玩家提示选择要加入手牌的卡
+	-- 提示当前玩家从卡组选择要加入手卡的卡（弹出选择提示）。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 规则层面：从卡组中选择1张符合条件的「鹰身女郎」
+	-- 从自己卡组中选择1张满足检索过滤条件的「鹰身女郎」。
 	local g=Duel.SelectMatchingCard(tp,c45547649.filter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 规则层面：将选中的卡以效果原因送入手牌
+		-- 将选中的「鹰身女郎」以效果原因加入持有者手卡。
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 规则层面：确认对方查看送入手牌的卡
+		-- 将加入手卡的那张「鹰身女郎」展示给对手确认。
 		Duel.ConfirmCards(1-tp,g)
 	end
 end

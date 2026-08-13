@@ -4,7 +4,7 @@
 -- ①：需以「阿不思的落胤」为融合素材的融合怪兽在自己的场上或墓地存在的场合才能发动。这张卡从手卡特殊召唤。
 -- ②：这张卡召唤·特殊召唤的场合才能发动。自己的卡组·墓地·除外状态的1张「烙印」魔法·陷阱卡加入手卡。那之后，选自己1张手卡回到卡组最下面。
 function c45484331.initial_effect(c)
-	-- 注册此卡具有「阿不思的落胤」的卡名信息
+	-- 将卡号68468459（阿不思的落胤）登记为这张卡上记载的卡名，供后续判断相关融合素材使用。
 	aux.AddCodeList(c,68468459)
 	-- ①：需以「阿不思的落胤」为融合素材的融合怪兽在自己的场上或墓地存在的场合才能发动。这张卡从手卡特殊召唤。
 	local e1=Effect.CreateEffect(c)
@@ -30,69 +30,69 @@ function c45484331.initial_effect(c)
 	e3:SetCode(EVENT_SPSUMMON_SUCCESS)
 	c:RegisterEffect(e3)
 end
--- 过滤函数，用于检测满足条件的融合怪兽（以阿不思的落胤为素材且在场上或墓地）
+-- 定义①效果所需的融合怪兽判定过滤器：目标是融合怪兽，融合素材包含阿不思的落胤，且处于我方场上表侧表示或存在于墓地。
 function c45484331.spfilter(c)
-	-- 检测怪兽是否以阿不思的落胤为融合素材
+	-- 判断目标是否同时满足：是融合怪兽，并且其融合素材中包含卡号68468459（阿不思的落胤）。
 	return c:IsType(TYPE_FUSION) and aux.IsMaterialListCode(c,68468459)
 		and (c:IsLocation(LOCATION_MZONE) and c:IsFaceup() or c:IsLocation(LOCATION_GRAVE))
 end
--- 判断场上或墓地是否存在以阿不思的落胤为素材的融合怪兽
+-- 定义①效果的发动条件：检查自己场上或墓地是否存在满足spfilter条件的融合怪兽。
 function c45484331.spcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断场上或墓地是否存在以阿不思的落胤为素材的融合怪兽
+	-- 通过Duel.IsExistingMatchingCard确认自己的场上或墓地存在至少1张满足spfilter条件的融合怪兽，以此作为能否发动的判定。
 	return Duel.IsExistingMatchingCard(c45484331.spfilter,tp,LOCATION_MZONE+LOCATION_GRAVE,0,1,nil)
 end
--- 设置特殊召唤的条件检查
+-- 定义①效果发动时的目标合法性判定：在chk==0时，确认自己主要怪兽区有空位，且这张卡本身可以被特殊召唤。
 function c45484331.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否有足够的怪兽区域进行特殊召唤
+	-- 检查自己场上是否还有可用的主要怪兽区空格，以保证特殊召唤能够进行。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置特殊召唤的连锁操作信息
+	-- 设置本次连锁的操作信息：预告效果处理时进行特殊召唤，对象为这张卡（e:GetHandler()），数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 特殊召唤的处理函数
+-- 定义①效果处理时的实际操作：若这张卡仍与当前效果关联，则将其特殊召唤到场上。
 function c45484331.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) then
-		-- 将此卡特殊召唤到场上
+		-- 将这张卡以表侧表示特殊召唤到自己（tp）的场上。
 		Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
--- 过滤函数，用于检索满足条件的「烙印」魔法·陷阱卡
+-- 定义②效果可选的卡的条件：是‘烙印’魔法·陷阱卡，能够加入手牌；若位于除外区则必须是表侧表示（墓地/卡组没有表侧限制）。
 function c45484331.thfilter(c)
 	return c:IsType(TYPE_SPELL+TYPE_TRAP) and c:IsSetCard(0x15d) and c:IsAbleToHand()
 		and (not c:IsLocation(LOCATION_REMOVED) or c:IsFaceup())
 end
--- 设置效果处理的目标和操作信息
+-- 定义②效果发动时的合法性检查：确认卡组、墓地、除外区存在至少1张满足thfilter的‘烙印’魔法·陷阱卡；并设置后续操作信息：检索加入手牌以及将1张手卡放回卡组。
 function c45484331.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否存在满足条件的「烙印」魔法·陷阱卡
+	-- 检查卡组、墓地、除外区是否存在至少1张满足thfilter条件的‘烙印’魔法·陷阱卡，作为能否发动的条件。
 	if chk==0 then return Duel.IsExistingMatchingCard(c45484331.thfilter,tp,LOCATION_DECK+LOCATION_GRAVE+LOCATION_REMOVED,0,1,nil) end
-	-- 设置将卡加入手牌的连锁操作信息
+	-- 设置操作信息：效果处理时从卡组·墓地·除外区把1张满足条件的卡加入手牌。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK+LOCATION_GRAVE+LOCATION_REMOVED)
-	-- 设置将手卡送回卡组的连锁操作信息
+	-- 设置操作信息：效果处理时随后选自己1张手卡放回卡组。
 	Duel.SetOperationInfo(0,CATEGORY_TODECK,nil,1,tp,LOCATION_HAND)
 end
--- 效果处理函数，执行检索与送回卡组的操作
+-- 定义②效果处理时的操作：先从卡组·墓地·除外区选择1张符合条件的‘烙印’魔法·陷阱卡加入手牌，成功后向对方展示并洗切卡组；之后选自己1张手卡放回卡组最下面。
 function c45484331.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要加入手牌的卡
+	-- 向玩家发送选择提示消息：请选择要加入手牌的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择满足条件的「烙印」魔法·陷阱卡
+	-- 让tp从自己的卡组、墓地、除外区中，选择1张满足thfilter条件且不受王家长眠之谷影响的‘烙印’魔法·陷阱卡。
 	local g=Duel.SelectMatchingCard(tp,aux.NecroValleyFilter(c45484331.thfilter),tp,LOCATION_DECK+LOCATION_GRAVE+LOCATION_REMOVED,0,1,1,nil)
-	-- 确认选择的卡已加入手牌并进行后续处理
+	-- 判断条件：如果成功选到卡，将其加入手牌的操作实际生效，且该卡现在确实在手牌区域，则继续执行后续的返回卡组处理。
 	if g:GetCount()>0 and Duel.SendtoHand(g,nil,REASON_EFFECT)>0 and g:GetFirst():IsLocation(LOCATION_HAND) then
-		-- 向对方确认所选卡
+		-- 将加入手牌的那张卡展示给对方玩家确认。
 		Duel.ConfirmCards(1-tp,g)
-		-- 洗切卡组
+		-- 洗切卡组，因为检索后卡组顺序已改变。
 		Duel.ShuffleDeck(tp)
-		-- 提示玩家选择要返回卡组的卡
+		-- 向玩家发送选择提示消息：请选择要返回卡组的卡。
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TODECK)  --"请选择要返回卡组的卡"
-		-- 选择要送回卡组的手卡
+		-- 从自己的手卡中选择1张能够返回卡组的卡（用于放回卡组最下面）。
 		local sg=Duel.SelectMatchingCard(tp,Card.IsAbleToDeck,tp,LOCATION_HAND,0,1,1,nil)
 		if sg:GetCount()>0 then
-			-- 中断当前效果处理
+			-- 中断当前效果处理，使后续的处理与前面的检索加入手牌处理不在同一时点，避免错过时点。
 			Duel.BreakEffect()
-			-- 洗切手牌
+			-- 洗切手卡，重置手卡顺序状态。
 			Duel.ShuffleHand(tp)
-			-- 将选中的手卡送回卡组底部
+			-- 将选中的手卡放回持有者的卡组最下面（SEQ_DECKBOTTOM），原因是效果处理（REASON_EFFECT）。
 			Duel.SendtoDeck(sg,nil,SEQ_DECKBOTTOM,REASON_EFFECT)
 		end
 	end

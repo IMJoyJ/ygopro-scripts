@@ -33,63 +33,63 @@ function c45531624.initial_effect(c)
 	e3:SetOperation(c45531624.drop)
 	c:RegisterEffect(e3)
 end
--- 检查当前玩家手牌数量是否大于等于1
+-- 效果条件函数：检测效果持有者的控制者手牌数量是否≥1（即存在手卡时，该卡不能攻击）。
 function c45531624.atcon(e)
-	-- 检查当前玩家手牌数量是否大于等于1
+	-- 判断效果持有者的控制者手牌数量是否大于等于1，作为不能攻击的发动条件。
 	return Duel.GetFieldGroupCount(e:GetHandlerPlayer(),LOCATION_HAND,0)>=1
 end
--- 过滤函数，用于判断手牌中是否存在「精灵剑士」卡且可以特殊召唤
+-- 特殊召唤用过滤函数：选择手牌中属于「精灵剑士」系列（0xe4）且能够被特殊召唤的怪兽。
 function c45531624.spfilter(c,e,tp)
 	return c:IsSetCard(0xe4) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 设置特殊召唤效果的发动条件，检查是否有足够的召唤位置和满足条件的卡片
+-- 发动条件判断函数：检查自己主要怪兽区是否有空位，且手牌中存在至少1只符合条件的「精灵剑士」怪兽，满足才能发动。
 function c45531624.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否有足够的召唤位置
+	-- 检查自己主要怪兽区是否存在可用空格，作为发动条件之一。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查手牌中是否存在满足条件的「精灵剑士」怪兽
+		-- 并检查手牌中是否存在至少1张满足spfilter条件的「精灵剑士」怪兽，若有才可发动。
 		and Duel.IsExistingMatchingCard(c45531624.spfilter,tp,LOCATION_HAND,0,1,nil,e,tp) end
-	-- 设置特殊召唤效果的操作信息
+	-- 设置连锁操作信息：将本效果登记为特殊召唤，预计从手牌特殊召唤1只怪兽（数量1，对象不特定）。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_HAND)
 end
--- 处理特殊召唤效果的发动，选择并特殊召唤符合条件的怪兽
+-- 效果处理函数：实际执行特殊召唤。先确认场地空格，让玩家从手牌选择1只符合条件的「精灵剑士」怪兽，然后将其表侧表示特殊召唤到自己场上。
 function c45531624.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查是否有足够的召唤位置
+	-- 处理时若自己场上没有可用的怪兽区域，则不进行特殊召唤。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-	-- 提示玩家选择要特殊召唤的卡片
+	-- 向玩家发送“请选择要特殊召唤的卡”的选择提示信息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 选择满足条件的「精灵剑士」怪兽
+	-- 让玩家从手牌中选择1张满足spfilter条件的「精灵剑士」怪兽作为特殊召唤对象。
 	local g=Duel.SelectMatchingCard(tp,c45531624.spfilter,tp,LOCATION_HAND,0,1,1,nil,e,tp)
 	if g:GetCount()>0 then
-		-- 将选中的怪兽特殊召唤到场上
+		-- 将选择的怪兽以表侧表示特殊召唤到召唤者自己场上（不检查召唤条件与苏生限制）。
 		Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
--- 判断是否为对方造成的战斗伤害且攻击怪兽为自身
+-- 抽卡效果的发动条件函数：本卡给予对方战斗伤害，且攻击怪兽正是本卡自身。
 function c45531624.drcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断是否为对方造成的战斗伤害且攻击怪兽为自身
+	-- 判断受到战斗伤害的是对方玩家，且本次战斗的攻击怪兽是效果持有者自身，满足才可发动。
 	return ep~=tp and Duel.GetAttacker()==e:GetHandler()
 end
--- 过滤函数，用于判断场上是否存在「精灵剑士」怪兽且正面表示
+-- 计数过滤函数：统计自己场上表侧表示且属于「精灵剑士」系列（0xe4）的怪兽。
 function c45531624.drfilter(c)
 	return c:IsFaceup() and c:IsSetCard(0xe4)
 end
--- 设置抽卡效果的发动条件，计算场上「精灵剑士」怪兽数量并检查是否可以抽卡
+-- 抽卡效果的目标/发动条件函数：统计自己场上符合条件的「精灵剑士」怪兽数量；检查其大于0且自己可抽那么多张卡；将抽卡玩家设为自己，并登记抽卡操作信息。
 function c45531624.drtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 计算场上「精灵剑士」怪兽数量
+	-- 计算自己场上表侧表示的「精灵剑士」怪兽数量，作为抽卡张数。
 	local ct=Duel.GetMatchingGroupCount(c45531624.drfilter,tp,LOCATION_MZONE,0,nil)
-	-- 检查是否可以抽卡
+	-- 发动合法性检查：场上存在至少1只符合条件的「精灵剑士」怪兽，且自己可以抽取对应数量的卡。
 	if chk==0 then return ct>0 and Duel.IsPlayerCanDraw(tp,ct) end
-	-- 设置抽卡效果的目标玩家
+	-- 将本次效果的抽卡玩家设置为效果控制者自己。
 	Duel.SetTargetPlayer(tp)
-	-- 设置抽卡效果的操作信息
+	-- 设置连锁操作信息：本效果为抽卡效果，目标玩家为tp，预计抽ct张卡（具体张数在处理时确定）。
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,ct)
 end
--- 处理抽卡效果的发动，根据场上「精灵剑士」怪兽数量进行抽卡
+-- 抽卡效果的处理函数：获取目标玩家，再次统计场上「精灵剑士」数量，然后让该玩家抽取对应数量的卡。
 function c45531624.drop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁的目标玩家
+	-- 获取连锁中登记的目标玩家，即需要抽卡的玩家。
 	local p=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER)
-	-- 计算场上「精灵剑士」怪兽数量
+	-- 再次统计自己场上表侧表示的「精灵剑士」怪兽数量作为实际抽卡张数（效果处理时确定）。
 	local d=Duel.GetMatchingGroupCount(c45531624.drfilter,tp,LOCATION_MZONE,0,nil)
-	-- 根据场上「精灵剑士」怪兽数量进行抽卡
+	-- 让玩家p以效果原因抽d张卡。
 	Duel.Draw(p,d,REASON_EFFECT)
 end

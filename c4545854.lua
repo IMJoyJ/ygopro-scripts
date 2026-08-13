@@ -29,31 +29,31 @@ function c4545854.initial_effect(c)
 	e4:SetTarget(c4545854.desreptg)
 	c:RegisterEffect(e4)
 end
--- 判断是否处于伤害计算阶段且存在攻击对象
+-- 定义攻击力上升效果的发动条件：仅在伤害计算阶段且存在攻击对象（即战斗伤害计算中）时生效。
 function c4545854.adcon(e)
-	-- 当前阶段为伤害计算阶段且存在攻击对象
+	-- 判断当前阶段是否为伤害计算阶段，并确认存在被攻击的怪兽，以保证处于怪兽之间的战斗伤害计算时。
 	return Duel.GetCurrentPhase()==PHASE_DAMAGE_CAL and Duel.GetAttackTarget()
 end
--- 判断是否为攻击或防守的超量怪兽
+-- 指定攻击力上升效果的适用对象：当前战斗中的攻击怪兽或被攻击怪兽，且该怪兽必须是超量怪兽。
 function c4545854.adtg(e,c)
-	-- 获取攻击怪兽
+	-- 获取本次战斗的攻击怪兽。
 	local a=Duel.GetAttacker()
-	-- 获取防守怪兽
+	-- 获取本次战斗的被攻击怪兽（攻击对象）。
 	local d=Duel.GetAttackTarget()
 	return (c==a or c==d) and c:IsType(TYPE_XYZ)
 end
--- 计算超量怪兽阶级×200的数值
+-- 计算攻击力/守备力的上升数值，为对象怪兽的阶级×200。
 function c4545854.adval(e,c)
 	return c:GetRank()*200
 end
--- 判断是否满足代替破坏条件
+-- 代替破坏效果的判定函数：检查这张卡是否将要因卡的效果被破坏，且并非由代替破坏导致，并确认自己场上存在可移除的超量素材。
 function c4545854.desreptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return not e:GetHandler():IsReason(REASON_REPLACE)
-		-- 检查玩家是否能移除至少1张超量素材
+		-- 检查自己能否以效果原因从场上移除至少1个超量素材，用于代替这张卡的破坏。
 		and Duel.CheckRemoveOverlayCard(tp,1,0,1,REASON_EFFECT) end
-	-- 询问玩家是否发动代替破坏效果
+	-- 询问这张卡的持有者是否发动代替破坏效果，选择移除超量素材来保全这张卡。
 	if Duel.SelectEffectYesNo(tp,e:GetHandler(),96) then
-		-- 移除玩家场上1张超量素材
+		-- 实际从自己场上移除1个超量素材，作为这张卡代替破坏的代价。
 		Duel.RemoveOverlayCard(tp,1,0,1,1,REASON_EFFECT)
 		return true
 	else return false end
