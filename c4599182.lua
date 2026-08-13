@@ -26,52 +26,52 @@ function c4599182.initial_effect(c)
 	e2:SetOperation(c4599182.setop)
 	c:RegisterEffect(e2)
 end
--- 过滤函数，用于筛选满足条件的「永火」怪兽，包括手牌、墓地或除外区的怪兽，且可以被特殊召唤。
+-- 定义特殊召唤对象的筛选函数：检查候选怪兽是否满足「永火」字段、能否被特殊召唤，且所处位置为手牌·墓地或表侧除外。
 function c4599182.filter(c,e,tp)
 	return c:IsSetCard(0xb) and c:IsCanBeSpecialSummoned(e,0,tp,false,false) and (c:IsLocation(LOCATION_HAND+LOCATION_GRAVE) or c:IsFaceup())
 end
--- 效果处理时的判断条件，检查是否满足特殊召唤的条件，包括场上是否有空位和是否存在符合条件的怪兽。
+-- 效果①的发动条件和目标选择：在发动时确认自己场上存在空位，且存在至少1只满足筛选条件的「永火」怪兽，并登记特殊召唤的操作信息。
 function c4599182.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查玩家场上是否有空位可以用于特殊召唤。
+	-- 检查自己主要怪兽区是否有空位，作为效果①发动的前提条件。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查玩家手牌、墓地或除外区是否存在至少一张符合条件的「永火」怪兽。
+		-- 检查是否存在至少1只符合条件的「永火」怪兽可供特殊召唤。
 		and Duel.IsExistingMatchingCard(c4599182.filter,tp,LOCATION_HAND+LOCATION_GRAVE+LOCATION_REMOVED,0,1,nil,e,tp) end
-	-- 设置连锁操作信息，表示将要特殊召唤一张「永火」怪兽。
+	-- 登记本次连锁要进行特殊召唤的操作信息（不取对象，数量1，来源范围为手牌·墓地·除外区）。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_HAND+LOCATION_GRAVE+LOCATION_REMOVED)
 end
--- 发动效果时的处理函数，检查是否有空位并选择要特殊召唤的怪兽。
+-- 效果①处理时：让玩家从手牌·墓地·表侧除外的自己怪兽中选择1只「永火」怪兽，并以表侧表示特殊召唤到场上。
 function c4599182.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 如果场上没有空位则直接返回，不进行后续处理。
+	-- 效果处理时再次确认怪兽区还有空位，若没有则终止处理。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-	-- 提示玩家选择要特殊召唤的怪兽。
+	-- 提示玩家选择要特殊召唤的怪兽（显示“请选择要特殊召唤的卡”）。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 从手牌、墓地或除外区中选择一张符合条件的「永火」怪兽。
+	-- 使用过滤函数选择1张符合条件的「永火」怪兽（同时排除墓地受王家长眠之谷影响的卡）。
 	local g=Duel.SelectMatchingCard(tp,aux.NecroValleyFilter(c4599182.filter),tp,LOCATION_HAND+LOCATION_GRAVE+LOCATION_REMOVED,0,1,1,nil,e,tp)
 	if g:GetCount()>0 then
-		-- 将选中的怪兽特殊召唤到场上。
+		-- 将选中的怪兽以表侧攻击表示特殊召唤到自己场上。
 		Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
--- 用于判断是否满足盖放条件的过滤函数，检查怪兽是否为「永火」怪兽且因战斗或对方效果离开场上的情况。
+-- 定义②效果的触发过滤条件：离场怪兽必须是我方场上表侧表示的「永火」怪兽，且离场原因为战斗破坏或对方的效果。
 function c4599182.cfilter(c,tp,rp)
 	return c:IsPreviousPosition(POS_FACEUP) and c:IsPreviousControler(tp) and bit.band(c:GetPreviousTypeOnField(),TYPE_MONSTER)~=0
 		and c:IsPreviousSetCard(0xb) and (c:IsReason(REASON_BATTLE) or (rp==1-tp and c:IsReason(REASON_EFFECT)))
 end
--- 触发效果的条件函数，判断是否有符合条件的怪兽因战斗或对方效果离开场上。
+-- ②效果的发动条件：只要存在满足条件的我方「永火」怪兽离场，且离场怪兽不是本卡自身，即可发动。
 function c4599182.setcon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c4599182.cfilter,1,nil,tp,rp) and not eg:IsContains(e:GetHandler())
 end
--- 设置盖放效果的目标函数，检查该卡是否可以盖放。
+-- ②效果发动时的合法性检查：确认本卡位于墓地且可以在魔法陷阱区盖放，并登记本卡将离开墓地的操作信息。
 function c4599182.settg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsSSetable() end
-	-- 设置连锁操作信息，表示将要盖放此卡。
+	-- 登记本卡将离开墓地的操作信息，使与墓地移动相关的卡片（如王家长眠之谷）可以进行连锁/干扰判定。
 	Duel.SetOperationInfo(0,CATEGORY_LEAVE_GRAVE,e:GetHandler(),1,0,0)
 end
--- 盖放效果的处理函数，检查卡是否有效并将其盖放。
+-- ②效果处理时：若本卡仍在墓地且与效果关联，则将其盖放到自己的魔法陷阱区。
 function c4599182.setop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) then
-		-- 将此卡盖放到场上。
+		-- 将本卡以里侧表示设置到自己的魔法陷阱区。
 		Duel.SSet(tp,c)
 	end
 end
