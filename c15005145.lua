@@ -5,7 +5,7 @@
 -- ②：这张卡是当作永续陷阱卡使用的场合，自己场上的5星以上的「百夫长骑士」怪兽不会被效果破坏。
 -- ③：这张卡是当作永续陷阱卡使用的场合，自己·对方的主要阶段才能发动。这张卡特殊召唤。
 local s,id,o=GetID()
--- 初始化卡片效果，注册召唤、特殊召唤时的检索效果、永续陷阱效果和主要阶段特殊召唤效果
+-- 初始化并注册卡片的三个效果：①召唤/特殊召唤成功时检索『百夫长骑士』并附加特召自肃（用两个触发事件共用同一检索效果）、②作为永续陷阱时使我方5星以上『百夫长骑士』怪兽获得效果破坏抗性、③作为永续陷阱时可在主要阶段将自身特殊召唤。
 function s.initial_effect(c)
 	-- ①：这张卡召唤·特殊召唤的场合才能发动。从卡组把「重骑士 普莉梅拉」以外的1张「百夫长骑士」卡加入手卡。这个回合，自己不能把「重骑士 普莉梅拉」特殊召唤。
 	local e1=Effect.CreateEffect(c)
@@ -45,30 +45,30 @@ function s.initial_effect(c)
 	e4:SetOperation(s.spop)
 	c:RegisterEffect(e4)
 end
--- 检索过滤函数，用于筛选「百夫长骑士」卡且不是自身卡号的卡
+-- 检索过滤器：目标必须包含「百夫长骑士」字段、卡名不是「重骑士 普莉梅拉」，并且能够加入手卡。
 function s.thfilter(c)
 	return c:IsSetCard(0x1a2) and not c:IsCode(id) and c:IsAbleToHand()
 end
--- 设置检索效果的处理目标，确定要检索的卡数量和位置
+-- ①效果的发动条件和操作信息：在可以发动时（chk==0）检查卡组是否存在满足条件的检索目标；若存在，则登记本次处理为从卡组将1张卡加入手卡。
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断是否满足检索条件，即卡组中是否存在符合条件的卡
+	-- 发动合法性判定：卡组中存在至少1张满足thfilter条件的「百夫长骑士」卡。
 	if chk==0 then return Duel.IsExistingMatchingCard(s.thfilter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置连锁操作信息，表示将要进行检索并加入手牌的操作
+	-- 登记操作信息：本次效果处理将从卡组把1张卡加入手卡（用于效果发动后的检索判定，不取对象）。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 执行检索效果的操作，选择卡并加入手牌，同时确认对方查看
+-- 执行①效果：从卡组选择1张符合条件的「百夫长骑士」卡加入手卡并展示给对方，然后给自己附加这个回合不能特殊召唤「重骑士 普莉梅拉」的限制。
 function s.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要加入手牌的卡
+	-- 弹出选择提示：让操作玩家选择要加入手牌的卡片。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 从卡组中选择符合条件的卡
+	-- 从自己卡组选择1张满足thfilter条件的「百夫长骑士」卡作为检索对象。
 	local g=Duel.SelectMatchingCard(tp,s.thfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的卡加入手牌
+		-- 将选中的卡片以效果原因加入其持有者的手卡（即自己的手卡）。
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 确认对方查看加入手牌的卡
+		-- 向对方玩家展示刚刚加入手卡的卡片，确认检索结果。
 		Duel.ConfirmCards(1-tp,g)
 	end
-	-- 注册一个回合结束时失效的不能特殊召唤效果，防止本回合再次特殊召唤自身
+	-- 这个回合，自己不能把「重骑士 普莉梅拉」特殊召唤。②：这张卡是当作永续陷阱卡使用的场合，自己场上的5星以上的「百夫长骑士」怪兽不会被效果破坏。③：这张卡是当作永续陷阱卡使用的场合，自己·对方的主要阶段才能发动。这张卡特殊召唤。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_CANNOT_SPECIAL_SUMMON)
@@ -76,40 +76,40 @@ function s.thop(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetTargetRange(1,0)
 	e1:SetTarget(s.splimit)
 	e1:SetReset(RESET_PHASE+PHASE_END)
-	-- 注册效果到玩家场上
+	-- 将‘自己不能特殊召唤「重骑士 普莉梅拉」’的限制效果注册给当前玩家，持续到本回合结束阶段。
 	Duel.RegisterEffect(e1,tp)
 end
--- 限制特殊召唤的过滤函数，禁止召唤自身
+-- 自肃限制的判定条件：只有卡名是「重骑士 普莉梅拉」的怪兽才受到不能特殊召唤的限制。
 function s.splimit(e,c)
 	return c:IsCode(id)
 end
--- 判断该卡是否为永续陷阱状态
+-- ②效果的适用条件：这张卡在魔法与陷阱区域且类型为永续陷阱（即正作为永续陷阱卡使用）。
 function s.edcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():GetType()==TYPE_TRAP+TYPE_CONTINUOUS
 end
--- 判断目标怪兽是否为「百夫长骑士」且等级不低于5
+-- ②效果的适用对象：己方场上5星以上、属于「百夫长骑士」字段的怪兽。
 function s.edtg(e,c)
 	return c:IsSetCard(0x1a2) and c:IsLevelAbove(5)
 end
--- 判断当前是否为主要阶段且该卡为永续陷阱状态
+-- ③效果的发动条件：当前为主要阶段1或主要阶段2，且这张卡正作为永续陷阱卡使用。
 function s.spcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前游戏阶段
+	-- 获取当前游戏阶段，用于判断是否处于主要阶段。
 	local ph=Duel.GetCurrentPhase()
 	return (ph==PHASE_MAIN1 or ph==PHASE_MAIN2) and e:GetHandler():GetType()==TYPE_TRAP+TYPE_CONTINUOUS
 end
--- 设置特殊召唤效果的目标，判断是否可以特殊召唤自身
+-- ③效果的发动合法性检查：己方主要怪兽区有空位，且自己可以特殊召唤「重骑士 普莉梅拉」（以4星·光属性·魔法师族·调整·效果怪兽的形式）。
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断玩家场上是否有足够的怪兽区域
+	-- 检查自己是否还有可用的主要怪兽区空格，确保特殊召唤后有格子。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 判断玩家是否可以特殊召唤指定参数的怪兽
+		-- 检查自己是否能够将「重骑士 普莉梅拉」以怪兽形式特殊召唤（使用其怪兽参数判定召唤规则是否允许）。
 		and Duel.IsPlayerCanSpecialSummonMonster(tp,id,0x1a2,TYPE_MONSTER+TYPE_EFFECT+TYPE_TUNER,1600,1600,4,RACE_SPELLCASTER,ATTRIBUTE_LIGHT) end
-	-- 设置连锁操作信息，表示将要进行特殊召唤的操作
+	-- 登记操作信息：本次效果处理将把这张卡自身特殊召唤（确定为特殊召唤对象）。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 执行特殊召唤效果的操作，将自身特殊召唤到场上
+-- 执行③效果：若这张卡仍与效果关联，则将其表侧表示特殊召唤到自己场上。
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if not c:IsRelateToEffect(e) then return end
-	-- 将自身特殊召唤到场上
+	-- 将这张卡以表侧表示特殊召唤到自己场上（不检查召唤条件、不检查苏生限制）。
 	Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 end

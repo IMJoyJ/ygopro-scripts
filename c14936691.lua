@@ -20,28 +20,28 @@ function c14936691.initial_effect(c)
 	e2:SetOperation(c14936691.posop)
 	c:RegisterEffect(e2)
 end
--- 检索满足条件的怪兽（表侧表示、异虫族、爬虫类族、可以变里侧守备表示）
+-- 过滤选择对象：必须是表侧表示、名字带有「异虫」的爬虫类族怪兽，且能够变成里侧表示。
 function c14936691.filter(c)
 	return c:IsFaceup() and c:IsSetCard(0x3e) and c:IsRace(RACE_REPTILE) and c:IsCanTurnSet()
 end
--- 设置效果的目标选择函数，用于选择符合条件的怪兽
+-- 效果的目标选择函数：验证对象合法性，在发动时检查是否存在符合条件的目标，让玩家选择1只怪兽，并设置改变表示形式的操作信息。
 function c14936691.postg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and c14936691.filter(chkc) end
-	-- 判断是否满足选择目标的条件（场上存在符合条件的怪兽）
+	-- 发动条件判定：自己的主要怪兽区是否存在至少1只满足过滤条件的表侧表示「异虫」爬虫类族怪兽可以作为效果对象。
 	if chk==0 then return Duel.IsExistingTarget(c14936691.filter,tp,LOCATION_MZONE,0,1,nil) end
-	-- 向玩家提示选择怪兽的提示信息
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_POSCHANGE)
-	-- 选择符合条件的怪兽作为目标
+	-- 向玩家显示选择提示信息，提示其选择要改变表示形式的怪兽。
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_POSCHANGE)  --"请选择要改变表示形式的怪兽"
+	-- 让玩家从自己场上的主要怪兽区选择1只满足过滤条件的表侧表示「异虫」爬虫类族怪兽，并将其设为效果对象。
 	local g=Duel.SelectTarget(tp,c14936691.filter,tp,LOCATION_MZONE,0,1,1,nil)
-	-- 设置操作信息，指定将要改变表示形式的怪兽
+	-- 设置本次连锁的操作信息：将改变对象卡片的表示形式（CATEGORY_POSITION），数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_POSITION,g,1,0,0)
 end
--- 设置效果的处理函数，用于执行怪兽表示形式的改变
+-- 效果处理时的操作：获取效果对象，若其仍在场上且与效果关联，则将其变为里侧守备表示。
 function c14936691.posop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁中被选择的目标怪兽
+	-- 取得通过效果对象选择所确定的1只对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsFaceup() and tc:IsRelateToEffect(e) then
-		-- 将目标怪兽变为里侧守备表示
+		-- 将对象怪兽的表示形式变更为里侧守备表示（表侧攻击/守备表示均变为里侧守备）。
 		Duel.ChangePosition(tc,POS_FACEDOWN_DEFENSE,0,POS_FACEDOWN_DEFENSE,0)
 	end
 end

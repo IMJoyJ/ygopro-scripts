@@ -31,32 +31,32 @@ function c15052462.initial_effect(c)
 	e4:SetValue(c15052462.eqlimit)
 	c:RegisterEffect(e4)
 end
--- 限制装备对象必须为不死族怪兽。
+-- 装备限制判定：只有不死族怪兽才能作为本卡的装备对象。
 function c15052462.eqlimit(e,c)
 	return c:IsRace(RACE_ZOMBIE)
 end
--- 筛选场上正面表示的不死族怪兽。
+-- 筛选条件：怪兽必须是表侧表示且种族为不死族。
 function c15052462.filter(c)
 	return c:IsFaceup() and c:IsRace(RACE_ZOMBIE)
 end
--- 选择场上正面表示的不死族怪兽作为装备对象。
+-- 发动时的目标选择处理：检查是否有合法对象，提示玩家从双方场上选择1只表侧表示不死族怪兽，并设为效果对象，同时记录装备操作信息。
 function c15052462.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and c15052462.filter(chkc) end
-	-- 检查是否有符合条件的装备怪兽。
+	-- 发动条件检查：若场上不存在表侧表示的不死族怪兽，则不能发动此卡。
 	if chk==0 then return Duel.IsExistingTarget(c15052462.filter,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil) end
-	-- 向玩家提示选择装备目标。
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_EQUIP)
-	-- 选择一只不死族怪兽作为装备对象。
+	-- 向操控者显示选择装备对象的提示消息，提示内容为“请选择要装备的卡”。
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_EQUIP)  --"请选择要装备的卡"
+	-- 从己方或对方场上选择1只表侧表示且为不死族的怪兽作为本卡装备的对象（同时登记为连锁对象）。
 	Duel.SelectTarget(tp,c15052462.filter,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,nil)
-	-- 设置本次连锁操作为装备效果。
+	-- 设置操作信息：效果处理时以本卡自身为对象进行装备分类处理，数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_EQUIP,e:GetHandler(),1,0,0)
 end
--- 执行装备效果。
+-- 效果处理：取出装备对象，确认本卡和对象仍与效果相关联且对象仍为表侧表示，满足条件则将本卡装备给该怪兽。
 function c15052462.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的装备目标怪兽。
+	-- 获取发动时选择的对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if e:GetHandler():IsRelateToEffect(e) and tc:IsRelateToEffect(e) and tc:IsFaceup() then
-		-- 将装备卡装备给目标怪兽。
+		-- 将本卡作为装备卡装备给对象怪兽（装备成功时装备魔法效果开始适用）。
 		Duel.Equip(tp,e:GetHandler(),tc)
 	end
 end

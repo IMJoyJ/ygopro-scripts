@@ -9,7 +9,7 @@ function c15090429.initial_effect(c)
 	e1:SetValue(c15090429.condition)
 	c:RegisterEffect(e1)
 end
--- 当卡片效果适用时，检查该怪兽是否为风属性
+-- 作为EFFECT_DOUBLE_TRIBUTE的判定条件：当此卡被用于祭品召唤风属性怪兽时返回true，即此卡可作为2只祭品。
 function c15090429.condition(e,c)
 	return c:IsAttribute(ATTRIBUTE_WIND)
 end

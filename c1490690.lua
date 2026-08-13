@@ -35,35 +35,35 @@ function c1490690.initial_effect(c)
 	e2:SetOperation(c1490690.stop)
 	c:RegisterEffect(e2)
 end
--- 效果发动时，判断是否为对方发动效果
+-- ①效果的发动条件：仅在对方玩家发动效果时才能发动（rp==1-tp表示效果发动者是对手）。
 function c1490690.con(e,tp,eg,ep,ev,re,r,rp)
 	return rp==1-tp
 end
--- 过滤函数，用于筛选「荷鲁斯」怪兽且可以特殊召唤
+-- ①效果的特殊召唤对象过滤：必须是「荷鲁斯」系列怪兽，且能够以表侧表示被特殊召唤。
 function c1490690.filter(c,e,tp)
 	return c:IsSetCard(0x19d) and c:IsCanBeSpecialSummoned(e,0,tp,false,false,POS_FACEUP)
 end
--- 设置连锁处理时的条件，判断是否满足特殊召唤的条件
+-- ①效果的发动合法性检查：我方主要怪兽区有空位，且手卡·墓地存在至少1只满足特殊召唤条件的「荷鲁斯」怪兽。
 function c1490690.tg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 判断场上是否有足够的怪兽区域
+	-- 检查我方主要怪兽区是否有可用的空格。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 判断手卡或墓地是否存在满足条件的「荷鲁斯」怪兽
+		-- 检查手卡·墓地是否存在至少1只可特殊召唤的「荷鲁斯」怪兽。
 		and Duel.IsExistingMatchingCard(c1490690.filter,tp,LOCATION_HAND+LOCATION_GRAVE,0,1,nil,e,tp) end
-	-- 设置连锁处理信息，表示将要特殊召唤怪兽
+	-- 设置操作信息：本效果包含特殊召唤，预计从手卡·墓地特殊召唤1只怪兽。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_HAND+LOCATION_GRAVE)
 end
--- 处理特殊召唤效果，选择并特殊召唤符合条件的怪兽，并设置不能特殊召唤相同卡名怪兽的效果
+-- ①效果处理：选择手卡·墓地中的1只「荷鲁斯」怪兽特殊召唤，并给己方附加本回合不能通过本卡效果特殊召唤同名怪兽的限制。
 function c1490690.op(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断场上是否有足够的怪兽区域
+	-- 处理时再次确认我方主要怪兽区仍有空位，若没有则效果不处理。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<1 then return end
-	-- 提示玩家选择要特殊召唤的怪兽
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
-	-- 选择满足条件的「荷鲁斯」怪兽
+	-- 向操作者显示选择提示，提示内容为“请选择要特殊召唤的卡”。
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
+	-- 从手卡·墓地中选择1只符合条件的「荷鲁斯」怪兽（过滤时排除受王家长眠之谷影响的卡）。
 	local g=Duel.SelectMatchingCard(tp,aux.NecroValleyFilter(c1490690.filter),tp,LOCATION_HAND+LOCATION_GRAVE,0,1,1,nil,e,tp)
 	if #g>0 then
-		-- 将选中的怪兽特殊召唤到场上
+		-- 将选择的怪兽以表侧表示特殊召唤到我方场上。
 		Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
-		-- 创建并注册一个效果，使本回合不能特殊召唤与该怪兽相同卡名的怪兽
+		-- 这个回合，自己不能把原本卡名和这个效果特殊召唤的怪兽相同的怪兽用「卡诺匹斯的守护者」的效果特殊召唤。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_FIELD)
 		e1:SetCode(EFFECT_CANNOT_SPECIAL_SUMMON)
@@ -72,31 +72,31 @@ function c1490690.op(e,tp,eg,ep,ev,re,r,rp)
 		e1:SetTarget(c1490690.splimit)
 		e1:SetLabel(g:GetFirst():GetOriginalCodeRule())
 		e1:SetReset(RESET_PHASE+PHASE_END)
-		-- 将效果注册到玩家场上
+		-- 将自肃效果注册到玩家tp，使其在本回合内受到对应特殊召唤限制。
 		Duel.RegisterEffect(e1,tp)
 	end
 end
--- 限制特殊召唤的过滤函数，判断是否为相同卡名的怪兽
+-- 自肃效果的过滤条件：特殊召唤的怪兽原本卡名与记录的一致，且该特殊召唤由「卡诺匹斯的守护者」的效果发动时，禁止其特殊召唤。
 function c1490690.splimit(e,c,sump,sumtype,sumpos,targetp,se)
 	local sc=se:GetHandler()
 	return sc and sc:IsCode(1490690) and c:IsOriginalCodeRule(e:GetLabel())
 end
--- 判断此卡是否从手卡或场上送去墓地
+-- ②效果的发动条件：这张卡是从手卡或场上被送去墓地的场合才能发动。
 function c1490690.stcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsPreviousLocation(LOCATION_HAND+LOCATION_ONFIELD)
 end
--- 设置连锁处理时的条件，判断是否满足盖放的条件
+-- ②效果的发动合法性检查：这张卡当前可以盖放；并设置操作信息表示将从墓地移动。
 function c1490690.sttg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsSSetable() end
-	-- 设置连锁处理信息，表示将要盖放此卡
+	-- 设置操作信息：本效果涉及从墓地离开（CATEGORY_LEAVE_GRAVE），用于相关效果判定。
 	Duel.SetOperationInfo(0,CATEGORY_LEAVE_GRAVE,e:GetHandler(),1,0,0)
 end
--- 处理盖放效果，将此卡盖放到场上，并设置其离开场时除外的效果
+-- ②效果处理：满足条件且卡片仍与效果关联时，将其盖放到我方魔陷区；成功盖放后，给它附加离场时除外代替离开的替代效果。
 function c1490690.stop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 判断此卡是否能正常盖放
+	-- 检查这张卡仍与本次效果关联，且成功盖放到场上时才继续处理。
 	if c:IsRelateToEffect(e) and Duel.SSet(tp,c)~=0 then
-		-- 创建并注册一个效果，使此卡离开场时除外
+		-- 这个效果盖放的这张卡从场上离开的场合除外。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_LEAVE_FIELD_REDIRECT)
