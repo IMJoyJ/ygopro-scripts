@@ -7,7 +7,7 @@ function c23615409.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- 对方场上存在的全部昆虫族的怪兽不能宣言攻击。
+	-- 对应效果原文：“对方场上存在的全部昆虫族的怪兽不能宣言攻击。”
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD)
 	e2:SetCode(EFFECT_CANNOT_ATTACK_ANNOUNCE)
@@ -16,7 +16,7 @@ function c23615409.initial_effect(c)
 	e2:SetTarget(c23615409.atktarget)
 	c:RegisterEffect(e2)
 end
--- 设置效果目标为所有昆虫族怪兽
+-- 该函数是永续效果的目标筛选条件：判断怪兽是否为昆虫族，若为昆虫族则适用“不能攻击宣言”的限制。
 function c23615409.atktarget(e,c)
 	return c:IsRace(RACE_INSECT)
 end
