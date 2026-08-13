@@ -6,9 +6,9 @@
 -- ②：这张卡为同调素材作同调召唤的场合，以自己场上1只「朋克」怪兽为对象才能发动。这个回合，那只怪兽在同1次的战斗阶段中可以作2次攻击。
 function c18313046.initial_effect(c)
 	c:EnableReviveLimit()
-	-- 为卡片添加融合召唤手续，使用2个满足「朋克」属性的怪兽作为融合素材
+	-- 为这张卡添加融合召唤手续，要求素材为2只“朋克”字段怪兽（符合Card.IsFusionSetCard，字段0x171），即实现“「朋克」怪兽×2”的融合素材。
 	aux.AddFusionProcFunRep(c,aux.FilterBoolFunction(Card.IsFusionSetCard,0x171),2,true)
-	-- ①：把融合召唤的这张卡解放才能发动。从手卡·卡组把最多2只8星以外的「朋克」怪兽守备表示特殊召唤（同名卡最多1张）。
+	-- 这个卡名的①②的效果1回合各能使用1次。①：把融合召唤的这张卡解放才能发动。从手卡·卡组把最多2只8星以外的「朋克」怪兽守备表示特殊召唤（同名卡最多1张）。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(18313046,0))
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -20,7 +20,7 @@ function c18313046.initial_effect(c)
 	e1:SetTarget(c18313046.sptg)
 	e1:SetOperation(c18313046.spop)
 	c:RegisterEffect(e1)
-	-- ②：这张卡为同调素材作同调召唤的场合，以自己场上1只「朋克」怪兽为对象才能发动。这个回合，那只怪兽在同1次的战斗阶段中可以作2次攻击。
+	-- 这个卡名的①②的效果1回合各能使用1次。②：这张卡为同调素材作同调召唤的场合，以自己场上1只「朋克」怪兽为对象才能发动。这个回合，那只怪兽在同1次的战斗阶段中可以作2次攻击。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(18313046,1))
 	e2:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
@@ -32,75 +32,75 @@ function c18313046.initial_effect(c)
 	e2:SetOperation(c18313046.atkop)
 	c:RegisterEffect(e2)
 end
--- 效果适用条件：此卡必须为融合召唤 summoned
+-- 效果①的发动条件判定：只有通过融合召唤出场的这张卡才满足发动条件（对应“把融合召唤的这张卡解放才能发动”的前提）。
 function c18313046.spcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsSummonType(SUMMON_TYPE_FUSION)
 end
--- 特殊召唤的过滤条件：不是8星且为「朋克」属性且可以特殊召唤到守备表示
+-- 特殊召唤的候选卡过滤条件：不是8星、属于“朋克”字段、且可以被表侧守备表示特殊召唤。对应“8星以外的「朋克」怪兽”。
 function c18313046.spfilter(c,e,tp)
 	return not c:IsLevel(8) and c:IsSetCard(0x171) and c:IsCanBeSpecialSummoned(e,0,tp,false,false,POS_FACEUP_DEFENSE)
 end
--- 发动费用：解放此卡且场上存在空怪兽区
+-- 效果①的发动代价处理：将这张卡解放作为代价。先检查是否满足解放条件及解放后怪兽区空位，满足则实际执行解放。
 function c18313046.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
-	-- 发动费用检查：此卡可被解放且场上存在空怪兽区
+	-- 代价检查：这张卡可以被解放，且解放后自己场上仍有可用的怪兽区空格。
 	if chk==0 then return c:IsReleasable() and Duel.GetMZoneCount(tp,c)>0 end
-	-- 执行发动费用：解放此卡
+	-- 以代价（REASON_COST）解放这张卡，完成“把融合召唤的这张卡解放才能发动”的代价。
 	Duel.Release(c,REASON_COST)
 end
--- 效果目标设定：确认场上存在满足条件的「朋克」怪兽
+-- 效果①的发动目标设定：检查手卡·卡组是否存在满足条件的“朋克”怪兽，并设置特殊召唤的操作信息。
 function c18313046.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 效果目标检查：确认场上存在满足条件的「朋克」怪兽
+	-- 发动时确认：手卡·卡组中至少存在1只满足spfilter条件的“朋克”怪兽，才能发动。
 	if chk==0 then return Duel.IsExistingMatchingCard(c18313046.spfilter,tp,LOCATION_HAND+LOCATION_DECK,0,1,nil,e,tp) end
-	-- 设置连锁操作信息：准备特殊召唤怪兽
+	-- 设置操作信息：本次处理将进行特殊召唤，预计数量为1，来源为手卡·卡组，供后续效果检测使用。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_HAND+LOCATION_DECK)
 end
--- 效果处理：检索满足条件的怪兽并特殊召唤
+-- 效果①处理：计算可特殊召唤的数量，受可用怪兽区和【青眼精灵龙】效果限制，从手卡·卡组选择最多2只卡名不同的“朋克”怪兽表侧守备表示特殊召唤。
 function c18313046.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取场上可用怪兽区数量
+	-- 获取自己场上可用的怪兽区空格数，用于决定最多能特殊召唤几只。
 	local ft=Duel.GetLocationCount(tp,LOCATION_MZONE)
 	if ft<=0 then return end
 	-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中。禁止双方同时特殊召唤2只以上怪兽
 	if ft>1 and Duel.IsPlayerAffectedByEffect(tp,59822133) then ft=1 end
 	local ct=math.min(ft,2)
-	-- 获取满足条件的怪兽组
+	-- 获取手卡·卡组中所有满足spfilter条件的“朋克”怪兽，作为后续选择的候选组。
 	local g=Duel.GetMatchingGroup(c18313046.spfilter,tp,LOCATION_HAND+LOCATION_DECK,0,nil,e,tp)
-	-- 提示玩家选择要特殊召唤的卡
+	-- 向玩家弹出“请选择要特殊召唤的卡”的选择提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 选择满足条件的怪兽组（卡名各不相同）
+	-- 让玩家从候选组中选择1到ct张卡，且通过aux.dncheck保证所选卡名互不相同（对应同名卡最多1张）。
 	local sg=g:SelectSubGroup(tp,aux.dncheck,false,1,ct)
 	if sg then
-		-- 将选中的怪兽组特殊召唤到场上
+		-- 将选中的怪兽以表侧守备表示特殊召唤到自己的场上。
 		Duel.SpecialSummon(sg,0,tp,tp,false,false,POS_FACEUP_DEFENSE)
 	end
 end
--- 效果适用条件：此卡作为同调素材被使用且当前处于战斗阶段或可进入战斗阶段
+-- 效果②的发动条件判定：这张卡作为同调素材送去墓地时，且当前处于战斗阶段开始到战斗阶段结束之间（或可以进行战斗阶段），才可发动。
 function c18313046.atkcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前阶段
+	-- 获取当前游戏阶段，用于后续条件判断。
 	local ph=Duel.GetCurrentPhase()
-	-- 效果适用条件判断：作为同调素材且当前阶段为战斗阶段或可进入战斗阶段
+	-- 返回是否满足：这张卡被用作同调召唤的素材（r==REASON_SYNCHRO），且当前处于战斗阶段相关时点，或可以进行战斗阶段。
 	return r==REASON_SYNCHRO and (ph>=PHASE_BATTLE_START and ph<=PHASE_BATTLE or Duel.IsAbleToEnterBP())
 end
--- 攻击次数增加效果的过滤条件：场上自己控制的「朋克」怪兽且未拥有额外攻击效果
+-- 效果②的选择对象过滤：自己场上的表侧表示“朋克”怪兽，且尚未受到额外攻击次数效果影响。
 function c18313046.atkfilter(c)
 	return c:IsFaceup() and c:IsSetCard(0x171) and not c:IsHasEffect(EFFECT_EXTRA_ATTACK)
 end
--- 效果目标设定：选择场上自己控制的「朋克」怪兽
+-- 效果②的取对象处理：确认存在合法对象后，提示玩家选择自己场上1只符合条件的“朋克”怪兽。
 function c18313046.atktg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and c18313046.atkfilter(chkc) end
-	-- 效果目标检查：确认场上存在满足条件的「朋克」怪兽
+	-- 发动时确认：自己场上存在至少1只满足atkfilter条件的“朋克”怪兽，才能选择对象。
 	if chk==0 then return Duel.IsExistingTarget(c18313046.atkfilter,tp,LOCATION_MZONE,0,1,nil) end
-	-- 提示玩家选择效果对象
+	-- 弹出“请选择效果的对象”的提示消息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)  --"请选择效果的对象"
-	-- 选择场上自己控制的「朋克」怪兽作为效果对象
+	-- 选择1只自己场上的“朋克”怪兽作为效果对象，并建立与当前连锁的关联。
 	Duel.SelectTarget(tp,c18313046.atkfilter,tp,LOCATION_MZONE,0,1,1,nil)
 end
--- 效果处理：为对象怪兽添加额外一次攻击效果
+-- 效果②处理：给对象怪兽附加1次额外攻击次数的效果，使其这个回合在同一次战斗阶段中可以攻击2次。
 function c18313046.atkop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的效果对象
+	-- 取得效果②选择的1只对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) and tc:IsFaceup() then
-		-- 为对象怪兽添加额外一次攻击效果
+		-- 这个回合，那只怪兽在同1次的战斗阶段中可以作2次攻击。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)

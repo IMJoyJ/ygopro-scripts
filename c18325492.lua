@@ -12,7 +12,7 @@ function c18325492.initial_effect(c)
 	e1:SetValue(c18325492.valcon)
 	c:RegisterEffect(e1)
 end
--- 只有在战斗破坏的情况下才生效
+-- 该函数作为效果的值判断条件：检查造成破坏的原因是否包含战斗破坏（REASON_BATTLE），若是则满足‘不会被战斗破坏’的适用条件，即仅在战斗破坏时生效。
 function c18325492.valcon(e,re,r,rp)
 	return bit.band(r,REASON_BATTLE)~=0
 end
