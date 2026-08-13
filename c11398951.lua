@@ -3,7 +3,7 @@
 -- 「电子化天使」仪式怪兽的降临必需。
 -- ①：等级合计直到变成和仪式召唤的怪兽相同为止，把自己的手卡·场上的怪兽解放或者作为解放的代替而从自己墓地让天使族或者战士族的怪兽回到卡组，从手卡把1只「电子化天使」仪式怪兽仪式召唤。
 function c11398951.initial_effect(c)
-	-- ①：等级合计直到变成和仪式召唤的怪兽相同为止，把自己的手卡·场上的怪兽解放或者作为解放的代替而从自己墓地让天使族或者战士族的怪兽回到卡组，从手卡把1只「电子化天使」仪式怪兽仪式召唤。
+	-- 「电子化天使」仪式怪兽的降临必需。①：等级合计直到变成和仪式召唤的怪兽相同为止，把自己的手卡·场上的怪兽解放或者作为解放的代替而从自己墓地让天使族或者战士族的怪兽回到卡组，从手卡把1只「电子化天使」仪式怪兽仪式召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -12,39 +12,39 @@ function c11398951.initial_effect(c)
 	e1:SetOperation(c11398951.activate)
 	c:RegisterEffect(e1)
 end
--- 过滤函数，用于判断卡片是否为「电子化天使」系列
+-- 过滤条件：卡片属于「电子化天使」系列，即作为仪式召唤对象时需要满足的字段。
 function c11398951.filter(c,e,tp)
 	return c:IsSetCard(0x2093)
 end
--- 过滤函数，用于判断卡片是否为战士族或天使族且可以送回卡组
+-- 墓地替代素材的筛选条件：等级大于0、种族为天使族或战士族、并且能够返回卡组。
 function c11398951.mfilter(c)
 	return c:GetLevel()>0 and c:IsRace(RACE_WARRIOR+RACE_FAIRY) and c:IsAbleToDeck()
 end
--- 效果的发动时点处理函数，用于判断是否可以发动此效果
+-- 效果发动时的条件检查和操作信息登记：确认手牌中存在可仪式召唤的「电子化天使」怪兽，且有合法素材组合；随后登记本效果将进行特殊召唤和将墓地怪兽返回卡组的处理。
 function c11398951.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then
-		-- 获取玩家当前可用的用于仪式召唤的素材卡片组（手牌和场上的怪兽）
+		-- 获取玩家tp可用的仪式召唤素材集合（包括手牌、场上可解放的怪兽以及墓地中的仪式魔人等）。
 		local mg1=Duel.GetRitualMaterial(tp)
-		-- 获取玩家墓地中满足条件的战士族或天使族怪兽组（可送回卡组）
+		-- 获取自己墓地中满足mfilter条件的怪兽集合，作为解放的代替素材。
 		local mg2=Duel.GetMatchingGroup(c11398951.mfilter,tp,LOCATION_GRAVE,0,nil)
-		-- 检查是否存在满足条件的「电子化天使」仪式怪兽，且其召唤所需等级合计满足要求
+		-- 检查手牌中是否存在1只「电子化天使」仪式怪兽，能够使用mg1和mg2中的素材使等级合计恰好等于该怪兽等级，从而可进行仪式召唤。
 		return Duel.IsExistingMatchingCard(aux.RitualUltimateFilter,tp,LOCATION_HAND,0,1,nil,c11398951.filter,e,tp,mg1,mg2,Card.GetLevel,"Equal")
 	end
-	-- 设置效果处理时将要特殊召唤的卡片信息
+	-- 登记本效果将进行1只怪兽从手牌的特殊召唤（仪式召唤）。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_HAND)
-	-- 设置效果处理时将要送回卡组的卡片信息
+	-- 登记本效果可能将墓地中的怪兽返回卡组的操作信息（数量未知，初始设为0）。
 	Duel.SetOperationInfo(0,CATEGORY_TODECK,nil,0,tp,LOCATION_GRAVE)
 end
--- 效果的发动处理函数，用于执行仪式召唤的具体操作
+-- 效果处理：选择要仪式召唤的「电子化天使」怪兽，选择符合等级合计的仪式素材，完成解放或代替回卡组，然后进行仪式召唤。
 function c11398951.activate(e,tp,eg,ep,ev,re,r,rp)
 	::cancel::
-	-- 获取玩家当前可用的用于仪式召唤的素材卡片组（手牌和场上的怪兽）
+	-- 获取当前实际可用的仪式召唤素材集合，用于后续选择素材。
 	local mg1=Duel.GetRitualMaterial(tp)
-	-- 获取玩家墓地中满足条件的战士族或天使族怪兽组（可送回卡组），并排除受王家长眠之谷影响的卡
+	-- 获取自己墓地中不受王家长眠之谷影响且满足mfilter条件的怪兽，作为解放的代替素材。
 	local mg2=Duel.GetMatchingGroup(aux.NecroValleyFilter(c11398951.mfilter),tp,LOCATION_GRAVE,0,nil)
-	-- 提示玩家选择要特殊召唤的仪式怪兽
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
-	-- 选择满足条件的「电子化天使」仪式怪兽进行仪式召唤
+	-- 向玩家显示“请选择要特殊召唤的卡”的提示，进入仪式怪兽的选择界面。
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
+	-- 从手牌中选择1只符合「电子化天使」字段且拥有合法素材组合的仪式怪兽作为特殊召唤对象。
 	local g=Duel.SelectMatchingCard(tp,aux.RitualUltimateFilter,tp,LOCATION_HAND,0,1,1,nil,c11398951.filter,e,tp,mg1,mg2,Card.GetLevel,"Equal")
 	local tc=g:GetFirst()
 	if tc then
@@ -55,29 +55,29 @@ function c11398951.activate(e,tp,eg,ep,ev,re,r,rp)
 		else
 			mg:RemoveCard(tc)
 		end
-		-- 提示玩家选择用于解放的素材
-		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_RELEASE)
-		-- 设置仪式召唤的等级检查附加条件，确保等级合计等于目标等级
+		-- 向玩家显示“请选择要解放的卡”的提示，进入仪式素材的选择界面。
+		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_RELEASE)  --"请选择要解放的卡"
+		-- 设置额外的素材合法性检查：所选素材的等级合计必须恰好等于仪式怪兽的等级，防止选择多余素材。
 		aux.GCheckAdditional=aux.RitualCheckAdditional(tc,tc:GetLevel(),"Equal")
-		-- 从可用素材中选择满足等级要求的子集作为仪式召唤的素材
+		-- 从可选素材中自动选择一组等级合计恰好等于仪式怪兽等级的卡片作为本次仪式召唤的素材。
 		local mat=mg:SelectSubGroup(tp,aux.RitualCheck,true,1,tc:GetLevel(),tp,tc,tc:GetLevel(),"Equal")
-		-- 清除附加的等级检查条件
+		-- 清除之前设置的额外素材检查闭包，避免对后续操作产生干扰。
 		aux.GCheckAdditional=nil
 		if not mat then goto cancel end
 		tc:SetMaterial(mat)
 		local mat2=mat:Filter(Card.IsLocation,nil,LOCATION_GRAVE):Filter(Card.IsRace,nil,RACE_WARRIOR+RACE_FAIRY)
 		if #mat2>0 then
-			-- 显示被选为仪式召唤素材的墓地怪兽动画效果
+			-- 为将要返回卡组的墓地素材显示选中动画，并将这些卡记录为对象。
 			Duel.HintSelection(mat2)
 		end
 		mat:Sub(mat2)
-		-- 解放选中的仪式召唤素材
+		-- 执行仪式素材的解放处理（通常为手牌/场上的怪兽；如包含墓地仪式魔人等特殊素材则除外）。
 		Duel.ReleaseRitualMaterial(mat)
-		-- 将作为替代解放的墓地怪兽送回卡组
+		-- 将作为解放代替的墓地天使族/战士族怪兽返回卡组并洗牌，原因标记为效果和仪式素材。
 		Duel.SendtoDeck(mat2,nil,SEQ_DECKSHUFFLE,REASON_EFFECT+REASON_MATERIAL+REASON_RITUAL)
-		-- 中断当前效果处理，使后续效果视为不同时处理
+		-- 中断当前效果处理，使之后的特殊召唤视为另一次处理，以产生正确的时点。
 		Duel.BreakEffect()
-		-- 将选中的仪式怪兽特殊召唤到场上
+		-- 将选择的「电子化天使」仪式怪兽以表侧表示进行仪式召唤，并完成仪式召唤程序。
 		Duel.SpecialSummon(tc,SUMMON_TYPE_RITUAL,tp,tp,false,true,POS_FACEUP)
 		tc:CompleteProcedure()
 	end

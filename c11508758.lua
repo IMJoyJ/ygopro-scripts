@@ -2,7 +2,7 @@
 -- 效果：
 -- ①：对方场上有怪兽2只以上存在的场合，这张卡的攻击宣言时，以对方场上1只表侧攻击表示怪兽为对象才能发动。那1只对方的表侧攻击表示怪兽的控制权直到战斗阶段结束时得到。作为对象的怪兽在这个回合不能直接攻击，在可以攻击的场合，选1只对方怪兽作为攻击对象进行伤害计算。
 function c11508758.initial_effect(c)
-	-- 创建一个诱发选发效果，用于在攻击宣言时发动，效果描述为“获得控制权”，分类为改变控制权，具有取对象属性，类型为单体诱发效果，触发时机为攻击宣言时，条件为对方场上有2只以上怪兽存在，目标为对方场上的1只表侧攻击表示怪兽，效果处理为改变该怪兽的控制权并使其本回合不能直接攻击，若可攻击则选择对方怪兽进行伤害计算。
+	-- ①：对方场上有怪兽2只以上存在的场合，这张卡的攻击宣言时，以对方场上1只表侧攻击表示怪兽为对象才能发动。那1只对方的表侧攻击表示怪兽的控制权直到战斗阶段结束时得到。作为对象的怪兽在这个回合不能直接攻击，在可以攻击的场合，选1只对方怪兽作为攻击对象进行伤害计算。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(11508758,0))  --"获得控制权"
 	e1:SetCategory(CATEGORY_CONTROL)
@@ -14,35 +14,35 @@ function c11508758.initial_effect(c)
 	e1:SetOperation(c11508758.ctlop)
 	c:RegisterEffect(e1)
 end
--- 判断效果发动的条件，即对方场上有怪兽2只以上存在。
+-- 效果发动条件：攻击宣言时存在攻击对象，且对方场上的怪兽数量≥2，满足①的发动前提。
 function c11508758.ctlcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 对方场上有怪兽2只以上存在且攻击目标不为空。
+	-- 检查当前攻击目标不为空，且对方场上怪兽数量不小于2。
 	return Duel.GetAttackTarget()~=nil and Duel.GetFieldGroupCount(tp,0,LOCATION_MZONE)>=2
 end
--- 定义用于筛选目标怪兽的过滤函数，筛选条件为表侧攻击表示、可以改变控制权、可以攻击。
+-- 对象筛选：必须是对方场上表侧攻击表示、控制权可以被改变且可以攻击的怪兽。
 function c11508758.filter(c)
 	return c:IsPosition(POS_FACEUP_ATTACK) and c:IsControlerCanBeChanged() and c:IsAttackable()
 end
--- 定义效果的目标选择函数，用于选择对方场上的1只表侧攻击表示怪兽作为对象。
+-- 发动时的目标处理：检查是否存在合法对象，向玩家提示选择后，选择1只满足条件的对方怪兽作为效果对象，并登记改变控制权的操作信息。
 function c11508758.ctltg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	-- 当chkc不为空时，判断该卡是否满足目标条件，即在主要怪兽区、对方控制、不是当前攻击目标且满足过滤条件。
+	-- 对象合法性校验：对象必须位于对方怪兽区、是表侧攻击表示、不是当前攻击对象，并且满足filter条件。
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(1-tp) and chkc~=Duel.GetAttackTarget() and c11508758.filter(chkc) end
-	-- 当chk为0时，判断对方场上有满足条件的怪兽存在。
+	-- 合法性检查阶段：确认对方场上存在至少1只满足条件的表侧攻击表示怪兽可选。
 	if chk==0 then return Duel.IsExistingTarget(c11508758.filter,tp,0,LOCATION_MZONE,1,nil) end
-	-- 向玩家提示选择要改变控制权的怪兽。
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_CONTROL)
-	-- 选择满足条件的对方怪兽作为目标。
+	-- 给玩家显示选择提示，要求选择要改变控制权的那1只对方怪兽。
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_CONTROL)  --"请选择要改变控制权的怪兽"
+	-- 让玩家从对方场上选择1只满足filter的表侧攻击表示怪兽，并将其登记为当前连锁的效果对象。
 	local g=Duel.SelectTarget(tp,c11508758.filter,tp,0,LOCATION_MZONE,1,1,nil)
-	-- 设置操作信息，表示将要改变目标怪兽的控制权。
+	-- 设置本连锁的操作信息为“改变控制权”，对象为已选择的怪兽，数量为1。
 	Duel.SetOperationInfo(0,CATEGORY_CONTROL,g,1,0,0)
 end
--- 定义效果的处理函数，用于执行效果处理逻辑。
+-- 效果处理：若对象仍合法且仍为对方表侧攻击怪兽，则夺取其控制权直到战斗阶段结束；成功后给该怪兽附加不能直接攻击的效果；若该怪兽可以攻击且不免疫此效果，则令其选择对方1只怪兽作为攻击对象进行伤害计算。
 function c11508758.ctlop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取当前连锁的效果目标卡。
+	-- 取得效果发动时选择的那1只对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) and tc:IsPosition(POS_FACEUP_ATTACK) and tc:IsControler(1-tp) then
-		-- 尝试获得目标怪兽的控制权，直到战斗阶段结束。
+		-- 尝试夺取对象怪兽的控制权，持续到战斗阶段结束（PHASE_BATTLE），成功则返回值非0，继续后续处理。
 		if Duel.GetControl(tc,tp,PHASE_BATTLE,1)~=0 then
 			-- 作为对象的怪兽在这个回合不能直接攻击。
 			local e1=Effect.CreateEffect(c)
@@ -53,10 +53,10 @@ function c11508758.ctlop(e,tp,eg,ep,ev,re,r,rp)
 			if tc:IsAttackable() and not tc:IsImmuneToEffect(e) then
 				local ats=tc:GetAttackableTarget()
 				if #ats==0 then return end
-				-- 向玩家提示选择攻击对象。
+				-- 提示玩家为获得控制权的对象怪兽选择1只攻击对象。
 				Duel.Hint(HINT_SELECTMSG,tp,aux.Stringid(11508758,1))  --"请选择攻击对象"
 				local g=ats:Select(tp,1,1,nil)
-				-- 令目标怪兽与选择的对方怪兽进行伤害计算。
+				-- 让对象怪兽对所选对方怪兽进行强制战斗伤害计算，对应“作为攻击对象进行伤害计算”。
 				Duel.CalculateDamage(tc,g:GetFirst())
 			end
 		end

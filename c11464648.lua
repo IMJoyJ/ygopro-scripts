@@ -6,9 +6,9 @@
 -- ②：这张卡只要有「刻魔」装备魔法卡装备，不受「刻魔」卡以外的卡的效果影响。
 -- ③：这张卡被送去墓地的场合，以自己的墓地·除外状态的1张其他的「刻魔」卡为对象才能发动。那张卡加入手卡。
 local s,id,o=GetID()
--- 初始化卡片效果，设置融合召唤条件、触发效果和免疫效果
+-- 初始化函数：为这张卡添加融合素材条件（刻魔融合怪兽+融合·连接怪兽）、启用苏生限制，并注册①③诱发效果（各1回合1次）和②永续免疫效果。
 function s.initial_effect(c)
-	-- 设置融合召唤条件：需要1只「刻魔」融合怪兽和1只融合·连接怪兽作为融合素材
+	-- 为这张卡添加融合召唤手续：以1只「刻魔」融合怪兽和1只融合·连接怪兽为素材才能融合召唤。
 	aux.AddFusionProcFun2(c,s.mfilter1,s.mfilter2,true)
 	c:EnableReviveLimit()
 	-- ①：这张卡融合召唤的场合，丢弃1张手卡才能发动。从卡组·额外卡组把1只恶魔族·光属性怪兽送去墓地。
@@ -45,83 +45,83 @@ function s.initial_effect(c)
 	e3:SetOperation(s.thop)
 	c:RegisterEffect(e3)
 end
--- 融合素材过滤器1：筛选「刻魔」融合怪兽
+-- 融合素材筛选1：素材必须是「刻魔」字段的融合怪兽。
 function s.mfilter1(c)
 	return c:IsFusionSetCard(0x1b0) and c:IsFusionType(TYPE_FUSION)
 end
--- 融合素材过滤器2：筛选融合·连接怪兽
+-- 融合素材筛选2：素材可以是融合怪兽或连接怪兽（对应融合·连接怪兽）。
 function s.mfilter2(c)
 	return c:IsFusionType(TYPE_FUSION+TYPE_LINK)
 end
--- 效果条件：确认此卡是融合召唤成功
+-- ①效果的发动条件：这张卡是否以融合召唤方式特殊召唤成功。
 function s.tgcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsSummonType(SUMMON_TYPE_FUSION)
 end
--- 效果费用：丢弃1张手卡
+-- ①效果的代价：需要丢弃1张手卡才能发动。
 function s.tgcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否满足丢弃手卡的条件
+	-- 代价检测：确认手牌中存在至少1张可以丢弃的卡。
 	if chk==0 then return Duel.IsExistingMatchingCard(Card.IsDiscardable,tp,LOCATION_HAND,0,1,nil) end
-	-- 执行丢弃手卡操作
+	-- 执行代价：从手牌丢弃1张卡（理由为COST+丢弃）。
 	Duel.DiscardHand(tp,Card.IsDiscardable,1,1,REASON_COST+REASON_DISCARD)
 end
--- 筛选目标：恶魔族·光属性怪兽
+-- 检索目标筛选：满足光属性·恶魔族且可以送去墓地的怪兽。
 function s.tgfilter(c)
 	return c:IsAttribute(ATTRIBUTE_LIGHT) and c:IsRace(RACE_FIEND) and c:IsAbleToGrave()
 end
--- 效果目标：从卡组·额外卡组选择1只恶魔族·光属性怪兽送去墓地
+-- ①效果的目标设定：从卡组·额外卡组选择1只光属性·恶魔族怪兽送去墓地，并设置操作信息。
 function s.tgtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查是否满足选择目标的条件
+	-- 目标检测：确认卡组·额外卡组存在至少1只符合条件的怪兽。
 	if chk==0 then return Duel.IsExistingMatchingCard(s.tgfilter,tp,LOCATION_DECK+LOCATION_EXTRA,0,1,nil) end
-	-- 设置连锁操作信息：将目标怪兽送去墓地
+	-- 设置操作信息：本次效果将把1张卡送去墓地（来源为卡组·额外卡组）。
 	Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,nil,1,tp,LOCATION_DECK+LOCATION_EXTRA)
 end
--- 效果处理：选择并送去墓地
+-- ①效果的处理：选择1只光属性·恶魔族怪兽从卡组·额外卡组送去墓地。
 function s.tgop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要送去墓地的卡
+	-- 发送选择提示：提示玩家选择要送去墓地的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
-	-- 选择满足条件的怪兽
+	-- 让玩家从卡组·额外卡组中选择1张满足条件的怪兽（不取对象）。
 	local g=Duel.SelectMatchingCard(tp,s.tgfilter,tp,LOCATION_DECK+LOCATION_EXTRA,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的怪兽送去墓地
+		-- 将选中的卡以效果原因送去墓地。
 		Duel.SendtoGrave(g,REASON_EFFECT)
 	end
 end
--- 装备魔法过滤器：筛选「刻魔」装备魔法
+-- 装备卡筛选：表侧表示的「刻魔」装备魔法卡。
 function s.eqfilter(c)
 	return c:IsFaceup() and c:IsSetCard(0x1b0) and c:IsAllTypes(TYPE_SPELL+TYPE_EQUIP)
 end
--- 免疫效果条件：确认有「刻魔」装备魔法装备
+-- ②效果的免疫条件：这张卡装备有表侧表示的「刻魔」装备魔法卡。
 function s.imcon(e)
 	local sg=e:GetHandler():GetEquipGroup()
 	return sg:IsExists(s.eqfilter,1,nil)
 end
--- 免疫效果过滤器：排除非「刻魔」卡的效果
+-- 免疫判定：效果来源卡不为「刻魔」字段时，该效果对这张卡无效。
 function s.efilter(e,te)
 	return not te:GetOwner():IsSetCard(0x1b0)
 end
--- 目标卡过滤器：筛选「刻魔」卡且在墓地或除外状态
+-- ③效果的目标筛选：墓地和除外状态中表侧表示的「刻魔」卡，且可以加入手卡。
 function s.thfilter(c)
 	return c:IsFaceupEx() and c:IsSetCard(0x1b0) and c:IsAbleToHand()
 end
--- 效果目标：选择1张自己的墓地或除外状态的其他「刻魔」卡加入手卡
+-- ③效果的目标设定：以自己墓地/除外状态的1张其他「刻魔」卡为对象并设置加入手卡操作。
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE+LOCATION_REMOVED) and chkc:IsControler(tp) and s.thfilter(chkc) and chkc~=e:GetHandler() end
-	-- 检查是否满足选择目标的条件
+	-- 目标检测：确认墓地·除外存在至少1张符合条件的其他「刻魔」卡。
 	if chk==0 then return Duel.IsExistingTarget(s.thfilter,tp,LOCATION_GRAVE+LOCATION_REMOVED,0,1,e:GetHandler()) end
-	-- 提示玩家选择要加入手牌的卡
+	-- 发送选择提示：提示玩家选择要加入手牌的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择满足条件的「刻魔」卡
+	-- 选择自己墓地/除外状态的1张符合条件的「刻魔」卡作为效果对象（取对象）。
 	local g=Duel.SelectTarget(tp,s.thfilter,tp,LOCATION_GRAVE+LOCATION_REMOVED,0,1,1,e:GetHandler())
-	-- 设置连锁操作信息：将目标卡加入手牌
+	-- 设置操作信息：本次效果将把所选对象加入持有者手卡。
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,1,0,0)
 end
--- 效果处理：将选中的卡加入手牌
+-- ③效果的处理：将对象卡加入持有者手卡。
 function s.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取连锁对象卡
+	-- 获取效果处理时的对象卡。
 	local tc=Duel.GetFirstTarget()
-	-- 判断对象卡是否有效且未受王家长眠之谷影响
+	-- 确认对象卡仍与效果关联且未受‘王家长眠之谷’影响。
 	if tc:IsRelateToEffect(e) and aux.NecroValleyFilter()(tc) then
-		-- 将对象卡加入手牌
+		-- 将对象卡以效果原因加入其持有者的手卡。
 		Duel.SendtoHand(tc,nil,REASON_EFFECT)
 	end
 end

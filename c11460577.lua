@@ -12,11 +12,11 @@ function c11460577.initial_effect(c)
 	e1:SetValue(500)
 	c:RegisterEffect(e1)
 end
--- 定义条件函数，用于判断效果是否触发
+-- 效果条件：仅在直接攻击且当前处于伤害步骤（伤害步骤或伤害计算时）时，该效果才适用。
 function c11460577.condtion(e)
-	-- 获取当前游戏阶段
+	-- 获取当前战斗阶段，用于判断是否处于伤害步骤内。
 	local ph=Duel.GetCurrentPhase()
 	return (ph==PHASE_DAMAGE or ph==PHASE_DAMAGE_CAL)
-		-- 满足当前阶段为伤害步骤且本次攻击的怪兽为效果持有者、且没有攻击目标时触发效果
+		-- 判断本次战斗攻击者为这张卡自身，且攻击目标为空，即进行直接攻击。
 		and Duel.GetAttacker()==e:GetHandler() and Duel.GetAttackTarget()==nil
 end
