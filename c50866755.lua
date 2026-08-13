@@ -2,14 +2,14 @@
 -- 效果：
 -- 这张卡不能特殊召唤。召唤·反转的回合的结束阶段时回到持有者手卡。这张卡召唤·反转时，对方场上盖放的魔法·陷阱卡全部破坏。
 function c50866755.initial_effect(c)
-	-- 为卡片添加在召唤或反转时回到手卡的效果
+	-- 为凤凰添加灵魂怪兽效果：在召唤·反转的回合的结束阶段时回到持有者手卡。
 	aux.EnableSpiritReturn(c,EVENT_SUMMON_SUCCESS,EVENT_FLIP)
 	-- 这张卡不能特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_SPSUMMON_CONDITION)
-	-- 设置该效果使卡片无法被特殊召唤
+	-- 设置特殊召唤条件判定为假，即禁止这张卡特殊召唤。
 	e1:SetValue(aux.FALSE)
 	c:RegisterEffect(e1)
 	-- 这张卡召唤·反转时，对方场上盖放的魔法·陷阱卡全部破坏。
@@ -25,22 +25,22 @@ function c50866755.initial_effect(c)
 	e5:SetCode(EVENT_FLIP)
 	c:RegisterEffect(e5)
 end
--- 过滤函数，用于判断目标卡片是否为里侧表示
+-- 定义筛选条件：选取对方场上里侧表示的魔法·陷阱卡。
 function c50866755.filter(c)
 	return c:IsFacedown()
 end
--- 设定连锁处理的目标为对方场上的里侧表示魔法·陷阱卡，并设置破坏分类
+-- 破坏效果的发动条件成立时，获取对方场上里侧表示的魔法·陷阱卡，并将破坏信息登记到操作信息中。
 function c50866755.destg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 获取对方场上所有里侧表示的魔法·陷阱卡
+	-- 获取对方场上所有里侧表示的魔法·陷阱卡。
 	local g=Duel.GetMatchingGroup(c50866755.filter,tp,0,LOCATION_SZONE,nil)
-	-- 设置当前连锁操作信息为破坏效果，目标为上一步获取的卡片组
+	-- 登记本次连锁的破坏操作信息：对象为g（对方里侧魔陷），数量为g的数量。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,g:GetCount(),0,0)
 end
--- 执行破坏效果，将目标卡片全部破坏
+-- 效果处理时执行破坏：重新获取对方场上里侧表示的魔法·陷阱卡并全部破坏。
 function c50866755.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 再次获取对方场上所有里侧表示的魔法·陷阱卡
+	-- 效果处理时重新获取对方场上所有里侧表示的魔法·陷阱卡。
 	local g=Duel.GetMatchingGroup(c50866755.filter,tp,0,LOCATION_SZONE,nil)
-	-- 调用Duel.Destroy函数，以效果原因破坏目标卡片
+	-- 以效果原因将这些卡片全部破坏。
 	Duel.Destroy(g,REASON_EFFECT)
 end

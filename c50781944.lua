@@ -15,29 +15,29 @@ function c50781944.initial_effect(c)
 	e1:SetOperation(c50781944.recop)
 	c:RegisterEffect(e1)
 end
--- 检查目标怪兽是否因破坏被送入墓地且之前在自己场上
+-- 筛选条件：该卡是被破坏、此前在怪兽区域、此前控制者为tp、且为怪兽卡，即满足“自己场上的怪兽被破坏送去墓地”这一条件的怪兽。
 function c50781944.filter(c,tp)
 	return c:IsReason(REASON_DESTROY) and c:IsPreviousLocation(LOCATION_MZONE) and
 		c:IsPreviousControler(tp) and c:IsType(TYPE_MONSTER)
 end
--- 判断是否有满足条件的怪兽被送入墓地
+-- 触发条件：本次送去墓地的怪兽群中，是否存在至少1张满足上述条件的怪兽。
 function c50781944.reccon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c50781944.filter,1,nil,tp)
 end
--- 设置效果的对象玩家和参数为1000
+-- 发动目标的合法性判定与效果信息登记：效果发动必定成立；将回复对象玩家设为自己、回复数值设为1000，并登记回复效果的操作信息。
 function c50781944.rectg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 将当前处理连锁的目标玩家设为自己
+	-- 将当前连锁的目标玩家设置为tp（自己），表示本次回复的受益玩家。
 	Duel.SetTargetPlayer(tp)
-	-- 将当前处理连锁的目标参数设为1000
+	-- 将当前连锁的目标参数设置为1000，表示回复的基本分数值。
 	Duel.SetTargetParam(1000)
-	-- 设置连锁操作信息为回复效果，对象为自己，回复值为1000
+	-- 登记操作信息：本连锁为回复效果，预计使玩家tp回复1000基本分。
 	Duel.SetOperationInfo(0,CATEGORY_RECOVER,nil,0,tp,1000)
 end
--- 执行回复效果，恢复指定玩家基本分
+-- 效果处理：从当前连锁中取得之前保存的目标玩家和回复数值，并执行回复。
 function c50781944.recop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的目标玩家和目标参数
+	-- 从当前连锁信息中取出目标玩家和目标参数，分别赋给p和d。
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 以效果原因使目标玩家回复对应数值的基本分
+	-- 以效果原因使玩家p回复d点基本分，完成回复处理。
 	Duel.Recover(p,d,REASON_EFFECT)
 end

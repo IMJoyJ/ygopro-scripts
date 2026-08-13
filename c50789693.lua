@@ -5,7 +5,7 @@
 -- ①：1回合1次，把这张卡1个超量素材取除才能发动。这张卡的攻击力或者守备力上升1000。
 -- ②：自己怪兽进行战斗的战斗步骤，丢弃1张手卡才能发动。这个回合，自己场上的怪兽不会被战斗破坏，自己受到的战斗伤害全部变成0。
 function c50789693.initial_effect(c)
-	-- 为卡片添加等级为2、需要2只怪兽进行叠放的XYZ召唤手续
+	-- 为铠甲河童添加XYZ召唤手续：以2只2星怪兽作为超量素材来超量召唤。
 	aux.AddXyzProcedure(c,nil,2,2)
 	c:EnableReviveLimit()
 	-- ①：1回合1次，把这张卡1个超量素材取除才能发动。这张卡的攻击力或者守备力上升1000。
@@ -31,18 +31,18 @@ function c50789693.initial_effect(c)
 	e2:SetOperation(c50789693.btop)
 	c:RegisterEffect(e2)
 end
--- 效果处理函数：检查是否能移除1个超量素材作为代价
+-- ①效果的代价处理：检查这张卡是否有1个超量素材可以作为代价取除，并在发动时实际取除1个超量素材。
 function c50789693.adcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():CheckRemoveOverlayCard(tp,1,REASON_COST) end
 	e:GetHandler():RemoveOverlayCard(tp,1,1,REASON_COST)
 end
--- 效果处理函数：选择攻击力或守备力上升1000
+-- ①效果处理：根据选择，使这张卡的攻击力或守备力上升1000，该增减效果在怪兽离场或效果被无效时重置。
 function c50789693.adop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) and c:IsFaceup() then
-		-- 让玩家从攻击力上升和守备力上升中选择一项
+		-- 玩家在“攻击力上升1000”和“守备力上升1000”两个选项中选择一个（返回0或1）。
 		local opt=Duel.SelectOption(tp,aux.Stringid(50789693,2),aux.Stringid(50789693,3))  --"攻击力上升1000/守备力上升1000"
-		-- 根据选择结果为卡片添加攻击力或守备力上升1000的效果
+		-- 这张卡的攻击力或者守备力上升1000。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		if opt==0 then
@@ -55,25 +55,25 @@ function c50789693.adop(e,tp,eg,ep,ev,re,r,rp)
 		c:RegisterEffect(e1)
 	end
 end
--- 条件判断函数：检查是否有己方怪兽参与战斗
+-- ②效果的发动条件：自己场上有怪兽正在进行战斗（包括攻击宣言的怪兽或被攻击的怪兽）。
 function c50789693.btcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前攻击怪兽
+	-- 取得当前战斗的攻击怪兽。
 	local bt=Duel.GetAttacker()
 	if bt and bt:IsControler(tp) then return true end
-	-- 获取当前攻击目标怪兽
+	-- 若攻击怪兽不是己方怪兽，则取得当前战斗的被攻击怪兽，用于判断是否为己方怪兽。
 	bt=Duel.GetAttackTarget()
 	return bt and bt:IsControler(tp)
 end
--- 效果处理函数：检查是否能丢弃1张手卡作为代价
+-- ②效果的代价：从手牌丢弃1张卡作为发动代价。
 function c50789693.btcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查玩家手牌中是否存在可丢弃的卡片
+	-- 代价检查：自己手牌中是否存在至少1张可以丢弃的卡。
 	if chk==0 then return Duel.IsExistingMatchingCard(Card.IsDiscardable,tp,LOCATION_HAND,0,1,nil) end
-	-- 从玩家手牌中丢弃1张可丢弃的卡片
+	-- 实际执行代价：从手牌丢弃1张可以丢弃的卡（理由为代价+丢弃）。
 	Duel.DiscardHand(tp,Card.IsDiscardable,1,1,REASON_COST+REASON_DISCARD)
 end
--- 效果处理函数：为己方玩家和场上怪兽注册战斗伤害无效和不会被战斗破坏的效果
+-- ②效果处理：本回合内，我方受到的战斗伤害全部变成0，且我方场上的怪兽不会被战斗破坏。
 function c50789693.btop(e,tp,eg,ep,ev,re,r,rp)
-	-- 为己方玩家注册战斗伤害全部变为0的效果
+	-- 自己受到的战斗伤害全部变成0。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_AVOID_BATTLE_DAMAGE)
@@ -81,9 +81,9 @@ function c50789693.btop(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetTargetRange(1,0)
 	e1:SetValue(1)
 	e1:SetReset(RESET_PHASE+PHASE_END)
-	-- 将效果e1注册给玩家tp
+	-- 将‘我方受到的战斗伤害变为0’的效果注册到当前玩家tp，该效果持续到结束阶段。
 	Duel.RegisterEffect(e1,tp)
-	-- 为己方场上怪兽注册不会被战斗破坏的效果
+	-- 自己场上的怪兽不会被战斗破坏。
 	local e2=Effect.CreateEffect(e:GetHandler())
 	e2:SetType(EFFECT_TYPE_FIELD)
 	e2:SetCode(EFFECT_INDESTRUCTABLE_BATTLE)
@@ -91,6 +91,6 @@ function c50789693.btop(e,tp,eg,ep,ev,re,r,rp)
 	e2:SetTargetRange(LOCATION_MZONE,0)
 	e2:SetReset(RESET_PHASE+PHASE_END)
 	e2:SetValue(1)
-	-- 将效果e2注册给玩家tp
+	-- 将‘我方场上的怪兽不会被战斗破坏’的效果注册到当前玩家tp，持续到结束阶段。
 	Duel.RegisterEffect(e2,tp)
 end
