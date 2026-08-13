@@ -10,7 +10,7 @@ function c37953640.initial_effect(c)
 	e1:SetTarget(c37953640.synlimit)
 	c:RegisterEffect(e1)
 end
--- 限制只有鱼族怪兽才能作为同调素材
+-- 同调素材限制的判断函数：检查作为同调素材的‘其他怪兽’是否为鱼族，是鱼族才允许作为同调素材。
 function c37953640.synlimit(e,c)
 	return c:IsRace(RACE_FISH)
 end

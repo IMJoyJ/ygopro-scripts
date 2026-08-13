@@ -16,15 +16,15 @@ function c37869028.initial_effect(c)
 	e2:SetOperation(c37869028.atop)
 	c:RegisterEffect(e2)
 end
--- 检查玩家场上是否存在至少1张水族怪兽可解放
+-- 攻击宣言代价的判定函数：检查是否有满足条件的水族怪兽可以作为解放代价，若有则允许攻击宣言。
 function c37869028.atcost(e,c,tp)
-	-- 检查玩家场上是否存在至少1张水族怪兽可解放
+	-- 检查我方是否存在至少1只水族怪兽可作为攻击宣言的解放代价，满足则返回真。
 	return Duel.CheckReleaseGroupEx(tp,Card.IsRace,1,REASON_ACTION,false,nil,RACE_AQUA)
 end
--- 选择并解放1张水族怪兽
+-- 攻击宣言代价的处理函数：执行解放1只水族怪兽的操作，完成攻击宣言所需的代价支付。
 function c37869028.atop(e,tp,eg,ep,ev,re,r,rp)
-	-- 选择1张水族怪兽作为解放对象
+	-- 选择我方1只水族怪兽作为解放对象，用于支付攻击宣言代价。
 	local g=Duel.SelectReleaseGroupEx(tp,Card.IsRace,1,1,REASON_ACTION,false,nil,RACE_AQUA)
-	-- 解放所选的水族怪兽
+	-- 将选择的水族怪兽解放（REASON_ACTION表示该解放为攻击宣言之际产生的代价）。
 	Duel.Release(g,REASON_ACTION)
 end

@@ -26,41 +26,41 @@ function c37829468.initial_effect(c)
 	e2:SetOperation(c37829468.desop)
 	c:RegisterEffect(e2)
 end
--- 规则层面：设置效果目标为场上表侧表示存在的光属性怪兽
+-- 攻击力上升效果的适用对象判定：筛选自己场上的光属性怪兽作为攻击力增减对象。
 function c37829468.atktg(e,c)
 	return c:IsAttribute(ATTRIBUTE_LIGHT)
 end
--- 规则层面：计算自己墓地光属性怪兽数量并乘以100作为攻击力加成
+-- 计算攻击力上升数值：统计效果控制者墓地中光属性怪兽的数量，每只使其攻击力上升100。
 function c37829468.atkval(e,c)
-	-- 规则层面：检索自己墓地光属性怪兽数量
+	-- 统计自己墓地中光属性怪兽的数量并乘以100，作为攻击力的上升数值。
 	return Duel.GetMatchingGroupCount(Card.IsAttribute,e:GetHandlerPlayer(),LOCATION_GRAVE,0,nil,ATTRIBUTE_LIGHT)*100
 end
--- 规则层面：判断是否为自己的结束阶段
+-- 破坏效果的发动条件：仅在自己的结束阶段且当前回合玩家为此卡控制者时满足。
 function c37829468.descon(e,tp,eg,ep,ev,re,r,rp)
-	-- 规则层面：判断当前回合玩家是否为效果持有者
+	-- 判定当前回合玩家是否为这张卡的控制者，若是则满足发动条件。
 	return Duel.GetTurnPlayer()==tp
 end
--- 规则层面：过滤场上光属性表侧表示怪兽
+-- 筛选可作为破坏对象的怪兽：必须是表侧表示的光属性怪兽。
 function c37829468.filter(c)
 	return c:IsFaceup() and c:IsAttribute(ATTRIBUTE_LIGHT)
 end
--- 规则层面：选择并设置破坏对象
+-- 破坏效果的目标选择处理：检查被指定对象是否合法；若为发动时则提示玩家从自己场上表侧表示的光属性怪兽中选择1张作为对象，并设置破坏的操作信息。
 function c37829468.destg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and c37829468.filter(chkc) end
 	if chk==0 then return true end
-	-- 规则层面：提示选择要破坏的卡
+	-- 向玩家发送“请选择要破坏的卡”的提示信息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
-	-- 规则层面：选择场上1只光属性表侧表示怪兽作为破坏对象
+	-- 让玩家从自己场上表侧表示的光属性怪兽中选择1张，并将其指定为效果对象。
 	local g=Duel.SelectTarget(tp,c37829468.filter,tp,LOCATION_MZONE,0,1,1,nil)
-	-- 规则层面：设置连锁操作信息为破坏效果
+	-- 设置本连锁的操作信息，标记该效果将进行破坏，目标为已选择的卡。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,g:GetCount(),0,0)
 end
--- 规则层面：执行破坏操作
+-- 破坏效果处理：取得效果对象，若其仍表侧表示且与效果关联，则将其破坏。
 function c37829468.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 规则层面：获取连锁中选定的目标怪兽
+	-- 取得当前连锁中第一个被指定为对象的目标卡。
 	local tc=Duel.GetFirstTarget()
 	if tc and tc:IsFaceup() and tc:IsRelateToEffect(e) then
-		-- 规则层面：将目标怪兽因效果破坏
+		-- 以效果原因将对象卡破坏。
 		Duel.Destroy(tc,REASON_EFFECT)
 	end
 end

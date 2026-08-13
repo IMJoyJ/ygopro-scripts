@@ -13,44 +13,44 @@ function c37806313.initial_effect(c)
 	e1:SetOperation(c37806313.operation)
 	c:RegisterEffect(e1)
 end
--- 定义过滤器，用于筛选墓地中的「冰结界」怪兽
+-- 筛选函数：判断卡片是否为「冰结界」字段的怪兽且可以返回卡组，作为效果的可选对象。
 function c37806313.filter(c)
 	return c:IsSetCard(0x2f) and c:IsType(TYPE_MONSTER) and c:IsAbleToDeck()
 end
--- 处理效果发动时的条件判断和目标选择
+-- 目标选择函数：检查指定对象必须是己方墓地且符合筛选的「冰结界」怪兽；发动条件为双方可抽卡且墓地存在至少2只可选对象。
 function c37806313.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and c37806313.filter(chkc) end
-	-- 检查玩家是否可以抽卡
+	-- 发动条件之一：双方玩家都必须能抽1张卡，否则不能发动。
 	if chk==0 then return Duel.IsPlayerCanDraw(tp,1) and Duel.IsPlayerCanDraw(1-tp,1)
-		-- 检查是否存在满足条件的2只墓地怪兽
+		-- 发动条件之二：自己墓地存在至少2只符合筛选条件的「冰结界」怪兽可作为效果对象。
 		and Duel.IsExistingTarget(c37806313.filter,tp,LOCATION_GRAVE,0,2,nil) end
-	-- 提示玩家选择要返回卡组的卡片
+	-- 显示选择卡片的提示消息，提示玩家选择要返回卡组的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TODECK)  --"请选择要返回卡组的卡"
-	-- 选择2只满足条件的墓地怪兽作为效果对象
+	-- 让当前玩家从自己墓地选择2只符合筛选条件的「冰结界」怪兽，并将它们设为效果的对象。
 	local g=Duel.SelectTarget(tp,c37806313.filter,tp,LOCATION_GRAVE,0,2,2,nil)
-	-- 设置效果操作信息，指定将怪兽送回卡组
+	-- 登记本连锁的“回卡组”操作信息：对象为已选中的卡，数量为选中数，用于后续相关效果检测。
 	Duel.SetOperationInfo(0,CATEGORY_TODECK,g,g:GetCount(),0,0)
-	-- 设置效果操作信息，指定双方各抽1张卡
+	-- 登记本连锁的“抽卡”操作信息：双方玩家各抽1张，用于后续相关效果检测。
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,PLAYER_ALL,1)
 end
--- 处理效果的发动效果
+-- 效果处理：获取对象并确认其仍与效果关联且数量为2；将对象返回持有者卡组，若实际返回数量为2则洗牌，然后双方各抽1张；若数量不足2则整个处理不适用。
 function c37806313.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁中指定的效果对象卡片组
+	-- 获取当前连锁效果的对象卡组。
 	local tg=Duel.GetChainInfo(0,CHAININFO_TARGET_CARDS)
 	if not tg or tg:FilterCount(Card.IsRelateToEffect,nil,e)~=2 then return end
-	-- 将指定的怪兽送回卡组
+	-- 将对象卡以效果原因返回持有者卡组（采用弹回卡组并洗牌的方式）。
 	Duel.SendtoDeck(tg,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
-	-- 获取实际被操作的卡片组
+	-- 获取刚才送卡组操作实际处理的卡片，用于确认返回结果。
 	local g=Duel.GetOperatedGroup()
-	-- 若送回卡组的卡片中有在卡组中的，则洗切卡组
+	-- 若实际返回卡组的卡中有位于卡组的卡，则洗切发动玩家的卡组。
 	if g:IsExists(Card.IsLocation,1,nil,LOCATION_DECK) then Duel.ShuffleDeck(tp) end
 	local ct=g:FilterCount(Card.IsLocation,nil,LOCATION_DECK+LOCATION_EXTRA)
 	if ct==2 then
-		-- 中断当前效果，使后续处理视为不同时处理
+		-- 中断当前效果处理，使此后的抽卡处理成为另一组时点，避免与回卡组同时处理。
 		Duel.BreakEffect()
-		-- 自己抽1张卡
+		-- 发动玩家抽1张卡。
 		Duel.Draw(tp,1,REASON_EFFECT)
-		-- 对方抽1张卡
+		-- 对方玩家抽1张卡。
 		Duel.Draw(1-tp,1,REASON_EFFECT)
 	end
 end
