@@ -4,7 +4,7 @@
 -- ①：以自己场上1只「黄金荣耀」怪兽为对象才能发动。那只怪兽直到回合结束时攻击力上升500，不会被战斗·效果破坏，不能把效果发动。
 -- ②：这个回合有自己场上的表侧表示的「黄金荣耀」怪兽被战斗·效果破坏的场合，结束阶段才能发动。墓地的这张卡在自己场上盖放。
 local s,id,o=GetID()
--- 注册卡牌的两个效果：①效果（改变攻击力、不被破坏、不能发动效果）和②效果（结束阶段盖放）
+-- 创建并注册该卡的①效果（发动后取对象，赋予攻击力上升、双重破坏抗性与不能发动效果）、②效果（满足条件时从墓地盖放），并注册一个全局破坏监测效果，用于记录本回合有无黄金荣耀怪兽被战破/效破。
 function s.initial_effect(c)
 	-- ①：以自己场上1只「黄金荣耀」怪兽为对象才能发动。那只怪兽直到回合结束时攻击力上升500，不会被战斗·效果破坏，不能把效果发动。
 	local e1=Effect.CreateEffect(c)
@@ -14,12 +14,12 @@ function s.initial_effect(c)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET+EFFECT_FLAG_DAMAGE_STEP)
 	e1:SetHintTiming(TIMING_DAMAGE_STEP)
-	-- 限制效果只能在伤害步骤前发动
+	-- 限制为当前不在伤害步骤、或处于伤害步骤但尚未伤害计算时才能发动，即不能进入伤害计算后发动。
 	e1:SetCondition(aux.dscon)
 	e1:SetTarget(s.target)
 	e1:SetOperation(s.activate)
 	c:RegisterEffect(e1)
-	-- ②：这个回合有自己场上的表侧表示的「黄金荣耀」怪兽被战斗·效果破坏的场合，结束阶段才能发动。墓地的这张卡在自己场上盖放。
+	-- 这个卡名的②的效果1回合只能使用1次。②：这个回合有自己场上的表侧表示的「黄金荣耀」怪兽被战斗·效果破坏的场合，结束阶段才能发动。墓地的这张卡在自己场上盖放。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(id,1))
 	e2:SetCategory(CATEGORY_SSET)
@@ -33,36 +33,36 @@ function s.initial_effect(c)
 	c:RegisterEffect(e2)
 	if not s.global_check then
 		s.global_check=true
-		-- 注册一个全局持续效果，用于检测是否有「黄金荣耀」怪兽被战斗或效果破坏
+		-- ①：以自己场上1只「黄金荣耀」怪兽为对象才能发动。那只怪兽直到回合结束时攻击力上升500，不会被战斗·效果破坏，不能把效果发动。②：这个回合有自己场上的表侧表示的「黄金荣耀」怪兽被战斗·效果破坏的场合。
 		local e3=Effect.CreateEffect(c)
 		e3:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 		e3:SetCode(EVENT_DESTROYED)
 		e3:SetOperation(s.check)
-		-- 将e3效果注册到全局环境，用于监听破坏事件
+		-- 将全局破坏监测效果注册到玩家0（环境侧），使所有场上发生的破坏事件都能进入s.check进行条件判断。
 		Duel.RegisterEffect(e3,0)
 	end
 end
--- 定义过滤器函数，用于筛选场上表侧表示的「黄金荣耀」怪兽
+-- 定义过滤器：卡为表侧表示且属于系列0x192（黄金荣耀）的怪兽。
 function s.filter(c)
 	return c:IsFaceup() and c:IsSetCard(0x192)
 end
--- 设置效果目标选择函数，要求选择一个自己场上的「黄金荣耀」怪兽
+-- ①效果的发动时点：选择自己场上1只表侧表示「黄金荣耀」怪兽为对象；若是在连锁处理中，则对指定的对象进行合法性校验。
 function s.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and s.filter(chkc) end
-	-- 判断是否满足选择目标的条件：场上存在一个自己控制的「黄金荣耀」怪兽
+	-- 检查自己场上是否存在至少1只可选的表侧表示「黄金荣耀」怪兽，作为①效果的发动条件。
 	if chk==0 then return Duel.IsExistingTarget(s.filter,tp,LOCATION_MZONE,0,1,nil) end
-	-- 提示玩家选择一个表侧表示的怪兽
+	-- 向玩家显示“请选择表侧表示的卡”的选择提示，供接下来的对象选择使用。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
-	-- 选择一个自己场上的「黄金荣耀」怪兽作为效果对象
+	-- 让玩家从自己场上的表侧「黄金荣耀」怪兽中选择1只，将其登记为本次连锁的对象（取对象效果）。
 	Duel.SelectTarget(tp,s.filter,tp,LOCATION_MZONE,0,1,1,nil)
 end
--- 执行效果①的处理函数，为对象怪兽添加不被战斗破坏、不被效果破坏、不能发动效果和攻击力+500的效果
+-- ①效果处理：取得对象后，先确认对象仍与效果有联系；随后赋予其“不会被战斗破坏”“不会被效果破坏”“不能发动效果”的持续效果，并在对象表侧表示时使其攻击力上升500；这些效果都在回合结束时重置。
 function s.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的效果目标怪兽
+	-- 取出连锁中登记的对象卡，即①效果选择的那只黄金荣耀怪兽。
 	local tc=Duel.GetFirstTarget()
 	if not tc:IsRelateToEffect(e) then return end
 	local c=e:GetHandler()
-	-- 为对象怪兽添加不被战斗破坏的效果
+	-- 对应①效果原文“那只怪兽直到回合结束时攻击力上升500，不会被战斗·效果破坏，不能把效果发动。”中的“不会被战斗·效果破坏”的战斗破坏部分。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_INDESTRUCTABLE_BATTLE)
@@ -72,7 +72,7 @@ function s.activate(e,tp,eg,ep,ev,re,r,rp)
 	local e2=e1:Clone()
 	e2:SetCode(EFFECT_INDESTRUCTABLE_EFFECT)
 	tc:RegisterEffect(e2)
-	-- 为对象怪兽添加不被效果破坏的效果
+	-- 直接对应①效果原文中的“不能把效果发动”。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_SINGLE)
 	e3:SetCode(EFFECT_CANNOT_TRIGGER)
@@ -85,33 +85,33 @@ function s.activate(e,tp,eg,ep,ev,re,r,rp)
 		tc:RegisterEffect(e4)
 	end
 end
--- 设置效果②的发动条件，判断是否在本回合有「黄金荣耀」怪兽被破坏
+-- ②效果的发动条件：当前玩家必须拥有本回合“黄金荣耀怪兽被战破/效破”的标记，且时点在结束阶段。
 function s.setcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断玩家是否已注册过标识效果，表示本回合已有「黄金荣耀」怪兽被破坏
+	-- 检查tp玩家身上带有本卡id标志的数量是否大于0，即是否满足②效果所需的“本回合有己方黄金荣耀怪兽被战破/效破”前提。
 	return Duel.GetFlagEffect(tp,id)>0
 end
--- 设置效果②的目标选择函数，判断墓地的卡是否可以盖放
+-- ②效果发动时的合法性判定：确认墓地中的这张卡可以被盖放到场上；在满足条件（chk==1）时登记离墓操作信息。
 function s.settg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	if chk==0 then return c:IsSSetable() end
-	-- 设置操作信息，表示将要盖放这张卡
+	-- 登记效果处理时会将墓地的这张卡移动（离墓），使其它卡片能针对这一动作进行连锁或限制。
 	Duel.SetOperationInfo(0,CATEGORY_LEAVE_GRAVE,c,1,0,0)
 end
--- 执行效果②的处理函数，将墓地的卡盖放到场上
+-- ②效果处理：若墓地的这张卡仍与发动效果保持联系，则将其在自己场上里侧表示盖放。
 function s.setop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 判断卡是否还在场上，若在则执行盖放操作
+	-- 处理时先确认这张卡仍与效果有联系（未被除外/移动），再执行盖放，防止墓地卡片离场后仍被错误处理。
 	if c:IsRelateToEffect(e) then Duel.SSet(tp,c) end
 end
--- 定义过滤器函数，用于筛选被破坏的「黄金荣耀」怪兽
+-- 判定被破坏的卡在破坏前是否属于「黄金荣耀」系列、由玩家tp控制、位于主要怪兽区且表侧表示，并且破坏原因是战斗或效果。
 function s.cfilter(c,tp)
 	return c:IsPreviousSetCard(0x192) and c:IsPreviousControler(tp) and c:IsPreviousLocation(LOCATION_MZONE)
 		and c:IsReason(REASON_BATTLE+REASON_EFFECT) and c:IsPreviousPosition(POS_FACEUP)
 end
--- 注册全局持续效果的处理函数，检测是否有「黄金荣耀」怪兽被破坏并设置标识
+-- 全局破坏事件的处理：对玩家0和玩家1分别检查，若该玩家控制的符合s.cfilter的黄金荣耀怪兽被战破/效破，则为该玩家注册一个当回合结束（PHASE_END）时重置的标志。
 function s.check(e,tp,eg,ep,ev,re,r,rp)
 	for p=0,1 do
-		-- 若破坏事件组中存在符合条件的「黄金荣耀」怪兽，则为对应玩家注册标识效果
+		-- 若事件组eg中存在至少一张满足s.cfilter且属于玩家p的卡，就为玩家p注册标志；该标志为RESET_PHASE+PHASE_END，因此只持续到当回合结束，正好对应②的“这个回合”条件。
 		if eg:IsExists(s.cfilter,1,nil,p) then Duel.RegisterFlagEffect(p,id,RESET_PHASE+PHASE_END,0,1) end
 	end
 end
