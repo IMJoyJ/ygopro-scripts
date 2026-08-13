@@ -3,7 +3,7 @@
 -- ①：自己的怪兽区域的这张卡被战斗或者怪兽的效果破坏送去墓地的场合，以对方场上1只表侧表示怪兽为对象才能发动。这张卡当作装备卡使用给那只对方怪兽装备。
 -- ②：这张卡的效果让这张卡装备中的场合，得到装备怪兽的控制权。这张卡从场上离开时装备怪兽破坏。
 function c29834183.initial_effect(c)
-	-- 创建一个诱发效果，当此卡因战斗或怪兽效果破坏送入墓地时发动，效果分类为装备和离开墓地
+	-- ①：自己的怪兽区域的这张卡被战斗或者怪兽的效果破坏送去墓地的场合，以对方场上1只表侧表示怪兽为对象才能发动。这张卡当作装备卡使用给那只对方怪兽装备。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_EQUIP+CATEGORY_LEAVE_GRAVE)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
@@ -14,48 +14,48 @@ function c29834183.initial_effect(c)
 	e1:SetOperation(c29834183.eqop)
 	c:RegisterEffect(e1)
 end
--- 此卡被战斗或者怪兽的效果破坏送去墓地的场合
+-- 判定①的诱发条件：这张卡必须是被战斗破坏，或被怪兽效果破坏后送去墓地，且破坏前控制权属于我方、位于我方怪兽区域，才满足发动条件。
 function c29834183.eqcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	return (c:IsReason(REASON_BATTLE) or (c:IsReason(REASON_EFFECT) and re:IsActiveType(TYPE_MONSTER)))
 		and c:IsReason(REASON_DESTROY) and c:IsPreviousControler(tp) and c:IsPreviousLocation(LOCATION_MZONE)
 end
--- 判断目标怪兽是否为表侧表示且满足装备条件
+-- 选择装备对象时的过滤函数：对象必须是对方场上的表侧表示怪兽，且我方魔陷区有空位可放置装备卡；若对象是陷阱怪兽，还需额外检查魔陷区的剩余空格。
 function c29834183.eqfilter(c,tp)
 	if c:IsFacedown() then return false end
-	-- 若目标怪兽为陷阱怪兽，则需满足其所在区域有足够空位
+	-- 对象为陷阱怪兽时，额外要求我方魔陷区在控制权变更判定与常规判定下均有足够空格（至少分别>0和>=2），以保证装备卡能成功装备。
 	if c:IsType(TYPE_TRAPMONSTER) then return Duel.GetLocationCount(tp,LOCATION_SZONE,tp,LOCATION_REASON_CONTROL)>0 and Duel.GetLocationCount(tp,LOCATION_SZONE,tp,0)>=2 end
 	return true
 end
--- 设置效果目标，选择对方场上一只表侧表示怪兽作为装备对象
+-- ①效果的发动条件与取对象处理：先检查我方魔陷区是否有空位，且对方场上有满足条件的表侧表示怪兽；再从中选择1只作为装备对象。
 function c29834183.eqtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(1-tp) and c29834183.eqfilter(chkc,tp) end
-	-- 判断己方魔法陷阱区域是否有空位
+	-- 发动条件检查：我方魔陷区必须至少存在1个空格，用于之后放置这张装备卡。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_SZONE)>0
-		-- 确认对方场上是否存在满足条件的怪兽
+		-- 发动条件检查：确认对方场上存在至少1只满足eqfilter条件的表侧表示怪兽，可以作为装备对象。
 		and Duel.IsExistingTarget(c29834183.eqfilter,tp,0,LOCATION_MZONE,1,nil,tp) end
-	-- 提示玩家选择要装备的卡
+	-- 发送UI提示信息，让操作者选择要装备的卡（显示'请选择要装备的卡'）。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_EQUIP)  --"请选择要装备的卡"
-	-- 选择对方场上一只表侧表示怪兽作为装备对象
+	-- 从对方场上选择1只符合条件的表侧表示怪兽作为装备对象，并将其设置为当前连锁的对象。
 	Duel.SelectTarget(tp,c29834183.eqfilter,tp,0,LOCATION_MZONE,1,1,nil,tp)
-	-- 设置效果操作信息，记录将要离开墓地的卡
+	-- 设置操作信息：声明这张卡将从墓地离开（涉及墓地效果），供其他卡进行联动或响应。
 	Duel.SetOperationInfo(0,CATEGORY_LEAVE_GRAVE,e:GetHandler(),1,0,0)
 end
--- 装备对象限制效果，确保只能装备给指定怪兽
+-- 装备限制函数：将这张装备卡的目标限定为发动时选择的那只怪兽（用LabelObject保存），只能装备给它。
 function c29834183.eqlimit(e,c)
 	return c==e:GetLabelObject()
 end
--- 执行装备操作，将此卡装备给目标怪兽
+-- ①效果的处理：若魔陷区仍有空位且对象合法，把这张卡当作装备卡装备给对象怪兽，同时注册②所需的获得控制权与离场破坏效果。
 function c29834183.eqop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 若己方魔法陷阱区域无空位则不执行装备
+	-- 处理时再次确认魔陷区有空位；若没有空位则直接终止本次装备处理。
 	if Duel.GetLocationCount(tp,LOCATION_SZONE)<=0 then return end
-	-- 获取当前连锁效果的目标怪兽
+	-- 取得发动时选择的对象怪兽（装备目标）。
 	local tc=Duel.GetFirstTarget()
 	if c:IsRelateToEffect(e) and tc:IsFaceup() and tc:IsRelateToEffect(e) and tc:IsControler(1-tp) then
-		-- 将此卡装备给目标怪兽
+		-- 将这张卡作为装备卡，以我方控制者的身份装备给目标怪兽。
 		Duel.Equip(tp,c,tc)
-		-- 设置装备对象限制，确保此卡只能装备给指定怪兽
+		-- 这张卡当作装备卡使用给那只对方怪兽装备。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_EQUIP_LIMIT)
@@ -64,14 +64,14 @@ function c29834183.eqop(e,tp,eg,ep,ev,re,r,rp)
 		e1:SetValue(c29834183.eqlimit)
 		e1:SetLabelObject(tc)
 		c:RegisterEffect(e1)
-		-- 装备后获得目标怪兽的控制权
+		-- ②：这张卡的效果让这张卡装备中的场合，得到装备怪兽的控制权。
 		local e2=Effect.CreateEffect(c)
 		e2:SetType(EFFECT_TYPE_EQUIP)
 		e2:SetCode(EFFECT_SET_CONTROL)
 		e2:SetValue(tp)
 		e2:SetReset(RESET_EVENT+RESETS_STANDARD)
 		c:RegisterEffect(e2)
-		-- 当此卡离开场上时触发检查，用于判断是否执行破坏效果
+		-- 这张卡从场上离开时
 		local e3=Effect.CreateEffect(c)
 		e3:SetType(EFFECT_TYPE_CONTINUOUS+EFFECT_TYPE_SINGLE)
 		e3:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
@@ -79,7 +79,7 @@ function c29834183.eqop(e,tp,eg,ep,ev,re,r,rp)
 		e3:SetOperation(c29834183.checkop)
 		e3:SetReset(RESET_EVENT+RESETS_STANDARD)
 		c:RegisterEffect(e3)
-		-- 当此卡离开场上时触发破坏效果，若未被无效则破坏装备怪兽
+		-- 这张卡从场上离开时装备怪兽破坏。
 		local e4=Effect.CreateEffect(c)
 		e4:SetType(EFFECT_TYPE_CONTINUOUS+EFFECT_TYPE_SINGLE)
 		e4:SetCode(EVENT_LEAVE_FIELD)
@@ -89,19 +89,19 @@ function c29834183.eqop(e,tp,eg,ep,ev,re,r,rp)
 		c:RegisterEffect(e4)
 	end
 end
--- 检查此卡是否被无效，若无效则标记为1，否则为0
+-- 离场前记录这张装备卡是否处于效果无效状态：无效则标记为1，否则为0；该标记供离场破坏处理判断是否执行破坏。
 function c29834183.checkop(e,tp,eg,ep,ev,re,r,rp)
 	if e:GetHandler():IsDisabled() then
 		e:SetLabel(1)
 	else e:SetLabel(0) end
 end
--- 执行破坏效果，若未被无效则破坏装备怪兽
+-- 离场时的破坏处理：重置自身效果后，若离场前未被无效化，则破坏装备怪兽；若已被无效化则跳过破坏。
 function c29834183.desop(e,tp,eg,ep,ev,re,r,rp)
 	e:Reset()
 	if e:GetLabelObject():GetLabel()~=0 then return end
 	local tc=e:GetHandler():GetEquipTarget()
 	if tc and tc:IsLocation(LOCATION_MZONE) then
-		-- 将装备怪兽破坏
+		-- 以效果破坏装备怪兽（对应②的‘装备怪兽破坏’）。
 		Duel.Destroy(tc,REASON_EFFECT)
 	end
 end

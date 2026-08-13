@@ -6,7 +6,7 @@
 -- ●以对方场上1只龙族怪兽为对象才能发动。得到那只龙族怪兽的控制权。
 -- ●直到对方回合结束时，对方场上的龙族怪兽不能把效果发动。
 function c2978414.initial_effect(c)
-	-- 为卡片添加XYZ召唤手续，要求满足龙族种族条件的8星怪兽叠放2只以上
+	-- 为这张卡添加XYZ召唤手续：以2只等级8的龙族怪兽作为超量素材进行XYZ召唤。
 	aux.AddXyzProcedure(c,aux.FilterBoolFunction(Card.IsRace,RACE_DRAGON),8,2)
 	c:EnableReviveLimit()
 	-- ●从手卡把1只龙族怪兽特殊召唤。
@@ -45,88 +45,88 @@ function c2978414.initial_effect(c)
 	e3:SetOperation(c2978414.efop)
 	c:RegisterEffect(e3)
 end
--- 设置该卡的编号为46
+-- 将此卡登记为No.46，使其在No.相关规则/效果中视为编号46的怪兽。
 aux.xyz_number[2978414]=46
--- 判断自己场上是否只有这张卡或没有其他怪兽
+-- 效果发动条件：自己场上没有其他怪兽存在时才能发动，统计自己场上怪兽区卡数不超过1。
 function c2978414.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断自己场上是否只有这张卡或没有其他怪兽
+	-- 检查自己场上怪兽区域存在的卡数量是否≤1，即除这张卡本身外没有其他怪兽。
 	return Duel.GetFieldGroupCount(tp,LOCATION_MZONE,0)<=1
 end
--- 设置发动此效果的费用为去除1个超量素材
+-- 发动代价：取除这张卡的1个超量素材，并向对方玩家提示本卡选择发动的效果。
 function c2978414.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():CheckRemoveOverlayCard(tp,1,REASON_COST) end
-	-- 向对方提示发动了此效果
+	-- 向对方玩家提示本卡选择发动的是哪个效果，显示对应的效果描述。
 	Duel.Hint(HINT_OPSELECTED,1-tp,e:GetDescription())
 	e:GetHandler():RemoveOverlayCard(tp,1,1,REASON_COST)
 end
--- 定义特殊召唤的过滤条件，必须是龙族且可以特殊召唤
+-- 特殊召唤对象过滤：手牌中满足龙族且可以被特殊召唤的怪兽，同时兼容源数龙的特殊召唤规则判定。
 function c2978414.spfilter(c,e,tp)
-	-- 定义特殊召唤的过滤条件，必须是龙族且可以特殊召唤
+	-- 判断怪兽是否为龙族且能否被特殊召唤，若为源数龙则使用其特殊召唤规则进行判定。
 	return c:IsRace(RACE_DRAGON) and c:IsCanBeSpecialSummoned(e,0,tp,false,aux.DragonXyzSpSummonType(c))
 end
--- 设置特殊召唤效果的目标函数，检查是否有满足条件的龙族怪兽可特殊召唤
+-- 特殊召唤效果的发动条件检查：自己场上怪兽区有空位，且手牌中存在符合条件的龙族怪兽。
 function c2978414.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查自己场上是否有足够的召唤空间
+	-- 检查自己场上是否有可用的怪兽区域。
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查手牌中是否存在满足条件的龙族怪兽
+		-- 并检查手牌是否存在至少1只可以被特殊召唤的龙族怪兽。
 		and Duel.IsExistingMatchingCard(c2978414.spfilter,tp,LOCATION_HAND,0,1,nil,e,tp) end
-	-- 设置特殊召唤效果的操作信息
+	-- 设置本次效果处理的类别为特殊召唤，预定从手牌把1只怪兽特殊召唤。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_HAND)
 end
--- 执行特殊召唤操作，选择手牌中的龙族怪兽进行特殊召唤
+-- 效果处理：从手牌选择1只龙族怪兽特殊召唤；若该怪兽是源数龙，则补完其特殊召唤手续。
 function c2978414.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查自己场上是否有足够的召唤空间
+	-- 处理时再次确认场上仍有可用怪兽区，否则效果不处理。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
-	-- 提示玩家选择要特殊召唤的卡
+	-- 弹出“请选择要特殊召唤的卡”的选择提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 选择满足条件的龙族怪兽
+	-- 让玩家从手牌选择1只符合条件的龙族怪兽。
 	local g=Duel.SelectMatchingCard(tp,c2978414.spfilter,tp,LOCATION_HAND,0,1,1,nil,e,tp)
 	if g:GetCount()>0 then
 		local sc=g:GetFirst()
-		-- 执行特殊召唤操作并完成召唤程序
+		-- 执行特殊召唤；若召唤成功且该怪兽为源数龙，则将其补完为正规特殊召唤（CompleteProcedure）。
 		if Duel.SpecialSummon(g,0,tp,tp,false,aux.DragonXyzSpSummonType(sc),POS_FACEUP)~=0 and aux.DragonXyzSpSummonType(sc) then
 			sc:CompleteProcedure()
 		end
 	end
 end
--- 定义控制权变更的过滤条件，必须是正面表示的龙族怪兽且可以改变控制权
+-- 控制权取得对象的过滤条件：表侧表示、龙族、且控制权可以被改变。
 function c2978414.ctfilter(c)
 	return c:IsFaceup() and c:IsRace(RACE_DRAGON) and c:IsControlerCanBeChanged()
 end
--- 设置控制权变更效果的目标函数，检查对方场上是否存在满足条件的龙族怪兽
+-- 取对象效果的目标选择：选择对方场上1只符合条件的龙族怪兽，并设置操作信息为改变控制权。
 function c2978414.cttg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(1-tp) and c2978414.ctfilter(chkc) end
-	-- 检查对方场上是否存在满足条件的龙族怪兽
+	-- 检查对方场上是否存在符合条件的龙族怪兽可以作为效果对象。
 	if chk==0 then return Duel.IsExistingTarget(c2978414.ctfilter,tp,0,LOCATION_MZONE,1,nil) end
-	-- 提示玩家选择要改变控制权的怪兽
+	-- 弹出“请选择要改变控制权的怪兽”的选择提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_CONTROL)  --"请选择要改变控制权的怪兽"
-	-- 选择满足条件的对方龙族怪兽
+	-- 选择对方场上1只龙族怪兽作为效果对象。
 	local g=Duel.SelectTarget(tp,c2978414.ctfilter,tp,0,LOCATION_MZONE,1,1,nil)
-	-- 设置控制权变更效果的操作信息
+	-- 设置本次效果处理的类别为改变控制权，并指定对象。
 	Duel.SetOperationInfo(0,CATEGORY_CONTROL,g,1,0,0)
 end
--- 执行控制权变更操作，获得目标怪兽的控制权
+-- 效果处理：获得对象龙族怪兽的控制权。
 function c2978414.ctop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的目标怪兽
+	-- 取得该效果的对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) and tc:IsRace(RACE_DRAGON) then
-		-- 获得目标怪兽的控制权
+		-- 将对象怪兽的控制权转移给本卡的控制者。
 		Duel.GetControl(tc,tp)
 	end
 end
--- 设置效果发动后对方场上的龙族怪兽不能发动效果
+-- 效果处理：生成一个持续到对方回合结束的领域效果，使对方场上的龙族怪兽不能发动效果。
 function c2978414.efop(e,tp,eg,ep,ev,re,r,rp)
-	-- 设置效果发动后对方场上的龙族怪兽不能发动效果
+	-- ●直到对方回合结束时，对方场上的龙族怪兽不能把效果发动。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_CANNOT_TRIGGER)
 	e1:SetTargetRange(0,LOCATION_MZONE)
 	e1:SetTarget(c2978414.actfilter)
 	e1:SetReset(RESET_PHASE+PHASE_END+RESET_OPPO_TURN,1)
-	-- 将效果注册到全局环境
+	-- 将这个不能发动效果的封印效果注册到场上，由tp方发动，影响对方场上的龙族怪兽。
 	Duel.RegisterEffect(e1,tp)
 end
--- 定义效果发动的过滤条件，仅对龙族怪兽生效
+-- 封印效果的过滤条件：龙族怪兽。
 function c2978414.actfilter(e,c)
 	return c:IsRace(RACE_DRAGON)
 end
