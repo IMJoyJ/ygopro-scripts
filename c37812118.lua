@@ -11,17 +11,19 @@ function c37812118.initial_effect(c)
 	e1:SetOperation(c37812118.activate)
 	c:RegisterEffect(e1)
 end
--- 效果发动时的条件判定与操作信息设置：确认双方玩家均能抽卡，并设置本次连锁将进行1次投掷硬币的操作信息。
+-- 设置效果目标：投掷硬币
 function c37812118.target(e,tp,eg,ep,ev,re,r,rp,chk)
+	-- 检查自己或对方是否至少有一方可以从卡组抽2张卡
 	if chk==0 then return Duel.IsPlayerCanDraw(tp,2) or Duel.IsPlayerCanDraw(1-tp,2) end
+	-- 设置操作信息：投掷1次硬币
 	Duel.SetOperationInfo(0,CATEGORY_COIN,nil,0,tp,1)
 end
--- 效果处理时执行：投掷1次硬币，根据正反结果决定由谁抽2张卡并执行抽卡。
+-- 效果处理：投掷硬币，表侧自己抽2张，里侧对方抽2张
 function c37812118.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 让发动玩家投掷1枚硬币，返回结果存入res（1为正面，0为反面）。
+	-- 进行1次投掷硬币
 	local res=Duel.TossCoin(tp,1)
-	-- 若硬币结果为正面，则发动玩家自己抽2张卡，抽卡原因为效果。
+	-- 投出正面的场合，自己从卡组抽2张
 	if res==1 then Duel.Draw(tp,2,REASON_EFFECT)
-	-- 若硬币结果为反面，则对方玩家抽2张卡，抽卡原因为效果。
+	-- 投出反面的场合，对方从卡组抽2张
 	else Duel.Draw(1-tp,2,REASON_EFFECT) end
 end
