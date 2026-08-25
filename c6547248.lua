@@ -23,9 +23,8 @@ function s.initial_effect(c)
 	e2:SetTarget(s.drtg)
 	e2:SetOperation(s.drop)
 	c:RegisterEffect(e2)
-	-- 为单张卡片注册一个合并的延迟事件监听器，用于监听怪兽召唤成功的事件。
-	local custom_code=aux.RegisterMergedDelayedEvent_ToSingleCard(c,id,EVENT_SUMMON_SUCCESS)
-	-- ②：自己把怪兽上级召唤的场合，以最多有为那次上级召唤而解放的怪兽数量的场上的其他的魔法·陷阱卡为对象才能发动。那些卡破坏。
+	--destroy
+	local custom_code=aux.RegisterMergedDelayedEvent_ToSingleCard(c,id,{EVENT_SUMMON_SUCCESS,EVENT_MSET})
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(id,1))  --"破坏效果"
 	e3:SetCategory(CATEGORY_DESTROY)

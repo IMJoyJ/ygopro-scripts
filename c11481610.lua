@@ -81,7 +81,7 @@ function c11481610.activate(e,tp,eg,ep,ev,re,r,rp)
 		end
 	end
 	if not res then
-		-- 计算发动者当前手卡的数量，用于未特殊召唤时的LP损失。
+		Duel.BreakEffect()
 		local lp=Duel.GetFieldGroupCount(tp,LOCATION_HAND,0)
 		-- 减少发动者LP，数值为手卡数量×1000，即每有1张手卡失去1000基本分。
 		Duel.SetLP(tp,Duel.GetLP(tp)-lp*1000)

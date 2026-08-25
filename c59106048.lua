@@ -100,8 +100,7 @@ function s.drop(e,tp,eg,ep,ev,re,r,rp)
 	-- 向玩家显示「请选择要返回卡组的卡」的选卡提示。
 	Duel.Hint(HINT_SELECTMSG,p,HINTMSG_TODECK)  --"请选择要返回卡组的卡"
 	local sg=g:SelectSubGroup(p,s.gcheck,false,1,g:GetCount())
-	if sg:GetCount()==0 then return end
-	-- 给对方观看选出的手卡的卡。
+	if not sg then return end
 	Duel.ConfirmCards(1-p,sg)
 	-- 以效果原因将选出的卡送回卡组并洗切。
 	Duel.SendtoDeck(sg,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)

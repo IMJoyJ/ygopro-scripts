@@ -72,7 +72,7 @@ function s.syntg(e,syncard,f,min,max)
 	local c=e:GetHandler()
 	local tp=syncard:GetControler()
 	local lv=syncard:GetLevel()
-	if lv<=c:GetLevel() and lv<=s.cardiansynlevel(c) then return false end
+	if lv<=c:GetLevel() and lv<=s.cardiansynlevel(c,syncard) then return false end
 	local g=Group.FromCards(c)
 	-- 获取玩家场上可用于该同调怪兽同调召唤的素材卡片组。
 	local mg=Duel.GetSynchroMaterial(tp):Filter(s.synfilter,c,syncard,c,f)
