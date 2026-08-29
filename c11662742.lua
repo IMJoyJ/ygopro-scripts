@@ -16,14 +16,14 @@ function c11662742.initial_effect(c)
 	e2:SetCode(EFFECT_DOUBLE_TRIBUTE)
 	e2:SetValue(c11662742.dtcon)
 	c:RegisterEffect(e2)
-	-- ③：自己因战斗·效果受到伤害的场合发动。场上的表侧表示的这张卡破坏。（此段为伤害事件监听，为③的发动标记伤害类型）
+	-- ③：自己因战斗·效果受到伤害的场合发动。场上的表侧表示的这张卡破坏。
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e3:SetRange(LOCATION_MZONE)
 	e3:SetCode(EVENT_DAMAGE)
 	e3:SetOperation(c11662742.dmop)
 	c:RegisterEffect(e3)
-	-- ③：自己因战斗受到伤害的场合发动。场上的表侧表示的这张卡破坏。（此效果对应战斗伤害导致的发动）
+	-- ③：自己因战斗·效果受到伤害的场合发动。场上的表侧表示的这张卡破坏。
 	local e4=Effect.CreateEffect(c)
 	e4:SetDescription(aux.Stringid(11662742,0))  --"自坏"
 	e4:SetCategory(CATEGORY_DESTROY)
@@ -34,7 +34,7 @@ function c11662742.initial_effect(c)
 	e4:SetTarget(c11662742.destg)
 	e4:SetOperation(c11662742.desop)
 	c:RegisterEffect(e4)
-	-- ③：自己因效果受到伤害的场合发动。场上的表侧表示的这张卡破坏。（此效果对应伤害步骤内伤害计算前的效果伤害导致的发动）
+	-- ③：自己因战斗·效果受到伤害的场合发动。场上的表侧表示的这张卡破坏。
 	local e5=Effect.CreateEffect(c)
 	e5:SetDescription(aux.Stringid(11662742,0))  --"自坏"
 	e5:SetCategory(CATEGORY_DESTROY)
@@ -45,7 +45,7 @@ function c11662742.initial_effect(c)
 	e5:SetTarget(c11662742.destg)
 	e5:SetOperation(c11662742.desop)
 	c:RegisterEffect(e5)
-	-- ③：自己因效果受到伤害的场合发动。场上的表侧表示的这张卡破坏。（此效果对应一般效果伤害导致的发动）
+	-- ③：自己因战斗·效果受到伤害的场合发动。场上的表侧表示的这张卡破坏。
 	local e6=Effect.CreateEffect(c)
 	e6:SetDescription(aux.Stringid(11662742,0))  --"自坏"
 	e6:SetCategory(CATEGORY_DESTROY)
@@ -57,46 +57,46 @@ function c11662742.initial_effect(c)
 	e6:SetOperation(c11662742.desop)
 	c:RegisterEffect(e6)
 end
--- 判定被解放的怪兽是否为光属性·天使族，满足时本卡可作为2只解放用于该怪兽的上级召唤。
+-- 双祭品条件：用于光属性·天使族怪兽的上级召唤
 function c11662742.dtcon(e,c)
 	local ec=e:GetHandler()
 	return c:IsAttribute(ATTRIBUTE_LIGHT) and c:IsRace(RACE_FAIRY) and (ec:IsFaceup() or c:GetControler()==ec:GetControler())
 end
--- 在受到伤害时监听伤害类型：若为战斗伤害则注册11662742标记；若为伤害阶段未计算伤害前的效果伤害则注册11662743标记，以供后续破坏效果判定。
+-- 伤害处理：自身控制者受到战斗伤害或伤害步骤中的效果伤害时注册标记
 function c11662742.dmop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsControler(1-ep) then return end
 	if bit.band(r,REASON_BATTLE)~=0 then
 		c:RegisterFlagEffect(11662742,RESET_PHASE+PHASE_DAMAGE,0,1)
-	-- 当处于伤害步骤且尚未进行伤害计算时受到效果伤害，注册11662743标记，用于e5在EVENT_BATTLED时触发。
+	-- 检查当前是否处于伤害步骤且尚未进行伤害计算
 	elseif Duel.GetCurrentPhase()==PHASE_DAMAGE and not Duel.IsDamageCalculated() then
 		c:RegisterFlagEffect(11662743,RESET_PHASE+PHASE_DAMAGE,0,1)
 	end
 end
--- e4的发动条件：检查本卡是否拥有11662742标记（即本卡控制者刚受到战斗伤害），是则允许发动自坏效果。
+-- 触发条件：检查自身是否存在受到战斗伤害的标记
 function c11662742.descon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():GetFlagEffect(11662742)>0
 end
--- e5的发动条件：检查本卡是否拥有11662743标记（即伤害计算前受到过效果伤害），是则允许发动自坏效果。
+-- 触发条件：检查自身是否存在伤害计算前受到效果伤害的标记
 function c11662742.descon2(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():GetFlagEffect(11662743)>0
 end
--- e6的发动条件：伤害来源为效果伤害、受到伤害的玩家是本卡控制者，且当前不是伤害计算前（避免与e5重复）。
+-- 触发条件：受到效果伤害且不在伤害计算前（伤害步骤外或伤害计算后）
 function c11662742.descon3(e,tp,eg,ep,ev,re,r,rp)
 	return bit.band(r,REASON_EFFECT)~=0 and e:GetHandler():GetControler()==ep
-		-- 进一步限定：当前不是伤害阶段，或虽是伤害阶段但已经完成伤害计算，从而排除伤害计算前的效果伤害。
+		-- 检查当前不在伤害步骤中，或者已完成伤害计算
 		and (Duel.GetCurrentPhase()~=PHASE_DAMAGE or Duel.IsDamageCalculated())
 end
--- 发动时的目标处理：无对象，确认发动可行性；通过后将本卡登记为破坏对象。
+-- 目标检查：设置破坏自身的操作信息
 function c11662742.destg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 向系统登记本次操作信息：效果将破坏这张卡（数量1），使其他卡能对应此破坏。
+	-- 设置效果处理的操作信息：破坏自身
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,e:GetHandler(),1,0,0)
 end
--- 效果处理：若本卡仍与效果相关，则执行破坏操作。
+-- 效果处理：破坏场上的这张卡
 function c11662742.desop(e,tp,eg,ep,ev,re,r,rp)
 	if e:GetHandler():IsRelateToEffect(e) then
-		-- 将这张卡以效果破坏的方式送去墓地。
+		-- 将自身破坏
 		Duel.Destroy(e:GetHandler(),REASON_EFFECT)
 	end
 end

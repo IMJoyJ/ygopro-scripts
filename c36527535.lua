@@ -18,18 +18,18 @@ function c36527535.initial_effect(c)
 	e2:SetValue(c36527535.dtcon)
 	c:RegisterEffect(e2)
 end
--- 特殊召唤规则的条件判断：若c为nil表示询问能否规则特殊召唤，则返回true；否则需满足自己场上无怪兽、对方场上有怪兽且自己有可用怪兽区。
+-- 特殊召唤条件判定：自己主要怪兽区无怪兽、对方主要怪兽区有怪兽且自己怪兽区有空格
 function c36527535.sprcon(e,c)
 	if c==nil then return true end
 	local tp=c:GetControler()
-	-- 自己的主要怪兽区没有怪兽。
+	-- 检查自己主要怪兽区没有怪兽存在
 	return Duel.GetFieldGroupCount(tp,LOCATION_MZONE,0)==0
-		-- 对方场上有怪兽存在。
+		-- 检查对方主要怪兽区有怪兽存在
 		and Duel.GetFieldGroupCount(tp,0,LOCATION_MZONE)>0
-		-- 自己的主要怪兽区有空位可供特殊召唤。
+		-- 检查自己主要怪兽区是否有可用空位
 		and Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 end
--- 判断被解放的怪兽是否为「娱乐伙伴」系列卡，若是则该卡可作为2只数量解放。
+-- 双祭品效果适用条件：「娱乐伙伴」怪兽上级召唤且自身表侧表示或同控制者
 function c36527535.dtcon(e,c)
 	local ec=e:GetHandler()
 	return c:IsSetCard(0x9f) and (ec:IsFaceup() or c:GetControler()==ec:GetControler())
