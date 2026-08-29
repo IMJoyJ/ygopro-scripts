@@ -76,8 +76,7 @@ function s.activate(e,tp,eg,ep,ev,re,r,rp)
 		-- 提示玩家选择要回到卡组的卡。
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TODECK)  --"请选择要返回卡组的卡"
 		local sg=mg:SelectSubGroup(tp,s.gcheck,false,ct,ct,tp,tc)
-		if sg:GetCount()>0 then
-			-- 显示选中的要回到卡组的卡的提示动画，并记录这些卡被选择。
+		if sg then
 			Duel.HintSelection(sg)
 			-- 将选择的「罪宝」卡洗回卡组，并确认它们确实回到了卡组或额外卡组。
 			if Duel.SendtoDeck(sg,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)~=0 and sg:FilterCount(Card.IsLocation,nil,LOCATION_DECK+LOCATION_EXTRA)~=0 then

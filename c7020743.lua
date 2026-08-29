@@ -108,8 +108,7 @@ function s.ovop(e,tp,eg,ep,ev,re,r,rp)
 			-- 提示玩家选择要作为超量素材的卡。
 			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_XMATERIAL)  --"请选择要作为超量素材的卡"
 			local sg=g:SelectSubGroup(tp,s.gcheck,false,1,2,tp)
-			if sg:GetCount()>0 then
-				-- 选中卡片的视觉提示效果。
+			if sg then
 				Duel.HintSelection(sg)
 				-- 将选中的卡片重叠作为此卡的超量素材。
 				Duel.Overlay(c,sg)

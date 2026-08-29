@@ -89,8 +89,7 @@ function s.setop(e,tp,eg,ep,ev,re,r,rp)
 	-- 提示玩家选择需要盖放的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SET)  --"请选择要盖放的卡"
 	local g=sg:SelectSubGroup(tp,s.gcheck,false,2,2,tp)
-	if g:GetCount()==2 then
-		-- 将选择的卡在自己场上盖放
+	if g then
 		Duel.SSet(tp,g)
 	end
 end

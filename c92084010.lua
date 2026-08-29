@@ -11,5 +11,6 @@ function c92084010.initial_effect(c)
 end
 -- 判断进行祭品召唤的怪兽是否为水属性
 function c92084010.condition(e,c)
-	return c:IsAttribute(ATTRIBUTE_WATER)
+	local ec=e:GetHandler()
+	return c:IsAttribute(ATTRIBUTE_WATER) and (ec:IsFaceup() or c:GetControler()==ec:GetControler())
 end

@@ -84,8 +84,7 @@ function s.thop(e,tp,eg,ep,ev,re,r,rp)
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
 		-- 让玩家从候选卡中选出sct张卡名互不相同的卡（同名卡最多1张），sct为作为对象的里侧表示卡数量。
 		local tg=g:SelectSubGroup(tp,aux.dncheck,false,sct,sct)
-		if tg:GetCount()>0 then
-			-- 把选出的卡从卡组加入手卡。
+		if tg then
 			Duel.SendtoHand(tg,nil,REASON_EFFECT)
 			-- 把加入手卡的卡给对方玩家确认。
 			Duel.ConfirmCards(1-tp,tg)

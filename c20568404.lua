@@ -80,8 +80,7 @@ function s.spop(e,tp,eg,ep,ev,re,r,rp)
 				-- 提示操作者选择要特殊召唤的卡。
 				Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
 				local ssg=tg:SelectSubGroup(tp,s.gcheck,false,1,ft,lv)
-				if ssg:GetCount()>0 then
-					-- 中断当前效果链，使后续特殊召唤作为不同时处理，以免错失时点。
+				if ssg then
 					Duel.BreakEffect()
 					-- 将选择的怪兽无视召唤条件、以正面表示特殊召唤到己方怪兽区。
 					Duel.SpecialSummon(ssg,0,tp,tp,true,false,POS_FACEUP)

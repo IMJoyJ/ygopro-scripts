@@ -11,5 +11,6 @@ function c25163248.initial_effect(c)
 end
 -- 判断被解放的这张卡所用于上级召唤的怪兽是否为机械族，若是则允许这张卡作为2只数量解放。
 function c25163248.condition(e,c)
-	return c:IsRace(RACE_MACHINE)
+	local ec=e:GetHandler()
+	return c:IsRace(RACE_MACHINE) and (ec:IsFaceup() or c:GetControler()==ec:GetControler())
 end

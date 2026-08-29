@@ -71,7 +71,8 @@ function c50354944.spop(e,tp,eg,ep,ev,re,r,rp)
 end
 -- ②效果的判定条件：被解放的怪兽种族必须为战士族。
 function c50354944.condition(e,c)
-	return c:IsRace(RACE_WARRIOR)
+	local ec=e:GetHandler()
+	return c:IsRace(RACE_WARRIOR) and (ec:IsFaceup() or c:GetControler()==ec:GetControler())
 end
 -- ③效果的发动条件：仅限自己或对方的战斗阶段，且满足伤害步骤前发动的限制。
 function c50354944.atkcon(e,tp,eg,ep,ev,re,r,rp)

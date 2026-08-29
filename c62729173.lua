@@ -11,5 +11,6 @@ function c62729173.initial_effect(c)
 end
 -- 判断进行上级召唤的怪兽是否是名字带有「侵入魔鬼」的怪兽
 function c62729173.condition(e,c)
-	return c:IsSetCard(0x100a)
+	local ec=e:GetHandler()
+	return c:IsSetCard(0x100a) and (ec:IsFaceup() or c:GetControler()==ec:GetControler())
 end

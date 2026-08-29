@@ -51,7 +51,8 @@ function c27107590.sprcon(e,c)
 end
 -- ②的判定：被解放的怪兽必须是「时械神」字段的怪兽，此时这张卡可作为2只的数量。
 function c27107590.dtcon(e,c)
-	return c:IsSetCard(0x4a)
+	local ec=e:GetHandler()
+	return c:IsSetCard(0x4a) and (ec:IsFaceup() or c:GetControler()==ec:GetControler())
 end
 -- ③的代价：把这张卡解放作为发动代价，并检查其可解放。
 function c27107590.thcost(e,tp,eg,ep,ev,re,r,rp,chk)

@@ -47,5 +47,6 @@ function c36523152.splimit(e,c,sump,sumtype,sumpos,targetp,se)
 end
 -- EFFECT_DOUBLE_TRIBUTE的值函数：当c（被上级召唤的怪兽）是机械族时返回true，此时持有者可以作为2只祭品；用于机械族怪兽的上级召唤。
 function c36523152.condition(e,c)
-	return c:IsRace(RACE_MACHINE)
+	local ec=e:GetHandler()
+	return c:IsRace(RACE_MACHINE) and (ec:IsFaceup() or c:GetControler()==ec:GetControler())
 end

@@ -53,8 +53,7 @@ function s.activate(e,tp,eg,ep,ev,re,r,rp)
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
 	-- 从卡组中选择3只卡名互不相同的「三幻魔」怪兽
 	local sg=g:SelectSubGroup(tp,aux.dncheck,false,3,3)
-	if sg:GetCount()>0 then
-		-- 将选中的3只「三幻魔」怪兽加入玩家手卡
+	if sg then
 		Duel.SendtoHand(sg,nil,REASON_EFFECT)
 		-- 向对方玩家确认加入手卡的这3张怪兽
 		Duel.ConfirmCards(1-tp,sg)

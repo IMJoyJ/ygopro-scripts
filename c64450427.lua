@@ -54,5 +54,6 @@ function c64450427.spop(e,tp,eg,ep,ev,re,r,rp)
 end
 -- 限制双祭品效果仅在灵摆怪兽上级召唤时适用
 function c64450427.dtcon(e,c)
-	return c:IsType(TYPE_PENDULUM)
+	local ec=e:GetHandler()
+	return c:IsType(TYPE_PENDULUM) and (ec:IsFaceup() or c:GetControler()==ec:GetControler())
 end

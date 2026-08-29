@@ -102,8 +102,7 @@ function c7337976.tgop2(e,tp,eg,ep,ev,re,r,rp)
 	local sg=g:SelectSubGroup(tp,aux.TRUE,false,1,ct)
 	-- 重置卡片组选择的附加检查条件。
 	aux.GCheckAdditional=nil
-	if sg:GetCount()>0 then
-		-- 将选择的「狱火机」怪兽因效果送去墓地。
+	if sg then
 		Duel.SendtoGrave(sg,REASON_EFFECT)
 	end
 end

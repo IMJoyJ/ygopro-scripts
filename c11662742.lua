@@ -59,7 +59,8 @@ function c11662742.initial_effect(c)
 end
 -- 判定被解放的怪兽是否为光属性·天使族，满足时本卡可作为2只解放用于该怪兽的上级召唤。
 function c11662742.dtcon(e,c)
-	return c:IsAttribute(ATTRIBUTE_LIGHT) and c:IsRace(RACE_FAIRY)
+	local ec=e:GetHandler()
+	return c:IsAttribute(ATTRIBUTE_LIGHT) and c:IsRace(RACE_FAIRY) and (ec:IsFaceup() or c:GetControler()==ec:GetControler())
 end
 -- 在受到伤害时监听伤害类型：若为战斗伤害则注册11662742标记；若为伤害阶段未计算伤害前的效果伤害则注册11662743标记，以供后续破坏效果判定。
 function c11662742.dmop(e,tp,eg,ep,ev,re,r,rp)

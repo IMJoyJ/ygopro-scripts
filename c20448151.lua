@@ -73,8 +73,7 @@ function s.activate(e,tp,eg,ep,ev,re,r,rp)
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
 	-- 让玩家从候选卡中选择2张，且必须满足一张为系列魔法·陷阱卡、另一张为白脸小丑的组合条件。
 	local tg1=g:SelectSubGroup(tp,aux.gffcheck,false,2,2,s.thfilter1,nil,s.thfilter2,nil)
-	if tg1:GetCount()==2 then
-		-- 将选中的2张卡以效果原因加入其持有者的手卡。
+	if tg1 then
 		Duel.SendtoHand(tg1,nil,REASON_EFFECT)
 		-- 向对方玩家展示加入手卡的2张卡，以确认检索内容。
 		Duel.ConfirmCards(1-tp,tg1)

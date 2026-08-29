@@ -136,7 +136,7 @@ function s.spop(e,tp,eg,ep,ev,re,r,rp)
 		-- 发送提示消息，让玩家选择要返回卡组的卡
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TODECK)  --"请选择要返回卡组的卡"
 		local sg=tg:SelectSubGroup(tp,s.fselect2,false,2,2,e,tp,tg)
-		if sg:GetCount()>0 then
+		if sg then
 			tg:Sub(sg)
 			-- 手动为即将回卡组的卡显示被选为对象的动画
 			Duel.HintSelection(sg)

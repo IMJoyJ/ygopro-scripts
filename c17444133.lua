@@ -11,5 +11,6 @@ function c17444133.initial_effect(c)
 end
 -- 作为EFFECT_DOUBLE_TRIBUTE的判定函数：检查被上级召唤的怪兽是否为光属性；若为光属性，则这张卡可以作为2只数量解放。
 function c17444133.condition(e,c)
-	return c:IsAttribute(ATTRIBUTE_LIGHT)
+	local ec=e:GetHandler()
+	return c:IsAttribute(ATTRIBUTE_LIGHT) and (ec:IsFaceup() or c:GetControler()==ec:GetControler())
 end

@@ -69,8 +69,7 @@ function s.spop(e,tp,eg,ep,ev,re,r,rp)
 	-- 提示玩家选择要送去墓地的卡片
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
 	local sg=g:SelectSubGroup(tp,s.gcheck,false,3,3)
-	-- 玩家选择3张卡并成功送去墓地
-	if sg:GetCount()>0 and Duel.SendtoGrave(sg,REASON_EFFECT)==3
+	if sg and Duel.SendtoGrave(sg,REASON_EFFECT)==3
 		and sg:IsExists(Card.IsLocation,3,nil,LOCATION_GRAVE)
 		-- 检查自己场上的怪兽区域是否有可用的空格
 		and Duel.GetLocationCount(tp,LOCATION_MZONE)>0

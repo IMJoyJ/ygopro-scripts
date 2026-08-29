@@ -100,8 +100,7 @@ function s.setop(e,tp,eg,ep,ev,re,r,rp)
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SET)  --"请选择要盖放的卡"
 		-- 让玩家从候选卡中选择1到ft张，且所选卡名互不相同（保证太阳之书和月之书各最多1张），用于盖放。
 		local sg=g:SelectSubGroup(tp,aux.dncheck,false,1,ft)
-		if sg:GetCount()>0 then
-			-- 将选择的「太阳之书」/「月之书」以里侧表示盖放到自己的魔法与陷阱区域。
+		if sg then
 			Duel.SSet(tp,sg)
 		end
 	end

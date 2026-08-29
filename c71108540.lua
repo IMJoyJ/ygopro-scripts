@@ -126,8 +126,7 @@ function s.tdop(e,tp,eg,ep,ev,re,r,rp)
 	-- 向操作玩家发送选择提示，要求其从候选组中选择要放置到卡组上面的卡片。
 	Duel.Hint(HINT_SELECTMSG,tp,aux.Stringid(id,3))  --"请选择要放置到卡组上面的卡"
 	local sg=g:SelectSubGroup(tp,s.gcheck,false,ct+1,ct+1)
-	if sg:GetCount()>0 then
-		-- 将玩家选出的卡片组sg展示给对方玩家确认，符合“给对方观看”的效果文本。
+	if sg then
 		Duel.ConfirmCards(1-tp,sg)
 		-- 遍历选出的每一张卡片sg，逐一将其移动到卡组最上方。
 		for tc in aux.Next(sg) do

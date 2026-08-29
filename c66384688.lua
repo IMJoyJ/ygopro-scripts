@@ -67,8 +67,7 @@ function s.thop(e,tp,eg,ep,ev,re,r,rp)
 			Duel.Hint(HINT_SELECTMSG,tp,aux.Stringid(id,2))  --"请选择要加入额外卡组的卡"
 			-- 让玩家从卡组中选择最多2张卡名不同的「威风妖怪」灵摆怪兽。
 			local hg=cg:SelectSubGroup(tp,aux.dncheck,false,1,2)
-			if hg:GetCount()>0 then
-				-- 中断当前效果，使后续的加入额外卡组处理与加入手牌不视为同时处理。
+			if hg then
 				Duel.BreakEffect()
 				-- 将选择的卡片表侧表示送去额外卡组。
 				Duel.SendtoExtraP(hg,nil,REASON_EFFECT)

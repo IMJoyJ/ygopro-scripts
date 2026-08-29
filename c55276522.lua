@@ -149,8 +149,7 @@ function s.spop(e,tp,eg,ep,ev,re,r,rp)
 		-- 提示玩家选择要特殊召唤的卡。
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
 		local sg=g:SelectSubGroup(tp,s.spgcheck,false,3,3,tp)
-		if sg:GetCount()>2 then
-			-- 将选中的3只怪兽以表侧表示特殊召唤。
+		if sg then
 			Duel.SpecialSummon(sg,0,tp,tp,false,false,POS_FACEUP)
 		end
 	end

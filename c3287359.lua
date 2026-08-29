@@ -94,9 +94,8 @@ function s.spop(e,tp,eg,ep,ev,re,r,rp)
 	-- 提示玩家选择要处理的2张「魔弹」卡（作为效果对象）。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)  --"请选择效果的对象"
 	local tg=g:SelectSubGroup(tp,s.gcheck,false,2,2,e,tp)
-	if tg:GetCount()>1 then
-		-- 提示玩家选择要特殊召唤到自己场上的1只「魔弹」怪兽。
-		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
+	if tg then
+		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
 		local sg=tg:FilterSelect(tp,s.spfilter,1,1,nil,tg,e,tp)
 		tg:Sub(sg)
 		-- 将选中的1只「魔弹」怪兽表侧表示特殊召唤到自己场上。

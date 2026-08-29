@@ -109,8 +109,7 @@ function s.thop(e,tp,eg,ep,ev,re,r,rp)
 	-- 发送系统提示：请选择要加入手牌的卡片
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
 	local tg=g:SelectSubGroup(tp,s.thcheck,false,1,2)
-	-- 如果选择了卡片，且成功将这些卡片送回手卡，并且其中至少有1张卡确实到达了手卡
-	if #tg>0 and Duel.SendtoHand(tg,nil,REASON_EFFECT)~=0 and tg:IsExists(Card.IsLocation,1,nil,LOCATION_HAND) then
+	if tg and Duel.SendtoHand(tg,nil,REASON_EFFECT)~=0 and tg:IsExists(Card.IsLocation,1,nil,LOCATION_HAND) then
 		local sg=tg:Filter(Card.IsControler,nil,tp)
 		if sg:GetCount()>0 then
 			-- 让对方玩家确认自己加入手卡的卡片

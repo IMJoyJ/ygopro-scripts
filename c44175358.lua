@@ -50,7 +50,7 @@ function s.spop(e,tp,eg,ep,ev,re,r,rp)
 	-- 发送选择提示消息，提示玩家接下来要选择要特殊召唤的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
 	local sg=g:SelectSubGroup(tp,s.fselect,false,2,2)
-	if sg:GetCount()==2 then
+	if sg then
 		local fid=e:GetHandler():GetFieldID()
 		-- 发送选择提示消息，提示玩家从符合条件的一组卡中选择要特殊召唤的卡（选择界面用）。
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"

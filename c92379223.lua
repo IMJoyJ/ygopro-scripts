@@ -79,11 +79,8 @@ function c92379223.activate(e,tp,eg,ep,ev,re,r,rp)
 			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TODECK)  --"请选择要返回卡组的卡"
 			-- 从符合条件的卡片中选择3张卡名不同的卡
 			local tg=g:SelectSubGroup(tp,aux.dncheck,false,3,3)
-			if #tg>0 then
-				-- 为选中的卡片显示被选为对象的动画效果
-				Duel.HintSelection(tg)
-			end
-			-- 将选中的卡片送回持有者卡组并洗牌
+			if not tg then return end
+			Duel.HintSelection(tg)
 			Duel.SendtoDeck(tg,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
 			-- 获取上一步操作中实际被送回卡组的卡片组
 			local og=Duel.GetOperatedGroup()
@@ -109,11 +106,8 @@ function c92379223.activate(e,tp,eg,ep,ev,re,r,rp)
 			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TODECK)  --"请选择要返回卡组的卡"
 			-- 从符合条件的卡片中选择3张卡名不同的卡
 			local tg=g:SelectSubGroup(tp,aux.dncheck,false,3,3)
-			if #tg>0 then
-				-- 为选中的卡片显示被选为对象的动画效果
-				Duel.HintSelection(tg)
-			end
-			-- 将选中的卡片送回持有者卡组并洗牌
+			if not tg then return end
+			Duel.HintSelection(tg)
 			Duel.SendtoDeck(tg,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
 			-- 获取上一步操作中实际被送回卡组的卡片组
 			local og=Duel.GetOperatedGroup()

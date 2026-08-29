@@ -55,8 +55,7 @@ function c67248304.operation(e,tp,eg,ep,ev,re,r,rp)
 			local og=Duel.GetOperatedGroup()
 			-- 获取当前回合玩家
 			local turnp=Duel.GetTurnPlayer()
-			local setg1=Group.CreateGroup()
-			-- 获取回合玩家手牌中可以盖放的魔法·陷阱卡
+			local setg1
 			local sg1=Duel.GetMatchingGroup(Card.IsSSetable,turnp,LOCATION_HAND,0,nil)
 			local ct1=og:FilterCount(c67248304.ctfilter,nil,turnp)
 			-- 若回合玩家有可盖放的卡且有卡片因此效果回到其手牌，询问其是否盖放
@@ -67,8 +66,7 @@ function c67248304.operation(e,tp,eg,ep,ev,re,r,rp)
 				Duel.Hint(HINT_SELECTMSG,turnp,HINTMSG_SET)  --"请选择要盖放的卡"
 				setg1=sg1:SelectSubGroup(turnp,c67248304.fselect,false,1,math.min(ct1,ft1+1),ft1)
 			end
-			local setg2=Group.CreateGroup()
-			-- 获取非回合玩家手牌中可以盖放的魔法·陷阱卡
+			local setg2
 			local sg2=Duel.GetMatchingGroup(Card.IsSSetable,1-turnp,LOCATION_HAND,0,nil)
 			local ct2=og:FilterCount(c67248304.ctfilter,nil,1-turnp)
 			-- 若非回合玩家有可盖放的卡且有卡片因此效果回到其手牌，询问其是否盖放
@@ -79,12 +77,9 @@ function c67248304.operation(e,tp,eg,ep,ev,re,r,rp)
 				Duel.Hint(HINT_SELECTMSG,1-turnp,HINTMSG_SET)  --"请选择要盖放的卡"
 				setg2=sg2:SelectSubGroup(1-turnp,c67248304.fselect,false,1,math.min(ct2,ft2+1),ft2)
 			end
-			-- 若有玩家选择盖放卡片，则中断当前效果，使盖放处理视为不同时处理
-			if setg1:GetCount()>0 or setg2:GetCount()>0 then Duel.BreakEffect() end
-			-- 回合玩家将选定的魔法·陷阱卡在自身场上盖放
-			if setg1:GetCount()>0 then Duel.SSet(turnp,setg1,turnp,false) end
-			-- 非回合玩家将选定的魔法·陷阱卡在自身场上盖放
-			if setg2:GetCount()>0 then Duel.SSet(1-turnp,setg2,1-turnp,false) end
+			if setg1 or setg2 then Duel.BreakEffect() end
+			if setg1 then Duel.SSet(turnp,setg1,turnp,false) end
+			if setg2 then Duel.SSet(1-turnp,setg2,1-turnp,false) end
 		end
 	end
 end

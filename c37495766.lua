@@ -95,8 +95,7 @@ function s.setop(e,tp,eg,ep,ev,re,r,rp)
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SET)  --"请选择要盖放的卡"
 		-- 从符合条件的中选择1至ft张卡名各不相同的卡。
 		local sg=g:SelectSubGroup(tp,aux.dncheck,false,1,ft)
-		if sg:GetCount()>0 then
-			-- 将选择的卡盖放到自己的魔陷区。
+		if sg then
 			Duel.SSet(tp,sg)
 		end
 	end

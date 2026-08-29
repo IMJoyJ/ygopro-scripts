@@ -72,7 +72,7 @@ function c77402960.activate(e,tp,eg,ep,ev,re,r,rp)
 			-- 提示玩家选择要特殊召唤的卡
 			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
 			local rg=sg:SelectSubGroup(tp,c77402960.fselect,false,1,4,ft1,ft2,ect,ft)
-			if rg:GetCount()>0 then
+			if rg then
 				local fid=c:GetFieldID()
 				local tc=rg:GetFirst()
 				while tc do

@@ -25,7 +25,8 @@ function c33750025.initial_effect(c)
 end
 -- 判定条件：被解放的怪兽是龙族时，这张卡可以作为2只祭品。
 function c33750025.tricon(e,c)
-	return c:IsRace(RACE_DRAGON)
+	local ec=e:GetHandler()
+	return c:IsRace(RACE_DRAGON) and (ec:IsFaceup() or c:GetControler()==ec:GetControler())
 end
 -- ②效果的取对象过滤条件：选择自己墓地1只5星以上的龙族怪兽，且该怪兽能被加入手卡。
 function c33750025.thfilter(c)

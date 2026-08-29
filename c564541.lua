@@ -23,7 +23,8 @@ function c564541.initial_effect(c)
 end
 -- 判断进行上级召唤的怪兽是否为龙族怪兽
 function c564541.dccon(e,c)
-	return c:IsRace(RACE_DRAGON)
+	local ec=e:GetHandler()
+	return c:IsRace(RACE_DRAGON) and (ec:IsFaceup() or c:GetControler()==ec:GetControler())
 end
 -- 过滤出墓地中龙族以外的怪兽卡
 function c564541.cfilter(c)

@@ -95,7 +95,8 @@ function c8522996.chop(e,tp,eg,ep,ev,re,r,rp)
 end
 -- 检查进行上级召唤的怪兽属性是否与这张卡当前的属性相同
 function c8522996.condition(e,c)
-	return c:IsAttribute(e:GetHandler():GetAttribute())
+	local ec=e:GetHandler()
+	return c:IsAttribute(ec:GetAttribute()) and (ec:IsFaceup() or c:GetControler()==ec:GetControler())
 end
 -- 限制自己不能特殊召唤与这张卡属性不同的怪兽
 function c8522996.splimit(e,c,tp,sumtp,sumpos)

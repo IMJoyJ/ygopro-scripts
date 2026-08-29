@@ -112,8 +112,7 @@ function s.activate(e,tp,eg,ep,ev,re,r,rp)
 			-- 提示玩家选择要破坏的卡
 			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
 			local sg=g1:SelectSubGroup(tp,s.gcheck,false,2,2,tp)
-			if sg:GetCount()>0 then
-				-- 为选出的2张卡显示被选中的动画并记录
+			if sg then
 				Duel.HintSelection(sg)
 				-- 将选出的自己场上1只「魔女术」怪兽和对方场上1张卡破坏
 				Duel.Destroy(sg,REASON_EFFECT)

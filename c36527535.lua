@@ -31,5 +31,6 @@ function c36527535.sprcon(e,c)
 end
 -- 判断被解放的怪兽是否为「娱乐伙伴」系列卡，若是则该卡可作为2只数量解放。
 function c36527535.dtcon(e,c)
-	return c:IsSetCard(0x9f)
+	local ec=e:GetHandler()
+	return c:IsSetCard(0x9f) and (ec:IsFaceup() or c:GetControler()==ec:GetControler())
 end

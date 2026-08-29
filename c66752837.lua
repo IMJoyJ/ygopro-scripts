@@ -25,7 +25,8 @@ function c66752837.initial_effect(c)
 end
 -- 判断解放召唤的怪兽是否为龙族怪兽
 function c66752837.tricon(e,c)
-	return c:IsRace(RACE_DRAGON)
+	local ec=e:GetHandler()
+	return c:IsRace(RACE_DRAGON) and (ec:IsFaceup() or c:GetControler()==ec:GetControler())
 end
 -- 过滤满足「灵庙守护者」以外的场上表侧表示的龙族怪兽因效果或战斗送去墓地条件的卡片
 function c66752837.cfilter(c)

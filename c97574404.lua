@@ -33,7 +33,8 @@ function c97574404.dtcon(e)
 end
 -- 判定进行上级召唤的怪兽是否为「秘仪之力」怪兽
 function c97574404.dtval(e,c)
-	return c:IsSetCard(0x5)
+	local ec=e:GetHandler()
+	return c:IsSetCard(0x5) and (ec:IsFaceup() or c:GetControler()==ec:GetControler())
 end
 -- 判定投掷硬币的结果是否为里（反面）
 function c97574404.sumcon(e)

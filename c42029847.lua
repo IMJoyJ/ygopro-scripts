@@ -18,7 +18,8 @@ function c42029847.initial_effect(c)
 end
 -- 判定被上级召唤的怪兽是否为天使族，若是则这张卡可作为2只解放素材使用。
 function c42029847.condition(e,c)
-	return c:IsRace(RACE_FAIRY)
+	local ec=e:GetHandler()
+	return c:IsRace(RACE_FAIRY) and (ec:IsFaceup() or c:GetControler()==ec:GetControler())
 end
 -- 特殊召唤成功时，若本回合尚未使用过该效果，则为玩家注册一个持续到结束阶段的额外召唤次数效果，并设置对应的触发标记。
 function c42029847.regop(e,tp,eg,ep,ev,re,r,rp)

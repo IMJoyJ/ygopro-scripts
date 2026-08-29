@@ -123,7 +123,7 @@ function s.spop(e,tp,eg,ep,ev,re,r,rp)
 			-- 提示玩家进入选择要特殊召唤的卡片界面。
 			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
 			local sg=g:SelectSubGroup(tp,s.gcheck,false,1,3,eft1,eft2,eft3,ect,ft)
-			if sg:GetCount()>0 then
+			if sg then
 				local exg1=sg:Filter(s.exfilter2,nil)
 				sg:Sub(exg1)
 				if exg1:GetCount()>0 then

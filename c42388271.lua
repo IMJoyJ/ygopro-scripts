@@ -22,7 +22,7 @@ function c42388271.initial_effect(c)
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_SINGLE)
 	e2:SetCode(EFFECT_DOUBLE_TRIBUTE)
-	e2:SetValue(1)
+	e2:SetValue(c42388271.condition)
 	c:RegisterEffect(e2)
 	-- ③：通常召唤的这张卡在怪兽区域存在，对方从额外卡组把怪兽特殊召唤的场合才能发动。从卡组把1只怪兽送去墓地。
 	local e3=Effect.CreateEffect(c)
@@ -38,7 +38,10 @@ function c42388271.initial_effect(c)
 	e3:SetOperation(c42388271.tgop)
 	c:RegisterEffect(e3)
 end
--- ①效果的发动代价函数：判定这张卡能否从手卡作为代价送去墓地；若能，则将这张卡送去墓地作为发动代价。
+function c42388271.condition(e,c)
+	local ec=e:GetHandler()
+	return ec:IsFaceup() or c:GetControler()==ec:GetControler()
+end
 function c42388271.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsAbleToGraveAsCost() end
 	-- 将这张卡从手卡送去墓地，作为效果的发动代价（REASON_COST）。

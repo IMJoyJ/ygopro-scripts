@@ -11,5 +11,6 @@ function c99865167.initial_effect(c)
 end
 -- 判定可作为2只祭品的条件：满足风属性且为通常怪兽的怪兽才能使用此效果。
 function c99865167.condition(e,c)
-	return c:IsAttribute(ATTRIBUTE_WIND) and c:IsType(TYPE_NORMAL)
+	local ec=e:GetHandler()
+	return c:IsAttribute(ATTRIBUTE_WIND) and c:IsType(TYPE_NORMAL) and (ec:IsFaceup() or c:GetControler()==ec:GetControler())
 end

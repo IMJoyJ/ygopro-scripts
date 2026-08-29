@@ -109,8 +109,7 @@ function s.spop(e,tp,eg,ep,ev,re,r,rp)
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
 	-- 从手卡中选取属性各不相同的怪兽组合
 	local sg=g:SelectSubGroup(tp,aux.dabcheck,false,1,ft)
-	if sg:GetCount()>0 then
-		-- 将选中的怪兽在自己场上表侧表示特殊召唤
+	if sg then
 		Duel.SpecialSummon(sg,0,tp,tp,false,false,POS_FACEUP)
 	end
 end

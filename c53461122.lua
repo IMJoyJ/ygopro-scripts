@@ -11,5 +11,6 @@ function c53461122.initial_effect(c)
 end
 -- 定义该效果的条件判定函数：检查作为祭品的怪兽是否满足地属性且为通常怪兽，满足时该怪兽可作为2只祭品使用。
 function c53461122.condition(e,c)
-	return c:IsAttribute(ATTRIBUTE_EARTH) and c:IsType(TYPE_NORMAL)
+	local ec=e:GetHandler()
+	return c:IsAttribute(ATTRIBUTE_EARTH) and c:IsType(TYPE_NORMAL) and (ec:IsFaceup() or c:GetControler()==ec:GetControler())
 end

@@ -76,8 +76,9 @@ function s.ncop(e,tp,eg,ep,ev,re,r,rp)
 end
 -- 当连锁发动的卡片代码与展示的卡片代码一致时，限制后续链条的响应
 function s.actop(e,tp,eg,ep,ev,re,r,rp)
-	if re:GetHandler():IsCode(e:GetLabel()) then
-		-- 设定双方玩家不能对应当前处理的效果把效果发动
+	local code=e:GetLabel()
+	local code1,code2=Duel.GetChainInfo(ev,CHAININFO_TRIGGERING_CODE,CHAININFO_TRIGGERING_CODE2)
+	if code==code1 or code==code2 then
 		Duel.SetChainLimit(aux.FALSE)
 	end
 end

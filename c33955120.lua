@@ -78,8 +78,7 @@ function s.tgop(e,tp,eg,ep,ev,re,r,rp)
 	local sg=g:SelectSubGroup(tp,aux.TRUE,false,1,2)
 	-- 清除额外选择限制，恢复默认选择逻辑。
 	aux.GCheckAdditional=nil
-	if sg:GetCount()>0 then
-		-- 将选中的卡以效果原因送入墓地。
+	if sg then
 		Duel.SendtoGrave(sg,REASON_EFFECT)
 	end
 	-- 对应①的后半句：“这个效果的发动后，直到回合结束时自己不是同调怪兽不能从额外卡组特殊召唤。”；②：“自己场上的植物族怪兽不会被效果破坏。”；③：“这张卡在墓地存在的状态，场上的卡被效果破坏的场合才能发动。这张卡特殊召唤。”
