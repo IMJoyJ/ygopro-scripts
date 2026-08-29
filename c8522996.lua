@@ -34,37 +34,37 @@ function c8522996.initial_effect(c)
 	e3:SetTarget(c8522996.splimit)
 	c:RegisterEffect(e3)
 end
--- 检查发动这张卡（特殊召唤为怪兽）的条件是否满足（怪兽区域有空位，且玩家可以特殊召唤该陷阱怪兽）
+-- 发动效果的目标确认（检查主要怪兽区空位及陷阱怪兽特殊召唤条件）
 function c8522996.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:IsCostChecked()
-		-- 检查自己场上是否有可用的怪兽区域空格
+		-- 检查自身主要怪兽区域是否有空位
 		and Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查玩家是否可以特殊召唤该特定属性、种族、攻守和等级的陷阱怪兽
+		-- 检查自身是否能作为怪兽特殊召唤
 		and Duel.IsPlayerCanSpecialSummonMonster(tp,8522996,0,TYPES_EFFECT_TRAP_MONSTER,1000,2400,6,RACE_FIEND,ATTRIBUTE_DARK) end
-	-- 设置连锁处理中的操作信息为特殊召唤自身
+	-- 设置特殊召唤自身的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 发动时的效果处理：将这张卡作为效果怪兽和陷阱卡在怪兽区域特殊召唤
+-- 执行将自身作为效果怪兽在怪兽区域特殊召唤的操作
 function c8522996.activate(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 效果处理时再次检查是否仍能特殊召唤该陷阱怪兽，若不能则直接结束处理
+	-- 检查是否仍能将自身作为效果怪兽特殊召唤
 	if not Duel.IsPlayerCanSpecialSummonMonster(tp,8522996,0,TYPES_EFFECT_TRAP_MONSTER,1000,2400,6,RACE_FIEND,ATTRIBUTE_DARK) then return end
 	c:AddMonsterAttribute(TYPE_EFFECT+TYPE_TRAP)
-	-- 将这张卡以自身效果特殊召唤到怪兽区域
+	-- 将自身以表侧表示特殊召唤
 	Duel.SpecialSummon(c,SUMMON_VALUE_SELF,tp,tp,true,false,POS_FACEUP)
 end
--- 检查这张卡是否是通过自身效果特殊召唤的
+-- 判断自身是否由自身效果特殊召唤成功
 function c8522996.chcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():GetSummonType()==SUMMON_TYPE_SPECIAL+SUMMON_VALUE_SELF
 end
--- 丢弃1张手卡作为发动效果的代价
+-- 变更属性效果的发动代价（丢弃1张手卡）
 function c8522996.chcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查手牌中是否存在可以丢弃的卡
+	-- 检查手卡中是否存在可丢弃的卡片
 	if chk==0 then return Duel.IsExistingMatchingCard(Card.IsDiscardable,tp,LOCATION_HAND,0,1,nil) end
-	-- 让玩家选择并丢弃1张手牌
+	-- 从手卡选择1张卡丢弃作为代价
 	Duel.DiscardHand(tp,Card.IsDiscardable,1,1,REASON_COST+REASON_DISCARD)
 end
--- 效果发动时的目标处理：让玩家宣言1个属性，并将宣言的属性保存在效果标签中
+-- 变更属性效果的目标确认与属性宣言
 function c8522996.chtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
 	-- 提示玩家选择要宣言的属性
@@ -73,7 +73,7 @@ function c8522996.chtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local aat=Duel.AnnounceAttribute(tp,1,ATTRIBUTE_ALL)
 	e:SetLabel(aat)
 end
--- 效果处理：使这张卡变为宣言的属性，并赋予其在作为相同属性怪兽上级召唤的解放时可作为2只数量解放的效果
+-- 执行变更属性及赋予可作2只数量解放的操作
 function c8522996.chop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local att=e:GetLabel()
@@ -93,7 +93,7 @@ function c8522996.chop(e,tp,eg,ep,ev,re,r,rp)
 	e2:SetReset(RESET_EVENT+RESETS_STANDARD)
 	c:RegisterEffect(e2)
 end
--- 检查进行上级召唤的怪兽属性是否与这张卡当前的属性相同
+-- 判断进行上级召唤的怪兽是否与自身属性相同
 function c8522996.condition(e,c)
 	local ec=e:GetHandler()
 	return c:IsAttribute(ec:GetAttribute()) and (ec:IsFaceup() or c:GetControler()==ec:GetControler())

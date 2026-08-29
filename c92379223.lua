@@ -16,30 +16,30 @@ function c92379223.initial_effect(c)
 	e1:SetOperation(c92379223.activate)
 	c:RegisterEffect(e1)
 end
--- 过滤函数：用于筛选自己场上表侧表示的「黄金国巫妖」怪兽
+-- 过滤表侧表示的「黄金国巫妖」怪兽
 function c92379223.filter(c)
 	return c:IsSetCard(0x1142) and c:IsFaceup()
 end
--- 过滤函数：用于筛选自己除外区表侧表示的「黄金国永生药」魔法·陷阱卡
+-- 过滤表侧表示的「黄金国永生药」卡
 function c92379223.tdfilter1(c)
 	return c:IsSetCard(0x2142) and c:IsFaceup()
 end
--- 过滤函数：用于筛选自己除外区表侧表示的「黄金乡」魔法·陷阱卡
+-- 过滤表侧表示的「黄金乡」卡
 function c92379223.tdfilter2(c)
 	return c:IsSetCard(0x143) and c:IsFaceup()
 end
--- 发动条件：检查自己场上是否存在「黄金国巫妖」怪兽
+-- 发动条件：自己场上有表侧表示的「黄金国巫妖」怪兽存在
 function c92379223.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查自己场上是否存在至少1张表侧表示的「黄金国巫妖」怪兽
+	-- 检查自己场上是否存在表侧表示的「黄金国巫妖」怪兽
 	return Duel.IsExistingMatchingCard(c92379223.filter,tp,LOCATION_MZONE,0,1,nil)
 end
--- 效果发动时的目标选择与处理分支判定
+-- 效果目标与选项选择：检查各分支发动条件并让玩家选择一个效果发动
 function c92379223.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 获取自己除外区所有表侧表示的「黄金国永生药」魔法·陷阱卡
+	-- 获取自己除外区表侧表示的「黄金国永生药」卡片组
 	local g1=Duel.GetMatchingGroup(c92379223.tdfilter1,tp,LOCATION_REMOVED,0,nil)
-	-- 获取自己除外区所有表侧表示的「黄金乡」魔法·陷阱卡
+	-- 获取自己除外区表侧表示的「黄金乡」卡片组
 	local g2=Duel.GetMatchingGroup(c92379223.tdfilter2,tp,LOCATION_REMOVED,0,nil)
-	-- 检查是否满足分支1的发动条件：除外区有3种以上不同卡名的「黄金国永生药」卡，且场上有其他卡可以破坏
+	-- 判断选项1是否满足条件（除外的「黄金国永生药」卡至少有3种且场上有其他卡）
 	local b1=g1:GetClassCount(Card.GetCode)>2 and Duel.IsExistingMatchingCard(aux.TRUE,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,e:GetHandler())
 	local b2=g2:GetClassCount(Card.GetCode)>2
 	if chk==0 then return b1 or b2 end
@@ -56,70 +56,74 @@ function c92379223.target(e,tp,eg,ep,ev,re,r,rp,chk)
 		opval[off-1]=2
 		off=off+1
 	end
-	-- 让玩家选择要发动的效果分支
+	-- 让玩家从满足条件的选项中选择1个效果
 	local op=Duel.SelectOption(tp,table.unpack(ops))
 	local sel=opval[op]
 	e:SetLabel(sel)
 	if sel==1 then
-		-- 获取场上除这张卡以外的所有卡片
+		-- 获取场上除此卡以外的所有卡片组
 		local g=Duel.GetMatchingGroup(aux.TRUE,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,e:GetHandler())
-		-- 设置效果处理信息：分类为破坏，目标为场上所有的卡
+		-- 设置操作信息：破坏场上除此卡以外的所有卡
 		Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,g:GetCount(),0,0)
 	end
 end
--- 效果处理：根据选择的分支，执行对应的回卡组及后续效果
+-- 效果处理：执行所选效果（返回卡组并全场破坏，或返回卡组并削减/回复基本分）
 function c92379223.activate(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local sel=e:GetLabel()
 	if sel==1 then
-		-- 获取自己除外区所有表侧表示的「黄金国永生药」魔法·陷阱卡
+		-- 获取自己除外区表侧表示的「黄金国永生药」卡片组
 		local g=Duel.GetMatchingGroup(c92379223.tdfilter1,tp,LOCATION_REMOVED,0,nil)
 		if g:GetClassCount(Card.GetCode)>=3 then
-			-- 提示玩家选择要返回卡组的卡片
+			-- 设置选择提示：选择要返回卡组的卡
 			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TODECK)  --"请选择要返回卡组的卡"
-			-- 从符合条件的卡片中选择3张卡名不同的卡
+			-- 选择3种类各1张卡名不同的「黄金国永生药」卡
 			local tg=g:SelectSubGroup(tp,aux.dncheck,false,3,3)
 			if not tg then return end
+			-- 显示选中卡片的目标提示动画
 			Duel.HintSelection(tg)
+			-- 将选中的3张卡返回卡组并洗牌
 			Duel.SendtoDeck(tg,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
-			-- 获取上一步操作中实际被送回卡组的卡片组
+			-- 获取实际操作返回卡组的卡片组
 			local og=Duel.GetOperatedGroup()
-			-- 若有卡片被送回主卡组，则洗切卡组
+			-- 若有卡片返回主卡组则洗切卡组
 			if og:IsExists(Card.IsLocation,1,nil,LOCATION_DECK) then Duel.ShuffleDeck(tp) end
 			local ct=og:FilterCount(Card.IsLocation,nil,LOCATION_DECK+LOCATION_EXTRA)
 			if ct==3 then
-				-- 中断当前效果，使后续的破坏处理与回卡组不视为同时处理
+				-- 中断效果处理
 				Duel.BreakEffect()
-				-- 获取场上除这张卡以外的所有卡片
+				-- 获取场上除此卡以外的所有卡片组
 				local g=Duel.GetMatchingGroup(aux.TRUE,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,e:GetHandler())
 				if #g>0 then
-					-- 破坏场上所有的卡
+					-- 将场上的卡全部破坏
 					Duel.Destroy(g,REASON_EFFECT)
 				end
 			end
 		end
 	else
-		-- 获取自己除外区所有表侧表示的「黄金乡」魔法·陷阱卡
+		-- 获取自己除外区表侧表示的「黄金乡」卡片组
 		local g=Duel.GetMatchingGroup(c92379223.tdfilter2,tp,LOCATION_REMOVED,0,nil)
 		if g:GetClassCount(Card.GetCode)>=3 then
-			-- 提示玩家选择要返回卡组的卡片
+			-- 设置选择提示：选择要返回卡组的卡
 			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TODECK)  --"请选择要返回卡组的卡"
-			-- 从符合条件的卡片中选择3张卡名不同的卡
+			-- 选择3种类各1张卡名不同的「黄金乡」卡
 			local tg=g:SelectSubGroup(tp,aux.dncheck,false,3,3)
 			if not tg then return end
+			-- 显示选中卡片的目标提示动画
 			Duel.HintSelection(tg)
+			-- 将选中的3张卡返回卡组并洗牌
 			Duel.SendtoDeck(tg,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
-			-- 获取上一步操作中实际被送回卡组的卡片组
+			-- 获取实际操作返回卡组的卡片组
 			local og=Duel.GetOperatedGroup()
-			-- 若有卡片被送回主卡组，则洗切卡组
+			-- 若有卡片返回主卡组则洗切卡组
 			if og:IsExists(Card.IsLocation,1,nil,LOCATION_DECK) then Duel.ShuffleDeck(tp) end
 			local ct=og:FilterCount(Card.IsLocation,nil,LOCATION_DECK+LOCATION_EXTRA)
 			if ct==3 then
-				-- 中断当前效果，使后续的生命值变化处理与回卡组不视为同时处理
+				-- 中断效果处理
 				Duel.BreakEffect()
-				-- 将对方的基本分变成一半（向上取整）
+				-- 将对方基本分变成一半
 				Duel.SetLP(1-tp,math.ceil(Duel.GetLP(1-tp)/2))
-				-- 自己回复等同于对方当前基本分数值的基本分
+				-- 自己基本分回复对方基本分的数值
 				Duel.Recover(tp,Duel.GetLP(1-tp),REASON_EFFECT)
 			end
 		end

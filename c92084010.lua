@@ -9,7 +9,7 @@ function c92084010.initial_effect(c)
 	e1:SetValue(c92084010.condition)
 	c:RegisterEffect(e1)
 end
--- 判断进行祭品召唤的怪兽是否为水属性
+-- 判断用于祭品召唤的怪兽是否为水属性（且自身为表侧表示或控制者相同）
 function c92084010.condition(e,c)
 	local ec=e:GetHandler()
 	return c:IsAttribute(ATTRIBUTE_WATER) and (ec:IsFaceup() or c:GetControler()==ec:GetControler())

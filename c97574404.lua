@@ -4,7 +4,7 @@
 -- ●表：名字带有「秘仪之力」的怪兽祭品召唤的场合，这1只怪兽可以作为2只的数量的祭品。
 -- ●里：名字带有「秘仪之力」的怪兽不能祭品召唤。
 function c97574404.initial_effect(c)
-	-- 注册该卡在召唤、反转召唤、特殊召唤成功时进行1次投掷硬币的诱发效果
+	-- 注册召唤·反转召唤·特殊召唤成功时进行投掷硬币的效果
 	aux.EnableArcanaCoin(c,EVENT_SUMMON_SUCCESS,EVENT_FLIP_SUMMON_SUCCESS,EVENT_SPSUMMON_SUCCESS)
 	-- ●表：名字带有「秘仪之力」的怪兽祭品召唤的场合，这1只怪兽可以作为2只的数量的祭品。
 	local e1=Effect.CreateEffect(c)
@@ -27,20 +27,20 @@ function c97574404.initial_effect(c)
 	e3:SetCode(EFFECT_CANNOT_MSET)
 	c:RegisterEffect(e3)
 end
--- 判定投掷硬币的结果是否为表（正面）
+-- 判定硬币投掷结果是否为表（正面）
 function c97574404.dtcon(e)
 	return e:GetHandler():GetFlagEffectLabel(FLAG_ID_ARCANA_COIN)==1
 end
--- 判定进行上级召唤的怪兽是否为「秘仪之力」怪兽
+-- 判断被祭品召唤的怪兽是否为「秘仪之力」怪兽
 function c97574404.dtval(e,c)
 	local ec=e:GetHandler()
 	return c:IsSetCard(0x5) and (ec:IsFaceup() or c:GetControler()==ec:GetControler())
 end
--- 判定投掷硬币的结果是否为里（反面）
+-- 判定硬币投掷结果是否为里（反面）
 function c97574404.sumcon(e)
 	return e:GetHandler():GetFlagEffectLabel(FLAG_ID_ARCANA_COIN)==0
 end
--- 过滤出进行上级召唤（祭品召唤）且卡名含有「秘仪之力」的怪兽
+-- 判断召唤方式是否为上级召唤且怪兽是否为「秘仪之力」怪兽
 function c97574404.sumtg(e,c,tp,sumtp)
 	return bit.band(sumtp,SUMMON_TYPE_ADVANCE)==SUMMON_TYPE_ADVANCE and c:IsSetCard(0x5)
 end
