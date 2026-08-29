@@ -9,7 +9,7 @@ function c62729173.initial_effect(c)
 	e1:SetValue(c62729173.condition)
 	c:RegisterEffect(e1)
 end
--- 判断进行上级召唤的怪兽是否是名字带有「侵入魔鬼」的怪兽
+-- 判定作为2只解放的条件（上级召唤的怪兽为「侵入魔鬼」怪兽）
 function c62729173.condition(e,c)
 	local ec=e:GetHandler()
 	return c:IsSetCard(0x100a) and (ec:IsFaceup() or c:GetControler()==ec:GetControler())

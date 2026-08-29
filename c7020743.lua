@@ -7,9 +7,9 @@
 -- ●4个以上：这张卡不会被战斗·效果破坏。
 -- ●8个以上：自己·对方回合，把这张卡4个超量素材取除才能发动。场上的卡全部破坏。
 local s,id,o=GetID()
--- 初始化此卡的效果，包括超量召唤手续、①效果（发动无效时叠素材）、②效果（根据素材数量获得攻击力/守备力上升、破坏抗性、场上卡全部破坏的即时诱发效果），以及用于检测发动无效的全局效果。
+-- 初始化卡片效果
 function s.initial_effect(c)
-	-- 添加超量召唤手续：1星怪兽×2。
+	-- 添加超量召唤手续：1星怪兽×2
 	aux.AddXyzProcedure(c,nil,1,2)
 	c:EnableReviveLimit()
 	-- ①：卡的效果的发动无效的场合才能发动（同一连锁上最多1次）。把自己以及对方的墓地的卡各最多1张作为这张卡的超量素材。
@@ -62,86 +62,87 @@ function s.initial_effect(c)
 	c:RegisterEffect(e6)
 	if not s.global_check then
 		s.global_check=true
-		-- ①：卡的效果的发动无效的场合才能发动（同一连锁上最多1次）。把自己以及对方的墓地的卡各最多1张作为这张卡的超量素材。②：这张卡持有的超量素材数量让这张卡得到以下效果。●1个以上：这张卡的攻击力·守备力上升这张卡的超量素材数量×700。●4个以上：这张卡不会被战斗·效果破坏。●8个以上：自己·对方回合，把这张卡4个超量素材取除才能发动。场上的卡全部破坏。
+		-- ①：卡的效果的发动无效的场合才能发动（同一连锁上最多1次）。把自己以及对方的墓地的卡各最多1张作为这张卡的超量素材。
 		local ge1=Effect.CreateEffect(c)
 		ge1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 		ge1:SetCode(EVENT_CHAIN_NEGATED)
 		ge1:SetOperation(s.negcheck)
 		ge1:SetReset(RESET_CHAIN)
-		-- 注册全局效果，用于在连锁发动被无效时触发自定义事件。
+		-- 注册全局环境效果
 		Duel.RegisterEffect(ge1,0)
 	end
 end
--- 全局效果的触发操作：获取当前连锁被无效的信息，并抛出自定义事件。
+-- 检查发动无效原因并触发自订事件
 function s.negcheck(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取导致当前连锁发动无效的效果。
+	-- 获取连锁被无效的原因效果
 	local de=Duel.GetChainInfo(ev,CHAININFO_DISABLE_REASON)
 	if de then
-		-- 触发自定义事件，通知此卡有效果发动被无效。
+		-- 以无效原因效果触发自订事件
 		Duel.RaiseEvent(e:GetHandler(),EVENT_CUSTOM+id,de,0,tp,tp,0)
 	end
 end
--- 过滤函数：检查卡片是否可以作为超量素材，且不受当前效果影响。
+-- 过滤可作为超量素材的卡
 function s.ofilter(c,e)
 	return c:IsCanOverlay() and (not e or not c:IsImmuneToEffect(e))
 end
--- ①效果的发动条件与目标检查：此卡是超量怪兽，且双方墓地存在至少1张可以作为超量素材的卡。
+-- 超量素材叠放效果的目标判定
 function s.ovtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查可行性：自身为超量怪兽，且双方墓地合计存在至少1张可叠放的卡。
+	-- 判断自身是否为超量怪兽且双方墓地是否存在可作为超量素材的卡
 	if chk==0 then return e:GetHandler():IsType(TYPE_XYZ) and Duel.IsExistingMatchingCard(s.ofilter,tp,LOCATION_GRAVE,LOCATION_GRAVE,1,nil) end
 end
--- 过滤函数：检查卡片的持有者是否为指定玩家。
+-- 判断卡片的持有者是否为指定玩家
 function s.gchecktp(c,tp)
 	return c:GetOwner()==tp
 end
--- 组过滤函数：限制选择的卡片组中，自己和对方墓地的卡各最多1张。
+-- 检查选取的卡片组中双方墓地的卡是否各最多1张
 function s.gcheck(g,tp)
 	return g:FilterCount(s.gchecktp,nil,tp)<=1 and g:FilterCount(s.gchecktp,nil,1-tp)<=1
 end
--- ①效果的处理：从双方墓地选择各最多1张卡（合计最多2张，且不能受王家之谷影响），作为此卡的超量素材。
+-- 超量素材叠放效果处理
 function s.ovop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) then
-		-- 获取双方墓地中不受王家之谷影响且可以作为超量素材的卡片组。
+		-- 获取双方墓地不受王家长眠之谷影响且可作为超量素材的卡
 		local g=Duel.GetMatchingGroup(aux.NecroValleyFilter(s.ofilter),tp,LOCATION_GRAVE,LOCATION_GRAVE,nil,e)
 		if #g>0 then
-			-- 提示玩家选择要作为超量素材的卡。
+			-- 提示选择要作为超量素材的卡
 			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_XMATERIAL)  --"请选择要作为超量素材的卡"
 			local sg=g:SelectSubGroup(tp,s.gcheck,false,1,2,tp)
 			if sg then
+				-- 设置选中卡片的视觉提示动画
 				Duel.HintSelection(sg)
-				-- 将选中的卡片重叠作为此卡的超量素材。
+				-- 把选中的卡作为超量素材叠放
 				Duel.Overlay(c,sg)
 			end
 		end
 	end
 end
--- ②效果的获得条件：检查此卡的超量素材数量是否大于或等于设定的数值（Label值）。
+-- 根据超量素材数量判断效果适用条件
 function s.effcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():GetOverlayCount()>=e:GetLabel()
 end
--- 攻击力/守备力上升值的计算函数：超量素材数量×700。
+-- 计算攻击力·守备力上升值（超量素材数量×700）
 function s.atkval(e,c)
 	return c:GetOverlayCount()*700
 end
--- 破坏效果的Cost：取除此卡的4个超量素材。
+-- 全场破坏效果的取除4个超量素材代价
 function s.descost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():CheckRemoveOverlayCard(tp,4,REASON_COST) end
 	e:GetHandler():RemoveOverlayCard(tp,4,4,REASON_COST)
 end
--- 破坏效果的目标检查与操作信息设置：检查场上是否存在卡，并设置破坏的操作信息。
+-- 全场破坏效果发动目标判定与操作信息注册
 function s.destg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查可行性：场上是否存在至少1张卡。
+	-- 判断场上是否存在可以破坏的卡
 	if chk==0 then return Duel.IsExistingMatchingCard(aux.TRUE,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,nil) end
-	-- 获取场上的所有卡。
+	-- 获取场上的所有卡
 	local g=Duel.GetMatchingGroup(aux.TRUE,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,nil)
-	-- 设置破坏操作信息，包含场上所有的卡。
+	-- 设置破坏操作信息
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,g:GetCount(),0,0)
 end
--- 破坏效果的处理：破坏场上的全部卡。
+-- 全场破坏效果处理
 function s.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取场上的所有卡。
+	-- 获取场上的所有卡
 	local g=Duel.GetMatchingGroup(aux.TRUE,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,nil)
-	-- 因效果破坏选中的卡片组。
+	-- 破坏场上的所有卡
 	Duel.Destroy(g,REASON_EFFECT)
 end

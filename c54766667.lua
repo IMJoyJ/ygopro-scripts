@@ -9,7 +9,7 @@ function c54766667.initial_effect(c)
 	e1:SetValue(c54766667.condition)
 	c:RegisterEffect(e1)
 end
--- 判断进行祭品召唤的怪兽是否为光属性的通常怪兽
+-- 判断被祭品召唤的怪兽是否为光属性通常怪兽
 function c54766667.condition(e,c)
 	local ec=e:GetHandler()
 	return c:IsAttribute(ATTRIBUTE_LIGHT) and c:IsType(TYPE_NORMAL) and (ec:IsFaceup() or c:GetControler()==ec:GetControler())

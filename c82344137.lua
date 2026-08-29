@@ -77,8 +77,10 @@ end
 -- 当连锁发动的卡片代码与展示的卡片代码一致时，限制后续链条的响应
 function s.actop(e,tp,eg,ep,ev,re,r,rp)
 	local code=e:GetLabel()
+	-- 获取当前连锁卡片的密码信息
 	local code1,code2=Duel.GetChainInfo(ev,CHAININFO_TRIGGERING_CODE,CHAININFO_TRIGGERING_CODE2)
 	if code==code1 or code==code2 then
+		-- 设置连锁限制为无法连锁
 		Duel.SetChainLimit(aux.FALSE)
 	end
 end

@@ -9,9 +9,9 @@ local s,id,o=GetID()
 -- 初始化函数，注册这张卡的连接召唤手续及各个效果
 function s.initial_effect(c)
 	c:EnableReviveLimit()
-	-- 为这张卡添加连接召唤手续，需要2至3只包含「奏悦机组」怪兽的怪兽作为连接素材
+	-- 为这张卡添加连接召唤手续，需要2至3只包含「反叛曲机器人」怪兽的怪兽作为连接素材
 	aux.AddLinkProcedure(c,nil,2,3,s.lcheck)
-	-- 这张卡的攻击力上升这张卡以外的自己怪兽的数量×500。
+	-- ①：这张卡的攻击力上升自己场上的其他怪兽数量×500。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
@@ -19,7 +19,7 @@ function s.initial_effect(c)
 	e1:SetCode(EFFECT_UPDATE_ATTACK)
 	e1:SetValue(s.atkval)
 	c:RegisterEffect(e1)
-	-- 自己主要阶段：可以从自己的卡组·墓地把1张「奏悦机组」陷阱卡在自己场上盖放。
+	-- ②：自己主要阶段才能发动。从自己的卡组·墓地把1张「反叛曲机器人」陷阱卡在自己场上盖放。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(id,0))  --"盖放陷阱"
 	e2:SetCategory(CATEGORY_SSET)
@@ -29,7 +29,7 @@ function s.initial_effect(c)
 	e2:SetTarget(s.settg)
 	e2:SetOperation(s.setop)
 	c:RegisterEffect(e2)
-	-- 对方主要阶段（诱发即时效果）：可以以自己墓地的3只3星以上的「奏悦机组」怪兽为对象；那之内的2只用喜欢的顺序回到卡组最下面，剩下的守备表示特殊召唤。
+	-- ③：对方主要阶段，以自己墓地3只3星以上的「反叛曲机器人」怪兽为对象才能发动。那之内的2只用喜欢的顺序回到卡组下面，另1只守备表示特殊召唤。
 	local e3=Effect.CreateEffect(c)
 	e3:SetDescription(aux.Stringid(id,1))  --"回到卡组并特殊召唤"
 	e3:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_TODECK)
@@ -44,7 +44,7 @@ function s.initial_effect(c)
 	e3:SetOperation(s.spop)
 	c:RegisterEffect(e3)
 end
--- 连接素材过滤条件：作为连接素材时至少有1只包含「奏悦机组」字段
+-- 连接素材过滤条件：作为连接素材时至少有1只包含「反叛曲机器人」字段
 function s.lcheck(g,lc)
 	return g:IsExists(Card.IsLinkSetCard,1,nil,0x1cf)
 end
@@ -53,7 +53,7 @@ function s.atkval(e,c)
 	-- 获取除了这张卡以外的自己主要怪兽区的怪兽数量，并乘以500
 	return Duel.GetMatchingGroupCount(aux.TRUE,c:GetControler(),LOCATION_MZONE,0,e:GetHandler())*500
 end
--- 过滤条件：「奏悦机组」陷阱卡，且能够盖放
+-- 过滤条件：「反叛曲机器人」陷阱卡，且能够盖放
 function s.setfilter(c)
 	return c:IsSetCard(0x1cf) and c:IsType(TYPE_TRAP) and c:IsSSetable()
 end
@@ -61,14 +61,14 @@ end
 function s.settg(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 检查自己魔陷区是否有可用的空格
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_SZONE)>0
-		-- 检查自己卡组或墓地是否存在至少1张满足条件的「奏悦机组」陷阱卡
+		-- 检查自己卡组或墓地是否存在至少1张满足条件的「反叛曲机器人」陷阱卡
 		and Duel.IsExistingMatchingCard(s.setfilter,tp,LOCATION_DECK+LOCATION_GRAVE,0,1,nil) end
 end
--- 效果处理：从自己的卡组·墓地把1张「奏悦机组」陷阱卡在自己场上盖放
+-- 效果处理：从自己的卡组·墓地把1张「反叛曲机器人」陷阱卡在自己场上盖放
 function s.setop(e,tp,eg,ep,ev,re,r,rp)
 	-- 发送提示消息，让玩家选择要盖放的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SET)  --"请选择要盖放的卡"
-	-- 玩家从自己卡组或墓地中选择1张符合条件且不受王家长眠之谷影响的「奏悦机组」陷阱卡
+	-- 玩家从自己卡组或墓地中选择1张符合条件且不受王家长眠之谷影响的「反叛曲机器人」陷阱卡
 	local g=Duel.SelectMatchingCard(tp,aux.NecroValleyFilter(s.setfilter),tp,LOCATION_DECK+LOCATION_GRAVE,0,1,1,nil)
 	local tc=g:GetFirst()
 	if tc then
@@ -81,17 +81,17 @@ function s.spcon(e,tp,eg,ep,ev,re,r,rp)
 	-- 判断当前回合是否为对方回合，并且处于主要阶段
 	return Duel.GetTurnPlayer()~=tp and Duel.IsMainPhase()
 end
--- 过滤条件：3星以上的「奏悦机组」怪兽，能成为对象，且可以回到卡组或能够被守备表示特殊召唤
+-- 过滤条件：3星以上的「反叛曲机器人」怪兽，能成为对象，且可以回到卡组或能够被守备表示特殊召唤
 function s.tdfilter(c,e,tp)
 	return c:IsSetCard(0x1cf) and c:IsType(TYPE_MONSTER)
 		and c:IsCanBeEffectTarget(e) and c:IsLevelAbove(3)
 		and (c:IsAbleToDeck() or c:IsCanBeSpecialSummoned(e,0,tp,false,false,POS_FACEUP_DEFENSE))
 end
--- 对象组合法性判断：组内必须至少有2张卡能回到卡组，且至少有1张卡能被特招
+-- 对象组合合法性判断：组内必须至少有2张卡能回到卡组，且至少有1张卡能被特招
 function s.fselect(g,e,tp)
 	return g:IsExists(Card.IsAbleToDeck,2,nil) and g:IsExists(Card.IsCanBeSpecialSummoned,1,nil,e,0,tp,false,false,POS_FACEUP_DEFENSE)
 end
--- 效果对象和操作信息设置：以自己墓地3只3星以上的「奏悦机组」怪兽为对象，设置相关操作信息
+-- 效果对象和操作信息设置：以自己墓地3只3星以上的「反叛曲机器人」怪兽为对象，设置相关操作信息
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	-- 获取墓地中所有满足基本过滤条件的卡
 	local dg=Duel.GetMatchingGroup(s.tdfilter,tp,LOCATION_GRAVE,0,nil,e,tp)

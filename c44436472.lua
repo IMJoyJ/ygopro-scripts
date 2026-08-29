@@ -9,7 +9,7 @@ function c44436472.initial_effect(c)
 	e1:SetValue(c44436472.condition)
 	c:RegisterEffect(e1)
 end
--- 判定作为解放的怪兽是否为暗属性，若是则这张卡可作为2只数量解放。
+-- 判断被上级召唤的怪兽是否为暗属性
 function c44436472.condition(e,c)
 	local ec=e:GetHandler()
 	return c:IsAttribute(ATTRIBUTE_DARK) and (ec:IsFaceup() or c:GetControler()==ec:GetControler())

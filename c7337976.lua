@@ -28,81 +28,82 @@ function c7337976.initial_effect(c)
 	e3:SetOperation(c7337976.tgop2)
 	c:RegisterEffect(e3)
 end
--- 效果①的发动代价（Cost）函数：丢弃1张手卡。
+-- 丢弃1张手卡的发动代价
 function c7337976.tgcost1(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查手牌中是否存在至少1张可以丢弃的卡。
+	-- 判断手卡是否存在可以丢弃的卡
 	if chk==0 then return Duel.IsExistingMatchingCard(Card.IsDiscardable,tp,LOCATION_HAND,0,1,nil) end
-	-- 向对方玩家提示发动了“丢弃1张手卡”的效果。
+	-- 向对方提示选择发动的效果
 	Duel.Hint(HINT_OPSELECTED,1-tp,e:GetDescription())
-	-- 玩家选择手牌中1张可以丢弃的卡。
+	-- 从手卡选择1张要丢弃的卡
 	local g=Duel.SelectMatchingCard(tp,Card.IsDiscardable,tp,LOCATION_HAND,0,1,1,nil)
-	-- 将选择的卡作为代价丢弃送去墓地。
+	-- 将选中的卡作为代价丢弃去墓地
 	Duel.SendtoGrave(g,REASON_COST+REASON_DISCARD)
 end
--- 过滤条件：卡组中的恶魔族怪兽且能送去墓地。
+-- 过滤可送去墓地的恶魔族怪兽
 function c7337976.filter1(c)
 	return c:IsRace(RACE_FIEND) and c:IsAbleToGrave()
 end
--- 效果①的发动准备（Target）函数。
+-- 堆墓效果的发动目标判定与操作信息注册
 function c7337976.tgtg1(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查卡组中是否存在至少1只可以送去墓地的恶魔族怪兽。
+	-- 判断卡组中是否存在可以送去墓地的恶魔族怪兽
 	if chk==0 then return Duel.IsExistingMatchingCard(c7337976.filter1,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置效果处理信息：从卡组将1张卡送去墓地。
+	-- 设置从卡组送去墓地的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,nil,1,tp,LOCATION_DECK)
 end
--- 效果①的效果处理（Operation）函数。
+-- 从卡组把1只恶魔族怪兽送去墓地效果处理
 function c7337976.tgop1(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要送去墓地的卡。
+	-- 提示选择要送去墓地的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
-	-- 玩家从卡组选择1只恶魔族怪兽。
+	-- 从卡组选择1只恶魔族怪兽
 	local g=Duel.SelectMatchingCard(tp,c7337976.filter1,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选择的怪兽因效果送去墓地。
+		-- 将选中的恶魔族怪兽送去墓地
 		Duel.SendtoGrave(g,REASON_EFFECT)
 	end
 end
--- 效果②的发动代价（Cost）函数：将表侧表示的这张卡送去墓地。
+-- 将魔陷区表侧表示的这张卡送去墓地的发动代价
 function c7337976.tgcost2(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsAbleToGraveAsCost() end
-	-- 向对方玩家提示发动了“这张卡送去墓地”的效果。
+	-- 向对方提示选择发动的效果
 	Duel.Hint(HINT_OPSELECTED,1-tp,e:GetDescription())
-	-- 将作为源头的这张卡作为代价送去墓地。
+	-- 把自身作为代价送去墓地
 	Duel.SendtoGrave(e:GetHandler(),REASON_COST)
 end
--- 过滤条件：手牌或卡组中的「狱火机」怪兽且能送去墓地。
+-- 过滤可送去墓地的「狱火机」怪兽
 function c7337976.filter2(c)
 	return c:IsSetCard(0xbb) and c:IsType(TYPE_MONSTER) and c:IsAbleToGrave()
 end
--- 过滤条件：从额外卡组特殊召唤的怪兽。
+-- 过滤从额外卡组特殊召唤的怪兽
 function c7337976.exfilter(c)
 	return c:IsSummonLocation(LOCATION_EXTRA)
 end
--- 效果②的发动准备（Target）函数。
+-- 狱火机堆墓效果的发动目标判定与操作信息注册
 function c7337976.tgtg2(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 获取对方场上从额外卡组特殊召唤的怪兽数量。
+	-- 获取对方场上从额外卡组特殊召唤的怪兽数量
 	local ct=Duel.GetMatchingGroupCount(c7337976.exfilter,tp,0,LOCATION_MZONE,nil)
-	-- 获取手牌和卡组中所有可以送去墓地的「狱火机」怪兽。
+	-- 获取手卡·卡组中可以送去墓地的「狱火机」怪兽
 	local g=Duel.GetMatchingGroup(c7337976.filter2,tp,LOCATION_HAND+LOCATION_DECK,0,nil)
 	if chk==0 then return ct>0 and g:GetCount()>0 end
-	-- 设置效果处理信息：从手牌或卡组将卡送去墓地。
+	-- 设置从手卡·卡组送去墓地的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,nil,1,tp,LOCATION_HAND+LOCATION_DECK)
 end
--- 效果②的效果处理（Operation）函数。
+-- 把「狱火机」怪兽从手卡·卡组送去墓地效果处理
 function c7337976.tgop2(e,tp,eg,ep,ev,re,r,rp)
-	-- 重新获取对方场上从额外卡组特殊召唤的怪兽数量。
+	-- 获取对方场上从额外卡组特殊召唤的怪兽数量
 	local ct=Duel.GetMatchingGroupCount(c7337976.exfilter,tp,0,LOCATION_MZONE,nil)
 	if ct<=0 then return end
-	-- 提示玩家选择要送去墓地的卡。
+	-- 提示选择要送去墓地的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
-	-- 获取手牌和卡组中所有可以送去墓地的「狱火机」怪兽。
+	-- 获取手卡·卡组中可以送去墓地的「狱火机」怪兽
 	local g=Duel.GetMatchingGroup(c7337976.filter2,tp,LOCATION_HAND+LOCATION_DECK,0,nil)
-	-- 设置卡片组选择的附加检查条件：所选卡片的卡名必须各不相同。
+	-- 设置同名卡最多1张的检查函数
 	aux.GCheckAdditional=aux.dncheck
-	-- 玩家选择1到ct张（最多为对方场上额外特召怪兽数量）卡名不同的「狱火机」怪兽。
+	-- 从手卡·卡组选择最多为该数量的不同名「狱火机」怪兽
 	local sg=g:SelectSubGroup(tp,aux.TRUE,false,1,ct)
-	-- 重置卡片组选择的附加检查条件。
+	-- 重置卡片组检查函数
 	aux.GCheckAdditional=nil
 	if sg then
+		-- 将选中的「狱火机」怪兽送去墓地
 		Duel.SendtoGrave(sg,REASON_EFFECT)
 	end
 end

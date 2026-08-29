@@ -108,6 +108,7 @@ function s.thop(e,tp,eg,ep,ev,re,r,rp)
 		-- 让玩家从卡组中选择2张卡名不同的「雷火沸动」卡。
 		local tg=g:SelectSubGroup(tp,aux.dncheck,false,2,2)
 		if tg then
+			-- 将选中的卡加入手牌。
 			Duel.SendtoHand(tg,nil,REASON_EFFECT)
 			-- 向对方玩家展示加入手牌的卡。
 			Duel.ConfirmCards(1-tp,tg)
