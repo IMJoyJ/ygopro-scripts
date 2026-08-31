@@ -4,7 +4,7 @@
 -- ①：自己因战斗·效果受到1000以上的伤害时才能发动。这张卡从手卡特殊召唤。
 -- ②：以对方墓地1只攻击力是?以外的怪兽为对象才能发动。对方可以从卡组选1只攻击力是?以外的怪兽。没选的场合或者作为对象的怪兽攻击力更高的场合，作为对象的怪兽在自己场上特殊召唤。选的怪兽回到卡组。那以外的场合，对方把选的怪兽加入手卡。
 function c5130393.initial_effect(c)
-	-- ①：自己因战斗·效果受到1000以上的伤害时才能发动。这张卡从手卡特殊召唤。
+	-- 初始化卡片效果
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(5130393,0))
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -17,7 +17,7 @@ function c5130393.initial_effect(c)
 	e1:SetTarget(c5130393.sptg)
 	e1:SetOperation(c5130393.spop)
 	c:RegisterEffect(e1)
-	-- ②：以对方墓地1只攻击力是?以外的怪兽为对象才能发动。对方可以从卡组选1只攻击力是?以外的怪兽。没选的场合或者作为对象的怪兽攻击力更高的场合，作为对象的怪兽在自己场上特殊召唤。选的怪兽回到卡组。那以外的场合，对方把选的怪兽加入手卡。
+	-- 这个卡名的①②的效果1回合各能使用1次。②：这张卡在主要阶段反转的场合发动。以下效果各适用。●对方可以从自身卡组把1只怪兽加入手卡。●这张卡的控制权移给对方。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(5130393,1))
 	e2:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_SEARCH)
@@ -29,78 +29,86 @@ function c5130393.initial_effect(c)
 	e2:SetOperation(c5130393.tdop)
 	c:RegisterEffect(e2)
 end
--- ①效果的发动条件判定：伤害来源为自己，伤害值在1000以上，且伤害类型为战斗或效果伤害时条件成立。
+-- 反转效果发动条件：主要阶段反转
 function c5130393.spcon(e,tp,eg,ep,ev,re,r,rp)
 	return ep==tp and ev>=1000 and bit.band(r,REASON_BATTLE+REASON_EFFECT)~=0
 end
--- ①效果的发动时点检查：自己场上主要怪兽区有空位，且这张手卡可以进行特殊召唤。
+-- ①：自己主要阶段才能发动。这张卡从手卡往对方场上里侧守备表示特殊召唤。场上有里侧表示怪兽存在的场合，也能作为代替在自己场上表侧表示特殊召唤。
 function c5130393.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查自己场上主要怪兽区是否存在空闲区域。
+	-- 反转效果目标检查与操作信息
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置操作信息：本次连锁将进行特殊召唤，对象为这张卡自身，数量为1。
+	-- 设置操作信息：转移自身控制权
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- ①效果处理：若这张卡仍与效果关联，则将其特殊召唤到自己场上。
+-- 过滤条件：怪兽卡且可以加入手卡
 function c5130393.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) then
-		-- 将这张卡以表侧表示特殊召唤到自己场上（不检查召唤条件与苏生限制）。
+		-- 反转效果处理函数
 		Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
--- ②效果取对象过滤器：选择对方墓地中攻击力不为'?'且可以被自己特殊召唤的怪兽。
+-- 获取对方卡组中的怪兽
 function c5130393.filter(c,e,tp)
 	return c:GetTextAttack()>=0 and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
+-- 对方选择是否将怪兽加入手卡
 function c5130393.thfilter(c,p)
 	return c:GetTextAttack()>=0 and c:IsType(TYPE_MONSTER) and c:IsAbleToHand(p)
 end
--- ②效果的发动目标函数：指定对象时必须位于对方墓地且满足取对象过滤器；发动时需自己主要怪兽区有空位，且对方墓地存在至少1只可取对象。
+-- 提示对方选择要加入手卡的怪兽
 function c5130393.tdtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and c5130393.filter(chkc,e,tp) end
-	-- 检查自己场上主要怪兽区是否有空位，以准备特殊召唤对象怪兽。
+	-- 对方从卡组选择1只怪兽
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查对方墓地是否存在至少1只满足取对象过滤器的怪兽。
+		-- 将选中的怪兽加入对方手卡
 		and Duel.IsExistingTarget(c5130393.filter,tp,0,LOCATION_GRAVE,1,nil,e,tp) end
-	-- 向本方玩家显示提示信息，要求选择要特殊召唤的卡。
+	-- 向自己确认对方加入手卡的怪兽
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 让对方墓地中选择1只满足条件的怪兽作为效果对象（并记录为连锁对象）。
+	-- 中断效果处理
 	local g=Duel.SelectTarget(tp,c5130393.filter,tp,0,LOCATION_GRAVE,1,1,nil,e,tp)
-	-- 设置操作信息：本次效果将要特殊召唤的对象为所选怪兽，数量为1。
+	-- 这张卡的控制权移给对方
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,1,0,0)
 end
--- ②效果处理：取得对象怪兽，询问对方是否从卡组选1只怪兽，根据攻击力比较或选择情况，决定将对象怪兽特殊召唤还是将选的卡加入对方手卡。
+-- 过滤条件：场上有里侧怪兽时可表侧特殊召唤到自己场上
 function c5130393.tdop(e,tp,eg,ep,ev,re,r,rp)
-	-- 取得效果处理时连锁上的对象卡（即取对象选择的怪兽）。
+	-- 检查场上是否存在里侧表示怪兽
 	local tc=Duel.GetFirstTarget()
 	if not tc:IsRelateToEffect(e) then return end
 	local vc=tc:GetTextAttack()
 	local sel=1
+	-- 过滤条件：可里侧守备特殊召唤到对方场上
 	local g=Duel.GetMatchingGroup(c5130393.thfilter,tp,0,LOCATION_DECK,nil,1-tp)
-	Duel.Hint(HINT_SELECTMSG,1-tp,aux.Stringid(5130393,2))
+	-- 特殊召唤效果目标检查
+	Duel.Hint(HINT_SELECTMSG,1-tp,aux.Stringid(5130393,2))  --"是否从卡组选1只怪兽？"
 	if g:GetCount()>0 then
-		-- 若对方卡组有可选怪兽，让对方法选择“选”或“不选”，选项序号存入sel（0表示选，1表示不选）。
+		-- 检查是否能特殊召唤到自己场上
 		sel=Duel.SelectOption(1-tp,1213,1214)
 	else
-		-- 若对方卡组没有可选怪兽，强制对方选择“不选”，sel设为1。
+		-- 或是否能特殊召唤到对方场上
 		sel=Duel.SelectOption(1-tp,1214)+1
 	end
 	if sel==0 then
-		Duel.Hint(HINT_SELECTMSG,1-tp,HINTMSG_CONFIRM)
+		-- 设置操作信息：特殊召唤自身
+		Duel.Hint(HINT_SELECTMSG,1-tp,HINTMSG_CONFIRM)  --"请选择给对方确认的卡"
+		-- 特殊召唤效果处理函数
 		local sg=Duel.SelectMatchingCard(1-tp,c5130393.thfilter,tp,0,LOCATION_DECK,1,1,nil,1-tp)
+		-- 判断是否可以表侧特殊召唤到自己场上
 		Duel.ConfirmCards(tp,sg)
 		if sg:GetFirst():GetTextAttack()<vc then
-			-- 因从卡组选卡并可能送回卡组，洗切对方的卡组。
+			-- 判断是否可以里侧守备特殊召唤到对方场上
 			Duel.ShuffleDeck(1-tp)
-			-- 对方选的怪兽攻击力低于对象怪兽时，将对象怪兽以表侧表示特殊召唤到自己场上。
+			-- 让玩家选择特殊召唤到哪一方场上
 			Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP)
 		else
+			-- 表侧表示特殊召唤到自己场上
 			Duel.SendtoHand(sg,nil,REASON_EFFECT,1-tp)
+			-- 里侧守备表示特殊召唤到对方场上
 			Duel.ConfirmCards(1-tp,sg)
 		end
 	else
-		-- 对方未选择卡组怪兽时，将对象怪兽以表侧表示特殊召唤到自己场上。
+		-- 自己确认该里侧表示怪兽
 		Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP)
 	end
 end

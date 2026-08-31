@@ -5,9 +5,9 @@
 -- ②：这张卡召唤·特殊召唤的场合发动。这张卡的原本持有者从自身卡组把1张「时空」魔法·陷阱卡加入手卡。
 -- ③：自己或对方的龙族超量怪兽的攻击宣言时发动。把场上的这张卡作为那只怪兽的超量素材。
 local s,id,o=GetID()
--- 为银河眼时源龙注册全部效果：①手牌诱发的即时效果，可从手卡特殊召唤到自己或对方场上；②召唤成功时检索「时空」魔法·陷阱卡（同时用复制效果处理特殊召唤成功时）；③攻击宣言时作为龙族超量怪兽的超量素材。
+-- 初始化卡片效果
 function s.initial_effect(c)
-	-- ①：自己·对方回合，场上有龙族超量怪兽存在的场合才能发动。这张卡从手卡往自己或对方的场上特殊召唤。
+	-- 这个卡名的①②的效果1回合各能使用1次。②：这张卡在主要阶段反转的场合发动。以下效果各适用。●对方可以从自身卡组把1张魔法·陷阱卡加入手卡。●这张卡的控制权移给对方。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(id,0))  --"特殊召唤"
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -20,7 +20,7 @@ function s.initial_effect(c)
 	e1:SetTarget(s.sptg)
 	e1:SetOperation(s.spop)
 	c:RegisterEffect(e1)
-	-- ②：这张卡召唤·特殊召唤的场合发动。这张卡的原本持有者从自身卡组把1张「时空」魔法·陷阱卡加入手卡。
+	-- 反转效果发动条件：主要阶段反转
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(id,1))  --"检索"
 	e2:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
@@ -33,7 +33,7 @@ function s.initial_effect(c)
 	local e3=e2:Clone()
 	e3:SetCode(EVENT_SPSUMMON_SUCCESS)
 	c:RegisterEffect(e3)
-	-- ③：自己或对方的龙族超量怪兽的攻击宣言时发动。把场上的这张卡作为那只怪兽的超量素材。
+	-- ①：自己主要阶段才能发动。这张卡从手卡往对方场上里侧守备表示特殊召唤。场上有里侧表示怪兽存在的场合，也能作为代替在自己场上表侧表示特殊召唤。
 	local e4=Effect.CreateEffect(c)
 	e4:SetDescription(aux.Stringid(id,2))  --"变成超量素材"
 	e4:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_F)
@@ -43,82 +43,87 @@ function s.initial_effect(c)
 	e4:SetOperation(s.mtop)
 	c:RegisterEffect(e4)
 end
--- 定义过滤函数，用于筛选场上表侧表示的龙族超量怪兽。
+-- 反转效果目标检查与操作信息
 function s.cfilter(c)
 	return c:IsRace(RACE_DRAGON) and c:IsType(TYPE_XYZ) and c:IsFaceup()
 end
--- ①效果的发动条件：检查场上是否存在至少1只表侧表示的龙族超量怪兽。
+-- 设置操作信息：转移自身控制权
 function s.spcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 调用Duel.IsExistingMatchingCard检查以发动方视角看双方主要怪兽区是否存在至少1只满足s.cfilter条件的怪兽。
+	-- 过滤条件：魔法·陷阱卡且可以加入手卡
 	return Duel.IsExistingMatchingCard(s.cfilter,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil)
 end
--- ①效果的发动目标合法性判定：确认这张卡能特殊召唤到自己或对方场上（任一方有可用怪兽区且满足特殊召唤条件）。
+-- 反转效果处理函数
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
-	-- 判定自己场上是否有可用怪兽区域且这张卡可以特殊召唤到自己场上。
+	-- 获取对方卡组中的魔法·陷阱卡
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0 and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
-		-- 判定对方场上是否有可用怪兽区域且这张卡可以表侧表示特殊召唤到对方场上。
+		-- 对方选择是否将卡加入手卡
 		or Duel.GetLocationCount(1-tp,LOCATION_MZONE)>0 and c:IsCanBeSpecialSummoned(e,0,tp,false,false,POS_FACEUP,1-tp) end
-	-- 设置操作信息：本次连锁将进行特殊召唤，对象为这张卡，供需要检测特殊召唤的卡（如星尘龙）参考。
+	-- 提示对方选择要加入手卡的卡
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- ①效果处理：检查卡片关联及召唤合法性，让发动者选择特殊召唤到自己或对方场上；若双方均无空位则这张卡以规则原因送去墓地。
+-- 对方从卡组选择1张魔法·陷阱卡
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if not c:IsRelateToEffect(e) or (not c:IsCanBeSpecialSummoned(e,0,tp,false,false) and not c:IsCanBeSpecialSummoned(e,0,tp,false,false,POS_FACEUP,1-tp)) then return end
-	-- 计算能否特殊召唤到自己场上，作为选项“自己场上”的可用性。
+	-- 将选中的卡加入对方手卡
 	local b1=Duel.GetLocationCount(tp,LOCATION_MZONE)>0 and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
-	-- 计算能否特殊召唤到对方场上，作为选项“对方场上”的可用性。
+	-- 向自己确认对方加入手卡的卡
 	local b2=Duel.GetLocationCount(1-tp,LOCATION_MZONE)>0 and c:IsCanBeSpecialSummoned(e,0,tp,false,false,POS_FACEUP,1-tp)
-	-- 弹出选项，让当前回合玩家选择将这张卡特殊召唤到哪一方场上。
+	-- 中断效果处理
 	local toplayer=aux.SelectFromOptions(tp,
 		{b1,aux.Stringid(id,3),tp},  --"往自己场上特殊召唤"
 		{b2,aux.Stringid(id,4),1-tp})  --"往对方场上特殊召唤"
 	if toplayer~=nil then
-		-- 按玩家的选择将这张卡表侧表示特殊召唤到对应玩家的主要怪兽区。
+		-- 这张卡的控制权移给对方
 		Duel.SpecialSummon(c,0,tp,toplayer,false,false,POS_FACEUP)
 	else
-		-- 若双方场上均没有可用的主要怪兽区域，则特殊召唤无法进行。
+		-- 过滤条件：场上有里侧怪兽时可表侧特殊召唤到自己场上
 		if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 and Duel.GetLocationCount(1-tp,LOCATION_MZONE)<=0 then
-			-- 在无法特殊召唤且双方均无空位时，将以规则原因把这张卡送去墓地。
+			-- 检查场上是否存在里侧表示怪兽
 			Duel.SendtoGrave(c,REASON_RULE)
 		end
 	end
 end
+-- 过滤条件：可里侧守备特殊召唤到对方场上
 function s.thfilter(c,p)
 	return c:IsSetCard(0x1b4) and c:IsType(TYPE_SPELL+TYPE_TRAP) and c:IsAbleToHand(p)
 end
--- ②效果发动时无对象，只设置操作信息；确认后从原本持有者卡组检索「时空」魔法·陷阱卡。
+-- 特殊召唤效果目标检查
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local hp=e:GetHandler():GetOwner()
 	if chk==0 then return true end
-	-- 设置操作信息：从原本持有者卡组将1张「时空」魔法·陷阱卡加入手卡。
+	-- 检查是否能特殊召唤到自己场上
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,hp,LOCATION_DECK)
 end
--- ②效果处理：由原本持有者从自身卡组选择1张符合条件的「时空」魔法·陷阱卡加入手卡，并向对方确认。
+-- 或是否能特殊召唤到对方场上
 function s.thop(e,tp,eg,ep,ev,re,r,rp)
 	local hp=e:GetHandler():GetOwner()
-	Duel.Hint(HINT_SELECTMSG,hp,HINTMSG_ATOHAND)
+	-- 设置操作信息：特殊召唤自身
+	Duel.Hint(HINT_SELECTMSG,hp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
+	-- 特殊召唤效果处理函数
 	local g=Duel.SelectMatchingCard(hp,s.thfilter,hp,LOCATION_DECK,0,1,1,nil,hp)
 	if g:GetCount()>0 then
+		-- 判断是否可以表侧特殊召唤到自己场上
 		Duel.SendtoHand(g,nil,REASON_EFFECT,hp)
+		-- 判断是否可以里侧守备特殊召唤到对方场上
 		Duel.ConfirmCards(1-hp,g)
 	end
 end
--- ③效果发动条件：攻击宣言的怪兽为龙族超量怪兽且在场上。
+-- 让玩家选择特殊召唤到哪一方场上
 function s.mttg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 获取攻击宣言的怪兽。
+	-- 表侧表示特殊召唤到自己场上
 	local at=Duel.GetAttacker()
 	if chk==0 then return at:IsType(TYPE_XYZ) and at:IsOnField() and at:IsRace(RACE_DRAGON) end
 end
--- ③效果处理：若这张卡仍与效果关联且可作为超量素材，且攻击怪兽不免疫此效果，则将这张卡叠放在攻击怪兽下方作为超量素材。
+-- 里侧守备表示特殊召唤到对方场上
 function s.mtop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取攻击宣言的怪兽。
+	-- 自己确认该里侧表示怪兽
 	local at=Duel.GetAttacker()
 	if c:IsRelateToEffect(e) and c:IsCanOverlay()
 		and at:IsRelateToBattle() and not at:IsImmuneToEffect(e) then
-		-- 将这张卡作为攻击怪兽的超量素材叠放。
+		-- 若双方场上均无空位则因规则送去墓地
 		Duel.Overlay(at,Group.FromCards(c))
 	end
 end

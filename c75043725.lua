@@ -13,33 +13,42 @@ function c75043725.initial_effect(c)
 	e1:SetOperation(c75043725.operation)
 	c:RegisterEffect(e1)
 end
--- 检查此效果的发动条件，即这张卡是否从场上送去墓地
+-- 从场上被送去墓地的发动条件
 function c75043725.condition(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsPreviousLocation(LOCATION_ONFIELD)
 end
--- 效果发动时的目标处理，由于是必发效果直接返回true，并设置操作信息
+-- 效果目标检查与操作信息
 function c75043725.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置操作信息，表示此效果包含从卡组将1张卡加入手牌的操作
+	-- 设置操作信息：从卡组将卡加入手卡
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
+-- 过滤条件：3星以下的通常怪兽且可加入手卡
 function c75043725.filter(c,p)
 	return c:IsLevelBelow(3) and c:IsType(TYPE_NORMAL) and c:IsAbleToHand(p)
 end
--- 效果处理的执行函数，双方玩家各自从卡组选择符合条件的卡，加入手牌并向对方确认
+-- 效果处理函数
 function c75043725.operation(e,tp,eg,ep,ev,re,r,rp)
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)
+	-- 提示自己选择要加入手卡的怪兽
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
+	-- 从自己卡组选择1张3星以下的通常怪兽
 	local g1=Duel.SelectMatchingCard(tp,c75043725.filter,tp,LOCATION_DECK,0,1,1,nil,tp)
 	local tc1=g1:GetFirst()
-	Duel.Hint(HINT_SELECTMSG,1-tp,HINTMSG_ATOHAND)
+	-- 提示对方选择要加入手卡的怪兽
+	Duel.Hint(HINT_SELECTMSG,1-tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
+	-- 对方从其卡组选择1张3星以下的通常怪兽
 	local g2=Duel.SelectMatchingCard(1-tp,c75043725.filter,tp,0,LOCATION_DECK,1,1,nil,1-tp)
 	local tc2=g2:GetFirst()
 	if tc1 then
+		-- 将选中的怪兽加入自己手卡
 		Duel.SendtoHand(tc1,nil,REASON_EFFECT)
+		-- 向对方确认加入手卡的怪兽
 		Duel.ConfirmCards(1-tp,tc1)
 	end
 	if tc2 then
+		-- 将选中的怪兽加入对方手卡
 		Duel.SendtoHand(tc2,nil,REASON_EFFECT,1-tp)
+		-- 向自己确认加入手卡的怪兽
 		Duel.ConfirmCards(tp,tc2)
 	end
 end
