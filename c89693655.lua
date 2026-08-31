@@ -86,10 +86,8 @@ function s.activate(e,tp,eg,ep,ev,re,r,rp)
 			-- 给予对方500点伤害
 			Duel.Damage(1-tp,500,REASON_EFFECT)
 		elseif tc1:GetAttack()<tc2:GetAttack() then
-			if tc2:IsAbleToHand() then
-				-- 将对方选的怪兽加入对方手卡
-				Duel.SendtoHand(tc2,nil,REASON_EFFECT)
-				-- 向自己确认加入手卡的怪兽
+			if tc2:IsAbleToHand(1-tp) then
+				Duel.SendtoHand(tc2,nil,REASON_EFFECT,1-tp)
 				Duel.ConfirmCards(tp,tc2)
 			else
 				-- 若无法加入手卡，则根据规则将该怪兽送去墓地

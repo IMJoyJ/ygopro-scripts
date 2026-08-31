@@ -40,8 +40,7 @@ function c51697825.activate(e,tp,eg,ep,ev,re,r,rp)
 		Duel.Hint(HINT_SELECTMSG,1-tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
 		local oc=sg:Select(1-tp,1,1,nil):GetFirst()
 		oc:SetStatus(STATUS_TO_HAND_WITHOUT_CONFIRM,true)
-		-- 将对方选择的卡加入对方手牌；若加入成功且该卡仍处于手牌区，则继续执行后续由己方选择卡牌的处理。
-		if Duel.SendtoHand(oc,1-tp,REASON_EFFECT)~=0 and oc:IsLocation(LOCATION_HAND) then
+		if Duel.SendtoHand(oc,1-tp,REASON_EFFECT,1-tp)~=0 and oc:IsLocation(LOCATION_HAND) then
 			sg:RemoveCard(oc)
 			-- 在对方选完后，向己方玩家发送“请选择要加入手牌的卡”的提示信息，准备从剩余卡中选择1张加入手牌。
 			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"

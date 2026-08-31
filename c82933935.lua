@@ -37,22 +37,16 @@ function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 设置连锁处理的操作信息为转移这张卡的控制权。
 	Duel.SetOperationInfo(0,CATEGORY_CONTROL,e:GetHandler(),1,0,0)
 end
--- 过滤满足“反转怪兽”或“迷拟宝箱鬼”卡且能加入手牌的卡片。
-function s.thfilter(c)
-	return (c:IsSetCard(0x1b7) or c:IsType(TYPE_FLIP)) and c:IsAbleToHand()
+function s.thfilter(c,p)
+	return (c:IsSetCard(0x1b7) or c:IsType(TYPE_FLIP)) and c:IsAbleToHand(p)
 end
 -- 反转效果的实际处理函数，包含对方检索卡片和转移控制权。
 function s.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取对方卡组中所有满足检索条件的卡片组。
-	local g=Duel.GetMatchingGroup(s.thfilter,tp,0,LOCATION_DECK,nil)
-	-- 如果对方卡组有符合条件的卡，则让对方选择是否将卡加入手牌。
-	if g:GetCount()>0 and Duel.SelectYesNo(1-tp,aux.Stringid(id,4)) then  --"是否把卡加入手卡？"
-		-- 给对方玩家发送选择加入手牌卡片的提示信息。
-		Duel.Hint(HINT_SELECTMSG,1-tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
+	local g=Duel.GetMatchingGroup(s.thfilter,tp,0,LOCATION_DECK,nil,1-tp)
+	if g:GetCount()>0 and Duel.SelectYesNo(1-tp,aux.Stringid(id,4)) then
+		Duel.Hint(HINT_SELECTMSG,1-tp,HINTMSG_ATOHAND)
 		local sg=g:Select(1-tp,1,1,nil)
-		-- 将对方选择的卡片加入对方手牌。
-		Duel.SendtoHand(sg,nil,REASON_EFFECT)
-		-- 让自身玩家确认对方加入手牌的卡。
+		Duel.SendtoHand(sg,nil,REASON_EFFECT,1-tp)
 		Duel.ConfirmCards(tp,sg)
 	end
 	local c=e:GetHandler()

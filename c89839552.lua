@@ -96,9 +96,7 @@ function c89839552.thop2(e,tp,eg,ep,ev,re,r,rp)
 			-- 给对方玩家发送“请选择要加入手牌的卡”的提示信息。
 			Duel.Hint(HINT_SELECTMSG,1-tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
 			local sg=og:Select(1-tp,1,1,nil)
-			-- 将对方选择的怪兽因效果加入对方手牌。
-			Duel.SendtoHand(sg,nil,REASON_EFFECT)
-			-- 给自己确认对方加入手牌的卡。
+			Duel.SendtoHand(sg,nil,REASON_EFFECT,1-tp)
 			Duel.ConfirmCards(tp,sg)
 		end
 	end

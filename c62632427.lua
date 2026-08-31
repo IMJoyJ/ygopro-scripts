@@ -48,19 +48,13 @@ function c62632427.activate(e,tp,eg,ep,ev,re,r,rp)
 	Duel.ConfirmCards(tp,d2)
 	-- 让对方确认自己卡组
 	Duel.ConfirmCards(1-tp,d1)
-	-- 提示自己选择要给对方加入手卡的卡
-	Duel.Hint(HINT_SELECTMSG,tp,aux.Stringid(62632427,2))  --"请选择要给对方加入手卡的卡"
-	-- 自己从对方卡组选择1张可以加入自己手卡的卡
-	local g2=Duel.SelectMatchingCard(tp,c62632427.filter,tp,0,LOCATION_DECK,1,1,nil,tp)
-	-- 提示对方选择要给对方加入手卡的卡
-	Duel.Hint(HINT_SELECTMSG,1-tp,aux.Stringid(62632427,2))  --"请选择要给对方加入手卡的卡"
-	-- 对方从自己卡组选择1张可以加入对方手卡的卡
+	Duel.Hint(HINT_SELECTMSG,tp,aux.Stringid(62632427,2))
+	local g2=Duel.SelectMatchingCard(tp,c62632427.filter,tp,0,LOCATION_DECK,1,1,nil,1-tp)
+	Duel.Hint(HINT_SELECTMSG,1-tp,aux.Stringid(62632427,2))
 	local g1=Duel.SelectMatchingCard(1-tp,c62632427.filter,tp,LOCATION_DECK,0,1,1,nil,tp)
 	-- 阶段性中断效果
 	Duel.BreakEffect()
-	-- 将自己从对方卡组选的卡加入自己的手卡
-	Duel.SendtoHand(g2,nil,REASON_EFFECT)
-	-- 让自己确认加入手卡的卡
+	Duel.SendtoHand(g2,nil,REASON_EFFECT,1-tp)
 	Duel.ConfirmCards(tp,g2)
 	-- 将对方从自己卡组选的卡加入对方的手卡
 	Duel.SendtoHand(g1,nil,REASON_EFFECT)

@@ -80,27 +80,22 @@ function c75728539.activate(e,tp,eg,ep,ev,re,r,rp)
 		Duel.RegisterEffect(e1,tp)
 	end
 end
--- 过滤卡组中与返回怪兽种族不同、且等级低于其等级/阶级/连接值的怪兽
-function c75728539.srfilter(c,race,lv)
-	return c:IsType(TYPE_MONSTER) and not c:IsRace(race) and c:IsLevelBelow(lv-1) and c:IsAbleToHand()
+function c75728539.srfilter(c,race,lv,p)
+	return c:IsType(TYPE_MONSTER) and not c:IsRace(race) and c:IsLevelBelow(lv-1) and c:IsAbleToHand(p)
 end
 -- 结束阶段检索效果的发动条件函数
 function c75728539.srcon(e,tp,eg,ep,ev,re,r,rp)
 	local op,race,lv=e:GetLabel()
-	-- 检查该持有者的卡组中是否存在符合检索条件的怪兽
-	return Duel.IsExistingMatchingCard(c75728539.srfilter,op,LOCATION_DECK,0,1,nil,race,lv)
+	return Duel.IsExistingMatchingCard(c75728539.srfilter,op,LOCATION_DECK,0,1,nil,race,lv,op)
 end
 -- 结束阶段检索效果的处理：持有者选择是否从卡组检索符合条件的怪兽
 function c75728539.srop(e,tp,eg,ep,ev,re,r,rp)
 	-- 提示发动「新世廻」的效果
 	Duel.Hint(HINT_CARD,0,75728539)
 	local op,race,lv=e:GetLabel()
-	-- 询问该持有者是否要从卡组将怪兽加入手卡
-	if Duel.SelectYesNo(op,aux.Stringid(75728539,2)) then  --"是否从卡组把怪兽加入手卡？"
-		-- 提示持有者选择要加入手牌的卡
-		Duel.Hint(HINT_SELECTMSG,op,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-		-- 持有者从卡组选择1只符合条件的怪兽
-		local g=Duel.SelectMatchingCard(op,c75728539.srfilter,op,LOCATION_DECK,0,1,1,nil,race,lv)
+	if Duel.SelectYesNo(op,aux.Stringid(75728539,2)) then
+		Duel.Hint(HINT_SELECTMSG,op,HINTMSG_ATOHAND)
+		local g=Duel.SelectMatchingCard(op,c75728539.srfilter,op,LOCATION_DECK,0,1,1,nil,race,lv,op)
 		if g:GetCount()>0 then
 			-- 将选中的怪兽加入该持有者的手牌
 			Duel.SendtoHand(g,nil,REASON_EFFECT,op)

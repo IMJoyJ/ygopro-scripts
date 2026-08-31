@@ -85,9 +85,8 @@ function s.spop(e,tp,eg,ep,ev,re,r,rp)
 		end
 	end
 end
--- 定义检索过滤条件：筛选卡名属于「时空」系列的魔法·陷阱卡，且可以被加入手卡。
-function s.thfilter(c)
-	return c:IsSetCard(0x1b4) and c:IsType(TYPE_SPELL+TYPE_TRAP) and c:IsAbleToHand()
+function s.thfilter(c,p)
+	return c:IsSetCard(0x1b4) and c:IsType(TYPE_SPELL+TYPE_TRAP) and c:IsAbleToHand(p)
 end
 -- ②效果发动时无对象，只设置操作信息；确认后从原本持有者卡组检索「时空」魔法·陷阱卡。
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
@@ -99,14 +98,10 @@ end
 -- ②效果处理：由原本持有者从自身卡组选择1张符合条件的「时空」魔法·陷阱卡加入手卡，并向对方确认。
 function s.thop(e,tp,eg,ep,ev,re,r,rp)
 	local hp=e:GetHandler():GetOwner()
-	-- 提示选择要加入手牌的卡。
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 由原本持有者（hp）从自身卡组筛选并选择1张符合条件的「时空」魔法·陷阱卡。
-	local g=Duel.SelectMatchingCard(hp,s.thfilter,hp,LOCATION_DECK,0,1,1,nil)
+	Duel.Hint(HINT_SELECTMSG,hp,HINTMSG_ATOHAND)
+	local g=Duel.SelectMatchingCard(hp,s.thfilter,hp,LOCATION_DECK,0,1,1,nil,hp)
 	if g:GetCount()>0 then
-		-- 将选出的卡加入其持有者的手卡。
-		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 向对方玩家展示这张加入手卡的卡，以确认检索内容。
+		Duel.SendtoHand(g,nil,REASON_EFFECT,hp)
 		Duel.ConfirmCards(1-hp,g)
 	end
 end

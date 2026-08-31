@@ -53,9 +53,8 @@ end
 function c5130393.filter(c,e,tp)
 	return c:GetTextAttack()>=0 and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 对方卡组中用于选择的过滤器：怪兽卡、攻击力不为'?'、且可以被加入手卡。
-function c5130393.thfilter(c)
-	return c:GetTextAttack()>=0 and c:IsType(TYPE_MONSTER) and c:IsAbleToHand()
+function c5130393.thfilter(c,p)
+	return c:GetTextAttack()>=0 and c:IsType(TYPE_MONSTER) and c:IsAbleToHand(p)
 end
 -- ②效果的发动目标函数：指定对象时必须位于对方墓地且满足取对象过滤器；发动时需自己主要怪兽区有空位，且对方墓地存在至少1只可取对象。
 function c5130393.tdtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
@@ -78,10 +77,8 @@ function c5130393.tdop(e,tp,eg,ep,ev,re,r,rp)
 	if not tc:IsRelateToEffect(e) then return end
 	local vc=tc:GetTextAttack()
 	local sel=1
-	-- 取得对方卡组中所有满足条件的怪兽（攻击力不为'?'且可加入手卡），作为可选择的集合。
-	local g=Duel.GetMatchingGroup(c5130393.thfilter,tp,0,LOCATION_DECK,nil)
-	-- 向对方玩家弹出选择提示：是否从卡组选1只怪兽？
-	Duel.Hint(HINT_SELECTMSG,1-tp,aux.Stringid(5130393,2))  --"是否从卡组选1只怪兽？"
+	local g=Duel.GetMatchingGroup(c5130393.thfilter,tp,0,LOCATION_DECK,nil,1-tp)
+	Duel.Hint(HINT_SELECTMSG,1-tp,aux.Stringid(5130393,2))
 	if g:GetCount()>0 then
 		-- 若对方卡组有可选怪兽，让对方法选择“选”或“不选”，选项序号存入sel（0表示选，1表示不选）。
 		sel=Duel.SelectOption(1-tp,1213,1214)
@@ -90,11 +87,8 @@ function c5130393.tdop(e,tp,eg,ep,ev,re,r,rp)
 		sel=Duel.SelectOption(1-tp,1214)+1
 	end
 	if sel==0 then
-		-- 向对方玩家发送提示，要求选择一张卡给对方确认。
-		Duel.Hint(HINT_SELECTMSG,1-tp,HINTMSG_CONFIRM)  --"请选择给对方确认的卡"
-		-- 让对方从卡组中选出1只满足条件的怪兽（用于给对方确认）。
-		local sg=Duel.SelectMatchingCard(1-tp,c5130393.thfilter,tp,0,LOCATION_DECK,1,1,nil)
-		-- 将对方选出的卡展示给本方玩家确认。
+		Duel.Hint(HINT_SELECTMSG,1-tp,HINTMSG_CONFIRM)
+		local sg=Duel.SelectMatchingCard(1-tp,c5130393.thfilter,tp,0,LOCATION_DECK,1,1,nil,1-tp)
 		Duel.ConfirmCards(tp,sg)
 		if sg:GetFirst():GetTextAttack()<vc then
 			-- 因从卡组选卡并可能送回卡组，洗切对方的卡组。
@@ -102,9 +96,7 @@ function c5130393.tdop(e,tp,eg,ep,ev,re,r,rp)
 			-- 对方选的怪兽攻击力低于对象怪兽时，将对象怪兽以表侧表示特殊召唤到自己场上。
 			Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP)
 		else
-			-- 将对方选中的卡加入其持有者的手卡（即对方手卡）。
-			Duel.SendtoHand(sg,nil,REASON_EFFECT)
-			-- 将加入对方手卡的卡展示给对方玩家确认。
+			Duel.SendtoHand(sg,nil,REASON_EFFECT,1-tp)
 			Duel.ConfirmCards(1-tp,sg)
 		end
 	else

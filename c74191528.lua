@@ -13,36 +13,25 @@ function c74191528.initial_effect(c)
 	e1:SetOperation(c74191528.activate)
 	c:RegisterEffect(e1)
 end
--- 过滤函数，检查卡片是否可以加入手卡
-function c74191528.filter(c)
-	return c:IsAbleToHand()
+function c74191528.filter(c,p)
+	return c:IsAbleToHand(p)
 end
 -- 效果发动的目标检查，确认双方卡组是否都至少有5张卡，且各自卡组中存在可以加入手卡的卡
 function c74191528.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查回合玩家的卡组中是否至少有5张卡，且存在可以加入手卡的卡
-	if chk==0 then return Duel.IsExistingMatchingCard(c74191528.filter,tp,LOCATION_DECK,0,5,nil)
-		-- 检查对方玩家的卡组中是否至少有5张卡，且存在可以加入手卡的卡
-		and Duel.IsExistingMatchingCard(c74191528.filter,1-tp,LOCATION_DECK,0,5,nil) end
-	-- 设置操作信息，表示此效果的处理涉及双方玩家从卡组将卡加入手卡
+	if chk==0 then return Duel.IsExistingMatchingCard(c74191528.filter,tp,LOCATION_DECK,0,5,nil,tp)
+		and Duel.IsExistingMatchingCard(c74191528.filter,1-tp,LOCATION_DECK,0,5,nil,1-tp) end
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,PLAYER_ALL,LOCATION_DECK)
 end
 -- 效果处理的开始，再次检查双方卡组数量是否都至少有5张，且各自卡组中存在可以加入手卡的卡，若不满足则不处理
 function c74191528.activate(e,tp,eg,ep,ev,re,r,rp)
 	-- 检查双方卡组的卡片数量是否都至少有5张
 	if Duel.GetFieldGroupCount(tp,LOCATION_DECK,0)<5 or Duel.GetFieldGroupCount(1-tp,LOCATION_DECK,0)<5
-		-- 检查回合玩家的卡组中是否存在可以加入手卡的卡
-		or not Duel.IsExistingMatchingCard(c74191528.filter,tp,LOCATION_DECK,0,1,nil)
-		-- 检查对方玩家的卡组中是否存在可以加入手卡的卡，若不满足上述任一条件则结束效果处理
-		or not Duel.IsExistingMatchingCard(c74191528.filter,1-tp,LOCATION_DECK,0,1,nil) then return end
-	-- 给回合玩家发送提示信息，提示其从自身卡组选择1张卡
-	Duel.Hint(HINT_SELECTMSG,tp,aux.Stringid(74191528,0))  --"请选择自己的1张卡"
-	-- 回合玩家从自身卡组选择1张可以加入手卡的卡
-	local g1=Duel.SelectMatchingCard(tp,c74191528.filter,tp,LOCATION_DECK,0,1,1,nil)
-	-- 给对方玩家发送提示信息，提示其从自身卡组选择1张卡
-	Duel.Hint(HINT_SELECTMSG,1-tp,aux.Stringid(74191528,0))  --"请选择自己的1张卡"
-	-- 对方玩家从自身卡组选择1张可以加入手卡的卡
-	local g2=Duel.SelectMatchingCard(1-tp,c74191528.filter,1-tp,LOCATION_DECK,0,1,1,nil)
-	-- 中断当前效果，使之后的效果处理不与前面的选择卡片同时处理
+		or not Duel.IsExistingMatchingCard(c74191528.filter,tp,LOCATION_DECK,0,1,nil,tp)
+		or not Duel.IsExistingMatchingCard(c74191528.filter,1-tp,LOCATION_DECK,0,1,nil,1-tp) then return end
+	Duel.Hint(HINT_SELECTMSG,tp,aux.Stringid(74191528,0))
+	local g1=Duel.SelectMatchingCard(tp,c74191528.filter,tp,LOCATION_DECK,0,1,1,nil,tp)
+	Duel.Hint(HINT_SELECTMSG,1-tp,aux.Stringid(74191528,0))
+	local g2=Duel.SelectMatchingCard(1-tp,c74191528.filter,1-tp,LOCATION_DECK,0,1,1,nil,1-tp)
 	Duel.BreakEffect()
 	-- 洗切回合玩家的卡组，以便后续对方能随机选择卡片
 	Duel.ShuffleDeck(tp)
@@ -70,9 +59,7 @@ function c74191528.activate(e,tp,eg,ep,ev,re,r,rp)
 	local sg1=g1:Select(1-tp,1,1,nil)
 	-- 将对方玩家为回合玩家随机选出的1张卡加入回合玩家的手卡
 	Duel.SendtoHand(sg1,tp,REASON_EFFECT)
-	-- 将回合玩家为对方玩家随机选出的1张卡加入对方玩家的手卡
-	Duel.SendtoHand(sg2,1-tp,REASON_EFFECT)
-	-- 给回合玩家确认加入对方手卡的那张卡
+	Duel.SendtoHand(sg2,1-tp,REASON_EFFECT,1-tp)
 	Duel.ConfirmCards(tp,sg2)
 	-- 给对方玩家确认加入回合玩家手卡的那张卡
 	Duel.ConfirmCards(1-tp,sg1)
