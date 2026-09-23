@@ -111,7 +111,7 @@ function s.thop(e,tp,eg,ep,ev,re,r,rp)
 end
 -- 效果④的卡片过滤函数，用于筛选可以特殊召唤的「于贝尔」。
 function s.filter2(c,e,tp)
-	return c:IsCode(78371393) and c:IsCanBeSpecialSummoned(e,0,tp,true,true)
+	return c:IsFaceupEx() and c:IsCode(78371393) and c:IsCanBeSpecialSummoned(e,0,tp,true,true)
 end
 -- 效果④的发动准备与合法性检测函数。
 function s.sptg2(e,tp,eg,ep,ev,re,r,rp,chk)

@@ -11,6 +11,12 @@ function c15866454.initial_effect(c)
 	e1:SetTarget(c15866454.target)
 	e1:SetOperation(c15866454.activate)
 	c:RegisterEffect(e1)
+	--cannot disable
+	local e0=Effect.CreateEffect(c)
+	e0:SetType(EFFECT_TYPE_SINGLE)
+	e0:SetCode(EFFECT_CANNOT_DISABLE)
+	e0:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
+	c:RegisterEffect(e0)
 end
 -- 定义对象筛选条件：卡片必须是魔法·陷阱卡且能够加入手卡（不处于不能回手牌的限制下）。
 function c15866454.filter(c)

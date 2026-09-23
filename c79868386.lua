@@ -18,6 +18,12 @@ function c79868386.initial_effect(c)
 	e1:SetTarget(c79868386.target)
 	e1:SetOperation(c79868386.activate)
 	c:RegisterEffect(e1)
+	--cannot disable
+	local e0=Effect.CreateEffect(c)
+	e0:SetType(EFFECT_TYPE_SINGLE)
+	e0:SetCode(EFFECT_CANNOT_DISABLE)
+	e0:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
+	c:RegisterEffect(e0)
 end
 -- 过滤条件：场上表侧表示且原本卡名为「欧贝利斯克之巨神兵」的怪兽。
 function c79868386.actfilter(c)

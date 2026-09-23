@@ -29,8 +29,7 @@ end
 -- 过滤条件1：除外的非调整怪兽，且能特殊召唤，并且能与自身作为素材同调召唤额外卡组的机械族同调怪兽
 function c66938505.scfilter1(c,e,tp,mc)
 	local mg=Group.FromCards(c,mc)
-	return not c:IsType(TYPE_TUNER) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
-		-- 检查额外卡组是否存在可以使用这些素材进行同调召唤的怪兽
+	return c:IsFaceup() and not c:IsType(TYPE_TUNER) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 		and Duel.IsExistingMatchingCard(c66938505.scfilter2,tp,LOCATION_EXTRA,0,1,nil,mg)
 end
 -- 过滤条件2：额外卡组的机械族怪兽，且可以使用指定的素材进行同调召唤

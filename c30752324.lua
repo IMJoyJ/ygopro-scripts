@@ -25,7 +25,7 @@ function s.spfilter2(c,e,tp)
 end
 -- 过滤场上原本类型为通常怪兽的表侧表示怪兽
 function s.cfilter(c)
-	return c:IsFaceup() and c:GetOriginalType()&(TYPE_NORMAL+TYPE_MONSTER)==(TYPE_NORMAL+TYPE_MONSTER)
+	return c:IsFaceup() and c:IsAllCardTypes(TYPE_NORMAL+TYPE_MONSTER)
 end
 -- 过滤魔法·陷阱卡
 function s.desfilter(c)

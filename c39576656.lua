@@ -103,13 +103,24 @@ function s.atkop(e,tp,eg,ep,ev,re,r,rp)
 		Duel.ShuffleExtra(1-tp)
 	end
 end
--- 结束阶段处理：若之前被临时除外的卡仍带有对应的标记，则将其返回持有者卡组。
+function s.retexfilter(c)
+	return c:IsPreviousLocation(LOCATION_EXTRA) and c:IsPreviousPosition(POS_FACEUP)
+end
+function s.returnremoved(g)
+	local pg=g:Filter(s.retexfilter,nil)
+	local dg=g:Filter(aux.NOT(s.retexfilter),nil)
+	if #pg>0 then
+		Duel.SendtoExtraP(pg,nil,REASON_EFFECT)
+	end
+	if #dg>0 then
+		Duel.SendtoDeck(dg,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
+	end
+end
 function s.retop(e,tp,eg,ep,ev,re,r,rp)
 	local fid=e:GetLabel()
 	local tc=e:GetLabelObject()
 	if tc and tc:GetFlagEffectLabel(id)==fid then
-		-- 将那张临时除外的卡以效果原因送回持有者卡组并洗切。
-		Duel.SendtoDeck(tc,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
+		s.returnremoved(Group.FromCards(tc))
 	end
 end
 -- ②效果的发动条件：这张卡被送去墓地前位于怪兽区域，且曾以同调召唤方式召唤过。
@@ -178,7 +189,8 @@ end
 -- 结束阶段处理：按fid筛选出之前临时除外的卡组，一并送回持有者卡组并洗切。
 function s.retop2(e,tp,eg,ep,ev,re,r,rp)
 	local fid=e:GetLabel()
-	local tg=e:GetLabelObject():Filter(s.retfilter,nil,fid)
-	-- 将筛选出的临时除外的卡组以效果原因送回持有者卡组并洗切。
-	Duel.SendtoDeck(tg,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
+	local g=e:GetLabelObject()
+	local tg=g:Filter(s.retfilter,nil,fid)
+	g:DeleteGroup()
+	s.returnremoved(tg)
 end

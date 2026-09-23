@@ -18,6 +18,12 @@ function c42469671.initial_effect(c)
 	e1:SetTarget(c42469671.destg)
 	e1:SetOperation(c42469671.desop)
 	c:RegisterEffect(e1)
+	--cannot disable
+	local e0=Effect.CreateEffect(c)
+	e0:SetType(EFFECT_TYPE_SINGLE)
+	e0:SetCode(EFFECT_CANNOT_DISABLE)
+	e0:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
+	c:RegisterEffect(e0)
 end
 -- 过滤函数：判定卡片为表侧表示怪兽，且其原本卡名在规则上等同于「奥西里斯之天空龙」（代码10000020）。用于检查是否有符合条件的天空龙在场。
 function c42469671.actfilter(c)

@@ -13,6 +13,7 @@ function s.initial_effect(c)
 	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_SUMMON_PROC)
+	e1:SetCondition(s.ntcon)
 	c:RegisterEffect(e1)
 	-- ②：这张卡召唤·特殊召唤的场合才能发动。从手卡把1只机械族·地属性怪兽特殊召唤。
 	local e2=Effect.CreateEffect(c)
@@ -46,7 +47,10 @@ end
 function s.chainfilter(re,tp,cid)
 	return false
 end
--- ②的特召筛选：选择手卡中机械族、地属性且能被该效果特殊召唤的怪兽。
+function s.ntcon(e,c,minc)
+	if c==nil then return true end
+	return minc==0 and c:IsLevelAbove(5) and Duel.GetLocationCount(c:GetControler(),LOCATION_MZONE)>0
+end
 function s.spfilter1(c,e,tp)
 	return c:IsRace(RACE_MACHINE) and c:IsAttribute(ATTRIBUTE_EARTH) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end

@@ -45,12 +45,11 @@ function c71625222.desop(e,tp,eg,ep,ev,re,r,rp)
 		local g=Duel.GetMatchingGroup(aux.TRUE,tp,LOCATION_MZONE,0,nil)
 		-- 将获取到的自己场上的怪兽全部破坏
 		Duel.Destroy(g,REASON_EFFECT)
-		-- 获取刚才因效果实际被破坏的卡片组
-		local dg=Duel.GetOperatedGroup()
+		local dg=Duel.GetOperatedGroup():Filter(Card.IsPreviousPosition,nil,POS_FACEUP)
 		local sum=0
 		-- 遍历实际被破坏的卡片组，用于累计这些怪兽的攻击力
 		for c in aux.Next(dg) do
-			sum=sum+math.max(c:GetAttack(),0)
+			sum=sum+math.max(c:GetPreviousAttackOnField(),0)
 		end
 		if sum>0 then
 			-- 给与自己受到破坏的怪兽攻击力合计数值一半的伤害

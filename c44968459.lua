@@ -14,7 +14,13 @@ function c44968459.initial_effect(c)
 	e1:SetTarget(c44968459.target)
 	e1:SetOperation(c44968459.activate)
 	c:RegisterEffect(e1)
-	-- ②：自己主要阶段把墓地的这张卡除外才能发动。从卡组把1只「沉默魔术师」怪兽加入手卡。
+	--cannot disable
+	local e0=Effect.CreateEffect(c)
+	e0:SetType(EFFECT_TYPE_SINGLE)
+	e0:SetCode(EFFECT_CANNOT_DISABLE)
+	e0:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
+	c:RegisterEffect(e0)
+	--to hand
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(44968459,1))  --"卡组检索"
 	e2:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)

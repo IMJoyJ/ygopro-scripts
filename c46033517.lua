@@ -139,7 +139,7 @@ function c46033517.spcon(e,tp,eg,ep,ev,re,r,rp)
 end
 -- ②特殊召唤对象的过滤条件：卡名属于「机甲」字段、等级1以上，并且能够被该效果特殊召唤。
 function c46033517.spfilter(c,e,tp)
-	return c:IsSetCard(0x36) and c:IsLevelAbove(1) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
+	return c:IsFaceup() and c:IsSetCard(0x36) and c:IsLevelAbove(1) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
 -- ②效果发动时的目标检测：若自己主怪兽区有空位，并且除外区存在至少1只满足特殊召唤条件的「机甲」怪兽，则效果可以发动；并设置特殊召唤的操作信息。
 function c46033517.sptg(e,tp,eg,ep,ev,re,r,rp,chk)

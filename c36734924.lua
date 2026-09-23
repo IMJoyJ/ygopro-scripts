@@ -99,9 +99,8 @@ function c36734924.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	-- 获取此效果发动时选择的对象卡。
 	local tc=Duel.GetFirstTarget()
-	-- 判定对象仍与此效果关联、能成功返回卡组，且本卡未被无效或失去关联，满足条件才继续处理。
-	if tc:IsRelateToEffect(e) and Duel.SendtoDeck(tc,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)~=0 and c:IsRelateToEffect(e) then
-		-- 将本卡以表侧表示特殊召唤到其控制者tp的场上。
+	if tc:IsRelateToEffect(e) and Duel.SendtoDeck(tc,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)~=0
+		and tc:IsLocation(LOCATION_DECK+LOCATION_EXTRA) and c:IsRelateToEffect(e) then
 		Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 	end
 end

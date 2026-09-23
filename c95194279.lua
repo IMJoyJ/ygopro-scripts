@@ -20,7 +20,7 @@ function c95194279.condition(e,tp,eg,ep,ev,re,r,rp)
 end
 -- 过滤条件：筛选可以被特殊召唤的怪兽。
 function c95194279.filter(c,e,tp)
-	return c:IsCanBeSpecialSummoned(e,0,tp,false,false)
+	return c:IsFaceup() and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
 -- 效果发动时的目标选择与合法性检测（支持在连锁中作为效果对象被选择）。
 function c95194279.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)

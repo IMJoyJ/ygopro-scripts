@@ -41,11 +41,11 @@ function c5611760.condition(e,tp,eg,ep,ev,re,r,rp)
 end
 -- 效果①的发动准备：设置操作信息为将双方手卡、场上、墓地的卡送回卡组
 function c5611760.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	if chk==0 then return true end
-	-- 获取双方手卡、场上、墓地中除战斗破坏确定以外的所有卡片
+	if chk==0 then return Duel.IsPlayerCanDraw(tp,5) and Duel.IsPlayerCanDraw(1-tp,5) end
 	local g=Duel.GetMatchingGroup(aux.NOT(Card.IsStatus),tp,0x1e,0x1e,nil,STATUS_BATTLE_DESTROYED)
 	-- 设置当前连锁的操作信息为将上述卡片全部送回卡组
 	Duel.SetOperationInfo(0,CATEGORY_TODECK,g,g:GetCount(),0,0x1e)
+	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,PLAYER_ALL,5)
 end
 -- 效果①的处理：将除这张卡以外的双方手卡、场上、墓地的卡全部回到持有者卡组，之后双方各抽5张
 function c5611760.activate(e,tp,eg,ep,ev,re,r,rp)

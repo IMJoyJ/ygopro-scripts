@@ -44,7 +44,7 @@ function s.initial_effect(c)
 end
 -- 过滤条件：属于「于贝尔」系列且可以被特殊召唤的怪兽。
 function s.spfilter(c,e,tp)
-	return c:IsSetCard(0x1a5) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
+	return c:IsFaceupEx() and c:IsSetCard(0x1a5) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
 -- 特殊召唤效果的发动准备（检查是否满足发动条件、注册回合内发动标识、设置操作信息）。
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)

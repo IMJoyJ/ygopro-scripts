@@ -53,8 +53,6 @@ function c71344451.activate(e,tp,eg,ep,ev,re,r,rp)
 			local tc=Duel.GetOperatedGroup():GetFirst()
 			-- 将抽到的卡给双方确认。
 			Duel.ConfirmCards(1-tp,tc)
-			-- 重新洗切手卡。
-			Duel.ShuffleHand(tp)
 			if tc:IsCode(71344451) then
 				-- 如果抽到的是「一击必杀！居合抽卡」，则将那张卡送去墓地。
 				if Duel.SendtoGrave(tc,REASON_EFFECT)~=0 and tc:IsLocation(LOCATION_GRAVE) then
@@ -74,13 +72,13 @@ function c71344451.activate(e,tp,eg,ep,ev,re,r,rp)
 						end
 					end
 				end
+				Duel.ShuffleHand(tp)
 			else
-				-- 提示玩家选择要回到卡组的卡。
-				Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TODECK)  --"请选择要返回卡组的卡"
-				-- 让玩家从自己墓地选择与送去墓地数量相同的、可以回到卡组的卡（受王家长眠之谷影响）。
+				Duel.ShuffleHand(tp)
+				Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TODECK)
 				local dg=Duel.SelectMatchingCard(tp,aux.NecroValleyFilter(Card.IsAbleToDeck),tp,LOCATION_GRAVE,0,ct2,ct2,nil)
 				if dg:GetCount()>0 then
-					-- 确认并显示玩家选择的卡片。
+					Duel.BreakEffect()
 					Duel.HintSelection(dg)
 					-- 将选择的卡片送回卡组并洗卡。
 					Duel.SendtoDeck(dg,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)

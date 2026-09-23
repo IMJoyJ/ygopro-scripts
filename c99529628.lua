@@ -78,7 +78,7 @@ function s.spop(e,tp,eg,ep,ev,re,r,rp)
 end
 -- 定义筛选除外区鱼族怪兽的过滤函数s.spfilter1：可用效果特殊召唤、6星以下、鱼族，并且基夫本身可以被除外，以保证②处理时能完成除外自己。
 function s.spfilter1(c,e,tp)
-	return c:IsCanBeSpecialSummoned(e,0,tp,false,false) and c:IsLevelBelow(6) and c:IsRace(RACE_FISH) and e:GetHandler():IsAbleToRemove()
+	return c:IsFaceup() and c:IsCanBeSpecialSummoned(e,0,tp,false,false) and c:IsLevelBelow(6) and c:IsRace(RACE_FISH)
 end
 -- 定义筛选对方场上可除外的怪兽的过滤函数s.rmfilter：位于对方主要怪兽区、控制者为对方、可被除外、能成为该效果的对象。
 function s.rmfilter(c,tp,e)
@@ -90,15 +90,11 @@ function s.rmcon(e,tp,eg,ep,ev,re,r,rp)
 end
 -- 定义②的发动目标：在对方场上被特殊召唤的怪兽中选取可作为对象的对方怪兽，并在自己除外区选取符合条件的鱼族怪兽作为特殊召唤对象；检查条件并登记操作信息。
 function s.rmtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	local c=e:GetHandler()
 	local g=eg:Filter(s.rmfilter,nil,tp,e)
-	if chkc then return g:IsContains(chkc) and e:GetHandler():IsAbleToRemove() end
-	-- 检查②发动时合法性：cost检查通过、至少存在1只可除外的对方怪兽，且自己特殊召唤区域可用（>=0表示此处不实际限制空格数）。
-	if chk==0 then return e:IsCostChecked() and #g>0 and Duel.GetLocationCount(tp,LOCATION_MZONE)>=0
-	-- 检查自己除外区是否存在至少1只符合条件的鱼族怪兽（6星以下、可特殊召唤，且基夫可除外）。
-	and Duel.IsExistingTarget(s.spfilter1,tp,LOCATION_REMOVED,0,1,nil,e,tp) end
-	-- 提示玩家选择要除外的对方怪兽（选择框提示文案）。
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
+	if chkc then return g:IsContains(chkc) end
+	local c=e:GetHandler()
+	if chk==0 then return #g>0 and c:IsAbleToRemove() and Duel.GetMZoneCount(tp,c)>0
+		and Duel.IsExistingTarget(s.spfilter1,tp,LOCATION_REMOVED,0,1,nil,e,tp) end
 	local tg=g:Clone()
 	if #g>1 then
 		-- 当候选对方怪兽多于1只时，再次提示玩家选择要除外的对方怪兽。
@@ -107,7 +103,7 @@ function s.rmtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	end
 	-- 将选中的对方怪兽设置为当前连锁的对象（作为效果处理时的依据）。
 	Duel.SetTargetCard(tg)
-	-- 将除外操作信息登记：目标为选中的对方怪兽，数量为实际选择张数，供后续效果检测。
+	tg:AddCard(c)
 	Duel.SetOperationInfo(0,CATEGORY_REMOVE,tg,#tg,0,0)
 	-- 提示玩家选择要特殊召唤的自己除外区的鱼族怪兽。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
@@ -122,9 +118,11 @@ function s.rmop(e,tp,eg,ep,ev,re,r,rp)
 	local res1,tg1=Duel.GetOperationInfo(0,CATEGORY_REMOVE)
 	-- 取出本次连锁中登记的CATEGORY_SPECIAL_SUMMON操作信息，得到要特殊召唤的目标组tg2。
 	local res2,tg2=Duel.GetOperationInfo(0,CATEGORY_SPECIAL_SUMMON)
-	local c,rc,sc=e:GetHandler(),tg1:GetFirst(),tg2:GetFirst()
-	if rc:IsRelateToEffect(e) and rc:IsControler(1-tp) and rc:IsType(TYPE_MONSTER) and c:IsRelateToEffect(e)
-		and c:IsAbleToRemove() and rc:IsAbleToRemove() then
+	local c=e:GetHandler()
+	local rc=tg1:Filter(aux.TRUE,c):GetFirst()
+	local sc=tg2:GetFirst()
+	if rc:IsRelateToEffect(e) and rc:IsControler(1-tp) and rc:IsAbleToRemove()
+		and c:IsRelateToEffect(e) and c:IsAbleToRemove() then
 		local rg=Group.FromCards(c,rc)
 		-- 判定：如果对方怪兽仍与效果关联、为对方怪兽且可除外，自身也仍关联且可除外，则将两者组成一组除外，并检查是否恰好除外成功2张且要特殊召唤的鱼族仍与效果关联。
 		if Duel.Remove(rg,POS_FACEUP,REASON_EFFECT)==2 and sc:IsRelateToEffect(e) then

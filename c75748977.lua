@@ -84,8 +84,7 @@ function s.desop(e,tp,eg,ep,ev,re,r,rp)
 end
 -- 过滤函数：筛选是指定融合怪兽的素材且可以特殊召唤的怪兽。
 function s.spfilter(c,e,tp,fc)
-	-- 判定卡片是否在融合怪兽的素材列表中，且当前可以被特殊召唤。
-	return aux.IsMaterialListCode(fc,c:GetCode()) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
+	return c:IsFaceupEx() and aux.IsMaterialListCode(fc,c:GetCode()) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
 -- 检查怪兽区域是否有足够的空位来特殊召唤选定的素材怪兽。
 function s.fselect(tg,tp,ec)

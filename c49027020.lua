@@ -113,7 +113,7 @@ function s.rmop(e,tp,eg,ep,ev,re,r,rp)
 end
 -- 特殊召唤的过滤函数：检查除外怪兽是否可以被对方玩家特殊召唤（不检查召唤条件与苏生限制）。
 function s.spfilter(c,e,tp)
-	return c:IsCanBeSpecialSummoned(e,0,tp,false,false)
+	return c:IsFaceup() and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
 -- 准备阶段延迟效果的触发条件：不是发动当回合、对方场上有空位、且对方除外区存在可特殊召唤的自身怪兽。
 function s.spcon(e,tp,eg,ep,ev,re,r,rp)

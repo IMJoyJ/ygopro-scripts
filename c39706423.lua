@@ -125,8 +125,7 @@ function s.excop(e,tp,eg,ep,ev,re,r,rp)
 		Duel.ShuffleDeck(tp)
 		-- 取得本连锁的对象怪兽（之前选择的表侧表示非恐龙族怪兽）
 		local tc=Duel.GetFirstTarget()
-		if not tc or not tc:IsRelateToChain() or not tc:IsFaceup() or not tc:IsOnField() then return end
-		-- 作为对象的怪兽的种族直到回合结束时变成恐龙族。
+		if not qc:IsLocation(LOCATION_GRAVE) or not tc or not tc:IsRelateToChain() or not tc:IsFaceup() or not tc:IsOnField() then return end
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_SINGLE)
 		e1:SetCode(EFFECT_CHANGE_RACE)

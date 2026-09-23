@@ -191,5 +191,5 @@ end
 -- 特殊召唤的此卡离场重定向的条件判断（必须是特殊召唤且表侧表示）
 function c4538826.rmcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	return c:IsSummonType(SUMMON_TYPE_SPECIAL) and c:IsFaceup()
+	return c:IsSummonType(SUMMON_TYPE_SPECIAL) and c:IsFaceup() and c:IsLocation(LOCATION_MZONE)
 end

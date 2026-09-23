@@ -16,6 +16,12 @@ function c4059313.initial_effect(c)
 	e1:SetTarget(c4059313.target)
 	e1:SetOperation(c4059313.activate)
 	c:RegisterEffect(e1)
+	--cannot disable
+	local e0=Effect.CreateEffect(c)
+	e0:SetType(EFFECT_TYPE_SINGLE)
+	e0:SetCode(EFFECT_CANNOT_DISABLE)
+	e0:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
+	c:RegisterEffect(e0)
 end
 -- 筛选符合条件的怪兽：表侧表示、卡名为「太阳神之翼神龙」、且尚未被本卡效果适用过（flag为0）。
 function c4059313.filter(c)
