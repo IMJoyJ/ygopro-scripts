@@ -6,14 +6,14 @@
 -- ②：同调召唤的这张卡被送去墓地的场合才能发动。这张卡特殊召唤。那之后，以下效果可以适用。
 -- ●把对方的额外卡组确认，那之内的2张直到结束阶段表侧除外。
 local s,id,o=GetID()
--- 定义卡片初始化入口：声明素材与同调召唤手续，并注册①效果（同调召唤成功后除外对方额外1张并可选加攻）、②效果（送墓自跳并可选再除外2张）及内置的同名效果一回合一次限制。
+-- 初始化卡片效果：注册同调素材及手续，注册同调召唤成功诱发效果、送墓诱发效果以及规则效果
 function s.initial_effect(c)
-	-- 将卡号43904702（「杀手级调整曲·削波手」）加入这张卡的同调素材名列表。
+	-- 将「杀手级调整曲·削波手」记入作为素材的特定卡名列表
 	aux.AddMaterialCodeList(c,43904702)
-	-- 设置混合同调召唤手续：需要1只「杀手级调整曲·削波手」作为素材，且素材中还包含1只以上调整，素材总数在1~99只之间。
+	-- 添加同调召唤手续：「杀手级调整曲·削波手」＋调整1只以上
 	aux.AddSynchroMixProcedure(c,aux.FilterBoolFunction(Card.IsCode,43904702),nil,nil,aux.Tuner(nil),1,99)
 	c:EnableReviveLimit()
-	-- ①：这张卡同调召唤的场合才能发动。把对方的额外卡组确认，那之内的1张直到结束阶段表侧除外。那之后，可以让这张卡的攻击力上升除外的怪兽的攻击力数值。
+	-- 这个卡名的①②的效果1回合各能使用1次。①：这张卡同调召唤的场合才能发动。把对方的额外卡组确认，那之内的1张直到结束阶段表侧除外。那之后，可以让这张卡的攻击力上升除外的怪兽的攻击力数值。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(id,0))  --"确认额外卡组并除外"
 	e1:SetCategory(CATEGORY_REMOVE+CATEGORY_ATKCHANGE)
@@ -25,7 +25,7 @@ function s.initial_effect(c)
 	e1:SetTarget(s.atktg)
 	e1:SetOperation(s.atkop)
 	c:RegisterEffect(e1)
-	-- ②：同调召唤的这张卡被送去墓地的场合才能发动。这张卡特殊召唤。那之后，以下效果可以适用。●把对方的额外卡组确认，那之内的2张直到结束阶段表侧除外。
+	-- 这个卡名的①②的效果1回合各能使用1次。②：同调召唤的这张卡被送去墓地的场合才能发动。这张卡特殊召唤。那之后，以下效果可以适用。●把对方的额外卡组确认，那之内的2张直到结束阶段表侧除外。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(id,1))  --"特殊召唤"
 	e2:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_REMOVE)
@@ -37,45 +37,45 @@ function s.initial_effect(c)
 	e2:SetTarget(s.sptg)
 	e2:SetOperation(s.spop)
 	c:RegisterEffect(e2)
-	-- 这个卡名的①②的效果1回合各能使用1次。
+	-- 「杀手级调整曲·削波手」＋调整1只以上
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_SINGLE)
 	e3:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
 	e3:SetCode(21142671)
 	c:RegisterEffect(e3)
 end
--- ①效果的发动条件：本卡是以同调召唤方式成功召唤的场合。
+-- 效果发动条件：自身同调召唤成功
 function s.atkcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsSummonType(SUMMON_TYPE_SYNCHRO)
 end
--- ①效果的目标处理：检查对方额外卡组是否有可除外的卡，并设置除外1张的操作信息。
+-- 效果发动目标检查
 function s.atktg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 效果发动时确认对方额外卡组中存在至少1张可被除外的卡。
+	-- 检查对方额外卡组是否存在可除外的卡
 	if chk==0 then return Duel.GetMatchingGroupCount(Card.IsAbleToRemove,tp,0,LOCATION_EXTRA,nil)>0 end
-	-- 设置连锁处理信息：本效果属于除外效果，预计除外对方额外卡组中的1张卡。
+	-- 设置操作信息：将对方额外卡组1张卡除外
 	Duel.SetOperationInfo(0,CATEGORY_REMOVE,nil,1,1-tp,LOCATION_EXTRA)
 end
--- ①效果处理：确认对方额外卡组并让玩家选择1张表侧除外；若除外的是怪兽，可再选择使本卡攻击力上升该怪兽攻击力数值，并在结束阶段将除外的卡返回持有者卡组。
+-- 效果处理：确认对方额外卡组并除外1张，可让自身攻击力上升该怪兽攻击力数值
 function s.atkop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 取得对方额外卡组的全部卡片。
+	-- 获取对方额外卡组的全部卡片
 	local g=Duel.GetFieldGroup(tp,0,LOCATION_EXTRA)
 	if #g>0 then
-		-- 将对方额外卡组的所有卡片展示给当前玩家确认。
+		-- 确认对方额外卡组
 		Duel.ConfirmCards(tp,g,true)
-		-- 显示“请选择要除外的卡”的提示，引导玩家选择要除外的卡片。
+		-- 提示选择要除外的卡
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
 		local sg=g:FilterSelect(tp,Card.IsAbleToRemove,1,1,nil)
 		local tc=sg:GetFirst()
-		-- 若选中了卡片并成功将其以表侧表示、效果且临时除外方式除外，则进入后续处理。
+		-- 将选中的卡直到结束阶段暂时表侧除外
 		if tc and Duel.Remove(tc,POS_FACEUP,REASON_EFFECT+REASON_TEMPORARY)~=0 then
 			local fid=c:GetFieldID()
-			-- 取得实际被除外的卡片组，用于之后获取被除外怪兽的攻击力。
+			-- 获取实际除外的卡片组
 			local og=Duel.GetOperatedGroup()
 			local oc=og:GetFirst()
 			if oc then
 				oc:RegisterFlagEffect(id,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END,EFFECT_FLAG_CLIENT_HINT,1,fid,aux.Stringid(id,4))  --"直到结束阶段除外"
-				-- 把对方的额外卡组确认，那之内的1张直到结束阶段表侧除外。那之后，可以让这张卡的攻击力上升除外的怪兽的攻击力数值。
+				-- 那之内的1张直到结束阶段表侧除外。
 				local e1=Effect.CreateEffect(c)
 				e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 				e1:SetCode(EVENT_PHASE+PHASE_END)
@@ -84,12 +84,12 @@ function s.atkop(e,tp,eg,ep,ev,re,r,rp)
 				e1:SetLabelObject(oc)
 				e1:SetCountLimit(1)
 				e1:SetOperation(s.retop)
-				-- 注册一个结束阶段触发的持续效果，用于将临时除外的卡送回持有者卡组。
+				-- 注册回合结束阶段使除外卡片返回的回合效果
 				Duel.RegisterEffect(e1,tp)
 				local atk=oc:GetAttack()
-				-- 判断本卡仍与连锁相关且表侧表示，并且被除外的怪兽攻击力大于0时，询问控制者是否让本卡攻击力上升该数值。
+				-- 询问是否让自身攻击力上升除外怪兽的攻击力数值
 				if c:IsRelateToChain() and c:IsFaceup() and atk>0 and Duel.SelectYesNo(tp,aux.Stringid(id,2)) then  --"是否上升攻击力？"
-					-- 那之后，可以让这张卡的攻击力上升除外的怪兽的攻击力数值。
+					-- 可以让这张卡的攻击力上升除外的怪兽的攻击力数值。
 					local e2=Effect.CreateEffect(c)
 					e2:SetType(EFFECT_TYPE_SINGLE)
 					e2:SetCode(EFFECT_UPDATE_ATTACK)
@@ -99,23 +99,29 @@ function s.atkop(e,tp,eg,ep,ev,re,r,rp)
 				end
 			end
 		end
-		-- 洗切对方的额外卡组。
+		-- 洗切对方额外卡组
 		Duel.ShuffleExtra(1-tp)
 	end
 end
+-- 过滤此前在额外卡组表侧表示存在的卡
 function s.retexfilter(c)
 	return c:IsPreviousLocation(LOCATION_EXTRA) and c:IsPreviousPosition(POS_FACEUP)
 end
+-- 将暂时除外的卡返回额外卡组或主卡组
 function s.returnremoved(g)
 	local pg=g:Filter(s.retexfilter,nil)
+	-- 过滤需要洗回额外/主卡组的卡
 	local dg=g:Filter(aux.NOT(s.retexfilter),nil)
 	if #pg>0 then
+		-- 将灵摆卡表侧表示返回额外卡组
 		Duel.SendtoExtraP(pg,nil,REASON_EFFECT)
 	end
 	if #dg>0 then
+		-- 将非灵摆卡洗回额外卡组
 		Duel.SendtoDeck(dg,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
 	end
 end
+-- 结束阶段将暂时除外的1张卡返回额外卡组
 function s.retop(e,tp,eg,ep,ev,re,r,rp)
 	local fid=e:GetLabel()
 	local tc=e:GetLabelObject()
@@ -123,48 +129,48 @@ function s.retop(e,tp,eg,ep,ev,re,r,rp)
 		s.returnremoved(Group.FromCards(tc))
 	end
 end
--- ②效果的发动条件：这张卡被送去墓地前位于怪兽区域，且曾以同调召唤方式召唤过。
+-- 效果发动条件：同调召唤的自身从怪兽区被送去墓地
 function s.spcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	return c:IsPreviousLocation(LOCATION_MZONE) and c:IsSummonType(SUMMON_TYPE_SYNCHRO)
 end
--- ②效果的目标处理：检查我方怪兽区域是否有空位，以及这张卡是否可以被特殊召唤。
+-- 效果发动目标检查
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
-	-- 检查我方怪兽区域是否存在可用空格。
+	-- 检查自己场上是否有空闲的主要怪兽区域
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and c:IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置连锁信息：本次效果将特殊召唤这张卡，数量为1。
+	-- 设置操作信息：特殊召唤自身
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,c,1,0,0)
 end
--- ②效果处理：将这张卡特殊召唤；成功后可选从对方额外卡组再确认并除外2张直到结束阶段，并在结束阶段返回。
+-- 效果处理：特殊召唤自身，可适用后续除外对方额外卡组2张卡的效果
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 确认这张卡仍与连锁相关、不受王家长眠之谷等影响，且特殊召唤成功，才继续后续可选的除外处理。
+	-- 特殊召唤自身并检查是否成功
 	if c:IsRelateToChain() and aux.NecroValleyFilter()(c) and Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)>0 then
-		-- 取得对方额外卡组中所有可被除外的卡，作为后续选择的对象集合。
+		-- 获取对方额外卡组所有可除外的卡
 		local g=Duel.GetMatchingGroup(Card.IsAbleToRemove,tp,0,LOCATION_EXTRA,nil)
-		-- 若可选卡数不少于2张，且控制者选择发动追加效果，则继续进行除外处理。
+		-- 检查对方额外卡组是否有至少2张卡并询问是否适用除外效果
 		if #g>=2 and Duel.SelectYesNo(tp,aux.Stringid(id,3)) then  --"是否除外额外卡组？"
-			-- 中断当前效果处理，使特殊召唤成功后的后续除外部分另作处理，避免错过时点。
+			-- 中断效果处理
 			Duel.BreakEffect()
-			-- 再次确认并展示对方额外卡组的全部卡片。
+			-- 确认对方额外卡组
 			Duel.ConfirmCards(tp,Duel.GetFieldGroup(tp,0,LOCATION_EXTRA),true)
-			-- 显示“请选择要除外的卡”的提示。
+			-- 提示选择要除外的卡
 			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
 			local sg=g:FilterSelect(tp,Card.IsAbleToRemove,2,2,nil)
 			if #sg==2 then
 				local fid=c:GetFieldID()
-				-- 若成功将选中的2张卡以表侧表示、效果且临时除外方式除外，则继续处理。
+				-- 将选中的2张卡直到结束阶段暂时表侧除外
 				if Duel.Remove(sg,POS_FACEUP,REASON_EFFECT+REASON_TEMPORARY)~=0 then
-					-- 取得实际被除外的卡片组。
+					-- 获取实际除外的卡片组
 					local og=Duel.GetOperatedGroup()
-					-- 遍历被除外的每张卡，为它们标记本次临时除外的对应信息。
+					-- 遍历被除外的卡片
 					for oc in aux.Next(og) do
 						oc:RegisterFlagEffect(id,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END,EFFECT_FLAG_CLIENT_HINT,1,fid,aux.Stringid(id,4))  --"直到结束阶段除外"
 					end
 					og:KeepAlive()
-					-- ●把对方的额外卡组确认，那之内的2张直到结束阶段表侧除外。
+					-- 把对方的额外卡组确认，那之内的2张直到结束阶段表侧除外。
 					local e1=Effect.CreateEffect(c)
 					e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 					e1:SetCode(EVENT_PHASE+PHASE_END)
@@ -173,20 +179,20 @@ function s.spop(e,tp,eg,ep,ev,re,r,rp)
 					e1:SetLabelObject(og)
 					e1:SetCountLimit(1)
 					e1:SetOperation(s.retop2)
-					-- 注册一个结束阶段触发的持续效果，用于将这2张临时除外的卡送回持有者卡组。
+					-- 注册回合结束阶段使除外卡片返回的回合效果
 					Duel.RegisterEffect(e1,tp)
 				end
 			end
-			-- 洗切对方的额外卡组。
+			-- 洗切对方额外卡组
 			Duel.ShuffleExtra(1-tp)
 		end
 	end
 end
--- 过滤函数：判断某卡是否带有本次临时除外的对应标记fid，用于结束阶段筛选需要返回的卡。
+-- 过滤带有对应标记编号的卡片
 function s.retfilter(c,fid)
 	return c:GetFlagEffectLabel(id)==fid
 end
--- 结束阶段处理：按fid筛选出之前临时除外的卡组，一并送回持有者卡组并洗切。
+-- 结束阶段将暂时除外的2张卡返回额外卡组
 function s.retop2(e,tp,eg,ep,ev,re,r,rp)
 	local fid=e:GetLabel()
 	local g=e:GetLabelObject()

@@ -3,7 +3,7 @@
 -- 「水晶机巧-胶子黑晶」的效果1回合只能使用1次。
 -- ①：对方的主要阶段以及战斗阶段，以调整以外的除外的1只自己怪兽为对象才能发动。那只怪兽效果无效特殊召唤，只用那只怪兽和这张卡为素材把1只机械族同调怪兽同调召唤。那个时候的同调素材怪兽不去墓地回到持有者卡组。
 function c66938505.initial_effect(c)
-	-- ①：对方的主要阶段以及战斗阶段，以调整以外的除外的1只自己怪兽为对象才能发动。那只怪兽效果无效特殊召唤，只用那只怪兽和这张卡为素材把1只机械族同调怪兽同调召唤。那个时候的同调素材怪兽不去墓地回到持有者卡组。
+	-- 「水晶机巧-胶子黑晶」的效果1回合只能使用1次。①：对方的主要阶段以及战斗阶段，以调整以外的除外的1只自己怪兽为对象才能发动。那只怪兽效果无效特殊召唤，只用那只怪兽和这张卡为素材把1只机械族同调怪兽同调召唤。那个时候的同调素材怪兽不去墓地回到持有者卡组。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(66938505,0))  --"除外特殊召唤并加速同调"
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -18,46 +18,47 @@ function c66938505.initial_effect(c)
 	e1:SetOperation(c66938505.scop)
 	c:RegisterEffect(e1)
 end
--- 发动条件判定：对方的主要阶段以及战斗阶段，且自身不在连锁中
+-- 效果发动条件：对方的主要阶段或战斗阶段，且自身不在连锁串中
 function c66938505.sccon(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取当前阶段
 	local ph=Duel.GetCurrentPhase()
-	-- 检查自身不在连锁中，且当前不是自己的回合
+	-- 检查自身不在连锁串中且当前为对方回合
 	return not e:GetHandler():IsStatus(STATUS_CHAINING) and Duel.GetTurnPlayer()~=tp
 		and (ph==PHASE_MAIN1 or (ph>=PHASE_BATTLE_START and ph<=PHASE_BATTLE) or ph==PHASE_MAIN2)
 end
--- 过滤条件1：除外的非调整怪兽，且能特殊召唤，并且能与自身作为素材同调召唤额外卡组的机械族同调怪兽
+-- 过滤除外区表侧表示、非调整且能与自身同调召唤机械族同调怪兽的怪兽
 function c66938505.scfilter1(c,e,tp,mc)
 	local mg=Group.FromCards(c,mc)
 	return c:IsFaceup() and not c:IsType(TYPE_TUNER) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
+		-- 检查额外卡组是否存在可同调召唤的机械族怪兽
 		and Duel.IsExistingMatchingCard(c66938505.scfilter2,tp,LOCATION_EXTRA,0,1,nil,mg)
 end
--- 过滤条件2：额外卡组的机械族怪兽，且可以使用指定的素材进行同调召唤
+-- 过滤额外卡组可以以指定素材同调召唤的机械族同调怪兽
 function c66938505.scfilter2(c,mg)
 	return c:IsRace(RACE_MACHINE) and c:IsSynchroSummonable(nil,mg)
 end
--- 效果发动阶段的目标选择与合法性检查
+-- 效果发动取对象及合法性检查
 function c66938505.sctg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_REMOVED) and chkc:IsControler(tp) and c66938505.scfilter1(chkc,e,tp,e:GetHandler()) end
-	-- 检查玩家是否能进行至少2次特殊召唤（特殊召唤素材怪兽 + 同调召唤）
+	-- 检查玩家本回合是否还能进行至少2次特殊召唤
 	if chk==0 then return Duel.IsPlayerCanSpecialSummonCount(tp,2)
-		-- 检查怪兽区域是否有空位
+		-- 检查自己场上是否有空闲的主要怪兽区域
 		and Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查除外区是否存在满足条件的自己怪兽作为对象
+		-- 检查除外区是否存在符合条件的目标怪兽
 		and Duel.IsExistingTarget(c66938505.scfilter1,tp,LOCATION_REMOVED,0,1,nil,e,tp,e:GetHandler()) end
-	-- 提示玩家选择要特殊召唤的卡
+	-- 提示选择要特殊召唤的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 选择除外的1只自己怪兽作为效果的对象
+	-- 选择除外区1只非调整怪兽作为对象
 	local g=Duel.SelectTarget(tp,c66938505.scfilter1,tp,LOCATION_REMOVED,0,1,1,nil,e,tp,e:GetHandler())
-	-- 设置特殊召唤的操作信息
+	-- 设置操作信息：特殊召唤目标怪兽
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,1,0,0)
 end
--- 效果处理：特殊召唤对象怪兽并进行同调召唤
+-- 效果处理：特殊召唤目标怪兽并无效其效果，然后进行机械族同调召唤且素材回卡组
 function c66938505.scop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取作为对象的那只怪兽
+	-- 获取作为效果对象的怪兽
 	local tc=Duel.GetFirstTarget()
-	-- 如果对象怪兽仍符合条件，则将其以表侧表示特殊召唤
+	-- 将目标怪兽特殊召唤到场上
 	if tc:IsRelateToEffect(e) and Duel.SpecialSummonStep(tc,0,tp,tp,false,false,POS_FACEUP) then
 		-- 那只怪兽效果无效特殊召唤
 		local e1=Effect.CreateEffect(c)
@@ -70,20 +71,20 @@ function c66938505.scop(e,tp,eg,ep,ev,re,r,rp)
 		e2:SetValue(RESET_TURN_SET)
 		tc:RegisterEffect(e2)
 	end
-	-- 完成特殊召唤的处理，若没有怪兽被成功特殊召唤则结束处理
+	-- 完成特殊召唤流程并检查是否成功
 	if Duel.SpecialSummonComplete()==0 then return end
 	if not c:IsRelateToEffect(e) then return end
-	-- 立即刷新场上卡片状态信息
+	-- 刷新场上状态信息
 	Duel.AdjustAll()
 	local mg=Group.FromCards(c,tc)
 	if mg:FilterCount(Card.IsLocation,nil,LOCATION_MZONE)<2 then return end
-	-- 获取额外卡组中可以使用当前素材进行同调召唤的机械族怪兽
+	-- 获取额外卡组可进行同调召唤的机械族怪兽
 	local g=Duel.GetMatchingGroup(c66938505.scfilter2,tp,LOCATION_EXTRA,0,nil,mg)
 	if g:GetCount()>0 then
-		-- 提示玩家选择要同调召唤的怪兽
+		-- 提示选择要特殊召唤的卡
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
 		local sg=g:Select(tp,1,1,nil)
-		-- 只用那只怪兽和这张卡为素材把1只机械族同调怪兽同调召唤。那个时候的同调素材怪兽不去墓地回到持有者卡组。
+		-- 那个时候的同调素材怪兽不去墓地回到持有者卡组。
 		local e1=Effect.CreateEffect(c)
 		e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_IGNORE_IMMUNE)
 		e1:SetType(EFFECT_TYPE_SINGLE)
@@ -93,7 +94,7 @@ function c66938505.scop(e,tp,eg,ep,ev,re,r,rp)
 		c:RegisterEffect(e1,true)
 		local e2=e1:Clone()
 		tc:RegisterEffect(e2,true)
-		-- 使用指定的素材进行同调召唤
+		-- 以自身和目标怪兽为素材进行同调召唤
 		Duel.SynchroSummon(tp,sg:GetFirst(),nil,mg)
 	end
 end
