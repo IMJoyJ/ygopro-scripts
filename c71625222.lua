@@ -13,46 +13,47 @@ function c71625222.initial_effect(c)
 	e1:SetOperation(c71625222.desop)
 	c:RegisterEffect(e1)
 end
--- 定义效果的发动准备（Target）函数，用于检查发动条件并向连锁中注册预期的操作信息
+-- 投掷硬币破坏效果发动准备与操作信息设置
 function c71625222.destg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 获取对方场上的所有怪兽，用于后续判断是否需要注册破坏的操作信息
+	-- 获取对方场上的怪兽
 	local g=Duel.GetMatchingGroup(nil,tp,0,LOCATION_MZONE,nil)
-	-- 向连锁中注册投掷硬币的操作信息
+	-- 设置操作信息：投掷1次硬币
 	Duel.SetOperationInfo(0,CATEGORY_COIN,nil,0,tp,1)
 	if #g>0 then
-		-- 若对方场上有怪兽，则向连锁中注册破坏卡片的操作信息
+		-- 设置操作信息：破坏卡片
 		Duel.SetOperationInfo(0,CATEGORY_DESTROY,e:GetHandler(),1,0,0)
 	end
 end
--- 定义效果的处理（Operation）函数，执行投硬币猜测并根据结果进行破坏和伤害处理
+-- 效果处理：玩家猜测硬币正反面并投掷硬币，猜中破坏对方场上全部怪兽，猜错破坏己方场上全部怪兽并受伤害
 function c71625222.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 向玩家发送提示信息，要求选择硬币的正反面
+	-- 提示玩家选择硬币的正反面
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_COIN)  --"请选择硬币的正反面"
-	-- 让发动效果的玩家宣言硬币的正反面（进行猜测）
+	-- 玩家宣言硬币正反面
 	local coin=Duel.AnnounceCoin(tp)
-	-- 进行1次投掷硬币，并获取投掷结果
+	-- 投掷1次硬币
 	local res=Duel.TossCoin(tp,1)
 	if coin~=res then
-		-- 若猜中（宣言与结果相同），获取对方场上的所有怪兽
+		-- 获取对方场上的全部怪兽
 		local g=Duel.GetMatchingGroup(aux.TRUE,tp,0,LOCATION_MZONE,nil)
-		-- 将获取到的对方场上的怪兽全部破坏
+		-- 破坏对方场上的全部怪兽
 		Duel.Destroy(g,REASON_EFFECT)
-		-- 触发自定义事件，用于其他卡片（如配合卡）检测时间魔术师成功发动效果的时点
+		-- 触发自定义事件
 		Duel.RaiseEvent(e:GetHandler(),EVENT_CUSTOM+71625222,e,0,0,tp,0)
 	else
-		-- 若猜错（宣言与结果不同），获取自己场上的所有怪兽
+		-- 获取自己场上的全部怪兽
 		local g=Duel.GetMatchingGroup(aux.TRUE,tp,LOCATION_MZONE,0,nil)
-		-- 将获取到的自己场上的怪兽全部破坏
+		-- 破坏自己场上的全部怪兽
 		Duel.Destroy(g,REASON_EFFECT)
+		-- 筛选出被破坏前是表侧表示的怪兽
 		local dg=Duel.GetOperatedGroup():Filter(Card.IsPreviousPosition,nil,POS_FACEUP)
 		local sum=0
-		-- 遍历实际被破坏的卡片组，用于累计这些怪兽的攻击力
+		-- 遍历破坏前表侧表示的怪兽计算原本在场攻击力总和
 		for c in aux.Next(dg) do
 			sum=sum+math.max(c:GetPreviousAttackOnField(),0)
 		end
 		if sum>0 then
-			-- 给与自己受到破坏的怪兽攻击力合计数值一半的伤害
+			-- 自己受到表侧表示破坏怪兽攻击力合计一半的伤害
 			Duel.Damage(tp,math.floor(sum/2),REASON_EFFECT)
 		end
 	end

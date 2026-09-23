@@ -4,9 +4,9 @@
 -- ①：选自己场上1只原本种族是幻神兽族的怪兽或者原本卡名是「邪神 神之化身」「邪神 恐惧之源」「邪神 抹灭者」的怪兽（已受「神之进化」的效果适用的怪兽不能选）。那只怪兽攻击力·守备力上升1000，自身的效果的发动以及那些发动的效果不会被无效化，得到以下效果。
 -- ●这张卡的攻击宣言时才能发动。对方必须把自身场上1只怪兽送去墓地。
 function c7373632.initial_effect(c)
-	-- 记录这张卡上记载了「邪神 神之化身」「邪神 恐惧之源」「邪神 抹灭者」的卡名。
+	-- 记录三邪神卡片密码（邪神 神之化身、邪神 恐惧之源、邪神 抹灭者）到关联卡片列表
 	aux.AddCodeList(c,21208154,62180201,57793869)
-	-- ①：选自己场上1只原本种族是幻神兽族的怪兽或者原本卡名是「邪神 神之化身」「邪神 恐惧之源」「邪神 抹灭者」的怪兽（已受「神之进化」的效果适用的怪兽不能选）。那只怪兽攻击力·守备力上升1000，自身的效果的发动以及那些发动的效果不会被无效化，得到以下效果。●这张卡的攻击宣言时才能发动。对方必须把自身场上1只怪兽送去墓地。
+	-- ①：选自己场上1只原本种族是幻神兽族的怪兽或者原本卡名是「邪神 神之化身」「邪神 恐惧之源」「邪神 抹灭者」的怪兽（已受「神之进化」的效果适用的怪兽不能选）。那只怪兽攻击力·守备力上升1000，自身的效果的发动以及那些发动的效果不会被无效化，得到以下效果。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_ATKCHANGE+CATEGORY_DEFCHANGE)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -15,32 +15,32 @@ function c7373632.initial_effect(c)
 	e1:SetTarget(c7373632.target)
 	e1:SetOperation(c7373632.activate)
 	c:RegisterEffect(e1)
-	--cannot disable
+	-- 这张卡的发动和效果不会被无效化。
 	local e0=Effect.CreateEffect(c)
 	e0:SetType(EFFECT_TYPE_SINGLE)
 	e0:SetCode(EFFECT_CANNOT_DISABLE)
 	e0:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
 	c:RegisterEffect(e0)
 end
--- 过滤条件：自己场上表侧表示、原本种族为幻神兽族或原本卡名为三邪神、且未适用「神之进化」效果的怪兽。
+-- 过滤自己场上未适用「神之进化」的原本幻神兽族或三邪神怪兽
 function c7373632.filter(c)
 	return c:IsFaceup() and (c:GetOriginalRace()&RACE_DIVINE~=0 or c:IsOriginalCodeRule(21208154,62180201,57793869)) and c:GetFlagEffect(7373632)==0
 end
--- 效果发动的目标检查：检查自己场上是否存在满足条件的怪兽。
+-- 卡片发动的目标判定
 function c7373632.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查自己场上是否存在至少1只满足过滤条件的怪兽。
+	-- 检查场上是否存在满足条件的表侧表示怪兽
 	if chk==0 then return Duel.IsExistingMatchingCard(c7373632.filter,tp,LOCATION_MZONE,0,1,nil) end
 end
--- 效果处理：选择自己场上1只满足条件的怪兽，使其攻击力·守备力上升1000，使其效果的发动及效果不会被无效，并使其获得攻击宣言时让对方送去墓地的效果。
+-- 效果处理：提升目标怪兽1000攻守、赋予发动与效果不会被无效的抗性、以及攻击宣言强迫对方送墓怪兽的效果
 function c7373632.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择表侧表示的卡。
+	-- 提示选择表侧表示的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
-	-- 玩家选择1只满足过滤条件的怪兽。
+	-- 选择自己场上1只满足条件的怪兽
 	local g=Duel.SelectMatchingCard(tp,c7373632.filter,tp,LOCATION_MZONE,0,1,1,nil)
 	local c=e:GetHandler()
 	local tc=g:GetFirst()
 	if tc then
-		-- 确认并显示所选择的怪兽。
+		-- 高亮显示所选怪兽
 		Duel.HintSelection(g)
 		-- 那只怪兽攻击力·守备力上升1000
 		local e1=Effect.CreateEffect(c)
@@ -58,12 +58,12 @@ function c7373632.activate(e,tp,eg,ep,ev,re,r,rp)
 		e3:SetCode(EFFECT_CANNOT_INACTIVATE)
 		e3:SetLabel(3)
 		e3:SetValue(c7373632.effectfilter)
-		-- 注册全局效果：使目标怪兽的效果的发动不会被无效。
+		-- 注册自身效果发动不会被无效化的效果
 		Duel.RegisterEffect(e3,tp)
 		local e4=e3:Clone()
 		e4:SetCode(EFFECT_CANNOT_DISEFFECT)
 		e4:SetLabel(4)
-		-- 注册全局效果：使目标怪兽发动的效果不会被无效。
+		-- 注册自身发动的效果不会被无效化的效果
 		Duel.RegisterEffect(e4,tp)
 		e3:SetLabelObject(e4)
 		e4:SetLabelObject(tc)
@@ -87,7 +87,7 @@ function c7373632.activate(e,tp,eg,ep,ev,re,r,rp)
 		e5:SetOperation(c7373632.tgop)
 		tc:RegisterEffect(e5)
 		if not tc:IsType(TYPE_EFFECT) then
-			-- 得到以下效果
+			-- 得到以下效果。
 			local e6=Effect.CreateEffect(c)
 			e6:SetType(EFFECT_TYPE_SINGLE)
 			e6:SetCode(EFFECT_ADD_TYPE)
@@ -98,31 +98,31 @@ function c7373632.activate(e,tp,eg,ep,ev,re,r,rp)
 		tc:RegisterFlagEffect(7373632,RESET_EVENT+RESETS_STANDARD,EFFECT_FLAG_CLIENT_HINT,1,0,aux.Stringid(7373632,0))  --"「神之进化」效果适用中"
 	end
 end
--- 获得效果的发动准备：检查对方场上是否有怪兽，并设置送去墓地的操作信息。
+-- 攻击诱发效果的目标判定及操作信息设置
 function c7373632.tgtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 获取对方场上的怪兽。
+	-- 获取对方场上的怪兽
 	local g=Duel.GetFieldGroup(tp,0,LOCATION_MZONE)
 	if chk==0 then return g:GetCount()>0 end
-	-- 设置操作信息：对方场上的1只怪兽送去墓地。
+	-- 设置操作信息：对方把自身场上1只怪兽送去墓地
 	Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,nil,1,1-tp,LOCATION_MZONE)
 end
--- 获得效果的处理：对方选择自身场上1只怪兽送去墓地。
+-- 效果处理：对方必须选自身场上1只怪兽送去墓地
 function c7373632.tgop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取对方场上的怪兽。
+	-- 获取对方场上的怪兽
 	local g=Duel.GetFieldGroup(tp,0,LOCATION_MZONE)
 	if g:GetCount()>0 then
-		-- 提示对方玩家选择要送去墓地的卡。
+		-- 提示对方选择要送去墓地的卡
 		Duel.Hint(HINT_SELECTMSG,1-tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
 		local sg=g:Select(1-tp,1,1,nil)
-		-- 确认并显示对方选择送去墓地的怪兽。
+		-- 高亮显示对方选中的怪兽
 		Duel.HintSelection(sg)
-		-- 对方玩家因规则将选择的怪兽送去墓地。
+		-- 玩家因规则将选中的怪兽送去墓地
 		Duel.SendtoGrave(sg,REASON_RULE,1-tp)
 	end
 end
--- 过滤条件：判断当前连锁中的效果是否由适用「神之进化」效果的怪兽所发动。
+-- 过滤判定当前连锁的效果是否由该怪兽发动
 function c7373632.effectfilter(e,ct)
-	-- 获取当前连锁中触发的效果。
+	-- 获取当前连锁触发的效果对象
 	local te=Duel.GetChainInfo(ct,CHAININFO_TRIGGERING_EFFECT)
 	local label=e:GetLabel()
 	local tc
@@ -133,7 +133,7 @@ function c7373632.effectfilter(e,ct)
 	end
 	return tc and tc==te:GetHandler()
 end
--- 检查目标怪兽是否离场，若离场则重置不会被无效的全局效果。
+-- 离场前检测：怪兽因自身效果离场时延迟重置防无效效果
 function c7373632.chk(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local e3=e:GetLabelObject()
@@ -149,11 +149,11 @@ function c7373632.chk(e,tp,eg,ep,ev,re,r,rp)
 		e0:SetCode(EVENT_CHAIN_END)
 		e0:SetLabelObject(e3)
 		e0:SetOperation(c7373632.resetop)
-		-- 注册连锁结束时重置不会被无效效果的事件。
+		-- 注册连锁结束时重置防无效效果的全局监听
 		Duel.RegisterEffect(e0,tp)
 	end
 end
--- 连锁结束时，重置不会被无效的全局效果。
+-- 连锁结束时重置不会被无效的效果并注销监听
 function c7373632.resetop(e,tp,eg,ep,ev,re,r,rp)
 	local e3=e:GetLabelObject()
 	local e4=e3:GetLabelObject()

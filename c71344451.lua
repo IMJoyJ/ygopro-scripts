@@ -14,73 +14,79 @@ function c71344451.initial_effect(c)
 	e1:SetOperation(c71344451.activate)
 	c:RegisterEffect(e1)
 end
--- 效果发动的Cost：丢弃1张手卡。
+-- 发动Cost：丢弃1张手卡
 function c71344451.cost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查手卡中是否存在除这张卡以外的可以丢弃的卡。
+	-- 检查手卡中是否存在可以丢弃的卡
 	if chk==0 then return Duel.IsExistingMatchingCard(Card.IsDiscardable,tp,LOCATION_HAND,0,1,e:GetHandler()) end
-	-- 玩家选择并丢弃1张手卡作为发动Cost。
+	-- 从手牌丢弃1张卡作为Cost
 	Duel.DiscardHand(tp,Card.IsDiscardable,1,1,REASON_COST+REASON_DISCARD)
 end
--- 效果发动的Target：检查对方场上是否有卡、自己卡组数量是否足够、是否能将卡组顶端的卡送去墓地以及是否能抽卡。
+-- 发动条件判断及操作信息设置
 function c71344451.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 获取对方场上的卡片数量。
+	-- 获取对方场上的卡片数量
 	local ct=Duel.GetFieldGroupCount(tp,0,LOCATION_ONFIELD)
-	-- 检查对方场上是否有卡，且自己卡组数量大于对方场上卡片数量，且自己可以把卡组顶端的卡送去墓地。
+	-- 检查对方场上卡片数量是否大于0、卡组剩余卡片是否足够送去墓地且可以从卡组送去墓地
 	if chk==0 then return ct>0 and Duel.GetFieldGroupCount(tp,LOCATION_DECK,0)>ct and Duel.IsPlayerCanDiscardDeck(tp,ct)
-		-- 检查自己是否可以抽1张卡。
+		-- 检查自己是否可以抽卡
 		and Duel.IsPlayerCanDraw(tp,1) end
-	-- 设置效果处理信息：从卡组送去墓地的卡片数量为对方场上的卡片数量。
+	-- 设置操作信息：从卡组将卡送去墓地
 	Duel.SetOperationInfo(0,CATEGORY_DECKDES,nil,0,tp,ct)
-	-- 设置效果处理信息：自己抽1张卡。
+	-- 设置操作信息：自己抽1张卡
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,1)
-	-- 设置效果处理信息：预计有墓地的卡回到卡组。
+	-- 设置操作信息：从墓地将卡送回卡组
 	Duel.SetOperationInfo(0,CATEGORY_TODECK,nil,1,tp,LOCATION_GRAVE)
 end
--- 效果处理：将卡组顶端的卡送去墓地并抽卡，根据抽到的卡是否为「一击必杀！居合抽卡」来决定是破坏场上的卡并给予伤害，还是将墓地的卡回到卡组。
+-- 效果处理：把对方场上卡片数量的卡从卡组送去墓地并抽1张卡确认，根据抽到的卡适用破坏伤害或墓地回收效果
 function c71344451.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前对方场上的卡片数量。
+	-- 获取对方场上的卡片数量
 	local ct=Duel.GetFieldGroupCount(tp,0,LOCATION_ONFIELD)
-	-- 如果对方场上有卡，则将对应数量的卡从自己卡组上面送去墓地。
+	-- 将对方场上卡片数量的卡从卡组顶端送去墓地
 	if ct>0 and Duel.DiscardDeck(tp,ct,REASON_EFFECT)~=0 then
-		-- 获取实际因该效果从卡组送去墓地的卡片数量。
+		-- 计算实际送去墓地的卡片数量
 		local ct2=Duel.GetOperatedGroup():Filter(Card.IsLocation,nil,LOCATION_GRAVE):GetCount()
 		if ct2==0 then return end
-		-- 中断当前效果，使后续的抽卡处理与送去墓地不视为同时处理。
+		-- 中断效果处理（分割前后时点）
 		Duel.BreakEffect()
-		-- 自己抽1张卡。
+		-- 自己抽1张卡
 		if Duel.Draw(tp,1,REASON_EFFECT)~=0 then
-			-- 获取刚刚抽到的那张卡。
+			-- 获取抽到的卡
 			local tc=Duel.GetOperatedGroup():GetFirst()
-			-- 将抽到的卡给双方确认。
+			-- 向双方展示确认抽到的卡
 			Duel.ConfirmCards(1-tp,tc)
 			if tc:IsCode(71344451) then
-				-- 如果抽到的是「一击必杀！居合抽卡」，则将那张卡送去墓地。
+				-- 抽到的卡送去墓地
 				if Duel.SendtoGrave(tc,REASON_EFFECT)~=0 and tc:IsLocation(LOCATION_GRAVE) then
-					-- 获取场上除这张卡以外的所有卡片。
+					-- 获取场上除了此卡以外的所有卡
 					local sg=Duel.GetMatchingGroup(aux.TRUE,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,aux.ExceptThisCard(e))
-					-- 破坏场上的全部卡片。
+					-- 破坏场上的卡
 					Duel.Destroy(sg,REASON_EFFECT)
-					-- 筛选出因该效果被破坏并送去墓地的卡片。
+					-- 获取破坏并成功送去墓地的卡片组
 					local tg=Duel.GetOperatedGroup():Filter(Card.IsLocation,nil,LOCATION_GRAVE)
 					if tg:GetCount()>0 then
 						local dam=tg:GetCount()*2000
 						if dam>0 then
-							-- 中断当前效果，使后续的伤害处理与破坏不视为同时处理。
+							-- 中断效果处理（分割前后时点）
 							Duel.BreakEffect()
-							-- 给与对方被破坏送去墓地的卡数量×2000的伤害。
+							-- 给与对方破坏送墓卡片数量×2000的伤害
 							Duel.Damage(1-tp,dam,REASON_EFFECT)
 						end
 					end
 				end
+				-- 洗切手牌
 				Duel.ShuffleHand(tp)
 			else
+				-- 洗切手牌
 				Duel.ShuffleHand(tp)
-				Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TODECK)
+				-- 提示选择要返回卡组的卡
+				Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TODECK)  --"请选择要返回卡组的卡"
+				-- 选择送去墓地数量的自己墓地的卡
 				local dg=Duel.SelectMatchingCard(tp,aux.NecroValleyFilter(Card.IsAbleToDeck),tp,LOCATION_GRAVE,0,ct2,ct2,nil)
 				if dg:GetCount()>0 then
+					-- 中断效果处理（分割前后时点）
 					Duel.BreakEffect()
+					-- 显示选中的卡片被选为对象
 					Duel.HintSelection(dg)
-					-- 将选择的卡片送回卡组并洗卡。
+					-- 将选中的卡送回卡组并洗切卡组
 					Duel.SendtoDeck(dg,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
 				end
 			end

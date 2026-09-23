@@ -2,7 +2,7 @@
 -- 效果：
 -- 对方进行攻击宣言时这张卡才能发动。选择自己场上1张表侧表示的怪兽。这张卡发动回合，对方只能以所选择的这只怪兽为攻击对象，且必须用所有表侧攻击表示的怪兽攻击所选择的这只怪兽。
 function c92854392.initial_effect(c)
-	-- 创建一个永续效果，用于在对方攻击宣言时发动
+	-- 对方进行攻击宣言时这张卡才能发动。选择自己场上1张表侧表示的怪兽。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET)
@@ -12,43 +12,46 @@ function c92854392.initial_effect(c)
 	e1:SetOperation(c92854392.activate)
 	c:RegisterEffect(e1)
 end
--- 判断当前回合玩家是否为对方
+-- 发动条件：对方回合的攻击宣言时
 function c92854392.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 对方进行攻击宣言时这张卡才能发动
+	-- 检查当前是否为对方回合
 	return Duel.GetTurnPlayer()~=tp
 end
--- 选择自己场上1张表侧表示的怪兽
+-- 效果发动取对象：选择自己场上1只表侧表示怪兽
 function c92854392.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and chkc:IsFaceup() end
+	-- 检查自己场上是否存在表侧表示怪兽
 	if chk==0 then return Duel.IsExistingTarget(Card.IsFaceup,tp,LOCATION_MZONE,0,1,nil) end
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)
+	-- 提示选择表侧表示的怪兽
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
+	-- 选择自己场上1只表侧表示怪兽作为对象
 	Duel.SelectTarget(tp,Card.IsFaceup,tp,LOCATION_MZONE,0,1,1,nil)
 end
--- 将对方只能以所选择的这只怪兽为攻击对象，且必须用所有表侧攻击表示的怪兽攻击所选择的这只怪兽
+-- 效果处理：强迫对方怪兽必须攻击选中的怪兽
 function c92854392.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的目标怪兽
+	-- 获取效果的对象怪兽
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
 		local fid=tc:GetRealFieldID()
-		-- 设置必须攻击效果，使对方只能攻击该怪兽
+		-- 这张卡发动回合，对方只能以所选择的这只怪兽为攻击对象，且必须用所有表侧攻击表示的怪兽攻击所选择的这只怪兽。
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_FIELD)
 		e1:SetCode(EFFECT_MUST_ATTACK)
 		e1:SetTargetRange(0,LOCATION_MZONE)
 		e1:SetReset(RESET_PHASE+PHASE_BATTLE)
-		-- 将效果e1注册给玩家tp
+		-- 注册全场效果：对方怪兽必须进行攻击
 		Duel.RegisterEffect(e1,tp)
 		local e2=e1:Clone()
 		e2:SetCode(EFFECT_MUST_ATTACK_MONSTER)
 		e2:SetValue(c92854392.atklimit)
 		e2:SetLabel(fid)
-		-- 将效果e2注册给玩家tp
+		-- 注册全场效果：对方怪兽若攻击则必须以对象怪兽为攻击对象
 		Duel.RegisterEffect(e2,tp)
-		-- 将攻击对象变为所选择的怪兽
+		-- 将当前的攻击对象转移为该对象怪兽
 		Duel.ChangeAttackTarget(tc)
 	end
 end
--- 判断怪兽是否为所选择的那只怪兽
+-- 攻击目标限制：攻击对象必须为所选怪兽
 function c92854392.atklimit(e,c)
 	return c:GetRealFieldID()==e:GetLabel()
 end
