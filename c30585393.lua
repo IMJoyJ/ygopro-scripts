@@ -19,7 +19,7 @@ function c30585393.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chk==0 then return eg:GetCount()==1 and tc:IsPreviousControler(tp) and tc:IsPreviousLocation(LOCATION_MZONE)
 		-- 确认自己场上主要怪兽区有可用的空格，以满足特殊召唤条件。
 		and Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		and tc:IsLocation(LOCATION_GRAVE+LOCATION_REMOVED) and tc:IsReason(REASON_EFFECT)
+		and tc:IsLocation(LOCATION_GRAVE+LOCATION_REMOVED) and tc:IsFaceupEx() and tc:IsReason(REASON_EFFECT)
 		and tc:IsCanBeEffectTarget(e) and tc:IsCanBeSpecialSummoned(e,0,tp,false,false) end
 	-- 将选择的那1只怪兽设为当前连锁的对象，使其成为效果处理时的取对象目标。
 	Duel.SetTargetCard(tc)

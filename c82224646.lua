@@ -181,8 +181,7 @@ function c82224646.scop(e,tp,eg,ep,ev,re,r,rp)
 	end
 	-- 完成特殊召唤的最终处理，若特殊召唤失败则结束效果。
 	if Duel.SpecialSummonComplete()==0 then return end
-	if not c:IsRelateToEffect(e) then return end
-	-- 立即刷新场上卡片状态信息，以确保后续同调召唤判定准确。
+	if not c:IsRelateToEffect(e) or c:IsFacedown() then return end
 	Duel.AdjustAll()
 	local mg=Group.FromCards(c,tc)
 	if mg:FilterCount(Card.IsLocation,nil,LOCATION_MZONE)<2 then return end

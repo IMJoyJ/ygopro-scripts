@@ -69,8 +69,7 @@ function c93665266.scop(e,tp,eg,ep,ev,re,r,rp)
 	tc:RegisterEffect(e2)
 	-- 完成特殊召唤的后续处理
 	Duel.SpecialSummonComplete()
-	if not c:IsRelateToEffect(e) then return end
-	-- 立即刷新场地信息，以确保同调素材状态正确
+	if not c:IsRelateToEffect(e) or c:IsFacedown() then return end
 	Duel.AdjustAll()
 	local mg=Group.FromCards(c,tc)
 	if mg:FilterCount(Card.IsLocation,nil,LOCATION_MZONE)<2 then return end

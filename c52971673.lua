@@ -21,20 +21,14 @@ function c52971673.dfilter(c)
 end
 -- 效果发动前的条件判定：自己场上存在至少1只衍生物，且双方场上有除本卡以外的至少1张非衍生物卡（可作为破坏对象）。
 function c52971673.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查自己场上是否存在至少1只衍生物，作为效果可发动的条件之一。
-	if chk==0 then return Duel.IsExistingMatchingCard(c52971673.cfilter,tp,LOCATION_MZONE,0,1,nil)
-		-- 检查双方场上是否存在除本卡以外的至少1张非衍生物卡，作为后续破坏对象存在的条件。
+	if chk==0 then return Duel.IsExistingMatchingCard(c52971673.cfilter,tp,LOCATION_ONFIELD,0,1,nil)
 		and Duel.IsExistingMatchingCard(c52971673.dfilter,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,e:GetHandler()) end
-	-- 获取自己场上所有衍生物的集合，用于登记后续将被破坏的卡片。
-	local g=Duel.GetMatchingGroup(c52971673.cfilter,tp,LOCATION_MZONE,0,nil)
-	-- 将衍生物组及其数量写入连锁的操作信息，标记此次效果包含破坏行为，供其他卡检索或应对。
+	local g=Duel.GetMatchingGroup(c52971673.cfilter,tp,LOCATION_ONFIELD,0,nil)
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,g:GetCount(),0,0)
 end
 -- 效果处理：先破坏自己场上全部衍生物，若实际破坏数为0则结束；否则在场上选择最多“该破坏数”的卡（除本卡外）破坏，并分为两段处理。
 function c52971673.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 处理时重新获取自己场上全部衍生物的集合，以当前场上实际存在的衍生物为准。
-	local g=Duel.GetMatchingGroup(c52971673.cfilter,tp,LOCATION_MZONE,0,nil)
-	-- 以效果原因将自己场上的这些衍生物全部破坏，并记录实际破坏数量dt。
+	local g=Duel.GetMatchingGroup(c52971673.cfilter,tp,LOCATION_ONFIELD,0,nil)
 	local dt=Duel.Destroy(g,REASON_EFFECT)
 	if dt==0 then return end
 	-- 获取场上除本卡以外的所有卡，作为后续选择破坏的候选对象（对应“场上存在的卡”）。

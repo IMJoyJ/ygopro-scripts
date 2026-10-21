@@ -87,7 +87,7 @@ end
 function c77202120.spfilter(c,e,tp)
 	return c:IsRace(RACE_DRAGON) and c:IsType(TYPE_SYNCHRO)
 		and c:IsPreviousLocation(LOCATION_ONFIELD) and c:IsPreviousControler(tp)
-		and c:IsCanBeEffectTarget(e) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
+		and c:IsFaceupEx() and c:IsCanBeEffectTarget(e) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
 -- 效果②的发动准备，选择被解放或除外的龙族同调怪兽作为对象
 function c77202120.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)

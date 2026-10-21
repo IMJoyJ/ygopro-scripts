@@ -68,17 +68,13 @@ end
 -- ②效果的目标判定：发动无条件满足；随后取得场上所有衍生物，并将其作为破坏对象写入操作信息。
 function c43534808.destg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 取得双方场上所有衍生物组成的集合。
-	local g=Duel.GetMatchingGroup(Card.IsType,tp,LOCATION_MZONE,LOCATION_MZONE,nil,TYPE_TOKEN)
-	-- 设置操作信息：本次效果将破坏场上所有衍生物，数量为当前衍生物的总数。
+	local g=Duel.GetMatchingGroup(Card.IsType,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,nil,TYPE_TOKEN)
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,g:GetCount(),0,0)
 end
 -- ②效果实际处理：重新取得场上所有衍生物并全部破坏；若实际破坏数大于0，且这张卡仍表侧表示且与效果关联，则使这张卡的攻击力上升破坏数×400。
 function c43534808.desop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 取得当前场上所有衍生物的集合。
-	local sg=Duel.GetMatchingGroup(Card.IsType,tp,LOCATION_MZONE,LOCATION_MZONE,nil,TYPE_TOKEN)
-	-- 以效果原因破坏这些衍生物，并返回实际破坏的数量。
+	local sg=Duel.GetMatchingGroup(Card.IsType,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,nil,TYPE_TOKEN)
 	local ct=Duel.Destroy(sg,REASON_EFFECT)
 	if ct>0 and c:IsFaceup() and c:IsRelateToEffect(e) then
 		-- 这张卡的攻击力上升破坏的衍生物数量×400。

@@ -106,13 +106,13 @@ function s.sccon(e,tp,eg,ep,ev,re,r,rp)
 	-- 判定当前回合玩家不是自己，并且处于主要阶段或战斗阶段。
 	return Duel.GetTurnPlayer()~=tp and (Duel.IsMainPhase() or Duel.IsBattlePhase())
 end
--- ③效果的目标函数：确认自己场上存在地属性怪兽，且额外卡组存在能用本卡和这些地属性怪兽进行同调召唤的怪兽；随后设置同调召唤的操作信息。
+function s.mfilter(c)
+	return c:IsFaceup() and c:IsAttribute(ATTRIBUTE_EARTH)
+end
 function s.sctg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then
 		local c=e:GetHandler()
-		-- 取得自己场上所有地属性怪兽，作为同调素材候选组。
-		local mg=Duel.GetMatchingGroup(Card.IsAttribute,tp,LOCATION_MZONE,0,nil,ATTRIBUTE_EARTH)
-		-- 检查额外卡组是否存在能够以c和mg为素材进行同调召唤的怪兽。
+		local mg=Duel.GetMatchingGroup(s.mfilter,tp,LOCATION_MZONE,0,nil)
 		return Duel.IsExistingMatchingCard(Card.IsSynchroSummonable,tp,LOCATION_EXTRA,0,1,nil,c,mg)
 	end
 	-- 向对方玩家提示本卡发动了③效果（显示效果描述）。
@@ -124,9 +124,7 @@ end
 function s.scop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsControler(1-tp) or not c:IsRelateToChain() or c:IsFacedown() then return end
-	-- 取得自己场上所有地属性怪兽（包含本卡）作为同调素材候选组。
-	local mg=Duel.GetMatchingGroup(Card.IsAttribute,tp,LOCATION_MZONE,0,nil,ATTRIBUTE_EARTH)
-	-- 取得额外卡组中所有能够以本卡和mg为素材进行同调召唤的同调怪兽。
+	local mg=Duel.GetMatchingGroup(s.mfilter,tp,LOCATION_MZONE,0,nil)
 	local g=Duel.GetMatchingGroup(Card.IsSynchroSummonable,tp,LOCATION_EXTRA,0,nil,c,mg)
 	if g:GetCount()>0 then
 		-- 显示“请选择要特殊召唤的卡”的选卡提示。

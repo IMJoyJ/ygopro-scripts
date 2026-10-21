@@ -49,7 +49,7 @@ function c89326990.operation(e,tp,eg,ep,ev,re,r,rp)
 	local tc=Duel.GetFirstTarget()
 	-- 将目标怪兽在自己场上表侧表示特殊召唤，若特殊召唤失败则结束处理
 	if not tc:IsRelateToEffect(e) or Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP)==0 then return end
-	if not c:IsRelateToEffect(e) then return end
+	if not c:IsRelateToEffect(e) or c:IsFacedown() then return end
 	local mg=Group.FromCards(c,tc)
 	-- 获取额外卡组中仅以这两张卡为素材可以进行同调召唤的风属性同调怪兽
 	local g=Duel.GetMatchingGroup(c89326990.scfilter,tp,LOCATION_EXTRA,0,nil,mg)

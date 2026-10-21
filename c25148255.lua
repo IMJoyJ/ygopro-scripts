@@ -67,8 +67,7 @@ function c25148255.scop(e,tp,eg,ep,ev,re,r,rp)
 	local tc=Duel.GetFirstTarget()
 	-- 确认对象怪兽仍与效果关联且特殊召唤成功；若对象已失效或特殊召唤失败则中止后续同调处理。
 	if not tc:IsRelateToEffect(e) or Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP)==0 then return end
-	if not c:IsRelateToEffect(e) then return end
-	-- 立即刷新场地信息，确保后续检查使用最新的怪兽位置状态。
+	if not c:IsRelateToEffect(e) or c:IsFacedown() then return end
 	Duel.AdjustAll()
 	local mg=Group.FromCards(c,tc)
 	if mg:FilterCount(Card.IsLocation,nil,LOCATION_MZONE)<2 then return end

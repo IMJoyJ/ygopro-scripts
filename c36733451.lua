@@ -41,7 +41,8 @@ function c36733451.operation(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	-- 获取自己卡组最上方的1张卡。
 	local g=Duel.GetDecktopGroup(tp,1)
-	-- 禁止下一次操作触发自动洗牌检查，因为从卡组顶端除外不需要洗切卡组。
+	local tc=g:GetFirst()
+	if not tc or not tc:IsAbleToRemove() then return end
 	Duel.DisableShuffleCheck()
 	-- 将卡组顶端的卡以表侧表示除外，除外原因为效果。
 	Duel.Remove(g,POS_FACEUP,REASON_EFFECT)

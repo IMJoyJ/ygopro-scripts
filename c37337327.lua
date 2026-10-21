@@ -52,8 +52,7 @@ end
 -- 效果①发动合法性判定与操作信息设置：取得本卡所连接区的怪兽作为同调素材组mg，检查额外卡组是否存在能用mg进行同调召唤的怪兽；存在则合法，并设置操作信息为执行1只额外卡组怪兽的特殊召唤。
 function c37337327.sctg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then
-		local mg=e:GetHandler():GetLinkedGroup()
-		-- 检查额外卡组中是否存在至少1只满足scfilter的怪兽，即能够只用当前所连接区的怪兽作为素材进行同调召唤的怪兽。
+		local mg=e:GetHandler():GetLinkedGroup():Filter(Card.IsFaceup,nil)
 		return Duel.IsExistingMatchingCard(c37337327.scfilter,tp,LOCATION_EXTRA,0,1,nil,mg)
 	end
 	-- 设置当前连锁的操作信息：本效果将进行从额外卡组特殊召唤1只怪兽（同调召唤），目标玩家为自己，来源为额外卡组。
@@ -63,8 +62,7 @@ end
 function c37337327.scop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if not c:IsRelateToEffect(e) then return end
-	local mg=c:GetLinkedGroup()
-	-- 获取额外卡组中所有满足scfilter的同调召唤候选怪兽，构成集合g供选择。
+	local mg=c:GetLinkedGroup():Filter(Card.IsFaceup,nil)
 	local g=Duel.GetMatchingGroup(c37337327.scfilter,tp,LOCATION_EXTRA,0,nil,mg)
 	if g:GetCount()>0 then
 		-- 向玩家显示选择提示，内容为“请选择要特殊召唤的卡”。

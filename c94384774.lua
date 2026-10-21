@@ -91,8 +91,7 @@ end
 -- ②效果的发动准备，检查场上是否有衍生物和这张卡，以及是否能特殊召唤「海老须衍生物」
 function s.destg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
-	-- 获取场上所有的衍生物
-	local g=Duel.GetMatchingGroup(Card.IsType,tp,LOCATION_MZONE,LOCATION_MZONE,nil,TYPE_TOKEN)
+	local g=Duel.GetMatchingGroup(Card.IsType,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,nil,TYPE_TOKEN)
 	g:AddCard(c)
 	-- 检查场上是否存在衍生物，且这些卡被破坏后自己场上是否有空余的怪兽区域
 	if chk==0 then return g:GetCount()>0 and Duel.GetMZoneCount(tp,g)>0
@@ -104,8 +103,7 @@ end
 -- ②效果的实际处理：破坏这张卡和场上的衍生物，并特殊召唤「海老须衍生物」，根据破坏的衍生物数量确定其攻守
 function s.desop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取场上除这张卡以外的所有衍生物
-	local g=Duel.GetMatchingGroup(Card.IsType,tp,LOCATION_MZONE,LOCATION_MZONE,aux.ExceptThisCard(e),TYPE_TOKEN)
+	local g=Duel.GetMatchingGroup(Card.IsType,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,aux.ExceptThisCard(e),TYPE_TOKEN)
 	if g:GetCount()==0 then return end
 	g:AddCard(c)
 	-- 尝试破坏这张卡和场上的衍生物，并判断是否有卡被成功破坏

@@ -68,7 +68,7 @@ function c24557335.descon(e,tp,eg,ep,ev,re,r,rp)
 end
 -- 定义②效果对象候选过滤tgfilter：该怪兽必须是本次被破坏的怪兽中满足非效果、我方表侧、战破/效破条件的，当前位于墓地或除外区，能够成为效果对象且能够被特殊召唤。
 function c24557335.tgfilter(c,e,tp)
-	return c:IsCanBeSpecialSummoned(e,0,tp,false,false) and c24557335.descfilter(c,tp)
+	return c:IsFaceupEx() and c:IsCanBeSpecialSummoned(e,0,tp,false,false) and c24557335.descfilter(c,tp)
 		and c:IsCanBeEffectTarget(e) and c:IsLocation(LOCATION_GRAVE+LOCATION_REMOVED)
 end
 -- 定义②效果的目标处理destg：从本次被破坏的怪兽中筛选可特殊召唤的候选组；若满足发动条件（有怪兽区且有候选），则选择其中1只作为对象；若只有1只则直接选用；最后将所选怪兽设为效果对象并登记特殊召唤操作信息。

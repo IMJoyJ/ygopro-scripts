@@ -93,7 +93,7 @@ function s.spop(e,tp,eg,ep,ev,re,r,rp)
 		-- 判断特殊召唤的基本条件：我方主要怪兽区有空位、被取除的素材是超量怪兽且其持有者是我方。
 		if Duel.GetLocationCount(tp,LOCATION_MZONE)>0 and tc:IsType(TYPE_XYZ) and tc:GetOwner()==tp
 			and tc:IsCanBeSpecialSummoned(e,0,tp,false,false,POS_FACEUP_DEFENSE)
-			and tc:IsLocation(LOCATION_GRAVE+LOCATION_REMOVED)
+			and tc:IsLocation(LOCATION_GRAVE+LOCATION_REMOVED) and tc:IsFaceupEx()
 			and not tc:IsHasEffect(EFFECT_NECRO_VALLEY)
 			-- 询问玩家是否要将这只取除的超量怪兽特殊召唤。
 			and Duel.SelectYesNo(tp,aux.Stringid(id,3)) then  --"是否特殊召唤？"

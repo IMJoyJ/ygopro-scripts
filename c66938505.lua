@@ -73,8 +73,7 @@ function c66938505.scop(e,tp,eg,ep,ev,re,r,rp)
 	end
 	-- 完成特殊召唤流程并检查是否成功
 	if Duel.SpecialSummonComplete()==0 then return end
-	if not c:IsRelateToEffect(e) then return end
-	-- 刷新场上状态信息
+	if not c:IsRelateToEffect(e) or c:IsFacedown() then return end
 	Duel.AdjustAll()
 	local mg=Group.FromCards(c,tc)
 	if mg:FilterCount(Card.IsLocation,nil,LOCATION_MZONE)<2 then return end

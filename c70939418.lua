@@ -69,12 +69,13 @@ end
 function c70939418.sccon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():GetFlagEffect(70939418)~=0
 end
--- 效果②的发动准备：检查是否可以以包含这张卡的自己场上的风属性怪兽为素材进行同调召唤，并设置特殊召唤的操作信息
+function c70939418.mfilter(c)
+	return c:IsFaceup() and c:IsAttribute(ATTRIBUTE_WIND)
+end
 function c70939418.sctg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then
 		local c=e:GetHandler()
-		-- 获取自己场上所有的风属性怪兽作为同调素材的候选组
-		local mg=Duel.GetMatchingGroup(Card.IsAttribute,tp,LOCATION_MZONE,0,nil,ATTRIBUTE_WIND)
+		local mg=Duel.GetMatchingGroup(c70939418.mfilter,tp,LOCATION_MZONE,0,nil)
 		return not c:IsStatus(STATUS_CHAINING)
 			-- 检查额外卡组中是否存在可以使用本卡以及上述风属性怪兽作为素材进行同调召唤的怪兽
 			and Duel.IsExistingMatchingCard(Card.IsSynchroSummonable,tp,LOCATION_EXTRA,0,1,nil,c,mg)
@@ -86,9 +87,7 @@ end
 function c70939418.scop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsControler(1-tp) or not c:IsRelateToEffect(e) or c:IsFacedown() then return end
-	-- 重新获取自己场上所有的风属性怪兽作为同调素材
-	local mg=Duel.GetMatchingGroup(Card.IsAttribute,tp,LOCATION_MZONE,0,nil,ATTRIBUTE_WIND)
-	-- 过滤出当前可以使用本卡和上述风属性怪兽作为素材进行同调召唤的同调怪兽组
+	local mg=Duel.GetMatchingGroup(c70939418.mfilter,tp,LOCATION_MZONE,0,nil)
 	local g=Duel.GetMatchingGroup(Card.IsSynchroSummonable,tp,LOCATION_EXTRA,0,nil,c,mg)
 	if g:GetCount()>0 then
 		-- 向玩家发送提示信息，要求选择要特殊召唤（同调召唤）的怪兽
