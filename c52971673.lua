@@ -2,7 +2,7 @@
 -- 效果：
 -- 自己场上存在的衍生物全部破坏。把最多有这个效果破坏的衍生物数量的场上存在的卡破坏。
 function c52971673.initial_effect(c)
-	-- 对应卡片效果原文：“自己场上存在的衍生物全部破坏。把最多有这个效果破坏的衍生物数量的场上存在的卡破坏。”
+	-- 自己场上存在的衍生物全部破坏。把最多有这个效果破坏的衍生物数量的场上存在的卡破坏。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_DESTROY)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -11,37 +11,43 @@ function c52971673.initial_effect(c)
 	e1:SetOperation(c52971673.activate)
 	c:RegisterEffect(e1)
 end
--- 定义过滤器cfilter：判定卡片是否为衍生物（TYPE_TOKEN），用于选出“自己场上存在的衍生物”。
+-- 过滤衍生物
 function c52971673.cfilter(c)
 	return c:IsType(TYPE_TOKEN)
 end
--- 定义过滤器dfilter：判定卡片不是衍生物，用于筛选可被破坏的场上非衍生物卡。
+-- 过滤非衍生物卡片
 function c52971673.dfilter(c)
 	return not c:IsType(TYPE_TOKEN)
 end
--- 效果发动前的条件判定：自己场上存在至少1只衍生物，且双方场上有除本卡以外的至少1张非衍生物卡（可作为破坏对象）。
+-- 发动目标：自己场上存在衍生物且场上存在自身以外的非衍生物卡片
 function c52971673.target(e,tp,eg,ep,ev,re,r,rp,chk)
+	-- 判断自己场上是否存在衍生物
 	if chk==0 then return Duel.IsExistingMatchingCard(c52971673.cfilter,tp,LOCATION_ONFIELD,0,1,nil)
+		-- 判断场上是否存在自身以外的非衍生物卡片
 		and Duel.IsExistingMatchingCard(c52971673.dfilter,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,e:GetHandler()) end
+	-- 获取自己场上所有的衍生物
 	local g=Duel.GetMatchingGroup(c52971673.cfilter,tp,LOCATION_ONFIELD,0,nil)
+	-- 设置操作信息：破坏自己场上的全部衍生物
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,g:GetCount(),0,0)
 end
--- 效果处理：先破坏自己场上全部衍生物，若实际破坏数为0则结束；否则在场上选择最多“该破坏数”的卡（除本卡外）破坏，并分为两段处理。
+-- 效果处理：破坏自己场上全部衍生物，选最多有破坏数量的场上的卡破坏
 function c52971673.activate(e,tp,eg,ep,ev,re,r,rp)
+	-- 获取自己场上所有的衍生物
 	local g=Duel.GetMatchingGroup(c52971673.cfilter,tp,LOCATION_ONFIELD,0,nil)
+	-- 破坏自己场上的衍生物并记录破坏数量
 	local dt=Duel.Destroy(g,REASON_EFFECT)
 	if dt==0 then return end
-	-- 获取场上除本卡以外的所有卡，作为后续选择破坏的候选对象（对应“场上存在的卡”）。
+	-- 获取场上自身以外的所有卡
 	local dg=Duel.GetMatchingGroup(aux.TRUE,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,aux.ExceptThisCard(e))
 	if dg:GetCount()>0 then
-		-- 中断当前效果处理，使破坏衍生物与后续选择破坏其他卡不在同一时点处理，避免触发时点合并。
+		-- 中断当前效果，使之后的破坏处理不视为同时进行
 		Duel.BreakEffect()
-		-- 向操作玩家显示“请选择要破坏的卡”的选择提示，要求进行破坏对象选择。
+		-- 提示选择要破坏的卡
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
 		local sg=dg:Select(tp,1,dt,nil)
-		-- 为被选中的卡片显示“被选为对象”的动画，并记录它们成为本次效果的对象。
+		-- 显示选中的卡片被选为破坏对象
 		Duel.HintSelection(sg)
-		-- 以效果原因破坏所选的卡片，完成效果中“把最多有这个效果破坏的衍生物数量的场上存在的卡破坏”的处理。
+		-- 破坏选中的卡
 		Duel.Destroy(sg,REASON_EFFECT)
 	end
 end
