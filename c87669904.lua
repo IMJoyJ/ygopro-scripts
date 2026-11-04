@@ -150,9 +150,7 @@ function c87669904.activate(e,tp,eg,ep,ev,re,r,rp)
 end
 -- 结束阶段破坏场上所有衍生物的效果处理函数。
 function c87669904.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取自己场上所有的衍生物。
-	local tg=Duel.GetMatchingGroup(Card.IsType,tp,LOCATION_MZONE,0,nil,TYPE_TOKEN)
-	-- 破坏所有选定的衍生物。
+	local tg=Duel.GetMatchingGroup(Card.IsType,tp,LOCATION_ONFIELD,0,nil,TYPE_TOKEN)
 	Duel.Destroy(tg,REASON_EFFECT)
 end
 -- 限制不能从额外卡组特殊召唤融合怪兽以外怪兽的过滤函数。

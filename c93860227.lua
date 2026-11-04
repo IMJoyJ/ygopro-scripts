@@ -54,7 +54,7 @@ end
 function s.tscon(e,tp,eg,ep,ev,re,r,rp)
 	if not re then return false end
 	local rc=re:GetHandler()
-	return r&REASON_COST~=0 and eg:IsExists(s.tgfilter,1,nil)
+	return r&REASON_COST~=0 and eg:IsExists(s.tgfilter,1,nil) and re:IsActivated()
 end
 -- 过滤条件：从手牌送去墓地、且可以作为装备卡装备的怪兽卡
 function s.eqfilter(c)

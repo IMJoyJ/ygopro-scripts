@@ -16,6 +16,5 @@ function c87978805.initial_effect(c)
 end
 -- 计算并返回该卡攻击力·守备力数值的辅助函数
 function c87978805.val(e,c)
-	-- 获取双方场上怪兽区域的衍生物数量，并乘以500作为返回值
-	return Duel.GetMatchingGroupCount(Card.IsType,c:GetControler(),LOCATION_MZONE,LOCATION_MZONE,nil,TYPE_TOKEN)*500
+	return Duel.GetMatchingGroupCount(Card.IsType,c:GetControler(),LOCATION_ONFIELD,LOCATION_ONFIELD,nil,TYPE_TOKEN)*500
 end

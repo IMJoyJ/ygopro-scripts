@@ -74,9 +74,9 @@ function s.activate(e,tp,eg,ep,ev,re,r,rp)
 end
 -- 判断发动效果的怪兽是否处于指定的对方主要怪兽区域
 function s.negcon(e,tp,eg,ep,ev,re,r,rp)
-	local rc=re:GetHandler()
-	return rp==1-tp and re:IsActiveType(TYPE_MONSTER) and rc:IsRelateToChain(ev)
-		and rc:IsControler(1-tp) and rc:IsLocation(LOCATION_MZONE) and rc:GetSequence()==e:GetLabel()
+	local loc,seq,p=Duel.GetChainInfo(ev,CHAININFO_TRIGGERING_LOCATION,CHAININFO_TRIGGERING_SEQUENCE,CHAININFO_TRIGGERING_CONTROLER)
+	return rp==1-tp and p==1-tp and re:IsActiveType(TYPE_MONSTER)
+		and loc&LOCATION_MZONE~=0 and seq==e:GetLabel()
 end
 -- 无效该怪兽发动的效果
 function s.negop(e,tp,eg,ep,ev,re,r,rp)

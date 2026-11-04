@@ -78,17 +78,14 @@ function s.spfilter(c,e,tp,m)
 	aux.GCheckAdditional=nil
 	return res
 end
--- 过滤可作为仪式素材送去墓地的表侧表示通常怪兽卡
-function s.matfilter(c)
+function s.matfilter(c,e)
 	return c:IsAllCardTypes(TYPE_NORMAL+TYPE_MONSTER)
-		and c:IsFaceupEx() and c:IsAbleToGrave()
+		and c:IsFaceupEx() and c:IsAbleToGrave() and not c:IsImmuneToEffect(e)
 end
 -- 效果①的目标判定与操作信息设置
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then
-		-- 获取手卡·卡组·场上可用的通常怪兽素材卡片组
-		local mg=Duel.GetMatchingGroup(s.matfilter,tp,LOCATION_DECK+LOCATION_HAND+LOCATION_ONFIELD,0,nil)
-		-- 检查手卡·墓地是否存在可以仪式召唤的「塞尼特」仪式怪兽
+		local mg=Duel.GetMatchingGroup(s.matfilter,tp,LOCATION_DECK+LOCATION_HAND+LOCATION_ONFIELD,0,nil,e)
 		return Duel.IsExistingMatchingCard(s.spfilter,tp,LOCATION_HAND+LOCATION_GRAVE,0,1,nil,e,tp,mg)
 	end
 	-- 设置操作信息：从手卡·墓地特殊召唤1只怪兽
@@ -101,11 +98,8 @@ end
 -- 效果①的操作处理：选怪兽送素材进行仪式召唤，随后可选墓地通常怪兽装备
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
 	::cancel::
-	-- 获取手卡·卡组·场上可作为素材的通常怪兽卡片组
-	local mg=Duel.GetMatchingGroup(s.matfilter,tp,LOCATION_DECK+LOCATION_HAND+LOCATION_ONFIELD,0,nil)
-	-- 提示选择要仪式召唤的怪兽
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 从手卡·墓地选择1只「塞尼特」仪式怪兽
+	local mg=Duel.GetMatchingGroup(s.matfilter,tp,LOCATION_DECK+LOCATION_HAND+LOCATION_ONFIELD,0,nil,e)
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
 	local tg=Duel.SelectMatchingCard(tp,aux.NecroValleyFilter(s.spfilter),tp,LOCATION_HAND+LOCATION_GRAVE,0,1,1,nil,e,tp,mg)
 	if tg:GetCount()>0 then
 		local tc=tg:GetFirst()

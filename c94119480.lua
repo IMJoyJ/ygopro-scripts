@@ -44,8 +44,7 @@ end
 function c94119480.operation(e,tp,eg,ep,ev,re,r,rp)
 	-- 获取在发动阶段选择的效果对象卡
 	local tc=Duel.GetFirstTarget()
-	if tc:IsRelateToEffect(e) and tc:IsFaceup() then
-		-- 将目标卡片因效果破坏
+	if tc:IsRelateToEffect(e) then
 		Duel.Destroy(tc,REASON_EFFECT)
 	end
 end

@@ -67,9 +67,9 @@ end
 -- ②效果的发动条件：此卡是通过自身效果特殊召唤，因战斗破坏，且是被对方怪兽攻击。
 function s.damcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
+	local a=Duel.GetAttacker()
 	return c:GetSummonType()==SUMMON_TYPE_SPECIAL+SUMMON_VALUE_SELF and c:IsReason(REASON_BATTLE) and c:IsPreviousControler(tp)
-		-- 确认此卡是攻击对象，且发动攻击的怪兽由对方控制。
-		and c==Duel.GetAttackTarget() and ((Duel.GetAttacker():IsControler(1-tp) and c:IsOnField()) or Duel.GetAttacker():IsPreviousControler(1-tp))
+		and c==Duel.GetAttackTarget() and a and ((a:IsControler(1-tp) and a:IsOnField()) or a:IsPreviousControler(1-tp))
 end
 -- ②效果的准备：获取破坏此卡的对方怪兽，计算其原本攻击力的2倍（最大3000），并设置伤害效果的对象和数值。
 function s.damtg(e,tp,eg,ep,ev,re,r,rp,chk)
