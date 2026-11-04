@@ -4,7 +4,7 @@
 -- ①：从卡组把1只「拉比林斯迷宫」怪兽特殊召唤。这张卡的发动后，直到下个回合的结束时自己不是恶魔族怪兽不能从卡组·额外卡组特殊召唤。
 -- ②：这张卡在墓地存在的状态，自己的通常陷阱卡的效果让怪兽从场上离开的场合才能发动。这张卡在自己场上盖放。这个效果在这张卡送去墓地的回合不能发动。
 function c5380979.initial_effect(c)
-	-- ①：从卡组把1只「拉比林斯迷宫」怪兽特殊召唤。这张卡的发动后，直到下个回合的结束时自己不是恶魔族怪兽不能从卡组·额外卡组特殊召唤。
+	-- ①：从卡组把1只「拉比林斯迷宫」怪兽特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(5380979,0))
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -29,38 +29,38 @@ function c5380979.initial_effect(c)
 	e2:SetOperation(c5380979.setop)
 	c:RegisterEffect(e2)
 end
--- 过滤器：筛选卡组中持有「拉比林斯迷宫」字段且能被当前效果特殊召唤的怪兽。
+-- 过滤「拉比林斯迷宫」怪兽
 function c5380979.spfilter(c,e,tp)
 	return c:IsSetCard(0x17e) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- ①效果的发动条件判定：确认自己主要怪兽区有空位，并且卡组中存在满足特殊召唤条件的「拉比林斯迷宫」怪兽。
+-- 确认怪兽区空位及卡组是否存在「拉比林斯迷宫」怪兽
 function c5380979.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查自己的主要怪兽区是否存在空位，作为①效果能否发动的条件之一。
+	-- 检查怪兽区是否有空位
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查卡组中是否存在至少1只持有「拉比林斯迷宫」字段且可被当前效果特殊召唤的怪兽，作为①效果能否发动的条件之一。
+		-- 检查卡组是否存在「拉比林斯迷宫」怪兽
 		and Duel.IsExistingMatchingCard(c5380979.spfilter,tp,LOCATION_DECK,0,1,nil,e,tp) end
-	-- 向系统登记本次操作信息：预定从卡组特殊召唤1只怪兽，用于让其他卡（如星尘龙等）能正确响应。
+	-- 设置操作信息：从卡组特殊召唤1只怪兽
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_DECK)
 end
--- ①效果的处理：从卡组选择1只「拉比林斯迷宫」怪兽特殊召唤；然后调用白银之城联动破坏判定；若这张卡是以魔法·陷阱卡发动方式使用的，则给自己附加直到下个回合结束为止、非恶魔族怪兽不能从卡组·额外卡组特殊召唤的自肃效果。
+-- 从卡组特殊召唤「拉比林斯迷宫」怪兽并施加特招自肃
 function c5380979.activate(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local res=0
-	-- 处理时再次确认主要怪兽区有空位，才能执行从卡组特殊召唤。
+	-- 检查怪兽区是否有空位
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)>0 then
-		-- 显示选择提示，要求玩家从卡组中选择要特殊召唤的怪兽。
+		-- 提示选择要特殊召唤的怪兽
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-		-- 玩家从卡组中选择1只满足spfilter条件的「拉比林斯迷宫」怪兽。
+		-- 从卡组选择1只「拉比林斯迷宫」怪兽
 		local g=Duel.SelectMatchingCard(tp,c5380979.spfilter,tp,LOCATION_DECK,0,1,1,nil,e,tp)
 		if g:GetCount()>0 then
-			-- 将选择的怪兽以表侧攻击表示特殊召唤到自己的主要怪兽区，并记录成功特殊召唤的数量。
+			-- 将怪兽表侧表示特殊召唤
 			res=Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
 		end
 	end
-	-- 调用「白银之城」联动处理：若满足对应场地等效果条件，则让玩家选择并破坏场上1张卡。
+	-- 触发白银之城联动破坏处理
 	aux.LabrynthDestroyOp(e,tp,res)
 	if e:IsHasType(EFFECT_TYPE_ACTIVATE) then
-		-- 这张卡的发动后，直到下个回合的结束时自己不是恶魔族怪兽不能从卡组·额外卡组特殊召唤。②：这个回合没有送去墓地的这张卡在墓地存在的状态，自己的通常陷阱卡的效果让怪兽从场上离开的场合才能发动。这张卡在自己场上盖放。
+		-- 这张卡的发动后，直到下个回合的结束时自己不是恶魔族怪兽不能从卡组·额外卡组特殊召唤。
 		local e1=Effect.CreateEffect(c)
 		e1:SetType(EFFECT_TYPE_FIELD)
 		e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
@@ -68,35 +68,35 @@ function c5380979.activate(e,tp,eg,ep,ev,re,r,rp)
 		e1:SetTargetRange(1,0)
 		e1:SetTarget(c5380979.splimit)
 		e1:SetReset(RESET_PHASE+PHASE_END,2)
-		-- 将上述自肃效果注册到当前玩家tp，使其直到下个回合结束为止持续生效。
+		-- 对玩家注册不能特殊召唤非恶魔族怪兽的效果
 		Duel.RegisterEffect(e1,tp)
 	end
 end
--- 自肃效果的过滤函数：任何将要特殊召唤的怪兽，如果不是恶魔族且来自卡组或额外卡组，则不能特殊召唤。
+-- 限制不能从卡组·额外卡组特殊召唤非恶魔族怪兽
 function c5380979.splimit(e,c)
 	return not c:IsRace(RACE_FIEND) and c:IsLocation(LOCATION_DECK+LOCATION_EXTRA)
 end
--- ②效果离场事件的过滤器：判断离场的卡原本在主要怪兽区且是因效果离场。
+-- 过滤因效果从怪兽区离开的怪兽
 function c5380979.cfilter(c)
 	return c:IsPreviousLocation(LOCATION_MZONE) and c:IsReason(REASON_EFFECT)
 end
--- ②效果的发动条件判定：本回合有怪兽因自己发动的通常陷阱卡的效果从场上离开，该离场怪兽不包含这张「拉比林斯迷宫欢迎」；且触发来源是通常陷阱卡；同时满足这张卡不是本回合被送去墓地（aux.exccon）的限制。
+-- 确认是否为自己的通常陷阱效果让怪兽离场且非本回合送墓
 function c5380979.setcon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c5380979.cfilter,1,nil) and not eg:IsContains(e:GetHandler()) and rp==tp
-		-- 追加判定：触发离场效果的那张卡必须是通常陷阱卡（re为陷阱类型且其原类型也是陷阱卡），并且这张「拉比林斯迷宫欢迎」不是在本回合被送去墓地。
+		-- 确认由通常陷阱发动且本卡非本回合送去墓地
 		and re:IsActiveType(TYPE_TRAP) and re:GetHandler():GetOriginalType()==TYPE_TRAP and aux.exccon(e)
 end
--- ②效果的发动时点判定与登记：确认这张卡可以被盖放，并登记操作信息。
+-- 确认自身是否可在场上盖放
 function c5380979.settg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsSSetable() end
-	-- 向系统登记操作信息：将把墓地的这张卡移回场上（盖放），供其他效果检测。
+	-- 设置操作信息：从墓地离开自身
 	Duel.SetOperationInfo(0,CATEGORY_LEAVE_GRAVE,e:GetHandler(),1,0,0)
 end
--- ②效果处理：若这张卡仍与效果关联，则将其盖放到自己的魔法与陷阱区域。
+-- 盖放自身的效果处理
 function c5380979.setop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) then
-		-- 将墓地的这张卡以里侧表示盖放在自己场上。
+		-- 在场上盖放自身
 		Duel.SSet(tp,c)
 	end
 end

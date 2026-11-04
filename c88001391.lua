@@ -5,9 +5,9 @@
 -- ●可以攻击的对方怪兽必须向这张卡作出攻击。
 -- ②：这张卡的效果特殊召唤的这张卡被对方怪兽的攻击破坏的场合发动。给与对方让这张卡破坏的怪兽的原本攻击力2倍数值的伤害（最多3000）。
 local s,id,o=GetID()
--- 初始化效果：注册①效果（发动并特殊召唤为怪兽）与②效果（被攻击破坏时给与伤害）。
+-- 初始化效果
 function s.initial_effect(c)
-	-- ①：这张卡发动后变成持有以下效果的效果怪兽（不死族·暗·4星·攻1800/守500）在怪兽区域特殊召唤（也当作陷阱卡使用）。●可以攻击的对方怪兽必须向这张卡作出攻击。
+	-- ①：这张卡发动后变成持有以下效果的效果怪兽（不死族·暗·4星·攻1800/守500）在怪兽区域特殊召唤（也当作陷阱卡使用）。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(id,0))
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -30,22 +30,22 @@ function s.initial_effect(c)
 	e2:SetOperation(s.damop)
 	c:RegisterEffect(e2)
 end
--- ①效果的发动准备：检查怪兽区域是否有空位，以及是否可以特殊召唤该陷阱怪兽。
+-- 特殊召唤自身的效果目标确认
 function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查自身怪兽区域是否有空位。
+	-- 检查怪兽区是否有空位
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0 and
-		-- 检查玩家是否能将该卡作为指定属性、种族、攻守、等级的效果怪兽特殊召唤。
+		-- 检查是否可以作为陷阱怪兽特殊召唤
 		Duel.IsPlayerCanSpecialSummonMonster(tp,id,0,TYPES_EFFECT_TRAP_MONSTER,1800,500,4,RACE_ZOMBIE,ATTRIBUTE_DARK) end
-	-- 设置连锁信息：此效果包含特殊召唤自身的操作。
+	-- 设置操作信息：特殊召唤自身
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- ①效果的效果处理：将自身作为怪兽特殊召唤，并赋予“对方怪兽必须向这张卡作出攻击”的效果。
+-- 特殊召唤自身并赋予必须攻击自身的效果
 function s.activate(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 效果处理时，再次检查是否能特殊召唤该陷阱怪兽，若不能则处理终止。
+	-- 再次检查是否可以作为陷阱怪兽特殊召唤
 	if not Duel.IsPlayerCanSpecialSummonMonster(tp,id,0,TYPES_EFFECT_TRAP_MONSTER,1800,500,4,RACE_ZOMBIE,ATTRIBUTE_DARK) then return end
 	c:AddMonsterAttribute(TYPE_EFFECT+TYPE_TRAP)
-	-- 将自身特殊召唤到怪兽区域。
+	-- 将自身特殊召唤到怪兽区
 	Duel.SpecialSummon(c,SUMMON_VALUE_SELF,tp,tp,true,false,POS_FACEUP)
 	-- ●可以攻击的对方怪兽必须向这张卡作出攻击。
 	local e2=Effect.CreateEffect(c)
@@ -60,18 +60,20 @@ function s.activate(e,tp,eg,ep,ev,re,r,rp)
 	e3:SetValue(s.atklimit)
 	c:RegisterEffect(e3)
 end
--- 限制对方怪兽攻击时的攻击对象必须是这张卡。
+-- 攻击对象限制为自身
 function s.atklimit(e,c)
 	return c==e:GetHandler()
 end
--- ②效果的发动条件：此卡是通过自身效果特殊召唤，因战斗破坏，且是被对方怪兽攻击。
+-- 判断是否自身效果特招且被对方怪兽战斗破坏
 function s.damcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
+	-- 获取攻击怪兽
 	local a=Duel.GetAttacker()
 	return c:GetSummonType()==SUMMON_TYPE_SPECIAL+SUMMON_VALUE_SELF and c:IsReason(REASON_BATTLE) and c:IsPreviousControler(tp)
+		-- 确认自身是被攻击对象且攻击怪兽为对方控制
 		and c==Duel.GetAttackTarget() and a and ((a:IsControler(1-tp) and a:IsOnField()) or a:IsPreviousControler(1-tp))
 end
--- ②效果的准备：获取破坏此卡的对方怪兽，计算其原本攻击力的2倍（最大3000），并设置伤害效果的对象和数值。
+-- 计算并设置战斗破坏自身的怪兽原本攻击力2倍的伤害
 function s.damtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
 	local bc=e:GetHandler():GetBattleTarget()
@@ -83,17 +85,17 @@ function s.damtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	end
 	if dam<0 then dam=0 end
 	dam=math.min(3000,dam*2)
-	-- 设置伤害效果的对象玩家为对方。
+	-- 设置伤害目标为对方玩家
 	Duel.SetTargetPlayer(1-tp)
-	-- 设置伤害效果的数值。
+	-- 设置伤害数值
 	Duel.SetTargetParam(dam)
-	-- 设置连锁信息：此效果包含给与对方伤害的操作。
+	-- 设置操作信息：给与对方伤害
 	Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,1-tp,dam)
 end
--- ②效果的效果处理：给与对方计算出的伤害。
+-- 给与对方伤害的效果处理
 function s.damop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁中设定的伤害对象玩家和伤害数值。
+	-- 获取伤害目标玩家与伤害数值
 	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	-- 给与对方玩家对应的效果伤害。
+	-- 给与对方效果伤害
 	Duel.Damage(p,d,REASON_EFFECT)
 end
