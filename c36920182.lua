@@ -64,8 +64,8 @@ function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	local g=Duel.GetMatchingGroup(s.tdfilter,tp,LOCATION_MZONE+LOCATION_GRAVE+LOCATION_REMOVED,0,nil)
 	-- 为后续CheckSubGroup检查额外设置子组限制：组合必须包含「维萨斯-斯塔弗罗斯特」。
 	aux.GCheckAdditional=s.gcheck
-	-- 检查额外卡组是否存在至少1只可当作同调召唤特殊召唤的「维萨斯」同调怪兽，作为分支二的前提。
-	local b2=Duel.IsExistingMatchingCard(s.synfilter,tp,LOCATION_EXTRA,0,1,nil,e,tp,nil)
+	local b2=aux.MustMaterialCheck(nil,tp,EFFECT_MUST_BE_SMATERIAL)
+		and Duel.IsExistingMatchingCard(s.synfilter,tp,LOCATION_EXTRA,0,1,nil,e,tp,nil)
 		and g:CheckSubGroup(s.tdcheck,5,5,e,tp)
 	-- 清除额外子组检查限制，避免影响之后其他选择操作。
 	aux.GCheckAdditional=nil
@@ -106,7 +106,7 @@ function s.activate(e,tp,eg,ep,ev,re,r,rp)
 			Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
 		end
 	else
-		-- 取得己方场上（表侧表示）·墓地·除外状态中所有可作为返回卡组材料的候选卡（已用王家长眠之谷过滤器排除受影响卡）。
+		if not aux.MustMaterialCheck(nil,tp,EFFECT_MUST_BE_SMATERIAL) then return end
 		local g=Duel.GetMatchingGroup(aux.NecroValleyFilter(s.tdfilter),tp,LOCATION_MZONE+LOCATION_GRAVE+LOCATION_REMOVED,0,nil)
 		-- 提示玩家选择要返回卡组的卡。
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TODECK)  --"请选择要返回卡组的卡"

@@ -6,6 +6,8 @@
 -- ②：只要这张卡在怪兽区域存在，自己场上的天使族怪兽不会成为对方的效果的对象。
 -- ③：自己·对方的主要阶段支付1000基本分才能发动。从自己的手卡·墓地选1只天使族怪兽守备表示特殊召唤。
 function c4167084.initial_effect(c)
+	aux.AddCodeList(c,25451652)
+	--fusion material
 	c:EnableReviveLimit()
 	-- 为这张卡添加融合召唤手续：以3只暗属性·天使族怪兽作为素材进行融合召唤。
 	aux.AddFusionProcFunRep(c,c4167084.ffilter,3,true)

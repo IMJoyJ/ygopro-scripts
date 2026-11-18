@@ -4,6 +4,8 @@
 -- ①：这张卡的战斗发生的对自己的战斗伤害变成0。
 -- ②：这张卡被战斗破坏送去墓地的场合发动。从手卡·卡组把1只「幻影之骑士」特殊召唤。
 function c13722870.initial_effect(c)
+	aux.AddCodeList(c,49217579)
+	--fusion material
 	c:EnableReviveLimit()
 	-- 为「黑炎之骑士」添加融合召唤手续：以「黑魔术师」（卡号46986414）和「炎之剑士」（卡号45231177）作为融合素材，允许使用融合素材代用等条件。
 	aux.AddFusionProcCode2(c,46986414,45231177,true,true)

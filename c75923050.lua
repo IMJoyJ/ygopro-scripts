@@ -3,6 +3,8 @@
 -- 「稀有金属女郎」＋「稀有金属战士」
 -- 这张卡在给对方直接攻击的伤害计算时攻击力上升1000，上场上的这张卡可以和融合区的「稀有金属骑士」互换（这张卡特殊召唤的回合不可以互换。）
 function c75923050.initial_effect(c)
+	aux.AddCodeList(c,1412158)
+	--fusion material
 	c:EnableReviveLimit()
 	-- 设置「稀有金属女郎」和「稀有金属战士」作为融合素材的融合召唤手续
 	aux.AddFusionProcCode2(c,92421852,38916461,true,true)

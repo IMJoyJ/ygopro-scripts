@@ -18,8 +18,7 @@ function c72957245.filter(c,e,tp)
 end
 -- 效果①的发动准备，处理取对象判定和发动条件检查
 function c72957245.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and c83764718.filter(chkc,e,tp) end
-	-- 检查自己场上是否有空余的怪兽区域
+	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and c72957245.filter(chkc,e,tp) end
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		-- 检查自己墓地是否存在至少1只满足条件的岩石族怪兽
 		and Duel.IsExistingTarget(c72957245.filter,tp,LOCATION_GRAVE,0,1,nil,e,tp) end

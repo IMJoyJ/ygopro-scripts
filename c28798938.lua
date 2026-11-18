@@ -6,6 +6,8 @@
 -- ●「双天将 密迹」：对方回合1次，以场上1张卡为对象才能发动。那张卡除外。
 -- ②：融合召唤的这张卡被破坏的场合才能发动。从卡组把「双天拳之熊罴」「双天脚之鸿鹄」各1只特殊召唤。那些怪兽在这个回合不会被战斗·效果破坏。
 function c28798938.initial_effect(c)
+	aux.AddCodeList(c,33026283,284224,85360035,11759079)
+	--fusion summon
 	c:EnableReviveLimit()
 	-- 为这张卡添加融合召唤手续：使用2只「双天」怪兽作为融合素材（满足卡名含有『双天』字段的怪兽）。
 	aux.AddFusionProcFunRep(c,aux.FilterBoolFunction(Card.IsFusionSetCard,0x14f),2,true)

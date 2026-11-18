@@ -3,9 +3,8 @@
 -- ①：场上的鸟兽族怪兽的攻击力·守备力上升200。
 -- ②：自己或对方把「鹰身女郎」或「鹰身女郎三姐妹」召唤·特殊召唤的场合，那玩家以场上1张魔法·陷阱卡为对象发动。那张卡破坏。
 function c75782277.initial_effect(c)
-	-- 注册卡片关联密码，表明本卡效果中记载了「鹰身女郎三姐妹」的卡名。
-	aux.AddCodeList(c,12206212)
-	-- 永续魔陷/场地卡通用的“允许发动”空效果，无此效果则无法发动
+	aux.AddCodeList(c,76812113,12206212)
+	--Activate
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)

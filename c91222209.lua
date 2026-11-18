@@ -77,8 +77,7 @@ function s.spfilter(c,e,tp)
 end
 -- ②号效果的发动准备（选择墓地中的目标怪兽，并设置特殊召唤的操作信息）。
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and s.filter(chkc,e,tp) end
-	-- 检查自己墓地是否存在至少1只满足过滤条件的「救援ACE队」怪兽。
+	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and s.spfilter(chkc,e,tp) end
 	if chk==0 then return Duel.IsExistingTarget(s.spfilter,tp,LOCATION_GRAVE,0,1,nil,e,tp) end
 	-- 提示玩家选择要特殊召唤的怪兽。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"

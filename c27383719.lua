@@ -34,8 +34,7 @@ function c27383719.spfilter(c,e,tp)
 end
 -- 特殊召唤效果的靶向/发动检查与目标选择
 function c27383719.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and c27383719.filter(chkc,e,tp) end
-	-- 检查自己场上的可特殊召唤的怪兽区域是否大于0
+	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and c27383719.spfilter(chkc,e,tp) end
 	if chk==0 then return Duel.GetMZoneCount(tp)>0
 		-- 检查自己墓地是否存在符合条件的「治安战警队」怪兽
 		and Duel.IsExistingTarget(c27383719.spfilter,tp,LOCATION_GRAVE,0,1,nil,e,tp) end

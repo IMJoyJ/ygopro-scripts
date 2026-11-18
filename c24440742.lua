@@ -71,11 +71,9 @@ function s.distg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	local ct=Duel.GetFieldGroup(tp,LOCATION_MZONE,0):FilterCount(s.filter,nil)
 	-- 若是在连锁处理中选择对象时，确认对象在场上、对方控制且可以被无效，否则不能选择。
 	if chkc then return chkc:IsOnField() and chkc:IsControler(1-tp) and aux.NegateAnyFilter(chkc) end
-	-- 发动时确认对方场上有至少1张表侧表示且可以被无效的卡，并且自己幻想魔族怪兽数量大于0。
-	if chk==0 then return Duel.IsExistingTarget(aux.NegateAnyFilter,tp,0,LOCATION_ONFIELD,1,nil) and ct>0 end
-	-- 给操作者显示选择提示：请选择要无效的卡。
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DISABLE)  --"请选择要无效的卡"
-	-- 让玩家从对方场上表侧且可无效的卡中选择1到‘自己幻想魔族怪兽数量’张作为效果对象，并记录为当前连锁的对象。
+	if chk==0 then return e:GetHandler():IsLocation(LOCATION_MZONE)
+		and Duel.IsExistingTarget(aux.NegateAnyFilter,tp,0,LOCATION_ONFIELD,1,nil) and ct>0 end
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DISABLE)
 	local g=Duel.SelectTarget(tp,aux.NegateAnyFilter,tp,0,LOCATION_ONFIELD,1,ct,nil)
 	-- 设置操作信息：本次操作将无效所选择的卡片（CATEGORY_DISABLE），数量为所选卡数。
 	Duel.SetOperationInfo(0,CATEGORY_DISABLE,g,g:GetCount(),0,0)

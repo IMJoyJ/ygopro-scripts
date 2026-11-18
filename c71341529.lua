@@ -12,7 +12,6 @@ function c71341529.initial_effect(c)
 	e1:SetCost(c71341529.spcost)
 	e1:SetTarget(c71341529.sptg)
 	e1:SetOperation(c71341529.spop)
-	e1:SetValue(c71341529.valcheck)
 	c:RegisterEffect(e1)
 end
 -- 检查此卡是否在场上被破坏并送去墓地

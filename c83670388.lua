@@ -63,13 +63,12 @@ function c83670388.damfilter(c,e)
 end
 -- 效果②的靶向与发动准备：确认是否有符合条件的被破坏怪兽，并将其设为效果对象，声明给与伤害的操作信息
 function c83670388.damtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	if chkc then return eg:IsContains(chkc) and c83670388.filter(chkc,e,tp) end
+	if chkc then return eg:IsContains(chkc) and c83670388.damfilter(chkc,e) end
 	if chk==0 then return eg:IsExists(c83670388.damfilter,1,nil,e) end
 	local g=eg
 	if #eg>1 then
-		-- 提示玩家选择效果的对象
-		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)  --"请选择效果的对象"
-		e=eg:FilterSelect(tp,c83670388.damfilter,1,1,nil,e)
+		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)
+		g=eg:FilterSelect(tp,c83670388.damfilter,1,1,nil,e)
 	end
 	-- 将选中的被破坏怪兽设为当前连锁的效果对象
 	Duel.SetTargetCard(g)

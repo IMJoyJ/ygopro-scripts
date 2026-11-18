@@ -2,7 +2,8 @@
 -- 效果：
 -- ①：丢弃1张手卡才能把这张卡发动。从自己墓地把「鹰身女郎」尽可能特殊召唤。这张卡从场上离开时这个效果特殊召唤的怪兽全部破坏。
 function c77778835.initial_effect(c)
-	-- ①：丢弃1张手卡才能把这张卡发动。从自己墓地把「鹰身女郎」尽可能特殊召唤。
+	aux.AddCodeList(c,76812113)
+	--Activate
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)

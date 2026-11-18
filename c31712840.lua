@@ -92,8 +92,6 @@ function c31712840.spop(e,tp,eg,ep,ev,re,r,rp)
 			Duel.ShuffleDeck(tp)
 			-- 将选中的卡移动到卡组最顶端。
 			Duel.MoveSequence(tc2,SEQ_DECKTOP)
-			-- 向双方玩家确认卡组最上方的1张卡（即刚放置的卡）。
-			Duel.ConfirmDecktop(tp,1)
 		end
 	end
 end

@@ -32,7 +32,6 @@ function c29867611.initial_effect(c)
 	e3:SetRange(LOCATION_SZONE)
 	e3:SetCondition(c29867611.desrepcon)
 	e3:SetTarget(c29867611.desreptg)
-	e3:SetValue(c29867611.desrepval)
 	e3:SetOperation(c29867611.desrepop)
 	c:RegisterEffect(e3)
 	-- ●对方：装备怪兽的攻击力下降给怪兽装备的自己的「游乐设施」陷阱卡数量×500。
@@ -138,11 +137,6 @@ function c29867611.desreptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 询问装备怪兽的控制者是否选择将这张卡送去墓地来代替装备怪兽被破坏。
 	return Duel.SelectEffectYesNo(tp,c,96)
 end
--- 设置代替破坏的判定函数：确认被破坏的怪兽是否为这张卡的装备对象（相当于代替破坏的发动条件判定）。
-function c29867611.desrepval(e,c)
-	return c29867611.repfilter(c,e:GetHandlerPlayer())
-end
--- 代替破坏效果处理：将这张装备卡送去墓地，从而代替装备怪兽被破坏。
 function c29867611.desrepop(e,tp,eg,ep,ev,re,r,rp)
 	-- 将这张卡以“效果+代替破坏”的理由送入墓地。
 	Duel.SendtoGrave(e:GetHandler(),REASON_EFFECT+REASON_REPLACE)

@@ -29,7 +29,7 @@ function c43582229.filter(c,e,tp)
 end
 -- 发动时的目标处理函数：先判定指定对象是否合法；发动判定直接通过；若主怪兽区有空位、墓地有符合条件的对象且玩家选择是，则将效果改为取对象特殊召唤并选择对象、登记操作信息；否则清空效果类别、属性和处理函数，仅作为通常发动。
 function c43582229.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and c43582229.filter(chkc) end
+	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and c43582229.filter(chkc,e,tp) end
 	if chk==0 then return true end
 	-- 检查自己主要怪兽区是否存在空格，以决定能否特殊召唤墓地怪兽。
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)>0

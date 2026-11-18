@@ -52,6 +52,7 @@ function c48210156.spop(e,tp,eg,ep,ev,re,r,rp)
 		local e3=Effect.CreateEffect(c)
 		e3:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 		e3:SetCode(EVENT_DESTROYED)
+		e3:SetProperty(EFFECT_FLAG_DELAY)
 		e3:SetCondition(c48210156.damcon)
 		e3:SetOperation(c48210156.damop)
 		-- 将监听破坏事件的持续效果e3注册给tp方，用于在符合条件的怪兽被破坏时触发伤害。

@@ -67,8 +67,7 @@ function s.eqfilter(c,tp)
 end
 -- 装备魔法卡发动时的效果目标选择与处理准备
 function s.eqtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and s.eqfilter(chkc,tp) and s.eqlimit(chkc) end
-	-- 检查自己场上是否存在可以装备的龙族同调怪兽
+	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and s.eqfilter(chkc,tp) end
 	if chk==0 then return Duel.IsExistingTarget(s.eqfilter,tp,LOCATION_MZONE,0,1,nil,tp) end
 	-- 提示玩家选择要装备的怪兽
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_EQUIP)  --"请选择要装备的卡"

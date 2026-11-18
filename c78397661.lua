@@ -44,8 +44,7 @@ function s.spcon(e,tp,eg,ep,ev,re,r,rp)
 end
 -- 特殊召唤对象过滤函数：筛选卡组·墓地中符合条件的怪兽
 function s.spfilter(c,e,tp)
-	-- 过滤条件：卡名是「阿不思的落胤」或者文本中有其卡名记述、等级4星以下、且可以被特殊召唤的怪兽
-	return aux.IsCodeOrListed(c,68468459) and c:IsLevelBelow(4) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
+	return (c:IsCode(68468459) or (c:IsLevelBelow(4) and aux.IsCodeListed(c,68468459))) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
 -- ①效果的目标函数：发动可能时进行合法性检查，并设置除外与特殊召唤的操作信息
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)

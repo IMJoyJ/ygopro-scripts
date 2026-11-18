@@ -5,6 +5,8 @@
 -- ②：融合召唤的这张卡被对方送去墓地的场合才能发动。从自己的手卡·卡组·墓地把1只「电子龙」特殊召唤。
 -- ③：把墓地的这张卡除外才能发动。这个回合中，自己场上的融合怪兽不会被对方的效果破坏，对方不能把那些作为效果的对象。
 function c82315403.initial_effect(c)
+	aux.AddCodeList(c,70095154)
+	--fusion material
 	c:EnableReviveLimit()
 	-- 设定融合召唤素材为1只「电子龙」怪兽和2只机械族怪兽
 	aux.AddFusionProcFunFun(c,aux.FilterBoolFunction(Card.IsFusionSetCard,0x1093),aux.FilterBoolFunction(Card.IsRace,RACE_MACHINE),2,true)

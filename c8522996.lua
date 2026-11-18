@@ -66,10 +66,8 @@ function c8522996.chcost(e,tp,eg,ep,ev,re,r,rp,chk)
 end
 -- 变更属性效果的目标确认与属性宣言
 function c8522996.chtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	if chk==0 then return true end
-	-- 提示玩家选择要宣言的属性
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATTRIBUTE)  --"请选择要宣言的属性"
-	-- 让玩家宣言1个属性
+	if chk==0 then return e:GetHandler():IsLocation(LOCATION_MZONE) end
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATTRIBUTE)
 	local aat=Duel.AnnounceAttribute(tp,1,ATTRIBUTE_ALL)
 	e:SetLabel(aat)
 end

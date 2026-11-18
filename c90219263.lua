@@ -2,9 +2,8 @@
 -- 效果：
 -- ①：场上有「鹰身女郎」存在的场合才能发动。从手卡·卡组把1只「鹰身女郎」或「鹰身女郎三姐妹」特殊召唤。
 function c90219263.initial_effect(c)
-	-- 在卡片中记录其记载了「鹰身女郎三姐妹」的卡片密码
-	aux.AddCodeList(c,12206212)
-	-- ①：场上有「鹰身女郎」存在的场合才能发动。从手卡·卡组把1只「鹰身女郎」或「鹰身女郎三姐妹」特殊召唤。
+	aux.AddCodeList(c,76812113,12206212)
+	--Activate
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)

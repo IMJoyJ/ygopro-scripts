@@ -3,6 +3,8 @@
 -- 「死亡青蛙」＋「死亡青蛙」＋「死亡青蛙」
 -- 这只怪兽融合召唤只能使用上述的卡进行。这张卡的攻击力上升自己墓地存在的「黄泉青蛙」的数量×500的数值。
 function c9910360.initial_effect(c)
+	aux.AddCodeList(c,12538374)
+	--fusion material
 	c:EnableReviveLimit()
 	-- 添加以3张「死亡青蛙」为素材的融合召唤手续，且不能使用融合代替素材
 	aux.AddFusionProcCodeRep(c,84451804,3,false,false)

@@ -5,6 +5,7 @@
 -- ●魔法卡：这张卡可以直接攻击对方玩家。
 -- ●陷阱卡：这张卡变成守备表示。
 function c13857930.initial_effect(c)
+	aux.AddCodeList(c,17732278)
 	c:EnableReviveLimit()
 	-- 这张卡用「新空间侠界限」的效果才能特殊召唤。
 	local e1=Effect.CreateEffect(c)

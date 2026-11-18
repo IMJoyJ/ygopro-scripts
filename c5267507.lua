@@ -51,12 +51,11 @@ function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 end
 -- 特殊召唤对象的过滤函数：满足召唤条件的「地缚」怪兽（0x21系列），或可以当作同调召唤特殊召唤的「真红莲新星龙」，且对应区域有可用怪兽区
 function s.spfilter(c,e,tp)
-	return ((c:IsCanBeSpecialSummoned(e,0,tp,false,false) and c:IsSetCard(0x21))
-		or (c:IsCode(97489701) and c:IsCanBeSpecialSummoned(e,SUMMON_TYPE_SYNCHRO,tp,false,false)))
-		-- 若该卡在卡组，则自己场上必须有可用的主要怪兽区
-		and (c:IsLocation(LOCATION_DECK) and Duel.GetMZoneCount(tp)>0
-			-- 若该卡在额外卡组，则自己场上必须有能让额外卡组怪兽出场的可用怪兽区
+	return (c:IsLocation(LOCATION_DECK) and Duel.GetMZoneCount(tp)>0
 			or c:IsLocation(LOCATION_EXTRA) and Duel.GetLocationCountFromEx(tp,tp,nil,c)>0)
+		and ((c:IsCanBeSpecialSummoned(e,0,tp,false,false) and c:IsSetCard(0x21))
+			or (c:IsCode(97489701) and aux.MustMaterialCheck(nil,tp,EFFECT_MUST_BE_SMATERIAL)
+				and c:IsCanBeSpecialSummoned(e,SUMMON_TYPE_SYNCHRO,tp,false,false)))
 end
 -- ②效果的处理函数：选1只「地缚神」怪兽或「红莲魔龙」送去墓地，之后可以选择从卡组·额外卡组把1只「地缚」怪兽特殊召唤，或把「真红莲新星龙」当作同调召唤作特殊召唤
 function s.spop(e,tp,eg,ep,ev,re,r,rp)

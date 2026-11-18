@@ -45,8 +45,7 @@ function c66407907.filter(c,e,tp)
 end
 -- 效果①的发动准备（检查怪兽区域空格、墓地是否存在符合条件的怪兽、选择对象并设置特殊召唤的操作信息）
 function c66407907.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and c66407907.filter(chkc) end
-	-- 检查自己场上是否有可用的怪兽区域空格
+	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and c66407907.filter(chkc,e,tp) end
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		-- 检查自己墓地是否存在至少1只满足条件的4星以下植物族通常怪兽
 		and Duel.IsExistingTarget(c66407907.filter,tp,LOCATION_GRAVE,0,1,nil,e,tp) end

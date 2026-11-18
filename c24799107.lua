@@ -7,7 +7,8 @@
 -- ●那个发动无效并破坏。
 -- ●这张卡回到额外卡组，从额外卡组把1只「半龙女仆·龙女管家」特殊召唤。
 function c24799107.initial_effect(c)
-	-- 为这张卡添加融合召唤手续：以1只「半龙女仆」怪兽和1只5星以上的龙族怪兽作为融合素材。
+	aux.AddCodeList(c,41232647)
+	--fusion material
 	aux.AddFusionProcFun2(c,aux.FilterBoolFunction(Card.IsFusionSetCard,0x133),c24799107.ffilter,true)
 	c:EnableReviveLimit()
 	-- 这个卡名的①②的效果1回合各能使用1次。①：自己·对方的准备阶段才能发动。从自己的手卡·墓地把1只9星以下的「半龙女仆」怪兽特殊召唤。

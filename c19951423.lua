@@ -82,7 +82,7 @@ end
 function s.cfilter(c,seq2)
 	-- 获取怪兽在怪兽区域中的绝对序号位置（0-4）。
 	local seq1=aux.MZoneSequence(c:GetSequence())
-	return c:IsFaceup() and c:IsSetCard(0x156) and seq1==4-seq2
+	return c:IsFaceup() and seq1==4-seq2
 end
 -- 提升攻击力效果的条件判断函数，确认发生效果发动的卡片处于对方的主要怪兽区域，且其正对面纵列存在我方表侧表示的「治安战警队」怪兽。
 function s.atkcon(e,tp,eg,ep,ev,re,r,rp)

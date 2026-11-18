@@ -3,9 +3,8 @@
 -- 「鹰身女郎」或「鹰身女郎三姐妹」才能装备。
 -- ①：装备怪兽的攻击力上升500。
 function c63224564.initial_effect(c)
-	-- 在卡片中记录其效果关联了「鹰身女郎三姐妹」的卡名
-	aux.AddCodeList(c,12206212)
-	-- 「鹰身女郎」或「鹰身女郎三姐妹」才能装备。
+	aux.AddCodeList(c,76812113,12206212)
+	--Activate
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_EQUIP)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)

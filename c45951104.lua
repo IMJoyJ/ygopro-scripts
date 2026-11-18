@@ -23,8 +23,7 @@ function s.filter(c,tp)
 end
 -- 效果发动时的目标选择与操作信息预设定：检查是否存在合法对象，选择1只对象，若对象原持有者为己方则预先设置200伤害信息。
 function s.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	if chkc then return chkc:IsLocation(LOCATION_MZONE) and s.filter(chkc) end
-	-- 发动时检查对方场上是否存在1只符合条件的对象。
+	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(1-tp) and s.filter(chkc,tp) end
 	if chk==0 then return Duel.IsExistingTarget(s.filter,tp,0,LOCATION_MZONE,1,nil,tp) end
 	-- 给玩家显示“请选择效果的对象”的选择提示。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)  --"请选择效果的对象"

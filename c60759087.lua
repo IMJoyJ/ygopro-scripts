@@ -50,7 +50,7 @@ function c60759087.tgfilter2(c)
 end
 -- 效果选择与对象选择处理（包含成为效果对象时的合法性检查）
 function c60759087.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	if chkc then return e:GetLabel()==1 and c60759087.tgfilter1(chkc)
+	if chkc then return e:GetLabel()==1 and c60759087.tgfilter2(chkc)
 		and chkc:IsLocation(LOCATION_SZONE) and chkc:IsControler(1-tp) end
 	-- 检查自己场上是否存在满足控制权交换条件的「姬丝基勒」或「璃拉」怪兽
 	local b1 = Duel.IsExistingTarget(c60759087.tgfilter1a,tp,LOCATION_MZONE,0,1,nil)

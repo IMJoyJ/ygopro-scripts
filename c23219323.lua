@@ -91,7 +91,7 @@ function s.spop(e,tp,eg,ep,ev,re,r,rp)
 		-- 确认对象不受「王家长眠之谷」等效果影响，并将其以效果原因送回持有者的额外卡组；若送回成功（返回>0）则继续。
 		and aux.NecroValleyFilter()(tc) and Duel.SendtoDeck(tc,nil,0,REASON_EFFECT)>0
 		and tc:IsLocation(LOCATION_EXTRA)
-		-- 确认对象可以按同调召唤形式特殊召唤，且自己场上有可供额外卡组怪兽特殊召唤的空位。
+		and aux.MustMaterialCheck(nil,tp,EFFECT_MUST_BE_SMATERIAL)
 		and tc:IsCanBeSpecialSummoned(e,SUMMON_TYPE_SYNCHRO,tp,false,false) and Duel.GetLocationCountFromEx(tp,tp,nil,tc)>0
 		-- 询问玩家是否进行后续的特殊召唤（提示“是否特殊召唤？”），选择“是”才继续。
 		and Duel.SelectYesNo(tp,aux.Stringid(id,1)) then  --"是否特殊召唤？"

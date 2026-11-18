@@ -40,7 +40,7 @@ function c33971095.filter(c,tp)
 end
 -- ①效果的发动目标处理：若连锁中指定对象，则验证该对象是否合法；若为发动合法性检查，则确认已满足cost条件且场上存在合法对象。
 function c33971095.lvtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and c33971095.filter(chkc) end
+	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and c33971095.filter(chkc,tp) end
 	if chk==0 then return e:IsCostChecked()
 		-- 发动条件判定：确认自己场上存在至少1只满足条件的表侧表示怪兽可以作为对象。
 		and Duel.IsExistingTarget(c33971095.filter,tp,LOCATION_MZONE,0,1,nil,tp) end

@@ -46,16 +46,12 @@ function s.filter2(c,e,tp,m,f,chkf)
 	return c:IsType(TYPE_FUSION) and c:IsSetCard(0x128) and (not f or f(c))
 		and c:IsCanBeSpecialSummoned(e,SUMMON_TYPE_FUSION,tp,false,false) and c:CheckFusionMaterial(m,nil,chkf)
 end
--- 卡片发动的分支目标确认与操作信息设置
-function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查自己场上是否存在表侧表示的「魔女术」怪兽
+function s.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc,exc)
 	local b1=Duel.IsExistingMatchingCard(s.cfilter,tp,LOCATION_MZONE,0,1,nil)
 		-- 检查对方场上是否存在卡片（破坏效果的分支1可行性检查）
 		and Duel.IsExistingMatchingCard(aux.TRUE,tp,0,LOCATION_ONFIELD,1,nil)
 	local chkf=tp
-	-- 获取墓地·除外状态可作为融合素材回到卡组的怪兽
-	local mg1=Duel.GetMatchingGroup(s.filter1,tp,LOCATION_GRAVE+LOCATION_REMOVED,0,nil,e)
-	-- 检查额外卡组是否存在可以使用这些素材融合召唤的「魔女术」融合怪兽
+	local mg1=Duel.GetMatchingGroup(s.filter1,tp,LOCATION_GRAVE+LOCATION_REMOVED,0,exc,e)
 	local res=Duel.IsExistingMatchingCard(s.filter2,tp,LOCATION_EXTRA,0,1,nil,e,tp,mg1,nil,chkf)
 	if not res then
 		-- 获取连锁素材效果

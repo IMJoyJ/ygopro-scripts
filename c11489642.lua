@@ -83,8 +83,7 @@ function s.tdfilter(c,e)
 end
 -- 定义②效果的目标选择与操作信息设置：从自己墓地选择3张卡名互不相同的指定怪兽卡作为对象，并设置回卡组与抽3张的操作信息；同时检查种类足够与可抽卡。
 function s.drtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and s.tdfilter(chkc) end
-	-- 获取自己墓地中满足②效果对象条件的全部卡（三种「水晶头骨」系怪兽）。
+	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and s.tdfilter(chkc,e) end
 	local g=Duel.GetMatchingGroup(s.tdfilter,tp,LOCATION_GRAVE,0,nil,e)
 	-- ②效果发动合法性检查：自己墓地中符合条件的怪兽卡名种类至少有3种（即三种各1只），且己方可以抽3张卡。
 	if chk==0 then return g:GetClassCount(Card.GetCode)>=3 and Duel.IsPlayerCanDraw(tp,3) end

@@ -44,7 +44,7 @@ function c12954226.damfilter(c,e)
 end
 -- ②效果发动时的对象选择与操作信息设定：若有符合条件的破坏怪兽则发动，并从其中选择1只（若只有1只则自动选择）作为效果对象；随后设置伤害与回复的操作信息。
 function c12954226.damtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	if chkc then return eg:IsContains(chkc) and c12954226.filter(chkc,e,tp) end
+	if chkc then return eg:IsContains(chkc) and c12954226.damfilter(chkc,e) end
 	if chk==0 then return eg:IsExists(c12954226.damfilter,1,nil,e) end
 	local g=eg
 	if #eg>1 then
@@ -54,8 +54,7 @@ function c12954226.damtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	end
 	-- 将选择的那只怪兽设置为当前效果的对象。
 	Duel.SetTargetCard(g)
-	local value=e:GetHandler():GetAttack()/2
-	-- 设置效果处理时会给对方造成伤害的操作信息，伤害数值为 value。
+	local value=g:GetFirst():GetAttack()/2
 	Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,1-tp,value)
 	-- 设置效果处理时自己会回复生命值的操作信息，回复数值为 value。
 	Duel.SetOperationInfo(0,CATEGORY_RECOVER,nil,0,tp,value)

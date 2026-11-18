@@ -78,8 +78,7 @@ function c39973386.tdfilter(c,e)
 end
 -- ②效果发动处理：从墓地选择2只属性不同的光·暗属性怪兽作为对象，并设置回卡组和抽卡的操作信息。
 function c39973386.tdtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and c39973386.tdfilter(chkc) end
-	-- 获取自己墓地中所有满足回卡组条件的怪兽集合。
+	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and c39973386.tdfilter(chkc,e) end
 	local g=Duel.GetMatchingGroup(c39973386.tdfilter,tp,LOCATION_GRAVE,0,nil,e)
 	-- 判定墓地中是否存在2只属性不同的可选怪兽，且自己可以抽1张卡。
 	if chk==0 then return g:CheckSubGroup(aux.dabcheck,2,2) and Duel.IsPlayerCanDraw(tp,1) end

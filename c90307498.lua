@@ -8,7 +8,8 @@ function c90307498.initial_effect(c)
 	c:EnableReviveLimit()
 	-- 设定融合素材为「元素英雄 新宇侠」和「于贝尔」的融合召唤手续
 	aux.AddFusionProcCode2(c,89943723,78371393,true,true)
-	-- 这张卡不用融合召唤不能特殊召唤。
+	aux.AddCodeList(c,5126490)
+	--spsummon condition
 	local e0=Effect.CreateEffect(c)
 	e0:SetType(EFFECT_TYPE_SINGLE)
 	e0:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)

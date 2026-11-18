@@ -202,9 +202,9 @@ function s.spop(e,tp,eg,ep,ev,re,r,rp)
 end
 -- 判断对方是否连锁自己的效果发动效果且此卡在场上里侧表示
 function s.thcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取上一个连锁效果的发动信息及发动玩家
+	if ev<2 then return false end
 	local te,p=Duel.GetChainInfo(ev-1,CHAININFO_TRIGGERING_EFFECT,CHAININFO_TRIGGERING_PLAYER)
-	return te and te:GetHandlerPlayer()==tp and ep~=tp and e:GetHandler():IsFacedown()
+	return te and p==tp and ep~=tp and e:GetHandler():IsFacedown()
 end
 -- 把里侧表示的这张卡变成表侧守备表示才能发动
 function s.thcost(e,tp,eg,ep,ev,re,r,rp,chk)

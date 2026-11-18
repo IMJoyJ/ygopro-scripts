@@ -82,8 +82,7 @@ function c32764863.spfilter(c,e,tp,mc,rank)
 end
 -- ②效果的目标指定与发动条件判断：选择自己场上1只水属性超量怪兽作为对象，并登记额外卡组特殊召唤操作信息。
 function c32764863.rktg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	if chkc then return chkc:IsControler(tp) and chkc:IsLocation(LOCATION_MZONE) and c32764863.spfilter(chkc,e,tp) end
-	-- 发动条件：自己场上存在满足②效果对象条件的超量怪兽。
+	if chkc then return chkc:IsControler(tp) and chkc:IsLocation(LOCATION_MZONE) and c32764863.rkfilter(chkc,e,tp) end
 	if chk==0 then return Duel.IsExistingTarget(c32764863.rkfilter,tp,LOCATION_MZONE,0,1,nil,e,tp) end
 	-- 弹出选择提示，让玩家选择效果对象。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)  --"请选择效果的对象"

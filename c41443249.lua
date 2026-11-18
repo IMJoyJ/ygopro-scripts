@@ -115,8 +115,7 @@ function s.spfilter(c,e,tp)
 end
 -- ③效果的目标函数：确认主要怪兽区有空位，并从自己除外区选择1只满足spfilter的「救援ACE队」怪兽作为对象（注意代码中误写为s.filter，实际应引用spfilter）。
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	if chkc then return chkc:IsLocation(LOCATION_REMOVED) and chkc:IsControler(tp) and s.filter(chkc,e,tp) end
-	-- 检查自己主要怪兽区是否存在可用的空位。
+	if chkc then return chkc:IsLocation(LOCATION_REMOVED) and chkc:IsControler(tp) and s.spfilter(chkc,e,tp) end
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		-- 检查自己除外区是否存在至少1只满足spfilter的「救援ACE队」怪兽可以作为对象。
 		and Duel.IsExistingTarget(s.spfilter,tp,LOCATION_REMOVED,0,1,nil,e,tp) end

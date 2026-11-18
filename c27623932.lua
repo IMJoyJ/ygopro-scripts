@@ -46,8 +46,7 @@ function c27623932.desfilter(c,atk)
 end
 -- 发动时目标函数target：处理发动时的合法性检查、选择对象怪兽，并预计算要破坏的对方怪兽组，设置破坏的操作信息。
 function c27623932.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and c27623932.tgfilter(chkc) end
-	-- 检查发动时是否存在合法目标：自己场上有满足tgfilter的怪兽，且对方场上有可被破坏的怪兽。
+	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and c27623932.tgfilter(chkc,tp) end
 	if chk==0 then return Duel.IsExistingTarget(c27623932.tgfilter,tp,LOCATION_MZONE,0,1,nil,tp) end
 	-- 给出选择提示，要求玩家选择表侧表示的卡（作为对象怪兽）。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"

@@ -61,8 +61,7 @@ end
 -- 效果②的发动准备与对象选择：选择自己场上1只满足条件的植物族怪兽。
 function s.atktg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	local c=e:GetHandler()
-	if chkc then return chkc:IsControler(tp) and chkc~=c and chkc:IsLocation(LOCATION_MZONE) and s.atkfilter(chkc) end
-	-- 检查自己场上是否存在除自身以外的、满足条件的植物族怪兽。
+	if chkc then return chkc:IsControler(tp) and chkc~=c and chkc:IsLocation(LOCATION_MZONE) and s.atkfilter(chkc,c) end
 	if chk==0 then return Duel.IsExistingTarget(s.atkfilter,tp,LOCATION_MZONE,0,1,c,c) end
 	-- 提示玩家选择效果的对象。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)  --"请选择效果的对象"

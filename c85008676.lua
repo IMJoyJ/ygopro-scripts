@@ -41,8 +41,7 @@ function c85008676.initial_effect(c)
 end
 -- 战斗伤害减半效果的发动条件函数
 function c85008676.damcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查自己是否会受到战斗伤害，且攻击怪兽不是自己的怪兽（即对方怪兽攻击）
-	return Duel.GetBattleDamage(tp)>0 and Duel.GetAttacker()~=tp
+	return Duel.GetBattleDamage(tp)>0 and Duel.GetAttacker():IsControler(1-tp)
 end
 -- 丢弃手牌作为发动代价的判定与执行函数
 function c85008676.damcost(e,tp,eg,ep,ev,re,r,rp,chk)

@@ -59,9 +59,8 @@ function c55838342.filter(c)
 end
 -- 效果②的发动准备：检查卡组中是否存在可检索的「星遗物」卡，并设置操作信息
 function c55838342.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查卡组中是否存在至少1张满足条件的「星遗物」卡
-	if chk==0 then return Duel.IsExistingMatchingCard(c55838342.filter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置连锁处理中的操作信息为从卡组将1张卡加入手牌
+	if chk==0 then return e:GetHandler():IsLocation(LOCATION_MZONE)
+		and Duel.IsExistingMatchingCard(c55838342.filter,tp,LOCATION_DECK,0,1,nil) end
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
 -- 效果②的处理：从卡组选择1张「星遗物」卡加入手牌并给对方确认

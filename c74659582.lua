@@ -53,7 +53,7 @@ function s.filter(c)
 end
 -- ①效果的发动准备与目标选择，确认自身和对方场上1只表侧表示怪兽是否可以除外，并进行取对象和设置操作信息。
 function s.rmtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(1-tp) and s.rfilter(chkc) end
+	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(1-tp) and s.filter(chkc) end
 	local c=e:GetHandler()
 	-- 检查自身是否可以除外，以及对方场上是否存在可作为除外对象的表侧表示怪兽。
 	if chk==0 then return c:IsAbleToRemove() and Duel.IsExistingTarget(s.filter,tp,0,LOCATION_MZONE,1,nil) end

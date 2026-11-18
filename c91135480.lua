@@ -67,8 +67,7 @@ function c91135480.operation(e,tp,eg,ep,ev,re,r,rp)
 	if Duel.IsExistingMatchingCard(c91135480.ctfilter,tp,0,LOCATION_MZONE,1,nil) then
 		tg:Merge(g:Filter(Card.IsType,nil,TYPE_SPELL))
 	end
-	-- 检查场上是否存在效果怪兽，以决定是否能将陷阱卡作为素材去除。
-	if Duel.IsExistingMatchingCard(c91135480.filter,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil) then
+	if Duel.IsExistingMatchingCard(aux.NegateEffectMonsterFilter,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil) then
 		tg:Merge(g:Filter(Card.IsType,nil,TYPE_TRAP))
 	end
 	-- 提示玩家选择要作为超量素材去除的卡。

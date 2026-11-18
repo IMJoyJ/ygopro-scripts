@@ -84,8 +84,7 @@ function c92998610.thfilter(c)
 end
 -- 效果②的Target（发动准备）函数，选择除外状态的1只怪兽作为对象
 function c92998610.thtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	if chkc then return chkc:IsControler(tp) and chkc:IsLocation(LOCATION_REMOVED) and c92998610.filter(chkc) end
-	-- 检查除外状态是否存在可作为对象的怪兽
+	if chkc then return chkc:IsControler(tp) and chkc:IsLocation(LOCATION_REMOVED) and c92998610.thfilter(chkc) end
 	if chk==0 then return Duel.IsExistingTarget(c92998610.thfilter,tp,LOCATION_REMOVED,0,1,nil) end
 	-- 提示玩家选择要加入手牌的卡片
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"

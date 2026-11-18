@@ -9,8 +9,6 @@ function c16617334.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_QUICK_O)
 	e1:SetCode(EVENT_CHAINING)
 	e1:SetRange(LOCATION_HAND)
-	e1:SetProperty(EFFECT_FLAG_DAMAGE_STEP+EFFECT_FLAG_DAMAGE_CAL)
-	-- 设置效果①的发动条件：当有会给与自己伤害的魔法·陷阱·怪兽效果发动时（aux.damcon1检测到该连锁包含对己方玩家的伤害效果）才能发动。
 	e1:SetCondition(aux.damcon1)
 	e1:SetCost(c16617334.effcost)
 	e1:SetOperation(c16617334.operation)

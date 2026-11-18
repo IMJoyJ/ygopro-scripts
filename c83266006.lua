@@ -33,8 +33,7 @@ function c83266006.spfilter(c,e,tp,att)
 end
 -- 效果发动时的对象选择与操作信息设置。
 function c83266006.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and c83266006.cfilter(chkc) end
-	-- 判定是否满足发动条件：自己场上有可用的怪兽区域空格。
+	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and c83266006.cfilter(chkc,e,tp) end
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		-- 且自己场上存在满足条件的不死族同调怪兽作为对象。
 		and Duel.IsExistingTarget(c83266006.cfilter,tp,LOCATION_MZONE,0,1,nil,e,tp) end

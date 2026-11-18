@@ -2,7 +2,8 @@
 -- 效果：
 -- ①：这张卡的攻击力·守备力上升场上的「鹰身女郎」数量×300。
 function c52040216.initial_effect(c)
-	-- ①：这张卡的攻击力·守备力上升场上的「鹰身女郎」数量×300。
+	aux.AddCodeList(c,76812113)
+	--atkup
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetProperty(EFFECT_FLAG_SINGLE_RANGE)

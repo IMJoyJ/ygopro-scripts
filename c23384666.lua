@@ -67,8 +67,7 @@ function c23384666.spfilter(c,e,tp)
 end
 -- ②效果的发动条件与选择目标函数：检查我方主要怪兽区是否有空位、墓地是否存在满足条件的机械族怪兽，并完成特殊召唤对象的选择。
 function c23384666.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	if chkc then return chkc:IsControler(tp) and chkc:IsLocation(LOCATION_GRAVE) and c23384666.filter(chkc,e,tp) end
-	-- 发动时检查我方主要怪兽区是否存在可用空格，以保证特殊召唤能进行。
+	if chkc then return chkc:IsControler(tp) and chkc:IsLocation(LOCATION_GRAVE) and c23384666.spfilter(chkc,e,tp) end
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		-- 并且墓地存在至少1只满足spfilter、且不是作为除外费用的这张卡自身（e:GetHandler()）的机械族怪兽可作为特殊召唤对象。
 		and Duel.IsExistingTarget(c23384666.spfilter,tp,LOCATION_GRAVE,0,1,e:GetHandler(),e,tp) end

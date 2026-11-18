@@ -6,6 +6,8 @@
 -- ②：只要这张卡在怪兽区域存在，这张卡以外的自己场上的「亚马逊」卡不会成为对方的效果的对象，不会被对方的效果破坏。
 -- ③：「亚马逊女帝」或者「亚马逊女王」为素材作融合召唤的这张卡在同1次的战斗阶段中可以作2次攻击。
 function c23965033.initial_effect(c)
+	aux.AddCodeList(c,4591250,15951532)
+	--fusion material
 	c:EnableReviveLimit()
 	-- 为这张卡注册融合召唤手续：融合素材为1只「亚马逊」融合怪兽和1只「亚马逊」怪兽。
 	aux.AddFusionProcFun2(c,c23965033.matfilter,aux.FilterBoolFunction(Card.IsFusionSetCard,0x4),true)

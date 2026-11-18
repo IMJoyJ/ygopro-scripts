@@ -25,15 +25,17 @@ function c51020079.spfilter(c,e,tp,lv,att)
 end
 -- 效果发动时的目标处理函数：检查是否有可解放的调整及墓地目标；选择并解放1只调整；再选择墓地1只符合条件怪兽作为对象，并设置特殊召唤操作信息。
 function c51020079.sptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	if chkc then return chkc:IsControler(tp) and chkc:IsLocation(LOCATION_GRAVE) and c51020079.spfilter(chkc,e,tp) end
-	-- 在效果发动合法性检查时，确认场上是否存在至少1只满足rfilter条件的可解放调整（且墓地有对应目标）。
+	if chkc then
+		local lv,att=e:GetLabel()
+		return chkc:IsControler(tp) and chkc:IsLocation(LOCATION_GRAVE) and c51020079.spfilter(chkc,e,tp,lv,att)
+	end
 	if chk==0 then return Duel.CheckReleaseGroup(tp,c51020079.rfilter,1,nil,e,tp) end
 	-- 从自己场上选择1只满足rfilter条件的调整怪兽作为发动代价。
 	local rg=Duel.SelectReleaseGroup(tp,c51020079.rfilter,1,1,nil,e,tp)
 	local r=rg:GetFirst()
 	local lv=r:GetLevel()
 	local att=r:GetAttribute()
-	-- 将选择的调整怪兽解放，作为效果的发动代价。
+	e:SetLabel(lv,att)
 	Duel.Release(rg,REASON_COST)
 	-- 向玩家显示选择特殊召唤对象的提示消息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"

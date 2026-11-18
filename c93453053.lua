@@ -94,8 +94,7 @@ function s.rmfilter(c,tp)
 end
 -- ②效果的发动准备与目标选择，选择自己墓地1张「码丽丝」卡作为对象
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and s.thfilter(chkc) end
-	-- 发动准备：检查自己墓地是否存在符合条件的「码丽丝」卡
+	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and s.rmfilter(chkc,tp) end
 	if chk==0 then return Duel.IsExistingTarget(s.rmfilter,tp,LOCATION_GRAVE,0,1,nil,tp) end
 	-- 提示玩家选择要除外的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"

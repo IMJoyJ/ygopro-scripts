@@ -35,9 +35,8 @@ function c85457355.lvfilter(c,lv)
 end
 -- 效果①的发动准备与条件判定
 function c85457355.lvtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	if chkc then return chkc:IsLocation(LOCATION_MZONE) and c85457355.lvfilter(chkc) and chkc~=e:GetHandler() end
 	local lv=e:GetHandler():GetLevel()
-	-- 检查场上是否存在除自身以外、等级在1以上且与自身等级不同的表侧表示怪兽，并确认自身等级在1以上且在场上
+	if chkc then return chkc:IsLocation(LOCATION_MZONE) and c85457355.lvfilter(chkc,lv) and chkc~=e:GetHandler() end
 	if chk==0 then return Duel.IsExistingTarget(c85457355.lvfilter,tp,LOCATION_MZONE,LOCATION_MZONE,1,e:GetHandler(),lv)
 		and e:GetHandler():IsLevelAbove(1) and e:GetHandler():IsRelateToEffect(e) end
 	-- 提示玩家选择作为效果对象的一只怪兽

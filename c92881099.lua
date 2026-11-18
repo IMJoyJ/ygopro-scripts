@@ -4,9 +4,8 @@
 -- ①：自己的「鹰身女郎」或者「鹰身女郎三姐妹」被战斗破坏时才能发动。原本卡名和那只怪兽不同的1只「鹰身」怪兽从卡组特殊召唤。
 -- ②：场上的这张卡被对方的效果或者自己的「鹰身」卡的效果破坏的场合，以自己墓地1只「鹰身」怪兽为对象发动。那只怪兽特殊召唤。
 function c92881099.initial_effect(c)
-	-- 将「鹰身女郎三姐妹」的卡片密码加入卡片记述列表，以便其他卡片检索或关联。
-	aux.AddCodeList(c,12206212)
-	-- 永续魔陷/场地卡通用的“允许发动”空效果，无此效果则无法发动
+	aux.AddCodeList(c,76812113,12206212)
+	--Activate
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)

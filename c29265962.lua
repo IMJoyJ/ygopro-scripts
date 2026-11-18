@@ -17,8 +17,7 @@ function s.initial_effect(c)
 end
 -- 目标怪兽的候选条件：必须为表侧表示，且我方手卡·卡组·墓地中存在至少2只原本卡名与其相同的怪兽可供装备。
 function s.filter(c,tp)
-	local code=c:GetOriginalCode()
-	-- 返回 true 需满足：该怪兽表侧表示，并且可以从我方手卡/卡组/墓地中找到至少2只满足 s.eqfilter 的原本卡名相同的怪兽。
+	local code=c:GetOriginalCodeRule()
 	return c:IsFaceup() and Duel.IsExistingMatchingCard(s.eqfilter,tp,LOCATION_DECK+LOCATION_GRAVE+LOCATION_HAND,0,2,nil,code,tp)
 end
 -- 装备候选怪兽的过滤条件：原本卡名与对象怪兽相同、是怪兽卡、我方场上不存在同名卡的限制（CheckUniqueOnField）且不属于禁止卡。
@@ -44,8 +43,7 @@ end
 function s.activate(e,tp,eg,ep,ev,re,r,rp)
 	-- 取得效果发动时选择的目标怪兽（作为装备对象的自己场上的表侧表示怪兽）。
 	local tc=Duel.GetFirstTarget()
-	local code=tc:GetOriginalCode()
-	-- 检查目标怪兽仍与效果关联（未离场）、仍表侧表示且是怪兽，且自己魔陷区空格数大于1，否则不执行装备处理。
+	local code=tc:GetOriginalCodeRule()
 	if tc:IsRelateToEffect(e) and tc:IsFaceup() and tc:IsType(TYPE_MONSTER) and Duel.GetLocationCount(tp,LOCATION_SZONE)>1
 		-- 并且从手卡/卡组/墓地中可选出多于1只（即至少2只）不受王家长眠之谷影响的装备候选怪兽，才能继续处理。
 		and Duel.GetMatchingGroupCount(aux.NecroValleyFilter(s.eqfilter),tp,LOCATION_DECK+LOCATION_HAND+LOCATION_GRAVE,0,nil,code,tp)>1 then

@@ -80,7 +80,7 @@ end
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	-- 检索自己怪兽区域所有满足条件的表侧表示「反叛曲机器人」怪兽
 	local tg=Duel.GetMatchingGroup(s.thfilter,tp,LOCATION_MZONE,0,nil,e)
-	if chkc then return chkc:IsOnField() and chkc:IsControler(tp) and s.thfilter(chkc) end
+	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and s.thfilter(chkc,e) end
 	if chk==0 then return tg:CheckSubGroup(s.gcheck,1,99) end
 	-- 向玩家发送"请选择要返回手牌的卡"的选择提示
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_RTOHAND)  --"请选择要返回手牌的卡"

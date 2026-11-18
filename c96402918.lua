@@ -101,16 +101,14 @@ function s.spfilter2(c,e,tp)
 end
 -- ②效果的发动准备：检查额外卡组是否存在可特殊召唤的「冰结界」同调怪兽，并设置特殊召唤的操作信息
 function s.sptg2(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查额外卡组是否存在至少1只满足特殊召唤条件的「冰结界」同调怪兽
-	if chk==0 then return Duel.IsExistingMatchingCard(s.spfilter2,tp,LOCATION_EXTRA,0,1,nil,e,tp) end
-	-- 设置连锁处理的操作信息，表示该效果包含从额外卡组特殊召唤1只怪兽的处理
+	if chk==0 then return aux.MustMaterialCheck(nil,tp,EFFECT_MUST_BE_SMATERIAL)
+		and Duel.IsExistingMatchingCard(s.spfilter2,tp,LOCATION_EXTRA,0,1,nil,e,tp) end
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_EXTRA)
 end
 -- ②效果的处理：从额外卡组选择1只「冰结界」同调怪兽，当作同调召唤特殊召唤
 function s.spop2(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要特殊召唤的卡
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 玩家从额外卡组选择1只满足条件的「冰结界」同调怪兽
+	if not aux.MustMaterialCheck(nil,tp,EFFECT_MUST_BE_SMATERIAL) then return end
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
 	local g=Duel.SelectMatchingCard(tp,s.spfilter2,tp,LOCATION_EXTRA,0,1,1,nil,e,tp)
 	local tc=g:GetFirst()
 	if tc then
