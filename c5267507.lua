@@ -6,13 +6,13 @@
 -- ●从卡组·额外卡组把1只「地缚」怪兽特殊召唤。
 -- ●从额外卡组把1只「真红莲新星龙」当作同调召唤作特殊召唤。
 local s,id,o=GetID()
--- 初始化卡片效果：登记记载的卡名、设置「地缚神」怪兽场上只能有1只表侧表示存在的唯一性限制，并注册②效果（手卡·墓地发动的诱发即时特殊召唤效果）
+-- 初始化卡片效果，注册卡名列表、场上只能存在1只「地缚神」怪兽的唯一限制，以及手卡·墓地除外的②效果(e1)
 function s.initial_effect(c)
-	-- 登记这张卡上记载着「红莲魔龙」（70902743）和「真红莲新星龙」（97489701）的卡名
+	-- 记录这张卡文本中记述了「红莲魔龙」(70902743)和「真红莲新星龙」(97489701)卡名的事实
 	aux.AddCodeList(c,70902743,97489701)
-	-- 设置场上唯一性限制：「地缚神」怪兽（0x1021系列）在自己场上主要怪兽区只能有1只表侧表示存在
+	-- 设置双方怪兽区域表侧表示的「地缚神」怪兽场上只能同时存在1只
 	c:SetUniqueOnField(1,1,aux.FilterBoolFunction(Card.IsSetCard,0x1021),LOCATION_MZONE)
-	-- ②：自己·对方的主要阶段，把手卡·墓地的这张卡除外才能发动。从自己的手卡·场上（表侧表示）把1只「地缚神」怪兽或「红莲魔龙」送去墓地。那之后，可以从以下效果让1个适用。●从卡组·额外卡组把1只「地缚」怪兽特殊召唤。●从额外卡组把1只「真红莲新星龙」当作同调召唤作特殊召唤。（这个卡名的②的效果1回合只能使用1次）
+	-- 这个卡名的②的效果1回合只能使用1次。②：自己·对方的主要阶段，把手卡·墓地的这张卡除外才能发动。从自己的手卡·场上（表侧表示）把1只「地缚神」怪兽或「红莲魔龙」送去墓地。那之后，可以从以下效果让1个适用。●从卡组·额外卡组把1只「地缚」怪兽特殊召唤。●从额外卡组把1只「真红莲新星龙」当作同调召唤作特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(id,0))  --"特殊召唤"
 	e1:SetCategory(CATEGORY_TOGRAVE+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES)
@@ -27,60 +27,63 @@ function s.initial_effect(c)
 	e1:SetOperation(s.spop)
 	c:RegisterEffect(e1)
 end
--- ②效果的发动条件函数：判断当前是否为主要阶段
+-- ②效果的Condition函数，限定只能在自己或对方的主要阶段1或主要阶段2发动
 function s.spcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 当前阶段是主要阶段1或主要阶段2时才能发动
+	-- 检查当前游戏阶段是否为主要阶段1或主要阶段2
 	return Duel.GetCurrentPhase()==PHASE_MAIN1 or Duel.GetCurrentPhase()==PHASE_MAIN2
 end
--- ②效果的代价函数：检查并支付代价（把手卡·墓地的这张卡除外）
+-- ②效果的Cost函数，将手卡·墓地中的这张卡作为代价除外
 function s.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsAbleToRemoveAsCost() end
-	-- 作为代价把这张卡以表侧表示除外
+	-- 将这张卡作为发动代价以表侧表示除外
 	Duel.Remove(e:GetHandler(),POS_FACEUP,REASON_COST)
 end
--- 送去墓地对象的过滤函数：表侧表示（含手卡）、可以送去墓地、且是「红莲魔龙」或「地缚神」怪兽的卡
+-- 过滤函数，筛选手卡或场上表侧表示、可送去墓地的「红莲魔龙」或「地缚神」怪兽
 function s.tgfilter(c)
 	return c:IsFaceupEx() and c:IsAbleToGrave() and (c:IsCode(70902743) or (c:IsSetCard(0x1021) and c:IsType(TYPE_MONSTER)))
 end
--- ②效果的目标函数：确认存在可送去墓地的对象卡并设置送去墓地的操作信息
+-- ②效果的Target函数，检查自己手卡·场上存在除这张卡以外满足tgfilter的卡，并设置送去墓地操作信息
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查自己手卡·场上是否存在至少1张满足条件的卡（可送去墓地的「地缚神」怪兽或「红莲魔龙」，这张卡自身除外）
+	-- 发动条件检测时，检查自己手卡·场上是否存在除这张卡以外至少1张满足tgfilter条件的卡
 	if chk==0 then return Duel.IsExistingMatchingCard(s.tgfilter,tp,LOCATION_HAND+LOCATION_ONFIELD,0,1,e:GetHandler()) end
-	-- 设置操作信息：将把1张卡送去墓地（效果处理时确定对象，故targets为nil）
+	-- 设置操作信息，声明将把1张己方怪兽送去墓地
 	Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,nil,1,tp,LOCATION_MZONE)
 end
--- 特殊召唤对象的过滤函数：满足召唤条件的「地缚」怪兽（0x21系列），或可以当作同调召唤特殊召唤的「真红莲新星龙」，且对应区域有可用怪兽区
+-- 过滤函数，筛选卡组可特招的「地缚」怪兽，或额外卡组中可特招的「地缚」怪兽及可当作同调召唤特招的「真红莲新星龙」
 function s.spfilter(c,e,tp)
+	-- 若卡片在卡组中，检查自己场上是否有可用的主要怪兽区域空格
 	return (c:IsLocation(LOCATION_DECK) and Duel.GetMZoneCount(tp)>0
+			-- 或者若卡片在额外卡组中，检查自己场上是否有可供其从额外卡组特殊召唤的格子
 			or c:IsLocation(LOCATION_EXTRA) and Duel.GetLocationCountFromEx(tp,tp,nil,c)>0)
 		and ((c:IsCanBeSpecialSummoned(e,0,tp,false,false) and c:IsSetCard(0x21))
+			-- 或者卡片为「真红莲新星龙」(97489701)且满足没有必须作为同调素材的限制条件
 			or (c:IsCode(97489701) and aux.MustMaterialCheck(nil,tp,EFFECT_MUST_BE_SMATERIAL)
 				and c:IsCanBeSpecialSummoned(e,SUMMON_TYPE_SYNCHRO,tp,false,false)))
 end
--- ②效果的处理函数：选1只「地缚神」怪兽或「红莲魔龙」送去墓地，之后可以选择从卡组·额外卡组把1只「地缚」怪兽特殊召唤，或把「真红莲新星龙」当作同调召唤作特殊召唤
+-- ②效果的Operation函数，将1只「地缚神」怪兽或「红莲魔龙」送去墓地，之后可选从卡组·额外卡组特招「地缚」怪兽或当作同调召唤特招「真红莲新星龙」
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要送去墓地的卡
+	-- 向自己发送选择提示信息：“请选择要送去墓地的卡”
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
-	-- 让自己从自己的手卡·场上选择1只满足条件的「地缚神」怪兽或「红莲魔龙」
+	-- 让自己在自己手卡·场上选择1张满足tgfilter条件的卡
 	local tc=Duel.SelectMatchingCard(tp,s.tgfilter,tp,LOCATION_HAND+LOCATION_ONFIELD,0,1,1,nil):GetFirst()
-	-- 把选择的卡送去墓地，且确认该卡确实被送去墓地（作为后续特殊召唤处理的前提）
+	-- 以效果将选中的卡tc送去墓地，并确认其已成功送入墓地
 	if tc and Duel.SendtoGrave(tc,REASON_EFFECT)~=0 and tc:IsLocation(LOCATION_GRAVE)
-		-- 确认自己的卡组·额外卡组存在至少1只可以特殊召唤的满足条件的怪兽
+		-- 检查自己卡组·额外卡组是否存在至少1只满足spfilter条件可特殊召唤的怪兽
 		and Duel.IsExistingMatchingCard(s.spfilter,tp,LOCATION_DECK+LOCATION_EXTRA,0,1,nil,e,tp)
-		-- 询问玩家是否进行特殊召唤（对应效果原文的「可以」）
+		-- 询问自己是否适用后续的特殊召唤效果（“是否特殊召唤？”）
 		and Duel.SelectYesNo(tp,aux.Stringid(id,1)) then  --"是否特殊召唤？"
-		-- 提示玩家选择要特殊召唤的卡
+		-- 向自己发送选择提示信息：“请选择要特殊召唤的卡”
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-		-- 让自己从卡组·额外卡组选择1只满足条件的怪兽作为特殊召唤对象
+		-- 让自己在卡组·额外卡组中选择1只满足spfilter条件的怪兽
 		local spc=Duel.SelectMatchingCard(tp,s.spfilter,tp,LOCATION_DECK+LOCATION_EXTRA,0,1,1,nil,e,tp):GetFirst()
 		if spc then
 			if spc:IsCode(97489701) then
-				-- 若选择的是「真红莲新星龙」，则把它当作同调召唤以表侧表示特殊召唤，成功后执行召唤手续完毕处理
+				-- 若选中的是「真红莲新星龙」，则当作同调召唤以表侧表示特殊召唤并检测是否成功
 				if Duel.SpecialSummon(spc,SUMMON_TYPE_SYNCHRO,tp,tp,false,false,POS_FACEUP)>0 then
 					spc:CompleteProcedure()
 				end
 			else
-				-- 若选择的是「地缚」怪兽，则把它以表侧表示特殊召唤到自己场上
+				-- 若选中的是「地缚」怪兽，则将其以普通特殊召唤方式表侧表示特殊召唤到自己场上
 				Duel.SpecialSummon(spc,0,tp,tp,false,false,POS_FACEUP)
 			end
 		end

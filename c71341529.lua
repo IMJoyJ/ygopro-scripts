@@ -14,30 +14,30 @@ function c71341529.initial_effect(c)
 	e1:SetOperation(c71341529.spop)
 	c:RegisterEffect(e1)
 end
--- 检查此卡是否在场上被破坏并送去墓地
+-- 发动条件检查函数：判断这张卡是否从场上因破坏而送去墓地
 function c71341529.spcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	return c:IsReason(REASON_DESTROY) and c:IsPreviousLocation(LOCATION_ONFIELD)
 end
--- 丢弃2张手卡作为效果发动的代价
+-- 发动代价函数：检查玩家能否丢弃2张手卡，并在发动时选择2张手卡丢弃作为代价
 function c71341529.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查手卡中是否存在除自身外至少2张可以丢弃的卡
+	-- 发动条件检查：确认自己手卡中（排除自身）至少有2张可以作为代价丢弃的卡
 	if chk==0 then return Duel.IsExistingMatchingCard(Card.IsDiscardable,tp,LOCATION_HAND,0,2,e:GetHandler()) end
-	-- 玩家选择并丢弃2张手卡
+	-- 让玩家选择2张手卡作为发动代价丢弃
 	Duel.DiscardHand(tp,Card.IsDiscardable,2,2,REASON_COST+REASON_DISCARD)
 end
--- 检查怪兽区域是否有空位以及此卡是否可以特殊召唤
+-- 发动检查与操作信息设置函数：确认场上存在怪兽区空位且墓地的这张卡可被特殊召唤
 function c71341529.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查自己场上是否有可用的怪兽区域空格
+	-- 检查自己场上主要怪兽区是否存在可用的空位
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置当前连锁的操作信息为特殊召唤此卡
+	-- 向系统登记操作信息：将会把墓地的这张卡特殊召唤
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 若此卡仍存在于墓地，则将其特殊召唤
+-- 效果处理函数：若墓地的这张卡仍与效果关联，则将其以表侧表示特殊召唤到自己场上
 function c71341529.spop(e,tp,eg,ep,ev,re,r,rp)
 	if e:GetHandler():IsRelateToEffect(e) then
-		-- 将此卡以表侧表示特殊召唤到自己场上
+		-- 将墓地的这张卡以表侧表示特殊召唤到自己场上
 		Duel.SpecialSummon(e:GetHandler(),0,tp,tp,false,false,POS_FACEUP)
 	end
 end

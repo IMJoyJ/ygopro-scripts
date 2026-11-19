@@ -17,34 +17,34 @@ function c43582229.initial_effect(c)
 	e2:SetCode(EFFECT_IMMUNE_EFFECT)
 	e2:SetRange(LOCATION_SZONE)
 	e2:SetTargetRange(LOCATION_MZONE,0)
-	-- 设置免疫效果的作用对象为持有者场上表侧表示的「冰结界」怪兽（SetTargetRange已限定自己怪兽区，再通过SetTarget筛选字段）。
+	-- 设置②效果的适用范围条件，只对所属字段为「冰结界」的怪兽适用
 	e2:SetTarget(aux.TargetBoolFunction(Card.IsSetCard,0x2f))
 	e2:SetCondition(c43582229.condition)
 	e2:SetValue(c43582229.efilter)
 	c:RegisterEffect(e2)
 end
--- 特殊召唤对象的筛选函数：等级4以下、是「冰结界」怪兽、且能被效果e由tp玩家特殊召唤（检查苏生限制和召唤条件）。
+-- 过滤自己墓地中可作为①效果对象的怪兽：等级在4星以下、属于「冰结界」字段且能够被特殊召唤
 function c43582229.filter(c,e,tp)
 	return c:IsLevelBelow(4) and c:IsSetCard(0x2f) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 发动时的目标处理函数：先判定指定对象是否合法；发动判定直接通过；若主怪兽区有空位、墓地有符合条件的对象且玩家选择是，则将效果改为取对象特殊召唤并选择对象、登记操作信息；否则清空效果类别、属性和处理函数，仅作为通常发动。
+-- 处理卡的发动时的目标选择：可空发，若自己怪兽区有空位且墓地有符合条件的怪兽且玩家选择适用对应效果，则取1只为对象并设置特殊召唤操作信息，否则重置效果属性为空发
 function c43582229.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and c43582229.filter(chkc,e,tp) end
 	if chk==0 then return true end
-	-- 检查自己主要怪兽区是否存在空格，以决定能否特殊召唤墓地怪兽。
+	-- 检查自己主要怪兽区是否还有至少1个可用空格
 	if Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查自己墓地是否存在至少1只满足filter条件且能成为效果对象的「冰结界」怪兽。
+		-- 检查自己墓地是否存在至少1只可成为对象的4星以下「冰结界」怪兽
 		and Duel.IsExistingTarget(c43582229.filter,tp,LOCATION_GRAVE,0,1,nil,e,tp)
-		-- 弹出询问，让玩家选择是否发动“将墓地怪兽特殊召唤”的处理，选择“是”才进入后续特殊召唤分支。
+		-- 询问发动玩家是否要在发动这张卡时特殊召唤墓地怪兽
 		and Duel.SelectYesNo(tp,aux.Stringid(43582229,0)) then  --"是否把墓地怪兽特殊召唤？"
 		e:SetCategory(CATEGORY_SPECIAL_SUMMON)
 		e:SetProperty(EFFECT_FLAG_CARD_TARGET)
 		e:SetOperation(c43582229.activate)
-		-- 发送选择提示消息，告知玩家“请选择要特殊召唤的卡”，用于选择卡片的UI显示。
+		-- 向发动玩家发送选择要特殊召唤的卡片提示信息
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-		-- 从自己墓地选择1只满足条件的「冰结界」怪兽作为效果对象，并自动与当前连锁关联。
+		-- 让发动玩家从自己墓地选择1只符合条件的4星以下「冰结界」怪兽作为本次连锁的对象
 		local g=Duel.SelectTarget(tp,c43582229.filter,tp,LOCATION_GRAVE,0,1,1,nil,e,tp)
-		-- 登记本次连锁的操作信息：包含特殊召唤分类、对象为g（1只怪兽），供其他卡效果检测。
+		-- 登记本次连锁包含将对象怪兽特殊召唤的操作信息
 		Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,1,0,0)
 	else
 		e:SetCategory(0)
@@ -52,25 +52,25 @@ function c43582229.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 		e:SetOperation(nil)
 	end
 end
--- 效果处理时的执行函数：取得效果对象，若对象仍与效果关联，则将其正面表示特殊召唤到自己场上。
+-- 执行①效果处理：检查对象怪兽是否仍与效果保持关联，是则将其以表侧表示特殊召唤到自己场上
 function c43582229.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取效果发动时所选择的对象卡（墓地那只「冰结界」怪兽）。
+	-- 获取发动时选中的墓地对象怪兽
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 由tp玩家将对象怪兽以表侧攻击表示特殊召唤到自己场上（仍需满足召唤条件和苏生限制）。
+		-- 将对象怪兽以表侧表示特殊召唤到自己场上
 		Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
--- 判定用过滤函数：怪兽需表侧表示且为「冰结界」字段，用于②效果的条件统计。
+-- 过滤自己场上可用于计数②效果条件的怪兽：表侧表示且属于「冰结界」字段
 function c43582229.imfilter(c)
 	return c:IsFaceup() and c:IsSetCard(0x2f)
 end
--- ②效果的发动条件函数：自己场上存在3只以上表侧表示的「冰结界」怪兽时条件满足。
+-- 检查②效果的适用条件：自己怪兽区是否存在至少3只表侧表示的「冰结界」怪兽
 function c43582229.condition(e)
-	-- 检查效果持有者（自己）的怪兽区是否存在至少3只表侧表示的「冰结界」怪兽。
+	-- 判定控制者怪兽区是否存在至少3只表侧表示的「冰结界」怪兽
 	return Duel.IsExistingMatchingCard(c43582229.imfilter,e:GetHandlerPlayer(),LOCATION_MZONE,0,3,nil)
 end
--- 免疫效果过滤器：对方怪兽在怪兽区发动的、从额外卡组特殊召唤的怪兽的发动效果，给予免疫。
+-- 判断免疫的效果条件：对方玩家在怪兽区发动的、且持有者是从额外卡组召唤或特殊召唤出场的怪兽的效果
 function c43582229.efilter(e,te)
 	local tc=te:GetOwner()
 	return te:IsActiveType(TYPE_MONSTER) and te:IsActivated()

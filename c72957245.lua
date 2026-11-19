@@ -12,42 +12,43 @@ function c72957245.initial_effect(c)
 	e1:SetOperation(c72957245.activate)
 	c:RegisterEffect(e1)
 end
--- 过滤自己墓地中可以守备表示特殊召唤的岩石族怪兽
+-- 过滤条件函数：筛选可被表侧守备表示特殊召唤的岩石族怪兽
 function c72957245.filter(c,e,tp)
 	return c:IsRace(RACE_ROCK) and c:IsCanBeSpecialSummoned(e,0,tp,false,false,POS_FACEUP_DEFENSE)
 end
--- 效果①的发动准备，处理取对象判定和发动条件检查
+-- ①效果的目标选择与检查函数：检查场上怪兽区空位并确认墓地存在岩石族怪兽，选择1只作为对象并登记特召操作信息
 function c72957245.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and c72957245.filter(chkc,e,tp) end
+	-- 检查自己场上主要怪兽区是否存在可用的空位
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查自己墓地是否存在至少1只满足条件的岩石族怪兽
+		-- 检查自己墓地是否存在至少1只可成为对象的岩石族怪兽
 		and Duel.IsExistingTarget(c72957245.filter,tp,LOCATION_GRAVE,0,1,nil,e,tp) end
-	-- 提示玩家选择要特殊召唤的卡
+	-- 向玩家发送选择提示：请选择要特殊召唤的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 选择自己墓地1只满足条件的岩石族怪兽作为效果对象
+	-- 让玩家从自己墓地选择1只岩石族怪兽作为对象
 	local g=Duel.SelectTarget(tp,c72957245.filter,tp,LOCATION_GRAVE,0,1,1,nil,e,tp)
-	-- 设置效果处理信息为特殊召唤该目标怪兽
+	-- 向系统登记操作信息：将会特殊召唤所选对象的1只怪兽
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,1,0,0)
 end
--- 过滤卡组中4星以下的岩石族怪兽
+-- 过滤条件函数：筛选卡组中等级4以下的岩石族怪兽
 function c72957245.cfilter(c)
 	return c:IsLevelBelow(4) and c:IsRace(RACE_ROCK)
 end
--- 效果①的处理，将目标怪兽特殊召唤，若为「魔救」怪兽则可选择将卡组中1只4星以下岩石族怪兽置于卡组最上方
+-- ①效果的处理函数：将对象怪兽表侧守备表示特殊召唤，若特召的是「魔救」怪兽则可再从卡组选1只4星以下岩石族怪兽洗卡后置于卡组最上方并确认
 function c72957245.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取发动的对象怪兽
+	-- 获取当前连锁中作为对象选择的墓地岩石族怪兽
 	local tc=Duel.GetFirstTarget()
-	-- 若对象怪兽仍存在于墓地且成功守备表示特殊召唤，且该怪兽为「魔救」怪兽，且自己卡组有4星以下岩石族怪兽，则玩家可以选择是否发动后续效果
+	-- 将对象怪兽守备表示特殊召唤，若特召成功且其为「魔救」怪兽、卡组存在4星以下岩石族怪兽时，询问玩家是否放置到卡组最上面
 	if tc:IsRelateToEffect(e) and Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP_DEFENSE)~=0 and tc:IsSetCard(0x140) and Duel.IsExistingMatchingCard(c72957245.cfilter,tp,LOCATION_DECK,0,1,nil) and Duel.SelectYesNo(tp,aux.Stringid(72957245,0)) then  --"是否把卡在卡组最上面放置？"
-		-- 中断当前效果处理，使后续的卡组放置处理与特殊召唤不视为同时进行
+		-- 中断当前处理，将特殊召唤与从卡组选卡放置分为不同时点处理
 		Duel.BreakEffect()
-		-- 从卡组选择1只4星以下的岩石族怪兽
+		-- 让玩家从自己卡组选择1只4星以下的岩石族怪兽
 		local dc=Duel.SelectMatchingCard(tp,c72957245.cfilter,tp,LOCATION_DECK,0,1,1,nil):GetFirst()
-		-- 将卡组洗牌
+		-- 洗切发动玩家的卡组
 		Duel.ShuffleDeck(tp)
-		-- 将选择的怪兽移动到卡组最上方
+		-- 将选出的岩石族怪兽移动到卡组最上方
 		Duel.MoveSequence(dc,SEQ_DECKTOP)
-		-- 确认卡组最上方的一张卡
+		-- 向双方展示确认置于卡组最上方的那张卡
 		Duel.ConfirmDecktop(tp,1)
 	end
 end
