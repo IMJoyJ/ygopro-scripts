@@ -5,6 +5,7 @@
 -- ●魔法卡：这张卡可以直接攻击对方玩家。
 -- ●陷阱卡：这张卡变成守备表示。
 function c13857930.initial_effect(c)
+	-- 记录这张卡的卡文上记载了「新空间侠·光辉青苔」的卡名。
 	aux.AddCodeList(c,17732278)
 	c:EnableReviveLimit()
 	-- 这张卡用「新空间侠界限」的效果才能特殊召唤。
@@ -32,44 +33,44 @@ function c13857930.initial_effect(c)
 	e4:SetValue(17732278)
 	c:RegisterEffect(e4)
 end
--- 战斗宣言时，若此卡为攻击怪兽或攻击对象则条件成立。
+-- 战斗诱发效果的发动条件判定：检查这张卡是否为本次攻击宣言中的攻击怪兽或攻击对象怪兽。
 function c13857930.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断此卡是否为攻击怪兽或攻击对象（即是否参与本次战斗）。
+	-- 判断这张卡是否正在作为攻击怪兽或被攻击对象参与本次战斗。
 	return e:GetHandler()==Duel.GetAttacker() or e:GetHandler()==Duel.GetAttackTarget()
 end
--- 效果发动条件检查：若此卡本回合尚未发动过该效果，则允许发动；发动时注册一次效果标记，并声明抽1张卡的操作信息。
+-- 战斗诱发效果的目标处理函数：通过临时标记防止同一战斗步骤重复触发，并申报自己抽1张卡的操作信息。
 function c13857930.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():GetFlagEffect(13857930)==0 end
 	e:GetHandler():RegisterFlagEffect(13857930,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_DAMAGE,0,1)
-	-- 设置本连锁的处理信息，声明将进行抽1张卡的操作，供其他卡的效果检测。
+	-- 设置操作信息：预计由自己玩家抽1张卡。
 	Duel.SetOperationInfo(0,CATEGORY_DRAW,nil,0,tp,1)
 end
--- 效果处理：自己抽1张卡，将抽到的卡给对方确认，然后根据该卡种类处理：怪兽卡则结束战斗阶段，魔法卡则可直接攻击（需玩家选择），陷阱卡则变成守备表示。
+-- 战斗诱发效果的效果处理函数：自己抽1张卡并给对方确认，根据抽到卡片的种类执行结束战斗阶段、允许直接攻击或自身变为守备表示的处理。
 function c13857930.activate(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 执行抽1张卡（原因为效果），若实际未能抽到则本次效果处理中断。
+	-- 使自己以效果抽1张卡，若实际未能抽到卡则中止后续处理。
 	if Duel.Draw(tp,1,REASON_EFFECT)==0 then return end
-	-- 取得此次抽卡操作实际抽到的那张卡。
+	-- 获取刚才效果抽到的那张卡片。
 	local tc=Duel.GetOperatedGroup():GetFirst()
-	-- 将抽到的卡展示给对方玩家确认。
+	-- 将抽到的卡片公开给对方玩家确认。
 	Duel.ConfirmCards(1-tp,tc)
 	if tc:IsType(TYPE_MONSTER) then
-		-- 跳过当前回合玩家的战斗阶段，即结束战斗阶段（对应怪兽卡的效果）。
+		-- 抽到怪兽卡时，跳过当前回合玩家的战斗阶段使其立即结束。
 		Duel.SkipPhase(Duel.GetTurnPlayer(),PHASE_BATTLE,RESET_PHASE+PHASE_BATTLE_STEP,1)
 	elseif tc:IsType(TYPE_SPELL) then
-		-- 判断此卡是否为攻击怪兽且自身没有“不能直接攻击”的效果限制，以决定是否可适用直接攻击。
+		-- 抽到魔法卡时，检查这张卡是否为攻击怪兽且未受到不能直接攻击的效果影响。
 		if c==Duel.GetAttacker() and not c:IsHasEffect(EFFECT_CANNOT_DIRECT_ATTACK)
-			-- 并且此卡仍与该效果关联、表侧表示，且玩家确认要执行直接攻击。
+			-- 且检查这张卡仍与效果有联系并呈表侧表示后，询问玩家是否要进行直接攻击。
 			and c:IsRelateToEffect(e) and c:IsFaceup() and Duel.SelectYesNo(tp,aux.Stringid(13857930,1)) then  --"是否要进行直接攻击？"
-			-- 将攻击目标改为空，即变为对对方玩家的直接攻击。
+			-- 将这张卡的攻击对象变更为直接攻击对方玩家。
 			Duel.ChangeAttackTarget(nil)
 		end
 	else
 		if c:IsRelateToEffect(e) and c:IsFaceup() then
-			-- 将此卡变为表侧守备表示（对应陷阱卡的效果）。
+			-- 抽到陷阱卡且这张卡仍呈表侧表示并与效果有联系时，将这张卡变为表侧守备表示。
 			Duel.ChangePosition(c,POS_FACEUP_DEFENSE)
 		end
 	end
-	-- 洗切手牌，以重置手牌顺序（抽卡后手牌洗切）。
+	-- 效果处理结束后手动洗切自己的手卡。
 	Duel.ShuffleHand(tp)
 end

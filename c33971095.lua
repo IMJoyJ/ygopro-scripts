@@ -29,35 +29,35 @@ function c33971095.initial_effect(c)
 	e3:SetOperation(c33971095.atkop)
 	c:RegisterEffect(e3)
 end
--- 过滤函数：判定一张卡是否为怪兽且属于「复仇死者」系列，用于筛选可解放的怪兽。
+-- 过滤条件函数：筛选「复仇死者」怪兽卡
 function c33971095.cfilter(c)
 	return c:IsType(TYPE_MONSTER) and c:IsSetCard(0x106)
 end
--- 对象筛选函数：检查候选对象是否为表侧表示且等级≥1，并确认自己场上·手卡存在至少1只可解放的「复仇死者」怪兽（不能选对象本身）。
+-- 过滤条件函数：筛选自己场上等级1以上的表侧表示怪兽，且排除它自己后手卡·场上仍存在可解放的「复仇死者」怪兽
 function c33971095.filter(c,tp)
-	-- （接上行）确认候选对象为表侧表示、等级≥1，且自己场上·手卡存在可解放的「复仇死者」怪兽。
+	-- 检查该怪兽是否为表侧表示且拥有1星以上等级，并确认排除自身外手卡·场上至少有1只可作为代价解放的「复仇死者」怪兽
 	return c:IsFaceup() and c:IsLevelAbove(1) and Duel.CheckReleaseGroupEx(tp,c33971095.cfilter,1,REASON_COST,true,c,c)
 end
--- ①效果的发动目标处理：若连锁中指定对象，则验证该对象是否合法；若为发动合法性检查，则确认已满足cost条件且场上存在合法对象。
+-- ①效果的目标选择与代价检查函数：确认能支付解放代价且存在可成为对象的自己场上表侧表示怪兽
 function c33971095.lvtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and c33971095.filter(chkc,tp) end
 	if chk==0 then return e:IsCostChecked()
-		-- 发动条件判定：确认自己场上存在至少1只满足条件的表侧表示怪兽可以作为对象。
+		-- 检查自己场上是否存在至少1只满足条件的表侧表示怪兽作为效果对象
 		and Duel.IsExistingTarget(c33971095.filter,tp,LOCATION_MZONE,0,1,nil,tp) end
-	-- 向操作玩家显示“请选择表侧表示的卡”的选择提示。
+	-- 向玩家发送选择提示：请选择表侧表示的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
-	-- 从自己场上选择1张满足条件的表侧表示怪兽作为效果对象（取对象）。
+	-- 让玩家从自己场上选择1只符合条件的表侧表示怪兽作为对象并获取该卡
 	local tc=Duel.SelectTarget(tp,c33971095.filter,tp,LOCATION_MZONE,0,1,1,nil,tp):GetFirst()
-	-- 从自己手卡·场上选择任意数量（1~99张）的「复仇死者」怪兽作为解放代价，且不能选择对象怪兽自身。
+	-- 让玩家从手卡·场上（排除对象怪兽自身）选择1至99只「复仇死者」怪兽用于作为代价解放
 	local sg=Duel.SelectReleaseGroupEx(tp,c33971095.cfilter,1,99,REASON_COST,true,tc,tc)
-	-- 将选择的「复仇死者」怪兽解放，作为发动①效果的代价。
+	-- 将选择的「复仇死者」怪兽作为发动代价解放
 	Duel.Release(sg,REASON_COST)
 	e:SetLabel(sg:GetCount())
 end
--- ①效果处理：取得对象怪兽，若其仍与效果关联且表侧表示，则赋予其等级上升效果。
+-- ①效果的处理函数：若对象怪兽仍表侧表示且与效果关联，则使其等级直到回合结束时上升等于解放数量的数值
 function c33971095.lvop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 取得①效果发动时选择的对象怪兽。
+	-- 获取当前连锁中作为对象选择的自己场上怪兽
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) and tc:IsFaceup() then
 		-- 那只怪兽的等级直到回合结束时上升解放的怪兽数量的数值。
@@ -69,17 +69,17 @@ function c33971095.lvop(e,tp,eg,ep,ev,re,r,rp)
 		tc:RegisterEffect(e1)
 	end
 end
--- ②效果的触发条件判断：自己的「复仇死者」仪式怪兽与对方怪兽战斗并战斗破坏对方怪兽。
+-- ②效果的发动条件函数：判断战斗破坏对方怪兽并送去墓地的是否为自己场上表侧表示且正在攻击的「复仇死者」仪式怪兽
 function c33971095.atkcon(e,tp,eg,ep,ev,re,r,rp)
 	local rc=eg:GetFirst()
-	-- 判定进行攻击并战斗破坏对方怪兽的就是攻击怪兽本身，且该怪兽进行过与对方怪兽的战斗并处于表侧表示。
+	-- 检查触发事件的怪兽是否为本次攻击怪兽、与对方怪兽进行了战斗且在场上表侧表示
 	return rc==Duel.GetAttacker() and rc:IsStatus(STATUS_OPPO_BATTLE) and rc:IsFaceup()
 		and bit.band(rc:GetType(),0x81)==0x81 and rc:IsSetCard(0x106) and rc:IsControler(tp)
 end
--- ②效果处理：对符合条件的那只自己怪兽发动攻击力上升效果。
+-- ②效果的处理函数：若攻击的自己怪兽仍表侧表示存在，则使其攻击力永久上升1000
 function c33971095.atkop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 取得进行攻击并战斗破坏对方怪兽的攻击怪兽。
+	-- 获取本次战斗发起攻击的自己怪兽
 	local tc=Duel.GetAttacker()
 	if tc:IsFaceup() then
 		-- 那只自己怪兽的攻击力上升1000。

@@ -6,10 +6,10 @@
 -- ●「双天将 密迹」：对方回合1次，以场上1张卡为对象才能发动。那张卡除外。
 -- ②：融合召唤的这张卡被破坏的场合才能发动。从卡组把「双天拳之熊罴」「双天脚之鸿鹄」各1只特殊召唤。那些怪兽在这个回合不会被战斗·效果破坏。
 function c28798938.initial_effect(c)
+	-- 记录这张卡的效果文本上记载了「双天将 金刚」「双天将 密迹」「双天拳之熊罴」「双天脚之鸿鹄」4张卡的卡名。
 	aux.AddCodeList(c,33026283,284224,85360035,11759079)
-	--fusion summon
 	c:EnableReviveLimit()
-	-- 为这张卡添加融合召唤手续：使用2只「双天」怪兽作为融合素材（满足卡名含有『双天』字段的怪兽）。
+	-- 为这张卡设置融合召唤手续：需要2只「双天」怪兽作为融合素材，且允许以非正规融合方式召唤。
 	aux.AddFusionProcFunRep(c,aux.FilterBoolFunction(Card.IsFusionSetCard,0x14f),2,true)
 	-- ①：这张卡得到作为融合素材的怪兽的原本卡名的以下效果。●「双天将 金刚」：进行战斗的自己的「双天」怪兽的攻击力只在伤害计算时变成3000。●「双天将 密迹」：对方回合1次，以场上1张卡为对象才能发动。那张卡除外。
 	local e0=Effect.CreateEffect(c)
@@ -30,11 +30,11 @@ function c28798938.initial_effect(c)
 	e3:SetOperation(c28798938.spop)
 	c:RegisterEffect(e3)
 end
--- e0的发动条件：这张卡是以融合召唤方式特殊召唤成功的。
+-- 融合素材效果赋予的触发条件函数：判断这张卡是否是通过融合召唤特殊召唤成功的。
 function c28798938.regcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsSummonType(SUMMON_TYPE_FUSION)
 end
--- 融合召唤成功后的处理：获取融合素材；若素材含有效果怪兽则给这张卡标记（熊罴回收相关）；若素材含『双天将 金刚』则获得『进行战斗的自己的「双天」怪兽攻击力只在伤害计算时变成3000』的永续效果；若素材含『双天将 密迹』则获得『对方回合1次，以场上1张卡为对象才能发动，那张卡除外』的诱发即时效果；并分别添加客户端提示标志。
+-- 融合召唤成功时的不入连锁处理函数：读取融合素材，若含效果怪兽则注册标记，若含原本卡名为「双天将 金刚」或「双天将 密迹」的怪兽则分别赋予对应效果并添加客户端提示。
 function c28798938.regop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local g=c:GetMaterial()
@@ -75,97 +75,97 @@ function c28798938.regop(e,tp,eg,ep,ev,re,r,rp)
 		c:RegisterFlagEffect(0,RESET_EVENT+RESETS_STANDARD,EFFECT_FLAG_CLIENT_HINT,1,0,aux.Stringid(28798938,1))  --"「双天将 密迹」为融合素材"
 	end
 end
--- 攻击力赋予效果的适用条件：仅在伤害计算阶段，己方存在进行战斗的「双天」怪兽时适用。
+-- 攻击力变为3000效果的适用条件函数：确认当前处于伤害计算阶段且自己正在进行战斗的怪兽属于「双天」字段。
 function c28798938.atkcon(e)
 	local tp=e:GetHandlerPlayer()
-	-- 获取由tp玩家操控的正在进行战斗的怪兽，若没有则返回nil。
+	-- 获取自己正在进行战斗的怪兽。
 	local a=Duel.GetBattleMonster(tp)
-	-- 判断当前阶段是否为伤害计算阶段，且存在战斗怪兽且该怪兽属于「双天」字段（0x14f）。
+	-- 判断当前是否为伤害计算时，且自己正在战斗的怪兽存在并属于「双天」(0x14f)字段。
 	return Duel.GetCurrentPhase()==PHASE_DAMAGE_CAL and a and a:IsSetCard(0x14f)
 end
--- 攻击力赋予效果的目标判定：只对己方当前正在战斗的那只「双天」怪兽（a）生效，即c必须等于a。
+-- 攻击力变为3000效果的对象筛选函数：仅对当前自己正在进行战斗的那只怪兽适用攻击力变化。
 function c28798938.atktg(e,c)
 	local tp=e:GetHandlerPlayer()
-	-- 获取己方当前战斗怪兽，用于与效果目标c比较。
+	-- 获取自己正在进行战斗的怪兽。
 	local a=Duel.GetBattleMonster(tp)
 	return c==a
 end
--- 除外效果的发动条件：当前回合为这张卡的控制者的对方回合（即满足『对方回合1次』）。
+-- 除外效果的发动条件函数：判断当前回合玩家是否为对方。
 function c28798938.rmcon(e)
-	-- 返回当前回合玩家是否不是这张卡的控制者，即当前为对方回合。
+	-- 判断当前回合玩家不等于效果持有者的控制者（即处于对方回合）。
 	return Duel.GetTurnPlayer()~=e:GetHandlerPlayer()
 end
--- 除外效果的目标选择与发动判定：选择场上1张可以被除外的卡作为对象；若存在则让玩家选择并设置操作信息。
+-- 除外效果的目标检查与选择函数：确认场上存在可除外的卡，让玩家选择场上1张卡作为对象并登记除外操作信息。
 function c28798938.rmtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsOnField() and chkc:IsAbleToRemove() end
-	-- 发动时（chk==0）判断双方场上是否存在至少1张可以被除外的卡，作为能否发动的前提。
+	-- 在检查能否发动时，确认双方场上存在至少1张可以除外且能成为效果对象的卡。
 	if chk==0 then return Duel.IsExistingTarget(Card.IsAbleToRemove,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,nil) end
-	-- 向玩家显示选择提示『请选择要除外的卡』。
+	-- 向玩家发送选择要除外卡片的提示信息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)  --"请选择要除外的卡"
-	-- 让玩家从双方场上选择1张可除外的卡，并将其设为当前连锁的对象。
+	-- 让玩家从双方场上选择1张可以除外的卡作为当前连锁的发动对象。
 	local g=Duel.SelectTarget(tp,Card.IsAbleToRemove,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,1,nil)
-	-- 设置操作信息：本次效果分类为除外，对象为g，数量为1，用于连锁判定等。
+	-- 向引擎登记本次连锁确定将对象卡除外（1张）的操作信息。
 	Duel.SetOperationInfo(0,CATEGORY_REMOVE,g,1,0,0)
 end
--- 效果处理：取得对象卡，若对象仍与效果关联，则将其表侧表示除外。
+-- 除外效果的处理函数：若对象卡仍与效果保持联系，则将其表侧表示除外。
 function c28798938.rmop(e,tp,eg,ep,ev,re,r,rp)
-	-- 取得当前连锁的第一个（也是唯一一个）效果对象卡。
+	-- 获取当前连锁指定的对象卡片。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 将对象卡以表侧表示除外，除外原因为效果。
+		-- 以效果原因将对象卡表侧表示除外。
 		Duel.Remove(tc,POS_FACEUP,REASON_EFFECT)
 	end
 end
--- ②效果的发动条件：这张卡被破坏前位于怪兽区域，且是以融合召唤方式召唤的（即『融合召唤的这张卡被破坏的场合』）。
+-- ②效果的发动条件函数：检查被破坏的这张卡破坏前位于怪兽区且是通过融合召唤出场的。
 function c28798938.spcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	return c:IsPreviousLocation(LOCATION_MZONE) and c:IsSummonType(SUMMON_TYPE_FUSION)
 end
--- 特召对象的筛选条件：卡名是「双天拳之熊罴」或「双天脚之鸿鹄」，且可以被当前效果特殊召唤。
+-- 定义特殊召唤过滤函数，检查卡组中的怪兽是否为「双天拳之熊罴」或「双天脚之鸿鹄」且能正规特殊召唤。
 function c28798938.spfilter(c,e,tp)
 	return c:IsCode(85360035,11759079) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- ②效果的发动目标判定：确认己方怪兽区有至少2个空位，且没有【青眼精灵龙】等禁止同时特殊召唤2只以上怪兽的效果，然后检查卡组中是否存在卡名互不相同的2张符合条件的卡（熊罴和鸿鹄各1只）；满足后设置操作信息。
+-- ②效果的发动检查与信息登记函数：验证己方怪兽区有至少2个空位、未受同时特召限制且卡组存在卡名不同的2只目标怪兽，并登记卡组特召2只的操作信息。
 function c28798938.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then
-		-- 获取己方主要怪兽区可用空格数，用于判断能否同时特殊召唤2只怪兽。
+		-- 获取自己场上主要怪兽区域的可用空格数量。
 		local ft=Duel.GetLocationCount(tp,LOCATION_MZONE)
 		-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中。禁止双方同时特殊召唤2只以上怪兽
 		if ft<2 or Duel.IsPlayerAffectedByEffect(tp,59822133) then return false end
-		-- 从卡组中取得所有满足特召条件的卡（熊罴和鸿鹄）。
+		-- 从自己卡组检索所有符合特殊召唤条件的「双天拳之熊罴」和「双天脚之鸿鹄」。
 		local g=Duel.GetMatchingGroup(c28798938.spfilter,tp,LOCATION_DECK,0,nil,e,tp)
-		-- 检查是否存在2张卡名不同（即熊罴和鸿鹄各1张）的子组，作为能否发动的条件。
+		-- 检查检索到的卡片组中是否存在2张卡名互不相同的子集（即各1只）。
 		return g:CheckSubGroup(aux.dncheck,2,2)
 	end
-	-- 设置操作信息：本次效果分类为特殊召唤，预计从卡组特殊召唤2只怪兽（对象在处理时确定）。
+	-- 向引擎登记本次连锁预计从自己卡组特殊召唤2只怪兽的操作信息。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,2,tp,LOCATION_DECK)
 end
--- ②效果处理：再次确认空位和青眼精灵龙限制后，从卡组选择卡名不同的2张卡（熊罴和鸿鹄），依次特殊召唤，并给它们各注册本回合不会被战斗·效果破坏的效果；最后完成特殊召唤。
+-- ②效果的处理函数：确认空位与特召数量限制后，从卡组选「双天拳之熊罴」「双天脚之鸿鹄」各1只特殊召唤，并赋予它们直到回合结束不会被战斗·效果破坏的永续效果。
 function c28798938.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取己方主要怪兽区可用空格数，用于再次确认能否特殊召唤2只怪兽。
+	-- 获取自己场上怪兽区域的当前可用空格数量。
 	local ft=Duel.GetLocationCount(tp,LOCATION_MZONE)
 	-- 检测【青眼精灵龙】(59822133)的怪兽效果是否生效中。禁止双方同时特殊召唤2只以上怪兽
 	if ft<2 or Duel.IsPlayerAffectedByEffect(tp,59822133) then return end
-	-- 从卡组中取得符合条件的特召对象（熊罴和鸿鹄）。
+	-- 获取自己卡组中所有满足条件的「双天拳之熊罴」和「双天脚之鸿鹄」。
 	local g=Duel.GetMatchingGroup(c28798938.spfilter,tp,LOCATION_DECK,0,nil,e,tp)
-	-- 向玩家显示选择提示『请选择要特殊召唤的卡』。
+	-- 向玩家发送选择要特殊召唤卡片的提示信息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 让玩家从符合条件的卡组中选择2张卡名不同的卡（即熊罴和鸿鹄各1只）。
+	-- 让玩家从卡组符合条件的怪兽中选择2只卡名互不相同的怪兽（各1只）。
 	local sg=g:SelectSubGroup(tp,aux.dncheck,false,2,2)
 	if not sg then return end
 	local tc=sg:GetFirst()
-	-- 遍历选出的2张卡，依次进行后续特殊召唤处理。
+	-- 遍历玩家选中的2只待特殊召唤的怪兽。
 	for tc in aux.Next(sg) do
-		-- 将当前卡以表侧表示特殊召唤到己方场上；若召唤成功，则继续为其赋予本回合的破坏抗性。
+		-- 执行单只怪兽的分解特殊召唤步骤以表侧表示出场，若成功则为其赋予抗破坏效果。
 		if Duel.SpecialSummonStep(tc,0,tp,tp,false,false,POS_FACEUP) then
-			-- 不会被战斗破坏。
+			-- 那些怪兽在这个回合不会被战斗·效果破坏。
 			local e1=Effect.CreateEffect(e:GetHandler())
 			e1:SetType(EFFECT_TYPE_SINGLE)
 			e1:SetCode(EFFECT_INDESTRUCTABLE_BATTLE)
 			e1:SetValue(1)
 			e1:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END)
 			tc:RegisterEffect(e1)
-			-- 不会被效果破坏。
+			-- 那些怪兽在这个回合不会被战斗·效果破坏。
 			local e2=Effect.CreateEffect(e:GetHandler())
 			e2:SetType(EFFECT_TYPE_SINGLE)
 			e2:SetCode(EFFECT_INDESTRUCTABLE_EFFECT)
@@ -175,6 +175,6 @@ function c28798938.spop(e,tp,eg,ep,ev,re,r,rp)
 			tc:RegisterFlagEffect(0,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END,EFFECT_FLAG_CLIENT_HINT,1,0,aux.Stringid(28798938,3))  --"「双天之狮使-阿吽」效果适用中"
 		end
 	end
-	-- 完成所有特殊召唤步骤，触发特殊召唤成功时的各种时点。
+	-- 完成分解的特殊召唤流程，使此前通过SpecialSummonStep出场的怪兽正式同时特殊召唤到场上。
 	Duel.SpecialSummonComplete()
 end

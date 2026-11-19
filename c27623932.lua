@@ -3,9 +3,9 @@
 -- 这个卡名的卡在1回合只能发动1张。
 -- ①：自己场上有「勇者衍生物」存在的场合，以把有「勇者衍生物」的衍生物名记述的装备卡装备的自己场上1只怪兽为对象才能发动。持有那只怪兽的攻击力以下的攻击力的对方场上的怪兽全部破坏。那之后，可以从自己的手卡·墓地选有「勇者衍生物」的衍生物名记述的1张装备魔法卡给自己场上1只可以装备的怪兽装备。
 local s,id,o=GetID()
--- 初始化效果函数：将本卡卡名记述的「勇者衍生物」加入代码列表，创建并注册魔法卡发动效果；设置效果分类为破坏、类型为魔法发动、自由时点、取对象、同名卡1回合只能发动1次的誓约次数限制，并设定提示时点、发动条件、发动时选择目标和效果处理函数。
+-- 初始化「雷霆放电」的效果：记录「勇者衍生物」卡名记述，并注册卡片发动效果（1回合1张，自己场上有「勇者衍生物」时取装备有记述「勇者衍生物」装备卡的己方1只怪兽为对象，破坏对方场上的怪兽并可追加装备）。
 function c27623932.initial_effect(c)
-	-- 将卡号3285552（勇者衍生物）记录为本卡效果文本中记述的卡名，供后续用aux.IsCodeListed判断“有「勇者衍生物」的衍生物名记述”。
+	-- 记录这张卡的效果文本上记载了「勇者衍生物」(3285552)的卡名。
 	aux.AddCodeList(c,3285552)
 	-- 这个卡名的卡在1回合只能发动1张。①：自己场上有「勇者衍生物」存在的场合，以把有「勇者衍生物」的衍生物名记述的装备卡装备的自己场上1只怪兽为对象才能发动。持有那只怪兽的攻击力以下的攻击力的对方场上的怪兽全部破坏。那之后，可以从自己的手卡·墓地选有「勇者衍生物」的衍生物名记述的1张装备魔法卡给自己场上1只可以装备的怪兽装备。
 	local e1=Effect.CreateEffect(c)
@@ -20,79 +20,80 @@ function c27623932.initial_effect(c)
 	e1:SetOperation(c27623932.operation)
 	c:RegisterEffect(e1)
 end
--- 过滤函数cfilter：判定卡为表侧表示的「勇者衍生物」（卡号3285552）。
+-- 定义过滤函数，检查卡片是否为表侧表示的「勇者衍生物」(3285552)。
 function c27623932.cfilter(c)
 	return c:IsCode(3285552) and c:IsFaceup()
 end
--- 发动条件函数：自己场上有表侧表示的「勇者衍生物」存在时才能发动本卡。
+-- 发动条件检查函数：确认自己场上是否存在表侧表示的「勇者衍生物」。
 function c27623932.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查自己场上（怪兽区+魔陷区）是否存在至少1张表侧表示的「勇者衍生物」。
+	-- 检查自己场上是否存在至少1张表侧表示的「勇者衍生物」。
 	return Duel.IsExistingMatchingCard(c27623932.cfilter,tp,LOCATION_ONFIELD,0,1,nil)
 end
--- 对象筛选函数tgfilter：选择自己场上1只表侧表示怪兽，该怪兽必须装备着至少1张表侧表示且卡名记述了「勇者衍生物」的装备卡，并且对方场上有攻击力不大于该怪兽当前攻击力的表侧表示怪兽。
+-- 定义对象过滤函数，检查怪兽是否表侧表示、装备着有「勇者衍生物」记述的表侧装备卡，且对方场上存在攻击力在该怪兽攻击力以下的怪兽。
 function c27623932.tgfilter(c,tp)
 	return c:IsFaceup() and c:GetEquipCount()>0 and c:GetEquipGroup():IsExists(c27623932.cfilter2,1,nil)
-		-- 附加条件：对方场上存在至少1只攻击力不高于该怪兽当前攻击力的表侧表示怪兽，使破坏效果有处理对象。
+		-- 检查对方怪兽区域是否存在至少1只攻击力在目标怪兽攻击力以下的表侧表示怪兽。
 		and Duel.IsExistingMatchingCard(c27623932.desfilter,tp,0,LOCATION_MZONE,1,nil,c:GetAttack())
 end
--- 过滤函数cfilter2：判定一张卡是表侧表示且其效果文本中记述了「勇者衍生物」（卡号3285552）。
+-- 定义过滤函数，检查装备卡是否为表侧表示且记述了「勇者衍生物」的卡名。
 function c27623932.cfilter2(c)
-	-- 返回条件：卡为表侧表示，且卡名记述了「勇者衍生物」。
+	-- 判断卡片是否为表侧表示且效果文本中记述了「勇者衍生物」(3285552)。
 	return c:IsFaceup() and aux.IsCodeListed(c,3285552)
 end
--- 破坏筛选函数desfilter：对方场上的表侧表示怪兽，攻击力小于等于传入的攻击力数值atk。
+-- 定义破坏目标过滤函数，检查怪兽是否为表侧表示且当前攻击力在指定攻击力atk以下。
 function c27623932.desfilter(c,atk)
 	return c:IsFaceup() and c:IsAttackBelow(atk)
 end
--- 发动时目标函数target：处理发动时的合法性检查、选择对象怪兽，并预计算要破坏的对方怪兽组，设置破坏的操作信息。
+-- 发动对象检查与宣言处理函数：验证条件并选择自己场上1只符合条件的目标怪兽，同时登记要破坏的对方怪兽操作信息。
 function c27623932.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and c27623932.tgfilter(chkc,tp) end
+	-- 在检查能否发动时，确认自己怪兽区存在至少1只符合条件且可成为效果对象的怪兽。
 	if chk==0 then return Duel.IsExistingTarget(c27623932.tgfilter,tp,LOCATION_MZONE,0,1,nil,tp) end
-	-- 给出选择提示，要求玩家选择表侧表示的卡（作为对象怪兽）。
+	-- 向玩家发送选择表侧表示卡片的提示信息。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
-	-- 玩家从自己场上选择1只满足条件的表侧表示怪兽作为效果对象。
+	-- 让玩家从自己怪兽区选择1只满足条件的目标怪兽并设为当前连锁的对象。
 	local g=Duel.SelectTarget(tp,c27623932.tgfilter,tp,LOCATION_MZONE,0,1,1,nil,tp)
-	-- 以所选对象怪兽的攻击力为基准，获取对方场上所有攻击力在该数值以下的表侧表示怪兽。
+	-- 获取对方怪兽区所有攻击力在对象怪兽攻击力以下的表侧表示怪兽卡片组。
 	local dg=Duel.GetMatchingGroup(c27623932.desfilter,tp,0,LOCATION_MZONE,nil,g:GetFirst():GetAttack())
-	-- 设置当前连锁的操作信息：要破坏的卡组为dg，数量为dg:GetCount()，供后续效果检测使用。
+	-- 向引擎登记本次连锁确定执行的破坏操作信息及涉及的对方怪兽卡片组。
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,dg,dg:GetCount(),0,0)
 end
--- CanEquipFilter：判断表侧表示的怪兽c能否被指定的装备魔法卡eqc装备。
+-- 定义可装备怪兽过滤函数，检查自己场上的怪兽是否为表侧表示且能被指定的装备卡eqc合法装备。
 function c27623932.CanEquipFilter(c,eqc)
 	return c:IsFaceup() and eqc:CheckEquipTarget(c)
 end
--- eqfilter：筛选手牌/墓地中的装备魔法卡，要求卡名记述「勇者衍生物」、是装备魔法、满足同名卡唯一限制、不是禁止卡，并且自己场上有可以装备它的表侧表示怪兽。
+-- 定义装备魔法过滤函数，检查卡片是否记述「勇者衍生物」、为装备魔法、不违反场上同名唯一限制且未被禁止使用，同时场上存在可装备它的自己怪兽。
 function c27623932.eqfilter(c,tp)
-	-- 该卡必须卡名记述「勇者衍生物」、是装备魔法、满足场上同名卡唯一限制且不属于禁止卡。
+	-- 判断卡片是否记述「勇者衍生物」、属于装备魔法、符合己方场上唯一性限制且未被禁止使用。
 	return aux.IsCodeListed(c,3285552) and c:IsType(TYPE_EQUIP) and c:CheckUniqueOnField(tp) and not c:IsForbidden()
-		-- 该装备魔法卡必须能装备给自己场上至少1只表侧表示的怪兽。
+		-- 检查自己怪兽区是否存在至少1只可被该装备魔法卡合法装备的怪兽。
 		and Duel.IsExistingMatchingCard(c27623932.CanEquipFilter,tp,LOCATION_MZONE,0,1,nil,c)
 end
--- 效果处理函数operation：取得对象怪兽，按当前攻击力选择并破坏对方场上符合条件的怪兽；若破坏成功且满足后续条件，则询问玩家后从手卡/墓地选择装备魔法卡装备给自己场上的怪兽。
+-- 效果处理函数：确认对象怪兽仍在场且表侧表示后，破坏对方场上攻击力在其以下的怪兽；若成功破坏，可从手卡·墓地选1张记述「勇者衍生物」的装备魔法卡装备给己方怪兽。
 function c27623932.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 取得处理时得到的对象怪兽（自己场上那只装备了相关装备卡的怪兽）。
+	-- 获取发动时选择的当前连锁的对象怪兽。
 	local tc=Duel.GetFirstTarget()
 	if tc:IsFaceup() and tc:IsRelateToEffect(e) then
-		-- 根据对象怪兽当前攻击力，获取对方场上攻击力不高于该数值的表侧表示怪兽作为破坏对象。
+		-- 再次获取对方怪兽区所有攻击力在对象怪兽当前攻击力以下的表侧表示怪兽卡片组。
 		local dg=Duel.GetMatchingGroup(c27623932.desfilter,tp,0,LOCATION_MZONE,nil,tc:GetAttack())
-		-- 执行破坏；若实际破坏数量不为0，且自己魔陷区有空位，才继续后续装备处理。
+		-- 破坏筛选出的对方怪兽，若至少破坏了1只且自己魔法与陷阱区仍有空位则继续判定追加装备条件。
 		if Duel.Destroy(dg,REASON_EFFECT)~=0 and Duel.GetLocationCount(tp,LOCATION_SZONE)>0
-			-- 检查手牌/墓地是否存在符合条件的装备魔法卡，并用aux.NecroValleyFilter排除因王家长眠之谷而不能从墓地使用的卡。
+			-- 检查自己的手卡或墓地是否存在至少1张满足装备条件且不受「王家长眠之谷」影响的装备魔法卡。
 			and Duel.IsExistingMatchingCard(aux.NecroValleyFilter(s.eqfilter),tp,LOCATION_HAND+LOCATION_GRAVE,0,1,nil,tp)
-			-- 询问玩家是否要进行后续的装备处理，对应“那之后，可以从自己的手卡·墓地选……”的效果。
+			-- 询问发动玩家是否要从手卡·墓地选择1张装备魔法卡进行装备。
 			and Duel.SelectYesNo(tp,aux.Stringid(id,0)) then  --"是否选装备魔法卡装备？"
-			-- 中断当前效果处理，使后续装备处理与破坏处理不在同一时点进行，避免错过时点。
+			-- 插入效果中断，使后续的装备处理与前面的破坏处理视为不同时处理。
 			Duel.BreakEffect()
-			-- 给出选择装备魔法卡的提示。
+			-- 向玩家发送选择要装备的卡的提示信息。
 			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_EQUIP)  --"请选择要装备的卡"
-			-- 从手牌/墓地选择1张符合条件的装备魔法卡（经过王家长眠之谷过滤）。
+			-- 让玩家从手卡或墓地选择1张满足条件且不受「王家长眠之谷」影响的装备魔法卡。
 			local eqg=Duel.SelectMatchingCard(tp,aux.NecroValleyFilter(s.eqfilter),tp,LOCATION_HAND+LOCATION_GRAVE,0,1,1,nil,tp)
 			local eqc=eqg:GetFirst()
-			-- 给出选择要装备的怪兽的提示。
+			-- 向玩家发送选择表侧表示怪兽作为装备对象的提示信息。
 			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)  --"请选择表侧表示的卡"
-			-- 选择自己场上1只可以装备该装备魔法卡的表侧表示怪兽作为装备对象。
+			-- 让玩家从自己怪兽区选择1只可以装备所选装备魔法卡的表侧表示怪兽。
 			local mg=Duel.SelectMatchingCard(tp,s.CanEquipFilter,tp,LOCATION_MZONE,0,1,1,nil,eqc)
-			-- 执行装备操作，将选好的装备魔法卡装备给选择好的怪兽。
+			-- 将选中的装备魔法卡以表侧表示装备给选中的自己场上怪兽。
 			Duel.Equip(tp,eqc,mg:GetFirst())
 		end
 	end

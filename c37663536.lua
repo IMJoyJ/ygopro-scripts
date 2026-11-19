@@ -5,9 +5,10 @@
 -- ②：从「古代的机械巨人」「古代的机械巨人-究极重击」之中以合计2只以上为素材作融合召唤的这张卡在同1次的战斗阶段中可以作出最多有那个数量的攻击。
 -- ③：融合召唤的表侧表示的这张卡因对方的效果从场上离开的场合才能发动。从额外卡组把1只「古代的机械究极巨人」无视召唤条件特殊召唤。
 function c37663536.initial_effect(c)
+	-- 记录该卡效果文上记载了「古代的机械巨人」「古代的机械巨人-究极重击」「古代的机械究极巨人」的卡名
 	aux.AddCodeList(c,83104731,95735217,12652643)
 	c:EnableReviveLimit()
-	-- 为这张卡添加融合召唤手续：要求以3只属于「古代的机械」系列的怪兽作为融合素材。
+	-- 定义融合召唤素材条件：需要3只「古代的机械」怪兽作为融合素材
 	aux.AddFusionProcFunRep(c,aux.FilterBoolFunction(Card.IsFusionSetCard,0x7),3,true)
 	-- ②：从「古代的机械巨人」「古代的机械巨人-究极重击」之中以合计2只以上为素材作融合召唤的这张卡在同1次的战斗阶段中可以作出最多有那个数量的攻击。
 	local e1=Effect.CreateEffect(c)
@@ -17,7 +18,7 @@ function c37663536.initial_effect(c)
 	e1:SetCondition(c37663536.condition)
 	e1:SetOperation(c37663536.operation)
 	c:RegisterEffect(e1)
-	-- ②：从「古代的机械巨人」「古代的机械巨人-究极重击」之中以合计2只以上为素材作融合召唤的
+	-- 从「古代的机械巨人」「古代的机械巨人-究极重击」之中以合计2只以上为素材作融合召唤
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_SINGLE)
 	e2:SetCode(EFFECT_MATERIAL_CHECK)
@@ -46,15 +47,15 @@ function c37663536.initial_effect(c)
 	e4:SetOperation(c37663536.spop)
 	c:RegisterEffect(e4)
 end
--- 素材检查回调：统计这张卡融合召唤使用的素材中卡号为83104731（古代的机械巨人）或95735217（古代的机械巨人-究极重击）的数量，并把数量存入e1的标签（Label）中，供后续赋予攻击次数使用。
+-- 融合素材检查函数：统计这张卡的融合素材中「古代的机械巨人」和「古代的机械巨人-究极重击」的合计数量，并存入e1效果的Label中
 function c37663536.valcheck(e,c)
 	e:GetLabelObject():SetLabel(c:GetMaterial():FilterCount(Card.IsCode,nil,83104731,95735217))
 end
--- 连续效果e1的触发条件：这张卡特殊召唤成功，且召唤方式为融合召唤。
+-- ②效果的适用判断函数：确认这张卡是以融合召唤方式特殊召唤成功的
 function c37663536.condition(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsSummonType(SUMMON_TYPE_FUSION)
 end
--- 融合召唤成功时的处理：若素材检查中符合条件的素材数量ct≥2，则给自己设置一个额外攻击效果：使这张卡在同一战斗阶段中增加ct-1次攻击（合计最多攻击ct次），并设定离场等标准时机重置。
+-- ②效果的赋予函数：若记录的指定素材数量达到2只以上，则为这张卡注册增加额外攻击次数（合计次数-1）的效果
 function c37663536.operation(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local ct=e:GetLabel()
@@ -70,41 +71,41 @@ function c37663536.operation(e,tp,eg,ep,ev,re,r,rp)
 		c:RegisterEffect(e1)
 	end
 end
--- 限制效果判定：只有当对方发动的效果类型为‘魔法·陷阱卡的发动’（EFFECT_TYPE_ACTIVATE）时，才会被禁止。
+-- 发动限制条件函数：禁止发动任何魔法·陷阱卡的卡片发动
 function c37663536.aclimit(e,re,tp)
 	return re:IsHasType(EFFECT_TYPE_ACTIVATE)
 end
--- 限制效果适用条件：当前正在进行攻击的怪兽是这张卡自身（即这张卡攻击的场合）。
+-- ①效果的生效条件函数：判断当前正在攻击的怪兽是否为这张卡自身
 function c37663536.actcon(e)
-	-- 判断当前攻击怪兽是否为这张卡自身，用于决定是否适用‘对方不能发动魔法·陷阱卡’的限制。
+	-- 检查当前攻击宣言及战斗阶段中的攻击怪兽是否就是这张卡
 	return Duel.GetAttacker()==e:GetHandler()
 end
--- ③的发动条件：这张卡必须是融合召唤、此前表侧表示存在于场上、因对方的效果（reason player为1-tp）离场，且离场原因为效果。
+-- ③效果的发动条件函数：判断这张卡是否为融合召唤出场、离场前处于表侧表示，且因对方的效果从场上离开
 function c37663536.spcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	return c:IsSummonType(SUMMON_TYPE_FUSION) and c:GetReasonPlayer()==1-tp
 		and c:IsReason(REASON_EFFECT) and c:IsPreviousPosition(POS_FACEUP)
 end
--- 特殊召唤对象过滤：选择卡号为12652643（古代的机械究极巨人）、可无视召唤条件特殊召唤、且额外卡组怪兽有足够空位可以出场的卡。
+-- 过滤条件函数：筛选额外卡组中可无视召唤条件特殊召唤且场地有空位的「古代的机械究极巨人」
 function c37663536.spfilter(c,e,tp)
-	-- 同时确认该卡是「古代的机械究极巨人」、能被无视召唤条件特殊召唤、以及自己场上存在可供额外卡组怪兽特殊召唤的空格。
+	-- 检查该卡是否为「古代的机械究极巨人」、能否被无视召唤条件特殊召唤，以及自己场上是否有供其从额外卡组出场的怪兽区空位
 	return c:IsCode(12652643) and c:IsCanBeSpecialSummoned(e,0,tp,true,false) and Duel.GetLocationCountFromEx(tp,tp,nil,c)>0
 end
--- ③的发动时点处理：在发动时检查额外卡组是否存在符合条件的「古代的机械究极巨人」；若存在，则登记特殊召唤操作信息。
+-- ③效果的目标与操作信息设置函数：确认额外卡组存在可特召的「古代的机械究极巨人」并登记特殊召唤操作信息
 function c37663536.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 作为发动条件：检查额外卡组中是否存在至少1只满足特殊召唤条件的「古代的机械究极巨人」，以此决定效果能否发动。
+	-- 发动条件检查：确认自己额外卡组存在至少1只符合条件的「古代的机械究极巨人」
 	if chk==0 then return Duel.IsExistingMatchingCard(c37663536.spfilter,tp,LOCATION_EXTRA,0,1,nil,e,tp) end
-	-- 登记本次连锁将进行‘从额外卡组把1只怪兽特殊召唤’的操作信息，使其他卡片（如星尘龙等）能够正确响应。
+	-- 向系统登记操作信息：将会从自己额外卡组特殊召唤1只怪兽
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_EXTRA)
 end
--- ③的处理：从额外卡组选择1只「古代的机械究极巨人」，将其无视召唤条件，以表侧表示特殊召唤到自己的场上。
+-- ③效果的处理函数：从自己额外卡组选择1只「古代的机械究极巨人」并无视召唤条件特殊召唤
 function c37663536.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 给玩家显示‘请选择要特殊召唤的卡’的选择提示，用于选择待特殊召唤的额外卡组怪兽。
+	-- 向玩家发送选择提示：请选择要特殊召唤的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-	-- 让玩家从自己的额外卡组中选择1只满足spfilter条件的卡（即「古代的机械究极巨人」且可特殊召唤）。
+	-- 让玩家从自己额外卡组选择1只符合条件的「古代的机械究极巨人」
 	local g=Duel.SelectMatchingCard(tp,c37663536.spfilter,tp,LOCATION_EXTRA,0,1,1,nil,e,tp)
 	if g:GetCount()>0 then
-		-- 将选中的「古代的机械究极巨人」无视召唤条件，以表侧攻击表示特殊召唤到自己的场上。
+		-- 将选择的「古代的机械究极巨人」无视召唤条件以表侧表示特殊召唤到自己场上
 		Duel.SpecialSummon(g,0,tp,tp,true,false,POS_FACEUP)
 	end
 end
