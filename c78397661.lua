@@ -5,14 +5,14 @@
 -- ①：自己·对方的主要阶段才能发动。这张卡直到结束阶段除外，从自己的卡组·墓地把1只「阿不思的落胤」或者有那个卡名记述的4星以下的怪兽特殊召唤。
 -- ②：这张卡在墓地存在的场合，以自己的墓地·除外状态的1只8星融合怪兽和场上1张卡为对象才能发动。那2张卡和这张卡回到卡组。
 local s,id,o=GetID()
--- 初始化卡片效果：登记卡名记述、设置同调召唤手续和苏生限制，并注册①的诱发即时效果（诱发即时、取对象以外的特殊召唤·除外）和②的起动效果（回卡组）
+-- 初始化卡片效果：记录「阿不思的落胤」卡名并设置同调召唤手续，注册暂时除外特召的①效果与墓地回收3张卡的②效果，各限制1回合1次。
 function s.initial_effect(c)
-	-- 登记这张卡上记述着「阿不思的落胤」（卡号68468459）这一事实，供卡名记述判定使用
+	-- 记录这张卡的卡文上记载了「阿不思的落胤」的卡名。
 	aux.AddCodeList(c,68468459)
-	-- 为这张卡设置同调召唤手续：1只调整＋1只以上调整以外的怪兽
+	-- 为这张卡添加同调召唤手续：1只调整加上1只以上调整以外的怪兽。
 	aux.AddSynchroProcedure(c,nil,aux.NonTuner(nil),1)
 	c:EnableReviveLimit()
-	-- ①：自己·对方的主要阶段才能发动。这张卡直到结束阶段除外，从自己的卡组·墓地把1只「阿不思的落胤」或者有那个卡名记述的4星以下的怪兽特殊召唤。
+	-- 这个卡名的①②的效果1回合各能使用1次。①：自己·对方的主要阶段才能发动。这张卡直到结束阶段除外，从自己的卡组·墓地把1只「阿不思的落胤」或者有那个卡名记述的4星以下的怪兽特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(id,0))  --"特殊召唤"
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_REMOVE)
@@ -25,7 +25,7 @@ function s.initial_effect(c)
 	e1:SetTarget(s.sptg)
 	e1:SetOperation(s.spop)
 	c:RegisterEffect(e1)
-	-- ②：这张卡在墓地存在的场合，以自己的墓地·除外状态的1只8星融合怪兽和场上1张卡为对象才能发动。那2张卡和这张卡回到卡组。
+	-- 这个卡名的①②的效果1回合各能使用1次。②：这张卡在墓地存在的场合，以自己的墓地·除外状态的1只8星融合怪兽和场上1张卡为对象才能发动。那2张卡和这张卡回到卡组。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(id,1))  --"回到卡组"
 	e2:SetCategory(CATEGORY_TODECK)
@@ -37,37 +37,38 @@ function s.initial_effect(c)
 	e2:SetOperation(s.tdop)
 	c:RegisterEffect(e2)
 end
--- ①效果发动条件的判定函数：确认当前是主要阶段
+-- ①效果的发动条件判定：检查当前是否处于自己或对方的主要阶段。
 function s.spcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判定当前是否为自己或对方的主要阶段，作为发动条件
+	-- 判断当前决斗阶段是否为主要阶段1或主要阶段2。
 	return Duel.IsMainPhase()
 end
--- 特殊召唤对象过滤函数：筛选卡组·墓地中符合条件的怪兽
+-- 过滤函数：判断怪兽是否为「阿不思的落胤」或卡文记述了其卡名的4星以下怪兽，且能被特殊召唤。
 function s.spfilter(c,e,tp)
+	-- 检查卡片是否为「阿不思的落胤」或记载了其卡名的4星以下怪兽，且可以常规特殊召唤。
 	return (c:IsCode(68468459) or (c:IsLevelBelow(4) and aux.IsCodeListed(c,68468459))) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- ①效果的目标函数：发动可能时进行合法性检查，并设置除外与特殊召唤的操作信息
+-- ①效果的目标处理函数（可行性检测部分）：检查这张卡离场后自己怪兽区有空位、自身可除外，且卡组或墓地存在可特召怪兽。
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
-	-- 发动可能性检查：确认这张卡离场后场上至少有1个可用的怪兽区
+	-- 发动可行性检测：检查这张卡离场后自己主要怪兽区是否至少有1个可用空位。
 	if chk==0 then return Duel.GetMZoneCount(tp,c)>0
 		and c:IsAbleToRemove()
-		-- 并且自己的卡组·墓地存在至少1只满足特殊召唤过滤条件的怪兽
+		-- 且检查自己墓地或卡组中是否存在至少1只满足条件的待特殊召唤怪兽。
 		and Duel.IsExistingMatchingCard(s.spfilter,tp,LOCATION_GRAVE+LOCATION_DECK,0,1,nil,e,tp) end
-	-- 设置操作信息：确定这张卡将被除外（数量1张）
+	-- 设置操作信息：预计将场上的这张卡除外。
 	Duel.SetOperationInfo(0,CATEGORY_REMOVE,c,1,0,0)
-	-- 设置操作信息：预计从自己的卡组·墓地特殊召唤1只怪兽（处理时才能确定对象）
+	-- 设置操作信息：预计从自己的墓地或卡组特殊召唤1只怪兽。
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_GRAVE+LOCATION_DECK)
 end
--- ①效果的处理函数：把这张卡暂时除外，注册结束阶段返回场上的持续效果，然后从卡组·墓地特殊召唤1只符合条件的怪兽
+-- ①效果的效果处理函数：将这张卡暂时除外至结束阶段并注册归还效果，随后从卡组或墓地选1只满足条件的怪兽特殊召唤。
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local fid=c:GetFieldID()
-	-- 确认这张卡仍与连锁相关后，以效果原因将其暂时除外（REASON_TEMPORARY表示结束阶段可以返回）
+	-- 若这张卡仍与当前连锁有联系，则以效果暂时将其除外并确认除外成功。
 	if c:IsRelateToChain() and Duel.Remove(c,0,REASON_EFFECT+REASON_TEMPORARY)~=0 then
 		if c:GetOriginalCode()==id then
 			c:RegisterFlagEffect(id,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END,EFFECT_FLAG_CLIENT_HINT,1,fid,aux.Stringid(id,2))  --"直到结束阶段除外"
-			-- 从自己的卡组·墓地把1只「阿不思的落胤」或者有那个卡名记述的4星以下的怪兽特殊召唤。②：这张卡在墓地存在的场合，以自己的墓地·除外状态的1只8星融合怪兽和场上1张卡为对象才能发动。那2张卡和这张卡回到卡组。
+			-- 这张卡直到结束阶段除外，从自己的卡组·墓地把1只「阿不思的落胤」或者有那个卡名记述的4星以下的怪兽特殊召唤。②：这张卡在墓地存在的场合，以自己的墓地·除外状态的1只8星融合怪兽和场上1张卡为对象才能发动。那2张卡和这张卡回到卡组。
 			local e1=Effect.CreateEffect(c)
 			e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 			e1:SetCode(EVENT_PHASE+PHASE_END)
@@ -77,23 +78,23 @@ function s.spop(e,tp,eg,ep,ev,re,r,rp)
 			e1:SetCountLimit(1)
 			e1:SetCondition(s.retcon)
 			e1:SetOperation(s.retop)
-			-- 把「结束阶段时这张卡返回场上」的持续效果注册到全局环境
+			-- 为自己注册一个在结束阶段触发的全局持续效果，用于使暂时除外的这张卡返回场上。
 			Duel.RegisterEffect(e1,tp)
 		end
-		-- 确认自己场上有可用的怪兽区后再进行特殊召唤
+		-- 检查自己怪兽区域当前是否仍有可用空位。
 		if Duel.GetLocationCount(tp,LOCATION_MZONE)>0 then
-			-- 向玩家提示选择要特殊召唤的卡片
+			-- 向自己发送选择提示，提示玩家选择要特殊召唤的卡。
 			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-			-- 让玩家从自己的卡组·墓地选择1只满足条件且不受王家长眠之谷影响的怪兽
+			-- 让玩家从自己的墓地或卡组选择1只不受王家长眠之谷影响的满足条件怪兽。
 			local g=Duel.SelectMatchingCard(tp,aux.NecroValleyFilter(s.spfilter),tp,LOCATION_GRAVE+LOCATION_DECK,0,1,1,nil,e,tp)
 			if g:GetCount()>0 then
-				-- 把选择的怪兽以表侧表示特殊召唤到自己场上
+				-- 将选中的怪兽以表侧表示特殊召唤到自己场上。
 				Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
 			end
 		end
 	end
 end
--- 结束阶段返回效果的发动条件：检查这张卡上记录的标识是否与注册时一致，不一致则重置该效果，一致才执行返回
+-- 归还场上效果的触发条件判定：核对被暂时除外的卡片是否仍保有对应的场域标识，否则销毁该临时效果。
 function s.retcon(e,tp,eg,ep,ev,re,r,rp)
 	local tc=e:GetLabelObject()
 	if tc:GetFlagEffectLabel(id)~=e:GetLabel() then
@@ -101,45 +102,45 @@ function s.retcon(e,tp,eg,ep,ev,re,r,rp)
 		return false
 	else return true end
 end
--- 结束阶段的处理函数：把暂时除外的这张卡返回场上
+-- 归还场上效果的处理函数：将暂时除外的这张卡返回到场上。
 function s.retop(e,tp,eg,ep,ev,re,r,rp)
-	-- 把这张卡从除外状态返回到场上（返回离场前的表示形式）
+	-- 将暂时除外的这张卡返回到原本场上。
 	Duel.ReturnToField(e:GetLabelObject())
 end
--- ②效果的对象过滤函数：筛选自己墓地·除外状态的8星融合怪兽
+-- 过滤函数：判断卡片是否为自己墓地或表侧除外状态的8星融合怪兽，且同时存在场上可成为对象并回卡组的卡。
 function s.tdfilter(c,tp)
 	return c:IsFaceupEx() and c:IsLevel(8) and c:IsType(TYPE_FUSION)
-		-- 并且确认双方场上存在至少1张可以回到卡组的卡作为另一个对象
+		-- 且检查双方场上是否存在至少1张可成为对象并返回卡组的卡。
 		and Duel.IsExistingTarget(Card.IsAbleToDeck,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,nil)
 end
--- ②效果的目标函数：确认这张卡在墓地且可以回到卡组，选择1只8星融合怪兽和场上1张卡作为对象，并设置回卡组的操作信息
+-- ②效果的对象选择与目标处理函数：分别选择自己墓地或除外状态的1只8星融合怪兽和场上1张卡为对象，并申报共3张卡回卡组的操作信息。
 function s.tdtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	local c=e:GetHandler()
 	if chkc then return false end
-	-- 发动可能性检查：自己的墓地·除外状态存在1只8星融合怪兽可以作为对象，并且这张卡自身可以回到卡组
+	-- 发动可行性检测：检查存在符合条件的8星融合怪兽对象及场上对象，且墓地的这张卡也能返回卡组。
 	if chk==0 then return Duel.IsExistingTarget(s.tdfilter,tp,LOCATION_GRAVE+LOCATION_REMOVED,0,1,nil,tp) and c:IsAbleToDeck() end
-	-- 向玩家提示选择要返回卡组的卡
+	-- 向自己发送选择提示，提示玩家选择墓地或除外区中要返回卡组的8星融合怪兽。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TODECK)  --"请选择要返回卡组的卡"
-	-- 选择自己的墓地·除外状态的1只8星融合怪兽作为对象
+	-- 让玩家从自己的墓地或除外区选择1只8星融合怪兽作为对象。
 	local g1=Duel.SelectTarget(tp,s.tdfilter,tp,LOCATION_GRAVE+LOCATION_REMOVED,0,1,1,nil,tp)
-	-- 向玩家提示选择要返回卡组的卡
+	-- 向自己发送选择提示，提示玩家选择场上要返回卡组的卡。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TODECK)  --"请选择要返回卡组的卡"
-	-- 选择双方场上1张可以回到卡组的卡作为对象
+	-- 让玩家从双方场上选择1张可返回卡组的卡作为对象。
 	local g2=Duel.SelectTarget(tp,Card.IsAbleToDeck,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,1,nil)
 	g1:Merge(g2)
 	g1:AddCard(c)
-	-- 设置操作信息：确定这2张对象卡和这张卡共3张将回到卡组
+	-- 设置操作信息：预计将选中的2张对象卡与墓地的这张卡共3张返回卡组。
 	Duel.SetOperationInfo(0,CATEGORY_TODECK,g1,3,0,0)
 end
--- ②效果的处理函数：确认对象卡均与连锁相关后，把那2张卡和这张卡共3张送回卡组并洗切
+-- ②效果的效果处理函数：若这张卡及2张对象卡均与连锁有联系且不受王家长眠之谷限制能回卡组，则将这3张卡一起洗回卡组。
 function s.tdop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if not c:IsRelateToChain() then return end
-	-- 取得与当前连锁相关的对象卡组（即选择的2张卡）
+	-- 获取当前连锁中仍与效果有联系的所有对象卡片组。
 	local g=Duel.GetTargetsRelateToChain()
 	g:AddCard(c)
-	-- 检查3张卡都可以回到卡组且不受王家长眠之谷影响，否则不处理
+	-- 检查包含这张卡在内的3张卡是否全部满足不受王家长眠之谷影响且能回卡组的条件，否则中止处理。
 	if g:FilterCount(aux.NecroValleyFilter(Card.IsAbleToDeck),nil)~=3 then return end
-	-- 把那2张卡和这张卡以效果原因返回卡组并洗切卡组
+	-- 将这3张卡以效果送回各自持有者的卡组或额外卡组并标记洗牌。
 	Duel.SendtoDeck(g,nil,SEQ_DECKSHUFFLE,REASON_EFFECT)
 end
