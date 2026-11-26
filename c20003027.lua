@@ -38,69 +38,69 @@ function c20003027.initial_effect(c)
 	e4:SetOperation(c20003027.spop)
 	c:RegisterEffect(e4)
 end
--- 筛选出由指定玩家sp召唤成功的怪兽，用于检测对方是否有召唤·特殊召唤怪兽。
+-- 过滤是否为指定玩家sp所召唤或特殊召唤的怪兽
 function c20003027.cfilter(c,sp)
 	return c:IsSummonPlayer(sp)
 end
--- 检测怪兽召唤/特殊召唤成功的事件组中是否存在由对方（1-tp）召唤的怪兽，满足①效果中“对方把怪兽召唤·特殊召唤的场合”的触发条件。
+-- 检查①效果的召唤触发条件：在本次召唤/特召事件中是否存在由对方玩家召唤或特召的怪兽
 function c20003027.thcon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c20003027.cfilter,1,nil,1-tp)
 end
--- 作为e3（被选择为攻击对象）的触发条件，检查攻击怪兽的控制者是否为对方（1-tp）。
+-- 检查①效果的被攻击触发条件：发起此次攻击的怪兽当前控制者是否为对方玩家
 function c20003027.thcon2(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断发动攻击的怪兽是否由对方控制，即这张卡是否成为对方怪兽的攻击对象。
+	-- 判断此次战斗的攻击怪兽是否由对方控制
 	return Duel.GetAttacker():IsControler(1-tp)
 end
--- 效果①的发动目标合法性与操作登记：确认此卡可以回手牌，并将回手牌效果的信息登记为当前连锁要进行的操作。
+-- 发动前确认此卡能否返回手卡，并登记将此卡送回手卡的操作信息
 function c20003027.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	if chk==0 then return c:IsAbleToHand() end
-	-- 登记“将这张卡送回手牌”的操作信息，供连锁判定使用（例如星尘龙等卡需要确认此操作）。
+	-- 登记将此卡自身送回手卡的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,c,1,0,0)
 end
--- 定义可被特殊召唤的卡牌条件：兽族、等级2以下、卡名不是「童话动物·小狗」、且可以被玩家tp用效果特殊召唤。
+-- 过滤卡组中除「童话动物·小狗」外、2星以下的兽族且可特殊召唤的怪兽
 function c20003027.thfilter(c,e,tp)
 	return c:IsRace(RACE_BEAST) and c:IsLevelBelow(2) and not c:IsCode(20003027) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
--- 效果①的解决处理：先让自身回手牌；成功且自身在手牌时，若自己场上有空格且卡组有符合条件的目标，则询问玩家是否从卡组特殊召唤1只符合条件的兽族怪兽。
+-- ①效果处理：将此卡送回手卡并确认已回到手卡后，若场上还有空位且卡组有符合条件的兽族怪兽，可选择其中1只表侧表示特殊召唤
 function c20003027.thop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 确认这张卡仍与该效果关联、回手牌成功且现在位于手牌，作为后续特殊召唤的前提条件。
+	-- 确认此卡与效果关联后将其以效果送回手卡，并验证其已成功回到手卡
 	if c:IsRelateToEffect(e) and Duel.SendtoHand(c,nil,REASON_EFFECT)~=0 and c:IsLocation(LOCATION_HAND)
-		-- 确认自己场上有空的怪兽区域，确保可以特殊召唤。
+		-- 检查己方怪兽区是否至少有1个可用空位
 		and Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 确认卡组中存在至少1只满足条件的可特殊召唤的怪兽。
+		-- 检查己方卡组是否存在至少1只符合条件的2星以下兽族怪兽
 		and Duel.IsExistingMatchingCard(c20003027.thfilter,tp,LOCATION_DECK,0,1,nil,e,tp)
-		-- 询问玩家是否进行卡组特殊召唤，选择是才继续执行。
+		-- 询问己方玩家是否从卡组特殊召唤1只符合条件的怪兽
 		and Duel.SelectYesNo(tp,aux.Stringid(20003027,2)) then  --"是否从卡组特殊召唤？"
-		-- 中断当前效果处理，使后续特殊召唤不视为与回手牌同时处理（避免错时点）。
+		-- 插入效果处理间断，使此卡回手与后续卡组特殊召唤视为不同时处理
 		Duel.BreakEffect()
-		-- 给出选择特殊召唤卡牌时的提示消息，提示内容为“请选择要特殊召唤的卡”。
+		-- 向己方发送从卡组选择要特殊召唤的怪兽的提示
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-		-- 从卡组选择1张满足thfilter条件的兽族怪兽。
+		-- 让己方从卡组选择1只除「童话动物·小狗」外的2星以下兽族怪兽
 		local g=Duel.SelectMatchingCard(tp,c20003027.thfilter,tp,LOCATION_DECK,0,1,1,nil,e,tp)
-		-- 将选择的怪兽以表侧表示特殊召唤到自己的场上。
+		-- 将选中的怪兽以表侧表示特殊召唤到己方场上
 		Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
--- 效果②的发动条件：当前回合玩家是这张卡的控制者tp，即自己的回合的结束阶段。
+-- 检查②效果发动条件：当前是否为己方回合
 function c20003027.spcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断当前回合玩家是否为tp，以确认处于自己结束阶段。
+	-- 判断当前的回合玩家是否为己方
 	return Duel.GetTurnPlayer()==tp
 end
--- 效果②的发动合法性与操作登记：确认自己场上有怪兽区空格且此卡可以特殊召唤，并登记特殊召唤操作信息。
+-- 发动前确认己方怪兽区有空位且手卡的此卡可以特殊召唤，并登记特召操作信息
 function c20003027.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
-	-- 检查自己场上是否有可用的怪兽区空格，以及此卡是否满足特殊召唤条件。
+	-- 检查己方怪兽区是否有空位且此卡能否被特殊召唤
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0 and c:IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 登记“将这张卡特殊召唤”的操作信息，供连锁判定使用。
+	-- 登记将此卡自身特殊召唤的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,c,1,0,0)
 end
--- 效果②的解决处理：若此卡仍与该效果关联，则将其从手牌特殊召唤。
+-- ②效果处理：若此卡仍在手卡并与效果关联，将其表侧表示特殊召唤到己方场上
 function c20003027.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) then
-		-- 将这张卡以表侧表示特殊召唤到自己场上。
+		-- 将此卡以表侧表示特殊召唤到己方场上
 		Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 	end
 end

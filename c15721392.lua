@@ -3,7 +3,7 @@
 -- 这个卡名的卡在1回合只能发动1张。
 -- ①：自己的「超级量子」怪兽被战斗破坏时才能发动。从额外卡组把1只「超级量子机兽」超量怪兽特殊召唤。那之后，可以从自己的手卡·卡组·墓地选在那张超量怪兽卡有卡名记述的1只「超级量子战士」怪兽效果无效特殊召唤。
 function c15721392.initial_effect(c)
-	-- 这个卡名的卡在1回合只能发动1张。①：自己的「超级量子」怪兽被战斗破坏时才能发动。从额外卡组把1只「超级量子机兽」超量怪兽特殊召唤。那之后，可以从自己的手卡·卡组·墓地选在那张超量怪兽卡有卡名记述的1只「超级量子战士」怪兽效果无效特殊召唤。
+	-- 这个卡名的卡在1回合只能发动1张。 ①：自己的「超级量子」怪兽被战斗破坏时才能发动。从额外卡组把1只「超级量子机兽」超量怪兽特殊召唤。那之后，可以从自己的手卡·卡组·墓地选在那张超量怪兽卡有卡名记述的1只「超级量子战士」怪兽效果无效特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON+CATEGORY_GRAVE_SPSUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -14,60 +14,60 @@ function c15721392.initial_effect(c)
 	e1:SetOperation(c15721392.activate)
 	c:RegisterEffect(e1)
 end
--- 筛选被战斗破坏的怪兽中，属于「超级量子」字段且上一控制者为自己的怪兽，用于判定是否满足发动条件。
+-- 过滤函数，检查是否为之前由自己控制的「超级量子」怪兽
 function c15721392.cfilter(c,tp)
 	return c:IsSetCard(0xdc) and c:IsPreviousControler(tp)
 end
--- 检查战斗破坏送入墓地的怪兽组中是否存在至少1只满足cfilter的怪兽，即“自己的「超级量子」怪兽被战斗破坏时”的触发条件。
+-- 发动条件检查，确认被战斗破坏的怪兽中包含自己控制的「超级量子」怪兽
 function c15721392.condition(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsExists(c15721392.cfilter,1,nil,tp)
 end
--- 定义额外卡组中可特殊召唤的「超级量子机兽」超量怪兽的筛选条件，包括字段、特殊召唤合法性以及额外卡组怪兽区域是否可用。
+-- 过滤函数，检查是否为可从额外卡组特殊召唤且场上存在对应可用空位的「超级量子机兽」怪兽
 function c15721392.spfilter(c,e,tp)
-	-- 返回该怪兽是否为「超级量子机兽」字段、能否被效果特殊召唤，且当前玩家有足够从额外卡组特殊召唤的空位。
+	-- 判断该卡是否为「超级量子机兽」怪兽、能否特殊召唤且额外卡组出场的怪兽区有可用空位
 	return c:IsSetCard(0x20dc) and c:IsCanBeSpecialSummoned(e,0,tp,false,false) and Duel.GetLocationCountFromEx(tp,tp,nil,c)>0
 end
--- 效果发动时的目标判定与操作信息设置：检查能否从额外卡组特殊召唤1只「超级量子机兽」，并设置特殊召唤的操作信息。
+-- 检查额外卡组是否存在可特殊召唤的「超级量子机兽」怪兽并设置特殊召唤操作信息
 function c15721392.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 在效果发动合法性检查（chk==0）时，确认额外卡组中是否存在满足spfilter的「超级量子机兽」怪兽。
+	-- 检查自己额外卡组是否存在至少1只满足条件的「超级量子机兽」怪兽
 	if chk==0 then return Duel.IsExistingMatchingCard(c15721392.spfilter,tp,LOCATION_EXTRA,0,1,nil,e,tp) end
-	-- 设置本次效果处理时将进行特殊召唤的操作信息：从额外卡组特殊召唤1只怪兽，归属玩家为tp。
+	-- 设置从自己额外卡组特殊召唤1只怪兽的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_EXTRA)
 end
--- 定义从手卡·卡组·墓地选择「超级量子战士」怪兽的筛选条件，要求其为「超级量子战士」字段、可被特殊召唤，且卡名被所超量怪兽卡记载。
+-- 过滤函数，检查是否为在指定超量怪兽上有卡名记述且可特殊召唤的「超级量子战士」怪兽
 function c15721392.spfilter2(c,e,tp,mc)
-	-- 返回该怪兽是否为「超级量子战士」字段、能否被效果特殊召唤，并且其卡名是否被所超量怪兽卡（mc）的卡名记述。
+	-- 判断该卡是否为「超级量子战士」怪兽、能否特殊召唤且其卡名记述在超量怪兽文本中
 	return c:IsSetCard(0x10dc) and c:IsCanBeSpecialSummoned(e,0,tp,false,false) and aux.IsCodeListed(mc,c:GetCode())
 end
--- 效果处理函数：先从额外卡组选择1只「超级量子机兽」特殊召唤，成功后询问是否从手卡·卡组·墓地选1只记述的「超级量子战士」效果无效特殊召唤。
+-- 效果处理，从额外卡组特殊召唤1只「超级量子机兽」怪兽，之后可从手卡·卡组·墓地效果无效特殊召唤其记述的1只「超级量子战士」怪兽
 function c15721392.activate(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	-- 获取额外卡组中所有满足spfilter的「超级量子机兽」怪兽的集合。
+	-- 获取自己额外卡组中所有可特殊召唤的「超级量子机兽」怪兽
 	local g=Duel.GetMatchingGroup(c15721392.spfilter,tp,LOCATION_EXTRA,0,nil,e,tp)
 	if g:GetCount()==0 then return end
-	-- 向玩家显示“请选择要特殊召唤的卡”的选择提示。
+	-- 提示控制者选择要从额外卡组特殊召唤的「超级量子机兽」怪兽
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
 	local tc=g:Select(tp,1,1,nil):GetFirst()
-	-- 将选中的「超级量子机兽」以表侧攻击表示特殊召唤；若特殊召唤成功则继续后续处理。
+	-- 将选中的「超级量子机兽」超量怪兽表侧表示特殊召唤并判断是否成功
 	if tc and Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP)>0 then
-		-- 获取手卡·卡组·墓地中满足spfilter2且不受王家长眠之谷影响的「超级量子战士」怪兽集合。
+		-- 获取手卡·卡组·墓地中（受王家长眠之谷过滤）记述在刚特殊召唤的超量怪兽上的「超级量子战士」怪兽
 		local g2=Duel.GetMatchingGroup(aux.NecroValleyFilter(c15721392.spfilter2),tp,LOCATION_HAND+LOCATION_DECK+LOCATION_GRAVE,0,nil,e,tp,tc)
-		-- 若没有符合条件的可特殊召唤怪兽，或玩家选择“否”，则直接结束效果处理。
+		-- 若没有可特殊召唤的怪兽或玩家选择不特殊召唤，则结束处理
 		if #g2<=0 or not Duel.SelectYesNo(tp,aux.Stringid(15721392,0)) then return end  --"是否特殊召唤记述的怪兽？"
-		-- 中断当前效果处理，使后续特殊召唤视为不同时处理，避免引起错误时点。
+		-- 中断当前效果处理，使后续「超级量子战士」怪兽的特殊召唤视为不同时处理
 		Duel.BreakEffect()
-		-- 向玩家显示“请选择要特殊召唤的卡”的选择提示，用于选择「超级量子战士」。
+		-- 提示控制者选择要特殊召唤的「超级量子战士」怪兽
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
 		local tc2=g2:Select(tp,1,1,nil):GetFirst()
-		-- 将选中的「超级量子战士」通过特殊召唤步骤进行处理；若成功则为后续附加效果无效状态做准备。
+		-- 以分步方式开始将选中的「超级量子战士」怪兽表侧表示特殊召唤
 		if tc2 and Duel.SpecialSummonStep(tc2,0,tp,tp,false,false,POS_FACEUP) then
-			-- 效果无效特殊召唤中的“效果无效”——使该怪兽的场上效果无效化（EFFECT_DISABLE）。
+			-- 效果无效特殊召唤。
 			local e1=Effect.CreateEffect(c)
 			e1:SetType(EFFECT_TYPE_SINGLE)
 			e1:SetCode(EFFECT_DISABLE)
 			e1:SetReset(RESET_EVENT+RESETS_STANDARD)
 			tc2:RegisterEffect(e1)
-			-- 效果无效特殊召唤中的“效果无效”——使该怪兽已发动的效果处理无效化（EFFECT_DISABLE_EFFECT）。
+			-- 效果无效特殊召唤。
 			local e2=Effect.CreateEffect(c)
 			e2:SetType(EFFECT_TYPE_SINGLE)
 			e2:SetCode(EFFECT_DISABLE_EFFECT)
@@ -75,7 +75,7 @@ function c15721392.activate(e,tp,eg,ep,ev,re,r,rp)
 			e2:SetReset(RESET_EVENT+RESETS_STANDARD)
 			tc2:RegisterEffect(e2)
 		end
-		-- 完成整个特殊召唤过程，正式处理所有通过特殊召唤步骤召唤的怪兽。
+		-- 完成分步特殊召唤处理并正式将其视作特殊召唤成功
 		Duel.SpecialSummonComplete()
 	end
 end
