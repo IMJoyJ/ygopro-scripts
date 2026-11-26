@@ -11,8 +11,8 @@ function s.initial_effect(c)
 	c:EnableReviveLimit()
 	-- ①：这张卡超量召唤的场合才能发动。从卡组选1只「光子」怪兽守备表示特殊召唤或作为这张卡的超量素材。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(id,0))  --"是否在超量怪兽上面重叠来超量召唤？"
-	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES)
+	e1:SetDescription(aux.Stringid(id,0))
+	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e1:SetCode(EVENT_SPSUMMON_SUCCESS)
 	e1:SetProperty(EFFECT_FLAG_DELAY)

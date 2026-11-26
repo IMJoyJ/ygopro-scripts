@@ -5,7 +5,7 @@
 function c39913299.initial_effect(c)
 	-- 这个卡名的卡在1回合只能发动1张。①：宣言1个卡名才能发动。自己卡组最上面的卡翻开，宣言的卡的场合，那张卡加入手卡。并且，可以再从卡组把1只神属性怪兽加入手卡或特殊召唤。不是的场合，翻开的卡送去墓地。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH+CATEGORY_DECKDES+CATEGORY_SPECIAL_SUMMON)
+	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON+CATEGORY_SPECIAL_SUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetCountLimit(1,39913299+EFFECT_COUNT_CODE_OATH)

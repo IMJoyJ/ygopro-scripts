@@ -4,8 +4,8 @@
 function c85431040.initial_effect(c)
 	-- ①：把这张卡解放才能发动。给与对方300伤害，可以从卡组把最多2只「邪恶之棘」攻击表示特殊召唤。这个效果特殊召唤的怪兽不能把效果发动。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(85431040,0))  --"伤害"
-	e1:SetCategory(CATEGORY_DAMAGE+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES)
+	e1:SetDescription(aux.Stringid(85431040,0))
+	e1:SetCategory(CATEGORY_DAMAGE+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e1:SetType(EFFECT_TYPE_IGNITION)
 	e1:SetRange(LOCATION_MZONE)
 	e1:SetCost(c85431040.cost)

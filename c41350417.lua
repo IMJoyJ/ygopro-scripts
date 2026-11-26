@@ -9,8 +9,8 @@ function s.initial_effect(c)
 	aux.AddCodeList(c,46986414,38033121)
 	-- 双方各自可以从自身的手卡·卡组把1只魔法师族·暗属性怪兽特殊召唤。这个效果让自己特殊召唤的怪兽的原本卡名是「黑魔术师」或「黑魔术少女」的场合，再让自己可以把除「黑魔导 the Curtain」外的1张有「黑魔术师」的卡名记述的魔法·陷阱卡从卡组加入手卡。这个回合，这个效果特殊召唤的怪兽的效果不能发动。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(id,0))  --"发动"
-	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_SEARCH+CATEGORY_TOHAND)
+	e1:SetDescription(aux.Stringid(id,0))
+	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON+CATEGORY_SEARCH+CATEGORY_TOHAND)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetCountLimit(1,id+EFFECT_COUNT_CODE_OATH)

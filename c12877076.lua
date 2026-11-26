@@ -95,8 +95,7 @@ function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
 		e:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH+CATEGORY_TOGRAVE+CATEGORY_DECKDES)
 	end
 	if op&2>0 then
-		e:SetCategory(e:GetCategory()|CATEGORY_SPECIAL_SUMMON)
-		-- 预设置特殊召唤的操作信息，声明可能从卡组、手卡、墓地、魔陷区特殊召唤1只怪兽，供连锁判定和时点检测使用。
+		e:SetCategory(e:GetCategory()|CATEGORY_SPECIAL_SUMMON|CATEGORY_DECK_SPSUMMON)
 		Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_DECK+LOCATION_HAND+LOCATION_GRAVE+LOCATION_SZONE)
 	end
 end

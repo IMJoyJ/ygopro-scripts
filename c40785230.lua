@@ -66,8 +66,8 @@ function c40785230.initial_effect(c)
 	c:RegisterEffect(e5)
 	-- ②：自己准备阶段发动。这张卡回到手卡。那之后，可以把自己的手卡·卡组·墓地·除外状态的1只「吠陀」怪兽特殊召唤。
 	local e6=Effect.CreateEffect(c)
-	e6:SetDescription(aux.Stringid(40785230,2))  --"这张卡回到手卡"
-	e6:SetCategory(CATEGORY_TOHAND+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_GRAVE_SPSUMMON)
+	e6:SetDescription(aux.Stringid(40785230,2))
+	e6:SetCategory(CATEGORY_TOHAND+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON+CATEGORY_GRAVE_SPSUMMON)
 	e6:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_F)
 	e6:SetCode(EVENT_PHASE+PHASE_STANDBY)
 	e6:SetRange(LOCATION_MZONE)

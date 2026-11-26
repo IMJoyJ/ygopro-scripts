@@ -31,8 +31,8 @@ function s.initial_effect(c)
 	c:RegisterEffect(e2)
 	-- ②：自己主要阶段才能发动。从对方卡组上面把3张卡翻开。可以从那之中选1只怪兽在自己场上特殊召唤。剩余回到卡组。
 	local e3=Effect.CreateEffect(c)
-	e3:SetDescription(aux.Stringid(id,1))  --"特殊召唤"
-	e3:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES)
+	e3:SetDescription(aux.Stringid(id,1))
+	e3:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e3:SetType(EFFECT_TYPE_IGNITION)
 	e3:SetRange(LOCATION_MZONE)
 	e3:SetCountLimit(1,id+o)

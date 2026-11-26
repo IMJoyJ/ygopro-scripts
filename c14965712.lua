@@ -26,8 +26,8 @@ function s.initial_effect(c)
 	c:RegisterEffect(e2)
 	-- ②：1回合1次，对方把场上的怪兽的效果发动时或者对方怪兽攻击的伤害计算时才能发动。从自己的卡组·墓地选1只「黑魔术师」或者攻击力300/守备力200的怪兽加入手卡或特殊召唤。那之后，可以把那只对方怪兽的攻击力变成0。
 	local e3=Effect.CreateEffect(c)
-	e3:SetDescription(aux.Stringid(id,1))  --"检索效果"
-	e3:SetCategory(CATEGORY_SEARCH+CATEGORY_SPECIAL_SUMMON+CATEGORY_TOHAND+CATEGORY_DECKDES+CATEGORY_GRAVE_ACTION+CATEGORY_GRAVE_SPSUMMON)
+	e3:SetDescription(aux.Stringid(id,1))
+	e3:SetCategory(CATEGORY_SEARCH+CATEGORY_SPECIAL_SUMMON+CATEGORY_TOHAND+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON+CATEGORY_GRAVE_ACTION+CATEGORY_GRAVE_SPSUMMON)
 	e3:SetType(EFFECT_TYPE_QUICK_O)
 	e3:SetProperty(EFFECT_FLAG_DAMAGE_STEP)
 	e3:SetCode(EVENT_CHAINING)

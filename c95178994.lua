@@ -4,8 +4,8 @@
 function c95178994.initial_effect(c)
 	-- ①：这张卡被战斗破坏送去墓地的场合发动。给与对方500伤害。那之后，可以从卡组把「巨型病毒」任意数量攻击表示特殊召唤。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(95178994,0))  --"伤害"
-	e1:SetCategory(CATEGORY_DAMAGE+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES)
+	e1:SetDescription(aux.Stringid(95178994,0))
+	e1:SetCategory(CATEGORY_DAMAGE+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_F)
 	e1:SetCode(EVENT_BATTLE_DESTROYED)
 	e1:SetCondition(c95178994.condition)

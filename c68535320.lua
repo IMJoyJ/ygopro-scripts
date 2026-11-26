@@ -4,8 +4,8 @@
 function c68535320.initial_effect(c)
 	-- ①：这张卡被对方破坏送去墓地时，以对方场上1只怪兽为对象才能发动。那只对方怪兽破坏。那之后，可以从卡组把1只「寒冰手」特殊召唤。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(68535320,0))  --"破坏并特殊召唤"
-	e1:SetCategory(CATEGORY_DESTROY+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES)
+	e1:SetDescription(aux.Stringid(68535320,0))
+	e1:SetCategory(CATEGORY_DESTROY+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET+EFFECT_FLAG_DAMAGE_STEP)
 	e1:SetCode(EVENT_TO_GRAVE)

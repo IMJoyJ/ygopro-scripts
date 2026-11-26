@@ -13,8 +13,8 @@ function c76794549.initial_effect(c)
 	aux.EnablePendulumAttribute(c)
 	-- ①：自己主要阶段才能发动。这张卡破坏，从手卡·卡组选1只「星读之魔术师」在自己的灵摆区域放置或特殊召唤。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(76794549,0))  --"这张卡破坏"
-	e1:SetCategory(CATEGORY_DESTROY+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES)
+	e1:SetDescription(aux.Stringid(76794549,0))
+	e1:SetCategory(CATEGORY_DESTROY+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e1:SetType(EFFECT_TYPE_IGNITION)
 	e1:SetRange(LOCATION_PZONE)
 	e1:SetCountLimit(1,76794549)

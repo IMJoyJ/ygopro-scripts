@@ -5,7 +5,7 @@
 function c61606250.initial_effect(c)
 	-- 这个卡名的卡在1回合只能发动1张，这张卡发动的回合，自己不是龙族怪兽不能特殊召唤。①：以自己场上1只「武装龙」怪兽为对象才能发动。从自己的卡组·墓地选那1只同名怪兽加入手卡或无视召唤条件特殊召唤。这个效果特殊召唤的怪兽不能直接攻击。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_SEARCH+CATEGORY_TOHAND+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_GRAVE_SPSUMMON)
+	e1:SetCategory(CATEGORY_SEARCH+CATEGORY_TOHAND+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON+CATEGORY_GRAVE_SPSUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET)

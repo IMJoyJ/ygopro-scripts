@@ -7,7 +7,7 @@ function c22819092.initial_effect(c)
 	aux.AddCodeList(c,22702055)
 	-- 这个卡名的卡在1回合只能发动1张。①：从卡组把7星以下的1只有「海」的卡名记述的怪兽或者水属性通常怪兽加入手卡。场上有「海」存在的场合，可以再从卡组把1只水属性通常怪兽特殊召唤。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES)
+	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetCountLimit(1,22819092+EFFECT_COUNT_CODE_OATH)

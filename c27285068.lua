@@ -10,8 +10,8 @@ function s.initial_effect(c)
 	aux.AddCodeList(c,97556336)
 	-- 这个卡名的①②的效果1回合各能使用1次。①：自己场上有「无垢者 米底乌斯」存在的场合才能发动。从卡组选1只攻击力300/守备力200的怪兽加入手卡或特殊召唤。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(id,0))  --"从卡组选怪兽"
-	e1:SetCategory(CATEGORY_SEARCH+CATEGORY_TOHAND+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES)
+	e1:SetDescription(aux.Stringid(id,0))
+	e1:SetCategory(CATEGORY_SEARCH+CATEGORY_TOHAND+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetCountLimit(1,id)

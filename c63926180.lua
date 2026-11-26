@@ -12,8 +12,8 @@ function s.initial_effect(c)
 	aux.AddCodeList(c,84288367)
 	-- 这个卡名的卡在1回合只能发动1张。①：可以从以下效果选择1个发动。这个回合，自己不用融合怪兽不能攻击宣言。●从自己的卡组·墓地把1只「法之神灵 艾华斯」特殊召唤。●从卡组选1只「阿莱斯特」怪兽送去墓地或除外。●把对方的额外卡组的里侧的卡随机3张确认，选那之内的1张除外。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(id,0))  --"发动"
-	e1:SetCategory(CATEGORY_TOGRAVE+CATEGORY_SPECIAL_SUMMON+CATEGORY_REMOVE+CATEGORY_DECKDES)
+	e1:SetDescription(aux.Stringid(id,0))
+	e1:SetCategory(CATEGORY_TOGRAVE+CATEGORY_SPECIAL_SUMMON+CATEGORY_REMOVE+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetCountLimit(1,id+EFFECT_COUNT_CODE_OATH)
@@ -52,7 +52,7 @@ function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	e:SetLabel(op)
 	if op==1 then
 		if e:IsCostChecked() then
-			e:SetCategory(CATEGORY_SPECIAL_SUMMON)
+			e:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DECK_SPSUMMON)
 		end
 		-- 设置连锁处理的操作信息，声明本次效果会从卡组或墓地特殊召唤1张卡。
 		Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_DECK+LOCATION_GRAVE)

@@ -67,9 +67,7 @@ function c1218214.drawop(e,tp,eg,ep,ev,re,r,rp)
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
 	-- 选择手牌中的1张「方界」卡
 	local g=Duel.SelectMatchingCard(tp,c1218214.cfilter,tp,LOCATION_HAND,0,1,1,nil)
-	-- 如果选中卡片成功送去墓地
-	if g:GetCount()>0 and Duel.SendtoGrave(g,REASON_EFFECT)>0 then
-		-- 自己从卡组抽1张卡
+	if g:GetCount()>0 and Duel.SendtoGrave(g,REASON_EFFECT)>0 and g:GetFirst():IsLocation(LOCATION_GRAVE) then
 		Duel.Draw(tp,1,REASON_EFFECT)
 	end
 end

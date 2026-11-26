@@ -8,8 +8,8 @@ local s,id,o=GetID()
 function s.initial_effect(c)
 	-- ①：可以从以下效果选择1个发动（这个卡名的以下效果1回合各能选择1次）。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(id,0))  --"发动"
-	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_SEARCH+CATEGORY_TOHAND+CATEGORY_DECKDES)
+	e1:SetDescription(aux.Stringid(id,0))
+	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_SEARCH+CATEGORY_TOHAND+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetTarget(s.target)

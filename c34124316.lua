@@ -4,7 +4,7 @@
 function c34124316.initial_effect(c)
 	-- ①：这张卡反转的场合发动。场上的怪兽全部破坏。那之后，双方从卡组上面把5张卡翻开，那之中的4星以下而可以特殊召唤的怪兽全部表侧攻击表示或里侧守备表示特殊召唤。剩下的翻开的卡全部加入手卡。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_DESTROY+CATEGORY_SEARCH+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_MSET)
+	e1:SetCategory(CATEGORY_DESTROY+CATEGORY_SEARCH+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON+CATEGORY_MSET)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_FLIP)
 	e1:SetTarget(c34124316.target)
 	e1:SetOperation(c34124316.operation)

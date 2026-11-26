@@ -4,8 +4,8 @@
 function c2843014.initial_effect(c)
 	-- 对应效果原文：这张卡被战斗破坏送去墓地时，从自己卡组把1只鱼族怪兽送去墓地。那之后，可以从自己卡组把1只「迅捷翻车鱼」特殊召唤。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(2843014,0))  --"送墓"
-	e1:SetCategory(CATEGORY_DECKDES+CATEGORY_SPECIAL_SUMMON)
+	e1:SetDescription(aux.Stringid(2843014,0))
+	e1:SetCategory(CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON+CATEGORY_SPECIAL_SUMMON)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_F)
 	e1:SetCode(EVENT_BATTLE_DESTROYED)
 	e1:SetCondition(c2843014.condition)

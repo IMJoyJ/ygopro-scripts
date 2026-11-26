@@ -14,7 +14,7 @@ function c64961254.initial_effect(c)
 	c:RegisterEffect(e1)
 	-- ②：1回合1次，宣言卡的种类（怪兽·魔法·陷阱）才能发动。对方卡组最上面的卡给双方确认，宣言的种类的卡的场合，对方把那张卡在自身场上盖放。不是的场合或者不能盖放的场合，对方把那张卡加入手卡。
 	local e3=Effect.CreateEffect(c)
-	e3:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_MSET+CATEGORY_SSET)
+	e3:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON+CATEGORY_MSET+CATEGORY_SSET)
 	e3:SetDescription(aux.Stringid(64961254,1))
 	e3:SetType(EFFECT_TYPE_IGNITION)
 	e3:SetCountLimit(1)

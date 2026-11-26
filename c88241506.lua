@@ -8,8 +8,8 @@ function c88241506.initial_effect(c)
 	aux.AddCodeList(c,89631139)
 	-- ②：这张卡被选择作为攻击对象时才能发动。那次攻击无效，这张卡的表示形式变更。那之后，可以从自己的手卡·卡组·墓地选1只「青眼白龙」特殊召唤。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(88241506,0))  --"攻击无效"
-	e1:SetCategory(CATEGORY_POSITION+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES)
+	e1:SetDescription(aux.Stringid(88241506,0))
+	e1:SetCategory(CATEGORY_POSITION+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e1:SetCode(EVENT_BE_BATTLE_TARGET)
 	e1:SetCountLimit(1,88241506)

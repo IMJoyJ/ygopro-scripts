@@ -15,7 +15,7 @@ function s.initial_effect(c)
 	-- ②：这张卡战斗破坏对方怪兽送去墓地时才能发动。从卡组选「纯血妖精」以外的1只4星以下的光属性·魔法师族怪兽加入手卡或特殊召唤。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(id,1))
-	e2:SetCategory(CATEGORY_TOHAND+CATEGORY_SPECIAL_SUMMON+CATEGORY_SEARCH+CATEGORY_DECKDES)
+	e2:SetCategory(CATEGORY_TOHAND+CATEGORY_SPECIAL_SUMMON+CATEGORY_SEARCH+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e2:SetCode(EVENT_BATTLE_DESTROYING)
 	e2:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	-- 效果发动条件：自身战斗破坏对方怪兽并送去墓地

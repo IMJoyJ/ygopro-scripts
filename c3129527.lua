@@ -8,8 +8,8 @@ function s.initial_effect(c)
 	aux.AddCodeList(c,77482666,40235813)
 	-- ①：在自己场上把最多4只「替罪羊衍生物」（兽族·地·1星·攻/守0）守备表示特殊召唤。对方场上有怪兽存在的场合，可以再从卡组把1只「疾风之豹战士」特殊召唤。这个回合，这衍生物不能为上级召唤而解放，自己不是融合怪兽不能从额外卡组特殊召唤。有「时间黑魔术师」的卡名记述的自己场上的卡被战斗·效果破坏的场合，可以作为代替把这个效果特殊召唤的自己场上1只衍生物破坏。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(id,0))  --"发动"
-	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_TOKEN+CATEGORY_DECKDES)
+	e1:SetDescription(aux.Stringid(id,0))
+	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_TOKEN+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetHintTiming(0,TIMINGS_CHECK_MONSTER+TIMING_END_PHASE)

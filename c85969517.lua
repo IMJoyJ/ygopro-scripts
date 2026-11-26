@@ -28,8 +28,8 @@ function s.initial_effect(c)
 	c:RegisterEffect(e1)
 	-- 这个卡名的①②的怪兽效果1回合各能使用1次。①：对方对怪兽的特殊召唤成功的场合才能发动。从卡组把1张「海造贼」卡加入手卡。这张卡有「海造贼」卡装备的场合，可以再从卡组把1只「海造贼」怪兽特殊召唤。
 	local e2=Effect.CreateEffect(c)
-	e2:SetDescription(aux.Stringid(id,1))  --"从卡组把1张「海造贼」卡加入手卡"
-	e2:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES)
+	e2:SetDescription(aux.Stringid(id,1))
+	e2:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
 	e2:SetProperty(EFFECT_FLAG_DELAY)
 	e2:SetCode(EVENT_SPSUMMON_SUCCESS)

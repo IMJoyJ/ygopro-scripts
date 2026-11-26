@@ -8,7 +8,7 @@ function s.initial_effect(c)
 	-- 对应效果原文：这个卡名的卡在1回合只能发动1张。①：以自己和对方的除外状态的卡数量差的数量的双方的场上·墓地的怪兽为对象才能发动。那些怪兽除外。那之后，对方可以从自身卡组把1只怪兽特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(id,0))
-	e1:SetCategory(CATEGORY_REMOVE+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES)
+	e1:SetCategory(CATEGORY_REMOVE+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetCountLimit(1,id+EFFECT_COUNT_CODE_OATH)

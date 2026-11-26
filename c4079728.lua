@@ -32,8 +32,8 @@ function s.initial_effect(c)
 	c:RegisterEffect(e2)
 	-- ②效果：把这张卡2个超量素材取除才能发动。从卡组选以下怪兽之内1只加入手卡或特殊召唤。●「护宝炮妖」怪兽 ●「兽带斗神」怪兽 ●「阿不思的落胤」或者有那个卡名记述的怪兽
 	local e3=Effect.CreateEffect(c)
-	e3:SetDescription(aux.Stringid(id,1))  --"检索效果"
-	e3:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_TOHAND+CATEGORY_SEARCH+CATEGORY_DECKDES)
+	e3:SetDescription(aux.Stringid(id,1))
+	e3:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_TOHAND+CATEGORY_SEARCH+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e3:SetType(EFFECT_TYPE_IGNITION)
 	e3:SetRange(LOCATION_MZONE)
 	e3:SetCountLimit(1,id)

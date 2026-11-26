@@ -19,7 +19,7 @@ function s.initial_effect(c)
 	-- ②：把这张卡解放才能发动。从手卡把1只「变形斗士」怪兽特殊召唤。那之后，可以从手卡·卡组把1只「工具挂车」特殊召唤。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(id,1))
-	e2:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES)
+	e2:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e2:SetType(EFFECT_TYPE_IGNITION)
 	e2:SetRange(LOCATION_MZONE)
 	e2:SetCountLimit(1,id+o)

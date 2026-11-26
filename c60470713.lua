@@ -10,8 +10,8 @@ function c60470713.initial_effect(c)
 	c:RegisterEffect(e1)
 	-- ①：这张卡在魔法与陷阱区域存在的状态，自己的场上（表侧表示）·墓地的「魔偶甜点」卡因效果回到自己的手卡·卡组的场合发动。从卡组把1只「魔偶甜点」怪兽加入手卡。自己场上有天使族「魔偶甜点」怪兽存在的场合，也能不加入手卡攻击表示特殊召唤。
 	local e2=Effect.CreateEffect(c)
-	e2:SetDescription(aux.Stringid(60470713,0))  --"检索"
-	e2:SetCategory(CATEGORY_SEARCH+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES)
+	e2:SetDescription(aux.Stringid(60470713,0))
+	e2:SetCategory(CATEGORY_SEARCH+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_F)
 	e2:SetRange(LOCATION_SZONE)
 	e2:SetCountLimit(1,60470713)

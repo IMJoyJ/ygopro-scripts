@@ -7,8 +7,8 @@ function c92377303.initial_effect(c)
 	c:EnableReviveLimit()
 	-- 猜中自己的「时间魔术师」的掷硬币效果时，可以把自己场上存在的1只「黑魔术师」解放从手卡或者卡组中特殊召唤。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(92377303,0))  --"特殊召唤"
-	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
+	e1:SetDescription(aux.Stringid(92377303,0))
+	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DECK_SPSUMMON)
 	e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
 	e1:SetRange(LOCATION_HAND+LOCATION_DECK)
 	e1:SetCode(EVENT_CUSTOM+71625222)

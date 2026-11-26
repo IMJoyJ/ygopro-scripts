@@ -6,8 +6,8 @@
 function c66171432.initial_effect(c)
 	-- ①：从自己卡组上面把3张卡翻开，那之中的「花札卫」怪兽尽可能无视召唤条件特殊召唤。这个效果特殊召唤的怪兽的等级变成2星，效果无效化。剩下的卡全部里侧表示除外，自己失去除外的卡数量×1000基本分。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(66171432,0))  --"卡组特殊召唤"
-	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES)
+	e1:SetDescription(aux.Stringid(66171432,0))
+	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetCountLimit(1,66171432+EFFECT_COUNT_CODE_OATH)

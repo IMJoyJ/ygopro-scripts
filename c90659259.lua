@@ -9,7 +9,7 @@ local s,id,o=GetID()
 function s.initial_effect(c)
 	-- 这个卡名的卡在1回合只能发动1张。①：以自己场上1只机械族怪兽为对象才能发动。那只怪兽的表示形式的以下效果适用。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES)
+	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET)

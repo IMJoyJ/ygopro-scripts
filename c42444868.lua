@@ -4,7 +4,7 @@
 function c42444868.initial_effect(c)
 	-- ①：怪兽的效果·魔法·陷阱卡发动时，把手卡1张反击陷阱卡给对方观看，丢弃1张手卡，支付1000基本分才能发动。那个发动无效，那张卡回到持有者卡组。那之后，可以从卡组·额外卡组选1只「珀耳修斯」怪兽特殊召唤。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_NEGATE+CATEGORY_TODECK+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES)
+	e1:SetCategory(CATEGORY_NEGATE+CATEGORY_TODECK+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_CHAINING)
 	e1:SetCondition(c42444868.condition)

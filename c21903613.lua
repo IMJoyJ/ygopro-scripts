@@ -13,7 +13,7 @@ function c21903613.initial_effect(c)
 	-- ①：这张卡连接召唤成功的场合才能发动。从自己卡组上面把最多3张卡翻开。那之中有植物族怪兽的场合，可以选那之内的最多2只特殊召唤。剩下的卡送去墓地。这个效果特殊召唤的怪兽不能作为连接素材。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(21903613,0))
-	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_TOGRAVE+CATEGORY_DECKDES)
+	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_TOGRAVE+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e1:SetProperty(EFFECT_FLAG_DELAY)
 	e1:SetCode(EVENT_SPSUMMON_SUCCESS)

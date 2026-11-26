@@ -6,7 +6,7 @@
 function c13482262.initial_effect(c)
 	-- 这个卡名的卡在1回合只能发动1张。①：作为这张卡的发动时的效果处理，可以把手卡1只「魔神仪」怪兽给对方观看，那2只同名怪兽从卡组特殊召唤。那之后，给人观看的怪兽回到卡组。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_TODECK+CATEGORY_DECKDES)
+	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_TODECK+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetCountLimit(1,13482262+EFFECT_COUNT_CODE_OATH)

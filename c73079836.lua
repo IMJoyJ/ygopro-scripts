@@ -11,7 +11,7 @@ function c73079836.initial_effect(c)
 	-- ①：自己主要阶段才能发动。从自己卡组上面把5张卡翻开。可以从那之中选1只岩石族怪兽守备表示特殊召唤。剩下的卡用喜欢的顺序回到卡组最下面。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(73079836,0))
-	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES)
+	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e1:SetType(EFFECT_TYPE_IGNITION)
 	e1:SetRange(LOCATION_MZONE)
 	e1:SetCountLimit(1,73079836)

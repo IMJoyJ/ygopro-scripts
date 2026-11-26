@@ -9,7 +9,7 @@ function c37343995.initial_effect(c)
 	-- ①：自己场上的怪兽不存在的场合或者只有超量怪兽的场合才能发动（这个效果发动的回合，自己不是「救祓少女」怪兽不能特殊召唤）。这张卡从手卡特殊召唤，从卡组把1只「救祓少女·埃莉丝」特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(37343995,0))
-	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES)
+	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e1:SetType(EFFECT_TYPE_IGNITION)
 	e1:SetRange(LOCATION_HAND)
 	e1:SetCountLimit(1,37343995)

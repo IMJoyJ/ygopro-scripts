@@ -4,8 +4,8 @@
 function c57844634.initial_effect(c)
 	-- 这张卡被战斗破坏送去墓地时，给与对方基本分500分伤害。并且可以再从自己卡组把「迅捷飞鼠」任意数量在对方场上表侧攻击表示特殊召唤。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(57844634,0))  --"伤害"
-	e1:SetCategory(CATEGORY_DAMAGE+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES)
+	e1:SetDescription(aux.Stringid(57844634,0))
+	e1:SetCategory(CATEGORY_DAMAGE+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_F)
 	e1:SetCode(EVENT_BATTLE_DESTROYED)
 	e1:SetCondition(c57844634.condition)

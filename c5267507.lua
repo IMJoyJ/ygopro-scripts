@@ -14,8 +14,8 @@ function s.initial_effect(c)
 	c:SetUniqueOnField(1,1,aux.FilterBoolFunction(Card.IsSetCard,0x1021),LOCATION_MZONE)
 	-- 这个卡名的②的效果1回合只能使用1次。②：自己·对方的主要阶段，把手卡·墓地的这张卡除外才能发动。从自己的手卡·场上（表侧表示）把1只「地缚神」怪兽或「红莲魔龙」送去墓地。那之后，可以从以下效果让1个适用。●从卡组·额外卡组把1只「地缚」怪兽特殊召唤。●从额外卡组把1只「真红莲新星龙」当作同调召唤作特殊召唤。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(id,0))  --"特殊召唤"
-	e1:SetCategory(CATEGORY_TOGRAVE+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES)
+	e1:SetDescription(aux.Stringid(id,0))
+	e1:SetCategory(CATEGORY_TOGRAVE+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e1:SetType(EFFECT_TYPE_QUICK_O)
 	e1:SetHintTiming(0,TIMING_MAIN_END)
 	e1:SetCode(EVENT_FREE_CHAIN)

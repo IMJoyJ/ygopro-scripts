@@ -38,7 +38,7 @@ function c34848821.initial_effect(c)
 	-- 这个卡名的③的效果1回合只能使用1次。③：这张卡被送去墓地的回合的结束阶段才能发动。从卡组选1只「铁兽」怪兽或「阿不思的落胤」加入手卡或特殊召唤。
 	local e4=Effect.CreateEffect(c)
 	e4:SetDescription(aux.Stringid(34848821,0))
-	e4:SetCategory(CATEGORY_SEARCH+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES)
+	e4:SetCategory(CATEGORY_SEARCH+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e4:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
 	e4:SetCode(EVENT_PHASE+PHASE_END)
 	e4:SetRange(LOCATION_GRAVE)

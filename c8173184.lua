@@ -103,50 +103,8 @@ function s.smop(e,tp,eg,ep,ev,re,r,rp)
 		-- 让玩家对选中的怪兽进行通常召唤（忽略每回合的通常召唤次数限制）
 		Duel.Summon(tp,g:GetFirst(),true,nil)
 	end
-	-- 这个回合，自己不用以「次世代」调整为同调素材的同调召唤不能从额外卡组把怪兽特殊召唤。
-	local e1=Effect.CreateEffect(c)
-	e1:SetType(EFFECT_TYPE_FIELD)
-	e1:SetCode(EFFECT_CANNOT_SPECIAL_SUMMON)
-	e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
-	e1:SetTargetRange(1,0)
-	e1:SetTarget(s.splimit)
-	e1:SetReset(RESET_PHASE+PHASE_END)
-	-- 注册限制玩家从额外卡组特殊召唤非同调怪兽的效果
-	Duel.RegisterEffect(e1,tp)
-	-- 这个回合，自己不用以「次世代」调整为同调素材的同调召唤不能从额外卡组把怪兽特殊召唤。
-	local e2=Effect.CreateEffect(c)
-	e2:SetType(EFFECT_TYPE_FIELD)
-	e2:SetCode(EFFECT_CANNOT_BE_SYNCHRO_MATERIAL)
-	e2:SetProperty(EFFECT_FLAG_IGNORE_RANGE+EFFECT_FLAG_IGNORE_IMMUNE)
-	e2:SetTarget(s.tlmtg)
-	e2:SetValue(s.tlmval)
-	e2:SetReset(RESET_PHASE+PHASE_END)
-	-- 注册限制非「次世代」调整不能作为同调素材的效果
-	Duel.RegisterEffect(e2,tp)
-	-- 这个回合，自己不用以「次世代」调整为同调素材的同调召唤不能从额外卡组把怪兽特殊召唤。
-	local e3=Effect.CreateEffect(c)
-	e3:SetType(EFFECT_TYPE_FIELD)
-	e3:SetCode(id)
-	e3:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
-	e3:SetTargetRange(1,0)
-	e3:SetReset(RESET_PHASE+PHASE_END)
-	-- 注册用于标记本回合已适用该特殊召唤限制的玩家标记效果
-	Duel.RegisterEffect(e3,tp)
+	aux.RegisterSynchroMaterialRequire(c,tp,s.tlmfilter,RESET_PHASE+PHASE_END)
 end
--- 限制从额外卡组特殊召唤非同调怪兽
-function s.splimit(e,c,sump,sumtype,sumpos,targetp,se)
-	return c:IsLocation(LOCATION_EXTRA) and bit.band(sumtype,SUMMON_TYPE_SYNCHRO)~=SUMMON_TYPE_SYNCHRO
-end
--- 过滤非「次世代」的调整怪兽
-function s.tlmtg(e,c)
-	return c:IsType(TYPE_TUNER) and not c:IsSetCard(0x2)
-end
--- 限制非「次世代」调整不能作为同调素材
-function s.tlmval(e,sync)
-	local tp=e:GetHandlerPlayer()
-	if sync:GetControler()==tp then
-		-- 检查玩家是否未获得豁免标记（用于处理某些特殊同调召唤情况）
-		return Duel.GetFlagEffect(tp,id+1)==0
-	end
-	return false
+function s.tlmfilter(c)
+	return c:IsSetCard(0x2) and c:IsType(TYPE_TUNER)
 end

@@ -17,8 +17,8 @@ function c25415052.initial_effect(c)
 	c:RegisterEffect(e1)
 	-- ①：这张卡仪式召唤成功的场合才能发动。选对方场上最多3张魔法·陷阱卡回到持有者卡组。那之后，可以从卡组把1只4星以下的灵魂怪兽无视召唤条件特殊召唤。
 	local e2=Effect.CreateEffect(c)
-	e2:SetDescription(aux.Stringid(25415052,0))  --"对方魔法·陷阱回到卡组"
-	e2:SetCategory(CATEGORY_TOHAND+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES)
+	e2:SetDescription(aux.Stringid(25415052,0))
+	e2:SetCategory(CATEGORY_TOHAND+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e2:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e2:SetProperty(EFFECT_FLAG_DELAY)
 	e2:SetCode(EVENT_SPSUMMON_SUCCESS)

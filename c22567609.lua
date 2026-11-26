@@ -4,8 +4,8 @@
 function c22567609.initial_effect(c)
 	-- 这张卡被战斗破坏送去墓地时，自己回复1000基本分。并且可以再从卡组把「迅捷鼯鼠」任意数量里侧守备表示特殊召唤。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(22567609,0))  --"回复"
-	e1:SetCategory(CATEGORY_RECOVER+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_MSET)
+	e1:SetDescription(aux.Stringid(22567609,0))
+	e1:SetCategory(CATEGORY_RECOVER+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON+CATEGORY_MSET)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_F)
 	e1:SetCode(EVENT_BATTLE_DESTROYED)
 	e1:SetCondition(c22567609.condition)

@@ -13,8 +13,8 @@ function s.initial_effect(c)
 	c:RegisterEffect(e1)
 	-- ①：自己主要阶段才能发动。自己的手卡·场上（表侧表示）1张其他的「终刻」卡破坏。那之后，从卡组选1只「终刻」怪兽加入手卡或特殊召唤。这个效果的发动后，直到回合结束时自己不是超量怪兽不能从额外卡组特殊召唤。
 	local e2=Effect.CreateEffect(c)
-	e2:SetDescription(aux.Stringid(id,0))  --"破坏并检索"
-	e2:SetCategory(CATEGORY_DESTROY+CATEGORY_TOHAND+CATEGORY_SEARCH+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES)
+	e2:SetDescription(aux.Stringid(id,0))
+	e2:SetCategory(CATEGORY_DESTROY+CATEGORY_TOHAND+CATEGORY_SEARCH+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e2:SetType(EFFECT_TYPE_IGNITION)
 	e2:SetRange(LOCATION_SZONE)
 	e2:SetCountLimit(1,id)

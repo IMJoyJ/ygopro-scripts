@@ -23,8 +23,8 @@ function c88989706.initial_effect(c)
 	c:RegisterEffect(e2)
 	-- ●2次：可以把这张卡做祭品，从自己的手卡·卡组选1只「不死王 巫妖」特殊召唤到场上。
 	local e3=Effect.CreateEffect(c)
-	e3:SetDescription(aux.Stringid(88989706,0))  --"特殊召唤"
-	e3:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES)
+	e3:SetDescription(aux.Stringid(88989706,0))
+	e3:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e3:SetType(EFFECT_TYPE_IGNITION)
 	e3:SetRange(LOCATION_MZONE)
 	e3:SetCondition(c88989706.spcon)

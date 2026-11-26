@@ -24,8 +24,8 @@ function s.initial_effect(c)
 	c:RegisterEffect(e1)
 	-- ②：自己·对方回合，以自己场上1只暗属性怪兽为对象才能发动。那只怪兽的攻击力上升500。作为对象的怪兽不存在的场合，可以作为代替从卡组把1只「弹丸」怪兽守备表示特殊召唤。
 	local e2=Effect.CreateEffect(c)
-	e2:SetDescription(aux.Stringid(id,1))  --"上升攻击力"
-	e2:SetCategory(CATEGORY_ATKCHANGE+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES)
+	e2:SetDescription(aux.Stringid(id,1))
+	e2:SetCategory(CATEGORY_ATKCHANGE+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e2:SetType(EFFECT_TYPE_QUICK_O)
 	e2:SetCode(EVENT_FREE_CHAIN)
 	e2:SetRange(LOCATION_MZONE)

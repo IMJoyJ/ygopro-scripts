@@ -13,8 +13,8 @@ function s.initial_effect(c)
 	c:RegisterEffect(e1)
 	-- ①：1回合最多3次，自己主要阶段才能发动。这张卡以外的自己的手卡·场上（表侧表示）3张相同种类（怪兽·魔法·陷阱）的卡送去墓地。那之后，可以把自己的手卡·卡组·墓地·除外状态的1只「三幻魔」怪兽特殊召唤。这个效果特殊召唤的怪兽不受对方发动的魔法·陷阱卡的效果影响。
 	local e2=Effect.CreateEffect(c)
-	e2:SetDescription(aux.Stringid(id,0))  --"送去墓地"
-	e2:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_TOGRAVE+CATEGORY_DECKDES+CATEGORY_GRAVE_SPSUMMON)
+	e2:SetDescription(aux.Stringid(id,0))
+	e2:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_TOGRAVE+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON+CATEGORY_GRAVE_SPSUMMON)
 	e2:SetType(EFFECT_TYPE_IGNITION)
 	e2:SetRange(LOCATION_FZONE)
 	e2:SetCountLimit(3)

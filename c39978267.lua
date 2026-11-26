@@ -22,11 +22,11 @@ function c39978267.initial_effect(c)
 end
 -- 装备卡状态过滤：若该卡当前装备在怪兽身上（GetEquipTarget()非nil），或为表侧表示的装备卡，则满足“场上1张装备在怪兽身上的装备卡”的选取条件。
 function c39978267.desfilter(c)
-	return c:GetEquipTarget() or c:IsFaceup() and c:IsType(TYPE_EQUIP)
+	return c:GetEquipTarget()
 end
 -- 装备可行性过滤：该卡必须是装备卡，且能通过CheckEquipTarget正确装备给电子袭击者，用于选择“装备在这张卡身上”的对象。
 function c39978267.eqfilter(c,ec)
-	return c:IsType(TYPE_EQUIP) and c:CheckEquipTarget(ec)
+	return c:GetEquipTarget() and c:CheckEquipTarget(ec)
 end
 -- 连锁阶段的对象合法校验：若已选择破坏分支，则对象须位于魔陷区且满足desfilter；若选择装备分支，则对象须位于魔陷区且满足eqfilter（可作为此卡装备）。
 function c39978267.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)

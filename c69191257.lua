@@ -11,8 +11,8 @@ function s.initial_effect(c)
 	c:EnableReviveLimit()
 	-- ①：这张卡特殊召唤的场合：可以从卡组把1只机械族调整送去墓地。自己场上有持有和原本等级不同等级的怪兽的场合，也能作为代替特殊召唤。「翠铅之机龙」的这个效果1回合只能使用1次。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(id,0))  --"送去墓地"
-	e1:SetCategory(CATEGORY_TOGRAVE+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES)
+	e1:SetDescription(aux.Stringid(id,0))
+	e1:SetCategory(CATEGORY_TOGRAVE+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e1:SetCode(EVENT_SPSUMMON_SUCCESS)
 	e1:SetProperty(EFFECT_FLAG_DELAY)

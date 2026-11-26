@@ -5,7 +5,7 @@
 function c90969892.initial_effect(c)
 	-- 这个卡名的卡在1回合只能发动1张。①：自己场上的怪兽的种族是3种类以上的场合才能发动。和自己场上的怪兽相同种族的怪兽从卡组选3只（相同种族最多1只）。对方从那之中随机选1只，自己把那只怪兽加入手卡或特殊召唤。剩下的怪兽用喜欢的顺序回到卡组下面。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_SEARCH+CATEGORY_TOHAND+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES)
+	e1:SetCategory(CATEGORY_SEARCH+CATEGORY_TOHAND+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetCountLimit(1,90969892+EFFECT_COUNT_CODE_OATH)

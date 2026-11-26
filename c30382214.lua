@@ -14,7 +14,7 @@ function c30382214.initial_effect(c)
 	c:RegisterEffect(e1)
 	-- ②：1回合1次，把自己场上1只「花札卫」怪兽解放才能发动。自己从卡组抽1张，给双方确认。那是「花札卫」怪兽的场合，可以从卡组把「花札卫-樱-」以外的1只「花札卫」怪兽加入手卡或特殊召唤。不是的场合，那张卡送去墓地。
 	local e2=Effect.CreateEffect(c)
-	e2:SetCategory(CATEGORY_DRAW+CATEGORY_SPECIAL_SUMMON+CATEGORY_SEARCH+CATEGORY_DECKDES)
+	e2:SetCategory(CATEGORY_DRAW+CATEGORY_SPECIAL_SUMMON+CATEGORY_SEARCH+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e2:SetType(EFFECT_TYPE_IGNITION)
 	e2:SetRange(LOCATION_MZONE)
 	e2:SetCountLimit(1)

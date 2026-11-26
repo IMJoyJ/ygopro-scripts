@@ -9,8 +9,8 @@ local s,id,o=GetID()
 function s.initial_effect(c)
 	-- 这个卡名的卡在1回合只能发动1张。①：选自己的手卡·卡组·场上（表侧表示）·墓地的通常怪兽卡的以下数量，给双方确认。那之后，那个数量的以下效果适用。这个效果把手卡的卡确认的场合，再让自己可以抽1张。●2张：除效果怪兽外的1只8星以下的融合怪兽从额外卡组当作通常怪兽卡使用特殊召唤。●3张：卡组1只「塞尼特」怪兽或者自己墓地1只通常怪兽特殊召唤。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(id,0))  --"发动"
-	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_GRAVE_SPSUMMON+CATEGORY_DRAW)
+	e1:SetDescription(aux.Stringid(id,0))
+	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON+CATEGORY_GRAVE_SPSUMMON+CATEGORY_DRAW)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetCountLimit(1,id+EFFECT_COUNT_CODE_OATH)

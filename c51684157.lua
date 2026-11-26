@@ -76,7 +76,7 @@ function c51684157.target(e,tp,eg,ep,ev,re,r,rp,chk)
 		-- 设置操作信息：效果处理时将从卡组把1张卡加入手卡（用于通常检索分支）。
 		Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 	else
-		e:SetCategory(CATEGORY_SEARCH+CATEGORY_TOHAND+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES)
+		e:SetCategory(CATEGORY_SEARCH+CATEGORY_TOHAND+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	end
 end
 -- 定义①效果处理逻辑：若未使用特殊召唤分支则检索加入手卡；若使用了特殊召唤分支，则从卡组特殊召唤1只幻龙族怪兽并使其效果无效。

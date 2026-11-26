@@ -5,7 +5,7 @@
 function c81119816.initial_effect(c)
 	-- ①：这张卡作为「调皮宝贝」怪兽的所用融合素材或者所用连接素材送去墓地的场合才能发动。从卡组把「调皮宝贝·脉冲娃」以外的1张「调皮宝贝」卡送去墓地。那之后，可以从手卡·卡组把「调皮宝贝·脉冲娃」以外的1只「调皮宝贝」怪兽守备表示特殊召唤。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES)
+	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e1:SetCode(EVENT_BE_MATERIAL)
 	e1:SetProperty(EFFECT_FLAG_DELAY)

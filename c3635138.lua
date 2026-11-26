@@ -5,7 +5,7 @@ function s.initial_effect(c)
 	-- 这个卡名的①③的效果1回合各能使用1次。①：自己受到战斗·效果伤害的场合才能发动。这张卡从手卡特殊召唤，自己回复2000基本分。那之后，可以从以下效果选择1个适用。●从自己的手卡·卡组·墓地把1只「冥府之使者」特殊召唤。●选对方场上最多2只攻击表示怪兽破坏。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(id,0))
-	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_GRAVE_SPSUMMON+CATEGORY_DECKDES+CATEGORY_DESTROY+CATEGORY_RECOVER)
+	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_GRAVE_SPSUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON+CATEGORY_DESTROY+CATEGORY_RECOVER)
 	e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
 	e1:SetCode(EVENT_DAMAGE)
 	e1:SetProperty(EFFECT_FLAG_DAMAGE_STEP+EFFECT_FLAG_DAMAGE_CAL+EFFECT_FLAG_DELAY)

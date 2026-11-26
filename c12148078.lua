@@ -5,7 +5,7 @@
 function c12148078.initial_effect(c)
 	-- 这个卡名的卡在1回合只能发动1张。①：丢弃1张手卡才能发动。掷1次骰子。等级合计直到变成和出现的数目相同为止从手卡·卡组把最多2只「疾行机人」怪兽效果无效特殊召唤。没能特殊召唤的场合，自己失去出现的数目×500基本分。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_DICE+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES)
+	e1:SetCategory(CATEGORY_DICE+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetCountLimit(1,12148078+EFFECT_COUNT_CODE_OATH)

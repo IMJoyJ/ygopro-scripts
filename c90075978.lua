@@ -4,7 +4,7 @@
 function c90075978.initial_effect(c)
 	-- 场上里侧表示存在的怪兽全部变成表侧守备表示。这个回合的结束阶段时自己场上表侧表示存在的爬虫类族·光属性怪兽全部变成里侧守备表示，自己从卡组抽出那个数量的卡。那之后，可以从自己卡组把1只7星以上的爬虫类族·光属性怪兽特殊召唤。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_POSITION+CATEGORY_SPECIAL_SUMMON+CATEGORY_DRAW+CATEGORY_DECKDES+CATEGORY_MSET)
+	e1:SetCategory(CATEGORY_POSITION+CATEGORY_SPECIAL_SUMMON+CATEGORY_DRAW+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON+CATEGORY_MSET)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetHintTiming(0,TIMINGS_CHECK_MONSTER+TIMING_END_PHASE)

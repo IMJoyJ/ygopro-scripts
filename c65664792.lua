@@ -8,7 +8,7 @@ function c65664792.initial_effect(c)
 	aux.AddCodeList(c,12206212)
 	-- ①：选自己场上1只「鹰身女郎三姐妹」回到持有者卡组。那之后，可以把3只原本卡名不同的「鹰身」怪兽从自己的手卡·卡组·墓地各选1只特殊召唤。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_TODECK+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_GRAVE_SPSUMMON)
+	e1:SetCategory(CATEGORY_TODECK+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON+CATEGORY_GRAVE_SPSUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetCountLimit(1,65664792)

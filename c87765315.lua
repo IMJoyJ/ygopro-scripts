@@ -4,7 +4,7 @@
 function c87765315.initial_effect(c)
 	-- ①：「龙魔王」怪兽以及除灵摆怪兽以外的「龙剑士」怪兽在场上存在的场合才能发动。双方场上的卡全部回到持有者卡组。那之后，可以从卡组把1只「龙剑士」怪兽或者「龙魔王」怪兽无视召唤条件特殊召唤。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_TODECK+CATEGORY_DECKDES)
+	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_TODECK+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetCondition(c87765315.condition)

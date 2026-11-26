@@ -15,19 +15,7 @@ end
 -- 给与战斗伤害以外伤害的效果发动时才能发动
 function c3055837.condition(e,tp,eg,ep,ev,re,r,rp)
 	if re:IsActiveType(TYPE_SPELL+TYPE_TRAP) and not re:IsHasType(EFFECT_TYPE_ACTIVATE) then return false end
-	-- 获取连锁中是否包含伤害效果
-	local ex,cg,ct,cp,cv=Duel.GetOperationInfo(ev,CATEGORY_DAMAGE)
-	if ex then return true end
-	-- 获取连锁中是否包含回复效果
-	ex,cg,ct,cp,cv=Duel.GetOperationInfo(ev,CATEGORY_RECOVER)
-	if not ex then return false end
-	-- 若对象玩家不为双方，则判断该玩家是否受到回复变伤害效果影响
-	if cp~=PLAYER_ALL then return Duel.IsPlayerAffectedByEffect(cp,EFFECT_REVERSE_RECOVER)
-	-- 若对象玩家为双方，则判断玩家0是否受到回复变伤害效果影响
-	else return Duel.IsPlayerAffectedByEffect(0,EFFECT_REVERSE_RECOVER)
-		-- 若对象玩家为双方，则判断玩家1是否受到回复变伤害效果影响
-		or Duel.IsPlayerAffectedByEffect(1,EFFECT_REVERSE_RECOVER)
-	end
+	return aux.damcon1(e,tp,eg,ep,ev,re,r,rp)
 end
 -- 判断对方手牌数量是否大于0
 function c3055837.target(e,tp,eg,ep,ev,re,r,rp,chk)

@@ -5,7 +5,7 @@
 function c15721392.initial_effect(c)
 	-- 这个卡名的卡在1回合只能发动1张。①：自己的「超级量子」怪兽被战斗破坏时才能发动。从额外卡组把1只「超级量子机兽」超量怪兽特殊召唤。那之后，可以从自己的手卡·卡组·墓地选在那张超量怪兽卡有卡名记述的1只「超级量子战士」怪兽效果无效特殊召唤。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_GRAVE_SPSUMMON)
+	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON+CATEGORY_GRAVE_SPSUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_BATTLE_DESTROYED)
 	e1:SetCountLimit(1,15721392+EFFECT_COUNT_CODE_OATH)

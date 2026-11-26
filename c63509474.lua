@@ -22,7 +22,7 @@ function c63509474.initial_effect(c)
 	c:RegisterEffect(e2)
 	-- ②：这张卡被对方的效果破坏送去墓地的场合才能发动。从卡组把1只鱼族怪兽加入手卡或特殊召唤。
 	local e3=Effect.CreateEffect(c)
-	e3:SetCategory(CATEGORY_SEARCH+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES)
+	e3:SetCategory(CATEGORY_SEARCH+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e3:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e3:SetCode(EVENT_TO_GRAVE)
 	e3:SetProperty(EFFECT_FLAG_DELAY)

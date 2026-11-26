@@ -35,7 +35,12 @@ function s.initial_effect(c)
 	c:RegisterEffect(e2)
 end
 s.material_type=TYPE_FUSION+TYPE_SYNCHRO+TYPE_XYZ+TYPE_LINK
--- 除外对象过滤函数：筛选自己墓地中可以被除外的融合·同调·超量·连接怪兽
+function s.sfcfilter(c,fc)
+	return c:IsFusionCode(86120751) or c:CheckFusionSubstitute(fc)
+end
+function s.synchro_fusion_check(tp,sg,fc)
+	return aux.gffcheck(sg,s.sfcfilter,fc,Card.IsFusionType,TYPE_SYNCHRO)
+end
 function s.rmfilter(c,tp)
 	return c:IsType(TYPE_FUSION+TYPE_SYNCHRO+TYPE_XYZ+TYPE_LINK)
 		and c:IsAbleToRemove()

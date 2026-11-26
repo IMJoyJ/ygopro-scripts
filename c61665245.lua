@@ -9,8 +9,8 @@ function c61665245.initial_effect(c)
 	c:EnableReviveLimit()
 	-- ①：这张卡连接召唤的场合才能发动。从手卡把1只怪兽效果无效在作为这张卡所连接区的对方场上守备表示特殊召唤。那之后，可以把和这个效果特殊召唤的怪兽相同种族的1只怪兽从卡组效果无效守备表示特殊召唤。这个效果从卡组特殊召唤过的回合，自己不是原本种族和从卡组特殊召唤的那只怪兽相同的怪兽不能特殊召唤。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(61665245,0))  --"从手卡特殊召唤"
-	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES)
+	e1:SetDescription(aux.Stringid(61665245,0))
+	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e1:SetCode(EVENT_SPSUMMON_SUCCESS)
 	e1:SetProperty(EFFECT_FLAG_DELAY)

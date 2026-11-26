@@ -21,7 +21,7 @@ function c46925518.initial_effect(c)
 	c:RegisterEffect(e2)
 	-- ②：这张卡反转的场合发动。这个回合的结束阶段，场上的表侧表示怪兽全部变成里侧守备表示。那之后，可以把持有这个效果变成里侧守备表示的怪兽数量以下的等级的1只「鬼计」怪兽从卡组里侧守备表示特殊召唤。
 	local e3=Effect.CreateEffect(c)
-	e3:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_MSET)
+	e3:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON+CATEGORY_MSET)
 	e3:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_F)
 	e3:SetCode(EVENT_FLIP)
 	e3:SetOperation(c46925518.fdop)

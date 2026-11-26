@@ -88,9 +88,7 @@ function s.ngtg(e,tp,eg,ep,ev,re,r,rp,chk)
 end
 -- 效果处理：使发动无效并破坏该卡
 function s.ngop(e,tp,eg,ep,ev,re,r,rp)
-	-- 使连锁的发动无效，并检查该卡是否仍在发动效果时的位置
-	if Duel.NegateActivation(ev) and re:GetHandler():IsRelatedToChain(ev) then
-		-- 将该卡破坏去墓地
+	if Duel.NegateActivation(ev) and re:GetHandler():IsRelateToChain(ev) then
 		Duel.Destroy(eg,REASON_EFFECT)
 	end
 end

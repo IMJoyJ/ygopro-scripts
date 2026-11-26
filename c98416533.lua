@@ -6,8 +6,8 @@
 function c98416533.initial_effect(c)
 	-- ①：对方把怪兽召唤·特殊召唤的场合或者这张卡被选择作为对方怪兽的攻击对象的场合才能发动。这张卡回到手卡。那之后，可以从卡组把「童话动物·小小袋鼠」以外的2只「童话动物」怪兽特殊召唤（同名卡最多1张）。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(98416533,0))  --"这张卡回到持有者手卡"
-	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES)
+	e1:SetDescription(aux.Stringid(98416533,0))
+	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
 	e1:SetCode(EVENT_SUMMON_SUCCESS)
 	e1:SetProperty(EFFECT_FLAG_DELAY)

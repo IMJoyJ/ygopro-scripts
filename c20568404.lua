@@ -10,8 +10,8 @@ function s.initial_effect(c)
 	aux.AddCodeList(c,id)
 	-- ①：自己主要阶段才能发动。自己场上1张卡破坏，从卡组把1只恐龙族怪兽送去墓地。那之后，可以直到等级合计变成和从卡组送去墓地的怪兽相同为止从手卡·卡组把「朱罗纪剑龙」以外的「朱罗纪」怪兽无视召唤条件特殊召唤。这个回合，自己不是恐龙族怪兽不能特殊召唤。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(id,0))  --"破坏并送去墓地"
-	e1:SetCategory(CATEGORY_DESTROY|CATEGORY_TOGRAVE|CATEGORY_SPECIAL_SUMMON|CATEGORY_DECKDES)
+	e1:SetDescription(aux.Stringid(id,0))
+	e1:SetCategory(CATEGORY_DESTROY|CATEGORY_TOGRAVE|CATEGORY_SPECIAL_SUMMON|CATEGORY_DECKDES|CATEGORY_DECK_SPSUMMON)
 	e1:SetType(EFFECT_TYPE_IGNITION)
 	e1:SetRange(LOCATION_MZONE)
 	e1:SetCountLimit(1,id)

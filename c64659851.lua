@@ -7,8 +7,8 @@ function c64659851.initial_effect(c)
 	aux.AddCodeList(c,77585513)
 	-- 这个卡名的卡在1回合只能发动1张。①：对方可以从自身的手卡·卡组选1张陷阱卡在自身的魔法与陷阱区域盖放。盖放的场合，自己从卡组把1只「人造人-念力震慑者」特殊召唤。没盖放的场合，自己把1只「人造人-念力震慑者」或者1只有那个卡名记述的怪兽从卡组加入手卡。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(64659851,0))  --"是否把陷阱卡盖放让对方特殊召唤？"
-	e1:SetCategory(CATEGORY_SEARCH+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_SSET)
+	e1:SetDescription(aux.Stringid(64659851,0))
+	e1:SetCategory(CATEGORY_SEARCH+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON+CATEGORY_SSET)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetCountLimit(1,64659851+EFFECT_COUNT_CODE_OATH)

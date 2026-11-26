@@ -13,8 +13,8 @@ function s.initial_effect(c)
 	aux.AddCodeList(c,49306994)
 	-- ①：从自己墓地把3只怪兽除外才能发动。这张卡从手卡特殊召唤。那之后，可以从以下效果选1个适用。●从手卡·卡组把1只「白夜」怪兽特殊召唤。●从卡组把1张「白之衣」加入手卡。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(id,0))  --"特殊召唤"
-	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_SEARCH+CATEGORY_TOHAND)
+	e1:SetDescription(aux.Stringid(id,0))
+	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON+CATEGORY_SEARCH+CATEGORY_TOHAND)
 	e1:SetType(EFFECT_TYPE_IGNITION)
 	e1:SetRange(LOCATION_HAND)
 	e1:SetCountLimit(1,id)

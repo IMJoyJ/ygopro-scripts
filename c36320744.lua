@@ -25,8 +25,8 @@ function s.initial_effect(c)
 	c:RegisterEffect(e1)
 	-- ②：场上的这张卡成为攻击·效果的对象时才能发动。从卡组把1只战士族·炎属性怪兽送去墓地，这张卡直到结束阶段除外。那之后，可以从卡组·额外卡组把1只「罗兰」怪兽特殊召唤。
 	local e2=Effect.CreateEffect(c)
-	e2:SetDescription(aux.Stringid(id,1))  --"这张卡除外"
-	e2:SetCategory(CATEGORY_TOGRAVE+CATEGORY_REMOVE+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES)
+	e2:SetDescription(aux.Stringid(id,1))
+	e2:SetCategory(CATEGORY_TOGRAVE+CATEGORY_REMOVE+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e2:SetType(EFFECT_TYPE_QUICK_O)
 	e2:SetCode(EVENT_BECOME_TARGET)
 	e2:SetRange(LOCATION_MZONE)

@@ -20,8 +20,8 @@ function s.initial_effect(c)
 	c:RegisterEffect(e1)
 	-- ②：这张卡召唤·反转召唤·特殊召唤的场合发动。进行1次投掷硬币，那个里表的以下效果适用。
 	local e2=Effect.CreateEffect(c)
-	e2:SetDescription(aux.Stringid(id,1))  --"卡组特招"
-	e2:SetCategory(CATEGORY_COIN+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES)
+	e2:SetDescription(aux.Stringid(id,1))
+	e2:SetCategory(CATEGORY_COIN+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e2:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_F)
 	e2:SetCode(EVENT_SUMMON_SUCCESS)
 	e2:SetTarget(s.cointg)

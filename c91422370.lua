@@ -4,7 +4,7 @@
 function c91422370.initial_effect(c)
 	-- 把自己场上1只攻击力1500以上的名字带有「发条」的怪兽解放发动。从手卡把1只名字带有「发条」的怪兽特殊召唤。那之后，可以把持有和这个效果特殊召唤的怪兽相同攻击力的1只名字带有「发条」的怪兽从卡组特殊召唤。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES)
+	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetHintTiming(0,TIMING_END_PHASE)

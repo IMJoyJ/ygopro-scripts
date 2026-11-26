@@ -8,11 +8,9 @@ local s,id,o=GetID()
 -- 初始化该卡的效果：设置融合召唤手续（以「机动要犀 铁犀三角龙」或「盾航战车 电子剑龙」＋机械族·恐龙族怪兽为素材）、苏生限制、①的不会被战斗破坏效果以及②的从手卡特召时破坏双方场上各1张卡的效果。
 function s.initial_effect(c)
 	c:EnableReviveLimit()
-	-- 将「机动要犀 铁犀三角龙」和「盾航战车 电子剑龙」登记为该卡融合素材的关联卡名。
-	aux.AddMaterialCodeList(c,12275533,99733359)
-	-- 为这张卡添加融合召唤手续：以1只「机动要犀 铁犀三角龙」或「盾航战车 电子剑龙」和1只机械族·恐龙族怪兽作为融合素材。
-	aux.AddFusionProcFun2(c,aux.FilterBoolFunction(Card.IsFusionCode,12275533,99733359),aux.FilterBoolFunction(Card.IsRace,RACE_MACHINE+RACE_DINOSAUR),true)
-	-- ①：只要从墓地特殊召唤的怪兽存在，这张卡不会被战斗破坏。
+	--material
+	aux.AddFusionProcCodeFun(c,{12275533,99733359},aux.FilterBoolFunction(Card.IsRace,RACE_MACHINE+RACE_DINOSAUR),1,true,true)
+	--indes
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
 	e1:SetCode(EFFECT_INDESTRUCTABLE_BATTLE)

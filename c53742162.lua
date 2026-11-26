@@ -24,8 +24,8 @@ function c53742162.initial_effect(c)
 	c:RegisterEffect(e2)
 	-- ②：自己场上的表侧表示的水属性怪兽以破坏以外的方法因对方从场上离开的场合才能发动。从卡组选1只「冰水」怪兽加入手卡或特殊召唤。
 	local e3=Effect.CreateEffect(c)
-	e3:SetDescription(aux.Stringid(53742162,1))  --"加入手卡或特殊召唤"
-	e3:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES)
+	e3:SetDescription(aux.Stringid(53742162,1))
+	e3:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e3:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
 	e3:SetCode(EVENT_LEAVE_FIELD)
 	e3:SetProperty(EFFECT_FLAG_DELAY)

@@ -20,7 +20,7 @@ function s.initial_effect(c)
 	-- ②：丢弃1张手卡，以场上1只攻击力2400以下的怪兽为对象才能发动。那只怪兽破坏。把自己场上的怪兽破坏的场合，可以再把原本等级比那只怪兽高2星的1只龙族怪兽从手卡·卡组特殊召唤。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(id,1))
-	e2:SetCategory(CATEGORY_DESTROY+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES)
+	e2:SetCategory(CATEGORY_DESTROY+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e2:SetType(EFFECT_TYPE_IGNITION)
 	e2:SetRange(LOCATION_MZONE)
 	e2:SetProperty(EFFECT_FLAG_CARD_TARGET)

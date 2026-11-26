@@ -5,7 +5,7 @@
 function c91530236.initial_effect(c)
 	-- 这个卡名的卡在1回合只能发动1张。①：丢弃1张手卡才能发动。从卡组选「灵使」怪兽、「凭依装着」怪兽、「凭依」魔法·陷阱卡之内2张（同名卡最多1张）。那之内的1张加入手卡，另1张在自己场上盖放。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_SEARCH+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_MSET+CATEGORY_SSET)
+	e1:SetCategory(CATEGORY_SEARCH+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON+CATEGORY_MSET+CATEGORY_SSET)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetCountLimit(1,91530236+EFFECT_COUNT_CODE_OATH)

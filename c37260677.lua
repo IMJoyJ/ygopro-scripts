@@ -35,7 +35,9 @@ function s.initial_effect(c)
 	c:RegisterEffect(e2)
 end
 s.material_type=TYPE_FUSION+TYPE_SYNCHRO+TYPE_XYZ+TYPE_LINK
--- 过滤函数：判断怪兽是否为融合、同调、超量或连接怪兽中的任意一种，用于限定融合素材的另一方。
+function s.synchro_fusion_check(tp,sg,fc)
+	return aux.gffcheck(sg,Card.IsFusionSetCard,0x150,Card.IsFusionType,TYPE_SYNCHRO)
+end
 function s.mfilter(c)
 	return c:IsFusionType(TYPE_FUSION|TYPE_SYNCHRO|TYPE_XYZ|TYPE_LINK)
 end

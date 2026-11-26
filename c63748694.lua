@@ -9,7 +9,7 @@ function c63748694.initial_effect(c)
 	aux.EnableChangeCode(c,24639891,LOCATION_HAND+LOCATION_DECK+LOCATION_MZONE+LOCATION_GRAVE)
 	-- 这个卡名的②的效果1回合只能使用1次。②：把手卡1只其他的「舍利军贯」给对方观看才能发动。这张卡从手卡特殊召唤。那之后，以下可以适用。●「舍利军贯」以外的1只「军贯」怪兽效果无效从卡组特殊召唤，用那只怪兽和这张卡为素材，把有那只怪兽的卡名记述的1只超量怪兽当作超量召唤从额外卡组特殊召唤。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES)
+	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e1:SetType(EFFECT_TYPE_IGNITION)
 	e1:SetRange(LOCATION_HAND)
 	e1:SetCountLimit(1,63748694)

@@ -16,7 +16,7 @@ function c61027400.initial_effect(c)
 	-- ②：自己主要阶段才能发动。从自己卡组上面把3张卡翻开。可以从那之中选1只「舍利军贯」加入手卡或特殊召唤。剩下的卡回到卡组。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(61027400,0))
-	e2:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES)
+	e2:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e2:SetType(EFFECT_TYPE_IGNITION)
 	e2:SetRange(LOCATION_MZONE)
 	e2:SetCountLimit(1,61027401)

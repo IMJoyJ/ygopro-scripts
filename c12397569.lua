@@ -14,7 +14,7 @@ function s.initial_effect(c)
 	-- 这个卡名的①的效果1回合只能使用1次。①：自己主要阶段才能发动。从卡组把1只「提斯蒂娜」怪兽送去墓地。对方场上有表侧表示卡3张以上存在的场合，可以再从手卡·卡组把1只「结晶神 提斯蒂娜」特殊召唤。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(id,0))
-	e2:SetCategory(CATEGORY_TOGRAVE+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES)
+	e2:SetCategory(CATEGORY_TOGRAVE+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e2:SetType(EFFECT_TYPE_IGNITION)
 	e2:SetRange(LOCATION_FZONE)
 	e2:SetCountLimit(1,id)

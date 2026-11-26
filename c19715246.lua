@@ -17,8 +17,8 @@ function s.initial_effect(c)
 	c:RegisterEffect(e0)
 	-- 这个卡名的①②的效果1回合各能使用1次。①：对方场上有怪兽存在的场合才能发动。这张卡从手卡特殊召唤。那之后，从卡组选1只「电子龙」特殊召唤或当作装备魔法卡使用给这张卡装备。这个回合，自己不是机械族怪兽不能特殊召唤。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(id,0))  --"特殊召唤"
-	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES)
+	e1:SetDescription(aux.Stringid(id,0))
+	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e1:SetType(EFFECT_TYPE_IGNITION)
 	e1:SetRange(LOCATION_HAND)
 	e1:SetCountLimit(1,id)

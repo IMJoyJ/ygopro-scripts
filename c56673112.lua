@@ -8,7 +8,7 @@ function c56673112.initial_effect(c)
 	-- 这个卡名的效果1回合只能使用1次。①：自己场上没有其他怪兽存在的场合，把这张卡解放才能发动。从卡组选「王后骑士」「卫兵骑士」「国王骑士」之内2只（同名卡最多1张）。那些怪兽各加入手卡或特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(56673112,0))
-	e1:SetCategory(CATEGORY_SEARCH+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES)
+	e1:SetCategory(CATEGORY_SEARCH+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e1:SetType(EFFECT_TYPE_IGNITION)
 	e1:SetRange(LOCATION_MZONE)
 	e1:SetCountLimit(1,56673112)

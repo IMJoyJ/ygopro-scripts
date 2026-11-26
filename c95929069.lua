@@ -4,8 +4,8 @@
 function c95929069.initial_effect(c)
 	-- ①：这张卡被对方破坏送去墓地时，以对方场上1张魔法·陷阱卡为对象才能发动。那张对方的卡破坏。那之后，可以从卡组把1只「火焰手」特殊召唤。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(95929069,0))  --"破坏并特殊召唤"
-	e1:SetCategory(CATEGORY_DESTROY+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES)
+	e1:SetDescription(aux.Stringid(95929069,0))
+	e1:SetCategory(CATEGORY_DESTROY+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET+EFFECT_FLAG_DAMAGE_STEP)
 	e1:SetCode(EVENT_TO_GRAVE)

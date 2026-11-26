@@ -8,7 +8,7 @@ function c37750912.initial_effect(c)
 	aux.AddCodeList(c,44508094)
 	-- ①：从卡组把1只「星尘」怪兽送去墓地。自己场上有着「星尘龙」或者有那个卡名记述的同调怪兽存在的场合，也能不送去墓地特殊召唤。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_TOGRAVE+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES)
+	e1:SetCategory(CATEGORY_TOGRAVE+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetCountLimit(1,37750912)

@@ -8,8 +8,8 @@ local s,id,o=GetID()
 function s.initial_effect(c)
 	-- 这个卡名的①②的效果1回合各能使用1次。①：这张卡发动后变成通常怪兽（念动力族·暗·4星·攻1900/守2500）在怪兽区域特殊召唤（也当作陷阱卡使用）。那之后，可以从自己的手卡·卡组·墓地把1只机械族「时间潜行者」怪兽特殊召唤。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(id,0))  --"变成通常怪兽特殊召唤"
-	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_GRAVE_SPSUMMON)
+	e1:SetDescription(aux.Stringid(id,0))
+	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON+CATEGORY_GRAVE_SPSUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetHintTiming(0,TIMINGS_CHECK_MONSTER+TIMING_END_PHASE)

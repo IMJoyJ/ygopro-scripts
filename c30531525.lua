@@ -4,7 +4,7 @@
 function c30531525.initial_effect(c)
 	-- 支付800基本分。翻开自己卡组最上面4张卡，将其中3星以下的通常怪兽特殊召唤到自己场上，将翻开的其它卡回到卡组。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES)
+	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetCost(c30531525.cost)

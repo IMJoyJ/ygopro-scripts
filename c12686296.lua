@@ -24,8 +24,8 @@ function s.initial_effect(c)
 	c:RegisterEffect(e0)
 	-- ①：这张卡特殊召唤的场合发动。进行1次投掷硬币，那个里表的以下效果适用。●表：把1只10星「秘仪之力」怪兽无视召唤条件从手卡·卡组特殊召唤。●里：把持有进行投掷硬币效果的1张卡从卡组加入手卡。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(id,1))  --"加入手卡"
-	e1:SetCategory(CATEGORY_COIN+CATEGORY_SEARCH+CATEGORY_TOHAND+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES)
+	e1:SetDescription(aux.Stringid(id,1))
+	e1:SetCategory(CATEGORY_COIN+CATEGORY_SEARCH+CATEGORY_TOHAND+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_F)
 	e1:SetCode(EVENT_SPSUMMON_SUCCESS)
 	e1:SetTarget(s.cointg)

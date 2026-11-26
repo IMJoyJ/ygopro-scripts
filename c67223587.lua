@@ -5,7 +5,7 @@ function c67223587.initial_effect(c)
 	-- 自己把名字带有「剑斗兽」的怪兽的特殊召唤成功时才能发动。从自己的手卡·卡组把1只名字带有「剑斗兽」的4星以下的怪兽特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
-	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES)
+	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e1:SetCode(EVENT_SPSUMMON_SUCCESS)
 	e1:SetCondition(c67223587.condition)
 	e1:SetTarget(c67223587.target)

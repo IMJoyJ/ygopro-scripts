@@ -7,7 +7,7 @@
 function c74202664.initial_effect(c)
 	-- 这个卡名的卡在1回合只能发动1张。①：自己基本分比对方少的场合才能发动。自己卡组最上面的卡给双方确认，等级是1星或者8星的怪兽的场合，那只怪兽加入手卡或特殊召唤。不是的场合，对方可以从以下效果选1个适用。●这张卡的控制者基本分变成1000。●从这张卡的控制者来看的对方基本分回复到变成8000。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_SEARCH+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_RECOVER)
+	e1:SetCategory(CATEGORY_SEARCH+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON+CATEGORY_RECOVER)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetHintTiming(0,TIMINGS_CHECK_MONSTER+TIMING_END_PHASE)

@@ -4,7 +4,7 @@
 function c75220074.initial_effect(c)
 	-- ①：这张卡战斗破坏对方怪兽时才能发动。从手卡·卡组把「铠龙-武装龙-」以外的1只5星以下的龙族·风属性怪兽特殊召唤。这个效果特殊召唤的怪兽在这个回合不能直接攻击。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES)
+	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e1:SetCode(EVENT_BATTLE_DESTROYING)
 	-- 设置发动条件为这张卡战斗破坏对方怪兽时

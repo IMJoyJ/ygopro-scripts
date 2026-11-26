@@ -14,8 +14,8 @@ function c28201945.initial_effect(c)
 	c:RegisterEffect(e1)
 	-- 这个卡名的②的效果1回合只能使用1次。②：自己把「洞」通常陷阱卡或者「落穴」通常陷阱卡发动的场合才能发动。从卡组选「卡祖拉之虫惑魔」以外的1只「虫惑魔」怪兽加入手卡或特殊召唤。
 	local e3=Effect.CreateEffect(c)
-	e3:SetDescription(aux.Stringid(28201945,0))  --"卡组检索"
-	e3:SetCategory(CATEGORY_SEARCH+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES)
+	e3:SetDescription(aux.Stringid(28201945,0))
+	e3:SetCategory(CATEGORY_SEARCH+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e3:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
 	e3:SetCode(EVENT_CHAINING)
 	e3:SetProperty(EFFECT_FLAG_DELAY)

@@ -11,8 +11,8 @@ local s,id,o=GetID()
 function s.initial_effect(c)
 	-- 这个卡名的卡在1回合只能发动1张。①：从自己的手卡·卡组·墓地把1只通常怪兽守备表示特殊召唤（从卡组特殊召唤的场合必须是4星以下）。自己场上有通常怪兽卡存在的场合，可以作为代替从以下效果选1个适用。●对方场上的怪兽全部破坏。●对方场上的魔法·陷阱卡全部破坏。●自己抽2张。●从自己或对方的墓地把1只怪兽在自己场上特殊召唤。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(id,0))  --"发动"
-	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DESTROY+CATEGORY_DRAW+CATEGORY_GRAVE_SPSUMMON+CATEGORY_DECKDES)
+	e1:SetDescription(aux.Stringid(id,0))
+	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DESTROY+CATEGORY_DRAW+CATEGORY_GRAVE_SPSUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetCountLimit(1,id+EFFECT_COUNT_CODE_OATH)

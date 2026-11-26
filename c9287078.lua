@@ -4,7 +4,7 @@
 function c9287078.initial_effect(c)
 	-- ①：对方对怪兽的召唤·特殊召唤成功时，以那1只怪兽和自己场上1只魔法师族怪兽为对象才能发动。那2只怪兽送去墓地。那之后，可以从自己的卡组·墓地选1只魔法师族·暗属性怪兽特殊召唤。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_TOGRAVE+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES)
+	e1:SetCategory(CATEGORY_TOGRAVE+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_SUMMON_SUCCESS)
 	e1:SetProperty(EFFECT_FLAG_CARD_TARGET)

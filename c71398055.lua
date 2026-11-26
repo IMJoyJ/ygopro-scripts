@@ -37,8 +37,8 @@ function s.initial_effect(c)
 	c:RegisterEffect(e1)
 	-- ①：以自己场上的「契约书」卡任意数量为对象才能发动。那些卡破坏。那之后，可以把最多有破坏数量的「死伟王」灵摆怪兽从卡组·额外卡组特殊召唤。
 	local e2=Effect.CreateEffect(c)
-	e2:SetDescription(aux.Stringid(id,0))  --"破坏效果"
-	e2:SetCategory(CATEGORY_DESTROY+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES)
+	e2:SetDescription(aux.Stringid(id,0))
+	e2:SetCategory(CATEGORY_DESTROY+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e2:SetProperty(EFFECT_FLAG_CARD_TARGET)
 	e2:SetType(EFFECT_TYPE_IGNITION)
 	e2:SetRange(LOCATION_PZONE)

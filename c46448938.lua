@@ -5,7 +5,7 @@
 function c46448938.initial_effect(c)
 	-- ①：这张卡发动的回合的结束阶段，把最多有这张卡的发动后自己或者对方发动的魔法卡数量的「魔导书的神判」以外的「魔导书」魔法卡从卡组加入手卡。那之后，可以把持有这个效果加入手卡的卡数量以下的等级的1只魔法师族怪兽从卡组特殊召唤。
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_SEARCH+CATEGORY_DECKDES)
+	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_SEARCH+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetCountLimit(1,46448938+EFFECT_COUNT_CODE_OATH)

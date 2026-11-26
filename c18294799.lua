@@ -7,8 +7,8 @@ local s,id,o=GetID()
 function s.initial_effect(c)
 	-- 这个卡名的效果1回合只能使用1次，这个效果发动的回合，自己不是龙族超量怪兽不能从额外卡组特殊召唤。①：自己场上没有怪兽存在的场合或者对方场上有攻击力2000以上的怪兽存在的场合才能发动。这张卡从手卡特殊召唤，从卡组把「无限龙 施瓦西龙」以外的1只光·暗属性的龙族·8星怪兽守备表示特殊召唤。
 	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(id,0))  --"特殊召唤自身并特殊召唤卡组"
-	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES)
+	e1:SetDescription(aux.Stringid(id,0))
+	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e1:SetType(EFFECT_TYPE_IGNITION)
 	e1:SetRange(LOCATION_HAND)
 	e1:SetCountLimit(1,id)
