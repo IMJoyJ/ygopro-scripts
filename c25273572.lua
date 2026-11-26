@@ -4,7 +4,7 @@
 -- ①：这张卡召唤·特殊召唤成功的场合才能发动。从卡组选1只「G石人·卵石斗牛犬」加入手卡或特殊召唤。这个效果的发动后，直到回合结束时自己不是电子界族怪兽不能特殊召唤。
 -- ②：这张卡从手卡送去墓地的场合才能发动。从卡组把1张「G石人」卡加入手卡。
 function c25273572.initial_effect(c)
-	-- ①：这张卡召唤·特殊召唤成功的场合才能发动。从卡组选1只「G石人·卵石斗牛犬」加入手卡或特殊召唤。这个效果的发动后，直到回合结束时自己不是电子界族怪兽不能特殊召唤。
+	-- 这个卡名的①②的效果1回合各能使用1次。①：这张卡召唤·特殊召唤成功的场合才能发动。从卡组选1只「G石人·卵石斗牛犬」加入手卡或特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(25273572,0))
 	e1:SetCategory(CATEGORY_SEARCH+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
@@ -31,40 +31,40 @@ function c25273572.initial_effect(c)
 	e3:SetOperation(c25273572.thop)
 	c:RegisterEffect(e3)
 end
--- 定义检索/特殊召唤的候选卡筛选条件：卡名必须是「G石人·卵石斗牛犬」，且满足“可以加入手卡”或“场上存在可用的怪兽区且该卡可以特殊召唤”。
+-- 过滤函数：筛选卡组中「G石人·卵石斗牛犬」(25273572)且可加入手卡或（在有空位时）可特殊召唤的卡片
 function c25273572.filter(c,e,tp,ft)
 	return c:IsCode(25273572) and (c:IsAbleToHand() or (ft>0 and c:IsCanBeSpecialSummoned(e,0,tp,false,false)))
 end
--- ①效果的发动合法性判定：检查自己卡组中是否存在至少1张符合条件的「G石人·卵石斗牛犬」，并计算可用的怪兽区数量ft供后续使用。
+-- 效果①的Target函数：检测当前怪兽区空位数并确认卡组中存在可加入手卡或特召的同名卡
 function c25273572.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 获取自己场上当前可用的怪兽区域数量，用于判断是否满足特殊召唤所需的空间。
+	-- 获取己方主要怪兽区当前的可用空位数
 	local ft=Duel.GetLocationCount(tp,LOCATION_MZONE)
-	-- 在发动合法性检查时，确认卡组中存在至少1张满足filter条件的「G石人·卵石斗牛犬」，否则效果不能发动。
+	-- 发动检测时确认己方卡组中存在至少1只可操作的「G石人·卵石斗牛犬」
 	if chk==0 then return Duel.IsExistingMatchingCard(c25273572.filter,tp,LOCATION_DECK,0,1,nil,e,tp,ft) end
 end
--- 执行①效果的检索/特殊召唤部分：从卡组选择1只符合条件的「G石人·卵石斗牛犬」，若场上有空位且该卡可以特殊召唤且玩家选择“特殊召唤”（或该卡不能加入手卡），则将其特殊召唤；否则将其加入手卡并让对手确认。
+-- 效果①的Operation函数：从卡组选1只「G石人·卵石斗牛犬」加入手卡或特殊召唤
 function c25273572.spop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取自己场上当前可用的怪兽区域数量，用于判断是否能够特殊召唤。
+	-- 在效果处理时重新获取己方主要怪兽区的可用空位数
 	local ft=Duel.GetLocationCount(tp,LOCATION_MZONE)
-	-- 显示选择卡片的提示消息，提示玩家“请选择要操作的卡”。
+	-- 向己方玩家发送选择要操作的卡片提示
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_OPERATECARD)  --"请选择要操作的卡"
-	-- 让玩家从卡组中选出1张符合filter条件的「G石人·卵石斗牛犬」。
+	-- 从己方卡组中选择1只符合条件的「G石人·卵石斗牛犬」
 	local g=Duel.SelectMatchingCard(tp,c25273572.filter,tp,LOCATION_DECK,0,1,1,nil,e,tp,ft)
 	local tc=g:GetFirst()
 	if tc then
 		if ft>0 and tc:IsCanBeSpecialSummoned(e,0,tp,false,false)
-			-- 判断是否执行特殊召唤分支：需要场上有空位、选中的卡可以特殊召唤，并且满足“该卡不能加入手卡”或玩家在弹出的选项中选择了“特殊召唤”（选项序号为1）。
+			-- 若该卡无法加入手卡，或玩家在加入手卡(1190)与特殊召唤(1152)之间选择了特殊召唤，则执行特召分支
 			and (not tc:IsAbleToHand() or Duel.SelectOption(tp,1190,1152)==1) then
-			-- 将选中的「G石人·卵石斗牛犬」以表侧表示特殊召唤到自己的怪兽区。
+			-- 将选中的「G石人·卵石斗牛犬」以表侧表示特殊召唤到己方场上
 			Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP)
 		else
-			-- 将选中的「G石人·卵石斗牛犬」加入持有者的手卡，原因为效果。
+			-- 以效果将选中的「G石人·卵石斗牛犬」加入持有者（己方）手卡
 			Duel.SendtoHand(tc,nil,REASON_EFFECT)
-			-- 向对手展示加入手卡的那张卡，以确认检索内容。
+			-- 向对方玩家公开确认加入手卡的「G石人·卵石斗牛犬」
 			Duel.ConfirmCards(1-tp,tc)
 		end
 	end
-	-- ①效果的自肃部分：这个效果的发动后，直到回合结束时自己不是电子界族怪兽不能特殊召唤。②效果：这张卡从手卡送去墓地的场合才能发动。从卡组把1张「G石人」卡加入手卡。
+	-- 这个效果的发动后，直到回合结束时自己不是电子界族怪兽不能特殊召唤。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_CANNOT_SPECIAL_SUMMON)
@@ -72,38 +72,38 @@ function c25273572.spop(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetTargetRange(1,0)
 	e1:SetTarget(c25273572.splimit)
 	e1:SetReset(RESET_PHASE+PHASE_END)
-	-- 将“自己不能特殊召唤电子界族以外怪兽”的自肃效果注册给当前玩家，持续到回合结束。
+	-- 为己方玩家注册持续到回合结束阶段的特召种族限制效果
 	Duel.RegisterEffect(e1,tp)
 end
--- 定义自肃效果的限制条件：当要特殊召唤的怪兽不是电子界族时（返回true），该特殊召唤被禁止。
+-- 特召限制过滤函数：禁止特殊召唤非电子界族(RACE_CYBERSE)的怪兽
 function c25273572.splimit(e,c)
 	return not c:IsRace(RACE_CYBERSE)
 end
--- ②效果的发动条件：检查这张卡在送去墓地前的位置是手牌（即确实是从手卡被送入墓地）。
+-- 效果②的Condition函数：检查这张卡送去墓地前的位置是否为手卡
 function c25273572.thcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsPreviousLocation(LOCATION_HAND)
 end
--- 定义②效果检索卡牌的筛选条件：属于「G石人」系列（SetCard 0x186）且可以加入手卡。
+-- 过滤函数：筛选卡组中属于「G石人」(0x186)字段且可以加入手卡的卡片
 function c25273572.thfilter(c)
 	return c:IsSetCard(0x186) and c:IsAbleToHand()
 end
--- ②效果的发动合法性判定：检查卡组中是否存在至少1张符合条件的「G石人」卡，并设置操作信息为从卡组检索1张加入手卡。
+-- 效果②的Target函数：检测卡组中存在可检索的「G石人」卡，并设置从卡组把1张卡加入手卡的操作信息
 function c25273572.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 在发动合法性检查时，确认卡组中存在至少1张满足thfilter条件的「G石人」卡，否则效果不能发动。
+	-- 发动检测时确认己方卡组中存在至少1张可加入手卡的「G石人」卡
 	if chk==0 then return Duel.IsExistingMatchingCard(c25273572.thfilter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置当前连锁的操作信息，标明此效果是从卡组将1张卡加入手卡（CATEGORY_TOHAND），用于效果发动检测。
+	-- 设置从己方卡组把1张卡加入手卡的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 执行②效果：从卡组选择1张符合条件的「G石人」卡加入手卡，并给对手确认。
+-- 效果②的Operation函数：从卡组选择1张「G石人」卡加入己方手卡并向对方确认
 function c25273572.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 显示选择卡片的提示消息，提示玩家“请选择要加入手卡的卡”。
+	-- 向己方玩家发送选择要加入手卡的卡片提示
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 让玩家从卡组中选出1张符合thfilter条件的「G石人」卡。
+	-- 从己方卡组中选择1张可加入手卡的「G石人」卡
 	local g=Duel.SelectMatchingCard(tp,c25273572.thfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if g:GetCount()>0 then
-		-- 将选中的「G石人」卡加入持有者的手卡，原因为效果。
+		-- 以效果将选中的「G石人」卡加入持有者（己方）手卡
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 向对手展示加入手卡的那张卡，以确认检索内容。
+		-- 向对方玩家公开确认加入手卡的「G石人」卡
 		Duel.ConfirmCards(1-tp,g)
 	end
 end
