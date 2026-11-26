@@ -17,56 +17,56 @@ function c74202664.initial_effect(c)
 	e1:SetOperation(c74202664.activate)
 	c:RegisterEffect(e1)
 end
--- 定义发动条件函数：自己基本分比对方少
+-- ①效果的发动条件：检查自己当前基本分是否比对方少。
 function c74202664.condition(e,tp,eg,ep,ev,re,r,rp)
-	-- 判断自己当前基本分是否小于对方当前基本分
+	-- 判断己方当前基本分是否严格低于对方当前基本分。
 	return Duel.GetLP(tp)<Duel.GetLP(1-tp)
 end
--- 定义发动准备（Target）函数：检查卡组是否有卡，以及是否能进行加入手卡或特殊召唤的操作
+-- ①效果的目标处理函数：检查自己卡组是否有卡且存在可加入手卡的卡或在有空位时可特殊召唤。
 function c74202664.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 获取自己卡组的所有卡片
+	-- 获取自己卡组中所有的卡片组。
 	local g=Duel.GetFieldGroup(tp,LOCATION_DECK,0)
-	-- 检查卡组数量大于0，且自己场上有怪兽区域空位
+	-- 发动条件检查：确认自己卡组至少有1张卡，且怪兽区有空位。
 	if chk==0 then return #g>0 and (Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查自己是否可以特殊召唤，且未受到无法特殊召唤的限制效果影响
+		-- 检查在怪兽区有空位时己方是否可以特殊召唤且未受烈焰侠特殊召唤限制影响。
 		and Duel.IsPlayerCanSpecialSummon(tp) and not Duel.IsPlayerAffectedByEffect(tp,63060238)
 		or g:IsExists(Card.IsAbleToHand,1,nil)) end
 end
--- 定义效果处理（Operation）函数：确认卡组最上方的卡，根据其等级和种类执行加入手卡、特殊召唤或由对方选择适用基本分变化效果
+-- ①效果的处理函数：确认自己卡组最上面的卡，若为1星或8星怪兽则加入手卡或特殊召唤，否则让对方选择适用其中1个基本分调整效果（或什么都不做）。
 function c74202664.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取自己卡组的所有卡片
+	-- 获取自己卡组中所有的卡片组。
 	local g=Duel.GetFieldGroup(tp,LOCATION_DECK,0)
 	if #g<=0 then return end
-	-- 将自己卡组最上面的1张卡给双方确认
+	-- 向双方确认自己卡组最上面的1张卡。
 	Duel.ConfirmDecktop(tp,1)
-	-- 获取卡组最上面的那张卡
+	-- 获取自己卡组最上面的1张卡。
 	local tc=Duel.GetDecktopGroup(tp,1):GetFirst()
 	if tc:IsType(TYPE_MONSTER) and (tc:IsLevel(1) or tc:IsLevel(8)) then
-		-- 获取自己场上可用的怪兽区域空格数
+		-- 获取自己主要怪兽区可用于特殊召唤的空位数量。
 		local ft=Duel.GetLocationCount(tp,LOCATION_MZONE)
 		if not tc:IsAbleToHand() and (not tc:IsCanBeSpecialSummoned(e,0,tp,false,false) or ft<=0) then return end
-		-- 若该卡能加入手卡，且（不能特殊召唤、无怪兽空位或玩家选择加入手卡），则执行加入手卡处理
+		-- 若确认的怪兽可加入手卡，且无法特殊召唤、没有怪兽区空位或玩家选择加入手卡时进入加入手卡分支。
 		if tc:IsAbleToHand() and (not tc:IsCanBeSpecialSummoned(e,0,tp,false,false) or ft<=0 or Duel.SelectOption(tp,1190,1152)==0) then
-			-- 使接下来的操作不触发系统自动洗牌检测
+			-- 禁用洗卡检测以避免误洗切卡组。
 			Duel.DisableShuffleCheck()
-			-- 将该卡因效果加入手卡
+			-- 将确认的1星或8星怪兽以效果加入自己手卡。
 			Duel.SendtoHand(tc,nil,REASON_EFFECT)
-			-- 手动洗切自己的手卡
+			-- 手动洗切己方的手卡。
 			Duel.ShuffleHand(tp)
 		else
-			-- 使接下来的特殊召唤操作不触发系统自动洗牌检测
+			-- 禁用洗卡检测以避免误洗切卡组。
 			Duel.DisableShuffleCheck()
-			-- 将该卡在自己场上表侧表示特殊召唤
+			-- 将确认的1星或8星怪兽以表侧表示特殊召唤到自己场上。
 			Duel.SpecialSummon(tc,0,tp,tp,false,false,POS_FACEUP)
 		end
 	else
-		-- 检查自己（这张卡的控制者）的基本分是否不等于1000（若不等于，则可以适用变成1000的效果）
+		-- 检查己方当前基本分是否不等于1000（以判定对方是否可选「控制者基本分变成1000」）。
 		local b1=Duel.GetLP(tp)~=1000
-		-- 检查对方（从控制者来看的对方）是否受到伤害变回复效果的影响
+		-- 检查对方是否受到「伤害变回复」效果的影响。
 		local ea=Duel.IsPlayerAffectedByEffect(1-tp,EFFECT_REVERSE_DAMAGE)
-		-- 检查对方（从控制者来看的对方）是否受到回复变伤害效果的影响
+		-- 检查对方是否受到「回复变伤害」效果的影响。
 		local eb=Duel.IsPlayerAffectedByEffect(1-tp,EFFECT_REVERSE_RECOVER)
-		-- 检查对方基本分是否小于8000，且回复效果不会变成伤害（确保回复到8000是可行的）
+		-- 检查对方基本分是否低于8000且能够实际进行回复操作。
 		local b2=Duel.GetLP(1-tp)<8000 and (ea or not eb)
 		local b3=true
 		local off=0
@@ -88,13 +88,13 @@ function c74202664.activate(e,tp,eg,ep,ev,re,r,rp)
 			opval[off-1]=3
 			off=off+1
 		end
-		-- 由对方玩家从可适用的效果选项中选择一个适用
+		-- 让对方从可用选项中选择要适用的效果编号。
 		local op=Duel.SelectOption(1-tp,table.unpack(ops))
 		if opval[op]==1 then
-			-- 将这张卡的控制者（自己）的基本分变成1000
+			-- 若对方选择选项1，将己方（控制者）的基本分设置为1000。
 			Duel.SetLP(tp,1000)
 		elseif opval[op]==2 then
-			-- 使对方（从控制者来看的对方）基本分回复到变成8000（回复差值）
+			-- 若对方选择选项2，让对方回复至8000基本分（回复量为8000减去当前基本分）。
 			Duel.Recover(1-tp,8000-Duel.GetLP(1-tp),REASON_EFFECT)
 		else return end
 	end
