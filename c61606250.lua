@@ -3,7 +3,7 @@
 -- 这个卡名的卡在1回合只能发动1张，这张卡发动的回合，自己不是龙族怪兽不能特殊召唤。
 -- ①：以自己场上1只「武装龙」怪兽为对象才能发动。从自己的卡组·墓地选那1只同名怪兽加入手卡或无视召唤条件特殊召唤。这个效果特殊召唤的怪兽不能直接攻击。
 function c61606250.initial_effect(c)
-	-- 这个卡名的卡在1回合只能发动1张，这张卡发动的回合，自己不是龙族怪兽不能特殊召唤。①：以自己场上1只「武装龙」怪兽为对象才能发动。从自己的卡组·墓地选那1只同名怪兽加入手卡或无视召唤条件特殊召唤。这个效果特殊召唤的怪兽不能直接攻击。
+	-- 这个卡名的卡在1回合只能发动1张，这张卡发动的回合，自己不是龙族怪兽不能特殊召唤。 ①：以自己场上1只「武装龙」怪兽为对象才能发动。从自己的卡组·墓地选那1只同名怪兽加入手卡或无视召唤条件特殊召唤。
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_SEARCH+CATEGORY_TOHAND+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON+CATEGORY_GRAVE_SPSUMMON)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
@@ -14,18 +14,18 @@ function c61606250.initial_effect(c)
 	e1:SetTarget(c61606250.target)
 	e1:SetOperation(c61606250.activate)
 	c:RegisterEffect(e1)
-	-- 添加自定义活动计数器，用于检测玩家在当前回合是否特殊召唤过非龙族怪兽
+	-- 注册自定义特殊召唤行动计数器，用于检测本回合是否特殊召唤过龙族以外的怪兽
 	Duel.AddCustomActivityCounter(61606250,ACTIVITY_SPSUMMON,c61606250.counterfilter)
 end
--- 计数器过滤函数：判断卡片是否为龙族怪兽
+-- 计数器过滤函数，仅对龙族以外的怪兽触发特殊召唤限制计数
 function c61606250.counterfilter(c)
 	return c:IsRace(RACE_DRAGON)
 end
--- 效果发动代价（Cost）函数：检查并注册本回合不能特殊召唤非龙族怪兽的限制
+-- 发动代价与誓约检查，确认本回合尚未特殊召唤过非龙族怪兽并注册持续至回合结束的龙族特殊召唤限制
 function c61606250.cost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 在发动准备阶段，检查本回合是否未曾特殊召唤过非龙族怪兽
+	-- 检查本回合是否尚未进行过龙族以外怪兽的特殊召唤
 	if chk==0 then return Duel.GetCustomActivityCount(61606250,tp,ACTIVITY_SPSUMMON)==0 end
-	-- 这张卡发动的回合，自己不是龙族怪兽不能特殊召唤。①：以自己场上1只「武装龙」怪兽为对象才能发动。从自己的卡组·墓地选那1只同名怪兽加入手卡或无视召唤条件特殊召唤。这个效果特殊召唤的怪兽不能直接攻击。
+	-- 这张卡发动的回合，自己不是龙族怪兽不能特殊召唤。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD)
 	e1:SetCode(EFFECT_CANNOT_SPECIAL_SUMMON)
@@ -33,56 +33,56 @@ function c61606250.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	e1:SetTargetRange(1,0)
 	e1:SetTarget(c61606250.splimit)
 	e1:SetReset(RESET_PHASE+PHASE_END)
-	-- 向玩家注册不能特殊召唤非龙族怪兽的全局效果
+	-- 为自己注册持续至回合结束的龙族特殊召唤誓约限制
 	Duel.RegisterEffect(e1,tp)
 end
--- 特殊召唤限制函数：限制不能特殊召唤非龙族怪兽
+-- 限制条件，禁止特殊召唤龙族以外的怪兽
 function c61606250.splimit(e,c,sump,sumtype,sumpos,targetp,se)
 	return not c:IsRace(RACE_DRAGON)
 end
--- 对象怪兽过滤函数：筛选场上表侧表示的「武装龙」怪兽，且卡组或墓地存在其同名怪兽
+-- 过滤函数，检查是否为自己场上表侧表示的「武装龙」怪兽且卡组·墓地存在可处理的同名怪兽
 function c61606250.filter(c,e,tp)
-	-- 判断怪兽是否表侧表示、属于「武装龙」系列，且卡组或墓地存在可检索或特殊召唤的同名怪兽
+	-- 判断该卡是否为表侧表示「武装龙」怪兽且自己卡组·墓地存在满足条件的同名怪兽
 	return c:IsFaceup() and c:IsSetCard(0x111) and Duel.IsExistingMatchingCard(c61606250.thfilter,tp,LOCATION_DECK+LOCATION_GRAVE,0,1,nil,e,tp,c:GetCode())
 end
--- 目标怪兽过滤函数：筛选卡组或墓地中与对象怪兽同名的怪兽，且该怪兽可以加入手卡或特殊召唤
+-- 过滤函数，检查是否为指定卡号的怪兽且能加入手卡或在有空位时可无视召唤条件特殊召唤
 function c61606250.thfilter(c,e,tp,code)
 	if not (c:IsCode(code) and c:IsType(TYPE_MONSTER)) then return false end
-	-- 获取玩家场上可用怪兽区域的数量
+	-- 获取自己怪兽区域的可用空位数
 	local ft=Duel.GetLocationCount(tp,LOCATION_MZONE)
 	return c:IsAbleToHand() or (ft>0 and c:IsCanBeSpecialSummoned(e,0,tp,true,false))
 end
--- 效果发动准备（Target）函数：确认是否满足发动条件，并选择场上的「武装龙」怪兽作为对象
+-- 检查自己怪兽区是否存在符合条件的「武装龙」怪兽并选择1只作为连锁对象
 function c61606250.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and c61606250.filter(chkc,e,tp) end
-	-- 在发动准备阶段，检查场上是否存在符合条件的「武装龙」怪兽作为对象
+	-- 检查自己怪兽区是否存在至少1只满足条件的「武装龙」怪兽
 	if chk==0 then return Duel.IsExistingTarget(c61606250.filter,tp,LOCATION_MZONE,0,1,nil,e,tp) end
-	-- 向玩家发送提示信息，要求选择效果的对象
+	-- 提示控制者选择自己场上1只「武装龙」怪兽作为对象
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)  --"请选择效果的对象"
-	-- 让玩家选择1只符合条件的「武装龙」怪兽作为效果的对象
+	-- 选择自己怪兽区1只「武装龙」怪兽作为本次连锁的对象
 	Duel.SelectTarget(tp,c61606250.filter,tp,LOCATION_MZONE,0,1,1,nil,e,tp)
 end
--- 效果处理（Activate）函数：将同名怪兽加入手卡或无视召唤条件特殊召唤，并施加不能直接攻击的限制
+-- 效果处理，从卡组·墓地选1只对象怪兽的同名怪兽加入手卡或无视召唤条件特殊召唤，若特召则限制其不能直接攻击
 function c61606250.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取本次效果发动的对象怪兽
+	-- 获取作为对象选择的「武装龙」怪兽
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) and tc:IsFaceup() then
-		-- 向玩家发送提示信息，要求选择要操作的卡片
+		-- 提示控制者选择要加入手卡或特殊召唤的同名怪兽
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_OPERATECARD)  --"请选择要操作的卡"
-		-- 从卡组或墓地选择1张与对象怪兽同名的怪兽（受王家之谷影响）
+		-- 从自己卡组·墓地（受王家长眠之谷限制过滤）选择1只对象怪兽的同名怪兽
 		local g=Duel.SelectMatchingCard(tp,aux.NecroValleyFilter(c61606250.thfilter),tp,LOCATION_DECK+LOCATION_GRAVE,0,1,1,nil,e,tp,tc:GetCode())
-		-- 获取玩家场上可用的怪兽区域数量，用于判断是否可以特殊召唤
+		-- 获取当前自己怪兽区的可用空位数
 		local ft=Duel.GetLocationCount(tp,LOCATION_MZONE)
 		local sc=g:GetFirst()
 		if sc then
-			-- 判断是否只能加入手卡，或者在可以特召且有空位时，让玩家选择是加入手卡还是特殊召唤
+			-- 判断选中的同名怪兽是否加入手卡（可加手且无法特召、无空位或玩家选择加手时执行）
 			if sc:IsAbleToHand() and (not sc:IsCanBeSpecialSummoned(e,0,tp,true,false) or ft<=0 or Duel.SelectOption(tp,1190,1152)==0) then
-				-- 将选中的同名怪兽加入手卡
+				-- 将选中的同名怪兽加入自己手卡
 				Duel.SendtoHand(sc,nil,REASON_EFFECT)
-				-- 向对方玩家确认加入手卡的卡片
+				-- 向对方确认加入手卡的怪兽
 				Duel.ConfirmCards(1-tp,sc)
 			else
-				-- 尝试无视召唤条件将该怪兽以表侧表示特殊召唤到场上
+				-- 以分步方式开始将选中的同名怪兽无视召唤条件表侧表示特殊召唤
 				if Duel.SpecialSummonStep(sc,0,tp,tp,true,false,POS_FACEUP) then
 					-- 这个效果特殊召唤的怪兽不能直接攻击。
 					local e1=Effect.CreateEffect(e:GetHandler())
@@ -92,7 +92,7 @@ function c61606250.activate(e,tp,eg,ep,ev,re,r,rp)
 					e1:SetReset(RESET_EVENT+RESETS_STANDARD)
 					sc:RegisterEffect(e1)
 				end
-				-- 完成特殊召唤的处理流程
+				-- 完成分步特殊召唤处理并正式将其视作特殊召唤成功
 				Duel.SpecialSummonComplete()
 			end
 		end

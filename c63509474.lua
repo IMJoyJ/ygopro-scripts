@@ -9,7 +9,7 @@ function c63509474.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
-	-- ①：以自己墓地1只鱼族怪兽为对象才能发动。那只怪兽加入手卡。
+	-- 这个卡名的①的效果1回合只能使用1次。 ①：以自己墓地1只鱼族怪兽为对象才能发动。那只怪兽加入手卡。
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(63509474,0))  --"墓地回收"
 	e2:SetCategory(CATEGORY_TOHAND)
@@ -31,69 +31,69 @@ function c63509474.initial_effect(c)
 	e3:SetOperation(c63509474.operation)
 	c:RegisterEffect(e3)
 end
--- 过滤自己墓地可以加入手牌的鱼族怪兽
+-- 过滤函数，检查是否为墓地中可加入手卡的鱼族怪兽
 function c63509474.thfilter(c)
 	return c:IsRace(RACE_FISH) and c:IsAbleToHand()
 end
--- ①号效果的发动准备与目标选择
+-- 检查自己墓地是否存在可加入手卡的鱼族怪兽，选择1只作为对象并设置操作信息
 function c63509474.thtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsControler(tp) and chkc:IsLocation(LOCATION_GRAVE) and c63509474.thfilter(chkc) end
-	-- 检查自己墓地是否存在至少1只可以加入手牌的鱼族怪兽
+	-- 检查自己墓地是否存在至少1只可作为对象加入手卡的鱼族怪兽
 	if chk==0 then return Duel.IsExistingTarget(c63509474.thfilter,tp,LOCATION_GRAVE,0,1,nil) end
-	-- 提示玩家选择要加入手牌的卡
+	-- 提示控制者从墓地选择要加入手卡的鱼族怪兽
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 选择自己墓地1只鱼族怪兽作为效果的对象
+	-- 选择自己墓地1只鱼族怪兽作为本次连锁的对象
 	local g=Duel.SelectTarget(tp,c63509474.thfilter,tp,LOCATION_GRAVE,0,1,1,nil)
-	-- 设置效果处理信息为将选中的卡加入手牌
+	-- 设置将对象怪兽加入手卡的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,1,0,0)
 end
--- ①号效果的效果处理
+-- 效果处理，确认对象怪兽仍与效果关联后将其加入自己手卡
 function c63509474.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取发动时选择的对象怪兽
+	-- 获取作为对象选择的墓地鱼族怪兽
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
-		-- 将对象怪兽加入手牌
+		-- 将作为对象的鱼族怪兽加入自己手卡
 		Duel.SendtoHand(tc,nil,REASON_EFFECT)
 	end
 end
--- 检查是否满足“这张卡在自己场上被对方的效果破坏并送去墓地”的条件
+-- 发动条件检查，确认之前由自己控制的这张卡是被对方的效果破坏而送去墓地的
 function c63509474.condition(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	return rp==1-tp and c:IsReason(REASON_DESTROY)
 		and c:IsReason(REASON_EFFECT) and c:IsPreviousControler(tp)
 end
--- 过滤卡组中可以加入手牌或可以特殊召唤的鱼族怪兽
+-- 过滤函数，检查是否为鱼族怪兽且能加入手卡或在有空位时可特殊召唤
 function c63509474.filter(c,e,tp,spchk)
 	return c:IsRace(RACE_FISH) and (c:IsAbleToHand() or spchk and c:IsCanBeSpecialSummoned(e,0,tp,false,false))
 end
--- ②号效果的发动准备
+-- 发动条件检查，根据自己怪兽区是否有空位确认卡组存在可加入手卡或特殊召唤的鱼族怪兽
 function c63509474.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then
-		-- 检查自己场上是否有空余的怪兽区域
+		-- 检查自己主要怪兽区是否至少有1个空位
 		local spchk=Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-		-- 检查卡组中是否存在至少1只满足条件的鱼族怪兽
+		-- 检查自己卡组是否存在至少1只满足加入手卡或特殊召唤条件的鱼族怪兽
 		return Duel.IsExistingMatchingCard(c63509474.filter,tp,LOCATION_DECK,0,1,nil,e,tp,spchk)
 	end
 end
--- ②号效果的效果处理
+-- 效果处理，从卡组选1只鱼族怪兽加入手卡或表侧表示特殊召唤
 function c63509474.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查自己场上是否有空余的怪兽区域
+	-- 效果处理时确认自己怪兽区是否有可用空位
 	local spchk=Duel.GetLocationCount(tp,LOCATION_MZONE)>0
-	-- 提示玩家选择要操作的卡
+	-- 提示控制者从卡组选择要加入手卡或特殊召唤的鱼族怪兽
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_OPERATECARD)  --"请选择要操作的卡"
-	-- 从卡组选择1只满足条件的鱼族怪兽
+	-- 从自己卡组选择1只满足条件的鱼族怪兽
 	local g=Duel.SelectMatchingCard(tp,c63509474.filter,tp,LOCATION_DECK,0,1,1,nil,e,tp,spchk)
 	if g:GetCount()>0 then
 		local sc=g:GetFirst()
 		if spchk and sc:IsCanBeSpecialSummoned(e,0,tp,false,false)
-			-- 若该怪兽不能加入手牌，或者玩家在“加入手牌”和“特殊召唤”中选择了“特殊召唤”
+			-- 判断是特殊召唤还是加入手卡（无法加手或玩家选择特召时执行特殊召唤）
 			and (not sc:IsAbleToHand() or Duel.SelectOption(tp,1190,1152)==1) then
-			-- 将选择的怪兽在自己场上表侧表示特殊召唤
+			-- 将选中的鱼族怪兽表侧表示特殊召唤到自己场上
 			Duel.SpecialSummon(sc,0,tp,tp,false,false,POS_FACEUP)
 		else
-			-- 将选择的怪兽加入手牌
+			-- 将选中的鱼族怪兽加入自己手卡
 			Duel.SendtoHand(sc,nil,REASON_EFFECT)
-			-- 给对方玩家确认加入手牌的卡
+			-- 向对方确认加入手卡的鱼族怪兽
 			Duel.ConfirmCards(1-tp,sc)
 		end
 	end
