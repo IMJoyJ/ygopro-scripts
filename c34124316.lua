@@ -10,48 +10,48 @@ function c34124316.initial_effect(c)
 	e1:SetOperation(c34124316.operation)
 	c:RegisterEffect(e1)
 end
--- 效果发动时的条件检查与操作信息登记：发动时无额外条件（chk==0即返回true），同时检索场上所有怪兽，并将本次效果预定破坏的对象和数量（全场怪兽）写入连锁操作信息。
+-- 反转效果的Target函数：在发动时始终通过检测，获取双方场上的全部怪兽并设置破坏操作信息
 function c34124316.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 获取双方场上全部怪兽（包括主要怪兽区和额外怪兽区），用于后续的破坏判定。
+	-- 获取双方怪兽区上的全部怪兽卡片组
 	local g=Duel.GetMatchingGroup(aux.TRUE,tp,LOCATION_MZONE,LOCATION_MZONE,nil)
-	-- 设置操作信息：本连锁的破坏效果以全场怪兽为对象，数量为对象怪兽数，用于给其他卡（如星尘龙等）提供发动检测信息。
+	-- 设置将场上全部怪兽破坏的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,g:GetCount(),0,0)
 end
--- 效果处理整体流程：先破坏场上所有怪兽；随后双方各自翻开卡组顶5张，分别对每张卡判断：4星以下且可特殊召唤则特殊召唤；否则若能加入手卡则加入手卡；否则送去墓地；最后完成所有特殊召唤并洗牌。
+-- 反转效果的Operation函数：破坏场上所有怪兽后，双方各翻开卡组最上方5张卡，将4星以下可特召的怪兽以表侧攻击或里侧守备表示特召，其余可回手的卡加入手卡（无法回手的送入墓地）
 function c34124316.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前场上所有怪兽作为即将被破坏的对象。
+	-- 获取双方怪兽区上的全部怪兽卡片组
 	local g=Duel.GetMatchingGroup(aux.TRUE,tp,LOCATION_MZONE,LOCATION_MZONE,nil)
-	-- 以效果原因将获取到的场上所有怪兽破坏。
+	-- 以效果破坏双方场上的全部怪兽
 	Duel.Destroy(g,REASON_EFFECT)
-	-- 获取发动玩家（tp）卡组最上方的5张卡，用于后续翻开处理。
+	-- 获取己方卡组最上方的5张卡
 	local g1=Duel.GetDecktopGroup(tp,5)
-	-- 获取对方玩家（1-tp）卡组最上方的5张卡，用于后续翻开处理。
+	-- 获取对方卡组最上方的5张卡
 	local g2=Duel.GetDecktopGroup(1-tp,5)
 	local hg=Group.CreateGroup()
 	local gg=Group.CreateGroup()
-	-- 确认（向双方展示）发动玩家卡组最上方5张卡。
+	-- 翻开并确认己方卡组最上方的5张卡
 	Duel.ConfirmDecktop(tp,5)
 	local tc=g1:GetFirst()
 	while tc do
 		if tc:IsLevelBelow(4) and tc:IsCanBeSpecialSummoned(e,0,tp,false,false,POS_FACEUP_ATTACK+POS_FACEDOWN_DEFENSE) then
-			-- 禁用自动洗切检查，避免接下来从卡组顶特殊召唤或移动卡后系统自动洗切卡组。
+			-- 禁用紧接着的己方分步特殊召唤后的自动洗切卡组检测
 			Duel.DisableShuffleCheck()
-			-- 将发动玩家翻开的满足条件（4星以下且可特殊召唤）的怪兽，以表侧攻击表示或里侧守备表示特殊召唤到发动玩家场上，作为连续特殊召唤的一步。
+			-- 将符合条件的4星以下己方怪兽以表侧攻击表示或里侧守备表示分步特殊召唤到己方场上
 			Duel.SpecialSummonStep(tc,0,tp,tp,false,false,POS_FACEUP_ATTACK+POS_FACEDOWN_DEFENSE)
 		elseif tc:IsAbleToHand() then
 			hg:AddCard(tc)
 		else gg:AddCard(tc) end
 		tc=g1:GetNext()
 	end
-	-- 确认（向双方展示）对方玩家卡组最上方5张卡。
+	-- 翻开并确认对方卡组最上方的5张卡
 	Duel.ConfirmDecktop(1-tp,5)
 	tc=g2:GetFirst()
 	while tc do
 		if tc:IsLevelBelow(4) and tc:IsCanBeSpecialSummoned(e,0,1-tp,false,false,POS_FACEUP_ATTACK+POS_FACEDOWN_DEFENSE) then
-			-- 禁用自动洗切检查，避免对方从卡组特殊召唤或移动卡后系统自动洗切卡组。
+			-- 禁用紧接着的对方分步特殊召唤后的自动洗切卡组检测
 			Duel.DisableShuffleCheck()
-			-- 将对方玩家翻开的满足条件（4星以下且可特殊召唤）的怪兽，以表侧攻击表示或里侧守备表示特殊召唤到对方玩家场上，作为连续特殊召唤的一步。
+			-- 将符合条件的4星以下对方怪兽以表侧攻击表示或里侧守备表示分步特殊召唤到对方场上
 			Duel.SpecialSummonStep(tc,0,1-tp,1-tp,false,false,POS_FACEUP_ATTACK+POS_FACEDOWN_DEFENSE)
 		elseif tc:IsAbleToHand() then
 			hg:AddCard(tc)
@@ -59,21 +59,21 @@ function c34124316.operation(e,tp,eg,ep,ev,re,r,rp)
 		tc=g2:GetNext()
 	end
 	if hg:GetCount()>0 then
-		-- 在将剩余卡加入手卡或送去墓地前禁用自动洗切检查。
+		-- 禁用将剩余卡片加入手卡前的自动洗切卡组检测
 		Duel.DisableShuffleCheck()
-		-- 将剩下的可以加入手卡的卡全部加入其持有者的手卡（nil表示加入原持有者）。
+		-- 以效果将双方剩下的可加入手卡的翻开卡片分别加入各自持有者的手卡
 		Duel.SendtoHand(hg,nil,REASON_EFFECT)
-		-- 洗切发动玩家的手卡，因为可能有卡加入了手卡。
+		-- 手动洗切己方玩家的手卡
 		Duel.ShuffleHand(tp)
-		-- 洗切对方玩家的手卡，因为可能有卡加入了对方手卡。
+		-- 手动洗切对方玩家的手卡
 		Duel.ShuffleHand(1-tp)
 	end
 	if gg:GetCount()>0 then
-		-- 在将剩余不能加入手卡的卡送去墓地前禁用自动洗切检查。
+		-- 禁用将无法加入手卡也无法特召的卡片送墓前的自动洗切卡组检测
 		Duel.DisableShuffleCheck()
-		-- 将既不能特殊召唤也不能加入手卡的剩余翻开卡，以效果原因送去墓地。
+		-- 将因规则或效果限制既不能特殊召唤也不能加入手卡的剩余翻开卡以效果送去墓地
 		Duel.SendtoGrave(gg,REASON_EFFECT)
 	end
-	-- 结束连续特殊召唤处理，统一完成所有通过SpecialSummonStep进行的特殊召唤。
+	-- 统一完成双方所有分步特殊召唤流程并触发相关时点
 	Duel.SpecialSummonComplete()
 end

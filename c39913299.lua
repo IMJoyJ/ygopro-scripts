@@ -13,78 +13,78 @@ function c39913299.initial_effect(c)
 	e1:SetOperation(c39913299.operation)
 	c:RegisterEffect(e1)
 end
--- 定义从卡组中筛选可追加处理的神属性怪兽的过滤函数：满足神属性，且能够加入手卡，或能够被特殊召唤。
+-- 过滤条件：检查卡片是否为可加入手卡或（在有空位时）可特殊召唤的神属性怪兽。
 function c39913299.filter(c,e,tp)
-	-- 筛选条件：该卡为神属性，并且（能加入手卡，或主要怪兽区有空位且能被特殊召唤）。
+	-- 判断卡片是否为神属性且能够加入手卡或在自己怪兽区有空位时可特殊召唤。
 	return c:IsAttribute(ATTRIBUTE_DIVINE) and (c:IsAbleToHand() or (Duel.GetLocationCount(tp,LOCATION_MZONE)>0 and c:IsCanBeSpecialSummoned(e,0,tp,false,false)))
 end
--- 发动时的目标处理：检查发动条件（卡组顶端可送去墓地且卡组有可加入手卡的卡），宣言一个卡名并记录，同时设置操作信息。
+-- ①效果的目标处理函数：检查卡组丢弃与检索合法性，让玩家宣言1个卡名并记录宣言参数。
 function c39913299.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 发动条件检查之一：自己是否可以把卡组顶端1张卡送去墓地。
+	-- 发动条件检查：确认己方玩家能够将卡组最上面1张卡送去墓地。
 	if chk==0 then return Duel.IsPlayerCanDiscardDeck(tp,1)
-		-- 发动条件检查之二：自己卡组中是否存在至少1张可以被加入手卡的卡。
+		-- 确认自己卡组存在至少1张可以加入手卡的卡。
 		and Duel.IsExistingMatchingCard(Card.IsAbleToHand,tp,LOCATION_DECK,0,1,nil) end
-	-- 给玩家提示“请宣言一个卡名”，并将宣言选择的提示信息写入缓存。
+	-- 发送提示信息，引导玩家宣言一个卡名。
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_CODE)  --"请宣言一个卡名"
 	getmetatable(e:GetHandler()).announce_filter={TYPE_FUSION+TYPE_SYNCHRO+TYPE_XYZ+TYPE_LINK,OPCODE_ISTYPE,OPCODE_NOT}
-	-- 让玩家宣言一个卡名（过滤掉融合、同调、超量、连接怪兽），返回所宣言的卡号。
+	-- 让己方玩家根据过滤规则（排除额外卡组怪兽）宣言1个卡名并保存卡号。
 	local ac=Duel.AnnounceCard(tp,table.unpack(getmetatable(e:GetHandler()).announce_filter))
-	-- 将宣言的卡号存入当前连锁的目标参数，供效果处理时使用。
+	-- 将玩家宣言的卡号设为当前连锁的目标参数。
 	Duel.SetTargetParam(ac)
-	-- 设置操作信息：本次效果包含卡名宣言这一操作（CATEGORY_ANNOUNCE）。
+	-- 设置操作信息：本次效果包含宣言卡名的操作。
 	Duel.SetOperationInfo(0,CATEGORY_ANNOUNCE,nil,0,tp,0)
 end
--- 效果处理的主要流程：确认并翻开卡组顶端1张卡，若与宣言卡名一致则加入手卡，并可继续选择神属性怪兽加入手卡或特殊召唤；若不一致则将翻开的卡送去墓地，同时控制自动洗牌检测。
+-- ①效果的处理函数：翻开卡组最上方1张卡，若为宣言的卡则加入手卡并可选检索或特招1只神属性怪兽，否则送去墓地。
 function c39913299.operation(e,tp,eg,ep,ev,re,r,rp)
-	-- 如果自己卡组没有卡，则无法进行任何处理，直接终止效果处理。
+	-- 检查自己卡组是否仍有卡片，若卡组为空则结束处理。
 	if Duel.GetFieldGroupCount(tp,LOCATION_DECK,0)<=0 then return end
-	-- 向双方确认自己卡组最上方1张卡（展示该卡）。
+	-- 向双方翻开确认自己卡组最上方1张卡。
 	Duel.ConfirmDecktop(tp,1)
-	-- 获取自己卡组最上方1张卡的卡片对象，用于后续判断。
+	-- 获取自己卡组最上方1张卡组成的卡片组。
 	local g=Duel.GetDecktopGroup(tp,1)
 	local tc=g:GetFirst()
-	-- 从当前连锁信息中取出之前记录的宣言卡号。
+	-- 从当前连锁信息中读取发动时宣言的卡号。
 	local ac=Duel.GetChainInfo(0,CHAININFO_TARGET_PARAM)
 	if tc:IsCode(ac) and tc:IsAbleToHand() then
-		-- 将翻开的卡加入其持有者的手卡（通过效果处理）。
+		-- 将翻开的且符合宣言卡名的卡以效果加入手卡。
 		Duel.SendtoHand(tc,nil,REASON_EFFECT)
-		-- 从卡组中筛选出满足c39913299.filter条件的卡片组，即符合追加条件的神属性怪兽。
+		-- 获取自己卡组中所有符合条件（可加入手卡或特招）的神属性怪兽卡片组。
 		local g=Duel.GetMatchingGroup(c39913299.filter,tp,LOCATION_DECK,0,nil,e,tp)
-		-- 如果卡组中存在符合条件的神属性怪兽且玩家选择“是”，则继续执行追加处理；否则跳过追加处理并关闭洗牌检测。
+		-- 若卡组存在可用神属性怪兽，询问玩家是否将其加入手卡或特殊召唤。
 		if g:GetCount()>0 and Duel.SelectYesNo(tp,aux.Stringid(39913299,0)) then  --"是否把神属性怪兽加入手卡或特殊召唤？"
-			-- 中断当前效果处理，使后续追加处理视为单独的效果处理时点（防止错时点）。
+			-- 中断当前效果处理，使之后的神属性怪兽处理与之前的加手卡视为不同时处理。
 			Duel.BreakEffect()
-			-- 给玩家提示“请选择要操作的卡”，并进入选择卡片界面。
+			-- 发送提示信息，引导玩家选择要操作的神属性怪兽。
 			Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_OPERATECARD)  --"请选择要操作的卡"
 			local sg=g:Select(tp,1,1,nil)
 			local sc=sg:GetFirst()
 			local b1=sc:IsAbleToHand()
-			-- 判断该神属性怪兽是否满足特殊召唤条件：自己主要怪兽区有空位，且该卡可以被特殊召唤。
+			-- 检查自己怪兽区是否有空位且所选神属性怪兽能否被特殊召唤。
 			local b2=Duel.GetLocationCount(tp,LOCATION_MZONE)>0 and sc:IsCanBeSpecialSummoned(e,0,tp,false,false)
 			local op=0
-			-- 根据该怪兽能否加入手卡或特殊召唤的组合情况，让玩家选择执行方式（加入手卡或特殊召唤）。
+			-- 若所选神属性怪兽既能加入手卡也能特殊召唤，让玩家选择加入手卡还是特殊召唤。
 			if b1 and b2 then op=Duel.SelectOption(tp,1190,1152)
 			elseif b1 then op=0
 			else op=1 end
 			if op==0 then
-				-- 将选择的神属性怪兽加入手卡。
+				-- 将所选神属性怪兽以效果加入手卡。
 				Duel.SendtoHand(sc,nil,REASON_EFFECT)
-				-- 向对方玩家展示这张加入手卡的卡，以确认其信息。
+				-- 将加入手卡的神属性怪兽展示给对方确认。
 				Duel.ConfirmCards(1-tp,sc)
 			else
-				-- 将选择的神属性怪兽以表侧表示特殊召唤到自己场上。
+				-- 将所选神属性怪兽以表侧表示特殊召唤到自己场上。
 				Duel.SpecialSummon(sc,0,tp,tp,false,false,POS_FACEUP)
 			end
 		else
-			-- 玩家决定不追加处理时，关闭系统的自动洗牌检测，因为只是翻开卡组顶端而未实际取出卡。
+			-- 若不进行神属性怪兽检索或特招，则禁用接下来的洗卡检测以保持原卡组顺序。
 			Duel.DisableShuffleCheck()
 		end
-		-- 手动洗切自己的手卡，因为可能已将卡加入手卡，同时重置洗牌检测状态。
+		-- 手动洗切己方的手卡。
 		Duel.ShuffleHand(tp)
 	else
-		-- 翻开的卡与宣言卡名不一致（或不能加入手卡）时，关闭自动洗牌检测，避免系统因翻开卡组顶端而自动洗切卡组。
+		-- 翻开的卡不是宣言的卡时，禁用洗卡检测以避免误洗切卡组。
 		Duel.DisableShuffleCheck()
-		-- 将翻开的卡送去墓地，原因包含效果处理以及因翻开而展示（REASON_REVEAL）。
+		-- 将翻开的不符合宣言卡名的卡以翻开送墓的原因送去墓地。
 		Duel.SendtoGrave(tc,REASON_EFFECT+REASON_REVEAL)
 	end
 end

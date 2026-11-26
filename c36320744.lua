@@ -5,14 +5,14 @@
 -- ①：这张卡特殊召唤的场合才能发动。从卡组把1张有「焰圣骑士帝-查理」的卡名记述的卡或者「象牙角笛」加入手卡。
 -- ②：场上的这张卡成为攻击·效果的对象时才能发动。从卡组把1只战士族·炎属性怪兽送去墓地，这张卡直到结束阶段除外。那之后，可以从卡组·额外卡组把1只「罗兰」怪兽特殊召唤。
 local s,id,o=GetID()
--- 初始化函数：为这张卡注册同调召唤手续（调整＋调整以外怪兽1只以上）、①在特殊召唤成功时检索「焰圣骑士帝-查理」或「象牙角笛」的效果、②在成为攻击/效果对象时发动送墓战士族炎属性+自身暂时除外+可特召「罗兰」的效果，并让②同时应对成为攻击对象和成为效果对象两种时点。
+-- 初始化「围绕圣剑的王姬 安洁莉卡」(36320744)：记录「焰圣骑士帝-查理」卡名、设置同调召唤手续与苏生限制，并注册①检索与②被选为对象时堆墓暂除且特召「罗兰」效果
 function s.initial_effect(c)
-	-- 将77656797（焰圣骑士帝-查理）登记到这张卡的卡名记述列表中，使检索时可用aux.IsCodeListed(c,77656797)判断卡名是否记述了该卡。
+	-- 记录这张卡的效果文本中记载了「焰圣骑士帝-查理」(77656797)的卡名
 	aux.AddCodeList(c,77656797)
-	-- 为这张卡追加同调召唤手续：调整1只＋调整以外怪兽1只以上。
+	-- 设置同调召唤手续：1只调整＋1只以上调整以外的怪兽
 	aux.AddSynchroProcedure(c,nil,aux.NonTuner(nil),1)
 	c:EnableReviveLimit()
-	-- ①：这张卡特殊召唤的场合才能发动。从卡组把1张有「焰圣骑士帝-查理」的卡名记述的卡或者「象牙角笛」加入手卡。
+	-- 这个卡名的①②的效果1回合各能使用1次。①：这张卡特殊召唤的场合才能发动。从卡组把1张有「焰圣骑士帝-查理」的卡名记述的卡或者「象牙角笛」加入手卡。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(id,0))  --"卡组检索"
 	e1:SetCategory(CATEGORY_SEARCH+CATEGORY_TOHAND)
@@ -25,7 +25,7 @@ function s.initial_effect(c)
 	c:RegisterEffect(e1)
 	-- ②：场上的这张卡成为攻击·效果的对象时才能发动。从卡组把1只战士族·炎属性怪兽送去墓地，这张卡直到结束阶段除外。那之后，可以从卡组·额外卡组把1只「罗兰」怪兽特殊召唤。
 	local e2=Effect.CreateEffect(c)
-	e2:SetDescription(aux.Stringid(id,1))
+	e2:SetDescription(aux.Stringid(id,1))  --"这张卡除外"
 	e2:SetCategory(CATEGORY_TOGRAVE+CATEGORY_REMOVE+CATEGORY_SPECIAL_SUMMON+CATEGORY_DECKDES+CATEGORY_DECK_SPSUMMON)
 	e2:SetType(EFFECT_TYPE_QUICK_O)
 	e2:SetCode(EVENT_BECOME_TARGET)
@@ -39,72 +39,72 @@ function s.initial_effect(c)
 	e3:SetCode(EVENT_BE_BATTLE_TARGET)
 	c:RegisterEffect(e3)
 end
--- 定义①的检索过滤器：卡名是「象牙角笛」（55749927），或者效果文本中记述了「焰圣骑士帝-查理」（77656797）的卡，并且能够加入手卡。
+-- 过滤函数：筛选卡组中「象牙角笛」(55749927)或记述有「焰圣骑士帝-查理」(77656797)卡名且可加入手卡的卡片
 function s.thfilter(c)
-	-- 检索条件的具体判断：满足卡名是象牙角笛 OR 记述有焰圣骑士帝-查理，且该卡当前可以加入手卡。
+	-- 判断卡片是否为「象牙角笛」(55749927)或记载了「焰圣骑士帝-查理」(77656797)卡名，且能够加入手卡
 	return (c:IsCode(55749927) or aux.IsCodeListed(c,77656797)) and c:IsAbleToHand()
 end
--- 定义①的发动目标函数：在发动时确认卡组存在检索对象，并设置本次操作信息为从卡组将1张卡加入手卡。
+-- 效果①的Target函数：检测己方卡组是否存在符合检索条件的卡片，并设置从卡组把1张卡加入手卡的操作信息
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 发动合法性检查：卡组中存在至少1张满足s.thfilter的卡。
+	-- 发动检测时确认己方卡组中存在至少1张符合条件的卡片
 	if chk==0 then return Duel.IsExistingMatchingCard(s.thfilter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置操作信息为“从卡组检索1张卡加入手卡”（目标不确定所以传nil，数量1，位置为卡组），供后续时点/效果检测。
+	-- 设置从己方卡组把1张卡加入手卡的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
--- 定义①的效果处理：从卡组选出1张符合条件的卡加入手卡，并让对方确认加入手卡的卡。
+-- 效果①的Operation函数：从卡组选择1张「象牙角笛」或记述有「焰圣骑士帝-查理」的卡加入手卡并向对方确认
 function s.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 弹出选择提示：请选择要加入手卡的卡。
+	-- 向己方玩家发送选择要加入手卡的卡片提示
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 从卡组选择1张满足s.thfilter的卡（不取对象，效果处理时选择）。
+	-- 从己方卡组中选择1张符合条件的卡片
 	local g=Duel.SelectMatchingCard(tp,s.thfilter,tp,LOCATION_DECK,0,1,1,nil)
 	if #g>0 then
-		-- 将选择的卡以效果原因加入持有者手卡。
+		-- 以效果将选中的卡片加入持有者（己方）手卡
 		Duel.SendtoHand(g,nil,REASON_EFFECT)
-		-- 向对方玩家展示加入手卡的这张卡。
+		-- 向对方玩家公开确认加入手卡的卡片
 		Duel.ConfirmCards(1-tp,g)
 	end
 end
--- 定义②的发动条件：成为攻击或效果对象的事件集合中包含这张卡自身，即这张卡被选择为攻击对象或效果对象时才能发动。
+-- 效果②的Condition函数：检查成为攻击或效果对象的卡片集合eg中是否包含这张卡
 function s.tgcon(e,tp,eg,ep,ev,re,r,rp)
 	return eg:IsContains(e:GetHandler())
 end
--- 定义送墓过滤器：战士族且炎属性的怪兽，且能够被效果送去墓地。
+-- 过滤函数：筛选卡组中炎属性、战士族且可以送去墓地的怪兽
 function s.tgfilter(c)
 	return c:IsAttribute(ATTRIBUTE_FIRE) and c:IsRace(RACE_WARRIOR) and c:IsAbleToGrave()
 end
--- 定义②的发动目标函数：检查自身可除外且卡组存在符合条件的战士族炎属性怪兽，并设置送墓/除外的操作信息。
+-- 效果②的Target函数：检测这张卡是否可以除外且卡组存在炎属性战士族怪兽，并设置堆墓与除外自身的操作信息
 function s.tgtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
-	-- ②发动合法性检查：这张卡当前可以被除外，且卡组中存在至少1只战士族·炎属性怪兽可以送去墓地。
+	-- 发动检测时确认这张卡可以被除外且己方卡组中存在至少1只炎属性·战士族怪兽
 	if chk==0 then return c:IsAbleToRemove() and Duel.IsExistingMatchingCard(s.tgfilter,tp,LOCATION_DECK,0,1,nil) end
-	-- 设置操作信息为“将从卡组把1只怪兽送去墓地”（不取对象，数量1）。
+	-- 设置从己方卡组把1只怪兽送去墓地的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,nil,1,tp,LOCATION_DECK)
-	-- 设置操作信息为“将这张卡自身除外”（目标为自身c，数量1）。
+	-- 设置将场上的这张卡除外的操作信息
 	Duel.SetOperationInfo(0,CATEGORY_REMOVE,c,1,0,0)
 end
--- 定义特殊召唤罗兰的过滤器：必须是「罗兰」系列怪兽（0x148），能够被这次效果特殊召唤；若从卡组特召要求主怪兽区有空位，若从额外卡组特召要求额外卡组怪兽能出场的空位。
+-- 过滤函数：筛选卡组或额外卡组中属于「罗兰」(0x148)字段、可特殊召唤且对应位置有足够空位的怪兽
 function s.spfilter(c,e,tp)
 	if not c:IsSetCard(0x148) or not c:IsCanBeSpecialSummoned(e,0,tp,false,false) then return false end
 	if c:IsLocation(LOCATION_DECK) then
-		-- 当从卡组特殊召唤时，检查玩家tp的主要怪兽区是否有空位。
+		-- 若候选怪兽位于卡组，检查己方主要怪兽区是否有可用空位
 		return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 	else
-		-- 当从额外卡组特殊召唤时，检查玩家tp的额外卡组怪兽可用出场空格数是否大于0。
+		-- 若候选怪兽位于额外卡组，检查己方能从额外卡组特召怪兽的可用空位是否足够
 		return Duel.GetLocationCountFromEx(tp,tp,nil,c)>0
 	end
 end
--- 定义②的效果处理：先选择并送墓1只战士族·炎属性怪兽；成功后若这张卡仍与效果关联，则将其暂时除外并设置结束阶段返回，之后可选择从卡组·额外卡组特殊召唤1只「罗兰」怪兽。
+-- 效果②的Operation函数：从卡组将1只炎属性战士族怪兽送墓，将这张卡暂时除外至结束阶段，随后可从卡组或额外卡组特召1只「罗兰」怪兽
 function s.tgop(e,tp,eg,ep,ev,re,r,rp)
-	-- 弹出选择提示：请选择要送去墓地的卡。
+	-- 向己方玩家发送选择要送去墓地的怪兽提示
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)  --"请选择要送去墓地的卡"
-	-- 从卡组选择1只战士族·炎属性怪兽送去墓地。
+	-- 从己方卡组中选择1只炎属性·战士族怪兽
 	local g=Duel.SelectMatchingCard(tp,s.tgfilter,tp,LOCATION_DECK,0,1,1,nil)
-	-- 条件判断：选到了送墓对象且实际送墓成功，且该卡确实位于墓地时，才继续执行后续效果。
+	-- 以效果将选中的炎属性·战士族怪兽送去墓地，并确认其成功进入墓地
 	if #g>0 and Duel.SendtoGrave(g,REASON_EFFECT)>0 and g:GetFirst():IsLocation(LOCATION_GRAVE) then
 		local c=e:GetHandler()
 		if c:IsRelateToEffect(e) then
 			local fid=c:GetFieldID()
-			-- 将这张卡以“暂时除外”方式除外，若除外成功则继续处理。
+			-- 尝试将与效果关联的这张卡以效果暂时除外（REASON_TEMPORARY）
 			if Duel.Remove(c,0,REASON_EFFECT+REASON_TEMPORARY)>0 then
 				if c:GetOriginalCode()==id then
 					c:RegisterFlagEffect(id,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END,0,1,fid)
@@ -118,27 +118,27 @@ function s.tgop(e,tp,eg,ep,ev,re,r,rp)
 					e1:SetCondition(s.retcon)
 					e1:SetOperation(s.retop)
 					e1:SetReset(RESET_PHASE+PHASE_END)
-					-- 将结束阶段时使暂时除外的这张卡返回场上的持续效果注册到决斗中（效果所有者tp）。
+					-- 为己方玩家注册在当前回合结束阶段将暂时除外的这张卡返回场上的延迟效果
 					Duel.RegisterEffect(e1,tp)
 				end
-				-- 检查卡组·额外卡组中是否存在至少1只可以特殊召唤的「罗兰」怪兽，作为是否询问玩家特召的条件。
+				-- 检查己方卡组或额外卡组中是否存在至少1只可特殊召唤的「罗兰」怪兽
 				if Duel.IsExistingMatchingCard(s.spfilter,tp,LOCATION_DECK+LOCATION_EXTRA,0,1,nil,e,tp)
-					-- 询问玩家是否从卡组·额外卡组特殊召唤「罗兰」怪兽。
+					-- 询问己方玩家是否要从卡组或额外卡组特殊召唤1只「罗兰」怪兽
 					and Duel.SelectYesNo(tp,aux.Stringid(id,2)) then  --"是否从卡组·额外卡组特殊召唤？"
-					-- 弹出选择提示：请选择要特殊召唤的卡。
+					-- 向己方玩家发送选择要特殊召唤的「罗兰」怪兽提示
 					Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)  --"请选择要特殊召唤的卡"
-					-- 从卡组·额外卡组选择1只满足条件的「罗兰」怪兽。
+					-- 从己方卡组或额外卡组中选择1只符合条件的「罗兰」怪兽
 					local sg=Duel.SelectMatchingCard(tp,s.spfilter,tp,LOCATION_DECK+LOCATION_EXTRA,0,1,1,nil,e,tp)
-					-- 中断当前效果处理，使后续特殊召唤作为不同时处理，以避免错过时点。
+					-- 中断当前处理步骤，使后续「罗兰」怪兽的特殊召唤与前面的送墓、除外视为不同时处理（“那之后”）
 					Duel.BreakEffect()
-					-- 将选择的「罗兰」怪兽以表侧攻击表示特殊召唤到tp的场上（不检查召唤条件/苏生限制）。
+					-- 将选中的「罗兰」怪兽以表侧表示特殊召唤到己方场上
 					Duel.SpecialSummon(sg,0,tp,tp,false,false,POS_FACEUP)
 				end
 			end
 		end
 	end
 end
--- 定义结束阶段回归的持续效果条件：仅当这张卡仍带有与本次除外时记录的field id一致的标记（即没有被其他效果重置/变化）时，才允许返回；否则终止该效果。
+-- 归还效果的Condition函数：检查LabelObject中的这张卡是否仍保留匹配的暂时除外标记fid，否则重置并销毁该效果
 function s.retcon(e,tp,eg,ep,ev,re,r,rp)
 	local tc=e:GetLabelObject()
 	if tc:GetFlagEffectLabel(id)~=e:GetLabel() then
@@ -146,8 +146,8 @@ function s.retcon(e,tp,eg,ep,ev,re,r,rp)
 		return false
 	else return true end
 end
--- 定义结束阶段回归的操作：把暂时除外的这张卡返回场上。
+-- 归还效果的Operation函数：在结束阶段将暂时除外的这张卡返回原控制者场上
 function s.retop(e,tp,eg,ep,ev,re,r,rp)
-	-- 执行把暂时除外的这张卡返回场上的操作。
+	-- 将暂时除外的这张卡返回到场上
 	Duel.ReturnToField(e:GetLabelObject())
 end
