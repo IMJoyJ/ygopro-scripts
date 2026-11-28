@@ -20,62 +20,63 @@ function c57312333.initial_effect(c)
 	e2:SetType(EFFECT_TYPE_IGNITION)
 	e2:SetRange(LOCATION_GRAVE)
 	e2:SetProperty(EFFECT_FLAG_CARD_TARGET)
+	-- 设定②效果的发动条件为本回合仍可进入战斗阶段
 	e2:SetCondition(aux.bpcon)
 	e2:SetCost(c57312333.atkcost)
 	e2:SetTarget(c57312333.atktg)
 	e2:SetOperation(c57312333.atkop)
 	c:RegisterEffect(e2)
 end
--- 过滤卡组中除「亚马逊的叫声」以外、可以加入手卡或送去墓地的「亚马逊」卡片
+-- ①效果过滤函数：筛选「亚马逊的叫声」以外可加入手卡或送去墓地的「亚马逊」卡
 function c57312333.filter(c)
 	return c:IsSetCard(0x4) and not c:IsCode(57312333) and (c:IsAbleToHand() or c:IsAbleToGrave())
 end
--- ①号效果的发动准备，检查卡组中是否存在符合条件的卡片
+-- ①效果发动检查：确认卡组中存在符合条件的「亚马逊」卡
 function c57312333.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查卡组中是否存在至少1张除「亚马逊的叫声」以外且能加入手卡或送去墓地的「亚马逊」卡片
+	-- 检查自己卡组是否存在至少1张满足①效果条件的「亚马逊」卡
 	if chk==0 then return Duel.IsExistingMatchingCard(c57312333.filter,tp,LOCATION_DECK,0,1,nil) end
 end
--- ①号效果的处理，从卡组选择1张「亚马逊」卡片并决定加入手卡或送去墓地
+-- ①效果处理：从卡组选择1张符合条件的「亚马逊」卡，根据玩家选择或可执行性将其加入手卡或送去墓地
 function c57312333.activate(e,tp,eg,ep,ev,re,r,rp)
-	-- 提示玩家选择要操作的卡片
+	-- 向玩家提示选择要从卡组操作的「亚马逊」卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_OPERATECARD)  --"请选择要操作的卡"
-	-- 从卡组选择1张满足过滤条件的「亚马逊」卡片
+	-- 让玩家从自己卡组选择1张符合条件的「亚马逊」卡
 	local g=Duel.SelectMatchingCard(tp,c57312333.filter,tp,LOCATION_DECK,0,1,1,nil)
 	local tc=g:GetFirst()
-	-- 判断卡片是否只能加入手卡，或者在既能加入手卡也能送去墓地时由玩家选择“加入手卡”
+	-- 判断选中的卡是否可加入手卡，并在无法送墓或玩家选择加入手卡时进入回手分支
 	if tc and tc:IsAbleToHand() and (not tc:IsAbleToGrave() or Duel.SelectOption(tp,1190,1191)==0) then
-		-- 将选择的卡片加入手卡
+		-- 以效果原因将选中的「亚马逊」卡加入手卡
 		Duel.SendtoHand(tc,nil,REASON_EFFECT)
-		-- 给对方玩家确认加入手卡的卡片
+		-- 向对方玩家公开确认加入手卡的卡
 		Duel.ConfirmCards(1-tp,tc)
 	else
-		-- 将选择的卡片送去墓地
+		-- 以效果原因将选中的「亚马逊」卡送去墓地
 		Duel.SendtoGrave(tc,REASON_EFFECT)
 	end
 end
--- ②号效果的发动代价，检查并执行将墓地的这张卡除外
+-- ②效果代价处理：检查并将墓地中的这张卡除外
 function c57312333.atkcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return e:GetHandler():IsAbleToRemoveAsCost() end
-	-- 将墓地的这张卡表侧表示除外
+	-- 将墓地中的这张卡表侧除外
 	Duel.Remove(e:GetHandler(),POS_FACEUP,REASON_EFFECT)
 end
--- 过滤自己场上表侧表示的「亚马逊」怪兽
+-- ②效果对象过滤函数：筛选表侧表示的「亚马逊」怪兽
 function c57312333.atkfilter(c)
 	return c:IsFaceup() and c:IsSetCard(0x4)
 end
--- ②号效果的发动准备，选择自己场上1只表侧表示的「亚马逊」怪兽作为对象
+-- ②效果目标设定：取自己场上1只表侧表示的「亚马逊」怪兽为对象
 function c57312333.atktg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and c57312333.atkfilter(chkc) end
-	-- 检查自己场上是否存在可以作为效果对象的表侧表示「亚马逊」怪兽
+	-- 检查自己怪兽区是否存在至少1只可作为对象的表侧「亚马逊」怪兽
 	if chk==0 then return Duel.IsExistingTarget(c57312333.atkfilter,tp,LOCATION_MZONE,0,1,nil) end
-	-- 提示玩家选择效果的对象
+	-- 向玩家提示选择作为效果对象的「亚马逊」怪兽
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TARGET)  --"请选择效果的对象"
-	-- 选择自己场上1只表侧表示的「亚马逊」怪兽作为效果对象
+	-- 让玩家从自己场上选择1只表侧表示的「亚马逊」怪兽作为效果对象
 	Duel.SelectTarget(tp,c57312333.atkfilter,tp,LOCATION_MZONE,0,1,1,nil)
 end
--- ②号效果的处理，使对象怪兽可以向对方所有怪兽各作1次攻击，并限制其他怪兽不能攻击
+-- ②效果处理：赋予对象怪兽本回合可向对方怪兽全部各攻击1次的效果，同时限制自己场上其他怪兽本回合不能攻击
 function c57312333.atkop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取当前连锁的效果对象怪兽
+	-- 获取被选为对象的「亚马逊」怪兽
 	local tc=Duel.GetFirstTarget()
 	if tc:IsRelateToEffect(e) then
 		-- 作为对象的怪兽可以向对方怪兽全部各作1次攻击。
@@ -94,10 +95,10 @@ function c57312333.atkop(e,tp,eg,ep,ev,re,r,rp)
 	e2:SetTarget(c57312333.ftarget)
 	e2:SetLabel(tc:GetFieldID())
 	e2:SetReset(RESET_PHASE+PHASE_END)
-	-- 注册全局效果，限制除对象怪兽以外的自己怪兽在本回合不能攻击
+	-- 为自己注册限制其他怪兽攻击的场地全局效果
 	Duel.RegisterEffect(e2,tp)
 end
--- 过滤除作为对象的怪兽以外的自己场上的怪兽
+-- 攻击限制过滤函数：选出场上ID不等于对象怪兽的所有己方怪兽
 function c57312333.ftarget(e,c)
 	return e:GetLabel()~=c:GetFieldID()
 end

@@ -17,7 +17,7 @@ function c10000000.initial_effect(c)
 	e1:SetOperation(c10000000.ttop)
 	e1:SetValue(SUMMON_TYPE_ADVANCE)
 	c:RegisterEffect(e1)
-	-- 这张卡通常召唤的场合，必须把3只解放作召唤。
+	-- 这张卡通常召唤的场合，必须把3只解放作召唤（不可盖放）。
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_SINGLE)
 	e2:SetCode(EFFECT_LIMIT_SET_PROC)
@@ -66,51 +66,51 @@ function c10000000.initial_effect(c)
 	e7:SetOperation(c10000000.desop)
 	c:RegisterEffect(e7)
 end
--- 上级召唤召唤条件检查：检查所解放的怪兽数量是否为3，且场上存在可供解放的3只怪兽
+-- 通常召唤条件检查：判断是否可以解放3只怪兽进行上级召唤
 function c10000000.ttcon(e,c,minc)
 	if c==nil then return true end
-	-- 检查可用于解放的怪兽数量是否满足3只
+	-- 检查所需祭品下限不超过3且场上存在3只可解放的祭品
 	return minc<=3 and Duel.CheckTribute(c,3)
 end
--- 上级召唤操作函数：让玩家选择3只怪兽解放，并将它们设置为这张卡的召唤素材
+-- 通常召唤操作：选择并解放3只祭品作为召唤素材
 function c10000000.ttop(e,tp,eg,ep,ev,re,r,rp,c)
-	-- 选择要解放的3只怪兽
+	-- 让玩家选择3只祭品怪兽
 	local g=Duel.SelectTribute(tp,c,3,3)
 	c:SetMaterial(g)
-	-- 解放选中的怪兽作为召唤的祭品
+	-- 将选中的3只祭品解放作为上级召唤素材
 	Duel.Release(g,REASON_SUMMON+REASON_MATERIAL)
 end
--- 召唤限制函数：阻止将这张卡直接里侧盖放（Set）召唤
+-- 禁止里侧守备表示通常召唤的条件函数（始终返回false）
 function c10000000.setcon(e,c,minc)
 	if not c then return true end
 	return false
 end
--- 召唤成功时的效果处理：在召唤成功时将连锁限制设置为不能发动其他任何效果
+-- 召唤成功时处理：限制双方在当前连锁结束前不能发动卡的效果
 function c10000000.sumsuc(e,tp,eg,ep,ev,re,r,rp)
-	-- 在召唤成功时限制后续连锁，使得双方玩家不能发动任何卡的效果
+	-- 设定直到当前连锁结束为止双方均不能连锁发动任何效果
 	Duel.SetChainLimitTillChainEnd(aux.FALSE)
 end
--- 自爆效果触发条件：检查这张卡在本回合中是否是通过特殊召唤上场的
+-- ⑤效果发动条件：检查这张卡是否为特殊召唤出场
 function c10000000.tgcon(e,tp,eg,ep,ev,re,r,rp)
 	return e:GetHandler():IsSummonType(SUMMON_TYPE_SPECIAL)
 end
--- 自爆效果的目标检查：如果是特殊召唤成功，则在结束阶段将其送去墓地，并设置相关操作信息
+-- ⑤效果目标设定：登记将这张卡送去墓地的操作信息
 function c10000000.tgtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	-- 设置效果处理的预估信息：将自身送去墓地
+	-- 声明本次效果会将自身送去墓地
 	Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,e:GetHandler(),1,0,0)
 end
--- 自爆效果操作函数：如果此卡在场上表侧表示存在，则在结束阶段将此卡送去墓地
+-- ⑤效果处理：若这张卡仍在场上表侧表示且与效果有联系，则送去墓地
 function c10000000.tgop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) and c:IsFaceup() then
-		-- 通过效果将此卡送去墓地
+		-- 以效果原因将这张卡送去墓地
 		Duel.SendtoGrave(c,REASON_EFFECT)
 	end
 end
--- 破坏效果代价函数：检查本回合此卡是否未曾进行攻击宣言，且自己场上是否有至少2只怪兽可解放；若满足，则禁止此卡在本回合攻击，并解放2只怪兽
+-- ④效果代价处理：检查未攻击宣言且可解放2只怪兽，施加本回合不能攻击限制并解放2只怪兽
 function c10000000.descost(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 代价检查：检查自身本回合攻击宣言次数是否为0，以及场上是否有至少2只可解放的怪兽
+	-- 发动确认：检查这张卡本回合未进行过攻击宣言，且自己场上存在至少2只可解放的怪兽
 	if chk==0 then return e:GetHandler():GetAttackAnnouncedCount()==0 and Duel.CheckReleaseGroup(tp,nil,2,nil) end
 	-- （这个效果发动的回合，这张卡不能攻击宣言）
 	local e1=Effect.CreateEffect(e:GetHandler())
@@ -119,24 +119,24 @@ function c10000000.descost(e,tp,eg,ep,ev,re,r,rp,chk)
 	e1:SetCode(EFFECT_CANNOT_ATTACK_ANNOUNCE)
 	e1:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END)
 	e:GetHandler():RegisterEffect(e1)
-	-- 让控制者选择场上2只可解放的怪兽
+	-- 让玩家从自己场上选择2只怪兽作为解放代价
 	local g=Duel.SelectReleaseGroup(tp,nil,2,2,nil)
-	-- 解放选中的怪兽作为发动效果的代价
+	-- 将选择的2只怪兽作为代价解放
 	Duel.Release(g,REASON_COST)
 end
--- 破坏效果目标函数：检查对方场上是否存在怪兽，并设定对方场上所有怪兽被破坏的操作信息
+-- ④效果目标设定：检查对方场上是否存在怪兽，并登记全部破坏的操作信息
 function c10000000.destg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 检查对方场上是否存在怪兽
+	-- 检查对方怪兽区是否存在至少1只怪兽
 	if chk==0 then return Duel.IsExistingMatchingCard(aux.TRUE,tp,0,LOCATION_MZONE,1,nil) end
-	-- 获取对方场上的所有怪兽
+	-- 获取对方怪兽区的所有怪兽
 	local g=Duel.GetMatchingGroup(aux.TRUE,tp,0,LOCATION_MZONE,nil)
-	-- 设置效果处理的预估信息：破坏对方场上的所有怪兽
+	-- 声明本次效果将破坏对方场上的全部怪兽
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,g:GetCount(),0,0)
 end
--- 破坏效果操作函数：获取并破坏对方场上的所有怪兽
+-- ④效果处理：获取对方场上所有怪兽并全部破坏
 function c10000000.desop(e,tp,eg,ep,ev,re,r,rp)
-	-- 获取对方场上当前的所有怪兽
+	-- 获取对方怪兽区的全部怪兽
 	local g=Duel.GetMatchingGroup(aux.TRUE,tp,0,LOCATION_MZONE,nil)
-	-- 通过效果破坏指定的怪兽卡片组
+	-- 以效果原因破坏对方场上的全部怪兽
 	Duel.Destroy(g,REASON_EFFECT)
 end

@@ -5,9 +5,9 @@
 -- ②：自己场上有5星以上的「鹰身」怪兽存在的场合才能发动。这张卡从手卡特殊召唤。
 -- ③：这张卡召唤·特殊召唤成功的场合才能发动。这个回合的结束阶段，从自己墓地选有「鹰身女郎三姐妹」的卡名记述的1张魔法·陷阱卡加入手卡。
 function c66386380.initial_effect(c)
-	-- 注册该卡的效果文本中记载了卡名「鹰身女郎三姐妹」（卡号12206212），以便其他卡片或系统进行检测。
+	-- 记录这张卡的效果文本上记述有「鹰身女郎三姐妹」的卡名
 	aux.AddCodeList(c,12206212)
-	-- ③：这张卡召唤·特殊召唤成功的场合才能发动。这个回合的结束阶段，从自己墓地选有「鹰身女郎三姐妹」的卡名记述的1张魔法·陷阱卡加入手卡。
+	-- 这个卡名的②③的效果1回合各能使用1次。③：这张卡召唤·特殊召唤成功的场合才能发动。这个回合的结束阶段，从自己墓地选有「鹰身女郎三姐妹」的卡名记述的1张魔法·陷阱卡加入手卡。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(66386380,0))
 	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_GRAVE_ACTION)
@@ -20,7 +20,7 @@ function c66386380.initial_effect(c)
 	local e2=e1:Clone()
 	e2:SetCode(EVENT_SPSUMMON_SUCCESS)
 	c:RegisterEffect(e2)
-	-- 使这张卡在场上·墓地存在时，卡名当作「鹰身女郎」使用。
+	-- 实现①效果：使这张卡的卡名只要在场上·墓地存在就当作「鹰身女郎」使用
 	aux.EnableChangeCode(c,76812113,LOCATION_MZONE+LOCATION_GRAVE)
 	-- ②：自己场上有5星以上的「鹰身」怪兽存在的场合才能发动。这张卡从手卡特殊召唤。
 	local e4=Effect.CreateEffect(c)
@@ -34,9 +34,9 @@ function c66386380.initial_effect(c)
 	e4:SetOperation(c66386380.ssop)
 	c:RegisterEffect(e4)
 end
--- 召唤·特殊召唤成功效果的执行函数：在全局注册一个在当前回合结束阶段触发的延迟效果。
+-- ③效果发动处理：注册在本回合结束阶段执行的墓地回收持续效果
 function c66386380.regop(e,tp,eg,ep,ev,re,r,rp)
-	-- ②：自己场上有5星以上的「鹰身」怪兽存在的场合才能发动。这张卡从手卡特殊召唤。③：这张卡召唤·特殊召唤成功的场合才能发动。这个回合的结束阶段，从自己墓地选有「鹰身女郎三姐妹」的卡名记述的1张魔法·陷阱卡加入手卡。
+	-- 这个回合的结束阶段，从自己墓地选有「鹰身女郎三姐妹」的卡名记述的1张魔法·陷阱卡加入手卡。
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e1:SetCode(EVENT_PHASE+PHASE_END)
@@ -44,55 +44,55 @@ function c66386380.regop(e,tp,eg,ep,ev,re,r,rp)
 	e1:SetCondition(c66386380.thcon)
 	e1:SetOperation(c66386380.thop)
 	e1:SetReset(RESET_PHASE+PHASE_END)
-	-- 将该回合结束阶段触发的延迟效果注册给玩家。
+	-- 为发动玩家注册结束阶段执行的全局持续效果
 	Duel.RegisterEffect(e1,tp)
 end
--- 过滤函数：检索自己墓地中记载了「鹰身女郎三姐妹」卡名的魔法·陷阱卡，且该卡能加入手牌。
+-- ③效果回收过滤函数：筛选记述有「鹰身女郎三姐妹」卡名且可加入手卡的魔法·陷阱卡
 function c66386380.thfilter(c)
-	-- 检查卡片是否记载了「鹰身女郎三姐妹」卡名、是否为魔法·陷阱卡，以及是否能加入手牌。
+	-- 检查卡片效果文本记述了「鹰身女郎三姐妹」、属于魔法或陷阱卡且可以加入手卡
 	return aux.IsCodeListed(c,12206212) and c:IsType(TYPE_SPELL+TYPE_TRAP) and c:IsAbleToHand()
 end
--- 结束阶段效果的发动条件：自己墓地存在至少1张满足条件的魔法·陷阱卡。
+-- 结束阶段回收触发条件：检查自己墓地是否存在符合条件的魔法·陷阱卡
 function c66386380.thcon(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查自己墓地是否存在至少1张满足条件的魔法·陷阱卡。
+	-- 检查自己墓地是否存在至少1张满足回收条件的魔法·陷阱卡
 	return Duel.IsExistingMatchingCard(c66386380.thfilter,tp,LOCATION_GRAVE,0,1,nil)
 end
--- 结束阶段效果的执行：从自己墓地选择1张满足条件的卡加入手牌。
+-- 结束阶段回收处理：从自己墓地选择1张符合条件的魔法·陷阱卡加入手卡并向对方展示
 function c66386380.thop(e,tp,eg,ep,ev,re,r,rp)
-	-- 给玩家发送提示信息，提示选择要加入手牌的卡片。
+	-- 向玩家提示选择墓地中要加入手卡的卡
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)  --"请选择要加入手牌的卡"
-	-- 让玩家从自己墓地选择1张满足条件且不受「王家长眠之谷」影响的卡。
+	-- 让玩家从自己墓地选择1张不受王家长眠之谷影响且记述「鹰身女郎三姐妹」的魔法·陷阱卡
 	local g=Duel.SelectMatchingCard(tp,aux.NecroValleyFilter(c66386380.thfilter),tp,LOCATION_GRAVE,0,1,1,nil)
 	local tc=g:GetFirst()
 	if tc then
-		-- 将选中的卡片因效果加入手牌。
+		-- 以效果原因将选中的魔法·陷阱卡加入手卡
 		Duel.SendtoHand(tc,nil,REASON_EFFECT)
-		-- 向对方玩家展示加入手牌的卡片。
+		-- 向对方玩家公开确认加入手卡的卡
 		Duel.ConfirmCards(1-tp,tc)
 	end
 end
--- 过滤函数：检索自己场上表侧表示的5星以上的「鹰身」怪兽。
+-- ②效果条件过滤函数：筛选场上表侧表示的5星以上「鹰身」怪兽
 function c66386380.filter(c)
 	return c:IsFaceup() and c:IsSetCard(0x64) and c:IsLevelAbove(5)
 end
--- 特殊召唤效果的发动条件：自己场上存在5星以上的「鹰身」怪兽。
+-- ②效果发动条件：检查自己场上是否存在5星以上的表侧「鹰身」怪兽
 function c66386380.sscon(e,tp,eg,ep,ev,re,r,rp)
-	-- 检查自己场上是否存在至少1只表侧表示的5星以上的「鹰身」怪兽。
+	-- 检查自己怪兽区是否存在至少1只5星以上的表侧「鹰身」怪兽
 	return Duel.IsExistingMatchingCard(c66386380.filter,tp,LOCATION_MZONE,0,1,nil)
 end
--- 特殊召唤效果的靶向/发动检测：检查怪兽区域是否有空位，以及自身是否能特殊召唤。
+-- ②效果目标设定：检查自己怪兽区空位及自身是否可特召，并登记特殊召唤操作信息
 function c66386380.sstg(e,tp,eg,ep,ev,re,r,rp,chk)
-	-- 在发动检测阶段，检查自己场上的主要怪兽区域是否有空位。
+	-- 检查自己主要怪兽区是否存在可用空位
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
 		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 设置连锁处理的操作信息，表明此效果包含将自身特殊召唤的操作。
+	-- 声明本次效果会将手卡中的这张卡特殊召唤
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
 end
--- 特殊召唤效果的执行：若自身仍存在于手牌中，则将其表侧表示特殊召唤到自己场上。
+-- ②效果处理：若这张卡仍与效果有联系，则从手卡表侧表示特殊召唤
 function c66386380.ssop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	if c:IsRelateToEffect(e) then
-		-- 将这张卡以表侧表示特殊召唤到自己场上。
+		-- 将这张卡从手卡表侧表示特殊召唤到自己场上
 		Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
