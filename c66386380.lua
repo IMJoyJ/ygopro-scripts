@@ -10,7 +10,7 @@ function c66386380.initial_effect(c)
 	-- ③：这张卡召唤·特殊召唤成功的场合才能发动。这个回合的结束阶段，从自己墓地选有「鹰身女郎三姐妹」的卡名记述的1张魔法·陷阱卡加入手卡。
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(66386380,0))
-	e1:SetCategory(CATEGORY_TOHAND)
+	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_GRAVE_ACTION)
 	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e1:SetProperty(EFFECT_FLAG_DELAY)
 	e1:SetCode(EVENT_SUMMON_SUCCESS)

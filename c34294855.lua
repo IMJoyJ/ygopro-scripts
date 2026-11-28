@@ -4,23 +4,21 @@
 function c34294855.initial_effect(c)
 	-- 这张卡被战斗破坏送去墓地时
 	local e1=Effect.CreateEffect(c)
-	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_CONTINUOUS)
+	e1:SetDescription(aux.Stringid(34294855,0))
+	e1:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_GRAVE_SPSUMMON)
+	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e1:SetCode(EVENT_BATTLE_DESTROYED)
-	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
 	e1:SetCondition(c34294855.regcon)
+	e1:SetCost(c34294855.spcost)
 	e1:SetOperation(c34294855.regop)
 	c:RegisterEffect(e1)
 	-- 支付500基本分才能发动。下个回合的准备阶段时，这张卡从墓地特殊召唤。
 	local e2=Effect.CreateEffect(c)
-	e2:SetDescription(aux.Stringid(34294855,0))  --"特殊召唤"
-	e2:SetCategory(CATEGORY_SPECIAL_SUMMON)
-	e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
+	e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e2:SetCode(EVENT_PHASE+PHASE_STANDBY)
 	e2:SetRange(LOCATION_GRAVE)
 	e2:SetCountLimit(1)
 	e2:SetCondition(c34294855.spcon)
-	e2:SetCost(c34294855.spcost)
-	e2:SetTarget(c34294855.sptg)
 	e2:SetOperation(c34294855.spop)
 	c:RegisterEffect(e2)
 	-- 此外，这个效果特殊召唤成功时发动。这张卡的攻击力上升500。
@@ -40,7 +38,10 @@ function c34294855.regcon(e,tp,eg,ep,ev,re,r,rp)
 end
 -- 为该卡注册一个标识，记录其被战斗破坏送去墓地的事实，该标识在标准重置事件或两次结束阶段后重置，确保下个准备阶段仍存在。
 function c34294855.regop(e,tp,eg,ep,ev,re,r,rp)
-	e:GetHandler():RegisterFlagEffect(34294855,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END,0,2)
+	local c=e:GetHandler()
+	if c:IsRelateToEffect(e) then
+		c:RegisterFlagEffect(34294855,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END,0,2)
+	end
 end
 -- 检查该卡是否带有被战斗破坏后设置的标识，以确认满足下个准备阶段从墓地特殊召唤的条件。
 function c34294855.spcon(e,tp,eg,ep,ev,re,r,rp)
@@ -53,19 +54,10 @@ function c34294855.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	-- 实际支付500基本分作为发动代价。
 	Duel.PayLPCost(tp,500)
 end
--- 特殊召唤效果的目标处理：确认效果持有者能够被特殊召唤，并登记操作信息，准备将其从墓地特殊召唤。
-function c34294855.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	if chk==0 then return e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
-	-- 向系统登记本次效果处理将执行特殊召唤操作，对象为效果持有者自身，数量为1。
-	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
-end
--- 特殊召唤效果的实际处理：若效果持有者仍与效果关联，则将其特殊召唤到场上。
 function c34294855.spop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
-	if c:IsRelateToEffect(e) then
-		-- 执行特殊召唤：以自身效果方式，不忽略召唤条件和苏生限制，将卡表侧表示特殊召唤到其持有者场上。
-		Duel.SpecialSummon(c,SUMMON_VALUE_SELF,tp,tp,false,false,POS_FACEUP)
-	end
+	c:ResetFlagEffect(34294855)
+	Duel.SpecialSummon(c,SUMMON_VALUE_SELF,tp,tp,false,false,POS_FACEUP)
 end
 -- 判断此卡是否是通过自身效果被特殊召唤，通过匹配召唤类型，确保只在‘诅咒之吸血鬼’自身效果特殊召唤成功时触发攻击力上升。
 function c34294855.upcon(e,tp,eg,ep,ev,re,r,rp)

@@ -62,7 +62,8 @@ function s.distg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	-- 获取对方场上的所有恶魔族怪兽作为可破坏对象
 	local dg=Duel.GetMatchingGroup(s.desfilter,tp,LOCATION_MZONE,0,nil)
 	if chkc then return g:IsContains(chkc) end
-	if chk==0 then return g:GetCount()>0 and (dg:GetCount()>1 or dg~=g) end
+	if chk==0 then return dg:GetCount()>0
+		and Duel.IsExistingTarget(s.tgfilter,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil,g,dg) end
 	local sg
 	if g:GetCount()==1 then
 		sg=g:Clone()
@@ -76,10 +77,7 @@ function s.distg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	end
 	-- 设置操作信息，表示将要使目标怪兽无效
 	Duel.SetOperationInfo(0,CATEGORY_DISABLE,sg,1,0,0)
-	if dg:GetCount()>0 then
-		-- 设置操作信息，表示将要破坏目标怪兽
-		Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,1,0,0)
-	end
+	Duel.SetOperationInfo(0,CATEGORY_DESTROY,dg,1,0,0)
 end
 -- 无效效果的处理函数，选择并破坏对方怪兽并使其效果无效
 function s.disop(e,tp,eg,ep,ev,re,r,rp)
@@ -91,6 +89,9 @@ function s.disop(e,tp,eg,ep,ev,re,r,rp)
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)  --"请选择要破坏的卡"
 	-- 从场上选择一张恶魔族怪兽作为破坏对象
 	local sg=Duel.SelectMatchingCard(tp,s.desfilter,tp,LOCATION_MZONE,0,1,1,tc)
+	if sg:GetCount()==0 then
+		sg=Duel.SelectMatchingCard(tp,s.desfilter,tp,LOCATION_MZONE,0,1,1,nil)
+	end
 	if sg:GetCount()>0 then
 		-- 显示被选为对象的动画效果
 		Duel.HintSelection(sg)

@@ -7,7 +7,7 @@
 function c26285788.initial_effect(c)
 	-- “这张卡发动的回合的结束阶段时，这个回合自己从手卡·场上解放的衍生物以外的怪兽数量的以下效果适用。「招来的对价」在1回合只能发动1张。”
 	local e1=Effect.CreateEffect(c)
-	e1:SetCategory(CATEGORY_DRAW)
+	e1:SetCategory(CATEGORY_DRAW+CATEGORY_GRAVE_ACTION)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetCountLimit(1,26285788+EFFECT_COUNT_CODE_OATH)

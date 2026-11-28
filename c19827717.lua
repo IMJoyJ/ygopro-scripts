@@ -4,6 +4,7 @@
 function c19827717.initial_effect(c)
 	-- 自己的手卡的1张怪兽卡丢弃去墓地。这个回合因为战斗被破坏送去自己的墓地的怪兽1只回合结束的时候回到手卡。
 	local e1=Effect.CreateEffect(c)
+	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_GRAVE_ACTION)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetCost(c19827717.cost)

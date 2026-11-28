@@ -39,7 +39,7 @@ function c2295831.regop(e,tp,eg,ep,ev,re,r,rp)
 		e1:SetCode(EFFECT_PUBLIC)
 		e1:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_MAIN1)
 		c:RegisterEffect(e1)
-		c:RegisterFlagEffect(2295831,RESET_PHASE+PHASE_MAIN1,EFFECT_FLAG_CLIENT_HINT,1,0,66)
+		c:RegisterFlagEffect(2295831,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_MAIN1,EFFECT_FLAG_CLIENT_HINT,1,0,66)
 	end
 end
 -- 发动条件：只能在主要阶段1发动，即“那个回合的主要阶段1才能发动”。

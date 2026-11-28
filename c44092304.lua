@@ -97,9 +97,8 @@ function s.tktg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local race=ec:GetOriginalRace()
 	local attr=ec:GetOriginalAttribute()
 	local atk=ec:GetBaseAttack()
-	-- 检查我方场上是否同时有可用的主要怪兽区空格和魔陷区空格（分别用于特召衍生物和装备此卡）。
-	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0 and Duel.GetLocationCount(tp,LOCATION_SZONE)>0
-		-- 继续检查能否以记录的原本种族、属性、攻击力，特殊召唤1只1星·攻击力?/守备力0的「异睡衍生物」衍生物。
+	if chk==0 then return ec:IsType(TYPE_MONSTER)
+		and Duel.GetLocationCount(tp,LOCATION_MZONE)>0 and Duel.GetLocationCount(tp,LOCATION_SZONE)>0
 		and Duel.IsPlayerCanSpecialSummonMonster(tp,id+o,0,TYPES_TOKEN_MONSTER,atk,0,1,race,attr) end
 	e:SetLabel(race,attr,atk)
 	-- 登记本次处理将生成衍生物（CATEGORY_TOKEN）。
